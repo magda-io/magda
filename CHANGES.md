@@ -30,6 +30,7 @@
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
 *   Fixed the GAP under preview map loading box
 *   Switched to using yarn as the package manager
+*   Merge duplicate publisher records before display on publisher page
 *   Made frontend GA post to both terria and dga google analytics.
 *   Tagged correspondence api as a typescript api.
 
