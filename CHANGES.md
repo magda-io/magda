@@ -34,6 +34,7 @@
 *   Made frontend GA post to both terria and dga google analytics.
 *   Tagged correspondence api as a typescript api.
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
+*   Made magda-web-server look for magda-web-client using require.resolve.
 
 ## 0.0.38
 
