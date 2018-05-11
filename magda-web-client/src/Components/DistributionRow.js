@@ -3,13 +3,13 @@ import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import type { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import Button from "muicss/lib/react/button";
 import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
+import ga from "../analytics/googleAnalytics";
 import ReactTooltip from "react-tooltip";
 const formatIcons = {
     default: defaultFormatIcon
@@ -192,8 +192,8 @@ class DistributionRow extends Component {
                 </div>
                 <div className="col-md-3 button-area">
                     {distribution.downloadURL ? (
-                        <Button
-                            className="download-button"
+                        <button
+                            className="download-button au-btn au-btn--secondary"
                             onClick={() => {
                                 if (!distribution.downloadURL) {
                                     this.props.dispatch(
@@ -210,8 +210,8 @@ class DistributionRow extends Component {
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
                                 );
-                                if (resource_url && window.ga) {
-                                    window.ga("send", {
+                                if (resource_url) {
+                                    ga("send", {
                                         hitType: "event",
                                         eventCategory: "Resource",
                                         eventAction: "Download",
@@ -229,16 +229,16 @@ class DistributionRow extends Component {
                             >
                                 Download
                             </a>
-                        </Button>
+                        </button>
                     ) : null}
-                    <Button
-                        className="new-tab-button"
+                    <button
+                        className="au-btn au-btn--secondary new-tab-button"
                         onClick={() => {
                             window.open(distributionLink, distribution.title);
                         }}
                     >
                         <img src={newTabIcon} alt="new tab" />
-                    </Button>
+                    </button>
                 </div>
             </div>
         );

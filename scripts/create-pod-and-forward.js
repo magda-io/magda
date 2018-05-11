@@ -50,7 +50,7 @@ childProcess.execSync("kubectl config use-context minikube", {
     stdio: "inherit",
     env: env
 });
-childProcess.execSync("npm run docker-build-local", {
+childProcess.execSync("yarn run docker-build-local", {
     stdio: "inherit",
     env: env
 });

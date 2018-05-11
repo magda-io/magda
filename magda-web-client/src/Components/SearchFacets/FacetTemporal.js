@@ -2,7 +2,6 @@ import "./FacetTemporal.css";
 import React, { Component } from "react";
 import FacetHeader from "./FacetHeader";
 import defined from "../../helpers/defined";
-import Button from "muicss/lib/react/button";
 import MonthPicker from "../../UI/MonthPicker";
 import range from "../../assets/range.svg";
 
@@ -158,22 +157,22 @@ class FacetTemporal extends Component {
                         <div className="clearfix facet-temporal facet-body">
                             {this.renderDatePicker()}
                             <div className="facet-footer">
-                                <Button
-                                    variant="flat"
+                                <button
+                                    className="au-btn au-btn--secondary"
                                     disabled={this.state.applyButtonDisabled}
                                     onClick={this.props.onResetFacet}
                                 >
                                     {" "}
                                     Clear{" "}
-                                </Button>
-                                <Button
+                                </button>
+                                <button
+                                    className="au-btn au-btn--secondary"
                                     disabled={this.state.applyButtonDisabled}
-                                    variant="flat"
                                     onClick={this.onApplyFilter}
                                 >
                                     {" "}
                                     Apply{" "}
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     )}

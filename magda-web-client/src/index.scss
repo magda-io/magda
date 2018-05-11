@@ -1,16 +1,21 @@
 @import "variables";
-
+@import "../pancake/sass/pancake.scss";
 html {
     @include AU-fontgrid(sm);
-}
-body {
-    margin: 0;
-    padding: 0;
     font-family: $font-base;
-    font-weight: 400;
+}
+.au-body a {
+    text-decoration: none;
     color: $body;
     overflow-x: hidden;
 }
+.au-body a:hover {
+    color: white;
+}
+.au-body p {
+    max-width: 100%;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;
@@ -34,7 +39,7 @@ body {
     }
 }
 
-.mui-btn {
+.au-btn {
     font-weight: 400;
     text-transform: none;
 }
@@ -62,10 +67,6 @@ a {
     transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
     cursor: pointer;
     color: $body;
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
     &:hover {
         color: #ffffff;
         background-color: $magda;
@@ -97,7 +98,7 @@ a {
     }
 }
 
-.mui-btn + .mui-btn {
+.au-btn + .au-btn {
     margin-left: 0;
 }
 
@@ -110,21 +111,21 @@ a {
 // gold starts here
 
 h1 {
-    @include AU-fontgrid(xxxl, heading);
-    font-weight: 400;
-}
-
-h2 {
-    @include AU-fontgrid(xxl, heading);
-    font-weight: 400;
-}
-
-h3 {
     @include AU-fontgrid(xl, heading);
     font-weight: 400;
 }
 
-h4 {
+h2 {
     @include AU-fontgrid(lg, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(md, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(sm, heading);
     font-weight: 400;
 }

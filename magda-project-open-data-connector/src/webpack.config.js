@@ -1,6 +1,9 @@
 const path = require("path");
 const webpack = require("webpack");
 
+const packagePath = package =>
+    path.dirname(require.resolve(`${package}/package.json`));
+
 module.exports = {
     entry: "./src/createTransformer.ts",
     output: {
@@ -27,13 +30,13 @@ module.exports = {
         // So we accomplish the same thing with webpack aliases here.
         // https://github.com/TypeStrong/ts-loader/issues/213
         alias: {
-            "@magda/registry-aspects/dist": path.resolve(
-                __dirname,
-                "../node_modules/@magda/registry-aspects/src"
+            "@magda/registry-aspects/dist": path.join(
+                packagePath("@magda/registry-aspects"),
+                "src"
             ),
-            "@magda/typescript-common/dist": path.resolve(
-                __dirname,
-                "../node_modules/@magda/typescript-common/src"
+            "@magda/typescript-common/dist": path.join(
+                packagePath("@magda/typescript-common"),
+                "src"
             )
         }
     },

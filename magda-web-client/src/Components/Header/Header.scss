@@ -12,6 +12,7 @@
         border-bottom: none;
         background: transparent;
         padding: 8px 0;
+        overflow-y: hidden;
         img {
             height: 100%;
             width: auto;
@@ -39,19 +40,6 @@
                 color: #000;
                 text-decoration: underline;
             }
-        }
-    }
-
-    .account-navbar {
-        display: inline-block;
-        a {
-            color: $body;
-            text-decoration: none;
-            border-bottom: 0;
-            transition: background-color 0.1s ease-in-out,
-                border-color 0.1s ease-in-out;
-            margin-right: 0px;
-            display: inline-block;
         }
     }
 }
@@ -108,13 +96,5 @@
         &.isOpen {
             height: auto;
         }
-    }
-    .account-navbar a,
-    a {
-        display: block;
-        line-height: 40px;
-    }
-    .account-navbar {
-        display: block;
     }
 }
