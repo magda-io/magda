@@ -12,7 +12,6 @@ import {
 import close from "../../../assets/close.svg";
 import success from "../../../assets/success.svg";
 import Notification from "../../../UI/Notification";
-import { Medium } from "../../../UI/Responsive";
 
 import "./FeedbackForm.css";
 

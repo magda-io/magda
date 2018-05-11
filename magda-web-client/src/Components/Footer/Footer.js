@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import FeedbackForm from "./Feedback/FeedbackForm";
 import { FeedbackButton, FeedbackLink } from "./Feedback/FeedbackButton";
-import { ExtraSmall, Small, Medium } from "../../UI/Responsive";
+import { Small, Medium } from "../../UI/Responsive";
 
 import dtaLogo from "./dta-logo.png";
 import d61logo from "./data61-logo.png";
