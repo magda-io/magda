@@ -19,8 +19,15 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import "./RecordHandler.css";
-
+import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 class RecordHandler extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            hideHeader: false
+        };
+    }
+
     componentWillMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
@@ -31,6 +38,11 @@ class RecordHandler extends React.Component {
             );
         }
     }
+
+    toggleHeader = hideHeader => {
+        this.setState({ hideHeader });
+    };
+
     componentWillReceiveProps(nextProps) {
         if (
             nextProps.match.params.datasetId !==
@@ -133,7 +145,16 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
-                        <h1 itemProp="name">{this.props.dataset.title}</h1>
+                        {!this.state.hideHeader && (
+                            <h1 className="dataset-title" itemProp="name">
+                                {this.props.dataset.title}
+                            </h1>
+                        )}
+                        <DatasetSuggestForm
+                            title={this.props.dataset.title}
+                            toggleHeader={this.toggleHeader}
+                            datasetId={this.props.dataset.identifier}
+                        />
                         <div className="publisher-basic-info-row">
                             <span
                                 itemProp="publisher"

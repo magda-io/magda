@@ -23,7 +23,9 @@ const serverConfig: {
 } =
     window.magda_server_config || {};
 //this below const enables suggest a Dataset when enabled
-export const enableSuggestDatasetPage = false;
+export const enableSuggestDatasetPage = true;
+export const correspondenceApiReportUrl =
+    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/:datasetId/report";
 export const correspondenceApiUrl =
     "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/request";
 const registryApiUrl =

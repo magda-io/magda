@@ -87,6 +87,7 @@ export default class Suggest extends React.Component {
                         formProps={formProps}
                         alertProps={alertProps}
                         formSubmitState={this.getFormSubmitState}
+                        requestType="request"
                     />
                 )}
             </div>

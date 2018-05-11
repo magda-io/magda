@@ -11,9 +11,9 @@ export default class RequestFormTemplate extends React.Component {
             message: "",
             senderName: "",
             senderEmail: "",
-            emailValid: true,
+            senderEmailValid: true,
             messageValid: true,
-            nameValid: true
+            senderNameValid: true
         };
     }
 
@@ -25,15 +25,15 @@ export default class RequestFormTemplate extends React.Component {
         const requiredFields = [];
         if (!state || !state.senderEmail || state.senderEmail.trim() === "") {
             requiredFields.push(`senderEmail`);
-            this.setState({ emailValid: false });
+            this.setState({ senderEmailValid: false });
         } else {
-            this.setState({ emailValid: true });
+            this.setState({ senderEmailValid: true });
         }
         if (!state || !state.senderName || state.senderName.trim() === "") {
             requiredFields.push(`senderName`);
-            this.setState({ nameValid: false });
+            this.setState({ senderNameValid: false });
         } else {
-            this.setState({ nameValid: true });
+            this.setState({ senderNameValid: true });
         }
         if (!state || !state.message || state.message.trim() === "") {
             requiredFields.push(`message`);
@@ -63,31 +63,26 @@ export default class RequestFormTemplate extends React.Component {
     handleInputChange = event => {
         const inputId = event.target.id;
         const inputVal = event.target.value.trim();
-        switch (inputId) {
-            case "textarea-input":
-                this.setState({ message: inputVal });
-                break;
-            case "name-input":
-                this.setState({ senderName: inputVal });
-                break;
-            case "email-input":
-                this.setState({ senderEmail: inputVal });
-                break;
-            default:
-                break;
-        }
+        this.setState(() => {
+            return {
+                [inputId]: inputVal
+            };
+        });
     };
 
     render() {
         return (
             <form>
-                {this.props.title && <AUheader title={this.props.title} />}
-                <label htmlFor="textarea-input">
-                    {this.props.textAreaLabel}
-                </label>
+                {this.props.title &&
+                    (this.props.smallTitle ? (
+                        <h4>{this.props.title}</h4>
+                    ) : (
+                        <AUheader title={this.props.title} />
+                    ))}
+                <label htmlFor="message">{this.props.textAreaLabel}</label>
                 <AUtextInput
                     as="textarea"
-                    id="textarea-input"
+                    id="message"
                     className={
                         "textarea-input " +
                         (this.state.messageValid
@@ -98,24 +93,28 @@ export default class RequestFormTemplate extends React.Component {
                     type="text"
                     placeholder={this.props.textAreaPlaceHolder}
                 />
-                <label htmlFor="name-input">Your Name</label>
+                <label htmlFor="senderName">Your Name</label>
                 <AUtextInput
-                    id="name-input"
+                    id="senderName"
                     onChange={this.handleInputChange}
                     type="text"
                     className={
                         "suggest-page-input " +
-                        (this.state.nameValid ? "" : "au-text-input--invalid")
+                        (this.state.senderNameValid
+                            ? ""
+                            : "au-text-input--invalid")
                     }
                     placeholder={this.props.namePlaceHolder}
                 />
-                <label htmlFor="email-input">Email</label>
+                <label htmlFor="senderEmail">Email</label>
                 <AUtextInput
-                    id="email-input"
+                    id="senderEmail"
                     onChange={this.handleInputChange}
                     className={
                         "suggest-page-input " +
-                        (this.state.emailValid ? "" : "au-text-input--invalid")
+                        (this.state.senderEmailValid
+                            ? ""
+                            : "au-text-input--invalid")
                     }
                     placeholder={this.props.emailPlaceHolder}
                 />
