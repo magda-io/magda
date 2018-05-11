@@ -1,89 +1,102 @@
 import {} from "mocha";
+import * as sinon from "sinon";
+import * as chai from "chai";
 import { ApiRouterOptions } from "../createApiRouter";
-import { DatasetMessage } from "../model";
-// import { assert } from "chai";
 
 import createApiRouter from "../createApiRouter";
-// import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import * as supertest from "supertest";
-import * as mockery from "mockery";
-import * as nock from "nock";
 import * as express from "express";
+import { SMTPMailer, Message } from "../SMTPMailer";
 
-const nodemailerMock = require("nodemailer-mock");
 const registryUrl: string = "https://registry.example.com";
-// const registry = new Registry({
-//     baseUrl: registryUrl,
-//     maxRetries: 0
-// });
-const routerOpts: ApiRouterOptions = {
-    jwtSecret: "squirrel",
-    registryUrl: registryUrl,
-    smtpHostname: "smtp.example.com",
-    smtpPort: 465,
-    smtpSecure: true
-};
-const DATA: DatasetMessage = {
-    senderName: "Bob Cunningham",
-    senderEmail: "bob.cunningham@example.com",
-    message: "Give me this dataset!"
-};
 
-describe("send mail", () => {
-    let router: express.Router = createApiRouter(routerOpts);
-    let registryScope: nock.Scope;
+describe("send dataset request mail", () => {
+    it("should respond with an 200 response if sendMail() was successful", () => {
+        const stubbedSMTPMailer: SMTPMailer = {
+            send(): Promise<{}> {
+                return null;
+            }
+        } as SMTPMailer;
 
-    beforeEach(() => {
-        registryScope = nock(registryUrl);
+        sinon.stub(stubbedSMTPMailer, "send");
+
+        (stubbedSMTPMailer.send as sinon.SinonStub).callsFake(
+            (message: Message) => {
+                chai.expect(message.to).to.equal("data@digital.gov.au");
+                chai
+                    .expect(message.from)
+                    .to.equal("bob.cunningham@example.com");
+                return Promise.resolve();
+            }
+        );
+
+        let app: express.Express = express();
+        app.use(require("body-parser").json());
+        app.use("/", createApiRouter(resolveRouterOptions(stubbedSMTPMailer)));
+
+        return supertest(app)
+            .post("/public/send/dataset/request")
+            .set({
+                "Content-Type": "application/json"
+            })
+            .send({
+                senderName: "Bob Cunningham",
+                senderEmail: "bob.cunningham@example.com",
+                message: "Give me dataset"
+            })
+            .expect(200)
+            .then(() => {
+                chai.expect((stubbedSMTPMailer.send as sinon.SinonStub).called)
+                    .to.be.true;
+            });
     });
 
-    before(() => {
-        mockery.enable({
-            warnOnUnregistered: false
-        });
+    it("should respond with an 500 response if sendMail() was unsuccessful", () => {
+        const stubbedSMTPMailer: SMTPMailer = {
+            send(): Promise<{}> {
+                return null;
+            }
+        } as SMTPMailer;
 
-        mockery.registerMock("nodemailer", nodemailerMock);
+        sinon.stub(stubbedSMTPMailer, "send");
+
+        (stubbedSMTPMailer.send as sinon.SinonStub).callsFake(
+            (message: Message) => {
+                chai.expect(message.to).to.equal("data@digital.gov.au");
+                chai
+                    .expect(message.from)
+                    .to.equal("bob.cunningham@example.com");
+                return Promise.reject(new Error());
+            }
+        );
+
+        let app: express.Express = express();
+        app.use(require("body-parser").json());
+        app.use("/", createApiRouter(resolveRouterOptions(stubbedSMTPMailer)));
+
+        return supertest(app)
+            .post("/public/send/dataset/request")
+            .set({
+                "Content-Type": "application/json"
+            })
+            .send({
+                senderName: "Bob Cunningham",
+                senderEmail: "bob.cunningham@example.com",
+                message: "Give me dataset"
+            })
+            .expect(500)
+            .then(() => {
+                chai.expect((stubbedSMTPMailer.send as sinon.SinonStub).called)
+                    .to.be.true;
+            });
     });
-
-    afterEach(() => {
-        nodemailerMock.mock.reset();
-        registryScope.done();
-        registryScope.removeAllListeners();
-    });
-
-    after(() => {
-        mockery.deregisterAll();
-        mockery.disable();
-    });
-
-    it("should use different templates given different related queries"),
-        () => {};
-
-    it("should respond with an unsuccessful response if record is invalid"),
-        (done: any) => {
-            return supertest(router)
-                .post("/public/send/dataset/request")
-                .set({
-                    "Content-Type": "application/json"
-                })
-                .send({
-                    senderName: DATA.senderName,
-                    senderEmail: DATA.senderEmail,
-                    message: DATA.message,
-                    datasetId: "ds-abc123"
-                })
-                .expect(500, done);
-        };
-
-    it("should respond with an successful response if record is valid"),
-        () => {
-            registryScope
-                .get("/records?aspect=dcat-dataset-strings&id=ds-abc123")
-                .reply(200, {
-                    agencyName: "Test Agency",
-                    agencyContact: "Test Agency Contact",
-                    dataset: "Test dataset"
-                });
-        };
 });
+
+function resolveRouterOptions(smtpMailer: SMTPMailer): ApiRouterOptions {
+    return {
+        jwtSecret: "squirrel",
+        registryUrl: registryUrl,
+        smtpMailer: smtpMailer
+    };
+}

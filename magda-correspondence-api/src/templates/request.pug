@@ -42,10 +42,7 @@ body
   p.content
     img.image(src="cid:dataGovLogo" alt="Data gov logo")
     |Hi there, <br/><br/>
-    |A query has been raised in relation to a #{agencyName} data set: #{dataset}. 
-    |Please log in to your profile on data.gov.au
-    |using #{agencyEmail} as soon as possible to respond to this query.<br/><br/>
-    |The query is from #{requesterName}, #{requesterEmail}: <br/><br/>
+    |A request has been raised for a particular dataset from #{requesterName}, #{requesterEmail}: <br/><br/>
     |#{requesterMsg} <br/><br/>
     a(target="_top" href=`mailto:${requesterEmail}`)
       button(type="button") Reply 

@@ -4,6 +4,7 @@ import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 import createApiRouter from "./createApiRouter";
+import { NodeMailerSMTPMailer } from "./SMTPMailer";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -45,8 +46,7 @@ const argv = addJwtSecretFromEnvVar(
         .option("smtpUsername", {
             describe: "The username to authenticate with the SMTP server",
             type: "string",
-            default:
-                ""
+            default: ""
         })
         .option("smtpPassword", {
             describe: "The password to authenticate with the SMTP server",
@@ -62,11 +62,13 @@ app.use(
     createApiRouter({
         jwtSecret: argv.jwtSecret,
         registryUrl: argv.registryUrl,
-        smtpHostname: argv.smtpHostname,
-        smtpPort: argv.smtpPort,
-        smtpSecure: argv.smtpSecure,
-        smtpUsername: argv.smtpUsername,
-        smtpPassword: argv.smtpPassword
+        smtpMailer: new NodeMailerSMTPMailer({
+            smtpHostname: argv.smtpHostname,
+            smtpPort: argv.smtpPort,
+            smtpSecure: argv.smtpSecure,
+            smtpUsername: argv.smtpUsername,
+            smtpPassword: argv.smtpPassword
+        })
     })
 );
 
