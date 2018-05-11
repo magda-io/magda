@@ -74,9 +74,7 @@ export default function Footer({ footerNavs }) {
                     {matched => (
                         <FooterNavs
                             footerNavs={
-                                matched
-                                    ? footerNavs.extraSmall
-                                    : footerNavs.small
+                                matched ? footerNavs.small : footerNavs.medium
                             }
                         />
                     )}

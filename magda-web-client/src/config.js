@@ -74,8 +74,8 @@ export const config = {
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: {
-        // ExtraSmall media query (mobile)
-        extraSmall: [
+        // small media query (mobile)
+        small: [
             {
                 category: "Data.gov.au",
                 links: [
@@ -86,8 +86,8 @@ export const config = {
                 ]
             }
         ],
-        // Small media query and bigger (desktop)
-        small: [
+        // medium media query and bigger (desktop)
+        medium: [
             {
                 category: "Data.gov.au",
                 links: [
