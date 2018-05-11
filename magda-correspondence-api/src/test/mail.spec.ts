@@ -1,13 +1,13 @@
 import {} from "mocha";
-import * as sinon from "sinon";
-import * as chai from "chai";
 import { ApiRouterOptions } from "../createApiRouter";
+import { SMTPMailer, Message } from "../SMTPMailer";
 
 import createApiRouter from "../createApiRouter";
 
+import * as chai from "chai";
+import * as sinon from "sinon";
 import * as supertest from "supertest";
 import * as express from "express";
-import { SMTPMailer, Message } from "../SMTPMailer";
 
 const registryUrl: string = "https://registry.example.com";
 
@@ -89,6 +89,43 @@ describe("send dataset request mail", () => {
             .then(() => {
                 chai.expect((stubbedSMTPMailer.send as sinon.SinonStub).called)
                     .to.be.true;
+            });
+    });
+
+    it("should raise an error if the sender provides an invalid email", () => {
+        const stubbedSMTPMailer: SMTPMailer = {
+            send(): Promise<{}> {
+                return null;
+            }
+        } as SMTPMailer;
+        sinon.stub(stubbedSMTPMailer, "send");
+
+        (stubbedSMTPMailer.send as sinon.SinonStub).callsFake(
+            (message: Message) => {
+                chai.expect(message.from).to.throw();
+                return Promise.reject(new Error());
+            }
+        );
+
+        let app: express.Express = express();
+        app.use(require("body-parser").json());
+        app.use("/", createApiRouter(resolveRouterOptions(stubbedSMTPMailer)));
+
+        return supertest(app)
+            .post("/public/send/dataset/request")
+            .set({
+                "Content-Type": "application/json"
+            })
+            .send({
+                senderName: "Bob Cunningham",
+                senderEmail: "<INVALID EMAIL>",
+                message: "Give me dataset"
+            })
+            .expect(500)
+            .then(() => {
+                chai.expect(
+                    (stubbedSMTPMailer.send as sinon.SinonStub).throwsException
+                );
             });
     });
 });

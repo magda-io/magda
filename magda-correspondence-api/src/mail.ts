@@ -80,5 +80,5 @@ function inspectEmail(email: string) {
     if (emailValidator.validate(email)) {
         return email;
     }
-    console.error(`Invalid email address: ${email}`);
+    throw new Error(`Invalid email address: ${email}`);
 }
