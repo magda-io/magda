@@ -36,6 +36,7 @@
 *   Made auto deploy for master -> dev server reconfigure jobs.
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
 *   Made magda-web-server look for magda-web-client using require.resolve.
+*   Implemented SMTP client with `nodemailer` for correspondence api
 
 ## 0.0.38
 
