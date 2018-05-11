@@ -3,6 +3,7 @@ import { Message } from "./SMTPMailer";
 import * as html2text from "html-to-text";
 import * as path from "path";
 import * as pug from "pug";
+import * as emailValidator from "email-validator";
 
 // import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
 // import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
@@ -26,8 +27,8 @@ export function sendMail(
 
     const message: Message = {
         to: "data@digital.gov.au",
-        from: request.body.senderEmail,
-        subject: `A question for from Data.gov.au`,
+        from: inspectEmail(request.body.senderEmail),
+        subject: `A question about a dataset from Data.gov.au`,
         text: html2text.fromString(resolveTemplate(templateContext)),
         html: resolveTemplate(templateContext),
         attachments: [
@@ -69,4 +70,15 @@ function resolveTemplate(context: object) {
         path.resolve(__dirname, "templates/request.pug"),
         context
     );
+}
+
+/**
+ * Check to see if an email is valid, return email or log error
+ * @param email - The email to test
+ */
+function inspectEmail(email: string) {
+    if (emailValidator.validate(email)) {
+        return email;
+    }
+    console.error(`Invalid email address: ${email}`);
 }
