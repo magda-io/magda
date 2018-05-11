@@ -18,8 +18,15 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import "./RecordHandler.css";
-
+import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 class RecordHandler extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            hideHeader: false
+        };
+    }
+
     componentWillMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
@@ -30,6 +37,11 @@ class RecordHandler extends React.Component {
             );
         }
     }
+
+    toggleHeader = hideHeader => {
+        this.setState({ hideHeader });
+    };
+
     componentWillReceiveProps(nextProps) {
         if (
             nextProps.match.params.datasetId !==
@@ -130,7 +142,18 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div>
-                        <h1>{this.props.dataset.title}</h1>
+                        <div>
+                            {!this.state.hideHeader && (
+                                <h1 className="dataset-title">
+                                    {this.props.dataset.title}
+                                </h1>
+                            )}
+                            <DatasetSuggestForm
+                                title={this.props.dataset.title}
+                                toggleHeader={this.toggleHeader}
+                                datasetId={this.props.dataset.identifier}
+                            />
+                        </div>
                         <div className="publisher-basic-info-row">
                             <span className="publisher">{publisherName}</span>
                             <span className="separator hidden-sm">/</span>
