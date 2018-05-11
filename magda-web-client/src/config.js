@@ -73,27 +73,44 @@ export const config = {
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
-    footerNavigation: [
-        {
-            category: "Data.gov.au",
-            links: [
-                ["About", "page/about"],
-                ["Request a dataset", "mailto:data@digital.gov.au"],
-                ["Privacy Policy", "page/privacy-policy"]
-            ]
-        },
-        {
-            category: "Publishers",
-            links: [
-                ["Sign in", "https://data.gov.au/user/login"],
-                ["Open data toolkit", "https://toolkit.data.gov.au/"]
-            ]
-        },
-        {
-            category: "Developers",
-            links: [["Powered by Magda", "https://github.com/TerriaJS/magda/"]]
-        }
-    ],
+    footerNavigation: {
+        // ExtraSmall media query (mobile)
+        extraSmall: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Give feedback", "feedback"]
+                ]
+            }
+        ],
+        // Small media query and bigger (desktop)
+        small: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Privacy Policy", "page/privacy-policy"]
+                ]
+            },
+            {
+                category: "Publishers",
+                links: [
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
+                ]
+            },
+            {
+                category: "Developers",
+                links: [
+                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                ]
+            }
+        ]
+    },
     months: [
         "Jan",
         "Feb",

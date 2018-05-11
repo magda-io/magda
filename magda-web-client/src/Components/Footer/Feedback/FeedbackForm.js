@@ -1,20 +1,25 @@
 import React from "react";
-import { fetchFeedback, resetFeedback } from "../actions/feedbackActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import "./FeedbackForm.css";
-import feedback from "../assets/feedback.svg";
-import close from "../assets/close.svg";
-import success from "../assets/success.svg";
-import Notification from "../UI/Notification";
 import ReactTooltip from "react-tooltip";
-import { Medium } from "../UI/Responsive";
+
+import {
+    fetchFeedback,
+    resetFeedback,
+    hideFeedbackForm,
+    showFeedbackForm
+} from "../../../actions/feedbackActions";
+import close from "../../../assets/close.svg";
+import success from "../../../assets/success.svg";
+import Notification from "../../../UI/Notification";
+import { Medium } from "../../../UI/Responsive";
+
+import "./FeedbackForm.css";
 
 class FeedbackForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isOpen: false,
             name: "",
             email: "",
             feedback: "",
@@ -64,8 +69,8 @@ class FeedbackForm extends React.Component {
     }
 
     onCancel() {
+        this.props.hideFeedbackForm();
         this.setState({
-            isOpen: false,
             name: "",
             email: "",
             feedback: "",
@@ -87,8 +92,8 @@ class FeedbackForm extends React.Component {
 
     onDismissNotification() {
         this.props.resetFeedback();
+        this.props.hideFeedbackForm();
         this.setState({
-            isOpen: false,
             name: "",
             email: "",
             feedback: "",
@@ -138,7 +143,7 @@ class FeedbackForm extends React.Component {
                     <button
                         className="close-btn au-btn au-btn--secondary"
                         onClick={() => {
-                            this.setState({ isOpen: false });
+                            this.props.hideFeedbackForm();
                         }}
                         title="close feedback"
                     >
@@ -208,28 +213,22 @@ class FeedbackForm extends React.Component {
     }
 
     render() {
-        return (
-            <div className="feedback-form">
-                <Medium>
-                    <button
-                        className="feedback-button au-btn"
-                        onClick={() => this.setState({ isOpen: true })}
-                    >
-                        <img alt="feedback" src={feedback} />Give feedback
-                    </button>
-                </Medium>
-                {this.state.isOpen && this.renderByState()}
-            </div>
-        );
+        return this.props.isShowingFeedbackForm ? (
+            <div className="feedback-form">{this.renderByState()}</div>
+        ) : null;
     }
 }
 
-function mapStateToProps(state) {
-    const feedback = state.feedback;
-    const isSendingFeedback = feedback.isSendingFeedback;
-    const sendFeedbackFailed = feedback.sendFeedbackFailed;
-    const sendFeedbackSuccess = feedback.sendFeedbackSuccess;
+function mapStateToProps({
+    feedback: {
+        isShowingFeedbackForm,
+        isSendingFeedback,
+        sendFeedbackFailed,
+        sendFeedbackSuccess
+    }
+}) {
     return {
+        isShowingFeedbackForm,
         isSendingFeedback,
         sendFeedbackFailed,
         sendFeedbackSuccess
@@ -240,7 +239,9 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             fetchFeedback: fetchFeedback,
-            resetFeedback: resetFeedback
+            resetFeedback: resetFeedback,
+            hideFeedbackForm,
+            showFeedbackForm
         },
         dispatch
     );

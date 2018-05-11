@@ -92,7 +92,7 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@gov.au/body@^2.0.2":
+"@gov.au/body@^2.0.0", "@gov.au/body@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@gov.au/body/-/body-2.0.2.tgz#614682524093b73d0f30844061a0b0697b03b8dc"
   dependencies:
@@ -120,6 +120,16 @@
     "@gov.au/pancake-sass" "~1"
     sass-versioning "^0.3.0"
 
+"@gov.au/footer@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@gov.au/footer/-/footer-2.0.1.tgz#578dc8e67981407d4db57d569b69808cfdfe9a0e"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@gov.au/grid-12@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@gov.au/grid-12/-/grid-12-2.0.1.tgz#87f24627d0480e6360a61c74ce48783c9d30c47f"
@@ -127,6 +137,17 @@
     "@gov.au/core" "^2.0.0"
     "@gov.au/pancake" "~1"
     "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-sass" "~1"
+
+"@gov.au/link-list@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@gov.au/link-list/-/link-list-2.0.1.tgz#7589a1005474981f0d784de5f777f92c4ec26e78"
+  dependencies:
+    "@gov.au/body" "^2.0.0"
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
 
 "@gov.au/pancake-json@^1.0.3", "@gov.au/pancake-json@~1":
