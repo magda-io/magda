@@ -34,26 +34,34 @@ class DataPreviewVis extends Component<{
      * @param {Array} tabs - Array of tab items
      */
     renderTabs(tabs) {
-        const tabitems = tabs.map((item, i) => (
-            <li className="list--unstyled" key={i}>
-                {item.action}
-            </li>
-        ));
+        const hash = window.location.hash;
+        const activeTabName = hash ? hash.slice(1, hash.length) : "chart";
 
+        const activeTab = tabs.find(
+            (item, i) =>
+                item.value.toLowerCase() === activeTabName.toLowerCase()
+        );
         return (
-            <div>
+            <nav className="tab-navigation">
                 <ul className="au-link-list  au-link-list--inline">
                     {tabs.map(t => (
-                        <li
-                            key={t.value}
-                            className="mainmenu--active list--unstyled"
-                        >
-                            {t.label}
+                        <li key={t.value}>
+                            <a
+                                className={`${
+                                    t.value.toLowerCase() ===
+                                    activeTabName.toLowerCase()
+                                        ? "mainmenu--active"
+                                        : null
+                                }`}
+                                href={`#${t.value}`}
+                            >
+                                {t.label}
+                            </a>
                         </li>
                     ))}
                 </ul>
-                <ul>{tabitems}</ul>
-            </div>
+                {activeTab.action}
+            </nav>
         );
     }
 

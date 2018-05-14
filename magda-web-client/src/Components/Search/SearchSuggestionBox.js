@@ -192,6 +192,7 @@ class SearchSuggestionBox extends Component {
             isMouseOver: false,
             selectedItemIdx: null
         });
+        debugger;
         this.searchInputRef.blur();
     }
 
@@ -255,7 +256,7 @@ class SearchSuggestionBox extends Component {
     setupSearchInputListener(newProps) {
         if (!newProps || !newProps.inputRef || !newProps.inputRef.controlEl)
             return;
-        const newInputRef = newProps.inputRef.controlEl;
+        const newInputRef = newProps.inputRef;
         if (this.searchInputRef) {
             if (this.searchInputRef === newInputRef) return;
             this.searchInputRef.removeEventListener(

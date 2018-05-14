@@ -74,7 +74,12 @@ a {
 }
 
 .tab-navigation {
+    .au-link-list {
+        display: flex;
+    }
+
     a {
+        display: inline-block;
         padding: 1rem 1rem;
         border-bottom: 5px solid #cfcfcf;
         &:hover,
@@ -98,12 +103,6 @@ a {
 
 .au-btn + .au-btn {
     margin-left: 0;
-}
-
-.other-page .app-container {
-    @media (max-width: $medium) {
-        padding: 0;
-    }
 }
 
 .list--unstyled {

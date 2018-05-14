@@ -12,7 +12,7 @@ function Tabs(props) {
     }
     return (
         <nav className="tab-navigation">
-            <ul className="au-link-list  au-link-list--inline">
+            <ul className="au-link-list">
                 {props.list.filter(i => i.isActive).map(item => (
                     <li role="presentation" key={item.id}>
                         <NavLink

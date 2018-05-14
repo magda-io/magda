@@ -13,6 +13,7 @@
         opacity: 0.75;
         @include AU-fontgrid(xs);
         margin-bottom: 5px;
+        display: inline-block;
     }
 
     .dataset-summary-description {
