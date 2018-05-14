@@ -1,5 +1,6 @@
 @import "../variables";
-.notification {
+
+.notification-box {
     position: fixed;
     height: 100vh;
     width: 100vw;
@@ -7,16 +8,15 @@
     top: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 999;
-}
 
-.notification__inner {
-    background: #fff;
-    border-radius: 5px;
-    position: fixed;
-    right: 4px;
-    bottom: 24px;
-    padding: 16px;
-    max-width: 400px;
+    .notification__inner {
+        position: fixed;
+        right: 4px;
+        bottom: 24px;
+        padding: 16px;
+        max-width: 400px;
+    }
+
     .close-btn {
         line-height: 0;
         padding: 0;
@@ -26,35 +26,6 @@
         img {
             height: 20px;
             width: 20px;
-        }
-    }
-
-    .notification__header {
-        @include AU-fontgrid(sm, heading);
-        font-weight: 500;
-        height: 70px;
-        &.with-icon {
-            padding: 20px 0 20px 70px;
-        }
-
-        .status-icon {
-            position: absolute;
-            left: 16px;
-            top: 16px;
-        }
-    }
-
-    .notification__error & {
-        border: 2px solid $magda;
-        .notification__header {
-            color: $magda;
-        }
-    }
-
-    .notification__success & {
-        border: 2px solid $success;
-        .notification__header {
-            color: $success;
         }
     }
 }
