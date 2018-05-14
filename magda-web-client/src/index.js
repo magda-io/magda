@@ -15,12 +15,15 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import ga from "./analytics/googleAnalytics";
+import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
 
 const store = createStore(
     reducer,
-    applyMiddleware(
-        thunkMiddleware, // lets us dispatch() functions
-        logger // neat middleware that logs actions
+    composeWithDevTools(
+        applyMiddleware(
+            thunkMiddleware, // lets us dispatch() functions
+            logger // neat middleware that logs actions
+        )
     )
 );
 
