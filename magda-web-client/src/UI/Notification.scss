@@ -17,6 +17,12 @@
         max-width: 400px;
     }
 
+    h3 {
+        word-break: keep-all;
+        word-wrap: normal;
+        margin-right: 32px;
+    }
+
     .close-btn {
         line-height: 0;
         padding: 0;
