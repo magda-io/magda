@@ -1,10 +1,7 @@
 import "es6-symbol/implement";
 import React, { Component } from "react";
-import Tabs from "muicss/lib/react/tabs";
-import Tab from "muicss/lib/react/tab";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
-
 import type { ParsedDistribution } from "../helpers/record";
 
 import "./DataPreviewVis.css";
@@ -38,12 +35,26 @@ class DataPreviewVis extends Component<{
      */
     renderTabs(tabs) {
         const tabitems = tabs.map((item, i) => (
-            <Tab key={i} value={item.value} label={item.label}>
+            <li className="list--unstyled" key={i}>
                 {item.action}
-            </Tab>
+            </li>
         ));
 
-        return <Tabs defaultSelectedIndex={0}>{tabitems}</Tabs>;
+        return (
+            <div>
+                <ul className="au-link-list  au-link-list--inline">
+                    {tabs.map(t => (
+                        <li
+                            key={t.value}
+                            className="mainmenu--active list--unstyled"
+                        >
+                            {t.label}
+                        </li>
+                    ))}
+                </ul>
+                <ul>{tabitems}</ul>
+            </div>
+        );
     }
 
     renderByState() {

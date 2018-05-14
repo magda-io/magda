@@ -24,7 +24,7 @@ class ToggleList extends Component {
         let size = this.state.isExpanded ? list.length : tempSize;
         return (
             <ul
-                className={`mui-list--unstyled toggle-list ${
+                className={`list--unstyled toggle-list ${
                     this.props.className
                 }`}
             >

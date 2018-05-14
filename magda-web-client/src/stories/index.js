@@ -10,7 +10,6 @@ import DataPreviewJson from "../UI/DataPreviewJson";
 import DataPreviewTable from "../UI/DataPreviewTable";
 import DataPreviewTextBox from "../UI/DataPreviewTextBox";
 import DataPreviewChart from "../UI/DataPreviewChart";
-import DropDown from "../UI/DropDown";
 import MarkdownViewer from "../UI/MarkdownViewer";
 import Notification from "../UI/Notification";
 import OverviewBox from "../UI/OverviewBox";
@@ -58,17 +57,6 @@ texit ad quos, ferar aratro praecipue.`;
 storiesOf("Shared UI", module)
     .addDecorator(story => (
         <MemoryRouter initialEntries={["/"]}>{story()}</MemoryRouter>
-    ))
-    .add("DropDown", () => (
-        <DropDown
-            options={[
-                { id: 0, value: "a" },
-                { id: 1, value: "b" },
-                { id: 2, value: "c" }
-            ]}
-            select={action()}
-            activeOption={"default option"}
-        />
     ))
     .add("ToggleList", () => (
         <ToggleList

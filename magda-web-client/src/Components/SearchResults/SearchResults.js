@@ -21,7 +21,7 @@ class SearchResults extends Component {
         return (
             <div className="search-results">
                 {this.getSummaryText()}
-                <ul className="mui-list--unstyled">
+                <ul className="list--unstyled">
                     {this.props.searchResults.map((result, i) => (
                         <li key={i} className="search-results__result">
                             <DatasetSummary
