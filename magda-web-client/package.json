@@ -28,6 +28,7 @@
         "@gov.au/footer": "^2.0.1",
         "@gov.au/grid-12": "^2.0.1",
         "@gov.au/link-list": "^2.0.1",
+        "@gov.au/page-alerts": "^2.0.1",
         "@gov.au/pancake": "^1.2.0",
         "@gov.au/pancake-json": "^1.0.3",
         "@gov.au/pancake-react": "^1.1.0",
@@ -126,7 +127,8 @@
         "vega": "^3.0.0-rc2",
         "vega-lite": "^2.0.0-beta.8",
         "weighted-mean": "^1.0.2",
-        "yaml-front-matter": "^4.0.0"
+        "yaml-front-matter": "^4.0.0",
+        "redux-devtools-extension": "^2.13.2"
     },
     "proxy": {
         "/server-config.js": {
