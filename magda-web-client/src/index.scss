@@ -76,6 +76,17 @@ a {
 .tab-navigation {
     a {
         padding: 1rem 1rem;
+        border-bottom: 5px solid #cfcfcf;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+            background-color: transparent;
+            color: $main;
+        }
+    }
+    a.mainmenu--active {
+        color: #007099;
+        border-color: #007099;
     }
 }
 
