@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
 *   Use DTA design system for all form elements
