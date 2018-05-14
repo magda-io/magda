@@ -192,7 +192,6 @@ class SearchSuggestionBox extends Component {
             isMouseOver: false,
             selectedItemIdx: null
         });
-        debugger;
         this.searchInputRef.blur();
     }
 
