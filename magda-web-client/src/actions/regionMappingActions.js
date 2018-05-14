@@ -33,7 +33,10 @@ export function fetchRegionMapping() {
                 if (response.status === 200) {
                     return response.json();
                 }
-                throw new Error(response.statusText);
+                let errorMessage = response.statusText;
+                if (!errorMessage)
+                    errorMessage = "Failed to retrieve network resource.";
+                throw new Error(errorMessage);
             })
             .then((json: FacetSearchJson) => {
                 return dispatch(receiveRegionMapping(json));
