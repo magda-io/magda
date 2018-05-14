@@ -10,9 +10,18 @@ function Notification(props) {
     let content = props.conent;
     if (!content) content = {};
 
+    if (content instanceof Error) {
+        type = "error";
+        content = {
+            title: "Error:",
+            detail: content.message
+        };
+    }
+
     let { title, detail } = props.content;
     if (!title) title = "";
     if (!detail) detail = "";
+    if (!detail && title) detail = title;
 
     return (
         <div className="notification-box">
