@@ -24,9 +24,7 @@ class ToggleList extends Component {
         let size = this.state.isExpanded ? list.length : tempSize;
         return (
             <ul
-                className={`list--unstyled toggle-list ${
-                    this.props.className
-                }`}
+                className={`list--unstyled toggle-list ${this.props.className}`}
             >
                 {list
                     .slice(0, size)
