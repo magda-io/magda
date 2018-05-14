@@ -1,13 +1,14 @@
-@import "../variables";
+@import "../../../variables";
 
 .feedback-form-inner {
     background: #fff;
     border-radius: 5px;
     border: 2px solid $success;
     position: fixed;
-    right: 24px;
-    bottom: 24px;
+    right: 20px;
+    bottom: 20px;
     max-width: 400px;
+    z-index: 1;
 }
 
 .feedback-form {
@@ -16,8 +17,8 @@
     @media (min-width: $small) {
         position: fixed;
     }
-    right: 24px;
-    bottom: 24px;
+    right: 20px;
+    bottom: 20px;
 
     .feedback-form-body {
         padding: 8px;
@@ -81,20 +82,5 @@
             width: calc(100% - 80px);
             margin-bottom: 10px;
         }
-    }
-}
-
-.feedback-button {
-    background: $success;
-    color: $banner-text;
-    border-radius: 30px;
-    padding-left: 40px;
-    padding-right: 8px;
-    img {
-        height: 40px;
-        width: 40px;
-        position: absolute;
-        left: 4px;
-        top: 4px;
     }
 }
