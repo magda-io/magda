@@ -21,7 +21,7 @@ import getDownloadMeasureResult from "../../format-engine/measures/downloadMeasu
 //import MeasureEvalResult from "src/format-engine/MeasureEvalResult";
 import MeasureResult from "src/format-engine/measures/MeasureResult";
 import {} from "../../format-engine/formats";
-import * as sampleLauncestonDistributionData from "../sampleLauncestonDistributionData.json";
+import * as sampleLauncestonDistributionData from "../sampleDataFiles/sampleLauncestonDistributionData.json";
 
 describe("measures tests", function(this: Mocha.ISuiteCallbackContext) {
     before(() => {
