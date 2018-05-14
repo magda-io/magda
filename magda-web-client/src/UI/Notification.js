@@ -6,7 +6,13 @@ import AUpageAlert from "@gov.au/page-alerts";
 function Notification(props) {
     let type = props.type;
     if (!type) type = "info";
-    const { title, detail } = props.content;
+
+    let content = props.conent;
+    if (!content) content = {};
+
+    let { title, detail } = props.content;
+    if (!title) title = "";
+    if (!detail) detail = "";
 
     return (
         <div className="notification-box">
@@ -18,7 +24,7 @@ function Notification(props) {
                     <img alt="close" src={close} />
                 </button>
                 {title ? <h3>{title}</h3> : null}
-                <p>{props.content.detail}</p>
+                <p>{detail}</p>
             </AUpageAlert>
         </div>
     );
