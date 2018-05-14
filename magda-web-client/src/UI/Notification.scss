@@ -21,7 +21,7 @@
     h3 {
         word-break: keep-all;
         word-wrap: normal;
-        margin-right: 32px;
+        margin: 0 32px 0 0;
         text-align: left;
     }
 
@@ -35,5 +35,21 @@
             height: 20px;
             width: 20px;
         }
+    }
+
+    .au-page-alerts--info .close-btn {
+        border-color: $AU-color-info;
+    }
+
+    .au-page-alerts--error .close-btn {
+        border-color: $AU-color-error;
+    }
+
+    .au-page-alerts--warning .close-btn {
+        border-color: $AU-color-warning;
+    }
+
+    .au-page-alerts--success .close-btn {
+        border-color: $AU-color-success;
     }
 }
