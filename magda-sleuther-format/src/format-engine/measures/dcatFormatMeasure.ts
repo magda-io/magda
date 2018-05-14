@@ -94,7 +94,7 @@ export default function getMeasureResult(
 
     let processedFormats: Array<string>;
 
-    const preProcessChain = [removeFalsy, foundationalCleanup];
+    const preProcessChain = [removeFalsy];
 
     processedFormats = preProcessChain.reduce(
         (accumulation, currentTransformer) => currentTransformer(accumulation),
@@ -123,6 +123,7 @@ export default function getMeasureResult(
     // this is an array that acts like an assembly belt, you input in the string, the middle functions are the assembly robots,
     // and the last function returns the output.
     const cleanUpAssemblyChain = [
+        foundationalCleanup,
         replaceAmpersandFormats,
         splitWhiteSpaceFormats,
         reduceMimeType,
