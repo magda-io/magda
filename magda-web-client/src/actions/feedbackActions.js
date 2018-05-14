@@ -4,6 +4,18 @@ import { actionTypes } from "../constants/ActionTypes";
 import type { Action } from "../types";
 import type { Error } from "../types";
 
+export function showFeedbackForm(): Action {
+    return {
+        type: actionTypes.SHOW_FEEDBACK_FORM
+    };
+}
+
+export function hideFeedbackForm(): Action {
+    return {
+        type: actionTypes.HIDE_FEEDBACK_FORM
+    };
+}
+
 export function sendFeedbacks(): Action {
     return {
         type: actionTypes.SEND_FEEDBACKS

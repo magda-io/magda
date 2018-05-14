@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
 import Search from "../Components/Search/Search";
-import Feedback from "../Components/Feedback";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
 import SignInRedirect from "../Components/Account/SignInRedirect";
@@ -21,7 +20,6 @@ const renderBody = () => {
     return (
         <Switch>
             <Route exact path="/search" component={Search} />
-            <Route exact path="/feedback" component={Feedback} />
             <Route exact path="/account" component={Account} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/sign-in-redirect" component={SignInRedirect} />

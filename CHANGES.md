@@ -35,6 +35,7 @@
 *   Tagged correspondence api as a typescript api.
 *   Made auto deploy for master -> dev server reconfigure jobs.
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
+*   Updated footer with govau design systems components.
 *   Made magda-web-server look for magda-web-client using require.resolve.
 
 ## 0.0.38
