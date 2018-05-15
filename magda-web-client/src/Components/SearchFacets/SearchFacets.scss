@@ -102,18 +102,12 @@
         }
     }
 }
-@media (max-width: $medium) {
-    .facet-body-buttons {
-        max-height: calc(100vh - 200px);
-        overflow-y: auto;
-    }
-}
 
 .facet-body-buttons {
-    max-height: calc(180px);
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
-    @media (max-width: $medium) {
-        max-height: calc(100vh - 200px);
+    @media (min-width: $medium) {
+        max-height: calc(180px);
         overflow-y: auto;
     }
 }
