@@ -51,16 +51,18 @@ export function fetchFeedback(values) {
             headers: {
                 "Content-Type": "application/json"
             }
-        }).then(response => {
-            if (response.ok) {
-                return dispatch(sendFeedbackSuccess());
-            }
-            return dispatch(
-                sendFeedbackFailed({
-                    title: response.status,
-                    detail: response.statusText
-                })
-            );
-        });
+        })
+            .then(response => {
+                if (response.ok) {
+                    return dispatch(sendFeedbackSuccess());
+                }
+                return dispatch(
+                    sendFeedbackFailed({
+                        title: response.status,
+                        detail: response.statusText
+                    })
+                );
+            })
+            .catch(error => dispatch(sendFeedbackFailed(error)));
     };
 }

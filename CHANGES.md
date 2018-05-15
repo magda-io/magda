@@ -1,5 +1,6 @@
 ## 0.0.39
 
+*   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
 *   Use DTA design system for all form elements
@@ -38,6 +39,7 @@
 *   Updated footer with govau design systems components.
 *   Made magda-web-server look for magda-web-client using require.resolve.
 *   Header adjustment for new design system.
+*   Updated notification with govau design systems components & fixed a few minor error handling related issues
 
 ## 0.0.38
 

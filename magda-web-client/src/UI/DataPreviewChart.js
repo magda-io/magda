@@ -156,7 +156,7 @@ class DataPreviewChart extends Component {
 
         return (
             <div
-                className="mui-row data-preview-chart"
+                className="row data-preview-chart"
                 ref={chartWidthDiv => {
                     this.chartWidthDiv = chartWidthDiv;
                 }}

@@ -91,7 +91,7 @@ class SearchFacets extends Component {
         return (
             <div className="search-facets-mobile">
                 <button
-                    className="filter-toggle-button mui-btn"
+                    className="filter-toggle-button au-btn"
                     onClick={this.onToggleFacetOnMobile}
                 >
                     Filters <img src={downArrowDark} alt="open filter" />
