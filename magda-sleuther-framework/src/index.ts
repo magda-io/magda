@@ -42,9 +42,22 @@ export default async function sleuther(
 
     options.express = options.express || (() => express());
 
-    setupWebhookEndpoint(options, registry);
-    setupRecrawlEndpoint(options, crawlExistingRecords, getCrawlerProgess);
-    startApiEndpoints(options);
+    const server = options.express();
+
+    server.use(require("body-parser").json({ limit: "50mb" }));
+
+    server.get("/healthz", (request, response) => {
+        response.status(200).send("OK");
+    });
+
+    setupWebhookEndpoint(server, options, registry);
+    setupRecrawlEndpoint(
+        server,
+        options,
+        crawlExistingRecords,
+        getCrawlerProgess
+    );
+    startApiEndpoints(server, options);
 
     await putAspectDefs();
 

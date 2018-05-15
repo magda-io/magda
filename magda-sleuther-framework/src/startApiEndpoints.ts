@@ -1,9 +1,11 @@
 import getWebhookUrl from "./getWebhookUrl";
 import SleutherOptions from "./SleutherOptions";
+import { Application } from "express";
 
-export default function startApiEndpoints(options: SleutherOptions) {
-    const server = options.express();
-
+export default function startApiEndpoints(
+    server: Application,
+    options: SleutherOptions
+) {
     function getPort() {
         return options.argv.listenPort;
     }

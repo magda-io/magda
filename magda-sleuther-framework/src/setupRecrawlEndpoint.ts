@@ -1,6 +1,8 @@
 import SleutherOptions from "./SleutherOptions";
+import { Application } from "express";
 
 export default function setupRecrawlEndpoint(
+    server: Application,
     options: SleutherOptions,
     recrawlFunc: () => Promise<void>,
     crawlerProgressFunc: () => {
@@ -9,8 +11,6 @@ export default function setupRecrawlEndpoint(
         crawledRecordNumber: number;
     }
 ) {
-    const server = options.express();
-
     server.get("/recrawl", (request, response) => {
         if (crawlerProgressFunc().isCrawling) {
             response.status(200).send("in progress");

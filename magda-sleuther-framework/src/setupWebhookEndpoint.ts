@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import * as express from "express";
+import { Application } from "express";
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
@@ -12,16 +12,10 @@ import AsyncPage, {
 } from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
+    server: Application,
     options: SleutherOptions,
     registry: Registry
 ) {
-    const server = options.express();
-    server.use(require("body-parser").json({ limit: "50mb" }));
-
-    server.get("/healthz", (request, response) => {
-        response.status(200).send("OK");
-    });
-
     server.post(
         "/hook",
         (request: express.Request, response: express.Response) => {
