@@ -17,14 +17,13 @@
     @media (min-width: $medium) {
         padding-bottom: 5px;
         margin-bottom: 0;
-        border-bottom: 2px solid hsla(0, 0%, 100%, 0.2);
+
         display: block;
         padding-top: 15px;
         font-family: $font-base;
         font-size: 33px;
         font-weight: 300;
         height: 57px;
-        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
         padding-right: 50px;
         padding-bottom: 5px;
         margin-bottom: 0px;
@@ -77,13 +76,14 @@
     input:focus {
         @include text();
         margin-bottom: 2px;
+        border-bottom: 2px solid #cfcfcf;
     }
 
     .search-btn {
         position: absolute;
         right: 0;
         padding: 5px;
-        bottom: 0;
+        bottom: 1px;
         border: 2px solid transparent;
         box-sizing: border-box;
         display: inline-block;
