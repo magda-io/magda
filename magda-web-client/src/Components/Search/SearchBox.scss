@@ -76,7 +76,9 @@
     input:focus {
         @include text();
         margin-bottom: 2px;
-        border-bottom: 2px solid #cfcfcf;
+        @media (min-width: $medium) {
+            border-bottom: 2px solid #cfcfcf;
+        }
     }
 
     .search-btn {
