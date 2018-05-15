@@ -3,12 +3,16 @@ import SleutherOptions from "./SleutherOptions";
 export default function setupRecrawlEndpoint(
     options: SleutherOptions,
     recrawlFunc: () => Promise<void>,
-    isCrawling: () => boolean
+    crawlerProgressFunc: () => {
+        isCrawling: boolean;
+        crawlingPageToken: string;
+        crawledRecordNumber: number;
+    }
 ) {
     const server = options.express();
 
     server.get("/recrawl", (request, response) => {
-        if (isCrawling()) {
+        if (crawlerProgressFunc().isCrawling) {
             response.status(200).send("in progress");
         } else {
             recrawlFunc();
@@ -16,7 +20,7 @@ export default function setupRecrawlEndpoint(
         }
     });
 
-    server.get("/isCrawling", (request, response) => {
-        response.status(200).send(isCrawling() ? "true" : "false");
+    server.get("/crawlerProgress", (request, response) => {
+        response.status(200).send(JSON.stringify(crawlerProgressFunc()));
     });
 }

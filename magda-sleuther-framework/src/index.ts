@@ -16,9 +16,17 @@ import registerWebhook from "./registerWebhook";
 import resumeWebhook from "./resumeWebhook";
 
 let isCrawling: boolean = false;
+let crawlingPageToken: string = "";
+let crawledRecordNumber: number = 0;
+
+function resetCrawler() {
+    isCrawling = false;
+    crawlingPageToken = "";
+    crawledRecordNumber = 0;
+}
 
 function getCrawlerProgess() {
-    return isCrawling;
+    return { isCrawling, crawlingPageToken, crawledRecordNumber };
 }
 
 export default async function sleuther(
@@ -139,6 +147,11 @@ export default async function sleuther(
                         // Last page was an empty page, no more records left
                         return undefined;
                     } else {
+                        crawlingPageToken =
+                            previous && previous.nextPageToken
+                                ? previous.nextPageToken
+                                : "";
+
                         console.info(
                             "Crawling after token " +
                                 (previous && previous.nextPageToken
@@ -157,6 +170,7 @@ export default async function sleuther(
                             )
                             .then(unionToThrowable)
                             .then(page => {
+                                crawledRecordNumber += page.records.length;
                                 console.info(
                                     `Crawled ${page.records.length} records`
                                 );
@@ -172,9 +186,9 @@ export default async function sleuther(
                 (record: Record) => options.onRecordFound(record, registry)
             );
 
-            isCrawling = false;
+            resetCrawler();
         } catch (e) {
-            isCrawling = false;
+            resetCrawler();
             throw e;
         }
     }
