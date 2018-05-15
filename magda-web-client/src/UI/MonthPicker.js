@@ -162,19 +162,17 @@ class MonthPicker extends Component {
             (upperYear = currYear && upperMonth > currMonth)
         ) {
             return (
-                <th>
-                    <span>
-                        <img
-                            src={help}
-                            alt="Help Link"
-                            data-tip={"Some datasets are predictions"}
-                            data-place="top"
-                            data-html={true}
-                            data-class="future-date-tooltip"
-                        />
-                        <ReactTooltip type="dark" />
-                    </span>
-                </th>
+                <span className="help-icon-position">
+                    <img
+                        src={help}
+                        alt="Help Link"
+                        data-tip={"Some datasets are predictions"}
+                        data-place="top"
+                        data-html={true}
+                        data-class="future-date-tooltip"
+                    />
+                    <ReactTooltip type="dark" />
+                </span>
             );
         }
     };
@@ -186,20 +184,22 @@ class MonthPicker extends Component {
                 <tbody>
                     <tr>
                         <th colSpan="3">
-                            <input
-                                type="year"
-                                placeholder="select a year"
-                                onChange={this.onChange}
-                                onFocus={this.onFocus}
-                                onBlur={this.onBlur}
-                                value={this.state.yearValue}
-                                className={`au-text-input au-text-input--block ${
-                                    this.state.isDefault ? "is-default" : ""
-                                }`}
-                            />
-                            {this.renderPrompt()}
+                            <div className={"year-input-container"}>
+                                <input
+                                    type="year"
+                                    placeholder="select a year"
+                                    onChange={this.onChange}
+                                    onFocus={this.onFocus}
+                                    onBlur={this.onBlur}
+                                    value={this.state.yearValue}
+                                    className={`au-text-input au-text-input--block ${
+                                        this.state.isDefault ? "is-default" : ""
+                                    }`}
+                                />
+                                {!this.props.startDate && this.renderToolTip()}
+                                {this.renderPrompt()}
+                            </div>
                         </th>
-                        {!this.props.startDate && this.renderToolTip()}
                     </tr>
                     {MONTH_NAMES.map((m, i) => (
                         <tr key={m}>
