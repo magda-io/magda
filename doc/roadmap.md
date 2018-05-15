@@ -10,19 +10,21 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ✅ **Productionising**: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it's secure and robust.
 
-**Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
+✅ **Home Page**: Creating an attractive page for users to land on that draws them into search, blog posts or use cases.
 
-**Home Page**: Creating an attractive page for users to land on that draws them into search, blog posts or use cases.
+✅ **Format Sleuther**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.
 
-**Data Quality**: We currently calculate "data quality" based on an average of how many links work in a dataset and the Tim Berners-Lee 5-star data quality scale, but don't really explain this very well. We're changing this so that it's strictly based on the 5 star scale (broken link = 0 stars, naturally, as it isn't accessible), and making sure we explain this whereever its present.
+✅ **Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
 
-**Format Sleuther**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.
+✅ **Data Quality**: We currently calculate "data quality" based on an average of how many links work in a dataset and the Tim Berners-Lee 5-star data quality scale, but don't really explain this very well. We're changing this so that it's strictly based on the 5 star scale (broken link = 0 stars, naturally, as it isn't accessible), and making sure we explain this whereever its present.
 
-**Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
+**MVP Dataset Feedback/Collaboration**: Using the contactPoint info attached to datasets to allow users to directly email data custodians... precursor of the more advanced features below.
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
 ## Near-Term Priorities June 2018 - infinity
+
+**Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 
