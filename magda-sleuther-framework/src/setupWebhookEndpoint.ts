@@ -6,7 +6,7 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
 import SleutherOptions from "./SleutherOptions";
-import getWebhookUrl from "./getWebhookUrl";
+
 import AsyncPage, {
     forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";
@@ -118,11 +118,4 @@ export default function setupWebhookEndpoint(
             }
         }
     );
-
-    function getPort() {
-        return options.argv.listenPort;
-    }
-
-    server.listen(getPort());
-    console.info(`Listening at ${getWebhookUrl(options)}`);
 }

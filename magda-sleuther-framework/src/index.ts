@@ -9,9 +9,17 @@ import AsyncPage, {
 } from "@magda/typescript-common/dist/AsyncPage";
 import SleutherOptions from "./SleutherOptions";
 import setupWebhookEndpoint from "./setupWebhookEndpoint";
+import setupRecrawlEndpoint from "./setupRecrawlEndpoint";
+import startApiEndpoints from "./startApiEndpoints";
 import isWebhookRegistered from "./isWebhookRegistered";
 import registerWebhook from "./registerWebhook";
 import resumeWebhook from "./resumeWebhook";
+
+let isCrawling: boolean = false;
+
+function getCrawlerProgess() {
+    return isCrawling;
+}
 
 export default async function sleuther(
     options: SleutherOptions
@@ -27,6 +35,8 @@ export default async function sleuther(
     options.express = options.express || (() => express());
 
     setupWebhookEndpoint(options, registry);
+    setupRecrawlEndpoint(options, crawlExistingRecords, getCrawlerProgess);
+    startApiEndpoints(options);
 
     await putAspectDefs();
 
@@ -116,42 +126,56 @@ export default async function sleuther(
     }
 
     async function crawlExistingRecords() {
-        console.info("Crawling existing records in registry");
+        try {
+            if (isCrawling) return;
+            isCrawling = true;
 
-        const registryPage = AsyncPage.create<RecordsPage<Record>>(previous => {
-            if (previous && previous.records.length === 0) {
-                console.info("No more records left");
-                // Last page was an empty page, no more records left
-                return undefined;
-            } else {
-                console.info(
-                    "Crawling after token " +
-                        (previous && previous.nextPageToken
-                            ? previous.nextPageToken
-                            : "<first page>")
-                );
+            console.info("Crawling existing records in registry");
 
-                // TODO: Retry with reduced limit if entity size too large error.
-                return registry
-                    .getRecords<Record>(
-                        options.aspects,
-                        options.optionalAspects,
-                        previous && previous.nextPageToken,
-                        true,
-                        10
-                    )
-                    .then(unionToThrowable)
-                    .then(page => {
-                        console.info(`Crawled ${page.records.length} records`);
-                        return page;
-                    });
-            }
-        }).map((page: RecordsPage<Record>) => page.records);
+            const registryPage = AsyncPage.create<RecordsPage<Record>>(
+                previous => {
+                    if (previous && previous.records.length === 0) {
+                        console.info("No more records left");
+                        // Last page was an empty page, no more records left
+                        return undefined;
+                    } else {
+                        console.info(
+                            "Crawling after token " +
+                                (previous && previous.nextPageToken
+                                    ? previous.nextPageToken
+                                    : "<first page>")
+                        );
 
-        await forEachAsync(
-            registryPage,
-            options.concurrency || 1,
-            (record: Record) => options.onRecordFound(record, registry)
-        );
+                        // TODO: Retry with reduced limit if entity size too large error.
+                        return registry
+                            .getRecords<Record>(
+                                options.aspects,
+                                options.optionalAspects,
+                                previous && previous.nextPageToken,
+                                true,
+                                10
+                            )
+                            .then(unionToThrowable)
+                            .then(page => {
+                                console.info(
+                                    `Crawled ${page.records.length} records`
+                                );
+                                return page;
+                            });
+                    }
+                }
+            ).map((page: RecordsPage<Record>) => page.records);
+
+            await forEachAsync(
+                registryPage,
+                options.concurrency || 1,
+                (record: Record) => options.onRecordFound(record, registry)
+            );
+
+            isCrawling = false;
+        } catch (e) {
+            isCrawling = false;
+            throw e;
+        }
     }
 }
