@@ -37,6 +37,7 @@
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
 *   Updated footer with govau design systems components.
 *   Made magda-web-server look for magda-web-client using require.resolve.
+*   Header adjustment for new design system.
 
 ## 0.0.38
 
