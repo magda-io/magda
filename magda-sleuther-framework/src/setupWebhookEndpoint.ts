@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Application } from "express";
+import * as express from "express";
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
@@ -12,7 +12,7 @@ import AsyncPage, {
 } from "@magda/typescript-common/dist/AsyncPage";
 
 export default function setupWebhookEndpoint(
-    server: Application,
+    server: express.Application,
     options: SleutherOptions,
     registry: Registry
 ) {
