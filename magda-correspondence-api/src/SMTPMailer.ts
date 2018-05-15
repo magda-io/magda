@@ -3,7 +3,7 @@ import * as SMTPTransport from "nodemailer/lib/smtp-transport";
 
 export interface SMTPMailer {
     send(msg: Message): Promise<{}>;
-    checkConnectivity(): Promise<boolean>;
+    checkConnectivity(): Promise<void>;
 }
 
 export interface SMTPMailerOptions {
@@ -65,14 +65,9 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
     }
 
     checkConnectivity() {
-        return this.connect()
-            .then(transporter => {
-                transporter.close();
-                return true;
-            })
-            .catch(() => {
-                return false;
-            });
+        return this.connect().then(transporter => {
+            transporter.close();
+        });
     }
 
     send(msg: Message) {

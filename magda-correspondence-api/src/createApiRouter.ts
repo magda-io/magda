@@ -45,17 +45,18 @@ export default function createApiRouter(
     const router: Router = express.Router();
 
     router.get("/healthz", (req, res) =>
-        options.smtpMailer.checkConnectivity().then(connected => {
-            if (connected) {
+        options.smtpMailer
+            .checkConnectivity()
+            .then(() => {
                 res.status(200).json({
                     status: "OK"
                 });
-            } else {
+            })
+            .catch(e => {
                 res.status(500).json({
                     status: "Failure"
                 });
-            }
-        })
+            })
     );
 
     router.post("/public/send/dataset/request", validateMiddleware, function(
@@ -105,7 +106,7 @@ export default function createApiRouter(
                 );
             });
 
-            handlePromise(promise, res);
+            handlePromise(promise, res, req.params.datasetId);
         }
     );
 
@@ -119,7 +120,7 @@ export default function createApiRouter(
                 const subject = `Feedback Regarding ${dataset.title}`;
 
                 const html = renderTemplate(
-                    Templates.Question,
+                    Templates.Feedback,
                     body,
                     subject,
                     dataset
@@ -135,7 +136,7 @@ export default function createApiRouter(
                 );
             });
 
-            handlePromise(promise, res);
+            handlePromise(promise, res, req.params.datasetId);
         }
     );
 
@@ -160,19 +161,27 @@ export default function createApiRouter(
  */
 function handlePromise(
     promise: Promise<any>,
-    response: express.Response
+    response: express.Response,
+    datasetId?: string
 ): void {
     promise
         .then(() => response.status(200).json({ status: "OK" }))
         .catch(e => {
-            if (_.get(e, "response.statusCode") === 404) {
+            if (_.get(e, "e.response.statusCode") === 404) {
+                console.error(
+                    "Attempted to send correspondence for non-existent dataset " +
+                        datasetId
+                );
                 response.status(404).json({
                     status: "Failure",
-                    error: "Dataset not found"
+                    error: "Dataset " + datasetId + " not found"
                 });
             } else {
                 throw e;
             }
         })
-        .catch(() => response.status(500).json({ status: "Failure" }));
+        .catch(e => {
+            console.error(e);
+            response.status(500).json({ status: "Failure" });
+        });
 }
