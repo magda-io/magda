@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
+import help from "../assets/help.svg";
+import ReactTooltip from "react-tooltip";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -145,6 +147,38 @@ class MonthPicker extends Component {
         }
     }
 
+    /**
+     * This function renders the ? tooltip next to the right hand side date picker
+     * based on whether or not a future date is selected
+     */
+    renderToolTip = () => {
+        var date = new Date();
+        var currYear = date.getFullYear();
+        var currMonth = date.getMonth() + 1;
+        var upperYear = this.props.year;
+        var upperMonth = this.props.month + 1;
+        if (
+            upperYear > currYear ||
+            (upperYear = currYear && upperMonth > currMonth)
+        ) {
+            return (
+                <th>
+                    <span>
+                        <img
+                            src={help}
+                            alt="Help Link"
+                            data-tip={"Some datasets are predictions"}
+                            data-place="top"
+                            data-html={true}
+                            data-class="future-date-tooltip"
+                        />
+                        <ReactTooltip type="dark" />
+                    </span>
+                </th>
+            );
+        }
+    };
+
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
         return (
@@ -165,6 +199,7 @@ class MonthPicker extends Component {
                             />
                             {this.renderPrompt()}
                         </th>
+                        {!this.props.startDate && this.renderToolTip()}
                     </tr>
                     {MONTH_NAMES.map((m, i) => (
                         <tr key={m}>
