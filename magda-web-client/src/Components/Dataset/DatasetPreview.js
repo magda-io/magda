@@ -20,8 +20,10 @@ export default class DatasetPreview extends Component {
     render() {
         const distributions = this.props.dataset.distributions;
         return (
-            <div className="dataset-preview container">
+            <div className="dataset-preview">
                 <DataPreviewVis
+                    location={this.props.location}
+                    dataset={this.props.dataset}
                     distribution={this.getDistributionForVis(distributions)}
                 />
                 <DataPreviewMap distributions={distributions} />

@@ -253,9 +253,8 @@ class SearchSuggestionBox extends Component {
     }
 
     setupSearchInputListener(newProps) {
-        if (!newProps || !newProps.inputRef || !newProps.inputRef.controlEl)
-            return;
-        const newInputRef = newProps.inputRef.controlEl;
+        if (!newProps || !newProps.inputRef) return;
+        const newInputRef = newProps.inputRef;
         if (this.searchInputRef) {
             if (this.searchInputRef === newInputRef) return;
             this.searchInputRef.removeEventListener(

@@ -128,7 +128,7 @@ class FacetBasicBody extends Component {
                 {this.state.showOptions && (
                     <div>
                         <div className="facet-body-buttons">
-                            <ul className="mui-list--unstyled">
+                            <ul className="list--unstyled">
                                 {that.state._activeOptions
                                     .sort((a, b) => b.hitCount - a.hitCount)
                                     .map(o => (

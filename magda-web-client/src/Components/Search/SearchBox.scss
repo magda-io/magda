@@ -1,6 +1,7 @@
 @import "../../variables";
 
 @mixin text() {
+    font-size: 1rem;
     border-bottom: 0;
     padding: 16px 8px;
     box-sizing: border-box;
@@ -81,11 +82,8 @@
     .search-btn {
         position: absolute;
         right: 0;
-        padding: 11px;
+        padding: 5px;
         bottom: 0;
-        @media (min-width: $medium) {
-            bottom: 7px;
-        }
         border: 2px solid transparent;
         box-sizing: border-box;
         display: inline-block;

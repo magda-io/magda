@@ -131,7 +131,7 @@ class RegionSearchBox extends Component {
                 </form>
                 {this.state.searchText.length > 0 && (
                     <ul
-                        className="region-search-box__options mui-list--unstyled"
+                        className="region-search-box__options list--unstyled"
                         onKeyDown={this.handleKeyDown}
                     >
                         {this.props.options.map((option, i) => (
