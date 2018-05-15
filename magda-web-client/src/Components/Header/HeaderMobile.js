@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import HeaderNav from "./HeaderNav";
 import { config } from "../../config.js";
-import mobileMenu from "../../assets/mobile-menu.svg";
-import mobileMenuClosed from "../../assets/mobile-menu-close.svg";
 
 import govtLogo from "../../assets/au-govt-logo-mobile.svg";
 
@@ -37,21 +35,14 @@ class HeaderMobile extends Component {
                         <Link to="/">{config.appName}</Link>
                     </div>
                     <button
-                        className="mobile-toggle"
+                        className={`mobile-toggle au-btn au-btn--tertiary icon au-accordion--${
+                            this.state.isMobileMenuOpen ? "open" : "closed"
+                        }`}
                         onClick={() => this.toggleMenu()}
-                    >
-                        <img
-                            src={`${
-                                this.state.isMobileMenuOpen
-                                    ? mobileMenuClosed
-                                    : mobileMenu
-                            }`}
-                            alt="open menu"
-                        />
-                    </button>
+                    />
                 </div>
                 <div
-                    className="mobile-nav-wrapper"
+                    className="mobile-nav-wrapper au-body"
                     aria-hidden={!this.state.isMobileMenuOpen}
                 >
                     <div
@@ -59,7 +50,7 @@ class HeaderMobile extends Component {
                             this.state.isMobileMenuOpen ? "isOpen" : ""
                         } mobile-nav`}
                     >
-                        <HeaderNav />
+                        <HeaderNav isMobile={true} />
                     </div>
                 </div>
             </div>
