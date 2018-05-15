@@ -4,15 +4,15 @@ html {
     @include AU-fontgrid(sm);
     font-family: $font-base;
 }
-.au-body a {
+a {
     text-decoration: none;
     color: $body;
     overflow-x: hidden;
 }
-.au-body a:hover {
+a:hover {
     color: white;
 }
-.au-body p {
+p {
     max-width: 100%;
 }
 
