@@ -109,6 +109,15 @@
     }
 }
 
+.facet-body-buttons {
+    max-height: calc(180px);
+    overflow-y: auto;
+    @media (max-width: $medium) {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+}
+
 .btn-facet-option {
     font-family: $font-base;
     position: relative;
