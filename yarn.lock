@@ -534,7 +534,7 @@
   version "0.1.29"
   resolved "https://registry.yarnpkg.com/@types/jsonpath/-/jsonpath-0.1.29.tgz#5551487728b154a361eb1caf82fee226cabebcd1"
 
-"@types/lodash@^4.14.64", "@types/lodash@^4.14.66", "@types/lodash@^4.14.68", "@types/lodash@^4.14.71", "@types/lodash@^4.14.73", "@types/lodash@^4.14.74", "@types/lodash@^4.14.88", "@types/lodash@^4.14.96":
+"@types/lodash@^4.14.108", "@types/lodash@^4.14.64", "@types/lodash@^4.14.66", "@types/lodash@^4.14.68", "@types/lodash@^4.14.71", "@types/lodash@^4.14.73", "@types/lodash@^4.14.74", "@types/lodash@^4.14.88", "@types/lodash@^4.14.96":
   version "4.14.108"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.108.tgz#02656af3add2e5b3174f830862c47421c00ef817"
 

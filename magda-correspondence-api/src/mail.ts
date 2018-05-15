@@ -1,12 +1,11 @@
-import { ApiRouterOptions } from "./createApiRouter";
-import { Message } from "./SMTPMailer";
-import * as html2text from "html-to-text";
 import * as path from "path";
-import * as pug from "pug";
-import * as emailValidator from "email-validator";
+import * as html2text from "html-to-text";
 
-// import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
-// import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import { Message, SMTPMailer } from "./SMTPMailer";
+import { DatasetMessage } from "./model";
+
+const auGovtLogoPath = path.resolve(__dirname, "assets/AU-Govt-Logo.jpg");
+const dataGovLogoPath = path.resolve(__dirname, "assets/Logo.jpg");
 
 /**
  * Send an email from posted form data
@@ -15,70 +14,37 @@ import * as emailValidator from "email-validator";
  * @param postData - form posted data, used to fetch recordID
  */
 export function sendMail(
-    options: ApiRouterOptions,
-    request: any,
-    response: any
-) {
-    let templateContext = {
-        requesterName: request.body.senderName,
-        requesterEmail: request.body.senderEmail,
-        requesterMsg: request.body.message
-    };
-
+    mailer: SMTPMailer,
+    defaultRecipient: string,
+    input: DatasetMessage,
+    html: string,
+    subject: string,
+    to: string = defaultRecipient
+): Promise<{}> {
     const message: Message = {
-        to: "data@digital.gov.au",
-        from: inspectEmail(request.body.senderEmail),
-        subject: `A question about a dataset from Data.gov.au`,
-        text: html2text.fromString(resolveTemplate(templateContext)),
-        html: resolveTemplate(templateContext),
+        to,
+        from: `${input.senderName} via data.gov.au <${defaultRecipient}>`,
+        replyTo: `${input.senderName} <${input.senderEmail}>`,
+        subject,
+        text: html2text.fromString(html),
+        html,
         attachments: [
             {
                 filename: "AU-Govt-Logo.jpg",
                 contentType: "image/jpeg",
                 contentDisposition: "inline",
-                path: path.resolve(__dirname, "assets/AU-Govt-Logo.jpg"),
+                path: auGovtLogoPath,
                 cid: "govAUCrest"
             },
             {
                 filename: "Logo.jpg",
                 contentType: "image/jpeg",
                 contentDisposition: "inline",
-                path: path.resolve(__dirname, "assets/Logo.jpg"),
+                path: dataGovLogoPath,
                 cid: "dataGovLogo"
             }
         ]
     };
-    options.smtpMailer
-        .send(message)
-        .then(() => response.status(200).send({ status: "OK" }))
-        .catch(() => response.status(500).send({ status: "Failure" }));
-}
 
-/**
- * Return a Promise<Record> given a dataset ID
- * @param reg Registry client to fetch from
- * @param id Dataset ID to query for
- */
-// function getRecordAsPromise(opts: ApiRouterOptions, id: string) {
-//     return new RegistryClient({ baseUrl: opts.registryUrl })
-//         .getRecord(id, ["dcat-dataset-strings"], [], true)
-//         .then(result => unionToThrowable(result));
-// }
-
-function resolveTemplate(context: object) {
-    return pug.renderFile(
-        path.resolve(__dirname, "templates/request.pug"),
-        context
-    );
-}
-
-/**
- * Check to see if an email is valid, return email or log error
- * @param email - The email to test
- */
-function inspectEmail(email: string) {
-    if (emailValidator.validate(email)) {
-        return email;
-    }
-    throw new Error(`Invalid email address: ${email}`);
+    return mailer.send(message);
 }

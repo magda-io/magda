@@ -52,6 +52,12 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The password to authenticate with the SMTP server",
             type: "string",
             default: ""
+        })
+        .option("defaultRecipient", {
+            describe:
+                "The email address to send data requests and questions/feedback on datasets where the email address couldn't be resolved",
+            type: "string",
+            demandOption: true
         }).argv
 );
 
@@ -62,6 +68,7 @@ app.use(
     createApiRouter({
         jwtSecret: argv.jwtSecret,
         registryUrl: argv.registryUrl,
+        defaultRecipient: argv.defaultRecipient,
         smtpMailer: new NodeMailerSMTPMailer({
             smtpHostname: argv.smtpHostname,
             smtpPort: argv.smtpPort,
