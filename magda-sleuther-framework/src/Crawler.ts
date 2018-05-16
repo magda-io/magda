@@ -37,11 +37,13 @@ class Crawler {
 
     public start(): Promise<void> {
         if (this.isCrawling) return this.crawlerPromise;
-        this.isCrawling = true;
         this.crawlerPromise = this.crawlExistingRecords();
         return this.crawlerPromise;
     }
 
+    /**
+     * allow in-process crawling to be waited by other program
+     */
     public async waitForCrawling() {
         if (!this.isCrawling || !this.crawlerPromise) return;
         await this.crawlerPromise;
@@ -54,7 +56,7 @@ class Crawler {
     private async crawlExistingRecords() {
         try {
             this.resetCrawler();
-
+            this.isCrawling = true;
             console.info("Crawling existing records in registry");
 
             const registryPage = AsyncPage.create<RecordsPage<Record>>(
