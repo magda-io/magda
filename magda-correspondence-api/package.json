@@ -26,6 +26,7 @@
         "@magda/scripts": "^0.0.39-0",
         "@types/express": "^4.0.35",
         "@types/node": "^8.0.14",
+        "@types/nodemailer": "^4.6.0",
         "@types/yargs": "^8.0.2",
         "typescript": "~2.5.0"
     },
