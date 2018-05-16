@@ -49,12 +49,6 @@
         margin-right: 24px;
     }
 
-    .dataset-summary-downloads,
-    .dataset-summary-updated,
-    .dataset-summary-quality {
-        float: left;
-    }
-
     .dataset-summary-downloads {
         span {
             color: $AU-color-foreground-action;
@@ -70,5 +64,12 @@
                 content: "";
             }
         }
+    }
+
+    .dataset-summary-downloads,
+    .dataset-summary-updated,
+    .dataset-summary-quality {
+        float: left;
+        line-height: 1.5em;
     }
 }
