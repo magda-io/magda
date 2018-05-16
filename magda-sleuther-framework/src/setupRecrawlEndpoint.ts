@@ -1,26 +1,22 @@
 import SleutherOptions from "./SleutherOptions";
 import { Application } from "express";
+import Crawler from "./Crawler";
 
 export default function setupRecrawlEndpoint(
     server: Application,
     options: SleutherOptions,
-    recrawlFunc: () => Promise<void>,
-    crawlerProgressFunc: () => {
-        isCrawling: boolean;
-        crawlingPageToken: string;
-        crawledRecordNumber: number;
-    }
+    crawler: Crawler
 ) {
-    server.get("/recrawl", (request, response) => {
-        if (crawlerProgressFunc().isCrawling) {
+    server.post("/recrawl", (request, response) => {
+        if (crawler.isInProgress()) {
             response.status(200).send("in progress");
         } else {
-            recrawlFunc();
+            crawler.start();
             response.status(200).send("crawler started");
         }
     });
 
     server.get("/crawlerProgress", (request, response) => {
-        response.status(200).send(JSON.stringify(crawlerProgressFunc()));
+        response.status(200).send(JSON.stringify(crawler.getProgess()));
     });
 }

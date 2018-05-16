@@ -1,12 +1,5 @@
 import * as express from "express";
-
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { RecordsPage } from "@magda/typescript-common/dist/registry/RegistryClient";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import AsyncPage, {
-    forEachAsync
-} from "@magda/typescript-common/dist/AsyncPage";
 import SleutherOptions from "./SleutherOptions";
 import setupWebhookEndpoint from "./setupWebhookEndpoint";
 import setupRecrawlEndpoint from "./setupRecrawlEndpoint";
@@ -14,20 +7,7 @@ import startApiEndpoints from "./startApiEndpoints";
 import isWebhookRegistered from "./isWebhookRegistered";
 import registerWebhook from "./registerWebhook";
 import resumeWebhook from "./resumeWebhook";
-
-let isCrawling: boolean = false;
-let crawlingPageToken: string = "";
-let crawledRecordNumber: number = 0;
-
-function resetCrawler() {
-    isCrawling = false;
-    crawlingPageToken = "";
-    crawledRecordNumber = 0;
-}
-
-function getCrawlerProgess() {
-    return { isCrawling, crawlingPageToken, crawledRecordNumber };
-}
+import Crawler from "./Crawler";
 
 export default async function sleuther(
     options: SleutherOptions
@@ -40,6 +20,8 @@ export default async function sleuther(
         maxRetries: options.maxRetries
     });
 
+    const crawler = new Crawler(registry, options);
+
     options.express = options.express || (() => express());
 
     const server = options.express();
@@ -51,12 +33,7 @@ export default async function sleuther(
     });
 
     setupWebhookEndpoint(server, options, registry);
-    setupRecrawlEndpoint(
-        server,
-        options,
-        crawlExistingRecords,
-        getCrawlerProgess
-    );
+    setupRecrawlEndpoint(server, options, crawler);
     startApiEndpoints(server, options);
 
     await putAspectDefs();
@@ -70,7 +47,7 @@ export default async function sleuther(
         console.info("No webhook was registered");
         await registerWebhook(options, registry);
 
-        await crawlExistingRecords();
+        await crawler.start();
     }
 
     function checkOptions(options: SleutherOptions) {
@@ -143,66 +120,6 @@ export default async function sleuther(
             throw failed[0];
         } else {
             return results;
-        }
-    }
-
-    async function crawlExistingRecords() {
-        try {
-            if (isCrawling) return;
-            isCrawling = true;
-
-            console.info("Crawling existing records in registry");
-
-            const registryPage = AsyncPage.create<RecordsPage<Record>>(
-                previous => {
-                    if (previous && previous.records.length === 0) {
-                        console.info("No more records left");
-                        // Last page was an empty page, no more records left
-                        return undefined;
-                    } else {
-                        crawlingPageToken =
-                            previous && previous.nextPageToken
-                                ? previous.nextPageToken
-                                : "";
-
-                        console.info(
-                            "Crawling after token " +
-                                (previous && previous.nextPageToken
-                                    ? previous.nextPageToken
-                                    : "<first page>")
-                        );
-
-                        // TODO: Retry with reduced limit if entity size too large error.
-                        return registry
-                            .getRecords<Record>(
-                                options.aspects,
-                                options.optionalAspects,
-                                previous && previous.nextPageToken,
-                                true,
-                                10
-                            )
-                            .then(unionToThrowable)
-                            .then(page => {
-                                crawledRecordNumber += page.records.length;
-                                console.info(
-                                    `Crawled ${page.records.length} records`
-                                );
-                                return page;
-                            });
-                    }
-                }
-            ).map((page: RecordsPage<Record>) => page.records);
-
-            await forEachAsync(
-                registryPage,
-                options.concurrency || 1,
-                (record: Record) => options.onRecordFound(record, registry)
-            );
-
-            resetCrawler();
-        } catch (e) {
-            resetCrawler();
-            throw e;
         }
     }
 }
