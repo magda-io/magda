@@ -159,7 +159,7 @@ class MonthPicker extends Component {
         var upperMonth = this.props.month + 1;
         if (
             upperYear > currYear ||
-            (upperYear = currYear && upperMonth > currMonth)
+            (upperYear === currYear && upperMonth > currMonth)
         ) {
             return (
                 <span className="help-icon-position">
