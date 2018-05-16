@@ -60,6 +60,8 @@
         "draft-js-plugins-editor": "2.0.0-rc2",
         "echarts": "^4.1.0",
         "echarts-for-react": "^2.0.8",
+        "enzyme": "^3.3.0",
+        "enzyme-adapter-react-16": "^1.1.1",
         "es6-promise": "^4.2.4",
         "es6-shim": "^0.35.3",
         "es6-symbol": "^3.1.1",
@@ -71,6 +73,7 @@
         "html-truncate": "^1.2.2",
         "immutable": "^3.8.1",
         "isomorphic-fetch": "^2.2.1",
+        "jest": "^22.4.3",
         "js-cookie": "^2.2.0",
         "leaflet": "^0.7.7",
         "leaflet-mapbox-vector-tile":
@@ -115,6 +118,7 @@
         "react-tooltip": "^3.4.0",
         "react-transition-group": "^2.3.1",
         "redux": "^4.0.0",
+        "redux-devtools-extension": "^2.13.2",
         "redux-logger": "^3.0.6",
         "redux-mock-store": "^1.2.1",
         "redux-thunk": "^2.1.0",
@@ -123,8 +127,7 @@
         "traverse": "^0.6.6",
         "uuid": "^3.0.1",
         "weighted-mean": "^1.0.2",
-        "yaml-front-matter": "^4.0.0",
-        "redux-devtools-extension": "^2.13.2"
+        "yaml-front-matter": "^4.0.0"
     },
     "proxy": {
         "/server-config.js": {
