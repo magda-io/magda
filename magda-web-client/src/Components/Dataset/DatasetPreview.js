@@ -9,14 +9,21 @@ export default class DatasetPreview extends Component {
         if (!distributions || distributions.length === 0) {
             return null;
         }
-        return distributions.find(d => d.linkStatusAvailable && d.linkActive);
+        return distributions.find(
+            d =>
+                d.linkStatusAvailable &&
+                d.linkActive &&
+                /(^|\W+)csv(\W+|$)/i.test(d.format)
+        );
     }
 
     render() {
         const distributions = this.props.dataset.distributions;
         return (
-            <div className="dataset-preview container">
+            <div className="dataset-preview">
                 <DataPreviewVis
+                    location={this.props.location}
+                    dataset={this.props.dataset}
                     distribution={this.getDistributionForVis(distributions)}
                 />
                 <DataPreviewMap distributions={distributions} />

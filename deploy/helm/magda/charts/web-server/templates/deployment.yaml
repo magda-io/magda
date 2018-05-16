@@ -19,8 +19,10 @@ spec:
             "--config", "/etc/config/config.json",
             "--listenPort", "80",
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
-            "--registryApiBaseUrlInternal", "http://registry-api/v0"
+            "--registryApiBaseUrlInternal", "http://registry-api/v0",
+            "--cspReportUri", {{ .Values.cspReportUri | quote }}
         ]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: "/"
@@ -28,6 +30,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

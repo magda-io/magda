@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import Input from "muicss/lib/react/input";
-import Button from "muicss/lib/react/button";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
@@ -150,18 +148,18 @@ class MonthPicker extends Component {
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
         return (
-            <table className="month-picker mui-table">
+            <table className="month-picker">
                 <tbody>
                     <tr>
                         <th colSpan="3">
-                            <Input
+                            <input
                                 type="year"
                                 placeholder="select a year"
                                 onChange={this.onChange}
                                 onFocus={this.onFocus}
                                 onBlur={this.onBlur}
                                 value={this.state.yearValue}
-                                className={`${
+                                className={`au-text-input au-text-input--block ${
                                     this.state.isDefault ? "is-default" : ""
                                 }`}
                             />
@@ -172,7 +170,7 @@ class MonthPicker extends Component {
                         <tr key={m}>
                             {m.map((n, j) => (
                                 <td key={n}>
-                                    <Button
+                                    <button
                                         disabled={
                                             !this.checkMonthValid(
                                                 +this.state.yearValue,
@@ -183,7 +181,7 @@ class MonthPicker extends Component {
                                             this,
                                             monthIndex(i, j)
                                         )}
-                                        className={`btn-facet-option btn-month ${
+                                        className={`au-btn btn-facet-option btn-month ${
                                             this.props.month ===
                                                 monthIndex(i, j) &&
                                             this.checkMonthValid(
@@ -195,7 +193,7 @@ class MonthPicker extends Component {
                                         }`}
                                     >
                                         {n}
-                                    </Button>
+                                    </button>
                                 </td>
                             ))}
                         </tr>

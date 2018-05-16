@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
 import OverviewBox from "../../UI/OverviewBox";
+import ga from "../../analytics/googleAnalytics";
 import "./RecordDetails.css";
 
 class DistributionDetails extends Component {
@@ -22,8 +23,8 @@ class DistributionDetails extends Component {
                         const resource_url = encodeURIComponent(
                             distribution.downloadURL
                         );
-                        if (resource_url && window.ga) {
-                            window.ga("send", {
+                        if (resource_url) {
+                            ga("send", {
                                 hitType: "event",
                                 eventCategory: "Resource",
                                 eventAction: "Download",

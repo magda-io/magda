@@ -49,10 +49,7 @@ export const config = {
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
-    facetListSize: 5,
     resultsPerPage: 10,
-    descriptionLength: 50,
-    downloadLinksSize: 3,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
     breakpoints: {
@@ -73,27 +70,44 @@ export const config = {
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
-    footerNavigation: [
-        {
-            category: "Data.gov.au",
-            links: [
-                ["About", "page/about"],
-                ["Request a dataset", "mailto:data@digital.gov.au"],
-                ["Privacy Policy", "page/privacy-policy"]
-            ]
-        },
-        {
-            category: "Publishers",
-            links: [
-                ["Sign in", "https://data.gov.au/user/login"],
-                ["Open data toolkit", "https://toolkit.data.gov.au/"]
-            ]
-        },
-        {
-            category: "Developers",
-            links: [["Powered by Magda", "https://github.com/TerriaJS/magda/"]]
-        }
-    ],
+    footerNavigation: {
+        // small media query (mobile)
+        small: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Give feedback", "feedback"]
+                ]
+            }
+        ],
+        // medium media query and bigger (desktop)
+        medium: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    ["Privacy Policy", "page/privacy-policy"]
+                ]
+            },
+            {
+                category: "Publishers",
+                links: [
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
+                ]
+            },
+            {
+                category: "Developers",
+                links: [
+                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                ]
+            }
+        ]
+    },
     months: [
         "Jan",
         "Feb",

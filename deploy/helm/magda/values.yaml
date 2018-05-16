@@ -1,5 +1,6 @@
 global:
   useCombinedDb: true
+  useCloudSql: false
   externalUrl: "http://localhost:6100"
   rollingUpdate:
     maxUnavailable: 0
@@ -32,3 +33,4 @@ tags:
   sleuther-visualization: false
   sleuther-format: false
   web-server: false
+  dev-ingress: false

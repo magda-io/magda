@@ -1,6 +1,8 @@
 // @flow
 import getDateString from "./getDateString";
+import { isSupportedFormat as isSupportedMapPreviewFormat } from "../UI/DataPreviewMap";
 import type { FetchError } from "../types";
+import weightedMean from "weighted-mean";
 // dataset query:
 //aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
 
@@ -239,16 +241,9 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     if (fmt.indexOf("csv") !== -1) {
         compatiblePreviews.table = true;
         compatiblePreviews.google = true;
-        compatiblePreviews.chart = !!isTimeSeries;
+        compatiblePreviews.chart = true;
     }
     switch (fmt) {
-        case "wms":
-        case "geojson":
-        case "wfs":
-        case "csv-geo-au":
-        case "kml":
-            compatiblePreviews.map = true;
-            break;
         case "xls":
         case "xlsx":
         case "doc":
@@ -271,6 +266,7 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
             compatiblePreviews.html = true;
             break;
         default:
+            if (isSupportedMapPreviewFormat(fmt)) compatiblePreviews.map = true;
     }
     return compatiblePreviews;
 }
@@ -328,6 +324,9 @@ export function parseDistribution(
         linkActive,
         isTimeSeries,
         chartFields,
+        visualizationInfo: aspects["visualization-info"]
+            ? aspects["visualization-info"]
+            : null,
         compatiblePreviews
     };
 }
@@ -361,8 +360,15 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? aspects["source"]["name"]
         : defaultDatasetAspects["source"]["name"];
 
-    const linkedDataRating: number = aspects["dataset-linked-data-rating"]
-        ? aspects["dataset-linked-data-rating"]["stars"]
+    function calcQuality(qualityAspect) {
+        const ratings = Object.keys(qualityAspect)
+            .map(key => qualityAspect[key])
+            .map(aspectRating => [aspectRating.score, aspectRating.weighting]);
+        return weightedMean(ratings);
+    }
+
+    const linkedDataRating: number = aspects["dataset-quality-rating"]
+        ? calcQuality(aspects["dataset-quality-rating"])
         : 0;
 
     const distributions = distribution["distributions"].map(d => {
@@ -411,7 +417,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             updatedDate: info.modified ? getDateString(info.modified) : null,
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields,
-            compatiblePreviews
+            compatiblePreviews,
+            visualizationInfo: visualizationInfo ? visualizationInfo : null
         };
     });
     return {

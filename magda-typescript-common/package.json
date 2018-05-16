@@ -4,12 +4,13 @@
     "version": "0.0.39-0",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run generate && npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "generate": "generate-registry-typescript ./src/generated/registry",
-        "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-        "dev": "npm run watch"
+        "test":
+            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+        "dev": "yarn run watch"
     },
     "devDependencies": {
         "@magda/registry-aspects": "^0.0.39-0",
@@ -39,10 +40,10 @@
     },
     "dependencies": {
         "body-parser": "^1.18.2",
+        "express": "^4.16.3",
         "isomorphic-fetch": "^2.2.1",
         "jsonwebtoken": "^7.4.1",
         "load-json-file": "^1.0.0",
-        "lodash": "^4.17.4",
         "moment": "^2.17.1",
         "request": "^2.79.0",
         "tsmonad": "^0.7.2",
@@ -57,5 +58,11 @@
         "jwtSecret": "squirrel",
         "SESSION_SECRET": "keyboard cat",
         "userId": "00000000-0000-4000-8000-000000000000"
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "library": true
+        }
     }
 }

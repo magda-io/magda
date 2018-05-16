@@ -8,13 +8,7 @@
     @include AU-fontgrid(xs);
     padding-right: 40px;
     a {
-        color: $banner-text;
-        border-bottom: solid 1px $banner-text;
-        &:hover,
-        &:focus {
-            background: $banner-text;
-            color: $success;
-        }
+        color: $banner-text !important;
     }
     .close-btn {
         background: transparent;

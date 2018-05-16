@@ -81,6 +81,7 @@ class FacetSearchBox extends Component {
             <div className="facet-search-box">
                 <img className="search-icon" src={search} alt="search" />
                 <Autosuggest
+                    className="au-text-input au-text-input--block"
                     suggestions={suggestions}
                     onSuggestionsFetchRequested={
                         this.onSuggestionsFetchRequested

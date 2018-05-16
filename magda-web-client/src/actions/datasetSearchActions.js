@@ -54,7 +54,10 @@ export function fetchSearchResults(query: string, queryObject: Object): Store {
                 if (response.status === 200) {
                     return response.json();
                 }
-                throw new Error(response.statusText);
+                let errorMessage = response.statusText;
+                if (!errorMessage)
+                    errorMessage = "Failed to retrieve network resource.";
+                throw new Error(errorMessage);
             })
             .then((json: DataSearchJson) => {
                 return dispatch(receiveResults(query, json));

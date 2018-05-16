@@ -1,31 +1,40 @@
 import React from "react";
 import "./Notification.css";
 import close from "../assets/close.svg";
-import Button from "muicss/lib/react/button";
+import AUpageAlert from "@gov.au/page-alerts";
 
 function Notification(props) {
+    let type = props.type;
+    if (!type) type = "info";
+
+    let content = props.conent;
+    if (!content) content = {};
+
+    if (content instanceof Error) {
+        type = "error";
+        content = {
+            title: "Error:",
+            detail: content.message
+        };
+    }
+
+    let { title, detail } = props.content;
+    if (!title) title = "";
+    if (!detail) detail = "";
+    if (!detail && title) detail = title;
+
     return (
-        <div className={`notification notification__${props.type}`}>
-            <div className="notification__inner">
-                <div
-                    className={`notification__header ${
-                        props.icon ? "with-icon" : ""
-                    }`}
+        <div className="notification-box">
+            <AUpageAlert as={type} className="notification__inner">
+                <button
+                    onClick={props.onDismiss}
+                    className="au-btn close-btn au-btn--secondary"
                 >
-                    {props.icon && (
-                        <img
-                            className="status-icon"
-                            alt={props.type}
-                            src={props.icon}
-                        />
-                    )}
-                    <span>{props.content.title}</span>
-                    <Button onClick={props.onDismiss} className="close-btn">
-                        <img alt="close" src={close} />
-                    </Button>
-                </div>
-                <div className="notification__body">{props.content.detail}</div>
-            </div>
+                    <img alt="close" src={close} />
+                </button>
+                {title ? <h3>{title}</h3> : null}
+                <p>{detail}</p>
+            </AUpageAlert>
         </div>
     );
 }

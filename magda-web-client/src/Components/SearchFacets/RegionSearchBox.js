@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import "./RegionSearchBox.css";
 import debounce from "lodash.debounce";
-import Form from "muicss/lib/react/form";
-import Input from "muicss/lib/react/input";
 import search from "../../assets/search-dark.svg";
 
 /**
@@ -120,18 +118,20 @@ class RegionSearchBox extends Component {
     render() {
         return (
             <div className="region-search-box  facet-search-box">
-                <Form onKeyDown={this.handleKeyDown}>
+                <form onKeyDown={this.handleKeyDown}>
                     <img className="search-icon" src={search} alt="search" />
-                    <Input
+                    <input
+                        className="au-text-input au-text-input--block"
+                        name="type region"
                         type="text"
                         value={this.state.searchText}
                         onInput={this.onSearchTextChange}
                         placeholder="Search by Region"
                     />
-                </Form>
+                </form>
                 {this.state.searchText.length > 0 && (
                     <ul
-                        className="region-search-box__options mui-list--unstyled"
+                        className="region-search-box__options list--unstyled"
                         onKeyDown={this.handleKeyDown}
                     >
                         {this.props.options.map((option, i) => (

@@ -12,22 +12,26 @@ class AccountNavbar extends React.Component {
 
     render() {
         return (
-            <div className="account-navbar">
+            <React.Fragment>
                 {this.props.user ? (
                     [
-                        <span>
+                        <li key="/account">
                             <Link to={`/account`}>
                                 {this.props.user.displayName}
                             </Link>
+                        </li>,
+                        <li key="/signOut">
                             <a href="" onClick={this.signOut.bind(this)}>
                                 Sign Out
                             </a>
-                        </span>
+                        </li>
                     ]
                 ) : (
-                    <Link to={`/account`}>Sign in</Link>
+                    <li key="/account">
+                        <Link to={`/account`}>Sign in</Link>
+                    </li>
                 )}
-            </div>
+            </React.Fragment>
         );
     }
 }

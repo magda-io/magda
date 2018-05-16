@@ -1,53 +1,8 @@
 @import "./variables";
+#root {
+    font-family: $font-base;
+}
 
 .app-container {
     min-height: 1000px;
-}
-
-.footer {
-    background-color: $magda-dark-blue;
-    color: #fff;
-    padding: 50px 0;
-    margin-top: 24px;
-    a {
-        color: #fff;
-    }
-    .nav > li > a {
-        padding: 10px 0px;
-        &:hover,
-        &:focus {
-            background: $magda;
-            color: #fff;
-        }
-    }
-    .nav-title {
-        text-transform: uppercase;
-    }
-    .copyright {
-        text-align: right;
-        @media (max-width: $small) {
-            padding-top: 50px;
-        }
-        img {
-            height: 40px;
-            width: auto;
-        }
-
-        a {
-            /* ./index.scss defines a border-bottom, this overrides that */
-            border-bottom-style: none;
-        }
-
-        a:hover {
-            /* ./index.scss defines a background-color, this overrides that */
-            background-color: transparent;
-        }
-    }
-}
-
-/* On mobile, add margin-bottom spacing to footer links */
-@media screen and (max-width: ($medium - 1)) {
-    .mui-list--unstyled > li {
-        margin-bottom: 1em;
-    }
 }

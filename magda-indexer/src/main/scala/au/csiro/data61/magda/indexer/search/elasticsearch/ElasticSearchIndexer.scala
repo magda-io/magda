@@ -143,10 +143,10 @@ class ElasticSearchIndexer(
       }
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
-          logger.info("Restoring snapshot")
+          logger.info("Restoring snapshot into {}", definition.name)
 
           client.execute {
-            restore snapshot snapshot.snapshotId.getName from SNAPSHOT_REPO_NAME indexes indices.getIndex(config, Indices.DataSetsIndex) waitForCompletion true
+            restoreSnapshot(snapshot.snapshotId.getName) from SNAPSHOT_REPO_NAME indexes indices.getIndex(config, definition.indicesIndex) waitForCompletion true
           } map { response =>
             response.status match {
               case RestStatus.OK =>
@@ -254,12 +254,7 @@ class ElasticSearchIndexer(
             definition.create match {
               case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
                 .flatMap(_ => {
-                  if (config.getBoolean("indexer.makeSnapshots"))
-                    createSnapshot(client, definition)
-                  else {
-                    logger.info("Snapshotting disabled, skipping")
-                    Future(Unit)
-                  }
+                  createSnapshot(client, definition)
                 })
               case None => Future(Unit)
             }
@@ -390,8 +385,8 @@ class ElasticSearchIndexer(
         ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
     }.map { response =>
       logger.info("Deleted {} datasets", response.successes.length)
-      
-      response.failures.foreach{failure =>
+
+      response.failures.foreach { failure =>
         logger.warning("Failed to delete: {}", failure.failureMessage)
       }
 
@@ -399,21 +394,28 @@ class ElasticSearchIndexer(
     }
   }
 
-  private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[CreateSnapshotResponse] = {
-    logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
+  private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[Unit] = {
+    if (config.getBoolean("indexer.makeSnapshots")) {
+      logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
-    val future = client.execute {
-      create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes indices.getIndex(config, definition.indicesIndex)
+      val future = client.execute {
+        create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes indices.getIndex(config, definition.indicesIndex)
+      }
+
+      future.onComplete {
+        case Success(result) =>
+          val info = result.getSnapshotInfo
+          logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), indices.getIndex(config, definition.indicesIndex))
+        case Failure(e) =>
+          logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
+          throw e
+      }
+
+      future.map(_ => Unit)
+    } else {
+      logger.info("Snapshotting disabled, skipping")
+      Future(Unit)
     }
-
-    future.onComplete {
-      case Success(result) =>
-        val info = result.getSnapshotInfo
-        logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), indices.getIndex(config, definition.indicesIndex))
-      case Failure(e) => logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
-    }
-
-    future
   }
 
   private def bulkIndex(definition: BulkDefinition): Future[RichBulkResponse] =

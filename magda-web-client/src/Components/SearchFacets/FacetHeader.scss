@@ -4,8 +4,13 @@
     display: flex;
     &.not-empty {
         button {
-            background: $body;
-            color: #fff;
+            font-family: $font-base;
+            &,
+            &:hover,
+            &:focus {
+                background: $body !important;
+                color: #fff !important;
+            }
         }
     }
 
@@ -26,6 +31,7 @@
         text-align: center;
         padding: 0 16px;
         text-transform: capitalize;
+        pointer: cursor;
         .facet-icon {
             padding: 4px 6px 4px 0;
             height: 24px;
@@ -34,12 +40,11 @@
         span {
             font-size: 14px;
             vertical-align: top;
-        }
-        &:hover,
-        &:active,
-        &.is-open {
-            background: $body;
-            color: #fff;
+            line-height: 35px;
         }
     }
+}
+
+.facet-body__header {
+    margin-bottom: 10px;
 }

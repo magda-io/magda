@@ -150,7 +150,9 @@ class RecordHandler extends React.Component {
                                     </span>&nbsp;
                                 </span>
                             )}
-                            <span className="separator hidden-sm">/</span>
+                            <span className="separator hidden-sm">
+                                &nbsp;/&nbsp;
+                            </span>
                             {defined(this.props.dataset.updatedDate) && (
                                 <span className="updated-date hidden-sm">
                                     Updated{" "}

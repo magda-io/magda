@@ -54,7 +54,7 @@
                     margin-left: 3px;
                 }
                 @media (max-width: $medium - 1) {
-                    margin-top: 6px;
+                    margin-top: 5.5px;
                 }
                 float: left;
                 width: 25px;
@@ -103,6 +103,7 @@
     }
     .recent-item-content {
         margin-left: 39px;
+        line-height: 2.2rem;
     }
     .selected {
         color: rgba(0, 0, 0, 0.87);

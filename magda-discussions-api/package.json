@@ -4,13 +4,15 @@
     "version": "0.0.39-0",
     "license": "Apache-2.0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "start": "node dist/index.js",
         "dev": "run-typescript-in-nodemon src/index.ts",
-        "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-        "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+        "docker-build-local":
+            "create-docker-context-for-node-component --build --push --tag auto --local",
+        "docker-build-prod":
+            "create-docker-context-for-node-component --build --push --tag auto"
     },
     "dependencies": {
         "@magda/typescript-common": "^0.0.39-0",
@@ -36,6 +38,12 @@
         "docker": {
             "name": "data61/magda-discussions-api",
             "include": "node_modules dist Dockerfile"
+        }
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "api": true
         }
     }
 }

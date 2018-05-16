@@ -82,7 +82,7 @@ object WebHookActor {
 
     def receive = {
       case InvalidateWebhookCache => 
-        println("invalidated")
+        log.info("Invalidated webhook cache")
         setup
       case Process(ignoreWaitingForResponse, aspectIds, webHookId) => {
         val actors = webHookId match {

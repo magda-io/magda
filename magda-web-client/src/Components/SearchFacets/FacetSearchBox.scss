@@ -1,17 +1,19 @@
 .react-autosuggest__input {
-    box-sizing: border-box;
     display: block;
-    background-color: transparent;
-    border: none;
-    outline: 0;
     width: 100%;
-    padding: 16px 0;
-    box-shadow: inset 0 -2px 0 0 rgba(73, 73, 73, 0.25);
-    border-radius: 0;
-    font-size: 14px;
-    line-height: 20px;
-    font-family: inherit;
-    background-image: none;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 8px 16px;
+    padding: 0.5rem 1rem;
+    height: 46px;
+    height: 2.875rem;
+    border: 3px solid gray;
+    background-color: #fff;
+    color: #313131;
+    border-radius: 4px;
+    vertical-align: middle;
+    appearance: none;
 }
 
 .react-autosuggest__suggestions-list {
@@ -25,10 +27,12 @@
 
 .react-autosuggest__container {
     position: relative;
+    margin-top: 10px;
 }
 
 .react-autosuggest__input--focused {
-    outline: none;
+    outline: 3px solid #9263de;
+    outline-offset: 2px;
 }
 
 .react-autosuggest__input--open {
@@ -58,6 +62,7 @@
 
 .facet-search-box .search-icon {
     position: absolute;
-    right: 16px;
-    top: 16px;
+    right: 24px;
+    top: 20px;
+    z-index: 10;
 }

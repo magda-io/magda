@@ -76,6 +76,11 @@ const argv = yargs
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
+    })
+    .option("cspReportUri", {
+        describe:
+            "The URI to send Content Security Policy violation reports to.",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -90,44 +95,47 @@ app.use(
     })
 );
 
+const cspDirectives = {
+    scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // for VWO until... we get rid of that? :(
+        "data:", // ditto
+        "browser-update.org",
+        "dev.visualwebsiteoptimizer.com",
+        "platform.twitter.com",
+        "www.googletagmanager.com",
+        "www.google-analytics.com",
+        "rum-static.pingdom.net",
+        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js",
+        "https://tagmanager.google.com/debug"
+    ],
+    objectSrc: ["'none'"],
+    sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"]
+} as helmet.IHelmetContentSecurityPolicyDirectives;
+
+if (argv.cspReportUri) {
+    cspDirectives.reportUri = argv.cspReportUri;
+}
+
 app.use(
     helmet.contentSecurityPolicy({
-        directives: {
-            scriptSrc: [
-                "'self'",
-                "'unsafe-eval'", // for vega until we banish it into an iframe
-                "'unsafe-inline'", // for VWO until... we get rid of that? :(
-                "data:", // ditto
-                "browser-update.org",
-                "dev.visualwebsiteoptimizer.com",
-                "platform.twitter.com",
-                "www.googletagmanager.com",
-                "www.google-analytics.com",
-                "rum-static.pingdom.net",
-                "cdnjs.cloudflare.com/ajax/libs/rollbar.js/", //rollbar
-                "cdnjs.cloudflare.com/ajax/libs/es5-shim/", // shim
-                "cdnjs.cloudflare.com/ajax/libs/es6-shim/", // shim
-                "s3-ap-southeast-2.amazonaws.com/data-gov-au-frontpage/"
-            ],
-            objectSrc: ["'none'"],
-            sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"],
-            reportUri: argv.baseUrl + "api/v0/feedback/csp"
-        } as helmet.IHelmetContentSecurityPolicyDirectives,
+        directives: cspDirectives,
         browserSniff: false
     })
 );
 
 app.use(morgan("combined"));
 
-const magda = path.join(__dirname, "..", "node_modules", "@magda");
-
-const clientRoot = path.join(magda, "web-client");
+const clientRoot = path.resolve(
+    require.resolve("@magda/web-client/package.json"),
+    ".."
+);
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const adminRoot = path.join(magda, "web-admin");
-const adminBuild = path.join(adminRoot, "build");
-console.log("Admin: " + adminBuild);
+// const adminRoot = require.resolve("@magda/web-admin");
+// const adminBuild = path.join(adminRoot, "build");
+// console.log("Admin: " + adminBuild);
 
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
@@ -193,7 +201,7 @@ app.get("/server-config.js", function(req, res) {
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
-app.use("/admin", express.static(adminBuild));
+// app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
@@ -221,12 +229,12 @@ app.get("/page/*", function(req, res) {
     res.sendFile(path.join(clientBuild, "index.html"));
 });
 
-app.get("/admin", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
-});
-app.get("/admin/*", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
-});
+// app.get("/admin", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
+// app.get("/admin/*", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
 
 if (argv.devProxy) {
     app.get("/api/*", function(req, res) {

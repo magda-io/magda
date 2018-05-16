@@ -119,7 +119,7 @@ export default class News extends Component<{
             return <Spinner height="420px" />;
         }
         return (
-            <ul className="mui-list--unstyled list-group">
+            <ul className="list--unstyled list-group">
                 {this.state.newsItems.slice(0, 3).map(n => this.renderNews(n))}
             </ul>
         );

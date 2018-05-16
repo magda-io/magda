@@ -24,4 +24,7 @@
         color: #c0392b;
         @include AU-fontgrid(lg);
     }
+    &__input-group {
+        margin-bottom: 10px;
+    }
 }

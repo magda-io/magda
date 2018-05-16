@@ -5,40 +5,24 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
 import Banner from "./UI/Banner";
-import FeedbackForm from "./Components/FeedbackForm";
+import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
-import d61logo from "./data61-logo.png";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
 import HomePage from "./Pages/HomePage";
 import OtherPages from "./Pages/OtherPages";
 
-import { Route, Link, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import { Medium } from "./UI/Responsive";
+import AUskipLink from "@gov.au/skip-link";
 
 import "./AppContainer.css";
-
-const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
 
 class AppContainer extends React.Component {
     componentWillMount() {
         this.props.requestWhoAmI();
-    }
-
-    renderLink(link) {
-        if (link[1].indexOf("mailto") === 0) {
-            return <a href={link[1]}>{link[0]}</a>;
-        } else if (!regex.test(link[1])) {
-            return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
-        } else {
-            return (
-                <a target="_blank" rel="noopener noreferrer" href={link[1]}>
-                    {link[0]}
-                </a>
-            );
-        }
     }
 
     render() {
@@ -46,6 +30,18 @@ class AppContainer extends React.Component {
         return (
             <ReactDocumentTitle title={config.appName}>
                 <div className="au-grid">
+                    <AUskipLink
+                        links={[
+                            {
+                                link: "#content",
+                                text: "Skip to main content"
+                            },
+                            {
+                                link: "#nav",
+                                text: "Skip to main navigation"
+                            }
+                        ]}
+                    />
                     <Medium>
                         <Banner />
                     </Medium>
@@ -55,52 +51,8 @@ class AppContainer extends React.Component {
                         <Route path="/*" component={OtherPages} />
                     </Switch>
 
-                    <footer className="footer clearfix au-grid">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-xs-6 col-sm-6 col-md-9 col-lg-9">
-                                    <ul className="mui-list--unstyled">
-                                        {footerNavs.map(item => (
-                                            <li
-                                                className="col-md-3 col-sm-4"
-                                                key={item.category}
-                                            >
-                                                <span className="nav-title">
-                                                    {item.category}
-                                                </span>
-                                                <ul className="mui-list--unstyled">
-                                                    {item.links.map(link => (
-                                                        <li key={link[1]}>
-                                                            {this.renderLink(
-                                                                link
-                                                            )}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className="col-xs-6 col-sm-6 col-md-offset-1 col-md-2">
-                                    <FeedbackForm />
-                                    <div className="copyright">
-                                        {" "}
-                                        Developed by{" "}
-                                        <a
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            href="https://www.data61.csiro.au/"
-                                        >
-                                            <img
-                                                src={d61logo}
-                                                alt="data61-logo"
-                                            />
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </footer>
+                    <Footer footerNavs={footerNavs} />
+
                     {this.props.topNotification.visible ? (
                         <Notification
                             content={{
