@@ -40,6 +40,7 @@
 *   Made magda-web-server look for magda-web-client using require.resolve.
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
+*   Implemented SMTP client with `nodemailer` for correspondence api
 
 ## 0.0.38
 

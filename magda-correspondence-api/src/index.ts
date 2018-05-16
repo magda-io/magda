@@ -4,6 +4,7 @@ import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 import createApiRouter from "./createApiRouter";
+import { NodeMailerSMTPMailer } from "./SMTPMailer";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -15,36 +16,66 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 6117
         })
+        .option("registryUrl", {
+            describe: "The base url for the registry",
+            type: "string",
+            default:
+                process.env.REGISTRY_URL ||
+                process.env.npm_package_config_registryUrl ||
+                "http://localhost:6117/api/v0/registry"
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
         .option("smtpHostname", {
             describe: "The SMTP server hostname",
-            type: "string"
+            type: "string",
+            default: ""
         })
         .option("smtpPort", {
             describe: "The SMTP server port",
-            default: 587,
-            type: "number"
+            type: "number",
+            default: 465
         })
         .option("smtpSecure", {
-            describe: "SMTP using TLS?",
-            default: true,
-            type: "boolean"
+            describe: "If the SMTP server should use SSL/TLS",
+            type: "boolean",
+            default: true
+        })
+        .option("smtpUsername", {
+            describe: "The username to authenticate with the SMTP server",
+            type: "string",
+            default: ""
+        })
+        .option("smtpPassword", {
+            describe: "The password to authenticate with the SMTP server",
+            type: "string",
+            default: ""
+        })
+        .option("defaultRecipient", {
+            describe:
+                "The email address to send data requests and questions/feedback on datasets where the email address couldn't be resolved",
+            type: "string",
+            demandOption: true
         }).argv
 );
 
 const app = express();
 app.use(require("body-parser").json());
-
 app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
-        smtpHostname: argv.smtpHostname,
-        smtpPort: argv.smtpPort,
-        smtpSecure: argv.smtpSecure
+        registryUrl: argv.registryUrl,
+        defaultRecipient: argv.defaultRecipient,
+        smtpMailer: new NodeMailerSMTPMailer({
+            smtpHostname: argv.smtpHostname,
+            smtpPort: argv.smtpPort,
+            smtpSecure: argv.smtpSecure,
+            smtpUsername: argv.smtpUsername,
+            smtpPassword: argv.smtpPassword
+        })
     })
 );
 

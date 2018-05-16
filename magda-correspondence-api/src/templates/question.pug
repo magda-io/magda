@@ -1,0 +1,16 @@
+doctype html
+html(lang="en-au")
+include includes/head.pug
+body
+  p.content
+    include includes/header.pug
+    |Hi there, <br/><br/>
+    |A question has been raised in relation to a dataset: #{dataset.title}, published by #{dataset.publisher}.
+    |Please respond to this query as soon as possible.<br/><br/>
+
+    |The query is from  #{message.senderName}, #{message.senderEmail}: <br/><br/>
+
+    |#{message.message} <br/><br/>
+
+    include includes/footer.pug
+

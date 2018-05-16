@@ -1,0 +1,15 @@
+doctype html
+html(lang="en-au")
+include includes/head.pug
+body
+  p.content
+    include includes/header.pug
+    |Hi there, <br/><br/>
+    |Feedback has been left on a dataset: #{dataset.title}, published by #{dataset.publisher}.
+
+    |The feedback is from  #{message.senderName}, #{message.senderEmail}: <br/><br/>
+
+    |#{message.message} <br/><br/>
+
+    include includes/footer.pug
+

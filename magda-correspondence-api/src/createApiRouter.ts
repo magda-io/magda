@@ -1,71 +1,187 @@
 import * as express from "express";
-import * as SMTPConnection from "nodemailer/lib/smtp-connection";
-import { Router } from "express";
-import { DatasetMessage } from "./model";
+import * as emailValidator from "email-validator";
+import * as _ from "lodash";
 
+import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+
+import { Router } from "express";
+import { sendMail } from "./mail";
+import { SMTPMailer } from "./SMTPMailer";
+import { DatasetMessage } from "./model";
+import renderTemplate, { Templates } from "./renderTemplate";
 export interface ApiRouterOptions {
     jwtSecret: string;
-    smtpHostname: string;
-    smtpUsername?: string;
-    smtpPassword?: string;
-    smtpPort: number;
-    smtpSecure: boolean;
+    registry: RegistryClient;
+    defaultRecipient: string;
+    smtpMailer: SMTPMailer;
 }
 
-export default function createApiRouter(options: ApiRouterOptions) {
+function validateMiddleware(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+) {
+    const body: DatasetMessage = req.body;
+
+    if (!body.message || !body.senderEmail || !body.senderName) {
+        res.status(400).json({
+            status: "Failure",
+            error: "Missing input"
+        });
+    } else if (!emailValidator.validate(body.senderEmail)) {
+        res.status(400).json({
+            status: "Failure",
+            error: "Invalid email: " + body.senderEmail
+        });
+    } else {
+        next();
+    }
+}
+
+export default function createApiRouter(
+    options: ApiRouterOptions
+): express.Router {
     const router: Router = express.Router();
 
-    router.get("/healthz", (req, res) => res.status(200).send("OK"));
-
-    function handleDatasetMessage(req: express.Request, res: express.Response) {
-        setTimeout(() => {
-            const body = req.body as DatasetMessage;
-
-            const randomFloat = Math.random();
-
-            try {
-                if (!body.message || !body.senderEmail || !body.senderName) {
-                    return res.status(400).send({
-                        status: "Failure",
-                        error: "Missing input"
-                    });
-                }
-
-                if (randomFloat > 0.1) {
-                    // 1 in 10 chance of failing
-                    return res.status(200).send({
-                        status: "success"
-                    });
-                } else {
-                    throw Error("Randomly generated error for fun");
-                }
-            } catch (e) {
-                return res.status(500).send({
-                    status: "failure",
-                    error: e.message
+    router.get("/healthz", (req, res) =>
+        options.smtpMailer
+            .checkConnectivity()
+            .then(() => {
+                res.status(200).json({
+                    status: "OK"
                 });
-            }
-        }, 1000);
-    }
+            })
+            .catch(e => {
+                res.status(500).json({
+                    status: "Failure"
+                });
+            })
+    );
 
-    function send(message: DatasetMessage) {
-        let connection = new SMTPConnection({
-            host: options.smtpHostname,
-            port: options.smtpPort,
-            secure: options.smtpSecure
-        });
-        connection.secure = true;
-        connection.connect().then(() => {});
-    }
+    router.post("/public/send/dataset/request", validateMiddleware, function(
+        req,
+        res
+    ) {
+        const body: DatasetMessage = req.body;
+        const subject = `Data Request from ${body.senderName}`;
+        const html = renderTemplate(Templates.Request, body, subject);
 
-    router.post("/public/send/dataset/request", send);
+        handlePromise(
+            sendMail(
+                options.smtpMailer,
+                options.defaultRecipient,
+                body,
+                html,
+                subject
+            ),
+            res
+        );
+    });
 
     router.post(
         "/public/send/dataset/:datasetId/question",
-        handleDatasetMessage
+        validateMiddleware,
+        function(req, res) {
+            const body: DatasetMessage = req.body;
+
+            const promise = getDataset(req.params.datasetId).then(dataset => {
+                const subject = `Question About ${dataset.title}`;
+
+                const html = renderTemplate(
+                    Templates.Question,
+                    body,
+                    subject,
+                    dataset
+                );
+
+                return sendMail(
+                    options.smtpMailer,
+                    options.defaultRecipient,
+                    body,
+                    html,
+                    subject,
+                    // TODO: Send to the dataset's contactPoint
+                    options.defaultRecipient
+                );
+            });
+
+            handlePromise(promise, res, req.params.datasetId);
+        }
     );
 
-    router.post("/public/send/dataset/:datasetId/report", handleDatasetMessage);
+    router.post(
+        "/public/send/dataset/:datasetId/report",
+        validateMiddleware,
+        function(req, res) {
+            const body: DatasetMessage = req.body;
+
+            const promise = getDataset(req.params.datasetId).then(dataset => {
+                const subject = `Feedback Regarding ${dataset.title}`;
+
+                const html = renderTemplate(
+                    Templates.Feedback,
+                    body,
+                    subject,
+                    dataset
+                );
+
+                return sendMail(
+                    options.smtpMailer,
+                    options.defaultRecipient,
+                    body,
+                    html,
+                    subject,
+                    options.defaultRecipient
+                );
+            });
+
+            handlePromise(promise, res, req.params.datasetId);
+        }
+    );
+
+    /**
+     * Gets a dataset from the registry as a promise, unwrapping it from its
+     * aspect.
+     */
+    function getDataset(datasetId: string): Promise<any> {
+        return options.registry
+            .getRecord(datasetId, ["dcat-dataset-strings"], [], false)
+            .then(result => unionToThrowable(result))
+            .then(record => record.aspects["dcat-dataset-strings"]);
+    }
 
     return router;
+}
+
+/**
+ * Translates a promise into a response, returning 200 if the promise resolves,
+ * 404 if it rejects with `response.statusCode: 404` in the error (as per the
+ * registry api) or 500 if it rejects for another reason.
+ */
+function handlePromise(
+    promise: Promise<any>,
+    response: express.Response,
+    datasetId?: string
+): void {
+    promise
+        .then(() => response.status(200).json({ status: "OK" }))
+        .catch(e => {
+            if (_.get(e, "e.response.statusCode") === 404) {
+                console.error(
+                    "Attempted to send correspondence for non-existent dataset " +
+                        datasetId
+                );
+                response.status(404).json({
+                    status: "Failure",
+                    error: "Dataset " + datasetId + " not found"
+                });
+            } else {
+                throw e;
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            response.status(500).json({ status: "Failure" });
+        });
 }
