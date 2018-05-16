@@ -1,11 +1,11 @@
-import * as path from "path";
+// import * as path from "path";
 import * as html2text from "html-to-text";
 
 import { Message, SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 
-const auGovtLogoPath = path.resolve(__dirname, "assets/AU-Govt-Logo.jpg");
-const dataGovLogoPath = path.resolve(__dirname, "assets/Logo.jpg");
+const auGovtLogoPath = require.resolve("../templates/assets/AU-Govt-Logo.jpg");
+const dataGovLogoPath = require.resolve("../templates/assets/Logo.jpg");
 
 /**
  * Send an email from posted form data
@@ -45,6 +45,10 @@ export function sendMail(
             }
         ]
     };
+
+    console.log(
+        `Sending with subject ${subject} from ${input.senderEmail} to ${to}`
+    );
 
     return mailer.send(message);
 }

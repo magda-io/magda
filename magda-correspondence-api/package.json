@@ -19,6 +19,7 @@
     "dependencies": {
         "@magda/typescript-common": "^0.0.39-0",
         "body-parser": "^1.13.2",
+        "email-validator": "^2.0.3",
         "express": "^4.13.1",
         "html-to-text": "^4.0.0",
         "isomorphic-fetch": "^2.2.1",
@@ -44,7 +45,6 @@
         "@types/supertest": "^2.0.4",
         "@types/yargs": "^8.0.2",
         "chai": "^4.1.2",
-        "email-validator": "^2.0.3",
         "mocha": "^5.1.1",
         "nock": "^9.2.5",
         "sinon": "^5.0.7",
@@ -54,9 +54,9 @@
     "config": {
         "docker": {
             "name": "data61/magda-correspondence-api",
-            "include": "node_modules dist Dockerfile"
+            "include": "node_modules dist templates Dockerfile"
         },
-        "jwtSecret": "squirrel"
+        "externalUrl": "http://localhost:6101"
     },
     "magda": {
         "language": "typescript",

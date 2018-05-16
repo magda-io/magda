@@ -5,7 +5,9 @@ body
   p.content
     include includes/header.pug
     |Hi there, <br/><br/>
-    |A question has been raised in relation to a dataset: #{dataset.title}, published by #{dataset.publisher}.
+    |A question has been raised in relation to a dataset: #{dataset.title},
+    |published by #{dataset.publisher}, at 
+    |<a href="#{datasetUrl}">#{dataset.url}</a>.
     |Please respond to this query as soon as possible.<br/><br/>
 
     |The query is from  #{message.senderName}, #{message.senderEmail}: <br/><br/>

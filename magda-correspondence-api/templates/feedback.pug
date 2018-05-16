@@ -5,7 +5,9 @@ body
   p.content
     include includes/header.pug
     |Hi there, <br/><br/>
-    |Feedback has been left on a dataset: #{dataset.title}, published by #{dataset.publisher}.
+    |Feedback has been left on a  dataset: #{dataset.title},
+    |published by #{dataset.publisher}, at 
+    |<a href="#{datasetUrl}">#{dataset.url}</a>.
 
     |The feedback is from  #{message.senderName}, #{message.senderEmail}: <br/><br/>
 

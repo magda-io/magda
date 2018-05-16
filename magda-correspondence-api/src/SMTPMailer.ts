@@ -14,6 +14,14 @@ export interface SMTPMailerOptions {
     smtpSecure: boolean;
 }
 
+export interface Attachment {
+    filename: string;
+    contentType: string;
+    contentDisposition: string;
+    path: string;
+    cid: string;
+}
+
 export interface Message {
     to: string;
     from: string;
@@ -21,13 +29,7 @@ export interface Message {
     subject: string;
     text: string;
     html: string;
-    attachments: Array<{
-        filename: string;
-        contentType: string;
-        contentDisposition: string;
-        path: string;
-        cid: string;
-    }>;
+    attachments: Array<Attachment>;
 }
 
 export class NodeMailerSMTPMailer implements SMTPMailer {
@@ -37,7 +39,7 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
         const options: SMTPTransport.Options = {
             host: this.opts.smtpHostname,
             port: this.opts.smtpPort,
-            secure: this.opts.smtpSecure,
+            requireTLS: this.opts.smtpSecure,
             logger: false,
             debug: false,
             connectionTimeout: 1500,
@@ -47,17 +49,14 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
             }
         };
 
-        console.debug(`Creating SMTP Transport object with given args...`);
         const transporter = nodemailer.createTransport(options);
 
         return new Promise((resolve, reject) => {
             transporter.verify((err, success) => {
-                console.debug(`...Verifying SMTP Transport connection...`);
                 if (err) {
                     console.error(err);
                     reject(err);
                 } else {
-                    console.debug(`...Connection established!`);
                     resolve(transporter);
                 }
             });
@@ -78,17 +77,10 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
                         if (err) {
                             console.error(err);
                             transporter.close();
-                            throw err;
+                            reject(err);
                         } else {
-                            console.debug(`Mail sent!`);
-                            console.debug(
-                                `Attempting to close SMTP transporter connection...`
-                            );
                             transporter.close();
-                            console.debug(
-                                `...Closed SMTP transporter connection. \n Success!!!`
-                            );
-                            return info;
+                            resolve(info);
                         }
                     });
                 })

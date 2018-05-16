@@ -3,6 +3,7 @@ import * as emailValidator from "email-validator";
 import * as _ from "lodash";
 
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
 import { Router } from "express";
@@ -11,10 +12,10 @@ import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 export interface ApiRouterOptions {
-    jwtSecret: string;
     registry: RegistryClient;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
+    externalUrl: string;
 }
 
 function validateMiddleware(
@@ -65,7 +66,12 @@ export default function createApiRouter(
     ) {
         const body: DatasetMessage = req.body;
         const subject = `Data Request from ${body.senderName}`;
-        const html = renderTemplate(Templates.Request, body, subject);
+        const html = renderTemplate(
+            Templates.Request,
+            body,
+            subject,
+            options.externalUrl
+        );
 
         handlePromise(
             sendMail(
@@ -86,12 +92,15 @@ export default function createApiRouter(
             const body: DatasetMessage = req.body;
 
             const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Question About ${dataset.title}`;
+                const subject = `Question About ${
+                    dataset.aspects["dcat-dataset-strings"].title
+                }`;
 
                 const html = renderTemplate(
                     Templates.Question,
                     body,
                     subject,
+                    options.externalUrl,
                     dataset
                 );
 
@@ -117,12 +126,15 @@ export default function createApiRouter(
             const body: DatasetMessage = req.body;
 
             const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Feedback Regarding ${dataset.title}`;
+                const subject = `Feedback Regarding ${
+                    dataset.aspects["dcat-dataset-strings"].title
+                }`;
 
                 const html = renderTemplate(
                     Templates.Feedback,
                     body,
                     subject,
+                    options.externalUrl,
                     dataset
                 );
 
@@ -144,11 +156,10 @@ export default function createApiRouter(
      * Gets a dataset from the registry as a promise, unwrapping it from its
      * aspect.
      */
-    function getDataset(datasetId: string): Promise<any> {
+    function getDataset(datasetId: string): Promise<Record> {
         return options.registry
             .getRecord(datasetId, ["dcat-dataset-strings"], [], false)
-            .then(result => unionToThrowable(result))
-            .then(record => record.aspects["dcat-dataset-strings"]);
+            .then(result => unionToThrowable(result));
     }
 
     return router;

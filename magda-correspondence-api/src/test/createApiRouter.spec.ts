@@ -1,6 +1,7 @@
 import {} from "mocha";
 import { ApiRouterOptions } from "../createApiRouter";
-import { SMTPMailer, Message } from "../SMTPMailer";
+import { SMTPMailer, Message, Attachment } from "../SMTPMailer";
+import * as fs from "fs";
 
 import createApiRouter from "../createApiRouter";
 
@@ -33,6 +34,7 @@ const DEFAULT_MESSAGE = "Gib me a dataset";
 const DEFAULT_DATASET_ID = "ds-blah-1234";
 const DEFAULT_DATASET_TITLE = "thisisatitle";
 const DEFAULT_DATASET_PUBLISHER = "publisher";
+const EXTERNAL_URL = "datagov.au.example.com";
 
 describe("send dataset request mail", () => {
     const DEFAULT_RECIPIENT = "blah@example.com";
@@ -118,6 +120,8 @@ describe("send dataset request mail", () => {
                     expect(args.html).to.contain(DEFAULT_MESSAGE);
                     expect(args.text).to.contain(DEFAULT_MESSAGE);
                     expect(args.subject).to.contain(DEFAULT_SENDER_NAME);
+
+                    checkAttachments(args.attachments);
                 });
         });
 
@@ -151,13 +155,21 @@ describe("send dataset request mail", () => {
 
                     expect(args.text).to.contain(DEFAULT_MESSAGE);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
+                    expect(args.text).to.contain(
+                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                    );
                     expect(args.text).to.contain("feedback");
 
                     expect(args.html).to.contain(DEFAULT_MESSAGE);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
+                    expect(args.html).to.contain(
+                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                    );
                     expect(args.html).to.contain("feedback");
 
                     expect(args.subject).to.contain(DEFAULT_DATASET_TITLE);
+
+                    checkAttachments(args.attachments);
                 });
         });
 
@@ -197,13 +209,21 @@ describe("send dataset request mail", () => {
 
                     expect(args.text).to.contain(DEFAULT_MESSAGE);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
+                    expect(args.text).to.contain(
+                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                    );
                     expect(args.text).to.contain("question");
 
                     expect(args.html).to.contain(DEFAULT_MESSAGE);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
+                    expect(args.html).to.contain(
+                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                    );
                     expect(args.html).to.contain("question");
 
                     expect(args.subject).to.contain(DEFAULT_DATASET_TITLE);
+
+                    checkAttachments(args.attachments);
                 });
         });
 
@@ -223,6 +243,7 @@ describe("send dataset request mail", () => {
                 `/records/${DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
             )
             .reply(200, {
+                id: DEFAULT_DATASET_ID,
                 aspects: {
                     "dcat-dataset-strings": {
                         title: DEFAULT_DATASET_TITLE,
@@ -355,12 +376,21 @@ describe("send dataset request mail", () => {
         });
     }
 
+    function checkAttachments(attachments: Array<Attachment>) {
+        attachments.forEach(attachment => {
+            expect(
+                fs.existsSync(attachment.path),
+                attachment.path + " to exist"
+            ).to.be.true;
+        });
+    }
+
     function resolveRouterOptions(smtpMailer: SMTPMailer): ApiRouterOptions {
         return {
-            jwtSecret: "squirrel",
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
-            registry
+            registry,
+            externalUrl: EXTERNAL_URL
         };
     }
 });
