@@ -1,4 +1,3 @@
-// import * as path from "path";
 import * as html2text from "html-to-text";
 
 import { Message, SMTPMailer } from "./SMTPMailer";
