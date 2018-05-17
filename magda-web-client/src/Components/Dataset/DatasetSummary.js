@@ -36,9 +36,8 @@ export default class DatasetSummary extends Component {
             : "";
         return (
             <div className="dataset-summary">
-                <h2>
+                <h2 className="dataset-summary-title">
                     <Link
-                        className="dataset-summary-title"
                         to={`/dataset/${encodeURIComponent(
                             dataset.identifier
                         )}?q=${searchText}`}

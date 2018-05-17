@@ -4,14 +4,22 @@ html {
     @include AU-fontgrid(sm);
     font-family: $font-base;
 }
-.au-body a {
+.au-body .au-grid a {
     text-decoration: none;
-    color: $body;
     overflow-x: hidden;
+    &:hover,
+    &:focus {
+        background: transparent;
+        color: inherit;
+        text-decoration: none;
+    }
 }
-.au-body a:hover {
-    color: white;
+
+.au-btn:hover:not(:disabled),
+a.au-btn:hover:not(:disabled) {
+    text-decoration: none;
 }
+
 .au-body p {
     max-width: 100%;
 }
@@ -73,23 +81,26 @@ a {
     }
 }
 
-.mui-tabs__bar > li > a {
-    border-bottom: 0px;
-    margin-right: 16px;
-    &:hover {
-        color: $magda;
-        background: transparent;
+.tab-navigation {
+    .au-link-list {
+        display: flex;
     }
-}
 
-.mui-tabs__bar > li.mui--is-active {
-    border-bottom: 0;
-}
-
-.mui-tabs__bar > li.mui--is-active > a,
-.mui-tabs__bar a.mui--is-active {
-    color: $magda;
-    border-bottom: 2px solid $magda;
+    a {
+        display: inline-block;
+        padding: 1rem 1rem;
+        border-bottom: 5px solid #cfcfcf;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+            background-color: transparent;
+            color: $main;
+        }
+    }
+    a.mainmenu--active {
+        color: #007099;
+        border-color: #007099;
+    }
 }
 
 .hidden-sm {
@@ -102,10 +113,9 @@ a {
     margin-left: 0;
 }
 
-.other-page .app-container {
-    @media (max-width: $medium) {
-        padding: 0;
-    }
+.list--unstyled {
+    padding-left: 0;
+    list-style: none;
 }
 
 // gold starts here

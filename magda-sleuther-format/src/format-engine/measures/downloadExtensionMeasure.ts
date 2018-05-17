@@ -8,12 +8,16 @@ export default function getMeasureResults(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
-    const { downloadURL } = relatedDistribution.aspects[
+    let { downloadURL } = relatedDistribution.aspects[
         "dcat-distribution-strings"
     ];
 
     if (!downloadURL || downloadURL === "") {
-        return null;
+        downloadURL =
+            relatedDistribution.aspects["dcat-distribution-strings"][
+                "accessURL"
+            ];
+        if (!downloadURL || downloadURL === "") return null;
     }
 
     let downloadURLString: string = downloadURL;
@@ -22,6 +26,7 @@ export default function getMeasureResults(
         [".*\\.geojson$", "GEOJSON"],
         [".*?.*service=wms.*", "WMS"],
         [".*?.*service=wfs.*", "WFS"],
+        ["\\W+MapServer\\W*|\\W+FeatureServer\\W*", "ESRI REST"],
         [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
         [".*\\.(pdf)(\\.zip)?$", "PDF"],
         [".*\\.(json)(\\.zip)?$", "JSON"],
@@ -37,7 +42,9 @@ export default function getMeasureResults(
     ];
 
     let formatFromURL: Array<string> = urlRegexes.find(regexCombo => {
-        return downloadURLString.match(regexCombo[0]) ? true : false;
+        return downloadURLString.match(new RegExp(regexCombo[0], "i"))
+            ? true
+            : false;
     });
 
     if (formatFromURL && formatFromURL.length > 0) {

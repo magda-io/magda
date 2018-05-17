@@ -4,8 +4,8 @@
     h3 {
         color: $body;
         @include AU-fontgrid(lg, heading);
-        padding-bottom: 20px;
-        padding-top: 20px;
+        margin-bottom: 10px;
+        margin-top: 3rem;
     }
 }
 
@@ -63,7 +63,6 @@
 }
 
 .dataset-details-files-apis {
-    margin-top: 50px;
 }
 
 .quality-rating-box {

@@ -66,16 +66,71 @@
             }
         }
 
+        .icon:before,
+        .icon--right:after {
+            width: 1.25em;
+            height: 1.25em;
+            display: inline-block;
+            vertical-align: middle;
+            position: relative;
+            content: " ";
+            background-repeat: no-repeat;
+            margin-top: -2px;
+
+            .lt-ie9 & {
+                display: none;
+            }
+        }
+
+        .icon:before {
+            @include AU-space(margin-right, 0.5unit);
+        }
+
         .mobile-toggle {
             background: transparent;
             border: 0;
             margin-top: 20px;
-            margin-right: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
             cursor: pointer;
             &:hover,
             &:focus {
                 outline: none;
+            }
+
+            &:before {
+                background-image: AU-svguri(
+                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                        '<path d="M0 0h24v24H0z" fill="none"/>' +
+                        '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
+                        "</svg>"
+                );
+            }
+
+            &:hover:before {
+                background-image: AU-svguri(
+                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                        '<path d="M0 0h24v24H0z" fill="none"/>' +
+                        '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
+                        "</svg>"
+                );
+            }
+
+            &.au-accordion--open {
+                &:before {
+                    background-image: AU-svguri(
+                        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
+                            '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
+                    );
+                }
+
+                &:hover:before {
+                    background-image: AU-svguri(
+                        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
+                            '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
+                    );
+                }
             }
         }
     }
@@ -85,11 +140,20 @@
         position: absolute;
         width: 100%;
         z-index: 1;
+        li {
+            border-bottom: 1px solid gray;
+            padding-left: 10px;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        ul {
+            padding-bottom: 0px;
+        }
     }
 
     .mobile-nav {
         background: #fff;
-        padding-left: 10px;
         overflow-y: hidden;
         height: 0;
         border-bottom: 1px solid rgba(73, 73, 73, 0.15);

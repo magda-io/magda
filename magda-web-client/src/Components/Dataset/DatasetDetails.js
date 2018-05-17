@@ -47,7 +47,10 @@ class DatasetDetails extends Component {
                 </div>
                 <TagsBox tags={dataset.tags} />
                 <div className="dataset-preview">
-                    <DatasetPreview dataset={dataset} />
+                    <DatasetPreview
+                        location={this.props.location}
+                        dataset={dataset}
+                    />
                 </div>
 
                 <div className="row">

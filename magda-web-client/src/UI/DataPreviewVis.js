@@ -1,10 +1,7 @@
 import "es6-symbol/implement";
 import React, { Component } from "react";
-import Tabs from "muicss/lib/react/tabs";
-import Tab from "muicss/lib/react/tab";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
-
 import type { ParsedDistribution } from "../helpers/record";
 
 import "./DataPreviewVis.css";
@@ -37,13 +34,35 @@ class DataPreviewVis extends Component<{
      * @param {Array} tabs - Array of tab items
      */
     renderTabs(tabs) {
-        const tabitems = tabs.map((item, i) => (
-            <Tab key={i} value={item.value} label={item.label}>
-                {item.action}
-            </Tab>
-        ));
+        const hash = window.location.hash;
+        const activeTabName = hash ? hash.slice(1, hash.length) : "chart";
 
-        return <Tabs defaultSelectedIndex={0}>{tabitems}</Tabs>;
+        const activeTab = tabs.find(
+            (item, i) =>
+                item.value.toLowerCase() === activeTabName.toLowerCase()
+        );
+        return (
+            <nav className="tab-navigation">
+                <ul className="au-link-list  au-link-list--inline">
+                    {tabs.map(t => (
+                        <li key={t.value}>
+                            <a
+                                className={`${
+                                    t.value.toLowerCase() ===
+                                    activeTabName.toLowerCase()
+                                        ? "mainmenu--active"
+                                        : null
+                                }`}
+                                href={`#${t.value}`}
+                            >
+                                {t.label}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+                {activeTab.action}
+            </nav>
+        );
     }
 
     renderByState() {

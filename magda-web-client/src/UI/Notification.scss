@@ -1,22 +1,30 @@
 @import "../variables";
-.notification {
+
+.notification-box {
     position: fixed;
     height: 100vh;
     width: 100vw;
     left: 0;
     top: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
+    z-index: 9999;
 
-.notification__inner {
-    background: #fff;
-    border-radius: 5px;
-    position: fixed;
-    right: 4px;
-    bottom: 24px;
-    padding: 16px;
-    max-width: 400px;
+    .notification__inner {
+        position: fixed;
+        right: 14px;
+        bottom: 24px;
+        padding: 16px;
+        max-width: 400px;
+        min-width: 290px;
+    }
+
+    h3 {
+        word-break: keep-all;
+        word-wrap: normal;
+        margin: 0 32px 0 0;
+        text-align: left;
+    }
+
     .close-btn {
         line-height: 0;
         padding: 0;
@@ -29,32 +37,19 @@
         }
     }
 
-    .notification__header {
-        @include AU-fontgrid(sm, heading);
-        font-weight: 500;
-        height: 70px;
-        &.with-icon {
-            padding: 20px 0 20px 70px;
-        }
-
-        .status-icon {
-            position: absolute;
-            left: 16px;
-            top: 16px;
-        }
+    .au-page-alerts--info .close-btn {
+        border-color: $AU-color-info;
     }
 
-    .notification__error & {
-        border: 2px solid $magda;
-        .notification__header {
-            color: $magda;
-        }
+    .au-page-alerts--error .close-btn {
+        border-color: $AU-color-error;
     }
 
-    .notification__success & {
-        border: 2px solid $success;
-        .notification__header {
-            color: $success;
-        }
+    .au-page-alerts--warning .close-btn {
+        border-color: $AU-color-warning;
+    }
+
+    .au-page-alerts--success .close-btn {
+        border-color: $AU-color-success;
     }
 }
