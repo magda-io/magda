@@ -7,7 +7,7 @@ import helpIcon from "../assets/help-24.svg";
 import ReactTooltip from "react-tooltip";
 
 function QualityIndicator(props) {
-    let rating = Math.ceil(parseFloat(props.quality).toFixed(2) * 10 / 2) - 1;
+    let rating = Math.ceil(parseFloat(props.quality).toFixed(2) * 10 / 2);
 
     if (rating < 0) {
         rating = 0;
