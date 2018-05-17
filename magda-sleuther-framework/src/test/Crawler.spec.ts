@@ -1,7 +1,6 @@
 import { Server } from "http";
 import * as express from "express";
 import * as nock from "nock";
-import * as sinon from "sinon";
 import * as queryString from "query-string";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
@@ -22,10 +21,13 @@ baseSpec(
         listenPort: () => number,
         beforeEachProperty: () => void
     ) => {
-        it("should crawl all records in registry once start() called ", () => {
+        //--- avoid different property test hit into the same registry domain
+        let registryDomainCounter = 0;
+
+        it("should crawl all records in registry ONCE start() called ", () => {
             return jsc.assert(
                 jsc.forall(
-                    jsc.nat(999),
+                    jsc.nat(100),
                     lcAlphaNumStringArbNe,
                     lcAlphaNumStringArbNe,
                     lcAlphaNumStringArbNe,
@@ -54,26 +56,32 @@ baseSpec(
                             })
                         );
 
-                        const onRecordFound = sinon
-                            .stub()
-                            .callsFake((foundRecord: Record) => {
-                                const idx = parseInt(foundRecord.id, 10);
-                                recordsTestTable[idx]++;
-                                return Promise.resolve();
-                            });
+                        const onRecordFound = (foundRecord: Record) => {
+                            const idx = parseInt(foundRecord.id, 10);
+                            if (typeof recordsTestTable[idx] !== "number") {
+                                throw new Error(
+                                    `try to increase invalid counter at ${idx}`
+                                );
+                            }
+                            recordsTestTable[idx]++;
+                            return Promise.resolve();
+                        };
 
                         const internalUrl = `http://${domain}.com`;
-                        const registryDomain = "example";
+                        const registryDomain =
+                            "example_" + registryDomainCounter;
+                        registryDomainCounter++;
                         const registryUrl = `http://${registryDomain}.com:80`;
                         const registryScope = nock(registryUrl);
 
                         registryScope
+                            .persist()
                             .get("/records")
                             .query(true)
-                            .reply(function(uri, requestBody, cb) {
+                            .reply(function(uri, requestBody) {
                                 const params = queryString.parseUrl(uri).query;
-                                const pageIdx = params.start
-                                    ? parseInt(params.start, 10)
+                                const pageIdx = params.pageToken
+                                    ? parseInt(params.pageToken, 10)
                                     : 0;
                                 const limit = parseInt(params.limit, 10);
                                 if (limit < 1)
@@ -97,7 +105,9 @@ baseSpec(
                                     200,
                                     {
                                         totalCount: recordPage.length,
-                                        nextPageToken: String(pageIdx + limit),
+                                        nextPageToken: String(
+                                            pageIdx + recordPage.length
+                                        ),
                                         records: recordPage
                                     }
                                 ];
@@ -141,6 +151,6 @@ baseSpec(
                 ),
                 {}
             );
-        });
+        }).timeout(20000);
     }
 );
