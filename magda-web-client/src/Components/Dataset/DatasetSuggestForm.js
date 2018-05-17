@@ -4,6 +4,8 @@ import close from "../../assets/close.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "@gov.au/buttons";
 
+//This is the question/report on a dataset form on the
+//individual dataset page
 export default class DatasetSuggestForm extends React.Component {
     constructor(props) {
         super(props);

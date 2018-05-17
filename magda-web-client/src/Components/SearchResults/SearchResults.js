@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import DatasetSummary from "../../Components/Dataset/DatasetSummary";
 import "./SearchResults.css";
-import Suggest from "./Suggest";
+import SearchPageSuggest from "./SearchPageSuggest";
 import { enableSuggestDatasetPage } from "../../config";
 
 class SearchResults extends Component {
@@ -26,6 +26,7 @@ class SearchResults extends Component {
                 <ul className="mui-list--unstyled">
                     {this.props.searchResults.map(
                         (result, i) =>
+                            //show the request dataset form only after the first result
                             enableSuggestDatasetPage && i === 0 ? (
                                 <React.Fragment key={i}>
                                     <li className="search-results__result">
@@ -38,7 +39,7 @@ class SearchResults extends Component {
                                         key={i - 5}
                                         className="search-results__result"
                                     >
-                                        <Suggest />
+                                        <SearchPageSuggest />
                                     </li>
                                 </React.Fragment>
                             ) : (

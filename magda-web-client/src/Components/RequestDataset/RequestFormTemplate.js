@@ -4,6 +4,7 @@ import AUbutton from "@gov.au/buttons";
 import AUheader from "@gov.au/header";
 import "./FormTemplate.css";
 
+//This is the react form template
 export default class RequestFormTemplate extends React.Component {
     constructor(props) {
         super(props);
