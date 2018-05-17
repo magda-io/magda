@@ -37,3 +37,20 @@
         margin: 0;
     }
 }
+
+.future-date-tooltip {
+    font-weight: 200;
+}
+
+.help-icon-position {
+    position: absolute;
+    right: 5px;
+    transition: right 0.2s;
+    top: 11px;
+}
+
+.year-input-container {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
