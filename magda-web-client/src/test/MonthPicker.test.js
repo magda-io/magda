@@ -57,12 +57,3 @@ describe("Check Month Valid Function", () => {
         });
     });
 });
-
-describe("Test change year function", () => {
-    beforeEach(() => {
-        monthPicker.instance().changeYear(2000);
-    });
-    it("changes year props", () => {
-        expect(monthPicker.instance().props.year).toEqual(2000);
-    });
-});
