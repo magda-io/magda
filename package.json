@@ -65,6 +65,12 @@
         },
         "react": {
             "location": "pancake/react/"
+        },
+        "js": {
+            "minified": true,
+            "modules": false,
+            "location": "pancake/js/",
+            "name": "pancake.min.js"
         }
     },
     "dependencies": {

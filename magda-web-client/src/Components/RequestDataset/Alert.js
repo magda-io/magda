@@ -1,6 +1,5 @@
 import React from "react";
 import AUpageAlert from "@gov.au/page-alerts";
-import "./Alert.css";
 
 const Alert = props => {
     return (

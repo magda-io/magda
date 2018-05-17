@@ -3,9 +3,10 @@ import RequestFormLogic from "../RequestDataset/RequestFormLogic";
 import downArrow from "../../assets/downArrow.svg";
 import upArrow from "../../assets/upArrow.svg";
 import close from "../../assets/close.svg";
-import "./Suggest.css";
+import "./SearchPageSuggest.css";
 
-export default class Suggest extends React.Component {
+//This is the suggest form on the search results page
+export default class SearchPageSuggest extends React.Component {
     constructor(props) {
         super(props);
 
