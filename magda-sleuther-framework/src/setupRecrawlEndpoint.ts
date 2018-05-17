@@ -17,6 +17,9 @@ export default function setupRecrawlEndpoint(
     });
 
     server.get("/crawlerProgress", (request, response) => {
-        response.status(200).send(JSON.stringify(crawler.getProgess()));
+        response
+            .status(200)
+            .set("Content-Type", "application/json")
+            .send(JSON.stringify(crawler.getProgess()));
     });
 }

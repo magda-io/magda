@@ -107,7 +107,7 @@
                 "ts:ts-node/register",
                 "--require",
                 "tsconfig-paths/register",
-                "src/test/**/Crawler.spec.ts"
+                "src/test/**/*.spec.ts"
             ]
         },
         {
