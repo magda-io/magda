@@ -248,31 +248,33 @@ baseSpec(
                     foundRecord: Record,
                     registry: Registry
                 ) {
-                    const progress = this.crawler.getProgess();
+                    const progress = this.crawler.getProgress();
                     const id = parseInt(foundRecord.id, 10);
-                    const recordedProgressIdx = this.crawlingProgressHistory.findIndex(
+                    const foundProgressIdx = this.crawlingProgressHistory.findIndex(
                         (item: any) => item.recordIds.indexOf(id) !== -1
                     );
-                    const foundProgress = this.crawlingProgressHistory[
-                        recordedProgressIdx
-                    ];
-                    const previousPageToken = this.crawlingProgressHistory[
-                        recordedProgressIdx - 1
-                    ].crawlingPageToken;
-                    const recordedProgress = {
-                        ...this.crawlingProgressHistory[recordedProgressIdx],
-                        crawlingPageToken: previousPageToken
+                    const foundProgress = {
+                        ...this.crawlingProgressHistory[foundProgressIdx]
                     };
-                    delete recordedProgress.recordIds;
-                    try {
-                        if (recordedProgressIdx === 1) {
-                            expect(progress).to.deep.equal(recordedProgress);
-                        } else {
-                            expect(progress).to.deep.equal(foundProgress);
-                        }
-                    } catch (e) {
-                        1 + 1;
-                    }
+                    const previousPageToken = this.crawlingProgressHistory[
+                        foundProgressIdx - 1
+                    ].crawlingPageToken;
+                    const currentPageToken = foundProgress.crawlingPageToken;
+                    const possibleTokens = [
+                        previousPageToken,
+                        currentPageToken
+                    ];
+
+                    expect(progress.isCrawling).to.equal(
+                        foundProgress.isCrawling
+                    );
+                    expect(progress.crawledRecordNumber).to.equal(
+                        foundProgress.crawledRecordNumber
+                    );
+                    //--- depends on timing, cralwer might report this page or previous page token
+                    expect(progress.crawlingPageToken).to.be.oneOf(
+                        possibleTokens
+                    );
 
                     return Promise.resolve();
                 },
