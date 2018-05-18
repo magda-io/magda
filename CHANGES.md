@@ -48,6 +48,7 @@
 *   Added tooltip to future dates on datepicker
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
+*   Added spacing between dataset publisher and created date.
 
 ## 0.0.38
 
