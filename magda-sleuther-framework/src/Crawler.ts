@@ -105,13 +105,9 @@ class Crawler {
                 (record: Record) =>
                     this.options.onRecordFound(record, this.registry)
             );
-
+        } finally {
             this.resetCrawler();
             this.crawlerPromise = null;
-        } catch (e) {
-            this.resetCrawler();
-            this.crawlerPromise = null;
-            throw e;
         }
     }
 }
