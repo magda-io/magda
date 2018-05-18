@@ -54,7 +54,7 @@ baseSpec(
 
             return request(server)
                 .post("/recrawl")
-                .send("")
+                .send()
                 .expect(200, {
                     isSuccess: true,
                     isNewCrawler: true
