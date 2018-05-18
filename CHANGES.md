@@ -49,6 +49,7 @@
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
 *   Fixed up datasets always showing as 0 stars.
+*   Added bottom margin to all static pages.
 
 ## 0.0.38
 
