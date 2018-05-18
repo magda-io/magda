@@ -128,7 +128,7 @@ baseSpec(
                 });
         });
 
-        it("GET/crawlerProgress: should invoke Crawler.getProgess() and response its return value in JSON", () => {
+        it("GET/crawlerProgress: should invoke Crawler.getProgress() and response its return value in JSON", () => {
             return jsc.assert(
                 jsc.forall(
                     lcAlphaNumStringArbNe,
@@ -164,7 +164,7 @@ baseSpec(
 
                         setupRecrawlEndpoint(app, options, crawler);
 
-                        crawler.getProgess.callsFake(() => {
+                        crawler.getProgress.callsFake(() => {
                             return {
                                 crawlingPageToken,
                                 isCrawling,

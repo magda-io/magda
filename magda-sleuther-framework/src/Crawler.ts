@@ -27,7 +27,7 @@ class Crawler {
         this.crawledRecordNumber = 0;
     }
 
-    public getProgess() {
+    public getProgress() {
         return {
             isCrawling: this.isCrawling,
             crawlingPageToken: this.crawlingPageToken,

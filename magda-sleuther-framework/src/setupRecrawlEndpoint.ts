@@ -47,7 +47,7 @@ export default function setupRecrawlEndpoint(
 
     server.get("/crawlerProgress", (request, response) => {
         try {
-            const progress = crawler.getProgess();
+            const progress = crawler.getProgress();
             response.status(200).json({
                 isSuccess: true,
                 progress
