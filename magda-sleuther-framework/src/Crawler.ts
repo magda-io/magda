@@ -66,18 +66,6 @@ class Crawler {
                         // Last page was an empty page, no more records left
                         return undefined;
                     } else {
-                        this.crawlingPageToken =
-                            previous && previous.nextPageToken
-                                ? previous.nextPageToken
-                                : "";
-
-                        console.info(
-                            "Crawling after token " +
-                                (previous && previous.nextPageToken
-                                    ? previous.nextPageToken
-                                    : "<first page>")
-                        );
-
                         // TODO: Retry with reduced limit if entity size too large error.
                         return this.registry
                             .getRecords<Record>(
@@ -92,6 +80,17 @@ class Crawler {
                                 this.crawledRecordNumber += page.records.length;
                                 console.info(
                                     `Crawled ${page.records.length} records`
+                                );
+                                this.crawlingPageToken =
+                                    page && page.nextPageToken
+                                        ? page.nextPageToken
+                                        : "";
+
+                                console.info(
+                                    "Crawling after token " +
+                                        (page && page.nextPageToken
+                                            ? page.nextPageToken
+                                            : "<first page>")
                                 );
                                 return page;
                             });

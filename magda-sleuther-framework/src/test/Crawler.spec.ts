@@ -256,26 +256,8 @@ baseSpec(
                     const foundProgress = {
                         ...this.crawlingProgressHistory[foundProgressIdx]
                     };
-                    const previousPageToken = this.crawlingProgressHistory[
-                        foundProgressIdx - 1
-                    ].crawlingPageToken;
-                    const currentPageToken = foundProgress.crawlingPageToken;
-                    const possibleTokens = [
-                        previousPageToken,
-                        currentPageToken
-                    ];
-
-                    expect(progress.isCrawling).to.equal(
-                        foundProgress.isCrawling
-                    );
-                    expect(progress.crawledRecordNumber).to.equal(
-                        foundProgress.crawledRecordNumber
-                    );
-                    //--- depends on timing, cralwer might report this page or previous page token
-                    expect(progress.crawlingPageToken).to.be.oneOf(
-                        possibleTokens
-                    );
-
+                    delete foundProgress.recordIds;
+                    expect(progress).to.deep.equal(foundProgress);
                     return Promise.resolve();
                 },
                 function(this: any, uri: string, requestBody: string) {
