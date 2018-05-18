@@ -31,47 +31,47 @@ dataFormatCategories.forEach(item => {
 });
 const CategoryDetermineConfigItems = [
     {
-        regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS/,
+        regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS|ESRI REST/i,
         category: "gis"
     },
     {
-        regex: /api|webservice| web service/,
+        regex: /api|webservice| web service/i,
         category: "api"
     },
     {
-        regex: /zip|7z|rar|arj/,
+        regex: /zip|7z|rar|arj/i,
         category: "archive"
     },
     {
-        regex: /doc|pdf|docx|txt|plaintext/,
+        regex: /doc|pdf|docx|txt|plaintext/i,
         category: "document"
     },
     {
-        regex: /html|htm|web page|web site/,
+        regex: /html|htm|web page|web site/i,
         category: "html"
     },
     {
-        regex: /^www:/,
+        regex: /^www:/i,
         category: "html"
     },
     {
-        regex: /jpg|gif|jpeg/,
+        regex: /jpg|gif|jpeg/i,
         category: "image-raster"
     },
     {
-        regex: /svg|png/,
+        regex: /svg|png/i,
         category: "image-vector"
     },
     {
-        regex: /ppt|pptx/,
+        regex: /ppt|pptx/i,
         category: "presentation"
     },
     {
-        regex: /xlsx|xls/,
+        regex: /xlsx|xls/i,
         category: "spreadsheet"
     },
     {
-        regex: /csv|tab/,
+        regex: /csv|tab/i,
         category: "tabular"
     }
 ];

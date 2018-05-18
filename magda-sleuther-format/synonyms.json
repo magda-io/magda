@@ -7,16 +7,19 @@
         "webpage",
         "website",
         "htm",
-        "x-msdownload"
+        "x-msdownload",
+        "WWW:DOWNLOAD-1.0-http--downloaddata"
     ],
+    "esri rest": ["esri rest"],
     "wms": [
         "OGC:WMS-1.3.0-http-get-capabilities",
         "OGC:WMS-1.3.0-http-get-map",
         "OGC:WMS",
         "OGC:WMS-1",
-        "OGC:WMS-2"
+        "OGC:WMS-2",
+        "OGC WMS"
     ],
-    "wfs": ["OGC-WFS", "OGC:WFS-1", "OGC:WFS-2"],
+    "wfs": ["OGC-WFS", "OGC:WFS-1", "OGC:WFS-2", "OGC WFS"],
     "docx": [
         "doc",
         "msword",
@@ -41,5 +44,12 @@
     "accdb": ["ACCESS", "ACCDB", "MDB"],
     "rss": ["RSS", "RSS+XML"],
     "rdf": ["RDF", "RDF+XML"],
-    "zip": ["7Zip", "ZIPPED", "X-7Z-COMPRESSED"]
+    "zip": ["7Zip", "ZIPPED", "X-7Z-COMPRESSED"],
+    "csiro open app": [
+        "WWW:DOWNLOAD-1.0-http--csiro-oa-app",
+        {
+            "data": "csiro-oa-app",
+            "type": "as-keyword"
+        }
+    ]
 }

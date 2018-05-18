@@ -103,9 +103,12 @@
         }
     }
 }
-@media (max-width: $medium) {
-    .facet-body-buttons {
-        max-height: calc(100vh - 200px);
+
+.facet-body-buttons {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    @media (min-width: $medium) {
+        max-height: calc(180px);
         overflow-y: auto;
     }
 }

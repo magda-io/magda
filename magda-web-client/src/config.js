@@ -49,10 +49,7 @@ export const config = {
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
-    facetListSize: 5,
     resultsPerPage: 10,
-    descriptionLength: 50,
-    downloadLinksSize: 3,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
     breakpoints: {
