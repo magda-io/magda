@@ -54,8 +54,8 @@ class SearchSuggestionBox extends Component {
     }
 
     cacheImgs() {
-        this.cacheImg(recentSearchImg);
-        this.cacheImg(closeImg);
+        this.cacheImg(recentSearchIcon);
+        this.cacheImg(closeIcon);
     }
 
     retrieveLocalData(key): searchDataType {
