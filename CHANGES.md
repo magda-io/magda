@@ -59,6 +59,7 @@
 *   Recent search caches images to avoid flickering icons issue on the first display
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
+*   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
 
 ## 0.0.38
