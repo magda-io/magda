@@ -44,7 +44,6 @@ class SearchSuggestionBox extends Component {
         this.searchInputRef = null;
         this.onSearchInputKeyDown = this.onSearchInputKeyDown.bind(this);
         this.containerRef = null;
-        this.cacheImages = [];
     }
 
     cacheImg(img) {
@@ -54,6 +53,7 @@ class SearchSuggestionBox extends Component {
     }
 
     cacheImgs() {
+        this.cacheImages = [];
         this.cacheImg(recentSearchIcon);
         this.cacheImg(closeIcon);
     }
