@@ -4,6 +4,7 @@
 */
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
+import { SelectedFormat } from "../formats";
 import * as _ from "lodash";
 
 // list of functions that clean up the dcat-string so that magda can understand it
@@ -91,10 +92,37 @@ export default function getMeasureResult(
         return null;
     }
 
+    let processedFormats: Array<string>;
+
+    const preProcessChain = [removeFalsy];
+
+    processedFormats = preProcessChain.reduce(
+        (accumulation, currentTransformer) => currentTransformer(accumulation),
+        [format]
+    );
+
+    const tmpProcessedResult: Array<SelectedFormat> = processedFormats
+        .map(f => {
+            const format = getCommonFormat(f, synonymObject, true);
+            if (!format) return null;
+            return {
+                format,
+                correctConfidenceLevel: 100
+            };
+        })
+        .filter(item => !!item);
+
+    //-- allow early exit so that format `OCG WFS` or esri rest` won't be broken
+    if (tmpProcessedResult.length) {
+        return {
+            formats: tmpProcessedResult,
+            distribution: relatedDistribution
+        };
+    }
+
     // this is an array that acts like an assembly belt, you input in the string, the middle functions are the assembly robots,
     // and the last function returns the output.
     const cleanUpAssemblyChain = [
-        removeFalsy,
         foundationalCleanup,
         replaceAmpersandFormats,
         splitWhiteSpaceFormats,
@@ -102,9 +130,9 @@ export default function getMeasureResult(
         filterBracketedFormats
     ];
 
-    let processedFormats: Array<string> = cleanUpAssemblyChain.reduce(
+    processedFormats = cleanUpAssemblyChain.reduce(
         (accumulation, currentTransformer) => currentTransformer(accumulation),
-        [format]
+        processedFormats
     );
 
     if (processedFormats.length < 1) {

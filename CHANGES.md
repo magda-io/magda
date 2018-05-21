@@ -29,6 +29,13 @@
 *   Brought back homepage animation
 *   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
+*   Fixed a few issues with `format-sleuther`
+*   `format-sleuther` will use accessURL if download URL not available
+*   `format-sleuther` will recognise `www:download-1.0-http—csiro-oa-app` as `CSIRO Open App`
+*   `format-sleuther` will recognise `WWW:DOWNLOAD-1.0-http--downloaddata` as `html`
+*   `MagdaCatalogItem` will use accessURL if download URL not available
+*   `MagdaCatalogItem` will use `dataset-format` (if available) to determine CatalogItem type
+*   Added `ESRI REST` (ArcGIS) support to `MapPreview`
 *   Fixed the GAP under preview map loading box
 *   Switched to using yarn as the package manager
 *   Merge duplicate publisher records before display on publisher page
@@ -38,9 +45,13 @@
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
 *   Updated footer with govau design systems components.
 *   Made magda-web-server look for magda-web-client using require.resolve.
+*   Added tooltip to future dates on datepicker
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
 *   Implemented SMTP client with `nodemailer` for correspondence api
+*   Added spacing between dataset publisher and created date.
+*   Fixed up datasets always showing as 0 stars.
+*   Added bottom margin to all static pages.
 
 ## 0.0.38
 

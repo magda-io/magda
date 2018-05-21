@@ -120,6 +120,7 @@ class FacetTemporal extends Component {
                     monthUpper={this.state.endMonth}
                     selectYear={this.selectStartYear}
                     selectMonth={this.selectStartMonth}
+                    startDate={true}
                 />
                 <div className="facet-temporal-range-icon">
                     <img src={range} alt="date range" />
@@ -135,6 +136,7 @@ class FacetTemporal extends Component {
                     monthUpper={monthUpper}
                     selectYear={this.selectEndYear}
                     selectMonth={this.selectEndMonth}
+                    startDate={false}
                 />
             </div>
         );
