@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
 import { bindActionCreators } from "redux";
@@ -54,7 +55,9 @@ class RecordHandler extends React.Component {
         const publisherName = this.props.dataset.publisher.name;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
-        // const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
+        const publisherId = this.props.dataset.publisher
+            ? this.props.dataset.publisher.id
+            : null;
 
         if (this.props.match.params.distributionId) {
             if (this.props.distributionIsFetching) {
@@ -137,9 +140,9 @@ class RecordHandler extends React.Component {
                                 itemScope
                                 itemType="http://schema.org/Organization"
                             >
-                                <span className="publisher" itemProp="name">
+                                <Link to={`/publishers/${publisherId}`}>
                                     {publisherName}
-                                </span>
+                                </Link>
                             </span>
                             <span className="separator hidden-sm"> / </span>
                             {defined(this.props.dataset.issuedDate) && (
