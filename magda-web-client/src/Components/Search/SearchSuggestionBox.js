@@ -46,16 +46,16 @@ class SearchSuggestionBox extends Component {
         this.containerRef = null;
     }
 
-    cacheImg(img) {
-        const imgLoader = new Image();
-        imgLoader.src = img;
-        this.cacheImages.push(imgLoader);
-    }
-
     cacheImgs() {
+        const cacheImg = img => {
+            const imgLoader = new Image();
+            imgLoader.src = img;
+            this.cacheImages.push(imgLoader);
+        };
+
         this.cacheImages = [];
-        this.cacheImg(recentSearchIcon);
-        this.cacheImg(closeIcon);
+        cacheImg(recentSearchIcon);
+        cacheImg(closeIcon);
     }
 
     retrieveLocalData(key): searchDataType {
