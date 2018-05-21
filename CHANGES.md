@@ -53,6 +53,7 @@
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
+*   Reimplemented links from publisher names to their respective page.
 
 ## 0.0.38
 
