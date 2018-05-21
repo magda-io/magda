@@ -128,4 +128,4 @@ correspondence-api:
       cpu: 100m
       memory: 0
   externalUrl: "https://magda-dev.terria.io"
-  defaultRecipient: "alex.gilleran+magda@csiro.it"
+  defaultRecipient: "magda-test@googlegroups.com"
