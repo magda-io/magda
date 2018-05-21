@@ -1,6 +1,5 @@
-@import "../pancake/sass/pancake.scss";
 @import "variables";
-
+@import "../pancake/sass/pancake.scss";
 html {
     @include AU-fontgrid(sm);
     font-family: inherit;
