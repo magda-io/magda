@@ -82,10 +82,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Suggest a dataset",
+                    [
+                        "Suggest a dataset",
                         !enableSuggestDatasetPage
-                        ? "mailto:data@digital.gov.au"
-                        : "suggest"],
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Give feedback", "feedback"]
                 ]
@@ -97,10 +99,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Suggest a dataset",
+                    [
+                        "Suggest a dataset",
                         !enableSuggestDatasetPage
-                        ? "mailto:data@digital.gov.au"
-                        : "suggest"],
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Privacy Policy", "page/privacy-policy"]
                 ]
             },
