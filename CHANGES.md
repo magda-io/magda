@@ -54,6 +54,7 @@
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
 *   Recent search caches images to avoid flickering icons issue on the first display
+*   Reimplemented links from publisher names to their respective page.
 
 ## 0.0.38
 
