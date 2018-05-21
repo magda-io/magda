@@ -54,6 +54,7 @@
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
 *   Reimplemented links from publisher names to their respective page.
+*   Added ui-only preview job to gitlab.
 
 ## 0.0.38
 
