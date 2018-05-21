@@ -48,6 +48,7 @@
 *   Added tooltip to future dates on datepicker
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
+*   Modified `Show full description` font-size.
 *   Added `recrawl` API endpoints to sleuther framework
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.

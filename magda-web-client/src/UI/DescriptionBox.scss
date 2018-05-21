@@ -1,5 +1,8 @@
 @import "../variables";
 .description-box {
+    span {
+        font-size: 1rem;
+    }
     .toggle-button {
         color: $AU-color-foreground-action;
         border: none;
