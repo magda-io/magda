@@ -45,7 +45,7 @@
         font-weight: 500;
         @include AU-fontgrid(xs);
         text-align: center;
-        color: #f8f9fa;
+        color: $AU-color-foreground-action;
         width: 134px;
         padding-left: 24.5px;
         padding-right: 24.5px;

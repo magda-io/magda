@@ -7,7 +7,7 @@
         text-decoration: none;
         &:hover,
         &:focus {
-            color: $body;
+            color: $AU-color-foreground-action;
             background: transparent;
             border-bottom: solid 1px #ffffff;
         }
@@ -40,7 +40,7 @@
 
     .dataset-summary-meta {
         @include AU-fontgrid(xs);
-        color: rgba($body, 0.5);
+        color: rgba($AU-color-foreground-action, 0.5);
         clear: both;
     }
 

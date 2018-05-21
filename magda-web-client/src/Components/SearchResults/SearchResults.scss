@@ -16,7 +16,7 @@
 
 .search-results__count {
     @include AU-fontgrid(sm);
-    color: #2b2b2b;
+    color: $AU-color-background;
     text-transform: uppercase;
     font-weight: 700;
     margin: 15px 0;

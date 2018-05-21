@@ -73,7 +73,7 @@ class FacetBasicBody extends Component {
         let divStyle = {
             width: maxWidth + "px",
             height: "3px",
-            background: "#00698f"
+            background: "#4C2A85"
         };
         let isActive = this.checkActiveOption(option);
 

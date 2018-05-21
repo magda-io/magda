@@ -4,12 +4,12 @@
     display: flex;
     &.not-empty {
         button {
-            font-family: $font-base;
+            font-family: inherit;
             &,
             &:hover,
             &:focus {
-                background: $body !important;
-                color: #fff !important;
+                background: $AU-colordark-background !important;
+                color: $AU-colordark-foreground-action !important;
             }
         }
     }
@@ -26,7 +26,7 @@
     button {
         border: 1px solid rgba(73, 73, 73, 0.05);
         border-radius: 2px;
-        background-color: #f7f8fa;
+        background-color: $AU-colordark-background;
         font-size: 14px;
         text-align: center;
         padding: 0 16px;

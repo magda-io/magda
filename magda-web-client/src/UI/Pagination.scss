@@ -16,8 +16,8 @@
             margin: 12px;
             font-weight: 400;
             &.current {
-                background-color: $AU-color-foreground-action;
-                color: #fff;
+                background-color: $AU-colordark-background;
+                color: $AU-colordark-foreground-text;
             }
         }
     }
