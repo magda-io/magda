@@ -64,15 +64,7 @@ export default function Login(props) {
             {props.providers.indexOf("ckan") !== -1 && (
                 <div className="col-sm-6 col-md-5">
                     <h2>Sign In with Data.gov.au</h2>
-                    <p>
-                        This will use your existing data.gov.au account. To
-                        register a new data.gov.au account,{" "}
-                        <AUctaLink
-                            link="http://data.gov.au/user/register"
-                            target="_blank"
-                            text="click here"
-                        />.
-                    </p>
+                    <p>This will use your existing data.gov.au account.</p>
                     <form
                         action={makeLoginUrl("ckan")}
                         method="post"
@@ -111,6 +103,16 @@ export default function Login(props) {
                             />
                         </div>
                     </form>
+                    <br />
+                    <h2>Register</h2>
+                    <p>
+                        To register a new data.gov.au account,{" "}
+                        <AUctaLink
+                            link="http://data.gov.au/user/register"
+                            target="_blank"
+                            text="click here"
+                        />.
+                    </p>
                 </div>
             )}
         </div>
