@@ -54,6 +54,7 @@
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
 *   Reimplemented links from publisher names to their respective page.
+*   Make search filters stay on until specifically dismissed
 
 ## 0.0.38
 
