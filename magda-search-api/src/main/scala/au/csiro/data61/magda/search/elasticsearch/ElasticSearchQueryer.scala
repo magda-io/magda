@@ -70,8 +70,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       throw t
   }
 
-  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description"), "publisher.name", ("keywords", 1.5f), "themes")
-  val NON_LANGUAGE_FIELDS = Seq("identifier", "catalog", "accrualPeriodicity", "contactPoint.name")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 20f), ("description", 5f), "publisher.name", ("keywords", 5f), "themes")
+  val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
@@ -79,8 +79,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
+      val query = buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize).explain(true)
 
-      Future.sequence(Seq(fullRegionsFuture, client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize)).flatMap(response =>
+      Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap(response =>
         if (response.totalHits > 0)
           Future.successful((response, MatchAll))
         else
@@ -318,50 +319,33 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      query.freeText flatMap { text =>
-        val innerQuery = strategy match {
-          case MatchAll => text
-          case MatchPart =>
-            query.quotes match {
-              case Seq()  => text
-              case quotes => (Seq(text) ++ quotes).mkString(" ")
-            }
-        }
-
-        val queryDef = multiMatchQuery(innerQuery)
-          .matchType(MultiMatchQueryBuilder.Type.CROSS_FIELDS)
-          .operator(operator)
+      query.freeText flatMap { inputText =>
+        val text = if (inputText.trim.length == 0) "*" else inputText
+        val queryString = new SimpleStringQueryDefinition(text).defaultOperator(operator).quoteFieldSuffix("keyword")
 
         // For some reason to make english analysis work properly you need to specifically hit the english fields.
-        val fields = DATASETS_LANGUAGE_FIELDS
-
-        def foldFields(fields: Seq[Any]) = fields.foldRight(queryDef) {
+        def foldFieldsEnglish(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
+          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName + ".english", boost)
+          case (field: String, queryDef)                     => queryDef.field(field + ".english", 0)
+        }
+        def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
           case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
-          case (field: String, queryDef)                     => queryDef.field(field, 1)
+          case (field: String, queryDef)                     => queryDef.field(field, 0)
         }
 
         // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
         // other analysis does. So we do this silliness
         val distributionsEnglishQueries = nestedQuery("distributions")
           .query(
-            queryDef
-              // If this was AND then a single distribution would have to match the entire query, this way you can
-              // have multiple dists partially match
-              .fields("distributions.title", "distributions.description", "distributions.title.english", "distributions.description.english")
-              .operator("or"))
+            // If this was AND then a single distribution would have to match the entire query, this way you can
+            // have multiple dists partially match
+            queryString.field("distributions.title.english").field("distributions.description.english").field("distributions.format.keyword_lowercase")
+              .defaultOperator("or"))
           .scoreMode(ScoreMode.Max)
 
-        val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
-        val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
+        val queries = Seq(foldFieldsEnglish(foldFields(queryString, NON_LANGUAGE_FIELDS), DATASETS_LANGUAGE_FIELDS), distributionsEnglishQueries)
 
-        Some(dismax(queries).tieBreaker(0.3))
-      },
-      setToOption(query.quotes) { quotes =>
-        // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
-        // in some cases for some reason, so we do this instead.
-        strategyToCombiner(strategy)(quotes.map { quote =>
-          ElasticDsl.matchPhraseQuery("_all", quote)
-        })
+        Some(dismax(queries).tieBreaker(0.2))
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),

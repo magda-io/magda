@@ -48,12 +48,16 @@
 *   Added tooltip to future dates on datepicker
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
+*   Simplified the way that search queries are sent to elasticsearch and boosted title to higher importance.
 *   Modified `Show full description` font-size.
 *   Added `recrawl` API endpoints to sleuther framework
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
 *   Modified offending CSS properties in `MarkdownViewer`.
+*   Recent search caches images to avoid flickering icons issue on the first display
+*   Added standard space in between Download / New tab buttons on `DatasetDetails`.
+*   Reimplemented links from publisher names to their respective page.
 
 ## 0.0.38
 
