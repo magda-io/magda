@@ -14,7 +14,6 @@ export default class RequestFormLogic extends React.Component {
 
     /**
      * handles the logic of submitting form
-     * magda-dev.terria.io/api/v0/correspondence/send/dataset/request
      * @param {Object} data form submitted data from child component "RequestFormTemplate.js"
      */
     handleSubmit = data => {
