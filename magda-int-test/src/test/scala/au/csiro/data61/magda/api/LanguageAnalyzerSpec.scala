@@ -49,7 +49,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-        .filter(term => !Generators.stopWordRegex.r.matchesAny(term))
+        .filterNot(term => Generators.stopWordRegex.r.matchesAny(term))
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -147,7 +147,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
               Some(pluralized)
             } else None
         }
-        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
+        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
 
       doTest(innerTermExtractor)
     }

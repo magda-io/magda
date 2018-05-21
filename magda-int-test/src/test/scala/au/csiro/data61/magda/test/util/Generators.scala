@@ -59,6 +59,8 @@ object Generators {
   } yield (before + middle.toString + after)
 
   // See StandardAnalyzer.ENGLISH_STOP_WORDS_SET
+  // Why not just link this in directly? There's some horrible thing going on with how lucene is 
+  // compiled that turns all the strings to some weird type that can't be understood.
   val luceneStopWords = Seq("a", "an", "and", "are", "as", "at", "be", "but", "by",
     "for", "if", "in", "into", "is", "it",
     "no", "not", "of", "on", "or", "such",

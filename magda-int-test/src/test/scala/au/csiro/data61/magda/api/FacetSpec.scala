@@ -49,6 +49,7 @@ import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
 import au.csiro.data61.magda.test.util.Generators
 import scala.reflect.internal.util.Statistics.View
+import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
 
@@ -478,9 +479,11 @@ class FacetSpec extends BaseSearchApiSpec {
         } yield result
 
         checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-          val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
-
-          checkDataSetResult(filteredDataSets, responseAs[SearchResult])
+          val result = responseAs[SearchResult]
+          whenever(result.strategy.get == SearchStrategy.MatchAll) {
+            val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
+            checkDataSetResult(filteredDataSets, result)
+          }
         }
       }
 
