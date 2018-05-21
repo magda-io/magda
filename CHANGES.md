@@ -53,6 +53,7 @@
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
+*   Recent search caches images to avoid flickering icons issue on the first display
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
 
