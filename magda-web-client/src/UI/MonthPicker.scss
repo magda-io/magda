@@ -35,6 +35,11 @@
         border-radius: 0;
         height: auto;
         margin: 0;
+        border-bottom: 5px solid transparent;
+    }
+    .btn-month.is-active {
+        border-bottom: 5px solid $AU-color-foreground-focus;
+        text-decoration: underline;
     }
 }
 

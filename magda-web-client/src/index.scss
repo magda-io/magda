@@ -1,5 +1,5 @@
-@import "../pancake/sass/pancake.scss";
 @import "variables";
+@import "../pancake/sass/pancake.scss";
 html {
     @include AU-fontgrid(sm);
     font-family: inherit;
@@ -12,6 +12,10 @@ html {
     &:focus {
         color: $AU-color-foreground-focus;
         text-decoration: none;
+    }
+
+    &:focus {
+        outline: 3px solid $AU-color-foreground-focus;
     }
 }
 
@@ -35,15 +39,16 @@ a.au-btn:hover:not(:disabled) {
     border: 0;
 }
 
-.au-body.au-body--dark {
-    background: $AU-colordark-background;
-    color: $AU-colordark-foreground-text;
+.au-body.au-body--dark,
+.au-footer.au-footer--dark {
+    background: $AU-colordark-background !important;
+    color: $AU-colordark-foreground-text !important;
     a,
     button {
-        color: $AU-colordark-foreground-action;
+        color: $AU-colordark-foreground-action !important;
         &:hover,
         &:focus {
-            color: $AU-colordark-foreground-focus;
+            color: $AU-colordark-foreground-focus !important;
         }
     }
 }
@@ -63,6 +68,9 @@ a.au-btn:hover:not(:disabled) {
 .au-btn {
     font-weight: 400;
     text-transform: none;
+    &:focus {
+        outline: 3px solid $AU-color-foreground-focus;
+    }
 }
 
 div {
@@ -151,4 +159,8 @@ h3 {
 h4 {
     @include AU-fontgrid(sm, heading);
     font-weight: 400;
+}
+
+.au-text-input {
+    border: 3px solid $AU-color-foreground-action;
 }
