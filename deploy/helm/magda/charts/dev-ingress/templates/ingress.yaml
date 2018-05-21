@@ -4,8 +4,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.org/ssl-services: "gateway"
-  generation: 2
+    nginx.org/ssl-services: {{ .Values.targetService | default "gateway" }}
   name: dev-ingress
 spec:
   # tls:
@@ -17,6 +16,6 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: gateway
+          serviceName: {{ .Values.targetService | default "gateway" }}
           servicePort: 80
         path: /

@@ -1,7 +1,7 @@
 global:
   useCombinedDb: true
   useCloudSql: false
-  externalUrl: http://magda-dev.terria.io
+  externalUrl: https://magda-dev.terria.io
   rollingUpdate:
     maxUnavailable: 1
   image:
