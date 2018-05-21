@@ -54,6 +54,7 @@
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
+*   Reimplemented links from publisher names to their respective page.
 
 ## 0.0.38
 
