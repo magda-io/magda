@@ -30,7 +30,6 @@ object FilterValue {
 }
 case class Query(
   freeText: Option[String] = None,
-  quotes: Set[String] = Set(),
   publishers: Set[FilterValue[String]] = Set(),
   dateFrom: Option[FilterValue[OffsetDateTime]] = None,
   dateTo: Option[FilterValue[OffsetDateTime]] = None,
@@ -41,16 +40,8 @@ object Query {
   val quoteRegex = """"(.*)"""".r
 
   def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String])(implicit config: Config): Query = {
-    val quotes = freeText.toSeq.flatMap(text =>
-      for (m <- quoteRegex.findAllIn(text).matchData; e <- m.subgroups) yield e)
-    val freeTextWithNoQuotes = freeText.map(text => quoteRegex.replaceAllIn(text, "").trim).flatMap {
-      case "" => None
-      case x  => Some(x)
-    }
-
     Query(
-      freeText = freeTextWithNoQuotes,
-      quotes = quotes.toSet,
+      freeText = freeText,
       publishers = publishers.map(x => filterValueFromString(Some(x))).flatten.toSet,
       dateFrom = dateFilterValueFromString(dateFrom),
       dateTo = dateFilterValueFromString(dateTo),

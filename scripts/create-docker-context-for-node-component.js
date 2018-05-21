@@ -347,7 +347,7 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
         const dest = path.resolve(destDir, relativePath);
         const srcPath = path.resolve(packageDir, relativePath);
 
-        console.log("src " + srcPath + " to " + dest);
+        // console.log("src " + srcPath + " to " + dest);
 
         try {
             const stat = fse.lstatSync(srcPath);

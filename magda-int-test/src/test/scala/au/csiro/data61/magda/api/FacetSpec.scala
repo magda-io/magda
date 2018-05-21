@@ -49,6 +49,7 @@ import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
 import au.csiro.data61.magda.test.util.Generators
 import scala.reflect.internal.util.Statistics.View
+import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
 
@@ -228,7 +229,7 @@ class FacetSpec extends BaseSearchApiSpec {
             def exactGen(dataSets: List[DataSet]) = for {
               baseQuery <- specificGen(dataSets)
               uuid <- Gen.uuid
-              query = baseQuery.copy(quotes = Set(uuid.toString))
+              query = baseQuery.copy(freeText = Some(baseQuery.freeText + s""""${uuid.toString}""""))
             } yield query
 
             checkFacetsWithQuery(dataSets => textQueryGen(exactGen(dataSets)), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
@@ -415,7 +416,7 @@ class FacetSpec extends BaseSearchApiSpec {
             facetSize <- Gen.posNum[Int]
             actualPublishers <- Gen.someOf(dataSets.flatMap(_.publisher))
             uuid <- Gen.uuid
-            query = Query(quotes = Set(uuid.toString), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
+            query = Query(freeText = Some(s""""${uuid.toString}""""), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
             textQuery <- textQueryGen(query)
           } yield (tuple, facetSize, textQuery, actualPublishers)
 
@@ -478,9 +479,11 @@ class FacetSpec extends BaseSearchApiSpec {
         } yield result
 
         checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-          val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
-
-          checkDataSetResult(filteredDataSets, responseAs[SearchResult])
+          val result = responseAs[SearchResult]
+          whenever(result.strategy.get == SearchStrategy.MatchAll) {
+            val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
+            checkDataSetResult(filteredDataSets, result)
+          }
         }
       }
 
