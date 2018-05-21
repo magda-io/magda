@@ -1,6 +1,7 @@
 import React from "react";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
+import AUctaLink from "@gov.au/cta-link";
 import "./Login.css";
 import { config } from "../../config";
 const { baseUrl } = config;
@@ -66,13 +67,11 @@ export default function Login(props) {
                     <p>
                         This will use your existing data.gov.au account. To
                         register a new data.gov.au account,{" "}
-                        <a
-                            href="http://data.gov.au/user/register"
+                        <AUctaLink
+                            link="http://data.gov.au/user/register"
                             target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            click here
-                        </a>.
+                            text="click here"
+                        />.
                     </p>
                     <form
                         action={makeLoginUrl("ckan")}
