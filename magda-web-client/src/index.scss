@@ -1,5 +1,5 @@
-@import "variables";
 @import "../pancake/sass/pancake.scss";
+@import "variables";
 html {
     @include AU-fontgrid(sm);
     font-family: inherit;
@@ -7,10 +7,10 @@ html {
 .au-body .au-grid a {
     text-decoration: none;
     overflow-x: hidden;
+    color: $AU-color-foreground-action;
     &:hover,
     &:focus {
-        background: transparent;
-        color: inherit;
+        color: $AU-color-foreground-focus;
         text-decoration: none;
     }
 }
@@ -33,6 +33,19 @@ a.au-btn:hover:not(:disabled) {
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     border: 0;
+}
+
+.au-body.au-body--dark {
+    background: $AU-colordark-background;
+    color: $AU-colordark-foreground-text;
+    a,
+    button {
+        color: $AU-colordark-foreground-action;
+        &:hover,
+        &:focus {
+            color: $AU-colordark-foreground-focus;
+        }
+    }
 }
 
 @keyframes hideMessage {

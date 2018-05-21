@@ -14,8 +14,13 @@
     }
     .dataset-summary-title {
         @include AU-fontgrid(md);
+        color: $AU-color-foreground-action;
         font-weight: 300;
         margin-bottom: 8px;
+        &:hover,
+        &:focus {
+            color: $AU-color-foreground-focus;
+        }
     }
 
     .dataset-summary-publisher {
