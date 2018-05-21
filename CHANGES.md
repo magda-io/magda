@@ -49,6 +49,7 @@
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
 *   Implemented SMTP client with `nodemailer` for correspondence api
+*   Added `recrawl` API endpoints to sleuther framework
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
