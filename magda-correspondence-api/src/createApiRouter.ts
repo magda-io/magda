@@ -158,7 +158,12 @@ export default function createApiRouter(
      */
     function getDataset(datasetId: string): Promise<Record> {
         return options.registry
-            .getRecord(datasetId, ["dcat-dataset-strings"], [], false)
+            .getRecord(
+                encodeURIComponent(datasetId),
+                ["dcat-dataset-strings"],
+                [],
+                false
+            )
             .then(result => unionToThrowable(result));
     }
 

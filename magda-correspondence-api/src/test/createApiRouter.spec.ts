@@ -31,7 +31,9 @@ const stubbedSMTPMailer: SMTPMailer = {
 const DEFAULT_SENDER_NAME = "Bob Cunningham";
 const DEFAULT_SENDER_EMAIL = "bob.cunningham@example.com";
 const DEFAULT_MESSAGE = "Gib me a dataset";
-const DEFAULT_DATASET_ID = "ds-blah-1234";
+const DEFAULT_DATASET_ID =
+    "ds-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2";
+const ENCODED_DEFAULT_DATASET_ID = encodeURIComponent(DEFAULT_DATASET_ID);
 const DEFAULT_DATASET_TITLE = "thisisatitle";
 const DEFAULT_DATASET_PUBLISHER = "publisher";
 const EXTERNAL_URL = "datagov.au.example.com";
@@ -135,7 +137,9 @@ describe("send dataset request mail", () => {
             stubGetRecordCall();
 
             return supertest(app)
-                .post(`/public/send/dataset/${DEFAULT_DATASET_ID}/report`)
+                .post(
+                    `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/report`
+                )
                 .set({
                     "Content-Type": "application/json"
                 })
@@ -156,14 +160,14 @@ describe("send dataset request mail", () => {
                     expect(args.text).to.contain(DEFAULT_MESSAGE);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.text).to.contain(
-                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                        EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.text).to.contain("feedback");
 
                     expect(args.html).to.contain(DEFAULT_MESSAGE);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.html).to.contain(
-                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                        EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.html).to.contain("feedback");
 
@@ -174,12 +178,12 @@ describe("send dataset request mail", () => {
         });
 
         checkEmailErrorCases(
-            `/public/send/dataset/${DEFAULT_DATASET_ID}/report`,
+            `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/report`,
             true
         );
 
         checkRegistryErrorCases(
-            `/public/send/dataset/${DEFAULT_DATASET_ID}/report`
+            `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/report`
         );
     });
     describe("/public/send/dataset/:datasetId/question", () => {
@@ -189,7 +193,9 @@ describe("send dataset request mail", () => {
             stubGetRecordCall();
 
             return supertest(app)
-                .post(`/public/send/dataset/${DEFAULT_DATASET_ID}/question`)
+                .post(
+                    `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/question`
+                )
                 .set({
                     "Content-Type": "application/json"
                 })
@@ -210,14 +216,14 @@ describe("send dataset request mail", () => {
                     expect(args.text).to.contain(DEFAULT_MESSAGE);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.text).to.contain(
-                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                        EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.text).to.contain("question");
 
                     expect(args.html).to.contain(DEFAULT_MESSAGE);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.html).to.contain(
-                        EXTERNAL_URL + "/dataset/" + DEFAULT_DATASET_ID
+                        EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.html).to.contain("question");
 
@@ -228,19 +234,19 @@ describe("send dataset request mail", () => {
         });
 
         checkEmailErrorCases(
-            `/public/send/dataset/${DEFAULT_DATASET_ID}/question`,
+            `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/question`,
             true
         );
 
         checkRegistryErrorCases(
-            `/public/send/dataset/${DEFAULT_DATASET_ID}/question`
+            `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/question`
         );
     });
 
     function stubGetRecordCall() {
         registryScope
             .get(
-                `/records/${DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
+                `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
             )
             .reply(200, {
                 id: DEFAULT_DATASET_ID,
@@ -277,7 +283,7 @@ describe("send dataset request mail", () => {
                 it("should return 404 if getting dataset from registry returns 404", () => {
                     registryScope
                         .get(
-                            `/records/${DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
+                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
                         )
                         .reply(404);
 
@@ -303,7 +309,7 @@ describe("send dataset request mail", () => {
                 it("should return 500 if getting dataset from registry returns 500", () => {
                     registryScope
                         .get(
-                            `/records/${DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
+                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&dereference=false`
                         )
                         .reply(500);
 

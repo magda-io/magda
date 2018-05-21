@@ -36,7 +36,7 @@ export default function renderTemplate(
         subject,
         dataset: dataset && {
             ...dataset.aspects["dcat-dataset-strings"],
-            url: externalUrl + "/dataset/" + dataset.id
+            url: externalUrl + "/dataset/" + encodeURIComponent(dataset.id)
         }
     };
 
