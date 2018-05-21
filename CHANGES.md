@@ -53,6 +53,7 @@
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
 *   Added bottom margin to all static pages.
+*   Modified `MarkdownViewer` content to now utilise `au-body`.
 
 ## 0.0.38
 

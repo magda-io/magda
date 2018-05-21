@@ -15,7 +15,11 @@ class MarkdownViewer extends React.Component {
             );
         }
         let markdown = { __html: html };
-        return <div className="markdown" dangerouslySetInnerHTML={markdown} />;
+        return (
+            <div className="au-body">
+                <div className="markdown" dangerouslySetInnerHTML={markdown} />;
+            </div>
+        );
     }
 }
 
