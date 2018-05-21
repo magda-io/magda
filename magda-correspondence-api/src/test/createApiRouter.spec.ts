@@ -30,7 +30,12 @@ const stubbedSMTPMailer: SMTPMailer = {
 
 const DEFAULT_SENDER_NAME = "Bob Cunningham";
 const DEFAULT_SENDER_EMAIL = "bob.cunningham@example.com";
-const DEFAULT_MESSAGE = "Gib me a dataset";
+const DEFAULT_MESSAGE_TEXT = `Gib me
+
+a dataset
+
+༼ つ ◕_◕ ༽つ`;
+const DEFAULT_MESSAGE_HTML = `<p>Gib me</p>\n<p>a dataset</p>\n<p>༼ つ ◕_◕ ༽つ</p>`;
 const DEFAULT_DATASET_ID =
     "ds-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2";
 const ENCODED_DEFAULT_DATASET_ID = encodeURIComponent(DEFAULT_DATASET_ID);
@@ -109,7 +114,7 @@ describe("send dataset request mail", () => {
                 .send({
                     senderName: DEFAULT_SENDER_NAME,
                     senderEmail: DEFAULT_SENDER_EMAIL,
-                    message: DEFAULT_MESSAGE
+                    message: DEFAULT_MESSAGE_TEXT
                 })
                 .expect(200)
                 .then(() => {
@@ -119,8 +124,8 @@ describe("send dataset request mail", () => {
                     expect(args.from).to.contain(DEFAULT_SENDER_NAME);
                     expect(args.from).to.contain(DEFAULT_RECIPIENT);
                     expect(args.replyTo).to.contain(DEFAULT_SENDER_EMAIL);
-                    expect(args.html).to.contain(DEFAULT_MESSAGE);
-                    expect(args.text).to.contain(DEFAULT_MESSAGE);
+                    expect(args.html).to.contain(DEFAULT_MESSAGE_HTML);
+                    expect(args.text).to.contain(DEFAULT_MESSAGE_TEXT);
                     expect(args.subject).to.contain(DEFAULT_SENDER_NAME);
 
                     checkAttachments(args.attachments);
@@ -146,7 +151,7 @@ describe("send dataset request mail", () => {
                 .send({
                     senderName: DEFAULT_SENDER_NAME,
                     senderEmail: DEFAULT_SENDER_EMAIL,
-                    message: DEFAULT_MESSAGE
+                    message: DEFAULT_MESSAGE_TEXT
                 })
                 .expect(200)
                 .then(() => {
@@ -157,14 +162,14 @@ describe("send dataset request mail", () => {
                     expect(args.from).to.contain(DEFAULT_RECIPIENT);
                     expect(args.replyTo).to.contain(DEFAULT_SENDER_EMAIL);
 
-                    expect(args.text).to.contain(DEFAULT_MESSAGE);
+                    expect(args.text).to.contain(DEFAULT_MESSAGE_TEXT);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.text).to.contain(
                         EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.text).to.contain("feedback");
 
-                    expect(args.html).to.contain(DEFAULT_MESSAGE);
+                    expect(args.html).to.contain(DEFAULT_MESSAGE_HTML);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.html).to.contain(
                         EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
@@ -202,7 +207,7 @@ describe("send dataset request mail", () => {
                 .send({
                     senderName: DEFAULT_SENDER_NAME,
                     senderEmail: DEFAULT_SENDER_EMAIL,
-                    message: DEFAULT_MESSAGE
+                    message: DEFAULT_MESSAGE_TEXT
                 })
                 .expect(200)
                 .then(() => {
@@ -213,14 +218,14 @@ describe("send dataset request mail", () => {
                     expect(args.from).to.contain(DEFAULT_RECIPIENT);
                     expect(args.replyTo).to.contain(DEFAULT_SENDER_EMAIL);
 
-                    expect(args.text).to.contain(DEFAULT_MESSAGE);
+                    expect(args.text).to.contain(DEFAULT_MESSAGE_TEXT);
                     expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.text).to.contain(
                         EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
                     );
                     expect(args.text).to.contain("question");
 
-                    expect(args.html).to.contain(DEFAULT_MESSAGE);
+                    expect(args.html).to.contain(DEFAULT_MESSAGE_HTML);
                     expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
                     expect(args.html).to.contain(
                         EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
@@ -295,7 +300,7 @@ describe("send dataset request mail", () => {
                         .send({
                             senderName: DEFAULT_SENDER_NAME,
                             senderEmail: DEFAULT_SENDER_EMAIL,
-                            message: DEFAULT_MESSAGE
+                            message: DEFAULT_MESSAGE_TEXT
                         })
                         .expect(404)
                         .then(() => {
@@ -321,7 +326,7 @@ describe("send dataset request mail", () => {
                         .send({
                             senderName: DEFAULT_SENDER_NAME,
                             senderEmail: DEFAULT_SENDER_EMAIL,
-                            message: DEFAULT_MESSAGE
+                            message: DEFAULT_MESSAGE_TEXT
                         })
                         .expect(500)
                         .then(() => {
@@ -353,7 +358,7 @@ describe("send dataset request mail", () => {
                         .send({
                             senderName: DEFAULT_SENDER_NAME,
                             senderEmail: DEFAULT_SENDER_EMAIL,
-                            message: DEFAULT_MESSAGE
+                            message: DEFAULT_MESSAGE_TEXT
                         })
                         .expect(500)
                         .then(() => {
@@ -371,7 +376,7 @@ describe("send dataset request mail", () => {
                         .send({
                             senderName: DEFAULT_SENDER_NAME,
                             senderEmail: "<INVALID EMAIL>",
-                            message: DEFAULT_MESSAGE
+                            message: DEFAULT_MESSAGE_TEXT
                         })
                         .expect(400)
                         .then(() => {

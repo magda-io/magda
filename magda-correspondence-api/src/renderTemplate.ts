@@ -1,5 +1,6 @@
 import * as pug from "pug";
 import * as path from "path";
+import * as MarkdownIt from "markdown-it";
 
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -24,6 +25,10 @@ const templates: TemplatesLookup = {
     )
 };
 
+const md = new MarkdownIt({
+    breaks: true
+});
+
 export default function renderTemplate(
     template: Templates,
     message: DatasetMessage,
@@ -32,7 +37,10 @@ export default function renderTemplate(
     dataset?: Record
 ) {
     const templateContext = {
-        message,
+        message: {
+            ...message,
+            html: md.render(message.message)
+        },
         subject,
         dataset: dataset && {
             ...dataset.aspects["dcat-dataset-strings"],
