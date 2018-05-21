@@ -15,16 +15,27 @@ export function getCommonFormat(
     } else {
         for (let label of Object.keys(synonymObject)) {
             for (var i = 0; i < synonymObject[label].length; i++) {
-                if(typeof synonymObject[label][i] === "string" && synonymObject[label][i].toString().toUpperCase() === format) return label.toUpperCase();
-                else if(typeof synonymObject[label][i] === "object" && synonymObject[label][i].type && synonymObject[label][i].data){
-                    switch(synonymObject[label][i].type){
-                        case "as-keyword" : 
-                            if(new RegExp(
-                                `(^|\\b)${escapeStringRegexp(
-                                    synonymObject[label][i].data
-                                )}(\\b|$)`,
-                                "i"
-                            ).test(format)) return label.toUpperCase();
+                if (
+                    typeof synonymObject[label][i] === "string" &&
+                    synonymObject[label][i].toString().toUpperCase() === format
+                )
+                    return label.toUpperCase();
+                else if (
+                    typeof synonymObject[label][i] === "object" &&
+                    synonymObject[label][i].type &&
+                    synonymObject[label][i].data
+                ) {
+                    switch (synonymObject[label][i].type) {
+                        case "as-keyword":
+                            if (
+                                new RegExp(
+                                    `(^|\\b)${escapeStringRegexp(
+                                        synonymObject[label][i].data
+                                    )}(\\b|$)`,
+                                    "i"
+                                ).test(format)
+                            )
+                                return label.toUpperCase();
                     }
                 }
             }
