@@ -27,6 +27,7 @@
 
     .dataset-summary-description {
         margin-bottom: 8px;
+        @include AU-fontgrid(xs);
         overflow: hidden;
         h1,
         h2,
