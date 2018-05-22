@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 // temporary disable feedback from so we can try something else
 // import FeedbackForm from "./Feedback/FeedbackForm";
 // import { FeedbackButton, FeedbackLink } from "./Feedback/FeedbackButton";
-import { Small, Medium } from "../../UI/Responsive";
+import { Small } from "../../UI/Responsive";
 
 import dtaLogo from "./dta-logo.png";
 import d61logo from "./data61-logo.png";
