@@ -230,7 +230,7 @@ class DistributionRow extends Component {
                                 Download
                             </a>
                         </button>
-                    ) : null}
+                    ) : null}{" "}
                     <button
                         className="au-btn au-btn--secondary new-tab-button"
                         onClick={() => {

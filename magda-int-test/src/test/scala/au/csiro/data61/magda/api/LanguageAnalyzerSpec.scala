@@ -49,7 +49,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-        .filter(term => !Generators.filterWordRegex.r.matchesAny(term))
+        .filterNot(term => Generators.stopWordRegex.r.matchesAny(term))
         .filter(term => term.matches(".*[A-Z][a-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -114,7 +114,6 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
     it("when searching for it directly") {
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
-        .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
         .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
 
       doTest(innerTermExtractor)
@@ -129,7 +128,6 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
         .filterNot(_.toLowerCase.endsWith("ss"))
-        .filterNot(term => Generators.filterWords.contains(term.toLowerCase))
         .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
         .filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
         .filterNot(_.isEmpty)
@@ -149,7 +147,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
               Some(pluralized)
             } else None
         }
-        .filterNot(term => StandardAnalyzer.ENGLISH_STOP_WORDS_SET.contains(term.toLowerCase))
+        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
 
       doTest(innerTermExtractor)
     }

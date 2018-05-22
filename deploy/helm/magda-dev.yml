@@ -1,7 +1,7 @@
 global:
   useCombinedDb: true
   useCloudSql: false
-  externalUrl: http://magda-dev.terria.io
+  externalUrl: https://magda-dev.terria.io
   rollingUpdate:
     maxUnavailable: 1
   image:
@@ -126,3 +126,10 @@ discussions-api:
     requests:
       cpu: 100m
       memory: 0
+correspondence-api:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 0
+  externalUrl: "https://magda-dev.terria.io"
+  defaultRecipient: "magda-test@googlegroups.com"
