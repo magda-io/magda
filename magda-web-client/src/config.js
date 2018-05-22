@@ -19,15 +19,18 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string
+    feedbackApiBaseUrl?: string,
+    correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-//this below const enables suggest a Dataset when enabled
+//this below const enables suggest/request/report dataset forms when enabled
 export const enableSuggestDatasetPage = true;
 export const correspondenceApiReportUrl =
-    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/:datasetId/report";
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/:datasetId/report";
 export const correspondenceApiUrl =
-    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/request";
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/request";
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
