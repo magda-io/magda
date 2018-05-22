@@ -164,3 +164,8 @@ h4 {
 .au-text-input {
     border: 3px solid $AU-color-foreground-action;
 }
+
+.au-body ::selection {
+    background: $AU-color-foreground-action !important;
+    color: $AU-colordark-foreground-text !important;
+}

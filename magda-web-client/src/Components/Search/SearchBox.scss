@@ -158,6 +158,9 @@
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 4px;
+        input {
+            color: rgba($AU-color-foreground-text, 0.9);
+        }
         input::-webkit-input-placeholder {
             color: rgba($AU-color-foreground-action, 0.9);
         }
