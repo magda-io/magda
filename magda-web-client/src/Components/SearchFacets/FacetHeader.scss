@@ -4,12 +4,11 @@
     display: flex;
     &.not-empty {
         button {
-            font-family: inherit;
             &,
             &:hover,
             &:focus {
                 background: $AU-colordark-background !important;
-                color: $AU-colordark-foreground-action !important;
+                color: $AU-colordark-foreground-text !important;
                 border-right: 1px solid #fff;
             }
         }

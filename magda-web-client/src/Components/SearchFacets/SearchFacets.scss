@@ -113,6 +113,10 @@
     }
 }
 
+.facet-option__list {
+    margin: 0;
+}
+
 .btn-facet-option {
     font-family: inherit;
     position: relative;
@@ -132,6 +136,9 @@
     &:focus {
         background-color: $AU-color-foreground-action;
         color: $AU-color-background;
+    }
+    &.is-active {
+        padding-left: 5px;
     }
 }
 
@@ -158,12 +165,6 @@
     line-height: 20px;
     padding: 15px 0;
     button {
-        text-transform: none;
-        font-weight: 400;
         padding: 0 16px;
-        font-size: 16px;
-        &:last-child {
-            color: $AU-color-foreground-action;
-        }
     }
 }
