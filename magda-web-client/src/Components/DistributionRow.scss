@@ -10,14 +10,14 @@
         height: 32px;
     }
     .distribution-row-link {
-        color: #000000;
+        color: $AU-color-foreground-text;
         @include AU-fontgrid(md);
         a {
             border-bottom: none;
         }
         a:hover {
-            background-color: #fff;
-            color: #000000;
+            background-color: $AU-color-background;
+            color: $AU-color-foreground-text;
         }
         margin-bottom: 8px;
     }
@@ -28,7 +28,7 @@
     }
 
     button {
-        background-color: #f7f8fa;
+        background-color: $AU-colordark-background;
         border: 1px solid rgba(73, 73, 73, 0.05);
     }
     .download-button {

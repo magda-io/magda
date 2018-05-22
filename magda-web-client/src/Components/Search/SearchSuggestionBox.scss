@@ -11,7 +11,7 @@
     }
     position: absolute;
     z-index: 2;
-    color: $body;
+    color: $AU-color-foreground-action;
     .search-suggestion-box-position-adjust {
         @media (max-width: $medium - 1) {
             height: 3px;
@@ -106,7 +106,7 @@
         line-height: 2.2rem;
     }
     .selected {
-        color: rgba(0, 0, 0, 0.87);
+        color: rgba($AU-color-foreground-text, 0.87);
         background: #f2f2f2 !important;
         button {
             background: #f2f2f2 !important;

@@ -21,7 +21,7 @@
     }
 
     &__email-icon {
-        color: #c0392b;
+        color: $AU-color-foreground-action;
         @include AU-fontgrid(lg);
     }
     &__input-group {

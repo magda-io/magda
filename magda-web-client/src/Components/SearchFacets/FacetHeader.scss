@@ -4,13 +4,12 @@
     display: flex;
     &.not-empty {
         button {
-            font-family: $font-base;
             &,
             &:hover,
             &:focus {
-                background: $body !important;
+                background: $AU-colordark-background !important;
+                color: $AU-colordark-foreground-text !important;
                 border-right: 1px solid #fff;
-                color: #fff !important;
             }
         }
     }
@@ -27,14 +26,14 @@
     button {
         border: 1px solid rgba(73, 73, 73, 0.05);
         border-radius: 2px;
-        background-color: #f7f8fa;
+        background-color: $AU-colordark-background;
         font-size: 14px;
         text-align: center;
         padding: 0 16px;
         text-transform: capitalize;
         pointer: cursor;
         .facet-icon {
-            padding: 4px 6px 4px 0;
+            padding: 6px 6px 4px 0;
             height: 24px;
             width: 24px;
         }

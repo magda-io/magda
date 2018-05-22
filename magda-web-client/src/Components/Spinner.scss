@@ -43,7 +43,7 @@
 .spinner_container {
     display: flex;
     align-items: center;
-    background-color: #f7f8fa;
+    background-color: $AU-color-background;
 }
 
 .sk-cube-grid {
@@ -61,8 +61,8 @@
     width: 30%;
     height: 30%;
     margin: 1px;
-    background-color: $main;
-    border: 1px solid $main;
+    background-color: $AU-color-foreground-action;
+    border: 1px solid $AU-color-foreground-action;
     box-sizing: border-box;
     border-radius: 2px;
     float: left;

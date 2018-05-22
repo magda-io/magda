@@ -15,9 +15,10 @@
             padding: 0px;
             margin: 12px;
             font-weight: 400;
+            background-color: $AU-color-background;
+            color: $AU-color-foreground-action;
             &.current {
-                background-color: $AU-color-foreground-action;
-                color: #fff;
+                background-color: $AU-colordark-foreground-action;
             }
         }
     }

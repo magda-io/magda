@@ -73,7 +73,7 @@ class FacetBasicBody extends Component {
         let divStyle = {
             width: maxWidth + "px",
             height: "3px",
-            background: "#00698f"
+            background: "#4C2A85"
         };
         let isActive = this.checkActiveOption(option);
 
@@ -128,7 +128,7 @@ class FacetBasicBody extends Component {
                 {this.state.showOptions && (
                     <div>
                         <div className="facet-body-buttons">
-                            <ul className="list--unstyled">
+                            <ul className="list--unstyled facet-option__list">
                                 {that.state._activeOptions
                                     .sort((a, b) => b.hitCount - a.hitCount)
                                     .map(o => (
@@ -161,7 +161,7 @@ class FacetBasicBody extends Component {
                                 Clear{" "}
                             </button>
                             <button
-                                className="au-btn au-btn--secondary"
+                                className="au-btn au-btn--primary"
                                 disabled={
                                     this.state._activeOptions.length === 0
                                 }
