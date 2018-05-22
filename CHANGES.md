@@ -61,6 +61,7 @@
 *   Reimplemented links from publisher names to their respective page.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Made all data.gov.au environments use mailgun.
 
 ## 0.0.38
 
