@@ -1,10 +1,12 @@
 import React from "react";
+import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import queryString from "query-string";
 import AUbuttons from "@gov.au/buttons";
+import { resetRegion } from "../../actions/datasetSearchActions";
 import removePassiveIcon from "../../assets/remove-passive.svg";
 
-const ClearAllButton = ({ location, history }) => {
+const ClearAllButton = ({ location, history, dispatch }) => {
     const query = queryString.parse(location.search);
     if (
         !query.publisher &&
@@ -28,6 +30,9 @@ const ClearAllButton = ({ location, history }) => {
                             const qStr = queryString.stringify({
                                 q: query.q ? query.q : ""
                             });
+                            //--- unfortunately, active Region needs to be reset
+                            //--- to reset region header state
+                            dispatch(resetRegion());
                             history.push({
                                 pathname: "/search",
                                 search: `?${qStr}`
@@ -47,4 +52,4 @@ const ClearAllButton = ({ location, history }) => {
     );
 };
 
-export default withRouter(ClearAllButton);
+export default withRouter(connect()(ClearAllButton));
