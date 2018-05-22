@@ -66,7 +66,6 @@ class SearchFacets extends Component {
     renderDesktop() {
         return (
             <div className="search-facets-desktop">
-                <div className="sub-heading"> Filters </div>
                 {config.facets.map(c => (
                     <div
                         className="search-facet"
