@@ -39,10 +39,23 @@ class SearchSuggestionBox extends Component {
             recentSearches: this.retrieveLocalData("recentSearches"),
             selectedItemIdx: null
         };
+        this.cacheImgs();
         this.createSearchDataFromProps(this.props);
         this.searchInputRef = null;
         this.onSearchInputKeyDown = this.onSearchInputKeyDown.bind(this);
         this.containerRef = null;
+    }
+
+    cacheImgs() {
+        const cacheImg = img => {
+            const imgLoader = new Image();
+            imgLoader.src = img;
+            this.cacheImages.push(imgLoader);
+        };
+
+        this.cacheImages = [];
+        cacheImg(recentSearchIcon);
+        cacheImg(closeIcon);
     }
 
     retrieveLocalData(key): searchDataType {

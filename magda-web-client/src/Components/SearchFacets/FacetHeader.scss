@@ -10,6 +10,7 @@
             &:focus {
                 background: $AU-colordark-background !important;
                 color: $AU-colordark-foreground-action !important;
+                border-right: 1px solid #fff;
             }
         }
     }

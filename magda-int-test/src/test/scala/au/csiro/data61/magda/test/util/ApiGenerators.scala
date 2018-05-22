@@ -48,9 +48,9 @@ object ApiGenerators {
     allDescWords match {
       case Nil => Gen.const("")
       case _ =>
-        val safeDescWords = allDescWords.filterNot(x => Generators.filterWords.contains(x.toLowerCase))
+        val safeDescWords = allDescWords.filterNot(x => Generators.luceneStopWords.contains(x.toLowerCase))
         val result = (for {
-          someDescWords <- listSizeBetween(1, 5, Gen.oneOf(allDescWords))
+          someDescWords <- listSizeBetween(1, 5, Gen.oneOf(safeDescWords))
           concated = someDescWords.mkString(" ")
         } yield concated).suchThat(validFilter)
 
@@ -122,12 +122,7 @@ object ApiGenerators {
     } yield split.slice(start, Math.max(split.length - 1, 1)).mkString(delimiter)
   }
 
-  def validFilter(word: String): Boolean = !filterWordRegex.r.matchesAny(word) && // Don't want to inject filter words into our query
-    !filterWords.contains(word.toLowerCase) && // ditto
-    {
-      val words = word.split("^[\\s-.']")
-      words.exists(word => !stopWords.contains(word.toLowerCase()))
-    } && // stop words tend to not match anything because of TFDIF
+  def validFilter(word: String): Boolean = !stopWordRegex.r.matchesAny(word) && // stop words tend to not match anything because of TFDIF
     word.exists(_.isLetterOrDigit) && // GOtta have at least one letter
     word.length > 1
 
@@ -153,14 +148,13 @@ object ApiGenerators {
     }
 
     val freeTextCount = iterableTextCount(query.freeText)
-    val quoteCount = iterableTextCount(query.quotes)
     val publisherCount = iterableTextCountFv(query.publishers)
     val dateFromCount = query.dateFrom.map(_ => 1).getOrElse(0)
     val dateToCount = query.dateTo.map(_ => 1).getOrElse(0)
     val formatsCount = iterableTextCountFv(query.formats)
     val regionsCount = query.regions.size
 
-    (freeTextCount + quoteCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
+    (freeTextCount + publisherCount + dateFromCount + dateToCount + formatsCount + regionsCount) < 500
   }
 
   def queryGen(dataSets: List[DataSet])(implicit config: Config, regions: List[(RegionSource, JsObject)]) = (for {
@@ -172,8 +166,10 @@ object ApiGenerators {
     formats <- probablyEmptySet(formatQueryGen(dataSets))
     regions <- probablyEmptySet(regionQueryGen)
   } yield Query(
-    freeText = freeText,
-    quotes = quotes,
+    freeText = (freeText.toSeq ++ quotes.map(""""""" + _ + """"""")) match {
+      case Nil => None
+      case seq => Some(seq.mkString(" "))
+    },
     publishers = publishers,
     dateFrom = dateFrom,
     dateTo = dateTo,
@@ -189,11 +185,8 @@ object ApiGenerators {
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
 
   def textQueryGen(queryGen: Gen[Query])(implicit config: Config): Gen[(String, Query)] = queryGen.flatMap { query =>
-    val textListComponents = (query.freeText.toSeq ++
-      query.quotes.map(""""""" + _ + """"""")).toSet
-
-    val publishers = query.publishers.filter(containsNoFilterWord)
-    val formats = query.formats.filter(containsNoFilterWord)
+    val publishers = query.publishers.filter(containsNoStopWord)
+    val formats = query.formats.filter(containsNoStopWord)
 
     val facetList =
       publishers.map(publisher => s"publisher=${encodeForUrl(publisher.toString)}") ++
@@ -202,9 +195,9 @@ object ApiGenerators {
         formats.map(format => s"format=${encodeForUrl(format.toString)}") ++
         query.regions.map(region => s"region=${encodeForUrl(region.map(_.queryRegion).toString)}")
 
+    val allList = Set(s"query=${encodeForUrl(query.freeText.getOrElse(""))}") ++ facetList
+
     val textQuery = for {
-      textList <- Gen.pick(textListComponents.size, textListComponents)
-      allList = Set(s"query=${encodeForUrl(textList.mkString(" "))}") ++ facetList
       randomList <- Gen.pick(allList.size, allList)
       rawQuery = randomList.mkString("&")
       randomCaseQuery <- randomCaseGen(rawQuery)
@@ -220,7 +213,7 @@ object ApiGenerators {
     textQuery.flatMap((_, query.copy(publishers = publishers, formats = formats)))
   }
 
-  def containsNoFilterWord(word: FilterValue[String]): Boolean = {
-    !filterWords.exists(filterWord => word.map(_.toLowerCase.contains(" " + filterWord.toLowerCase + " ")).getOrElse(false))
+  def containsNoStopWord(word: FilterValue[String]): Boolean = {
+    !luceneStopWords.exists(stopWord => word.map(_.toLowerCase.contains(" " + stopWord.toLowerCase + " ")).getOrElse(false))
   }
 }

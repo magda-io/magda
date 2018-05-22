@@ -58,20 +58,19 @@ object Generators {
     after <- listSizeBetween(0, 50, textCharGen).map(_.mkString.trim)
   } yield (before + middle.toString + after)
 
-  val filterWords = Set("in", "to", "as", "by", "from")
   // See StandardAnalyzer.ENGLISH_STOP_WORDS_SET
+  // Why not just link this in directly? There's some horrible thing going on with how lucene is 
+  // compiled that turns all the strings to some weird type that can't be understood.
   val luceneStopWords = Seq("a", "an", "and", "are", "as", "at", "be", "but", "by",
     "for", "if", "in", "into", "is", "it",
     "no", "not", "of", "on", "or", "such",
     "that", "the", "their", "then", "there", "these",
     "they", "this", "to", "was", "will", "with")
 
-  val stopWords = luceneStopWords.filterNot(filterWords.contains(_))
+  val stopWordRegex = s"(?i)(${luceneStopWords.mkString("|")})(\\s|$$)"
+  def removeStopWords(s: String) = s.replaceAll(stopWordRegex, " ").trim
 
-  val filterWordRegex = s"(?i)(${filterWords.mkString("|")})(\\s|$$)"
-  def removeFilterWords(s: String) = s.replaceAll(filterWordRegex, " ").trim
-
-  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (2, Gen.oneOf(stopWords)))
+  val nonEmptyTextWithStopWordsGen = Gen.frequency((5, nonEmptyTextGen), (2, Gen.oneOf(luceneStopWords)))
 
   val textGen = Gen.frequency((15, nonEmptyTextWithStopWordsGen), (1, Gen.const("")))
 
@@ -214,7 +213,7 @@ object Generators {
     "properties" -> JsObject(Seq(
       regionSource.idProperty -> JsString(id),
       regionSource.nameProperty -> JsString(name)) ++
-      regionSource.shortNameProperty.map(_ -> JsString(shortName)).toSeq: _* )))
+      regionSource.shortNameProperty.map(_ -> JsString(shortName)).toSeq: _*)))
 
   def pointGen(thisCoordGen: Gen[Coordinate] = coordGen()) = thisCoordGen.map(Point.apply)
   def multiPointGen(max: Int, thisCoordGen: Gen[Coordinate] = coordGen()) = listSizeBetween(1, max, thisCoordGen).map(MultiPoint.apply)
@@ -287,7 +286,7 @@ object Generators {
     MediaTypes.`text/csv`,
     MediaTypes.`application/json`,
     MediaTypes.`application/octet-stream`))
-  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeFilterWords).map(_.take(50).trim)).map(_.mkString(" ")).suchThat(!_.trim.isEmpty())
+  val formatNameGen = listSizeBetween(1, 3, nonEmptyTextWithStopWordsGen.map(removeStopWords).map(_.take(50).trim)).map(_.mkString(" ")).suchThat(!_.trim.isEmpty())
   def randomFormatGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("randomFormat", formatNameGen, 5)(inputCache)
 
   def textGen(inner: Gen[List[String]]) = inner
