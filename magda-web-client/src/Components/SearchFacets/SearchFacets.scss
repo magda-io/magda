@@ -118,7 +118,6 @@
 }
 
 .btn-facet-option {
-    font-family: inherit;
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -129,7 +128,8 @@
     box-shadow: none;
     margin: 0;
     padding: 0;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
+    padding: 0 8px;
     cursor: pointer;
     &.is-active,
     &:hover,
@@ -137,15 +137,12 @@
         background-color: $AU-color-foreground-action;
         color: $AU-color-background;
     }
-    &.is-active {
-        padding-left: 5px;
-    }
 }
 
 .btn-facet-option__volume-indicator {
     display: block;
     position: absolute;
-    left: 0;
+    left: 8px;
     bottom: 0px;
     z-index: 10;
 }
