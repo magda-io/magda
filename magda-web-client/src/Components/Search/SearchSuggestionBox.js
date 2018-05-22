@@ -348,7 +348,9 @@ class SearchSuggestionBox extends Component {
                     onMouseOut={() => this.onMouseOut()}
                 >
                     <Medium>
-                        <h5>Recent Searches</h5>
+                        <h5 className="search-suggestion__heading">
+                            Recent Searches
+                        </h5>
                     </Medium>
                     {recentSearchItems.map((item, idx) => (
                         <div
@@ -359,15 +361,15 @@ class SearchSuggestionBox extends Component {
                                     : ""
                             }`}
                         >
+                            <img
+                                className="recent-item-icon"
+                                src={recentSearchIcon}
+                                alt="recent search item"
+                            />
                             <button
                                 className="au-btn au-btn--tertiary search-item-main-button"
                                 onClick={e => this.onSearchItemClick(e, item)}
                             >
-                                <img
-                                    className="recent-item-icon"
-                                    src={recentSearchIcon}
-                                    alt="recent search item"
-                                />
                                 <Medium>
                                     <MarkdownViewer
                                         markdown={this.createSearchItemLabelText(
