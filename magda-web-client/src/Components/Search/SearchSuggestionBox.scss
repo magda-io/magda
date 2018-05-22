@@ -42,7 +42,7 @@
         button.search-item-main-button {
             width: calc(100% - 50px);
             text-align: left;
-            padding: 8px;
+            padding: 0px;
             &.markdown {
                 margin-left: 0;
                 em {
@@ -51,7 +51,7 @@
             }
         }
         button.search-item-delete-button {
-            padding: 0;
+            padding: 8px;
             img {
                 width: 13px;
                 height: 13px;
@@ -64,6 +64,10 @@
             @media (max-width: $medium - 1) {
                 box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
             }
+        }
+
+        .recent-item-icon {
+            padding: 8px;
         }
     }
 
