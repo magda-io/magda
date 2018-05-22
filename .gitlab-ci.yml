@@ -394,7 +394,7 @@ dockerize:dockerExtensions:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
-Run As Preview:
+Run As Preview (Full):
   stage: preview
   when: manual
   only:
@@ -439,6 +439,38 @@ Run As Preview:
   # Helm upgrade
   - helm init --upgrade
   - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,correspondence-api.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+
+Run As Preview (UI Only):
+  stage: preview
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+  dependencies: []
+  cache:
+    paths: []
+  image:
+    name: dtzar/helm-kubectl
+  before_script: []
+  environment:
+    name: preview/$CI_COMMIT_REF_NAME
+    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    on_stop: Stop Preview
+  script:
+  # Kube Config
+  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+  - export KUBECONFIG=kubectlconfig.yaml
+
+  # Create kube namespace
+  - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
+
+  # Create kube secrets
+  - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+
+  # Helm upgrade
+  - helm init --upgrade
+  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://magda-dev.terria.io --timeout 1200 --wait
 
 Stop Preview:
   stage: preview
