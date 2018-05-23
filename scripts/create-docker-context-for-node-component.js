@@ -6,6 +6,12 @@ const path = require("path");
 const process = require("process");
 const yargs = require("yargs");
 const _ = require("lodash");
+const {
+    getVersions,
+    getTags,
+    getName,
+    getRepository
+} = require("./docker-util");
 
 const argv = yargs
     .options({
@@ -90,7 +96,10 @@ updateDockerFile(componentSrcDir, componentDestDir);
 if (argv.build) {
     const cacheFromImage =
         argv.cacheFromVersion &&
-        getRepository() + getName() + ":" + argv.cacheFromVersion;
+        getRepository(argv.local, argv.repository) +
+            getName() +
+            ":" +
+            argv.cacheFromVersion;
 
     if (cacheFromImage) {
         // Pull this image into the docker daemon - if it fails we don't care, we'll just go from scratch.
@@ -115,7 +124,7 @@ if (argv.build) {
             shell: true
         }
     );
-    const tags = getTags();
+    const tags = getTags(argv.tag, argv.local, argv.repository);
     const tagArgs = tags
         .map(tag => ["-t", tag])
         .reduce((soFar, tagArgs) => soFar.concat(tagArgs), []);
@@ -200,47 +209,9 @@ if (argv.build) {
     });
 }
 
-function getVersions() {
-    return (
-        argv.version || [
-            !argv.local && process.env.npm_package_version
-                ? process.env.npm_package_version
-                : "latest"
-        ]
-    );
-}
-
-function getName() {
-    return process.env.npm_package_config_docker_name
-        ? process.env.npm_package_config_docker_name
-        : process.env.npm_package_name
-            ? process.env.npm_package_name
-            : "UnnamedImage";
-}
-
-function getTags() {
-    if (argv.tag === "auto") {
-        return getVersions().map(version => {
-            const tagPrefix = getRepository();
-            const name = getName();
-
-            return (tag = tagPrefix + name + ":" + version);
-        });
-    } else {
-        return argv.tag ? [argv.tag] : [];
-    }
-}
-
-function getRepository() {
-    return (
-        (argv.repository && argv.repository + "/") ||
-        (argv.local ? "localhost:5000/" : "")
-    );
-}
-
 function updateDockerFile(sourceDir, destDir) {
-    const tags = getVersions();
-    const repository = getRepository();
+    const tags = getVersions(argv.local, argv.version);
+    const repository = getRepository(argv.local, argv.repository);
     const dockerFileContents = fse.readFileSync(
         path.resolve(sourceDir, "Dockerfile"),
         "utf-8"
