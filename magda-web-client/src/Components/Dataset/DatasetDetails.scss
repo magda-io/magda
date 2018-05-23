@@ -4,8 +4,8 @@
     h3 {
         color: $body;
         @include AU-fontgrid(lg, heading);
-        padding-bottom: 20px;
-        padding-top: 20px;
+        margin-bottom: 10px;
+        margin-top: 3rem;
     }
 }
 
@@ -25,9 +25,6 @@
 }
 
 .dataset-details-source {
-    a {
-        border-bottom: none;
-    }
     .markdown a {
         font-weight: 500;
     }
@@ -51,16 +48,15 @@
 .quality-rating-box {
     margin-top: 20px;
     margin-bottom: 20px;
-    position: relative;
+
     span {
         color: #535353;
-    }
-    .star-rating-box {
-        position: absolute;
-        top: 3px;
     }
 }
 
 .dataset-details-files-apis {
-    margin-top: 50px;
+}
+
+.quality-rating-box {
+    margin: 20px 0;
 }

@@ -7,12 +7,22 @@ const Alert = props => {
         <main className="au-grid">
             <div className="container">
                 <div className="row">
-                    <div className="col-md-6">
+                    <div className="col-md-9">
                         <AUpageAlert as={props.type}>
                             <h5>{props.header}</h5>
                         </AUpageAlert>
                         <br />
-                        <p className="success-page-message">{props.message}</p>
+                        {}
+                        {props.message && (
+                            <React.Fragment>
+                                <p className="success-page-message">
+                                    {props.message.split(".")[0]}.
+                                </p>
+                                <p className="success-page-message">
+                                    {props.message.split(".")[1]}
+                                </p>
+                            </React.Fragment>
+                        )}
                     </div>
                 </div>
             </div>

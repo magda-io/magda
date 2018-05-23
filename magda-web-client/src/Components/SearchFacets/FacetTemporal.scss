@@ -1,8 +1,13 @@
+.btn-month.is-active {
+    border-bottom: 5px solid red;
+    text-decoration: underline;
+}
+
 .facet-temporal-month-picker {
     display: flex;
 
     .facet-temporal-range-icon {
-        margin-top: 30px;
+        margin-top: 15px;
         width: 20px;
     }
 }

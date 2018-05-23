@@ -1,8 +1,11 @@
 @import "../variables";
 
 .tags-box {
-    table {
-        border-collapse: collapse;
+    display: flex;
+    a {
+        border-bottom: none;
+        text-decoration: underline;
+        overflow-x: initial;
     }
     .heading {
         color: $body;
@@ -10,37 +13,11 @@
         line-height: 19px;
         vertical-align: top;
         width: 50px;
-    }
-    ul {
-        padding: 0px;
-        margin: 0px;
-        list-style-type: none;
-    }
-    li {
-        display: inline;
-    }
-    li:first-child {
-        list-style-type: none;
-    }
-    a:first-letter {
-        text-transform: uppercase;
-    }
-    a {
-        display: inline-block;
-        border-bottom: none;
-    }
-    li,
-    a {
-        color: $body;
-        margin-right: 4px;
-        &:hover,
-        &:focus {
-            color: #fff;
-        }
-    }
-    .other-tag:before {
-        content: "·";
+        margin-top: 10px;
         margin-right: 10px;
-        vertical-align: middle;
+    }
+
+    .au-tags > li {
+        border: 0;
     }
 }

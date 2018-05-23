@@ -4,18 +4,16 @@
     .pagination-list {
         list-style: none;
         display: flex;
-        color: $AU-color-foreground-action;
         padding-left: 0;
         justify-content: center;
         margin-bottom: 24px;
         button {
-            height: 24px;
-            min-width: 24px;
+            height: 28px;
+            min-width: 28px;
             border-radius: 2px;
             line-height: 1;
             padding: 0px;
             margin: 12px;
-            color: $AU-color-foreground-action;
             font-weight: 400;
             &.current {
                 background-color: $AU-color-foreground-action;
@@ -29,10 +27,5 @@
         line-height: 16px;
         text-align: center;
         margin-bottom: 8px;
-    }
-
-    .pagination-list .btn-prev,
-    .pagination-list .btn-next {
-        border: 1px solid rgba($AU-color-foreground-action, 0.5);
     }
 }

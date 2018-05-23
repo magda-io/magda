@@ -3,6 +3,7 @@
 .search-results {
 }
 .search-results__result {
+    padding: 0 5px;
     background: #fff;
     clear: both;
     height: auto;
@@ -12,7 +13,6 @@
     padding-bottom: 24px;
     overflow-x: hidden;
 }
-
 
 .search-results__count {
     @include AU-fontgrid(sm);

@@ -10,7 +10,6 @@ import DataPreviewJson from "../UI/DataPreviewJson";
 import DataPreviewTable from "../UI/DataPreviewTable";
 import DataPreviewTextBox from "../UI/DataPreviewTextBox";
 import DataPreviewChart from "../UI/DataPreviewChart";
-import DropDown from "../UI/DropDown";
 import MarkdownViewer from "../UI/MarkdownViewer";
 import Notification from "../UI/Notification";
 import OverviewBox from "../UI/OverviewBox";
@@ -20,7 +19,6 @@ import QualityIndicator from "../UI/QualityIndicator";
 import TemporalAspectViewer from "../UI/TemporalAspectViewer";
 import ToggleList from "../UI/ToggleList";
 import Tabs from "../UI/Tabs";
-import ContactForm from "../UI/ContactForm";
 import MonthPicker from "../UI/MonthPicker";
 // doc
 import ApiViewer from "./ApiViewer";
@@ -59,17 +57,6 @@ texit ad quos, ferar aratro praecipue.`;
 storiesOf("Shared UI", module)
     .addDecorator(story => (
         <MemoryRouter initialEntries={["/"]}>{story()}</MemoryRouter>
-    ))
-    .add("DropDown", () => (
-        <DropDown
-            options={[
-                { id: 0, value: "a" },
-                { id: 1, value: "b" },
-                { id: 2, value: "c" }
-            ]}
-            select={action()}
-            activeOption={"default option"}
-        />
     ))
     .add("ToggleList", () => (
         <ToggleList
@@ -153,10 +140,6 @@ storiesOf("Aspect Viewer", module).add("Temporal Aspect Viewer", () => (
     <TemporalAspectViewer
         data={{ intervals: [{ start: "2017-12-25", end: "2017-12-25" }] }}
     />
-));
-
-storiesOf("Contact Form", module).add("Generic contact from", () => (
-    <ContactForm />
 ));
 
 iconTypes.map(iconname =>

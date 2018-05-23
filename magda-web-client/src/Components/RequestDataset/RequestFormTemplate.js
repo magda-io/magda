@@ -23,8 +23,15 @@ export default class RequestFormTemplate extends React.Component {
      * @param {Object} state current state
      */
     checkRequiredFields(state) {
+        //this below package validates emails.
+        var validator = require("email-validator");
         const requiredFields = [];
-        if (!state || !state.senderEmail || state.senderEmail.trim() === "") {
+        if (
+            !state ||
+            !state.senderEmail ||
+            state.senderEmail.trim() === "" ||
+            !validator.validate(state.senderEmail.trim())
+        ) {
             requiredFields.push(`senderEmail`);
             this.setState({ senderEmailValid: false });
         } else {
@@ -73,14 +80,16 @@ export default class RequestFormTemplate extends React.Component {
 
     render() {
         return (
-            <form>
+            <form method="post">
                 {this.props.title &&
                     (this.props.smallTitle ? (
-                        <h4>{this.props.title}</h4>
+                        <h3 className="small-title">{this.props.title}</h3>
                     ) : (
                         <AUheader title={this.props.title} />
                     ))}
-                <label htmlFor="message">{this.props.textAreaLabel}</label>
+                <label htmlFor="message" className="field-label">
+                    {this.props.textAreaLabel} *
+                </label>
                 <AUtextInput
                     as="textarea"
                     id="message"
@@ -94,7 +103,14 @@ export default class RequestFormTemplate extends React.Component {
                     type="text"
                     placeholder={this.props.textAreaPlaceHolder}
                 />
-                <label htmlFor="senderName">Your Name</label>
+                {!this.state.messageValid && (
+                    <label className="input-field-error">
+                        Please enter a valid message
+                    </label>
+                )}
+                <label htmlFor="senderName" className="field-label">
+                    Your Name *
+                </label>
                 <AUtextInput
                     id="senderName"
                     onChange={this.handleInputChange}
@@ -107,7 +123,14 @@ export default class RequestFormTemplate extends React.Component {
                     }
                     placeholder={this.props.namePlaceHolder}
                 />
-                <label htmlFor="senderEmail">Email</label>
+                {!this.state.senderNameValid && (
+                    <label className="input-field-error">
+                        Please enter a name
+                    </label>
+                )}
+                <label htmlFor="senderEmail" className={"field-label"}>
+                    Email *
+                </label>
                 <AUtextInput
                     id="senderEmail"
                     onChange={this.handleInputChange}
@@ -119,12 +142,17 @@ export default class RequestFormTemplate extends React.Component {
                     }
                     placeholder={this.props.emailPlaceHolder}
                 />
+                {!this.state.senderEmailValid && (
+                    <label className="input-field-error">
+                        Email is invalid
+                    </label>
+                )}
                 <AUbutton
                     onClick={this.handleSubmit}
                     className="submit-button"
                     type="submit"
                 >
-                    Send
+                    {this.props.isSending ? "Sending..." : "Send"}
                 </AUbutton>
             </form>
         );

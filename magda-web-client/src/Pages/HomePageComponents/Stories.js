@@ -35,7 +35,7 @@ class Stories extends Component {
                                 appear={true}
                                 timeout={{ appear: 500 }}
                             >
-                                <div className="mui-row" key="stories-boxes">
+                                <div className="row" key="stories-boxes">
                                     <div className="col-md-12">
                                         <StoryBox
                                             idx={0}
@@ -88,7 +88,7 @@ class Stories extends Component {
                             appear={true}
                             timeout={{ appear: 500 }}
                         >
-                            <span>
+                            <div>
                                 <div className="stories-container">
                                     <div className="col-3">
                                         <StoryBox idx={0} className="stories" />
@@ -117,7 +117,7 @@ class Stories extends Component {
                                         <StoryBox idx={5} className="stories" />
                                     </div>
                                 </div>
-                            </span>
+                            </div>
                         </CSSTransition>
                     </TransitionGroup>
                 </Medium>

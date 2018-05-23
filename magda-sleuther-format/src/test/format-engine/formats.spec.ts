@@ -29,6 +29,32 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
         expect(getCommonFormat("WWW:LINK-1", synonymObject)).to.eql("HTML");
     });
 
+    it("should classify synonym'd OGC WMS / OGC WFS links as their synonym", () => {
+        expect(getCommonFormat("OGC WMS", synonymObject)).to.eql("WMS");
+
+        expect(getCommonFormat("OGC WFS", synonymObject)).to.eql("WFS");
+
+        expect(getCommonFormat("WWW:LINK-1", synonymObject)).to.eql("HTML");
+    });
+
+    it("should classify WWW:DOWNLOAD-1.0-http--csiro-oa-app links as CSIRO OPEN APP", () => {
+        expect(
+            getCommonFormat(
+                "WWW:DOWNLOAD-1.0-http--csiro-oa-app",
+                synonymObject
+            )
+        ).to.eql("CSIRO OPEN APP");
+    });
+
+    it("should classify WWW:DOWNLOAD-1.0-http--downloaddata links without synonyms as 'HTML'", function() {
+        expect(
+            getCommonFormat(
+                "WWW:DOWNLOAD-1.0-http--downloaddata",
+                synonymObject
+            )
+        ).to.eql("HTML");
+    });
+
     it("should classify unsynonym'd CSW WWW: links without synonyms as 'null'", function() {
         expect(
             getCommonFormat("WWW:DOWNLOAD-1.0-http--download", synonymObject)

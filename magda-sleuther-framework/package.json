@@ -3,10 +3,11 @@
     "description": "MAGDA Sleuther Framework",
     "version": "0.0.39-0",
     "scripts": {
-        "build": "npm run compile",
+        "build": "yarn run compile",
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
-        "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register,tsx:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+        "test":
+            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },
     "author": "",
     "license": "Apache-2.0",
@@ -19,6 +20,7 @@
         "@types/lodash": "^4.14.68",
         "@types/mocha": "^2.2.41",
         "@types/nock": "^8.2.1",
+        "@types/query-string": "^5.1.0",
         "@types/sinon": "^2.3.3",
         "@types/supertest": "^2.0.2",
         "@types/yargs": "^8.0.2",
@@ -28,6 +30,7 @@
         "mocha-testcheck": "^1.0.0-rc.0",
         "nock": "^9.0.14",
         "portfinder": "^1.0.13",
+        "query-string": "^6.1.0",
         "sinon": "^2.4.1",
         "supertest": "^3.0.0",
         "testcheck": "^1.0.0-rc.2",
@@ -45,6 +48,13 @@
     "config": {
         "docker": {
             "include": "node_modules dist"
+        }
+    },
+    "magda": {
+        "language": "typescript",
+        "categories": {
+            "sleuther": true,
+            "library": true
         }
     }
 }

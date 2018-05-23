@@ -14,12 +14,16 @@ import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
+import ga from "./analytics/googleAnalytics";
+import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
 
 const store = createStore(
     reducer,
-    applyMiddleware(
-        thunkMiddleware, // lets us dispatch() functions
-        logger // neat middleware that logs actions
+    composeWithDevTools(
+        applyMiddleware(
+            thunkMiddleware, // lets us dispatch() functions
+            logger // neat middleware that logs actions
+        )
     )
 );
 
@@ -34,10 +38,8 @@ class GAListener extends React.Component {
     }
 
     sendPageView(location) {
-        if (window.ga) {
-            window.ga("set", "location", location.pathname);
-            window.ga("send", "pageview");
-        }
+        ga("set", "location", location.pathname);
+        ga("send", "pageview");
     }
 
     render() {

@@ -8,17 +8,21 @@ export default class RequestFormLogic extends React.Component {
         super(props);
         this.state = {
             successResult: false,
-            posted: false
+            posted: false,
+            isSending: false
         };
     }
 
     /**
      * handles the logic of submitting form
-     * I still need the form submission logic to be implemented
-     * magda-dev.terria.io/api/v0/correspondence/send/dataset/request
      * @param {Object} data form submitted data from child component "RequestFormTemplate.js"
      */
     handleSubmit = data => {
+        this.setState(() => {
+            return {
+                isSending: true
+            };
+        });
         const senderEmail = data.senderEmail;
         const message = data.message;
         const senderName = data.senderName;
@@ -43,23 +47,41 @@ export default class RequestFormLogic extends React.Component {
                 senderEmail,
                 senderName
             })
-        }).then(response => {
-            if (!response.ok) {
-                this.setState(() => {
-                    return { successResult: false, posted: true };
-                });
-                if (this.props.formSubmitState) {
-                    this.props.formSubmitState(true);
+        })
+            .then(response => {
+                if (!response.ok) {
+                    this.setState(() => {
+                        return {
+                            successResult: false,
+                            posted: true,
+                            isSending: false
+                        };
+                    });
+                    if (this.props.formSubmitState) {
+                        this.props.formSubmitState(true);
+                    }
+                } else {
+                    this.setState(() => {
+                        return {
+                            successResult: true,
+                            posted: true,
+                            isSending: false
+                        };
+                    });
+                    if (this.props.formSubmitState) {
+                        this.props.formSubmitState(true);
+                    }
                 }
-            } else {
+            })
+            .catch(error => {
                 this.setState(() => {
-                    return { successResult: true, posted: true };
+                    return {
+                        successResult: false,
+                        posted: true,
+                        isSending: false
+                    };
                 });
-                if (this.props.formSubmitState) {
-                    this.props.formSubmitState(true);
-                }
-            }
-        });
+            });
     };
 
     /**
@@ -83,6 +105,7 @@ export default class RequestFormLogic extends React.Component {
                 <RequestFormTemplate
                     {...this.props.formProps}
                     handleSubmit={this.handleSubmit}
+                    isSending={this.state.isSending}
                 />
             );
         } else {
@@ -96,11 +119,20 @@ export default class RequestFormLogic extends React.Component {
                 );
             } else {
                 return (
-                    <Alert
-                        type={alert.type}
-                        message={alert.message}
-                        header={alert.header}
-                    />
+                    <div>
+                        {!this.state.isSending && (
+                            <Alert
+                                type={alert.type}
+                                message={alert.message}
+                                header={alert.header}
+                            />
+                        )}
+                        <RequestFormTemplate
+                            {...this.props.formProps}
+                            handleSubmit={this.handleSubmit}
+                            isSending={this.state.isSending}
+                        />
+                    </div>
                 );
             }
         }

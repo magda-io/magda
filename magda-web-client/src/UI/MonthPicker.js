@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import Input from "muicss/lib/react/input";
-import Button from "muicss/lib/react/button";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
+import help from "../assets/help.svg";
+import ReactTooltip from "react-tooltip";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -147,32 +147,65 @@ class MonthPicker extends Component {
         }
     }
 
+    /**
+     * This function renders the ? tooltip next to the right hand side date picker
+     * based on whether or not a future date is selected
+     */
+    renderToolTip = () => {
+        var date = new Date();
+        var currYear = date.getFullYear();
+        var currMonth = date.getMonth() + 1;
+        var upperYear = this.props.year;
+        var upperMonth = this.props.month + 1;
+        if (
+            upperYear > currYear ||
+            (upperYear === currYear && upperMonth > currMonth)
+        ) {
+            return (
+                <span className="help-icon-position">
+                    <img
+                        src={help}
+                        alt="Help Link"
+                        data-tip={"Some datasets are predictions"}
+                        data-place="top"
+                        data-html={true}
+                        data-class="future-date-tooltip"
+                    />
+                    <ReactTooltip type="dark" />
+                </span>
+            );
+        }
+    };
+
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
         return (
-            <table className="month-picker mui-table">
+            <table className="month-picker">
                 <tbody>
                     <tr>
                         <th colSpan="3">
-                            <Input
-                                type="year"
-                                placeholder="select a year"
-                                onChange={this.onChange}
-                                onFocus={this.onFocus}
-                                onBlur={this.onBlur}
-                                value={this.state.yearValue}
-                                className={`${
-                                    this.state.isDefault ? "is-default" : ""
-                                }`}
-                            />
-                            {this.renderPrompt()}
+                            <div className={"year-input-container"}>
+                                <input
+                                    type="year"
+                                    placeholder="select a year"
+                                    onChange={this.onChange}
+                                    onFocus={this.onFocus}
+                                    onBlur={this.onBlur}
+                                    value={this.state.yearValue}
+                                    className={`au-text-input au-text-input--block ${
+                                        this.state.isDefault ? "is-default" : ""
+                                    }`}
+                                />
+                                {!this.props.startDate && this.renderToolTip()}
+                                {this.renderPrompt()}
+                            </div>
                         </th>
                     </tr>
                     {MONTH_NAMES.map((m, i) => (
                         <tr key={m}>
                             {m.map((n, j) => (
                                 <td key={n}>
-                                    <Button
+                                    <button
                                         disabled={
                                             !this.checkMonthValid(
                                                 +this.state.yearValue,
@@ -183,7 +216,7 @@ class MonthPicker extends Component {
                                             this,
                                             monthIndex(i, j)
                                         )}
-                                        className={`btn-facet-option btn-month ${
+                                        className={`au-btn btn-facet-option btn-month ${
                                             this.props.month ===
                                                 monthIndex(i, j) &&
                                             this.checkMonthValid(
@@ -195,7 +228,7 @@ class MonthPicker extends Component {
                                         }`}
                                     >
                                         {n}
-                                    </Button>
+                                    </button>
                                 </td>
                             ))}
                         </tr>

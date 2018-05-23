@@ -39,10 +39,23 @@ class SearchSuggestionBox extends Component {
             recentSearches: this.retrieveLocalData("recentSearches"),
             selectedItemIdx: null
         };
+        this.cacheImgs();
         this.createSearchDataFromProps(this.props);
         this.searchInputRef = null;
         this.onSearchInputKeyDown = this.onSearchInputKeyDown.bind(this);
         this.containerRef = null;
+    }
+
+    cacheImgs() {
+        const cacheImg = img => {
+            const imgLoader = new Image();
+            imgLoader.src = img;
+            this.cacheImages.push(imgLoader);
+        };
+
+        this.cacheImages = [];
+        cacheImg(recentSearchIcon);
+        cacheImg(closeIcon);
     }
 
     retrieveLocalData(key): searchDataType {
@@ -165,7 +178,12 @@ class SearchSuggestionBox extends Component {
     saveRecentSearch(newProps, prevProps) {
         const searchData = this.createSearchDataFromProps(newProps);
         if (!searchData) return;
-        if (!searchData.data.q || !searchData.data.q.trim()) return;
+        if (
+            !searchData.data.q ||
+            !searchData.data.q.trim() ||
+            searchData.data.q.trim() === "*"
+        )
+            return;
         const currentSearchData = this.createSearchDataFromProps(prevProps);
         if (isEqual(currentSearchData, searchData)) return;
         const recentSearches = this.insertItemIntoLocalData(
@@ -248,9 +266,8 @@ class SearchSuggestionBox extends Component {
     }
 
     setupSearchInputListener(newProps) {
-        if (!newProps || !newProps.inputRef || !newProps.inputRef.controlEl)
-            return;
-        const newInputRef = newProps.inputRef.controlEl;
+        if (!newProps || !newProps.inputRef) return;
+        const newInputRef = newProps.inputRef;
         if (this.searchInputRef) {
             if (this.searchInputRef === newInputRef) return;
             this.searchInputRef.removeEventListener(
@@ -343,7 +360,7 @@ class SearchSuggestionBox extends Component {
                             }`}
                         >
                             <button
-                                className="mui-btn mui-btn--flat search-item-main-button"
+                                className="au-btn au-btn--tertiary search-item-main-button"
                                 onClick={e => this.onSearchItemClick(e, item)}
                             >
                                 <img
@@ -366,7 +383,7 @@ class SearchSuggestionBox extends Component {
                                 </Small>
                             </button>
                             <button
-                                className="mui-btn mui-btn--flat search-item-delete-button"
+                                className="au-btn au-btn--tertiary search-item-delete-button"
                                 onClick={e => this.onDeleteItemClick(e, idx)}
                             >
                                 <img alt="delete search item" src={closeIcon} />

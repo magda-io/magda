@@ -23,6 +23,7 @@ spec:
             "--dbHost", "authorization-db",
             "--dbPort", "5432"
         ]
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/public/users/{{ .Values.global.defaultAdminUserId }}
@@ -30,6 +31,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

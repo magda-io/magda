@@ -1,21 +1,42 @@
 $form-width: 700px;
 
 form {
-  max-width: $form-width;
+    max-width: $form-width;
 }
 
 .textarea-input {
-    width: -webkit-fill-available;
+    width: 100%;
+    width: -moz-available;
+    width: -webkit-stretch;
+    width: stretch;
     display: block;
     margin-bottom: 30px;
-    margin-top: 20px; }
-  
+    margin-top: 20px;
+}
+
 .suggest-page-input {
     display: block;
     width: 300px;
     margin-bottom: 30px;
-    margin-top: 10px; }
+    margin-top: 10px;
+}
 
 .submit-button {
-    float:right;
-}  
+    float: right;
+}
+
+.small-title {
+    font-weight: 500;
+}
+
+.input-field-error {
+    color: red;
+    display: block;
+    font-size: 14px;
+    margin-top: -20px;
+    margin-bottom: 10px;
+}
+
+.field-label {
+    font-weight: 500;
+}

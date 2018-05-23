@@ -33,82 +33,6 @@
 
 ga("create", "UA-92539508-1", "auto", "terria");
 
-// VWO
-var _vwo_code = (function() {
-    var account_id = 329812,
-        settings_tolerance = 2000,
-        library_tolerance = 2500,
-        use_existing_jquery = false,
-        /* DO NOT EDIT BELOW THIS LINE */
-        f = false,
-        d = document;
-    return {
-        use_existing_jquery: function() {
-            return use_existing_jquery;
-        },
-        library_tolerance: function() {
-            return library_tolerance;
-        },
-        finish: function() {
-            if (!f) {
-                f = true;
-                var a = d.getElementById("_vis_opt_path_hides");
-                if (a) a.parentNode.removeChild(a);
-            }
-        },
-        finished: function() {
-            return f;
-        },
-        load: function(a) {
-            var b = d.createElement("script");
-            b.src = a;
-            b.type = "text/javascript";
-            b.innerText;
-            b.onerror = function() {
-                _vwo_code.finish();
-            };
-            d.getElementsByTagName("head")[0].appendChild(b);
-        },
-        init: function() {
-            settings_timer = setTimeout(
-                "_vwo_code.finish()",
-                settings_tolerance
-            );
-            var a = d.createElement("style"),
-                b =
-                    "body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}",
-                h = d.getElementsByTagName("head")[0];
-            a.setAttribute("id", "_vis_opt_path_hides");
-            a.setAttribute("type", "text/css");
-            if (a.styleSheet) a.styleSheet.cssText = b;
-            else a.appendChild(d.createTextNode(b));
-            h.appendChild(a);
-            this.load(
-                "//dev.visualwebsiteoptimizer.com/j.php?a=" +
-                    account_id +
-                    "&u=" +
-                    encodeURIComponent(d.URL) +
-                    "&r=" +
-                    Math.random()
-            );
-            return settings_timer;
-        }
-    };
-})();
-_vwo_settings_timer = _vwo_code.init();
-
-var $buoop = { vs: { i: 10, f: -4, o: -4, s: 7, c: -4 }, api: 4 };
-function $buo_f() {
-    var e = document.createElement("script");
-    e.src = "//browser-update.org/update.min.js";
-    document.body.appendChild(e);
-}
-try {
-    document.addEventListener("DOMContentLoaded", $buo_f, false);
-} catch (e) {
-    window.attachEvent("onload", $buo_f);
-}
-
 // rollbar
 !(function(r) {
     function e(n) {
@@ -122,7 +46,6 @@ try {
     return (e.m = r), (e.c = o), (e.p = ""), e(0);
 })([
     function(r, e, o) {
-        "use strict";
         var n = o(1),
             t = o(4);
         (_rollbarConfig = _rollbarConfig || {}),
@@ -143,7 +66,6 @@ try {
             );
     },
     function(r, e, o) {
-        "use strict";
         function n(r) {
             return function() {
                 try {
@@ -161,14 +83,14 @@ try {
             (this.shimId = function() {
                 return o;
             }),
-                "undefined" != typeof window &&
+                "undefined" !== typeof window &&
                     window._rollbarShims &&
                     (window._rollbarShims[o] = { handler: e, messages: [] });
         }
         function a(r, e) {
             if (r) {
                 var o = e.globalAlias || "Rollbar";
-                if ("object" == typeof r[o]) return r[o];
+                if ("object" === typeof r[o]) return r[o];
                 (r._rollbarShims = {}), (r._rollbarWrappedError = null);
                 var t = new p(e);
                 return n(function() {
@@ -183,7 +105,7 @@ try {
                         e.enabled !== !1 &&
                             (void 0 === n ||
                                 n === !0 ||
-                                ("object" == typeof n && n.network)) &&
+                                ("object" === typeof n && n.network)) &&
                             r.addEventListener &&
                             (r.addEventListener("load", t.captureLoad.bind(t)),
                             r.addEventListener(
@@ -223,12 +145,12 @@ try {
                         )
                             for (o = o.messages || []; (n = o.shift()); )
                                 for (t = n.args || [], i = 0; i < t.length; ++i)
-                                    if (((l = t[i]), "function" == typeof l)) {
+                                    if (((l = t[i]), "function" === typeof l)) {
                                         l(e);
                                         break;
                                     }
                     }
-                    "function" == typeof a && a(e);
+                    "function" === typeof a && a(e);
                 },
                 i = !1,
                 s = e.createElement("script"),
@@ -260,12 +182,12 @@ try {
                     var n;
                     if (
                         ((n =
-                            "function" == typeof e
+                            "function" === typeof e
                                 ? e
                                 : function() {
                                       return e || {};
                                   }),
-                        "function" != typeof r)
+                        "function" !== typeof r)
                     )
                         return r;
                     if (r._isWrap) return r;
@@ -273,13 +195,13 @@ try {
                         !r._rollbar_wrapped &&
                         ((r._rollbar_wrapped = function() {
                             o &&
-                                "function" == typeof o &&
+                                "function" === typeof o &&
                                 o.apply(this, arguments);
                             try {
                                 return r.apply(this, arguments);
                             } catch (o) {
                                 var e = o;
-                                throw ("string" == typeof e &&
+                                throw ("string" === typeof e &&
                                     (e = new String(e)),
                                 (e._rollbarContext = n() || {}),
                                 (e._rollbarContext._wrappedSource = r.toString()),
@@ -310,11 +232,10 @@ try {
         r.exports = { setupShim: a, Rollbar: p };
     },
     function(r, e) {
-        "use strict";
         function o(r, e, o) {
             if (r) {
                 var t;
-                "function" == typeof e._rollbarOldOnError
+                "function" === typeof e._rollbarOldOnError
                     ? (t = e._rollbarOldOnError)
                     : r.onerror &&
                       !r.onerror.belongsToShim &&
@@ -336,7 +257,7 @@ try {
         }
         function t(r, e, o) {
             if (r) {
-                "function" == typeof r._rollbarURH &&
+                "function" === typeof r._rollbarURH &&
                     r._rollbarURH.belongsToShim &&
                     r.removeEventListener("unhandledrejection", r._rollbarURH);
                 var n = function(r) {
@@ -418,7 +339,6 @@ try {
         };
     },
     function(r, e) {
-        "use strict";
         function o(r, e) {
             (this.impl = r(e, this)), (this.options = e), n(o.prototype);
         }
@@ -446,7 +366,7 @@ try {
                 (n = o.method),
                     (t = o.args),
                     this[n] &&
-                        "function" == typeof this[n] &&
+                        "function" === typeof this[n] &&
                         ("captureDomContentLoaded" === n || "captureLoad" === n
                             ? this[n].apply(this, [t[0], o.ts])
                             : this[n].apply(this, t));
@@ -455,7 +375,6 @@ try {
             (r.exports = o);
     },
     function(r, e) {
-        "use strict";
         r.exports = function(r) {
             return function(e) {
                 if (!e && !window._rollbarInitialized) {

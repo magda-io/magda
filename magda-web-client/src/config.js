@@ -19,15 +19,18 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string
+    feedbackApiBaseUrl?: string,
+    correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-//this below const enables suggest a Dataset when enabled
+//this below const enables suggest/request/report dataset forms when enabled
 export const enableSuggestDatasetPage = true;
 export const correspondenceApiReportUrl =
-    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/:datasetId/report";
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/:datasetId/report";
 export const correspondenceApiUrl =
-    "https://magda-dev.terria.io/api/v0/correspondence/send/dataset/request";
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/request";
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
@@ -54,10 +57,7 @@ export const config = {
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
-    facetListSize: 5,
     resultsPerPage: 10,
-    descriptionLength: 50,
-    downloadLinksSize: 3,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
     breakpoints: {
@@ -78,32 +78,54 @@ export const config = {
         ["Publishers", "publishers"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
-    footerNavigation: [
-        {
-            category: "Data.gov.au",
-            links: [
-                ["About", "page/about"],
-                [
-                    "Suggest a dataset",
-                    !enableSuggestDatasetPage
-                        ? "mailto:data@digital.gov.au"
-                        : "suggest"
-                ],
-                ["Privacy Policy", "page/privacy-policy"]
-            ]
-        },
-        {
-            category: "Publishers",
-            links: [
-                ["Sign in", "https://data.gov.au/user/login"],
-                ["Open data toolkit", "https://toolkit.data.gov.au/"]
-            ]
-        },
-        {
-            category: "Developers",
-            links: [["Powered by Magda", "https://github.com/TerriaJS/magda/"]]
-        }
-    ],
+    footerNavigation: {
+        // small media query (mobile)
+        small: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Give feedback", "feedback"]
+                ]
+            }
+        ],
+        // medium media query and bigger (desktop)
+        medium: [
+            {
+                category: "Data.gov.au",
+                links: [
+                    ["About", "page/about"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
+                    ["Privacy Policy", "page/privacy-policy"]
+                ]
+            },
+            {
+                category: "Publishers",
+                links: [
+                    ["Sign in", "https://data.gov.au/user/login"],
+                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
+                ]
+            },
+            {
+                category: "Developers",
+                links: [
+                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                ]
+            }
+        ]
+    },
     months: [
         "Jan",
         "Feb",

@@ -74,7 +74,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
         {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP
-          value: {{ .Values.waleBackup.method | quote }}
+          value: {{ .Values.waleBackup.method | default "NONE" | quote }}
+        - name: BACKUP_RO
+          value: {{ .Values.waleBackup.readOnly | default "FALSE" | upper | quote }}
+        - name: BACKUP_RECOVERY_MODE
+          value: {{ .Values.waleBackup.recoveryMode | quote }}
         - name: WALE_S3_PREFIX
           value: {{ .Values.waleBackup.s3Prefix }}
         - name: AWS_ACCESS_KEY_ID
@@ -151,13 +155,15 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{- define "magda.postgresLivenessProbe" }}
+{{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           exec:
             command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432" ]
           initialDelaySeconds: 3600
           periodSeconds: 10
           timeoutSeconds: 1
-{{- end}}
+{{- end }}
+{{- end }}
 
 {{- define "magda.postgresLifecycle" }}
         lifecycle:

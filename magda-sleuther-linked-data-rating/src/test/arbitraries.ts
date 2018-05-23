@@ -34,10 +34,8 @@ const allFormatWords = new RegExp(
  * Generates a format string that will match the desired star count.
  */
 export const formatArb = (starCount: number): jsc.Arbitrary<string> => {
-    if (starCount === 0) {
-        return jsc.oneof([2, 3, 4].map(x => formatArb(x)));
-    } else if (starCount === 1) {
-        return jsc.elements(ZERO_STAR_LICENSES);
+    if (starCount === 0 || starCount === 1) {
+        return jsc.elements(["oaeirjga", "geragcre", "blerghgrr"]);
     } else {
         const innerArb = fuzzStringArbResult(
             jsc.elements(openFormats[starCount]),
@@ -91,9 +89,10 @@ export function recordForHighestStarCountArb(
             const dists = x.map(({ dist }) => dist);
             return recordArbWithDists(dists);
         },
-        record =>
-            record.aspects["dataset-distributions"].distributions.map(
+        record => {
+            return record.aspects["dataset-distributions"].distributions.map(
                 (dist: Record) => dist.aspects["dcat-distribution-strings"]
-            )
+            );
+        }
     );
 }

@@ -3,6 +3,15 @@
 .dataset-summary {
     height: auto;
     clear: both;
+    a {
+        text-decoration: none;
+        &:hover,
+        &:focus {
+            color: $body;
+            background: transparent;
+            border-bottom: solid 1px #ffffff;
+        }
+    }
     .dataset-summary-title {
         @include AU-fontgrid(md);
         font-weight: 300;
@@ -13,10 +22,10 @@
         opacity: 0.75;
         @include AU-fontgrid(xs);
         margin-bottom: 5px;
+        display: inline-block;
     }
 
     .dataset-summary-description {
-        opacity: 0.5;
         @include AU-fontgrid(xs);
         margin-bottom: 8px;
         overflow: hidden;
@@ -39,12 +48,6 @@
         margin-right: 24px;
     }
 
-    .dataset-summary-downloads,
-    .dataset-summary-updated,
-    .dataset-summary-quality {
-        float: left;
-    }
-
     .dataset-summary-downloads {
         span {
             color: $AU-color-foreground-action;
@@ -60,5 +63,12 @@
                 content: "";
             }
         }
+    }
+
+    .dataset-summary-downloads,
+    .dataset-summary-updated,
+    .dataset-summary-quality {
+        float: left;
+        line-height: 1.5em;
     }
 }

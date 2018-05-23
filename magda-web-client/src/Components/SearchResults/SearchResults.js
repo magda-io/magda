@@ -23,7 +23,7 @@ class SearchResults extends Component {
         return (
             <div className="search-results">
                 {this.getSummaryText()}
-                <ul className="mui-list--unstyled">
+                <ul className="list--unstyled">
                     {this.props.searchResults.map(
                         (result, i) =>
                             //show the request dataset form only after the first result

@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
 import { bindActionCreators } from "redux";
@@ -66,7 +67,9 @@ class RecordHandler extends React.Component {
         const publisherName = this.props.dataset.publisher.name;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
-        // const publisherId = this.props.dataset.publisher ? this.props.dataset.publisher.id : null;
+        const publisherId = this.props.dataset.publisher
+            ? this.props.dataset.publisher.id
+            : null;
 
         if (this.props.match.params.distributionId) {
             if (this.props.distributionIsFetching) {
@@ -141,31 +144,43 @@ class RecordHandler extends React.Component {
                 )}`;
 
                 return (
-                    <div>
-                        <div>
-                            {!this.state.hideHeader && (
-                                <h1 className="dataset-title">
-                                    {this.props.dataset.title}
-                                </h1>
-                            )}
-                            <DatasetSuggestForm
-                                title={this.props.dataset.title}
-                                toggleHeader={this.toggleHeader}
-                                datasetId={this.props.dataset.identifier}
-                            />
-                        </div>
+                    <div itemScope itemType="http://schema.org/Dataset">
+                        <DatasetSuggestForm
+                            title={this.props.dataset.title}
+                            toggleHeader={this.toggleHeader}
+                            datasetId={this.props.dataset.identifier}
+                        />
+                        <h1 className="dataset-title" itemProp="name">
+                            {this.props.dataset.title}
+                        </h1>
                         <div className="publisher-basic-info-row">
-                            <span className="publisher">{publisherName}</span>
-                            <span className="separator hidden-sm">/</span>
+                            <span
+                                itemProp="publisher"
+                                itemScope
+                                itemType="http://schema.org/Organization"
+                            >
+                                <Link to={`/publishers/${publisherId}`}>
+                                    {publisherName}
+                                </Link>
+                            </span>
+                            <span className="separator hidden-sm"> / </span>
                             {defined(this.props.dataset.issuedDate) && (
                                 <span className="updated-date hidden-sm">
-                                    Created {this.props.dataset.issuedDate}&nbsp;
+                                    Created{" "}
+                                    <span itemProp="dateCreated">
+                                        {this.props.dataset.issuedDate}
+                                    </span>&nbsp;
                                 </span>
                             )}
-                            <span className="separator hidden-sm">/</span>
+                            <span className="separator hidden-sm">
+                                &nbsp;/&nbsp;
+                            </span>
                             {defined(this.props.dataset.updatedDate) && (
                                 <span className="updated-date hidden-sm">
-                                    Updated {this.props.dataset.updatedDate}
+                                    Updated{" "}
+                                    <span itemProp="dateModified">
+                                        {this.props.dataset.updatedDate}
+                                    </span>
                                 </span>
                             )}
                         </div>

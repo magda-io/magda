@@ -19,12 +19,16 @@ export default class Suggest extends React.Component {
             time taken to action your request may vary depending
             on the nature of the request.`,
             successHeader: "Your request has been sent!",
-            failMessage: "Error sending form",
-            failHeader: "There was an error sending your form!"
+            failMessage: null,
+            failHeader: "Uh oh. We've run into an error. Please try again."
         };
 
         return (
-            <RequestFormLogic formProps={formProps} alertProps={alertProps} />
+            <RequestFormLogic
+                formProps={formProps}
+                alertProps={alertProps}
+                requestType="request"
+            />
         );
     }
 }

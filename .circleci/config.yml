@@ -15,7 +15,7 @@ jobs:
 #                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
-          command: 'sudo npm install -g npm@latest lerna @gov.au/pancake'
+          command: 'sudo yarn global add npm@latest lerna @gov.au/pancake'
       - restore_cache:
           key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
@@ -31,7 +31,7 @@ jobs:
           command: ./node_modules/.bin/eslint magda-web-client/src/
       - run:
           name: npm build
-          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 npm run build
+          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 yarn run build
 
       - store_artifacts:
           path: lerna-debug.log

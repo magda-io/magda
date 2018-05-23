@@ -9,7 +9,7 @@ function StarRating(props) {
         .fill(emptyStarIcon)
         .fill(starIcon, 0, props.stars);
     return (
-        <span className="star-rating-box">
+        <div className="star-rating-box">
             {stars.map((icon, i) => (
                 <span
                     key={i}
@@ -18,10 +18,9 @@ function StarRating(props) {
                     }
                 >
                     <img key={i} src={icon} alt="star rating" />
-                    &nbsp;
                 </span>
             ))}
-        </span>
+        </div>
     );
 }
 

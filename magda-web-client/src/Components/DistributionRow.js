@@ -3,13 +3,13 @@ import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import type { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import Button from "muicss/lib/react/button";
 import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
+import ga from "../analytics/googleAnalytics";
 import ReactTooltip from "react-tooltip";
 const formatIcons = {
     default: defaultFormatIcon
@@ -31,47 +31,47 @@ dataFormatCategories.forEach(item => {
 });
 const CategoryDetermineConfigItems = [
     {
-        regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS/,
+        regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS|ESRI REST/i,
         category: "gis"
     },
     {
-        regex: /api|webservice| web service/,
+        regex: /api|webservice| web service/i,
         category: "api"
     },
     {
-        regex: /zip|7z|rar|arj/,
+        regex: /zip|7z|rar|arj/i,
         category: "archive"
     },
     {
-        regex: /doc|pdf|docx|txt|plaintext/,
+        regex: /doc|pdf|docx|txt|plaintext/i,
         category: "document"
     },
     {
-        regex: /html|htm|web page|web site/,
+        regex: /html|htm|web page|web site/i,
         category: "html"
     },
     {
-        regex: /^www:/,
+        regex: /^www:/i,
         category: "html"
     },
     {
-        regex: /jpg|gif|jpeg/,
+        regex: /jpg|gif|jpeg/i,
         category: "image-raster"
     },
     {
-        regex: /svg|png/,
+        regex: /svg|png/i,
         category: "image-vector"
     },
     {
-        regex: /ppt|pptx/,
+        regex: /ppt|pptx/i,
         category: "presentation"
     },
     {
-        regex: /xlsx|xls/,
+        regex: /xlsx|xls/i,
         category: "spreadsheet"
     },
     {
-        regex: /csv|tab/,
+        regex: /csv|tab/i,
         category: "tabular"
     }
 ];
@@ -131,7 +131,12 @@ class DistributionRow extends Component {
             }`;
 
         return (
-            <div className="distribution-row row">
+            <div
+                className="distribution-row row"
+                itemProp="distribution"
+                itemScope
+                itemType="http://schema.org/DataDownload"
+            >
                 <div className="col-sm-9">
                     <div className="row">
                         <Medium>
@@ -154,20 +159,27 @@ class DistributionRow extends Component {
                                 {!distribution.downloadURL &&
                                 distribution.accessURL ? (
                                     <div>
-                                        {distribution.title}({
-                                            distribution.format
-                                        })
+                                        <span itemProp="name">
+                                            {distribution.title}
+                                        </span>(<span itemProp="fileFormat">
+                                            {distribution.format}
+                                        </span>)
                                     </div>
                                 ) : (
                                     <Link to={distributionLink}>
-                                        {distribution.title}({
-                                            distribution.format
-                                        })
+                                        <span itemProp="name">
+                                            {distribution.title}
+                                        </span>(<span itemProp="fileFormat">
+                                            {distribution.format}
+                                        </span>)
                                     </Link>
                                 )}
                             </div>
 
-                            <div className="distribution-row-link-license">
+                            <div
+                                className="distribution-row-link-license"
+                                itemProp="license"
+                            >
                                 {distribution.license &&
                                     (typeof distribution.license === "string"
                                         ? distribution.license
@@ -180,8 +192,8 @@ class DistributionRow extends Component {
                 </div>
                 <div className="col-md-3 button-area">
                     {distribution.downloadURL ? (
-                        <Button
-                            className="download-button"
+                        <button
+                            className="download-button au-btn au-btn--secondary"
                             onClick={() => {
                                 if (!distribution.downloadURL) {
                                     this.props.dispatch(
@@ -198,8 +210,8 @@ class DistributionRow extends Component {
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
                                 );
-                                if (resource_url && window.ga) {
-                                    window.ga("send", {
+                                if (resource_url) {
+                                    ga("send", {
                                         hitType: "event",
                                         eventCategory: "Resource",
                                         eventAction: "Download",
@@ -210,17 +222,23 @@ class DistributionRow extends Component {
                             }}
                         >
                             <img src={downloadIcon} alt="download" />
-                            <span className="button-text">Download</span>
-                        </Button>
-                    ) : null}
-                    <Button
-                        className="new-tab-button"
+                            <a
+                                className="button-text"
+                                itemProp="contentUrl"
+                                href={distribution.downloadURL}
+                            >
+                                Download
+                            </a>
+                        </button>
+                    ) : null}{" "}
+                    <button
+                        className="au-btn au-btn--secondary new-tab-button"
                         onClick={() => {
                             window.open(distributionLink, distribution.title);
                         }}
                     >
                         <img src={newTabIcon} alt="new tab" />
-                    </Button>
+                    </button>
                 </div>
             </div>
         );

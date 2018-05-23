@@ -5,7 +5,7 @@ import DataPreviewTable from "../../UI/DataPreviewTable";
 import DataPreviewTextBox from "../../UI/DataPreviewTextBox";
 import DataPreviewGoogleViewer from "../../UI/DataPreviewGoogleViewer";
 import DataPreviewJson from "../../UI/DataPreviewJson";
-import DataPreviewVega from "../../UI/DataPreviewVega";
+import DataPreviewChart from "../../UI/DataPreviewChart";
 import DataPreviewNews from "../../UI/DataPreviewNews";
 import ProgressBar from "../../UI/ProgressBar";
 
@@ -29,7 +29,7 @@ class DistributionPreview extends Component {
         if (compatiblePreviews.map) {
             return <DataPreviewMap distributions={[this.props.distribution]} />;
         } else if (compatiblePreviews.chart) {
-            DataPreviewComponent = DataPreviewVega;
+            DataPreviewComponent = DataPreviewChart;
         } else if (compatiblePreviews.table) {
             DataPreviewComponent = DataPreviewTable;
         } else if (compatiblePreviews.json) {

@@ -38,11 +38,11 @@ export default class DatasetSuggestForm extends React.Component {
         const formProps = {
             title: "Ask a question about " + this.props.title,
             smallTitle: true,
-            namePlaceHolder: "Irving Washingtonnn",
+            namePlaceHolder: "Irving Washington",
             emailPlaceHolder: "washington.irving@mail.com",
             textAreaPlaceHolder:
-                "Location of all industrial solar plants in Victoria",
-            textAreaLabel: "What sort of data are you looking for?"
+                "Ask a question or report a problem about this dataset.",
+            textAreaLabel: "What would you like to ask about this dataset?"
         };
         const alertProps = {
             successMessage: `Someone from the Australian Digital Transformation
@@ -51,8 +51,8 @@ export default class DatasetSuggestForm extends React.Component {
             time taken to action your request may vary depending
             on the nature of the request.`,
             successHeader: "Your request has been sent!",
-            failMessage: "Error sending form",
-            failHeader: "There was an error sending your form!"
+            failMessage: null,
+            failHeader: "Uh oh. There was an error sending your form!"
         };
         return (
             <div>

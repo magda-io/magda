@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./ToggleList.css";
-import Button from "muicss/lib/react/button";
 
 class ToggleList extends Component {
     constructor(props) {
@@ -25,9 +24,7 @@ class ToggleList extends Component {
         let size = this.state.isExpanded ? list.length : tempSize;
         return (
             <ul
-                className={`mui-list--unstyled toggle-list ${
-                    this.props.className
-                }`}
+                className={`list--unstyled toggle-list ${this.props.className}`}
             >
                 {list
                     .slice(0, size)
@@ -38,11 +35,14 @@ class ToggleList extends Component {
                     ))}
                 {list.length - tempSize > 0 && (
                     <li>
-                        <Button onClick={this.onClick}>
+                        <button
+                            className="au-btn au-btn--tertiary"
+                            onClick={this.onClick}
+                        >
                             {this.state.isExpanded
                                 ? `Show less`
                                 : `+ Show ${list.length - tempSize} more`}
-                        </Button>
+                        </button>
                     </li>
                 )}
             </ul>
