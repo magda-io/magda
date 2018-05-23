@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
 import downArrowDark from "../../assets/downArrowDark.svg";
+import ClearAllButtom from "./ClearAllButton";
 
 import "./SearchFacets.css";
 
@@ -82,6 +83,7 @@ class SearchFacets extends Component {
                         />
                     </div>
                 ))}
+                <ClearAllButtom key={"clear-all-button"} />
             </div>
         );
     }
@@ -112,6 +114,9 @@ class SearchFacets extends Component {
                             />
                         </div>
                     ))}
+                {this.state.showFilterOnMobile && (
+                    <ClearAllButtom key={"clear-all-button"} />
+                )}
                 {this.state.openFacet && (
                     <div className="mobile-facet-background" />
                 )}
