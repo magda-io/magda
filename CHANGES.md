@@ -64,6 +64,7 @@
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
 *   Made all data.gov.au environments use mailgun.
+*   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 
 ## 0.0.38
 
