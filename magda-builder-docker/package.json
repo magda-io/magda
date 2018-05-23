@@ -6,7 +6,8 @@
         "docker-build-prod":
             "create-docker-context-for-node-component --build --push",
         "docker-build-local":
-            "create-docker-context-for-node-component --build --push --local"
+            "create-docker-context-for-node-component --build --push --local",
+        "retag-and-push": "retag-and-push"
     },
     "author": "",
     "license": "Apache-2.0",

@@ -124,7 +124,7 @@ if (argv.build) {
             shell: true
         }
     );
-    const tags = getTags(argv.tag, argv.local, argv.repository);
+    const tags = getTags(argv.tag, argv.local, argv.repository, argv.version);
     const tagArgs = tags
         .map(tag => ["-t", tag])
         .reduce((soFar, tagArgs) => soFar.concat(tagArgs), []);

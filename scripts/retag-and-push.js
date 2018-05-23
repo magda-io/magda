@@ -1,9 +1,24 @@
 #!/usr/bin/env node
-const fs = require("fs-extra");
-const klawSync = require("klaw-sync");
-const path = require("path");
+
 const yargs = require("yargs");
-const { getVersion, getName } = require("./docker-util");
+const childProcess = require("child_process");
+const {
+    getVersions,
+    getTags,
+    getName,
+    getRepository
+} = require("./docker-util");
+
+// Docker and ConEmu (an otherwise excellent console for Windows) don't get along.
+// See: https://github.com/Maximus5/ConEmu/issues/958 and https://github.com/moby/moby/issues/28814
+// So if we're running under ConEmu, we need to add an extra -cur_console:i parameter to disable
+// ConEmu's hooks and also set ConEmuANSI to OFF so Docker doesn't do anything drastic.
+const env = Object.assign({}, process.env);
+const extraParameters = [];
+if (env.ConEmuANSI === "ON") {
+    env.ConEmuANSI = "OFF";
+    extraParameters.push("-cur_console:i");
+}
 
 const argv = yargs
     .config()
@@ -11,32 +26,45 @@ const argv = yargs
     .option("fromPrefix", {
         describe: "The prefix of the image that will be given a new tag",
         type: "string",
-        example: "registry.gitlab.com/magda-data/data61/",
-        demandOption: true
+        example: "registry.gitlab.com/magda-data/",
+        default: ""
     })
     .option("fromVersion", {
         describe:
             "The version of the existing image that will be given a new tag",
         type: "string",
         example: "0.0.38-RC1",
-        demandOption: true
+        default: getVersions()[0]
     })
     .option("toPrefix", {
         describe: "The prefix for the tag to push to",
         type: "string",
-        example: "data61/",
-        demandOption: true
+        example: "registry.gitlab.com/magda-data/",
+        default: ""
+    })
+    .option("toVersion", {
+        describe: "The version for the tag to push to",
+        type: "string",
+        example: "0.0.39",
+        default: getVersions()[0]
     }).argv;
 
-const dockerProcess = childProcess.spawnSync(
+const toTag = argv.toPrefix + getName() + ":" + argv.toVersion;
+
+const tagProcess = childProcess.spawnSync(
     "docker",
-    [
-        "tag",
-        argv.fromPrefix + getName() + ":" + argv.fromVersion,
-        argv.toPrefix + getName() + ":" + getTag()
-    ],
+    ["tag", argv.fromPrefix + getName() + ":" + argv.fromVersion, toTag],
     {
         stdio: ["pipe", "inherit", "inherit"],
         env: env
     }
 );
+
+if (tagProcess.status !== 0) {
+    process.exit(tagProcess.status);
+}
+
+const pushProcess = childProcess.spawnSync("docker", ["push", toTag], {
+    stdio: ["pipe", "inherit", "inherit"],
+    env: env
+});

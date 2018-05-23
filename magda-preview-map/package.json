@@ -101,6 +101,7 @@
             "create-docker-context-for-node-component --build --push --tag auto --local",
         "docker-build-prod":
             "create-docker-context-for-node-component --build --push --tag auto",
+        "retag-and-push": "retag-and-push",
         "compile": "gulp release",
         "build": "yarn run gulp release",
         "dev": "npm start && gulp watch"

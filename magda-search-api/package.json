@@ -10,6 +10,7 @@
         "docker-build-local":
             "cd .. && sbt \"-Drepository=localhost:5000\" searchApi/dockerBuildAndPush",
         "docker-build-prod": "cd .. && sbt searchApi/dockerBuildAndPush",
+        "retag-and-push": "retag-and-push",
         "start": "cd .. && sbt searchApi/run",
         "dev": "cd .. && sbt ~searchApi/relaunch"
     },

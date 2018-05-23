@@ -9,6 +9,7 @@
         "docker-build-local":
             "cd .. && sbt \"-Drepository=localhost:5000\" indexer/dockerBuildAndPush",
         "docker-build-prod": "cd .. && sbt indexer/dockerBuildAndPush",
+        "retag-and-push": "retag-and-push",
         "start": "cd .. && sbt indexer/run",
         "dev": "cd .. && sbt ~indexer/relaunch"
     },

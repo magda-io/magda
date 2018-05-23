@@ -11,6 +11,7 @@
             "create-docker-context-for-node-component --build --push --tag auto --local",
         "docker-build-prod":
             "create-docker-context-for-node-component --build --push --tag auto",
+        "retag-and-push": "retag-and-push",
         "test":
             "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
     },

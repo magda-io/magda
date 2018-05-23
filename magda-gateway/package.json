@@ -14,7 +14,8 @@
         "docker-build-local":
             "create-docker-context-for-node-component --build --push --tag auto --local",
         "docker-build-prod":
-            "create-docker-context-for-node-component --build --push --tag auto"
+            "create-docker-context-for-node-component --build --push --tag auto",
+        "retag-and-push": "retag-and-push"
     },
     "dependencies": {
         "@magda/typescript-common": "^0.0.39-0",

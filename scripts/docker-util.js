@@ -12,17 +12,17 @@ exports.getName = function getName() {
     return process.env.npm_package_config_docker_name
         ? process.env.npm_package_config_docker_name
         : process.env.npm_package_name
-            ? process.env.npm_package_name
+            ? "data61/magda-" + process.env.npm_package_name.split("/")[1]
             : "UnnamedImage";
 };
 
-exports.getTags = function getTags(tag, local, repository) {
+exports.getTags = function getTags(tag, local, repository, version) {
     if (tag === "auto") {
-        return exports.getVersions().map(version => {
+        return exports.getVersions(local, version).map(version => {
             const tagPrefix = exports.getRepository(local, repository);
             const name = exports.getName();
 
-            return (tag = tagPrefix + name + ":" + version);
+            return tagPrefix + name + ":" + version;
         });
     } else {
         return tag ? [tag] : [];
