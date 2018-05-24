@@ -14,7 +14,7 @@ type Query = {
     page: number
 };
 
-export default function(query: Query) {
+export default function buildSearchQueryString(query: Query) {
     let keywords = queryToString("query", query.q);
     let dateFroms = queryToString("dateFrom", query.dateFrom);
     let dateTos = queryToString("dateTo", query.dateTo);
