@@ -53,7 +53,7 @@ class Publisher extends Component {
     render() {
         return (
             <FacetBasic
-                title="publisher"
+                title="organisation"
                 id="publisher"
                 hasQuery={Boolean(this.props.activePublishers.length)}
                 options={this.props.publisherOptions}

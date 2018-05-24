@@ -175,7 +175,7 @@ storiesOf("API viewer", module)
             type="table"
         />
     ))
-    .add("publishers viewer", () => (
+    .add("organisations viewer", () => (
         <ApiViewer
             url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"
             type="table"

@@ -161,7 +161,7 @@ class SearchSuggestionBox extends Component {
                     this.createSearchOptionListTextFromArray(data.format) +
                     " format"
             );
-        if (data.publisher)
+        if (data.organisation)
             filters.push(
                 "from publisher " +
                     this.createSearchOptionListTextFromArray(data.publisher)

@@ -151,7 +151,7 @@ export const defaultPublisher: Publisher = {
             name: "",
             title: "",
             imageUrl: "",
-            description: "No Description available for this publisher"
+            description: "No Description available for this organisation"
         }
     }
 };

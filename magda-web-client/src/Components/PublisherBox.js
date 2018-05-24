@@ -8,13 +8,15 @@ export default function PublisherBox(props) {
         <div className="white-box publisher-box">
             <div className="inner">
                 <h3>
-                    <Link to={`publishers/${encodeURIComponent(publisher.id)}`}>
+                    <Link
+                        to={`organisations/${encodeURIComponent(publisher.id)}`}
+                    >
                         {publisher.name}
                     </Link>
                 </h3>
                 <div className="">{publisher["description"]}</div>
                 <Link
-                    to={`/search?publisher=${encodeURIComponent(
+                    to={`/search?organisation=${encodeURIComponent(
                         publisher.name
                     )}`}
                 >
