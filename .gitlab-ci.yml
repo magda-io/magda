@@ -515,7 +515,8 @@ release-tags-to-docker-hub:
   stage: release
   only:
     - /^v.*$/
-  dependencies: []
+  dependencies:
+    - builders-and-yarn
   except:
     - branches
     - triggers
