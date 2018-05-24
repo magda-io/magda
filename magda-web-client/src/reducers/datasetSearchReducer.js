@@ -49,7 +49,7 @@ const datasetSearchReducer = (
     switch (action.type) {
         case "REQUEST_RESULTS":
             let queryObject = action.queryObject;
-            let activePub = queryFilterFormat(queryObject.publisher);
+            let activePub = queryFilterFormat(queryObject.organisation);
             let activeFormat = queryFilterFormat(queryObject.format);
             let regionSelected = regionToObject(queryObject);
             return Object.assign({}, state, {
