@@ -523,6 +523,8 @@ release-tags-to-docker-hub:
     - branches
     - triggers
   cache: {}
+  services:
+    - docker:dind
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   script:
