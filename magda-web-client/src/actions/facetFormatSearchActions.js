@@ -4,22 +4,18 @@ import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import type { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
+import buildSearchQueryString from "../helpers/buildSearchQueryString";
 
-export function requestFormats(generalQuery: string): FacetAction {
+export function requestFormats(): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_FORMATS,
-        generalQuery
+        type: actionTypes.FACET_REQUEST_FORMATS
     };
 }
 
-export function receiveFormats(
-    generalQuery: string,
-    json: Object
-): FacetAction {
+export function receiveFormats(json: Object): FacetAction {
     return {
         type: actionTypes.FACET_RECEIVE_FORMATS,
-        json: json,
-        generalQuery
+        json: json
     };
 }
 
@@ -30,31 +26,53 @@ export function requestFormatsFailed(error: Object): FacetAction {
     };
 }
 
-export function fetchFormatSearchResults(generalQuery: string): Object {
+export function resetFormatSearch(): FacetAction {
+    return {
+        type: actionTypes.FACET_RESET_FORMATS
+    };
+}
+
+export function fetchFormatSearchResults(
+    generalQuery: object,
+    facetQuery: string
+): Object {
     return (dispatch: Function) => {
-        dispatch(requestFormats(generalQuery));
-        let url: string =
-            config.searchApiUrl +
-            `facets/format/options?generalQuery=${encodeURIComponent(
-                generalQuery
-            )}&start=0&limit=10000`;
-        return fetch(url)
-            .then(response => {
-                if (response.status === 200) {
-                    return response.json();
-                }
-                throw new Error(response.statusText);
-            })
-            .then((json: FacetSearchJson) => {
-                return dispatch(receiveFormats(generalQuery, json));
-            })
-            .catch(error =>
-                dispatch(
-                    requestFormatsFailed({
-                        title: error.name,
-                        detail: error.message
-                    })
-                )
-            );
+        if (facetQuery && facetQuery.length > 0) {
+            dispatch(requestFormats(generalQuery));
+
+            const generalQueryString = buildSearchQueryString({
+                ...generalQuery,
+                start: 0,
+                limit: 10,
+                q: null
+            });
+
+            const url: string =
+                config.searchApiUrl +
+                `facets/format/options?generalQuery=${encodeURIComponent(
+                    generalQuery.q
+                )}&${generalQueryString}&facetQuery=${facetQuery}`;
+
+            return fetch(url)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                    throw new Error(response.statusText);
+                })
+                .then((json: FacetSearchJson) => {
+                    return dispatch(receiveFormats(json));
+                })
+                .catch(error =>
+                    dispatch(
+                        requestFormatsFailed({
+                            title: error.name,
+                            detail: error.message
+                        })
+                    )
+                );
+        } else {
+            return dispatch(resetFormatSearch());
+        }
     };
 }

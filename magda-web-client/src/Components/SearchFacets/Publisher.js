@@ -61,7 +61,6 @@ class Publisher extends Component {
                     this.props.publisherOptions
                 }
                 activeOptions={this.props.activePublishers}
-                facetSearchResults={this.props.publisherSearchResults}
                 onToggleOption={this.onTogglePublisherOption}
                 onResetFacet={this.onResetPublisherFacet}
                 searchFacet={this.onSearchPublisherFacet}
