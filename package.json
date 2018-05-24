@@ -33,7 +33,8 @@
             "yarn run build-changed-ts && yarn run build-changed-scala",
         "prettier":
             "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
-        "precommit": "pretty-quick --staged"
+        "precommit": "pretty-quick --staged",
+        "retag-and-push": "lerna run retag-and-push"
     },
     "pancake": {
         "auto-save": true,
