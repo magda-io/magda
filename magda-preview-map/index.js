@@ -84,7 +84,8 @@ terria
         })
     })
     .otherwise(function(e) {
-        raiseErrorToUser(terria, e);
+        if (console && console.log) console.log(e);
+        //raiseErrorToUser(terria, e);
     })
     .always(function() {
         try {
