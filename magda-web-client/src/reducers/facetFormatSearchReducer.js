@@ -3,8 +3,7 @@ import type { FacetAction, FacetSearchState } from "../helpers/datasetSearch";
 
 const initialData = {
     isFetching: false,
-    data: [],
-    generalQuery: "",
+    data: null,
     error: null
 };
 
@@ -18,17 +17,21 @@ const facetFormatSearch = (
                 isFetching: true,
                 error: null
             });
+        case "FACET_RESET_FORMATS":
+            return Object.assign({}, state, {
+                error: null,
+                data: null
+            });
         case "FACET_RECEIVE_FORMATS":
             return Object.assign({}, state, {
                 isFetching: false,
                 error: null,
-                data: action.json && action.json.options && action.json.options,
-                generalQuery: action.generalQuery && action.generalQuery
+                data: action.json && action.json.options && action.json.options
             });
         case "FACET_REQUEST_FORMATS_FAILED":
             return Object.assign({}, state, {
                 isFetching: false,
-                data: [],
+                data: null,
                 error: action.error
             });
         default:
