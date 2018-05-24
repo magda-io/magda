@@ -3,7 +3,7 @@ import type { FacetAction, FacetSearchState } from "../helpers/datasetSearch";
 
 const initialData = {
     isFetching: false,
-    data: [],
+    data: null,
     generalQuery: "",
     error: null
 };
@@ -18,6 +18,12 @@ const facetPublisher = (
                 isFetching: true,
                 error: null
             });
+        case "FACET_RESET_PUBLISHERS":
+            return Object.assign({}, state, {
+                error: null,
+                data: null,
+                generalQuery: action.generalQuery
+            });
         case "FACET_RECEIVE_PUBLISHERS":
             return Object.assign({}, state, {
                 isFetching: false,
@@ -27,7 +33,7 @@ const facetPublisher = (
         case "FACET_REQUEST_PUBLISHERS_FAILED":
             return Object.assign({}, state, {
                 isFetching: false,
-                data: [],
+                data: null,
                 error: action.error
             });
         default:
