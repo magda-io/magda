@@ -64,6 +64,9 @@
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
 *   Made all data.gov.au environments use mailgun.
+*   Map Preview: Set default camera to Australia & set map to 2d
+*   Map Preview: Mute errors from users
+*   Map Preview: Report selected distribution to console
 
 ## 0.0.38
 
