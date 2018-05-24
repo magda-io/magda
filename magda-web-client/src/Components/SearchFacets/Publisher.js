@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import { fetchPublisherSearchResults } from "../../actions/facetPublisherSearchActions";
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
-import queryString from "query-string";
+
 class Publisher extends Component {
     constructor(props) {
         super(props);
@@ -46,10 +46,7 @@ class Publisher extends Component {
 
     onSearchPublisherFacet(facetQuery) {
         this.props.dispatch(
-            fetchPublisherSearchResults(
-                queryString.parse(this.props.location.search).q || "*",
-                facetQuery
-            )
+            fetchPublisherSearchResults(this.props.generalQuery, facetQuery)
         );
     }
 
@@ -82,7 +79,8 @@ function mapStateToProps(state) {
     return {
         publisherOptions: datasetSearch.publisherOptions,
         activePublishers: datasetSearch.activePublishers,
-        publisherSearchResults: facetPublisherSearch.data
+        publisherSearchResults: facetPublisherSearch.data,
+        generalQuery: datasetSearch.queryObject
     };
 }
 

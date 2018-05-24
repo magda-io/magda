@@ -5,14 +5,11 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import type { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
 import type { FetchError } from "../types";
+import buildSearchQueryString from "../helpers/buildSearchQueryString";
 
-export function requestPublishers(
-    generalQuery: string,
-    facetQuery
-): FacetAction {
+export function requestPublishers(facetQuery): FacetAction {
     return {
         type: actionTypes.FACET_REQUEST_PUBLISHERS,
-        generalQuery,
         facetQuery
     };
 }
@@ -25,22 +22,19 @@ export function requestPublishersFailed(error: FetchError): FacetAction {
 }
 
 export function receivePublishers(
-    generalQuery: string,
     facetQuery: string,
     json: Object
 ): FacetAction {
     return {
         type: actionTypes.FACET_RECEIVE_PUBLISHERS,
         json: json,
-        generalQuery,
         facetQuery
     };
 }
 
-export function resetPublisherSearch(generalQuery: string): FacetAction {
+export function resetPublisherSearch(): FacetAction {
     return {
-        type: actionTypes.FACET_RESET_PUBLISHERS,
-        generalQuery
+        type: actionTypes.FACET_RESET_PUBLISHERS
     };
 }
 
@@ -49,16 +43,21 @@ export function fetchPublisherSearchResults(
     facetQuery: string
 ) {
     return (dispatch: FacetAction => void) => {
-        console.log(facetQuery);
-
         if (facetQuery && facetQuery.length > 0) {
-            dispatch(requestPublishers(generalQuery, facetQuery));
+            dispatch(requestPublishers(facetQuery));
+
+            const generalQueryString = buildSearchQueryString({
+                ...generalQuery,
+                start: 0,
+                limit: 10,
+                q: null
+            });
 
             return fetch(
                 config.searchApiUrl +
                     `facets/publisher/options?generalQuery=${encodeURIComponent(
-                        generalQuery
-                    )}&facetQuery=${facetQuery}&start=0&limit=10`
+                        generalQuery.q
+                    )}&${generalQueryString}&facetQuery=${facetQuery}`
             )
                 .then(response => {
                     if (response.status !== 200) {
@@ -68,9 +67,7 @@ export function fetchPublisherSearchResults(
                     }
                 })
                 .then((json: FacetSearchJson) => {
-                    return dispatch(
-                        receivePublishers(generalQuery, facetQuery, json)
-                    );
+                    return dispatch(receivePublishers(facetQuery, json));
                 })
                 .catch(error =>
                     dispatch(
@@ -81,7 +78,7 @@ export function fetchPublisherSearchResults(
                     )
                 );
         } else {
-            return dispatch(resetPublisherSearch(generalQuery));
+            return dispatch(resetPublisherSearch());
         }
     };
 }
