@@ -1,3 +1,7 @@
+## 0.0.40
+
+*   Changed Publishers to Organisations in UI
+
 ## 0.0.39
 
 *   remove MUI
