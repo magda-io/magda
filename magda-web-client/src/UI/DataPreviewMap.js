@@ -97,7 +97,13 @@ class DataPreviewMap extends Component {
                             zoomOnEnable: true
                         }
                     ],
-                    baseMapName: "Positron (Light)"
+                    baseMapName: "Positron (Light)",
+                    initialCamera: {
+                        west: 123.48632812500001,
+                        south: -36.40359962073253,
+                        east: 143.52539062500003,
+                        north: -19.041348796589013
+                    }
                 }
             ]
         };
@@ -210,7 +216,7 @@ class DataPreviewMap extends Component {
                             frameBorder="0"
                             src={
                                 config.previewMapUrl +
-                                "#mode=preview&hideExplorerPanel=1&clean"
+                                "#mode=preview&hideExplorerPanel=1"
                             }
                             ref={f => (this.iframeRef = f)}
                             style={
