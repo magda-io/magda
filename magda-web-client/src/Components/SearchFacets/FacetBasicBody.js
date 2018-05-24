@@ -19,7 +19,6 @@ class FacetBasicBody extends Component {
     }
 
     componentWillMount() {
-        this.props.searchFacet();
         this.setState({
             _activeOptions: this.props.activeOptions
         });
@@ -97,9 +96,10 @@ class FacetBasicBody extends Component {
     }
 
     searchBoxValueChange(value) {
-        this.setState({
-            showOptions: !value || value.length === 0
-        });
+        this.props.searchFacet(value);
+        // this.setState({
+        //     showOptions: !value || value.length === 0
+        // });
     }
 
     onApplyFilter() {
