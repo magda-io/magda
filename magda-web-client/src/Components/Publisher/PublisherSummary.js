@@ -10,7 +10,7 @@ function PublisherSummary(props) {
                 <h2>
                     <Link
                         to={
-                            "publishers/" +
+                            "organisations/" +
                             encodeURIComponent(props.publisher.id)
                         }
                     >

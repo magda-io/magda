@@ -9,7 +9,7 @@ import removePassiveIcon from "../../assets/remove-passive.svg";
 const ClearAllButton = ({ location, history, dispatch }) => {
     const query = queryString.parse(location.search);
     if (
-        !query.publisher &&
+        !query.organisation &&
         !query.format &&
         !query.dateFrom &&
         !query.dateTo &&
