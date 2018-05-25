@@ -207,6 +207,7 @@ buildtest:map:
   cache:
     paths: []
   script:
+    - yarn install
     - yarn run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.map=true -- run test
   artifacts:
