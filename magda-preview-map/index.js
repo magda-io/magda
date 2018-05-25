@@ -31,6 +31,7 @@ import GazetteerSearchProviderViewModel from "terriajs/lib/ViewModels/GazetteerS
 import GnafSearchProviderViewModel from "terriajs/lib/ViewModels/GnafSearchProviderViewModel.js";
 import defined from "terriajs-cesium/Source/Core/defined";
 import render from "./lib/Views/render";
+import knockout from "terriajs-cesium/Source/ThirdParty/knockout";
 
 import createCatalogMemberFromType from "terriajs/lib/Models/createCatalogMemberFromType";
 import MagdaCatalogItem from "./lib/Models/MagdaCatalogItem";
@@ -61,6 +62,18 @@ terria.welcome =
 // Create the ViewState before terria.start so that errors have somewhere to go.
 const viewState = new ViewState({
     terria: terria
+});
+
+knockout.getObservable(viewState, "notifications").subscribe(function() {
+    if (!viewState.notifications || !viewState.notifications.length) return;
+    const notification = viewState.notifications.shift();
+    if (!notification) return;
+    let msg = "";
+    if (typeof notification === "string") msg = notification;
+    else if (notification.message) msg = notification.message;
+    else msg = String(notification);
+    if (!console || !console.log) return;
+    console.log(`Preview Map notifcation: \n ${msg}`);
 });
 
 if (process.env.NODE_ENV === "development") {
