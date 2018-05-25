@@ -511,7 +511,7 @@ deploy-master-to-dev:
   - kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file deploy/connector-config/
   - kubectl apply -f deploy/kubernetes/generated/prod/cron
 
-release-tags-to-docker-hub:
+Release Tags To Docker Hub:
   stage: release
   only:
     - /^v.*$/
@@ -528,5 +528,6 @@ release-tags-to-docker-hub:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
+    - ls magda-admin-api/node_modules/.bin
     - yarn install
     - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
