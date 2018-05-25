@@ -6,23 +6,29 @@ import { actionTypes } from "../constants/ActionTypes";
 import type { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
 import buildSearchQueryString from "../helpers/buildSearchQueryString";
 
-export function requestFormats(): FacetAction {
+export function requestFormats(facetQuery: string): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_FORMATS
+        type: actionTypes.FACET_REQUEST_FORMATS,
+        facetQuery
     };
 }
 
-export function receiveFormats(json: Object): FacetAction {
+export function receiveFormats(facetQuery: string, json: Object): FacetAction {
     return {
         type: actionTypes.FACET_RECEIVE_FORMATS,
-        json: json
+        json: json,
+        facetQuery
     };
 }
 
-export function requestFormatsFailed(error: Object): FacetAction {
+export function requestFormatsFailed(
+    facetQuery: string,
+    error: Object
+): FacetAction {
     return {
         type: actionTypes.FACET_REQUEST_FORMATS_FAILED,
-        error
+        error,
+        facetQuery
     };
 }
 
@@ -38,7 +44,7 @@ export function fetchFormatSearchResults(
 ): Object {
     return (dispatch: Function) => {
         if (facetQuery && facetQuery.length > 0) {
-            dispatch(requestFormats(generalQuery));
+            dispatch(requestFormats(facetQuery));
 
             const generalQueryString = buildSearchQueryString({
                 ...generalQuery,
@@ -50,7 +56,7 @@ export function fetchFormatSearchResults(
             const url: string =
                 config.searchApiUrl +
                 `facets/format/options?generalQuery=${encodeURIComponent(
-                    generalQuery.q
+                    generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;
 
             return fetch(url)
@@ -61,11 +67,11 @@ export function fetchFormatSearchResults(
                     throw new Error(response.statusText);
                 })
                 .then((json: FacetSearchJson) => {
-                    return dispatch(receiveFormats(json));
+                    return dispatch(receiveFormats(facetQuery, json));
                 })
                 .catch(error =>
                     dispatch(
-                        requestFormatsFailed({
+                        requestFormatsFailed(facetQuery, {
                             title: error.name,
                             detail: error.message
                         })

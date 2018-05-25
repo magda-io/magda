@@ -4,7 +4,8 @@ import type { FacetAction, FacetSearchState } from "../helpers/datasetSearch";
 const initialData = {
     isFetching: false,
     data: null,
-    error: null
+    error: null,
+    facetQuery: ""
 };
 
 const facetFormatSearch = (
@@ -15,25 +16,38 @@ const facetFormatSearch = (
         case "FACET_REQUEST_FORMATS":
             return Object.assign({}, state, {
                 isFetching: true,
-                error: null
+                error: null,
+                facetQuery: action.facetQuery
             });
         case "FACET_RESET_FORMATS":
             return Object.assign({}, state, {
                 error: null,
-                data: null
+                data: null,
+                facetQuery: ""
             });
         case "FACET_RECEIVE_FORMATS":
-            return Object.assign({}, state, {
-                isFetching: false,
-                error: null,
-                data: action.json && action.json.options && action.json.options
-            });
+            if (action.facetQuery === state.facetQuery) {
+                return Object.assign({}, state, {
+                    isFetching: false,
+                    error: null,
+                    data:
+                        action.json &&
+                        action.json.options &&
+                        action.json.options
+                });
+            } else {
+                return state;
+            }
         case "FACET_REQUEST_FORMATS_FAILED":
-            return Object.assign({}, state, {
-                isFetching: false,
-                data: null,
-                error: action.error
-            });
+            if (action.facetQuery === state.facetQuery) {
+                return Object.assign({}, state, {
+                    isFetching: false,
+                    data: null,
+                    error: action.error
+                });
+            } else {
+                return state;
+            }
         default:
             return state;
     }
