@@ -68,10 +68,7 @@ class RegionMap extends Component {
     }
 
     shouldRegionUpdate(preProps, nextProps) {
-        if (
-            !defined(nextProps.regionMapping) ||
-            !defined(nextProps.region.regionType)
-        ) {
+        if (!defined(nextProps.regionMapping)) {
             return false;
         } else if (
             this.layer &&
@@ -116,7 +113,9 @@ class RegionMap extends Component {
 
     addRegion(props) {
         this.removeRegion();
-        let regionData = props.regionMapping[props.region.regionType];
+        let regionType = props.region.regionType;
+        if (!regionType) regionType = "STE";
+        let regionData = props.regionMapping[regionType];
         if (defined(regionData)) {
             this.getID = function(feature) {
                 return feature.properties[regionData.regionProp];
