@@ -102,11 +102,11 @@ class DataPreviewMap extends Component {
                         }
                     ],
                     baseMapName: "Positron (Light)",
-                    initialCamera: {
-                        west: 123.48632812500001,
-                        south: -36.40359962073253,
-                        east: 143.52539062500003,
-                        north: -19.041348796589013
+                    homeCamera: {
+                        north: -8,
+                        east: 158,
+                        south: -45,
+                        west: 109
                     }
                 }
             ]
