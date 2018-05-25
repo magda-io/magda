@@ -5,7 +5,6 @@ import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
 import "./FacetBasicBody.css";
 
-// extends Facet class
 class FacetBasicBody extends Component {
     constructor(props) {
         super(props);
@@ -100,9 +99,6 @@ class FacetBasicBody extends Component {
 
     searchBoxValueChange(value) {
         this.props.searchFacet(value);
-        // this.setState({
-        //     showOptions: !value || value.length === 0
-        // });
     }
 
     onApplyFilter() {
@@ -118,7 +114,6 @@ class FacetBasicBody extends Component {
                 <div className="clearfix facet-body__header">
                     <FacetSearchBox
                         renderOption={this.renderOption}
-                        options={this.props.facetSearchResults}
                         onToggleOption={this.onToggleOption}
                         searchBoxValueChange={this.searchBoxValueChange}
                         title={this.props.title}
