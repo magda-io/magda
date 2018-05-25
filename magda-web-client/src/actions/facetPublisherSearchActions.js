@@ -54,7 +54,8 @@ export function fetchPublisherSearchResults(
                 ...generalQuery,
                 start: 0,
                 limit: 10,
-                q: null
+                q: null,
+                publisher: null
             });
 
             return fetch(

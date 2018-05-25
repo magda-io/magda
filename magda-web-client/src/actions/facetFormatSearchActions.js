@@ -50,7 +50,8 @@ export function fetchFormatSearchResults(
                 ...generalQuery,
                 start: 0,
                 limit: 10,
-                q: null
+                q: null,
+                format: null
             });
 
             const url: string =
