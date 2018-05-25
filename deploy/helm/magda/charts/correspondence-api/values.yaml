@@ -14,7 +14,6 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
-smtpHostname: "smtp.mailgun.org"
 smtpPort: 587
 defaultRecipient: "mail@example.com"
 externalUrl: "https://search.data.gov.au"
