@@ -1,6 +1,5 @@
 ## 0.0.39
 
-*   remove feedback form in footer
 *   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
@@ -63,6 +62,7 @@
 *   Added ui-only preview job to gitlab.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
 
 ## 0.0.38
 
