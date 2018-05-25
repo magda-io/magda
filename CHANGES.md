@@ -1,6 +1,7 @@
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
+*   Modified `MonthPicker` tooltip icon's right padding
 
 ## 0.0.39
 
