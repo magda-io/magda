@@ -128,6 +128,56 @@
 -   Map Preview: Report selected distribution to console
 -   Adjusted pagination button styles
 -   Bumped regions index version to 21 because of region shortname
+*   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
+*   Apply Design System skip link/links styles
+*   Add schema.org/Dataset microdata semantic markup
+*   Use colours from DTA design guide
+*   Fixed distribution previews
+*   Made CSP report uri configurable
+*   Added stubbed correspondence api
+*   Added link to publisher page for publisher on dataset summary.
+*   Recent search will not save "\*" search
+*   Reduced homepage tagline bottom margin
+*   Brought back homepage animation
+*   Chart is available for Non-time series CSV data files now
+*   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
+*   Fixed a few issues with `format-sleuther`
+*   `format-sleuther` will use accessURL if download URL not available
+*   `format-sleuther` will recognise `www:download-1.0-http—csiro-oa-app` as `CSIRO Open App`
+*   `format-sleuther` will recognise `WWW:DOWNLOAD-1.0-http--downloaddata` as `html`
+*   `MagdaCatalogItem` will use accessURL if download URL not available
+*   `MagdaCatalogItem` will use `dataset-format` (if available) to determine CatalogItem type
+*   Added `ESRI REST` (ArcGIS) support to `MapPreview`
+*   Fixed the GAP under preview map loading box
+*   Switched to using yarn as the package manager
+*   Merge duplicate publisher records before display on publisher page
+*   Made frontend GA post to both terria and dga google analytics.
+*   Tagged correspondence api as a typescript api.
+*   Made auto deploy for master -> dev server reconfigure jobs.
+*   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
+*   Updated footer with govau design systems components.
+*   Made magda-web-server look for magda-web-client using require.resolve.
+*   Added tooltip to future dates on datepicker
+*   Header adjustment for new design system.
+*   Updated notification with govau design systems components & fixed a few minor error handling related issues
+*   Implemented SMTP client with `nodemailer` for correspondence api
+*   Simplified the way that search queries are sent to elasticsearch and boosted title to higher importance.
+*   Modified `Show full description` font-size.
+*   Added `recrawl` API endpoints to sleuther framework
+*   Added spacing between dataset publisher and created date.
+*   Fixed up datasets always showing as 0 stars.
+*   Added bottom margin to all static pages.
+*   Modified offending CSS properties in `MarkdownViewer`.
+*   Recent search caches images to avoid flickering icons issue on the first display
+*   Added standard space in between Download / New tab buttons on `DatasetDetails`.
+*   Reimplemented links from publisher names to their respective page.
+*   Make search filters stay on until specifically dismissed
+*   Added ui-only preview job to gitlab.
+*   Modified `DatasetSummary` description style to be default `au-body`
+*   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
+*   Made all data.gov.au environments use mailgun.
+*   Partially corrected incorrect result counts when searching for facets.
 
 ## 0.0.38
 
