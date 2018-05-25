@@ -1,7 +1,7 @@
-FROM mhart/alpine-node:9
+FROM mhart/alpine-node:8
 
 RUN npm install -g lerna
 
-RUN apk --update add git openssh bash yarn && \
+RUN apk --update add git openssh bash && \
     rm -rf /var/lib/apt/lists/* && \
     rm /var/cache/apk/*
