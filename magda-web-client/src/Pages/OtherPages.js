@@ -31,9 +31,9 @@ const renderBody = () => {
             <Route exact path="/projects" component={ProjectsViewer} />
             <Route exact path="/projects/new" component={CreateProject} />
             <Route path="/projects/:projectId" component={ProjectDetails} />
-            <Route exact path="/publishers" component={PublishersViewer} />
+            <Route exact path="/organisations" component={PublishersViewer} />
             <Route
-                path="/publishers/:publisherId"
+                path="/organisations/:publisherId"
                 component={PublisherDetails}
             />
             {staticPageRegister.map(item => (
@@ -53,7 +53,7 @@ const OtherPages = props => {
     return (
         <div className="other-page">
             <Header />
-            {props.location.pathname !== "/publishers" && (
+            {props.location.pathname !== "/organisations" && (
                 <SearchBoxSwitcher
                     location={props.location}
                     theme="none-home"
