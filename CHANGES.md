@@ -65,6 +65,7 @@
 *   Tweaked `au-btn` border-right to be white for search facets.
 *   Remove feedback form & button from both desktop & mobile view
 *   Made all data.gov.au environments use mailgun.
+*   Adjusted pagination button styles
 
 ## 0.0.38
 
