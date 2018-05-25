@@ -14,10 +14,14 @@ export function requestPublishers(facetQuery): FacetAction {
     };
 }
 
-export function requestPublishersFailed(error: FetchError): FacetAction {
+export function requestPublishersFailed(
+    facetQuery,
+    error: FetchError
+): FacetAction {
     return {
         type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
-        error
+        error,
+        facetQuery
     };
 }
 
@@ -56,7 +60,7 @@ export function fetchPublisherSearchResults(
             return fetch(
                 config.searchApiUrl +
                     `facets/publisher/options?generalQuery=${encodeURIComponent(
-                        generalQuery.q
+                        generalQuery.q || "*"
                     )}&${generalQueryString}&facetQuery=${facetQuery}`
             )
                 .then(response => {
@@ -71,7 +75,7 @@ export function fetchPublisherSearchResults(
                 })
                 .catch(error =>
                     dispatch(
-                        requestPublishersFailed({
+                        requestPublishersFailed(facetQuery, {
                             title: error.name,
                             detail: error.message
                         })
