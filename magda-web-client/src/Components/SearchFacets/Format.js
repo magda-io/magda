@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import { fetchFormatSearchResults } from "../../actions/facetFormatSearchActions";
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
-import queryString from "query-string";
 
 class Format extends Component {
     constructor(props) {

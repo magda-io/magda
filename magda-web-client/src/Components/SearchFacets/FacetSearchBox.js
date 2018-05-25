@@ -22,7 +22,7 @@ class FacetSearchBox extends Component {
     };
 
     render() {
-        const { value, suggestions } = this.state;
+        const { value } = this.state;
 
         // Autosuggest will pass through all these props to the input.
         const inputProps = {
@@ -44,6 +44,6 @@ class FacetSearchBox extends Component {
     }
 }
 
-FacetSearchBox.defaultProps = { options: [] };
+FacetSearchBox.defaultProps = {};
 
 export default FacetSearchBox;
