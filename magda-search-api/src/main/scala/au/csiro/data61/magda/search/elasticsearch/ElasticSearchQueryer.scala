@@ -348,7 +348,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         Some(dismax(queries).tieBreaker(0.2))
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
-      setToOption(query.publishers)(seq => should(seq.map(publisherAcronymQuery(strategy))).boost(2)),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))).boost(2)))
