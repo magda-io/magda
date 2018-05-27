@@ -5,7 +5,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.39-0"
+    tag: "0.0.40-0"
 
 tags:
   all: true
