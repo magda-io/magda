@@ -49,6 +49,7 @@ class FacetRegion extends Component {
     onFeatureClick(feature) {
         let regionMapping = this.props.regionMapping;
         let regionType = this.state._activeRegion.regionType;
+        if (!regionType) regionType = "STE";
 
         let regionProp = regionMapping[regionType].regionProp;
         let nameProp = regionMapping[regionType].nameProp;
