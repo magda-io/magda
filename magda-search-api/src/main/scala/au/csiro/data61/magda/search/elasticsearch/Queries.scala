@@ -19,10 +19,12 @@ import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.SearchStrategy
 
 object Queries {
-  def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
+  def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String])  = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
-        case SearchStrategy.MatchAll => matchQuery("publisher.name.keyword_lowercase", publisherString)
+        case SearchStrategy.MatchAll => multiMatchQuery(publisherString)
+          .fields("publisher.acronym", "publisher.name.keyword_lowercase")
+          .minimumShouldMatch("-50%")
         case SearchStrategy.MatchPart =>
           multiMatchQuery(publisherString)
             .fields("publisher.name", "publisher.name.english")
