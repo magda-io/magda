@@ -73,6 +73,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("text"))),
             objectField("publisher").fields(
               keywordField("identifier"),
+              keywordField("acronym"),
               magdaTextField("name",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote"))),
@@ -99,6 +100,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
+            keywordField("acronym"),
             magdaTextField("value"),
             textField("english").analyzer("english")))
         .analysis(

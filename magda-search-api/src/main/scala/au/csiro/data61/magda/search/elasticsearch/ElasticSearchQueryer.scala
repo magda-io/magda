@@ -70,7 +70,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       throw t
   }
 
-  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 20f), ("description", 5f), "publisher.name", ("keywords", 5f), "themes")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 20f), ("description", 5f), "publisher.name", "publisher.acronym", ("keywords", 5f), "themes")
   val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
@@ -348,6 +348,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         Some(dismax(queries).tieBreaker(0.2))
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
+      setToOption(query.publishers)(seq => should(seq.map(publisherAcronymQuery(strategy))).boost(2)),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))).boost(2)))

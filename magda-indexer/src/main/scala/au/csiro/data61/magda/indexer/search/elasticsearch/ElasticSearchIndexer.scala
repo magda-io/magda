@@ -428,10 +428,6 @@ class ElasticSearchIndexer(
         }
     }
 
-  private def getAcronymsFromPublisherName(publisherName:String): String = {
-    val cleanedName = """[^a-zA-Z\s]""".r.replaceAllIn(publisherName,"")
-    """\s""".r.split(cleanedName).map(_.trim).filter(!_.equals("")).map(_.take(1).capitalize).mkString
-  }
 
   /**
    * Indexes a number of datasets into ES using a bulk insert.
@@ -450,7 +446,7 @@ class ElasticSearchIndexer(
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
-          "acronym" -> getAcronymsFromPublisherName(publisherName).toJson,
+          "acronym" -> publisher.acronym.toJson,
           "value" -> publisherName.toJson).toJson)))
 
     val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>
