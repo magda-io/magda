@@ -55,7 +55,11 @@ class Pagination extends Component {
                             <li key={i}>
                                 <button
                                     onClick={this.onClick.bind(this, i)}
-                                    className={`${i === current ? "" : ""}`}
+                                    className={`${
+                                        i === current
+                                            ? "current"
+                                            : "non-current"
+                                    }`}
                                 >
                                     {i}
                                 </button>
@@ -65,7 +69,9 @@ class Pagination extends Component {
                         <li>
                             <button
                                 onClick={this.onClick.bind(this, max)}
-                                className={`${max === current ? "" : ""}`}
+                                className={`${
+                                    max === current ? "current" : "non-current"
+                                }`}
                             >
                                 {max}
                             </button>
@@ -107,7 +113,9 @@ class Pagination extends Component {
                         <li key={i}>
                             <button
                                 onClick={this.onClick.bind(this, i)}
-                                className={`${i === current ? "" : ""}`}
+                                className={`${
+                                    i === current ? "current" : "non-current"
+                                }`}
                             >
                                 {i}
                             </button>
