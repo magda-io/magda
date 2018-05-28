@@ -3,6 +3,7 @@
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
 *   Location filter: Make state selectable on the inital region filter panel open
+*   Added publisher name acronyms to elasticsearch
 
 ## 0.0.39
 
