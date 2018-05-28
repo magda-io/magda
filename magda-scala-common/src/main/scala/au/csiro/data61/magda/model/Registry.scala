@@ -171,7 +171,7 @@ object Registry {
 
   trait RegistryConverters extends RegistryProtocols {
 
-    private def getAcronymFromPublisherName(publisherName:Option[String]): Option[String] = {
+    def getAcronymFromPublisherName(publisherName:Option[String]): Option[String] = {
       publisherName
         .map("""[^a-zA-Z\s]""".r.replaceAllIn(_,""))
         .map("""\s""".r.split(_).map(_.trim).filter(!_.equals("")).map(_.take(1).capitalize).mkString)
