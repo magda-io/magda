@@ -23,7 +23,7 @@ class HeaderMobile extends Component {
         return (
             <div className="mobile-header">
                 <div className="mobile-header-inner">
-                    <Link to="/">
+                    <Link to="/" className="mobile-logo-link">
                         <img
                             className="mobile-logo"
                             src={govtLogo}
