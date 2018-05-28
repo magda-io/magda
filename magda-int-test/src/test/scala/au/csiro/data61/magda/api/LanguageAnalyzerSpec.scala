@@ -50,7 +50,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
         .filterNot(term => Generators.stopWordRegex.r.matchesAny(term))
-        .filter(term => term.matches(".*[A-Z][a-z].*"))
+        .filter(term => term.matches(".*[A-Za-z].*"))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
         Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
