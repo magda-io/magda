@@ -88,7 +88,7 @@ class RegionMap extends Component {
                         ? "rgba(14, 0, 33, 0.8)"
                         : "rgba(0,0,0,0)",
                 outline: {
-                    color: "#ddd",
+                    color: "#6B7FD7",
                     size: 1
                 },
                 selected: {
