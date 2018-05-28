@@ -4,13 +4,11 @@
     display: flex;
     &.not-empty {
         button {
-            font-family: inherit;
             &,
             &:hover,
             &:focus {
                 background: $AU-colordark-background !important;
-                color: $AU-colordark-foreground-action !important;
-                border-right: 1px solid #fff;
+                color: $AU-colordark-foreground-text !important;
             }
         }
     }
@@ -34,7 +32,7 @@
         text-transform: capitalize;
         pointer: cursor;
         .facet-icon {
-            padding: 4px 6px 4px 0;
+            padding: 6px 6px 4px 0;
             height: 24px;
             width: 24px;
         }

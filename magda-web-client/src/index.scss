@@ -13,10 +13,17 @@ html {
         }
     }
 }
-.au-body .au-grid a {
-    color: $AU-color-foreground-action;
-    &:focus {
-        outline: 3px solid $AU-color-foreground-focus;
+.au-body .au-grid {
+    a {
+        color: $AU-color-foreground-action;
+    }
+    a,
+    button,
+    input,
+    select {
+        &:focus {
+            outline: 3px solid $AU-colordark-foreground-focus;
+        }
     }
 }
 
@@ -38,7 +45,7 @@ a.au-btn:hover:not(:disabled) {
 
 .au-body.au-body--dark,
 .au-footer.au-footer--dark {
-    border-color: $AU-color-foreground-focus !important;
+    border-color: $AU-colordark-foreground-focus !important;
     background: $AU-colordark-background !important;
     color: $AU-colordark-foreground-text !important;
     a,
@@ -148,4 +155,9 @@ h4 {
 
 .au-text-input {
     border: 3px solid $AU-color-foreground-action;
+}
+
+.au-body ::selection {
+    background: $AU-color-foreground-action !important;
+    color: $AU-colordark-foreground-text !important;
 }

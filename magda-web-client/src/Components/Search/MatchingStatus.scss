@@ -1,13 +1,4 @@
 @import "../../variables";
 .no-matching {
-    padding: 10px 0;
-    font-weight: 400;
-    color: $AU-color-foreground-action;
-    font-size: 1.1em;
-}
-
-@media (max-width: 768px) {
-    .no-matching {
-        margin: 15px 0;
-    }
+    margin: 15px 0;
 }

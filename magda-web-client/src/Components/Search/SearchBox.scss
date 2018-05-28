@@ -71,6 +71,7 @@
         @media (min-width: $medium) {
             border-bottom: 2px solid #cfcfcf;
         }
+        outline: none !important;
     }
 
     .search-btn {
@@ -124,7 +125,7 @@
         -ms-user-select: none;
         user-select: none;
         max-width: 100%;
-        border-top: 2px solid $magda-secondary;
+        border-top: 2px solid $AU-colordark-foreground-focus;
         border-radius: 2px;
         display: none;
         @media (min-width: $medium) {
@@ -160,7 +161,6 @@
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 4px;
-
         input {
             color: $AU-color-foreground-action;
         }

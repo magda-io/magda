@@ -168,7 +168,7 @@ class FacetTemporal extends Component {
                                     Clear{" "}
                                 </button>
                                 <button
-                                    className="au-btn au-btn--secondary"
+                                    className="au-btn au-btn--primary"
                                     disabled={this.state.applyButtonDisabled}
                                     onClick={this.onApplyFilter}
                                 >

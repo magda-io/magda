@@ -3,23 +3,18 @@
 .dataset-summary {
     height: auto;
     clear: both;
-    a {
-        text-decoration: none;
-        &:hover,
-        &:focus {
-            color: $AU-color-foreground-action;
-            background: transparent;
-            border-bottom: solid 1px #ffffff;
-        }
-    }
     .dataset-summary-title {
         @include AU-fontgrid(md);
+
         color: $AU-color-foreground-action;
         font-weight: 300;
         margin-bottom: 0;
-        &:hover,
-        &:focus {
-            color: $AU-color-foreground-focus;
+        a {
+            text-decoration: none;
+            &:hover,
+            &:focus {
+                color: $AU-color-foreground-focus;
+            }
         }
     }
 
@@ -54,7 +49,6 @@
 
     .dataset-summary-downloads {
         span {
-            color: $AU-color-foreground-action;
             @include AU-fontgrid(xs);
             display: inline-block;
             padding-right: 5px;

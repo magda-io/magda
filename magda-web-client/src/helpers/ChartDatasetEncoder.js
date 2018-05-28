@@ -118,7 +118,8 @@ const defaultChartOption = {
     },
     grid: {
         right: 10
-    }
+    },
+    color: ["rgba(14, 0, 33, 0.8)", "#4C2A85", "#6B7FD7"]
 };
 
 class ChartDatasetEncoder {

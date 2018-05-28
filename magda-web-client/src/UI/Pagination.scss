@@ -17,8 +17,17 @@
             font-weight: 400;
             background-color: $AU-color-background;
             color: $AU-color-foreground-action;
+            cursor: pointer;
+            border: 2px solid $AU-color-foreground-action;
+            &:hover,
+            &:focus {
+                background: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
+            }
             &.current {
-                background-color: $AU-colordark-foreground-action;
+                background-color: $AU-colordark-background;
+                color: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
             }
         }
     }
