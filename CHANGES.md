@@ -4,6 +4,7 @@
 *   Modified `MonthPicker` tooltip icon's right padding
 *   Location filter: Make state selectable on the inital region filter panel open
 *   Removed underline on coat of arms.
+*   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 
 ## 0.0.39
 
@@ -70,7 +71,12 @@
 *   Added ui-only preview job to gitlab.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
 *   Made all data.gov.au environments use mailgun.
+*   Map Preview: Set default camera to Australia
+*   Map Preview: Mute errors from users
+*   Map Preview: Report selected distribution to console
+*   Adjusted pagination button styles
 
 ## 0.0.38
 

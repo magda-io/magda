@@ -213,7 +213,8 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers"
+    "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
+    "organisations"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
