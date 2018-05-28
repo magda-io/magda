@@ -26,6 +26,13 @@ html {
         border-color: $AU-color-foreground-action;
     }
 
+    .au-btn.au-btn--tertiary,
+    a.au-btn.au-btn--tertiary {
+        color: $AU-colordark-foreground-focus;
+        background: transparent;
+        border-color: transparent;
+    }
+
     a,
     button,
     input,
