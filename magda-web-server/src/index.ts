@@ -213,7 +213,7 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers"
+    "organisations"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -223,6 +223,14 @@ topLevelRoutes.forEach(topLevelRoute => {
     app.get("/" + topLevelRoute + "/*", function(req, res) {
         res.sendFile(path.join(clientBuild, "index.html"));
     });
+});
+
+/**
+ * For whatever reason a user still requests /publishers, redirect to /organisations
+ */
+app.get("/publishers", function(req, res) {
+    //Redirect to static page
+    res.redirect("/organisations");
 });
 
 app.get("/page/*", function(req, res) {
