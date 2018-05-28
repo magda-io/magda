@@ -38,7 +38,7 @@ html {
     input,
     select {
         &:focus {
-            outline: 3px solid $AU-colordark-foreground-focus;
+            outline-color: $AU-colordark-foreground-focus !important;
         }
     }
 }
