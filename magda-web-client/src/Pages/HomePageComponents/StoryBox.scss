@@ -23,11 +23,13 @@
         }
 
         .story-box-body {
+            a {
+                text-decoration: none;
+            }
             .markdown {
                 font-family: inherit;
                 font-style: normal;
                 font-weight: normal;
-                color: $AU-color-foreground-action;
             }
         }
     }

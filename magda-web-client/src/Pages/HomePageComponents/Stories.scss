@@ -1,8 +1,10 @@
 @import "../../variables";
 
 .homepage-stories {
-    @media (max-width: $medium) {
-        margin-top: 16px;
+    margin-top: 1rem;
+
+    @media (min-width: $medium) {
+        margin-bottom: 2rem;
     }
 
     .stories-container {
