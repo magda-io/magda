@@ -125,11 +125,13 @@ git push origin v<version>
 
 ```bash
 git checkout master
-git pull origin <version branch> -s recursive -X ours`
-git push origin master
+git pull
+git checkout -b merge-<version>
+git pull origin <version branch> -s recursive -X ours
+git push origin merge-<version>
 ```
 
-Be careful - any conflicts will be resolved by taking masters version, which sometimes causes lerna config to get clobbered - double check!
+... and open a PR. Be careful - any conflicts will be resolved by taking masters version, which sometimes causes lerna config to get clobbered - double check!
 
 ### Create new pre-release version, publish to dev and push to git
 
