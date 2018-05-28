@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import Search from "../Components/Search/Search";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
@@ -32,6 +32,19 @@ const renderBody = () => {
             <Route exact path="/projects/new" component={CreateProject} />
             <Route path="/projects/:projectId" component={ProjectDetails} />
             <Route exact path="/organisations" component={PublishersViewer} />
+            <Route
+                exact
+                path="/publishers"
+                render={() => <Redirect to="/organisations" />}
+            />
+            <Route
+                path="/publishers/:publisherId"
+                render={({ match }) => (
+                    <Redirect
+                        to={`/organisations/${match.params.publisherId}`}
+                    />
+                )}
+            />
             <Route
                 path="/organisations/:publisherId"
                 component={PublisherDetails}
