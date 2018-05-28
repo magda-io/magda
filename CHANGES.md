@@ -8,6 +8,7 @@
 *   Removed underline on coat of arms.
 *   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 *   Made region and dataset configurable in search api.
+*   Fixed open in national map button not send correct URL
 
 ## 0.0.39
 
