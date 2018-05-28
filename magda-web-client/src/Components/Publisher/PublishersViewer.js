@@ -108,9 +108,9 @@ class PublishersViewer extends Component {
 
     render() {
         return (
-            <ReactDocumentTitle title={"Publishers | " + config.appName}>
+            <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="container publishers-viewer">
-                    <h1>Publishers</h1>
+                    <h1>Organisations</h1>
                     <div className="row">
                         {!this.props.isFetching && this.renderContent()}
                         {this.props.isFetching && <ProgressBar />}

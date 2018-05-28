@@ -2,10 +2,10 @@ import React from "react";
 
 import AUfooter, { AUfooterNav } from "@gov.au/footer";
 import { Link } from "react-router-dom";
-
-import FeedbackForm from "./Feedback/FeedbackForm";
-import { FeedbackButton, FeedbackLink } from "./Feedback/FeedbackButton";
-import { Small, Medium } from "../../UI/Responsive";
+// temporary disable feedback from so we can try something else
+// import FeedbackForm from "./Feedback/FeedbackForm";
+// import { FeedbackButton, FeedbackLink } from "./Feedback/FeedbackButton";
+import { Small } from "../../UI/Responsive";
 
 import dtaLogo from "./dta-logo.png";
 import d61logo from "./data61-logo.png";
@@ -18,7 +18,8 @@ function FooterLink({ link }) {
     if (link[1].indexOf("mailto") === 0) {
         return <a href={link[1]}>{link[0]}</a>;
     } else if (link[1] === "feedback") {
-        return <FeedbackLink caption={link[0]} />;
+        // return <FeedbackLink caption={link[0]} />;
+        return null;
     } else if (!regex.test(link[1])) {
         return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     } else {
@@ -80,12 +81,6 @@ export default function Footer({ footerNavs }) {
                     )}
                 </Small>
                 <section className="footer-end col-md-3 col-sm-6 col-xs-6">
-                    <Medium>
-                        <FeedbackButton />
-                    </Medium>
-
-                    <FeedbackForm />
-
                     <Copyright
                         href="https://www.data61.csiro.au/"
                         logoSrc={d61logo}

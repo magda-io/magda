@@ -1,6 +1,6 @@
 {
     "name": "@magda/scripts",
-    "version": "0.0.39-0",
+    "version": "0.0.40-0",
     "description": "Scripts for building, running, and deploying MAGDA",
     "license": "Apache-2.0",
     "bin": {
@@ -12,9 +12,9 @@
         "create-pod-and-forward": "create-pod-and-forward.js"
     },
     "devDependencies": {
-        "lodash": "^4.17.5",
         "fs-extra": "^2.1.2",
         "klaw-sync": "^2.1.0",
+        "lodash": "^4.17.5",
         "moment": "^2.19.4",
         "nodemon": "^1.11.0",
         "tmp": "0.0.31",
