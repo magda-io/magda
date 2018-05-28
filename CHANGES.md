@@ -3,6 +3,7 @@
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
 *   Location filter: Make state selectable on the inital region filter panel open
+*   Made region and dataset configurable in search api.
 
 ## 0.0.39
 
