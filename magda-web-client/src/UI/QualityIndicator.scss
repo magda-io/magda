@@ -5,18 +5,4 @@
         display: inline;
         margin-right: 2px;
     }
-
-    .tooltip {
-        margin-top: 2px;
-        color: #fff;
-        margin-left: 5px;
-        position: absolute;
-
-        &,
-        &:focus,
-        &:hover {
-            text-decoration: none;
-            border: none;
-        }
-    }
 }
