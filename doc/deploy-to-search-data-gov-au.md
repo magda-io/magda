@@ -12,10 +12,8 @@ git status
 *   [ ] Check this out into a release branch
 
 ```
-git checkout -b 0.0.x
+git checkout -b release/0.0.x
 ```
-
-*   [ ] Put new heading in CHANGES for the next version.
 
 *   [ ] At the root, run `lerna bootstrap`
 
@@ -84,7 +82,7 @@ kubectl config use-context <prod-cluster-name>
 *   [ ] Helm upgrade prod
 
 ```bash
-helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
+helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
 *   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
