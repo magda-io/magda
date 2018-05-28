@@ -150,7 +150,6 @@ correspondence-api:
         requests:
             cpu: 100m
             memory: 200Mi
-    externalUrl: "https://search.data.gov.au"
     defaultRecipient: "data@digital.gov.au"
     smtpHostname: "smtp.mailgun.org"
     smtpPort: 2525
