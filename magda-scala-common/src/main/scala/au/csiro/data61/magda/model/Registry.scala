@@ -174,7 +174,7 @@ object Registry {
     def getAcronymFromPublisherName(publisherName:Option[String]): Option[String] = {
       publisherName
         .map("""[^a-zA-Z\s]""".r.replaceAllIn(_,""))
-        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("","AND","THE","OF").contains(_)).map(_.take(1)).mkString)
+        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("","AND","THE").contains(_)).map(_.take(1)).mkString)
     }
 
     private def convertPublisher(publisher: Record): Agent = {
