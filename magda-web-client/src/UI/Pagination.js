@@ -19,7 +19,7 @@ class Pagination extends Component {
         return (
             <button
                 onClick={this.onClick.bind(this, currentIndex - 1)}
-                className="btn-prev au-btn au-btn--secondary"
+                className="btn-prev"
             >
                 {" "}
                 <img src={left_arrow} alt="previous page" />{" "}
@@ -31,7 +31,7 @@ class Pagination extends Component {
         return (
             <button
                 onClick={this.onClick.bind(this, currentIndex + 1)}
-                className="btn-next au-btn au-btn--secondary"
+                className="btn-nexty"
             >
                 {" "}
                 <img src={right_arrow} alt="next page" />{" "}
@@ -40,11 +40,7 @@ class Pagination extends Component {
     }
 
     renderDisabledButton() {
-        return (
-            <button className="au-btn au-btn--secondary" disabled={true}>
-                ...
-            </button>
-        );
+        return <button disabled={true}>...</button>;
     }
 
     renderPageList(max, current) {
@@ -59,9 +55,7 @@ class Pagination extends Component {
                             <li key={i}>
                                 <button
                                     onClick={this.onClick.bind(this, i)}
-                                    className={`au-btn ${
-                                        i === current ? "" : "au-btn--secondary"
-                                    }`}
+                                    className={`${i === current ? "" : ""}`}
                                 >
                                     {i}
                                 </button>
@@ -71,9 +65,7 @@ class Pagination extends Component {
                         <li>
                             <button
                                 onClick={this.onClick.bind(this, max)}
-                                className={`au-btn ${
-                                    max === current ? "" : "au-btn--secondary"
-                                }`}
+                                className={`${max === current ? "" : ""}`}
                             >
                                 {max}
                             </button>
@@ -87,29 +79,20 @@ class Pagination extends Component {
                     {current > 1 && this.renderPrevButton(current)}
                     {margins.map(i => (
                         <li key={i}>
-                            <button
-                                className="au-btn au-btn--secondary"
-                                onClick={this.onClick.bind(this, i)}
-                            >
+                            <button onClick={this.onClick.bind(this, i)}>
                                 {i}
                             </button>
                         </li>
                     ))}
                     <li>{this.renderDisabledButton()}</li>
                     <li>
-                        <button
-                            className="au-btn"
-                            onClick={this.onClick.bind(this, current)}
-                        >
+                        <button onClick={this.onClick.bind(this, current)}>
                             {current}
                         </button>
                     </li>
                     <li>{this.renderDisabledButton()}</li>
                     <li>
-                        <button
-                            className="au-btn au-btn--secondary"
-                            onClick={this.onClick.bind(this, max)}
-                        >
+                        <button onClick={this.onClick.bind(this, max)}>
                             {max}
                         </button>
                     </li>
@@ -124,9 +107,7 @@ class Pagination extends Component {
                         <li key={i}>
                             <button
                                 onClick={this.onClick.bind(this, i)}
-                                className={`au-btn ${
-                                    i === current ? "" : "au-btn--secondary"
-                                }`}
+                                className={`${i === current ? "" : ""}`}
                             >
                                 {i}
                             </button>
