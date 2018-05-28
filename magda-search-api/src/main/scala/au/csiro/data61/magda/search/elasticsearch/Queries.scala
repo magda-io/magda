@@ -19,7 +19,7 @@ import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.SearchStrategy
 
 object Queries {
-  def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String])  = {
+  def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
         case SearchStrategy.MatchAll => multiMatchQuery(publisherString)

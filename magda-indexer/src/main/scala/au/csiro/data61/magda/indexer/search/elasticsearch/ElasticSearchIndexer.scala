@@ -239,7 +239,7 @@ class ElasticSearchIndexer(
     }
 
     snapshotFuture flatMap {
-      case RestoreSuccess => Future.successful(Unit) // no need to reindex
+      case RestoreSuccess => Future.successful(Unit) // no need to reindex 
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
@@ -427,7 +427,6 @@ class ElasticSearchIndexer(
             throw t
         }
     }
-
 
   /**
    * Indexes a number of datasets into ES using a bulk insert.
