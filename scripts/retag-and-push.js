@@ -49,16 +49,23 @@ const argv = yargs
         default: getVersions()[0]
     }).argv;
 
+const fromTag = argv.fromPrefix + getName() + ":" + argv.fromVersion;
+
+const pullProcess = childProcess.spawnSync("docker", ["pull", fromTag], {
+    stdio: ["pipe", "inherit", "inherit"],
+    env: env
+});
+
+if (pullProcess.status !== 0) {
+    process.exit(pullProcess.status);
+}
+
 const toTag = argv.toPrefix + getName() + ":" + argv.toVersion;
 
-const tagProcess = childProcess.spawnSync(
-    "docker",
-    ["tag", argv.fromPrefix + getName() + ":" + argv.fromVersion, toTag],
-    {
-        stdio: ["pipe", "inherit", "inherit"],
-        env: env
-    }
-);
+const tagProcess = childProcess.spawnSync("docker", ["tag", fromTag, toTag], {
+    stdio: ["pipe", "inherit", "inherit"],
+    env: env
+});
 
 if (tagProcess.status !== 0) {
     process.exit(tagProcess.status);
