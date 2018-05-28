@@ -16,7 +16,16 @@ html {
     a.au-btn.au-btn--secondary,
     a {
         color: $AU-color-foreground-action;
+        border-color: $AU-color-foreground-action;
     }
+
+    .au-btn.au-btn--primary,
+    a.au-btn.au-btn--primary {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+        border-color: $AU-color-foreground-action;
+    }
+
     a,
     button,
     input,
