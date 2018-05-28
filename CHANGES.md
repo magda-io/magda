@@ -5,6 +5,7 @@
 *   Location filter: Make state selectable on the inital region filter panel open
 *   Removed underline on coat of arms.
 *   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
+*   Made region and dataset configurable in search api.
 
 ## 0.0.39
 
