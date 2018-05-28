@@ -92,7 +92,10 @@ class Pagination extends Component {
                     ))}
                     <li>{this.renderDisabledButton()}</li>
                     <li>
-                        <button onClick={this.onClick.bind(this, current)}>
+                        <button
+                            onClick={this.onClick.bind(this, current)}
+                            className="current"
+                        >
                             {current}
                         </button>
                     </li>
