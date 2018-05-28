@@ -27,7 +27,7 @@ object Queries {
           .minimumShouldMatch("-50%")
         case SearchStrategy.MatchPart =>
           multiMatchQuery(publisherString)
-            .fields("publisher.name", "publisher.name.english")
+            .fields("publisher.acronym", "publisher.name", "publisher.name.english")
             .minimumShouldMatch("-50%")
       }, "publisher.name"
     )
