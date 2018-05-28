@@ -1,35 +1,30 @@
 @import "variables";
 @import "../pancake/sass/pancake.scss";
 html {
+    @include AU-fontgrid(sm);
+    font-family: inherit;
 }
+.au-body .au-grid a {
+    text-decoration: none;
+    color: $AU-color-foreground-action;
+    &:hover,
+    &:focus {
+        color: $AU-color-foreground-focus;
+        text-decoration: none;
+    }
 
-.au-body {
-    p,
-    input,
-    a,
-    span {
-        &::selection {
-            background: $AU-color-foreground-action;
-        }
-    }
-}
-.au-body .au-grid {
-    a {
-        color: $AU-color-foreground-action;
-    }
-    a,
-    button,
-    input,
-    select {
-        &:focus {
-            outline: 3px solid $AU-colordark-foreground-focus;
-        }
+    &:focus {
+        outline: 3px solid $AU-color-foreground-focus;
     }
 }
 
 .au-btn:hover:not(:disabled),
 a.au-btn:hover:not(:disabled) {
     text-decoration: none;
+}
+
+.au-body p {
+    max-width: 100%;
 }
 
 .sr-only {
@@ -45,7 +40,6 @@ a.au-btn:hover:not(:disabled) {
 
 .au-body.au-body--dark,
 .au-footer.au-footer--dark {
-    border-color: $AU-colordark-foreground-focus !important;
     background: $AU-colordark-background !important;
     color: $AU-colordark-foreground-text !important;
     a,
@@ -92,6 +86,19 @@ div {
 }
 
 a {
+    -webkit-appearance: none;
+    position: relative;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    border-bottom: solid 1px $AU-colordark-background;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+    cursor: pointer;
+    color: $AU-color-foreground-action;
+    &:hover {
+        color: $AU-colordark-foreground-text;
+        background-color: $AU-colordark-background;
+    }
 }
 
 .tab-navigation {
@@ -155,9 +162,4 @@ h4 {
 
 .au-text-input {
     border: 3px solid $AU-color-foreground-action;
-}
-
-.au-body ::selection {
-    background: $AU-color-foreground-action !important;
-    color: $AU-colordark-foreground-text !important;
 }

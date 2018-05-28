@@ -1,6 +1,6 @@
 {
     "name": "@magda/preview-map",
-    "version": "0.0.39-0",
+    "version": "0.0.40-0",
     "description": "Geospatial preview based on TerriaJS.",
     "license": "Apache-2.0",
     "engines": {
@@ -31,7 +31,7 @@
         }
     },
     "devDependencies": {
-        "@magda/scripts": "^0.0.39-0",
+        "@magda/scripts": "^0.0.40-0",
         "babel-core": "^6.7.4",
         "babel-eslint": "^8.2.2",
         "babel-loader": "^7.0.0",
@@ -82,8 +82,8 @@
     },
     "scripts": {
         "start":
-            "bash ./node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",
-        "stop": "bash ./node_modules/terriajs-server/stop_server.sh",
+            "bash ../node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",
+        "stop": "bash ../node_modules/terriajs-server/stop_server.sh",
         "gulp": "gulp",
         "postinstall":
             "echo 'Installation with NPM successful. What to do next:\\n  npm start       # Starts the server on port 3001\\n  gulp watch      # Builds NationalMap and dependencies, and rebuilds if files change.'",
@@ -103,7 +103,7 @@
             "create-docker-context-for-node-component --build --push --tag auto",
         "compile": "gulp release",
         "build": "yarn run gulp release",
-        "dev": "npm start && gulp watch"
+        "dev": "yarn start && gulp watch"
     },
     "magda": {
         "language": "javascript",

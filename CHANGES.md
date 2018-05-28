@@ -1,3 +1,9 @@
+## 0.0.40
+
+*   Changed Publishers to Organisations in UI
+*   Modified `MonthPicker` tooltip icon's right padding
+*   Location filter: Make state selectable on the inital region filter panel open
+
 ## 0.0.39
 
 *   implemented new UI palette with accessibility improvements
@@ -60,9 +66,16 @@
 *   Recent search caches images to avoid flickering icons issue on the first display
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
+*   Make search filters stay on until specifically dismissed
 *   Added ui-only preview job to gitlab.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
+*   Made all data.gov.au environments use mailgun.
+*   Map Preview: Set default camera to Australia
+*   Map Preview: Mute errors from users
+*   Map Preview: Report selected distribution to console
+*   Adjusted pagination button styles
 
 ## 0.0.38
 
