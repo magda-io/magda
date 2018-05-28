@@ -8,12 +8,8 @@
     float: left;
 }
 
-.search-tabs li a {
-    color: #333;
-}
-
 .search-tabs li.active a {
     font-weight: 400;
-    color: $magda-blue;
-    border-bottom: solid 3px $magda-blue;
+    color: $AU-color-foreground-action;
+    border-bottom: solid 3px $AU-color-foreground-action;
 }

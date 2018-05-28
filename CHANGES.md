@@ -11,6 +11,7 @@
 
 ## 0.0.39
 
+*   implemented new UI palette with accessibility improvements
 *   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form

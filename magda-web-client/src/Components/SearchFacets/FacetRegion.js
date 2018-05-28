@@ -128,7 +128,7 @@ class FacetRegion extends Component {
                         Clear{" "}
                     </button>
                     <button
-                        className="au-btn au-btn--secondary"
+                        className="au-btn au-btn--primary"
                         onClick={this.onApplyFilter}
                         disabled={this.state.applyButtonDisabled}
                     >

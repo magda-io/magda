@@ -3,19 +3,19 @@
 .dataset-summary {
     height: auto;
     clear: both;
-    a {
-        text-decoration: none;
-        &:hover,
-        &:focus {
-            color: $body;
-            background: transparent;
-            border-bottom: solid 1px #ffffff;
-        }
-    }
     .dataset-summary-title {
         @include AU-fontgrid(md);
+
+        color: $AU-color-foreground-action;
         font-weight: 300;
-        margin-bottom: 8px;
+        margin-bottom: 0;
+        a {
+            text-decoration: none;
+            &:hover,
+            &:focus {
+                color: $AU-color-foreground-focus;
+            }
+        }
     }
 
     .dataset-summary-publisher {
@@ -39,7 +39,6 @@
 
     .dataset-summary-meta {
         @include AU-fontgrid(xs);
-        color: rgba($body, 0.5);
         clear: both;
     }
 
@@ -50,7 +49,6 @@
 
     .dataset-summary-downloads {
         span {
-            color: $AU-color-foreground-action;
             @include AU-fontgrid(xs);
             display: inline-block;
             padding-right: 5px;

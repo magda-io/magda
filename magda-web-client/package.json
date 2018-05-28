@@ -33,6 +33,7 @@
         "@gov.au/pancake-json": "^1.0.3",
         "@gov.au/pancake-react": "^1.1.0",
         "@gov.au/pancake-sass": "^1.3.0",
+        "@gov.au/select": "^2.0.2",
         "@gov.au/skip-link": "^2.0.2",
         "@gov.au/tags": "^2.0.1",
         "@gov.au/text-inputs": "^2.0.2",

@@ -191,6 +191,16 @@
   dependencies:
     babel-runtime "6.26.0"
 
+"@gov.au/select@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@gov.au/select/-/select-2.0.2.tgz#e2e7b7d00980577855c850b6f2ac57c0b59b1c88"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@gov.au/skip-link@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@gov.au/skip-link/-/skip-link-2.0.2.tgz#c5c7392c6cd06930fb1a1134f608f7fa4d5b1dd4"

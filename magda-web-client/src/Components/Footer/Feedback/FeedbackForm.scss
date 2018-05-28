@@ -3,7 +3,7 @@
 .feedback-form-inner {
     background: #fff;
     border-radius: 5px;
-    border: 2px solid $success;
+    border: 2px solid $AU-colordark-foreground-action;
     position: fixed;
     right: 20px;
     bottom: 20px;
@@ -39,7 +39,7 @@
     .feedback-form-header {
         display: flex;
         padding: 8px;
-        color: $success;
+        color: $AU-colordark-foreground-action;
         text-align: left;
         font-size: 14px;
     }
@@ -60,12 +60,12 @@
         a {
             margin-top: 10px;
             display: inline-block;
-            color: $main;
+            color: $AU-color-foreground-action;
             @include AU-fontgrid(xs);
         }
         a:hover,
         a:focus {
-            color: #fff;
+            color: $AU-color-background;
         }
     }
 
@@ -74,7 +74,7 @@
         @include AU-fontgrid(xs);
         label {
             width: 80px;
-            color: $main;
+            color: $AU-color-foreground-action;
             margin-right: 10px;
         }
         input,
