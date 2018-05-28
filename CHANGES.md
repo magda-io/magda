@@ -9,6 +9,7 @@
 *   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 *   Made region and dataset configurable in search api.
 *   Fixed open in national map button not send correct URL
+*   Added `baseExternalUrl` to `server-config.js` & `open in national map button` now uses `baseExternalUrl`
 
 ## 0.0.39
 

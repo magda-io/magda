@@ -145,6 +145,7 @@ app.get("/server-config.js", function(req, res) {
     const config = {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
+        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         apiBaseUrl: apiBaseUrl,
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
