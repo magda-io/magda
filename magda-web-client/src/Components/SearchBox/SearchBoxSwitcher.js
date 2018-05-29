@@ -11,7 +11,7 @@ const SearchBoxSwitcher = props => {
                     <SearchBox
                         location={props.location}
                         isMobile={true}
-                        isHome={props.theme == "home"}
+                        isHome={props.theme === "home"}
                     />
                 </div>
             </Small>
@@ -19,7 +19,7 @@ const SearchBoxSwitcher = props => {
                 <SearchBox
                     location={props.location}
                     isMobile={false}
-                    isHome={props.theme == "home"}
+                    isHome={props.theme === "home"}
                 />
             </Medium>
         </div>
