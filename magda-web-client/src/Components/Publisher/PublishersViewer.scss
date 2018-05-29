@@ -1,0 +1,11 @@
+@import "../../variables";
+.publishers-viewer {
+    h1 {
+        color: $AU-color-foreground-action;
+        margin-top: 3rem;
+        @include AU-fontgrid(xl);
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+    }
+}

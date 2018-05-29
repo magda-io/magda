@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Make organisation page more consistent with rest of the site
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 
 ## 0.0.40
