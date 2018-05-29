@@ -116,7 +116,7 @@
     .search-btn {
         position: absolute;
         right: 0;
-        padding: 5px;
+        padding: 8px;
         bottom: 1px;
         border: 2px solid transparent;
         box-sizing: border-box;
@@ -133,10 +133,11 @@
         background: none;
         border-bottom: 2px solid rgba(#fff, 0.2);
         img {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
         }
-        @media (max-width: $medium - 1) {
+        @media (min-width: $medium) {
+            padding: 5px;
             img {
                 width: 32px;
                 height: 32px;

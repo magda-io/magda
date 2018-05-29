@@ -2,6 +2,7 @@
 
 ## 0.0.40
 
+*   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
 *   Location filter: Make state selectable on the inital region filter panel open
