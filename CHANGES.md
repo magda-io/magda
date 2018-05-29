@@ -1,3 +1,8 @@
+## 0.0.41
+
+*   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
+
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
@@ -9,8 +14,6 @@
 *   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 *   Made region and dataset configurable in search api.
 *   Fixed open in national map button not send correct URL
-*   Create Suggest a Dataset Page
-*   Add Suggest a Dataset on search results page
 
 ## 0.0.39
 
