@@ -11,8 +11,9 @@ stages:
   - buildtest
   - dockerize
   - preview
+  - deploy-dev
   - release
-  - staging
+  - deploy-staging
   - deploy-prod
 
 builders-and-yarn:
@@ -514,7 +515,7 @@ Release Tags To Docker Hub:
 
 Deploy RC Tags As Staging:
   <<: *runAsPreview
-  stage: staging
+  stage: deploy-staging
   when: on_success
   only:
     - /^v.*RC.*$/
