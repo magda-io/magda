@@ -120,7 +120,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 20,
+      version = 21,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         create.index(indices.getIndex(config, Indices.RegionsIndex))
