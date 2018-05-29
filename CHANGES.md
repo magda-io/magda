@@ -2,6 +2,7 @@
 
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
+*   Added static class container for publisher page. Removed `min-height` property for main containers
 
 ## 0.0.39
 
@@ -69,7 +70,6 @@
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
 *   Made all data.gov.au environments use mailgun.
-*   Added static class container for publisher page. Removed `min-height` property for main containers
 
 ## 0.0.38
 
