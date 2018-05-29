@@ -1,8 +1,11 @@
+## 0.0.41
+
+*   Added static class container for publisher page. Removed `min-height` property for main containers
+
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
-*   Added static class container for publisher page. Removed `min-height` property for main containers
 
 ## 0.0.39
 
