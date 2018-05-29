@@ -2,7 +2,7 @@
 
 .search {
     .sub-heading {
-        color: $body;
+        color: $AU-color-foreground-action;
         margin-top: 10px;
         @include AU-fontgrid(sm);
         font-weight: 500;

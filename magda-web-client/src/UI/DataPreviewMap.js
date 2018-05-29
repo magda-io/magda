@@ -94,7 +94,7 @@ class DataPreviewMap extends Component {
                         {
                             name: this.state.selectedDistribution.title,
                             type: "magda-item",
-                            url: "/",
+                            url: config.baseUrl,
                             distributionId: this.state.selectedDistribution
                                 .identifier,
                             isEnabled: true,

@@ -85,19 +85,19 @@ class RegionMap extends Component {
             return {
                 color:
                     region === this.getID(feature)
-                        ? "rgba(245, 88, 96, 0.6)"
+                        ? "rgba(14, 0, 33, 0.8)"
                         : "rgba(0,0,0,0)",
                 outline: {
-                    color: "#ddd",
+                    color: "#6B7FD7",
                     size: 1
                 },
                 selected: {
                     color:
                         region === this.getID(feature)
-                            ? "rgba(245, 88, 96, 0.6)"
+                            ? "rgba(14, 0, 33, 0.8)"
                             : "rgba(0,0,0,0)",
                     outline: {
-                        color: "#ffffff"
+                        color: "#4c2a85"
                     }
                 }
             };

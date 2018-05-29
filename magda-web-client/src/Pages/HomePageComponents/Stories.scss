@@ -1,8 +1,10 @@
 @import "../../variables";
 
 .homepage-stories {
-    @media (max-width: $medium) {
-        margin-top: 16px;
+    margin-top: 1rem;
+
+    @media (min-width: $medium) {
+        margin-bottom: 2rem;
     }
 
     .stories-container {
@@ -39,13 +41,13 @@
         left: 50%;
         bottom: 0px;
         margin-left: -67px;
-        background: #37434f;
+        background: $AU-colordark-background;
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
         font-weight: 500;
         @include AU-fontgrid(xs);
         text-align: center;
-        color: #f8f9fa;
+        color: $AU-colordark-foreground-text;
         width: 134px;
         padding-left: 24.5px;
         padding-right: 24.5px;

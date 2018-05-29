@@ -1,23 +1,4 @@
 @import "../variables";
 
 .tags-box {
-    display: flex;
-    a {
-        border-bottom: none;
-        text-decoration: underline;
-        overflow-x: initial;
-    }
-    .heading {
-        color: $body;
-        font-size: 16px;
-        line-height: 19px;
-        vertical-align: top;
-        width: 50px;
-        margin-top: 10px;
-        margin-right: 10px;
-    }
-
-    .au-tags > li {
-        border: 0;
-    }
 }

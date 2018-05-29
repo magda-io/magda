@@ -7,7 +7,6 @@
     box-sizing: border-box;
     display: block;
     background-color: transparent;
-    color: rgba(0, 0, 0, 0.87);
     border: none;
     outline: 0;
     width: 100%;
@@ -16,11 +15,12 @@
     background-image: none;
     @media (min-width: $medium) {
         padding-bottom: 5px;
+        padding-left: 0;
         margin-bottom: 0;
-
+        color: rgba($AU-colordark-foreground-text, 0.87);
         display: block;
         padding-top: 15px;
-        font-family: $font-base;
+        font-family: inherit;
         font-size: 33px;
         font-weight: 300;
         height: 57px;
@@ -33,7 +33,7 @@
 .searchBox-switcher {
     &.none-home {
         @media (min-width: $medium) {
-            background: rgba(245, 245, 245, 0.8);
+            background: $AU-colordark-background;
         }
         .searchBox {
             background-color: transparent;
@@ -41,22 +41,14 @@
     }
 }
 
-.home {
-    .searchBox {
-        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
-            0px 3px 6px rgba(0, 0, 0, 0.23);
-        border-radius: 4px;
-    }
-}
-
 .searchBox {
     position: relative;
-    color: $body;
+    color: $AU-color-foreground-action;
     box-sizing: border-box;
     display: flex;
     justify-content: space-between;
-    background-color: rgba(#fff, 0.8);
-    background: #ffffff;
+    background-color: rgba($AU-color-foreground-action, 0.8);
+    background: $AU-color-background;
     border-radius: 0px;
     border-bottom: 1px solid rgba(73, 73, 73, 0.15);
     @media (min-width: $medium) {
@@ -79,6 +71,7 @@
         @media (min-width: $medium) {
             border-bottom: 2px solid #cfcfcf;
         }
+        outline: none !important;
     }
 
     .search-btn {
@@ -121,6 +114,7 @@
         z-index: 10;
         position: absolute;
         bottom: 0px;
+        left: -1px;
         font-size: 33px;
         height: 0;
         overflow: hidden;
@@ -131,7 +125,7 @@
         -ms-user-select: none;
         user-select: none;
         max-width: 100%;
-        border-top: 2px solid $main;
+        border-top: 2px solid $AU-colordark-foreground-focus;
         border-radius: 2px;
         display: none;
         @media (min-width: $medium) {
@@ -143,21 +137,56 @@
     input::-webkit-input-placeholder {
         /* Chrome/Opera/Safari */
         @include text();
-        color: rgba(0, 0, 0, 0.6);
+        color: rgba($AU-colordark-foreground-text, 0.9);
     }
     input::-moz-placeholder {
         /* Firefox 19+ */
         @include text();
-        color: rgba(0, 0, 0, 0.6);
+        color: rgba($AU-colordark-foreground-text, 0.9);
     }
     input:-ms-input-placeholder {
         /* IE 10+ */
         @include text();
-        color: rgba(0, 0, 0, 0.6);
+        color: rgba($AU-colordark-foreground-text, 0.9);
     }
     input:-moz-placeholder {
         /* Firefox 18- */
         @include text();
-        color: rgba(0, 0, 0, 0.6);
+        color: rgba($AU-colordark-foreground-text, 0.9);
+    }
+}
+
+.home {
+    .searchBox {
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
+            0px 3px 6px rgba(0, 0, 0, 0.23);
+        border-radius: 4px;
+        input {
+            color: $AU-color-foreground-action;
+        }
+        input::-webkit-input-placeholder {
+            color: rgba($AU-color-foreground-action, 0.7);
+        }
+        input::-moz-placeholder {
+            color: rgba($AU-color-foreground-action, 0.7);
+        }
+        input:-ms-input-placeholder {
+            color: rgba($AU-color-foreground-action, 0.7);
+        }
+        input:-moz-placeholder {
+            color: rgba($AU-color-foreground-action, 0.7);
+        }
+        input:focus::-webkit-input-placeholder {
+            color: transparent;
+        }
+        input:focus:-moz-placeholder {
+            color: transparent;
+        } /* FF 4-18 */
+        input:focus::-moz-placeholder {
+            color: transparent;
+        } /* FF 19+ */
+        input:focus:-ms-input-placeholder {
+            color: transparent;
+        } /* IE 10+ */
     }
 }
