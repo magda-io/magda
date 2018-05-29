@@ -1,5 +1,7 @@
 ## 0.0.41
 
+*   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+
 ## 0.0.40
 
 *   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
