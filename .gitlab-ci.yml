@@ -523,5 +523,6 @@ Deploy RC Tags As Staging:
     - master
     - branches
   script:
-    - TAG=$(npm run get-magda-version --silent)
+    - apk add --update jq
+    - TAG=$(jq -r ".version" lerna.json)
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait

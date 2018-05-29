@@ -34,8 +34,7 @@
         "prettier":
             "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
         "precommit": "pretty-quick --staged",
-        "retag-and-push": "lerna run retag-and-push --stream",
-        "get-magda-version": "node ./scripts/get-magda-version.js"
+        "retag-and-push": "lerna run retag-and-push --stream"
     },
     "pancake": {
         "auto-save": true,
