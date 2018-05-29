@@ -40,7 +40,7 @@ export const config = {
     homePageConfig: homePageConfig,
     appName: "data.gov.au",
     about:
-        "<p><span style='color:#00698f;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
+        "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl: serverConfig.baseUrl || fallbackApiHost,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
@@ -75,7 +75,7 @@ export const config = {
     headerNavigation: [
         ["Datasets", "search"],
         ["About", "page/about"],
-        ["Publishers", "publishers"],
+        ["Organisations", "organisations"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: {

@@ -1,5 +1,20 @@
+## 0.0.40
+
+*   Changed Publishers to Organisations in UI
+*   Modified `MonthPicker` tooltip icon's right padding
+*   Location filter: Make state selectable on the inital region filter panel open
+*   Made region and dataset configurable in search api.
+*   Added publisher name acronyms to elasticsearch
+*   Removed underline on coat of arms.
+*   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
+*   Made region and dataset configurable in search api.
+*   Fixed open in national map button not send correct URL
+*   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
+
 ## 0.0.39
 
+*   implemented new UI palette with accessibility improvements
 *   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
@@ -21,8 +36,6 @@
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
 *   Fixed distribution previews
-*   Create Suggest a Dataset Page
-*   Add Suggest a Dataset on search results page
 *   Made CSP report uri configurable
 *   Added stubbed correspondence api
 *   Added link to publisher page for publisher on dataset summary.
@@ -61,10 +74,16 @@
 *   Recent search caches images to avoid flickering icons issue on the first display
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
-*   Create Suggest a Dataset Page
-*   Add Suggest a Dataset on search results page
+*   Make search filters stay on until specifically dismissed
+*   Added ui-only preview job to gitlab.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
+*   Made all data.gov.au environments use mailgun.
+*   Map Preview: Set default camera to Australia
+*   Map Preview: Mute errors from users
+*   Map Preview: Report selected distribution to console
+*   Adjusted pagination button styles
 
 ## 0.0.38
 

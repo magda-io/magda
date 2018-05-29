@@ -10,7 +10,7 @@ class DatasetPublisher extends Component {
                 <h3 className="section-heading">Overview</h3>
                 <OverviewBox content={publisher.name} />
                 <Link
-                    to={`/search?publisher=${encodeURIComponent(
+                    to={`/search?organisation=${encodeURIComponent(
                         publisher.name
                     )}`}
                 >

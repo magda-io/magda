@@ -68,12 +68,6 @@ class SearchBox extends Component {
         if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         this.updateQuery({
             q: text,
-            publisher: [],
-            regionId: undefined,
-            regionType: undefined,
-            dateFrom: undefined,
-            dateTo: undefined,
-            format: [],
             page: undefined
         });
     }

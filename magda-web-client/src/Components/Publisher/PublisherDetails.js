@@ -51,7 +51,7 @@ class PublisherDetails extends Component {
                         </div>
                         <div>
                             <Link
-                                to={`/search?publisher=${encodeURIComponent(
+                                to={`/search?organisation=${encodeURIComponent(
                                     publisher.name
                                 )}`}
                             >

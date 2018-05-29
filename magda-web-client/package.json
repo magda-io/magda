@@ -1,7 +1,7 @@
 {
     "name": "@magda/web-client",
     "description": "The MAGDA in-browser web front end.",
-    "version": "0.0.39-0",
+    "version": "0.0.40-0",
     "license": "Apache-2.0",
     "scripts": {
         "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -35,10 +35,11 @@
         "@gov.au/pancake-json": "^1.0.3",
         "@gov.au/pancake-react": "^1.1.0",
         "@gov.au/pancake-sass": "^1.3.0",
+        "@gov.au/select": "^2.0.2",
         "@gov.au/skip-link": "^2.0.2",
         "@gov.au/tags": "^2.0.1",
         "@gov.au/text-inputs": "^2.0.2",
-        "@magda/scripts": "^0.0.39-0",
+        "@magda/scripts": "^0.0.40-0",
         "@storybook/addon-actions": "^3.3.3",
         "@storybook/addon-links": "^3.3.3",
         "@storybook/addons": "^3.3.3",

@@ -1,18 +1,15 @@
 @import "../variables";
 .banner {
     text-align: center;
-    background: $success;
-    color: $banner-text;
     padding: 8px 0;
     position: relative;
     @include AU-fontgrid(xs);
     padding-right: 40px;
     a {
-        color: $banner-text !important;
+        display: inline-block;
     }
     .close-btn {
         background: transparent;
-        color: $banner-text;
         border: none;
         box-shadow: none;
         position: absolute;

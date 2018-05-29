@@ -22,7 +22,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-## Near-Term Priorities June 2018 - infinity
+## Near-Term Priorities June 2018 - June 2019
 
 **Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
 
@@ -39,7 +39,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 We're planning to do a lot of research into what exactly data consumers find useful
 
-**Dataset Feedback/Collaboration**: Closing the loop between data users and custodians by providing a Quora-styled Q&A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset's metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators and the ability to have some Q&As private.
+**Dataset Feedback/Collaboration V2**: Closing the loop between data users and custodians by providing a Quora-styled Q&A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset's metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators and the ability to have some Q&As private.
 
 **User Management/Administration**: Currently it's possible to create an account with Magda and log in, but there's very little ability to change your details, or for administrators to ban or delete abusive accounts - these features need to be added.
 

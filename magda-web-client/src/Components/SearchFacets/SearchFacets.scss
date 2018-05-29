@@ -33,8 +33,7 @@
 
 .au-btn.filter-toggle-button {
     position: relative;
-    color: $main;
-    border-radius: 0;
+    color: $AU-color-foreground-action;
     border: 0;
     box-shadow: inset 0 -1px 0 0 rgba(73, 73, 73, 0.15);
     width: 100%;
@@ -44,7 +43,7 @@
     padding: 0 15px;
     height: 50px;
     margin: 0;
-    background-color: #f7f8fa;
+    background-color: $AU-color-background;
     text-transform: uppercase;
     img {
         position: absolute;
@@ -55,7 +54,7 @@
     &:hover,
     &:focus {
         background-color: #f7f8fa;
-        color: $main;
+        color: $AU-color-foreground-action;
     }
 }
 .search-facets-mobile {
@@ -113,8 +112,11 @@
     }
 }
 
+.facet-option__list {
+    margin: 0;
+}
+
 .btn-facet-option {
-    font-family: $font-base;
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -125,20 +127,21 @@
     box-shadow: none;
     margin: 0;
     padding: 0;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
+    padding: 0 8px;
     cursor: pointer;
     &.is-active,
     &:hover,
     &:focus {
-        background-color: $main;
-        color: #fff;
+        background-color: $AU-color-foreground-action;
+        color: $AU-color-background;
     }
 }
 
 .btn-facet-option__volume-indicator {
     display: block;
     position: absolute;
-    left: 0;
+    left: 8px;
     bottom: 0px;
     z-index: 10;
 }
@@ -158,12 +161,6 @@
     line-height: 20px;
     padding: 15px 0;
     button {
-        text-transform: none;
-        font-weight: 400;
         padding: 0 16px;
-        font-size: 16px;
-        &:last-child {
-            color: $AU-color-foreground-action;
-        }
     }
 }

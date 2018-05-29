@@ -48,7 +48,7 @@ export default class DatasetSummary extends Component {
                 {publisher && (
                     <Link
                         className="dataset-summary-publisher"
-                        to={`/publishers/${publisherIdent}`}
+                        to={`/organisations/${publisherIdent}`}
                     >
                         {publisher}
                     </Link>

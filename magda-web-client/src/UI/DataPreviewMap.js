@@ -57,6 +57,10 @@ class DataPreviewMap extends Component {
             });
             return;
         } else {
+            if (console && console.log) {
+                console.log("map preview distribution selection: ");
+                console.log(selectedDistribution);
+            }
             this.setState({
                 isInitLoading: false,
                 isMapLoading: true,
@@ -90,14 +94,20 @@ class DataPreviewMap extends Component {
                         {
                             name: this.state.selectedDistribution.title,
                             type: "magda-item",
-                            url: "/",
+                            url: config.baseUrl,
                             distributionId: this.state.selectedDistribution
                                 .identifier,
                             isEnabled: true,
                             zoomOnEnable: true
                         }
                     ],
-                    baseMapName: "Positron (Light)"
+                    baseMapName: "Positron (Light)",
+                    homeCamera: {
+                        north: -8,
+                        east: 158,
+                        south: -45,
+                        west: 109
+                    }
                 }
             ]
         };
@@ -210,7 +220,7 @@ class DataPreviewMap extends Component {
                             frameBorder="0"
                             src={
                                 config.previewMapUrl +
-                                "#mode=preview&hideExplorerPanel=1&clean"
+                                "#mode=preview&hideExplorerPanel=1"
                             }
                             ref={f => (this.iframeRef = f)}
                             style={

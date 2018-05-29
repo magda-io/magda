@@ -49,6 +49,7 @@ class FacetRegion extends Component {
     onFeatureClick(feature) {
         let regionMapping = this.props.regionMapping;
         let regionType = this.state._activeRegion.regionType;
+        if (!regionType) regionType = "STE";
 
         let regionProp = regionMapping[regionType].regionProp;
         let nameProp = regionMapping[regionType].nameProp;
@@ -127,7 +128,7 @@ class FacetRegion extends Component {
                         Clear{" "}
                     </button>
                     <button
-                        className="au-btn au-btn--secondary"
+                        className="au-btn au-btn--primary"
                         onClick={this.onApplyFilter}
                         disabled={this.state.applyButtonDisabled}
                     >

@@ -159,7 +159,7 @@ class RecordHandler extends React.Component {
                                 itemScope
                                 itemType="http://schema.org/Organization"
                             >
-                                <Link to={`/publishers/${publisherId}`}>
+                                <Link to={`/organisations/${publisherId}`}>
                                     {publisherName}
                                 </Link>
                             </span>

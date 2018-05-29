@@ -22,9 +22,9 @@ spec:
             "--listenPort", "80",
             "--registryUrl", "http://registry-api/v0",
             "--externalUrl", {{ .Values.externalUrl | quote }},
-            "--smtpHostname", {{ .Values.smtpHostname | quote}},
+            "--smtpHostname", {{ .Values.smtpHostname | quote }},
             "--smtpPort", {{ .Values.smtpPort | default 587 | quote }},
-            "--smtpSecure", {{ .Values.smtpSecure | default true | quote}},
+            "--smtpSecure", {{ .Values.smtpSecure | default true | quote }},
             "--defaultRecipient", {{ .Values.defaultRecipient | quote }}
         ]
         livenessProbe:

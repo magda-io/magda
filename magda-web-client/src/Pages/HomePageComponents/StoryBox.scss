@@ -2,8 +2,8 @@
 
 .homepage-stories {
     .story-title-link:hover {
-        color: $body;
-        background-color: #fff;
+        color: $AU-color-foreground-action;
+        background-color: $AU-color-background;
     }
     .story-title-link {
         border: none;
@@ -23,11 +23,13 @@
         }
 
         .story-box-body {
+            a {
+                text-decoration: none;
+            }
             .markdown {
-                font-family: $font-base;
+                font-family: inherit;
                 font-style: normal;
                 font-weight: normal;
-                color: $body;
             }
         }
     }

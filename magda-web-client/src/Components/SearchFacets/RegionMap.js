@@ -68,10 +68,7 @@ class RegionMap extends Component {
     }
 
     shouldRegionUpdate(preProps, nextProps) {
-        if (
-            !defined(nextProps.regionMapping) ||
-            !defined(nextProps.region.regionType)
-        ) {
+        if (!defined(nextProps.regionMapping)) {
             return false;
         } else if (
             this.layer &&
@@ -88,19 +85,19 @@ class RegionMap extends Component {
             return {
                 color:
                     region === this.getID(feature)
-                        ? "rgba(245, 88, 96, 0.6)"
+                        ? "rgba(14, 0, 33, 0.8)"
                         : "rgba(0,0,0,0)",
                 outline: {
-                    color: "#ddd",
+                    color: "#6B7FD7",
                     size: 1
                 },
                 selected: {
                     color:
                         region === this.getID(feature)
-                            ? "rgba(245, 88, 96, 0.6)"
+                            ? "rgba(14, 0, 33, 0.8)"
                             : "rgba(0,0,0,0)",
                     outline: {
-                        color: "#ffffff"
+                        color: "#4c2a85"
                     }
                 }
             };
@@ -116,7 +113,9 @@ class RegionMap extends Component {
 
     addRegion(props) {
         this.removeRegion();
-        let regionData = props.regionMapping[props.region.regionType];
+        let regionType = props.region.regionType;
+        if (!regionType) regionType = "STE";
+        let regionData = props.regionMapping[regionType];
         if (defined(regionData)) {
             this.getID = function(feature) {
                 return feature.properties[regionData.regionProp];

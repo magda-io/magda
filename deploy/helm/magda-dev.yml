@@ -1,11 +1,11 @@
 global:
   useCombinedDb: true
   useCloudSql: false
-  externalUrl: http://magda-dev.terria.io
+  externalUrl: https://magda-dev.terria.io
   rollingUpdate:
     maxUnavailable: 1
   image:
-    tag: "0.0.39-0"
+    tag: "0.0.40-0"
 
 tags:
   all: true
@@ -133,3 +133,5 @@ correspondence-api:
       memory: 0
   externalUrl: "https://magda-dev.terria.io"
   defaultRecipient: "magda-test@googlegroups.com"
+  smtpHostname: "smtp.mailgun.org"
+  smtpPort: 2525

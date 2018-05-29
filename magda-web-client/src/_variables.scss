@@ -1,34 +1,20 @@
-@import "../pancake/sass/core.scss";
+$AU-color-foreground-action: #4c2a85;
+$AU-color-foreground-focus: #0e0021;
+$AU-color-foreground-text: #0e0021;
+$AU-color-background: #ffffff;
 
-$main: $AU-color-foreground-action;
-$body: $AU-color-foreground-text;
+$AU-colordark-foreground-action: #f1f7ee;
+$AU-colordark-foreground-focus: #6b7fd7;
+$AU-colordark-foreground-text: #f1f7ee;
+$AU-colordark-background: #320e3b;
 
-$magda: $AU-color-foreground-action;
-$magda-grey: #ecf0f1;
-$magda-grey-light: #f7f7f7;
-$magda-dark-grey: #888;
-$magda-blue: #2980b9;
-$magda-dark-blue: #2c3e50;
 $magda-green: #16a085;
 $magda-red: #c0392b;
 $magda-yellow: #f1c40f;
-$success: #145e70;
-$banner-text: #48c9f6;
 
-$badge-bg: #daddde;
-
-$font-base: "Rubik", sans-serif;
+$banner-text: $AU-color-foreground-text;
 
 $small: 768px;
 $medium: 992px;
 $large: 1200px;
-
-$AU-color-foreground-action: #00698f !default;
-$AU-color-foreground-focus: #9263de !default;
-$AU-color-foreground-text: #313131 !default;
-$AU-color-background: #ffffff !default;
-
-$AU-colordark-foreground-action: #61daff !default;
-$AU-colordark-foreground-focus: #c390f9 !default;
-$AU-colordark-foreground-text: #ffffff !default;
-$AU-colordark-background: #135e70 !default;
+@import "../pancake/sass/core.scss";

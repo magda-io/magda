@@ -18,7 +18,10 @@ export default function(query: Query) {
     let keywords = queryToString("query", query.q);
     let dateFroms = queryToString("dateFrom", query.dateFrom);
     let dateTos = queryToString("dateTo", query.dateTo);
-    let publishers = queryToString("publisher", query.publisher);
+    let publishers = queryToString(
+        "publisher",
+        query.organisation || query.publisher
+    );
     let formats = queryToString("format", query.format);
     let locations = queryToString(
         "region",
