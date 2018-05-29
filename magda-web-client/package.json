@@ -74,8 +74,7 @@
         "isomorphic-fetch": "^2.2.1",
         "js-cookie": "^2.2.0",
         "leaflet": "^0.7.7",
-        "leaflet-mapbox-vector-tile":
-            "github:TerriaJS/Leaflet.MapboxVectorTile",
+        "leaflet-mapbox-vector-tile": "github:TerriaJS/Leaflet.MapboxVectorTile",
         "lodash": "^4.17.10",
         "lodash.debounce": "^4.0.8",
         "lodash.find": "^4.6.0",
@@ -162,7 +161,12 @@
         "css": {
             "minified": true,
             "modules": false,
-            "browsers": ["last 2 versions", "ie 8", "ie 9", "ie 10"],
+            "browsers": [
+                "last 2 versions",
+                "ie 8",
+                "ie 9",
+                "ie 10"
+            ],
             "location": "pancake/css/",
             "name": false
         },

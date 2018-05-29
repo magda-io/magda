@@ -3,10 +3,8 @@
     "version": "0.0.41-0",
     "description": "Builder image for nodejs magda projects",
     "scripts": {
-        "docker-build-prod":
-            "create-docker-context-for-node-component --build --push",
-        "docker-build-local":
-            "create-docker-context-for-node-component --build --push --local"
+        "docker-build-prod": "create-docker-context-for-node-component --build --push",
+        "docker-build-local": "create-docker-context-for-node-component --build --push --local"
     },
     "author": "",
     "license": "Apache-2.0",

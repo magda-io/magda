@@ -8,8 +8,7 @@
         "compile": "tsc -p tsconfig-build.json",
         "watch": "tsc -p tsconfig-build.json --watch",
         "generate": "generate-registry-typescript ./src/generated/registry",
-        "test":
-            "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+        "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
         "dev": "yarn run watch"
     },
     "devDependencies": {

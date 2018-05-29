@@ -5,8 +5,7 @@
     "license": "Apache-2.0",
     "bin": {
         "generate-registry-typescript": "generate-registry-typescript.js",
-        "create-docker-context-for-node-component":
-            "create-docker-context-for-node-component.js",
+        "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
         "generate-connector-jobs": "generate-connector-jobs.js",
         "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
         "create-pod-and-forward": "create-pod-and-forward.js"

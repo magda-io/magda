@@ -3,17 +3,12 @@
     "version": "0.0.41-0",
     "description": "MAGDA deployment configuration.",
     "scripts": {
-        "create-connector-configmap":
-            "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
+        "create-connector-configmap": "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
         "generate-connector-jobs": "generate-connector-jobs",
-        "generate-connector-jobs-local":
-            "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
-        "generate-connector-jobs-dev":
-            "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
-        "generate-connector-jobs-prod":
-            "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
-        "create-config-configmap":
-            "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/"
+        "generate-connector-jobs-local": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
+        "generate-connector-jobs-dev": "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
+        "generate-connector-jobs-prod": "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
+        "create-config-configmap": "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/"
     },
     "author": "",
     "license": "Apache-2.0",
@@ -26,8 +21,7 @@
     },
     "bin": {
         "generate-registry-typescript": "generate-registry-typescript.js",
-        "create-docker-context-for-node-component":
-            "create-docker-context-for-node-component.js",
+        "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
         "generate-connector-jobs": "generate-connector-jobs.js"
     }
 }
