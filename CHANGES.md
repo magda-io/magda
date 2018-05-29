@@ -1,6 +1,6 @@
 ## 0.0.41
 
-*   Added static class container for publisher page. Removed `min-height` property for main containers
+*   Added static class container for publisher, other pages. Removed `min-height` property for main containers
 
 ## 0.0.40
 
