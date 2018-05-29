@@ -1,5 +1,7 @@
 ## 0.0.41
 
+*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
