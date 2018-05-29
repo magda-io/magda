@@ -60,7 +60,7 @@ const OtherPages = props => {
                 />
             )}
             <div
-                className="container app-container static-page-container"
+                className="static-page-container container app-container"
                 id="content"
             >
                 {renderBody()}
