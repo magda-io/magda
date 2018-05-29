@@ -1,6 +1,6 @@
 {
     "name": "@magda/postgres",
-    "version": "0.0.40-0",
+    "version": "0.0.41-0",
     "description":
         "A base Docker image for PostgreSQL with Flyway for schema migrations.",
     "scripts": {
@@ -20,7 +20,7 @@
         }
     },
     "devDependencies": {
-        "@magda/scripts": "^0.0.40-0"
+        "@magda/scripts": "^0.0.41-0"
     },
     "magda": {
         "categories": {
