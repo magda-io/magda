@@ -41,7 +41,7 @@ spec:
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
             "-Dindexer.readSnapshots={{ .Values.readSnapshots | default true }}",
-            "-Dindexer.makeSnapshots={{ .Values.readSnapshots | default true }}",
+            "-Dindexer.makeSnapshots={{ .Values.makeSnapshots | default true }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}

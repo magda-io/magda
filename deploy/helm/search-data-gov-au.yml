@@ -24,7 +24,6 @@ tags:
     sleuther-visualization: true
     sleuther-format: true
     web-server: true
-    feedback-api: true
 
 elasticsearch:
     production: true
@@ -54,14 +53,14 @@ gateway:
         googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
     resources:
         requests:
-            cpu: 200m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
 preview-map:
     replicas: 2
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
 registry-api:
     logLevel: INFO
     livenessProbe:
@@ -75,13 +74,13 @@ authorization-api:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
 search-api:
     replicas: 2
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 500Mi
         limits:
             cpu: 1000m
             memory: 1000Mi
@@ -92,14 +91,14 @@ web-server:
         maxReplicas: 4
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
     disableAuthenticationFeatures: true
 sleuther-broken-link:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -107,7 +106,7 @@ sleuther-linked-data-rating:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -123,7 +122,7 @@ sleuther-format:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -137,7 +136,7 @@ indexer:
     resources:
         requests:
             cpu: 200m
-            memory: 200Mi
+            memory: 500Mi
 feedback-api:
     gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
     replicas: 2
@@ -149,7 +148,7 @@ correspondence-api:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
     defaultRecipient: "data@digital.gov.au"
     smtpHostname: "smtp.mailgun.org"
     smtpPort: 2525
