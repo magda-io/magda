@@ -521,7 +521,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
                 case None            => queryPublishers.contains(Unspecified())
               }
 
-              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.acronym)}") {
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
                 matchesQuery should be(true)
               }
             }
@@ -559,7 +559,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
                 case None            => queryPublishers.contains(Unspecified())
               }
 
-              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.acronym)}") {
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
                 matchesQuery should be(true)
               }
             }
