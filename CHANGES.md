@@ -1,5 +1,8 @@
 ## 0.0.41
 
+*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+*   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
