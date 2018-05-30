@@ -24,7 +24,7 @@ class RecordHandler extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hideHeader: false
+            addMargin: false
         };
     }
 
@@ -39,8 +39,8 @@ class RecordHandler extends React.Component {
         }
     }
 
-    toggleHeader = hideHeader => {
-        this.setState({ hideHeader });
+    toggleMargin = addMargin => {
+        this.setState({ addMargin });
     };
 
     componentWillReceiveProps(nextProps) {
@@ -145,11 +145,17 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
-                        <DatasetSuggestForm
-                            title={this.props.dataset.title}
-                            toggleHeader={this.toggleHeader}
-                            datasetId={this.props.dataset.identifier}
-                        />
+                        <div
+                            className={
+                                this.state.addMargin ? "form-margin" : ""
+                            }
+                        >
+                            <DatasetSuggestForm
+                                title={this.props.dataset.title}
+                                toggleMargin={this.toggleMargin}
+                                datasetId={this.props.dataset.identifier}
+                            />
+                        </div>
                         <h1 className="dataset-title" itemProp="name">
                             {this.props.dataset.title}
                         </h1>

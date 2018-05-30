@@ -9,9 +9,22 @@ export default class RequestFormLogic extends React.Component {
         this.state = {
             successResult: false,
             posted: false,
-            isSending: false
+            isSending: false,
+            senderEmail: "",
+            message: "",
+            senderName: ""
         };
     }
+
+    /**
+     * This handles the change event of typing into the form.
+     * It passes the state value of email, name and message.
+     * When called in the parent component,
+     * it also helps retain the state when the form is not submited, or an error state has occured.
+     */
+    handleChange = data => {
+        this.props.handleChange(data, this.state.successResult);
+    };
 
     /**
      * handles the logic of submitting form
@@ -68,6 +81,7 @@ export default class RequestFormLogic extends React.Component {
                             isSending: false
                         };
                     });
+                    this.handleChange(data);
                     if (this.props.formSubmitState) {
                         this.props.formSubmitState(true);
                     }
@@ -106,6 +120,10 @@ export default class RequestFormLogic extends React.Component {
                     {...this.props.formProps}
                     handleSubmit={this.handleSubmit}
                     isSending={this.state.isSending}
+                    handleChange={this.handleChange}
+                    senderEmail={this.props.senderEmail}
+                    senderName={this.props.senderName}
+                    message={this.props.message}
                 />
             );
         } else {
@@ -130,7 +148,11 @@ export default class RequestFormLogic extends React.Component {
                         <RequestFormTemplate
                             {...this.props.formProps}
                             handleSubmit={this.handleSubmit}
+                            handleChange={this.handleChange}
                             isSending={this.state.isSending}
+                            senderEmail={this.props.senderEmail}
+                            senderName={this.props.senderName}
+                            message={this.props.message}
                         />
                     </div>
                 );

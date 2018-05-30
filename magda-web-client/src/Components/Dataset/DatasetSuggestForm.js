@@ -11,13 +11,36 @@ export default class DatasetSuggestForm extends React.Component {
         super(props);
         this.state = {
             showSuggest: false,
-            formPosted: false
+            formPosted: false,
+            message: "",
+            senderEmail: "",
+            senderName: ""
         };
     }
 
     //toggles "formPosted" state whether or not the form is posted or not
     getFormSubmitState = formPosted => {
         this.setState({ formPosted });
+    };
+
+    /**
+     * If the form is posted successfully the form will reset to default values,
+     * else the values typed in previously are retained.
+     * @data: is the object consisting of email, message and name
+     * @isFormPosted: is a boolean to say whether or not the form is posted
+     * successfully or not
+     */
+    handleChange = (data, isFormPosted) => {
+        const senderEmail = isFormPosted ? "" : data.senderEmail;
+        const message = isFormPosted ? "" : data.message;
+        const senderName = isFormPosted ? "" : data.senderName;
+        this.setState(() => {
+            return {
+                senderEmail,
+                message,
+                senderName
+            };
+        });
     };
 
     /**
@@ -31,15 +54,15 @@ export default class DatasetSuggestForm extends React.Component {
                 formPosted: false
             };
         });
-        this.props.toggleHeader(!this.state.showSuggest);
+        this.props.toggleMargin(!this.state.showSuggest);
     };
 
     render() {
         const formProps = {
             title: "Ask a question about " + this.props.title,
             smallTitle: true,
-            namePlaceHolder: "Irving Washington",
-            emailPlaceHolder: "washington.irving@mail.com",
+            namePlaceHolder: "Dorothy Hill",
+            emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?"
@@ -84,6 +107,10 @@ export default class DatasetSuggestForm extends React.Component {
                             formSubmitState={this.getFormSubmitState}
                             datasetId={this.props.datasetId}
                             requestType="report"
+                            handleChange={this.handleChange}
+                            senderEmail={this.state.senderEmail}
+                            senderName={this.state.senderName}
+                            message={this.state.message}
                         />
                     </div>
                 )}

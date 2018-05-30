@@ -12,9 +12,31 @@ export default class SearchPageSuggest extends React.Component {
 
         this.state = {
             showSuggest: false,
-            formPosted: false
+            formPosted: false,
+            message: "",
+            senderEmail: "",
+            senderName: ""
         };
     }
+    /**
+     * If the form is posted successfully the form will reset to default values,
+     * else the values typed in previously are retained.
+     * @data: is the object consisting of email, message and name
+     * @isFormPosted: is a boolean to say whether or not the form is posted
+     * successfully or not
+     */
+    handleChange = (data, isFormPosted) => {
+        const senderEmail = isFormPosted ? "" : data.senderEmail;
+        const message = isFormPosted ? "" : data.message;
+        const senderName = isFormPosted ? "" : data.senderName;
+        this.setState(() => {
+            return {
+                senderEmail,
+                message,
+                senderName
+            };
+        });
+    };
 
     //toggles "formPosted" state whether or not the form is posted or not
     getFormSubmitState = formPosted => {
@@ -35,10 +57,10 @@ export default class SearchPageSuggest extends React.Component {
 
     render() {
         const formProps = {
-            namePlaceHolder: "Irving Washington",
-            emailPlaceHolder: "washington.irving@mail.com",
+            namePlaceHolder: "Dorothy Hill",
+            emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
-                "Location of all industrial solar plants in Victoria",
+                "It helps if you're really specific on the kind of data you're looking for and what you would use it for. Feel free to report any problems you run into as well.",
             textAreaLabel: "What sort of data are you looking for?"
         };
         const alertProps = {
@@ -89,6 +111,10 @@ export default class SearchPageSuggest extends React.Component {
                         alertProps={alertProps}
                         formSubmitState={this.getFormSubmitState}
                         requestType="request"
+                        handleChange={this.handleChange}
+                        senderEmail={this.state.senderEmail}
+                        senderName={this.state.senderName}
+                        message={this.state.message}
                     />
                 )}
             </div>

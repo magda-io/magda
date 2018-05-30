@@ -17,13 +17,27 @@ export default class RequestFormTemplate extends React.Component {
             senderNameValid: true
         };
     }
+    componentDidMount() {
+        const message = this.props.message ? this.props.message : "";
+        const senderEmail = this.props.senderEmail
+            ? this.props.senderEmail
+            : "";
+        const senderName = this.props.senderName ? this.props.senderName : "";
+        this.setState(() => {
+            return {
+                senderEmail,
+                message,
+                senderName
+            };
+        });
+    }
 
     /**
      * performs some basic validation on the 3 inputs
      * @param {Object} state current state
      */
     checkRequiredFields(state) {
-        //this below package validates emails.
+        // this below package validates emails.
         var validator = require("email-validator");
         const requiredFields = [];
         if (
@@ -71,11 +85,17 @@ export default class RequestFormTemplate extends React.Component {
     handleInputChange = event => {
         const inputId = event.target.id;
         const inputVal = event.target.value.trim();
-        this.setState(() => {
-            return {
-                [inputId]: inputVal
-            };
-        });
+        this.setState(
+            () => {
+                return {
+                    [inputId]: inputVal
+                };
+            },
+            () => {
+                // put this in a callback since setState is async
+                this.props.handleChange(this.state);
+            }
+        );
     };
 
     render() {
@@ -93,6 +113,7 @@ export default class RequestFormTemplate extends React.Component {
                 <AUtextInput
                     as="textarea"
                     id="message"
+                    value={this.state.message}
                     className={
                         "textarea-input " +
                         (this.state.messageValid
@@ -113,6 +134,7 @@ export default class RequestFormTemplate extends React.Component {
                 </label>
                 <AUtextInput
                     id="senderName"
+                    value={this.state.senderName}
                     onChange={this.handleInputChange}
                     type="text"
                     className={
@@ -133,6 +155,7 @@ export default class RequestFormTemplate extends React.Component {
                 </label>
                 <AUtextInput
                     id="senderEmail"
+                    value={this.state.senderEmail}
                     onChange={this.handleInputChange}
                     className={
                         "suggest-page-input " +
@@ -151,6 +174,7 @@ export default class RequestFormTemplate extends React.Component {
                     onClick={this.handleSubmit}
                     className="submit-button"
                     type="submit"
+                    disabled={this.props.isSending}
                 >
                     {this.props.isSending ? "Sending..." : "Send"}
                 </AUbutton>
