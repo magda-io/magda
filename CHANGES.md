@@ -82,6 +82,7 @@
 *   Map Preview: Mute errors from users
 *   Map Preview: Report selected distribution to console
 *   Adjusted pagination button styles
+*   Bumped regions index version to 31 because of region shortname
 
 ## 0.0.38
 
