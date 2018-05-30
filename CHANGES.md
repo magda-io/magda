@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Fixed display of chart axis config dropdowns in Firefox.
 *   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 
