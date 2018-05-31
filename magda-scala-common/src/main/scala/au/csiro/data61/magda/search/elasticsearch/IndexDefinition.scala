@@ -162,11 +162,12 @@ object IndexDefinition extends DefaultJsonProtocol {
             "english_with_synonym",
             StandardTokenizer,
             List(
-              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               LowercaseTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
+              MagdaSynonymTokenFilter,
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-              StemmerTokenFilter("english_stemmer", "english"),
-              MagdaSynonymTokenFilter
+              StemmerTokenFilter("english_stemmer", "english")
             )
           )
         )
