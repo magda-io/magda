@@ -19,7 +19,8 @@ import com.sksamuel.elastic4s.analyzers.{
   LowercaseTokenFilter,
   KeywordTokenizer,
   StandardTokenizer,
-  SynonymTokenFilter
+  SynonymTokenFilter,
+  UppercaseTokenFilter
 }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
@@ -110,7 +111,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("text"))),
             objectField("publisher").fields(
               keywordField("identifier"),
-              keywordField("acronym"),
+              textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("name",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote"))),
@@ -137,13 +138,19 @@ object IndexDefinition extends DefaultJsonProtocol {
             textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
-            keywordField("acronym"),
+            textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
             magdaTextField("value"),
             textField("english").analyzer("english")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
-            KeywordTokenizer
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "uppercase",
+            KeywordTokenizer,
+            UppercaseTokenFilter
           ),
           /* implemented new english analyzer as per:
              https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer

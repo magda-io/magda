@@ -47,8 +47,9 @@ import au.csiro.data61.magda.test.util.Generators.regionGen
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 import au.csiro.data61.magda.test.util.ApiGenerators
+import au.csiro.data61.magda.model.Registry.RegistryConverters
 
-class DataSetSearchSpec extends BaseSearchApiSpec {
+class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()
@@ -489,6 +490,83 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
           }
         }
       }
+
+      it("should be hit if query by its acronym (Uppercase)") {
+        def dataSetToQuery(dataSet: DataSet) = {
+
+          val publishers = Set(
+            dataSet.publisher
+              .flatMap(d=>getAcronymFromPublisherName(d.name).map(_.toUpperCase))
+              .map(Specified.apply).getOrElse(Unspecified()))
+            .filter {
+              case Specified(x) => ApiGenerators.validFilter(x)
+              case _            => true
+            }.asInstanceOf[Set[FilterValue[String]]]
+
+          Gen.const(Query(publishers = publishers))
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
+            val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
+
+            response.dataSets.foreach { dataSet =>
+              val matchesQuery = dataSet.publisher.flatMap(_.acronym) match {
+                case Some(acronym) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(acronym)))
+                case None            => queryPublishers.contains(Unspecified())
+              }
+
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+                matchesQuery should be(true)
+              }
+            }
+          }
+        }
+      }
+
+      it("should be hit if query by its acronym (Lowercase)") {
+        def dataSetToQuery(dataSet: DataSet) = {
+
+          val publishers = Set(
+            dataSet.publisher
+              .flatMap(d=>getAcronymFromPublisherName(d.name).map(_.toLowerCase))
+              .map(Specified.apply).getOrElse(Unspecified()))
+            .filter {
+              case Specified(x) => ApiGenerators.validFilter(x)
+              case _            => true
+            }.asInstanceOf[Set[FilterValue[String]]]
+
+          Gen.const(Query(publishers = publishers))
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
+            val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
+            withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
+
+            response.dataSets.foreach { dataSet =>
+              val matchesQuery = dataSet.publisher.flatMap(_.acronym) match {
+                case Some(acronym) => queryPublishers.contains(Specified(MagdaMatchers.extractAlphaNum(acronym)))
+                case None            => queryPublishers.contains(Unspecified())
+              }
+
+              withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+                matchesQuery should be(true)
+              }
+            }
+          }
+        }
+      }
+
     }
 
     def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {

@@ -297,7 +297,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy, facetSize: Int) =
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
+      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
       .subAggregations(facetDef.aggregationDefinition(facetSize))
 
   /**
@@ -312,7 +312,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
-  private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
+  private def queryToQueryDef(query: Query, strategy: SearchStrategy, isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
       case MatchAll  => "and"
       case MatchPart => "or"
@@ -347,7 +347,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
         Some(dismax(queries).tieBreaker(0.2))
       },
-      setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
+      setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy, !isForAggregation))).boost(2)),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq => should(seq.map(region => regionIdQuery(region, indices))).boost(2)))
