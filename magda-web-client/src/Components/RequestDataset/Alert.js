@@ -8,17 +8,20 @@ const Alert = props => {
             <div className="container">
                 <div className="row">
                     <div className="col-md-9">
-                        <AUpageAlert as={props.type}>
+                        <AUpageAlert
+                            as={props.type}
+                            className="correspondence-alert"
+                        >
                             <h5>{props.header}</h5>
                         </AUpageAlert>
                         <br />
                         {}
                         {props.message && (
                             <React.Fragment>
-                                <p className="success-page-message">
+                                <p className="correspondence-success-message">
                                     {props.message.split(".")[0]}.
                                 </p>
-                                <p className="success-page-message">
+                                <p className="correspondence-success-message">
                                     {props.message.split(".")[1]}
                                 </p>
                             </React.Fragment>

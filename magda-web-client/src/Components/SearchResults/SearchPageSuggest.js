@@ -93,7 +93,7 @@ export default class SearchPageSuggest extends React.Component {
                 ) : (
                     <img
                         src={close}
-                        className="close-button"
+                        className="correspondence-search-close-button "
                         alt="close"
                         onClick={() => {
                             this.setState(() => {

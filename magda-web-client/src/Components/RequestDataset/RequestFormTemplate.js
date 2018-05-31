@@ -100,10 +100,12 @@ export default class RequestFormTemplate extends React.Component {
 
     render() {
         return (
-            <form method="post">
+            <form className="correspondence-form" method="post">
                 {this.props.title &&
                     (this.props.smallTitle ? (
-                        <h3 className="small-title">{this.props.title}</h3>
+                        <h3 className="correspondence-small-title">
+                            {this.props.title}
+                        </h3>
                     ) : (
                         <AUheader title={this.props.title} />
                     ))}
@@ -115,7 +117,7 @@ export default class RequestFormTemplate extends React.Component {
                     id="message"
                     value={this.state.message}
                     className={
-                        "textarea-input " +
+                        "correspondence-message-input " +
                         (this.state.messageValid
                             ? ""
                             : "au-text-input--invalid")
@@ -125,7 +127,7 @@ export default class RequestFormTemplate extends React.Component {
                     placeholder={this.props.textAreaPlaceHolder}
                 />
                 {!this.state.messageValid && (
-                    <label className="input-field-error">
+                    <label className="correspondence-field-error">
                         Please enter a valid message
                     </label>
                 )}
@@ -138,7 +140,7 @@ export default class RequestFormTemplate extends React.Component {
                     onChange={this.handleInputChange}
                     type="text"
                     className={
-                        "suggest-page-input " +
+                        "correspondence-name-input " +
                         (this.state.senderNameValid
                             ? ""
                             : "au-text-input--invalid")
@@ -146,7 +148,7 @@ export default class RequestFormTemplate extends React.Component {
                     placeholder={this.props.namePlaceHolder}
                 />
                 {!this.state.senderNameValid && (
-                    <label className="input-field-error">
+                    <label className="correspondence-field-error">
                         Please enter a name
                     </label>
                 )}
@@ -158,7 +160,7 @@ export default class RequestFormTemplate extends React.Component {
                     value={this.state.senderEmail}
                     onChange={this.handleInputChange}
                     className={
-                        "suggest-page-input " +
+                        "correspondence-email-input " +
                         (this.state.senderEmailValid
                             ? ""
                             : "au-text-input--invalid")
@@ -166,13 +168,13 @@ export default class RequestFormTemplate extends React.Component {
                     placeholder={this.props.emailPlaceHolder}
                 />
                 {!this.state.senderEmailValid && (
-                    <label className="input-field-error">
+                    <label className="correspondence-field-error">
                         Email is invalid
                     </label>
                 )}
                 <AUbutton
                     onClick={this.handleSubmit}
-                    className="submit-button"
+                    className="correspondence-submit-button"
                     type="submit"
                     disabled={this.props.isSending}
                 >

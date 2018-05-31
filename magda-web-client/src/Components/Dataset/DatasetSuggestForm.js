@@ -81,7 +81,7 @@ export default class DatasetSuggestForm extends React.Component {
             <div>
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest ? (
-                    <div>
+                    <div className="dataset-correspondence-container">
                         <AUbutton
                             className="ask-question-button"
                             onClick={this.toggleShowForm}
@@ -93,7 +93,7 @@ export default class DatasetSuggestForm extends React.Component {
                     <div className="ask-dataset-form">
                         <img
                             src={close}
-                            className="close-button"
+                            className="correspondence-dataset-close-button"
                             alt="close"
                             onClick={this.toggleShowForm}
                         />

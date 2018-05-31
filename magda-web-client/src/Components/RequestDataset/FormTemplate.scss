@@ -1,10 +1,10 @@
 $form-width: 700px;
 
-form {
+.correspondence-form {
     max-width: $form-width;
 }
 
-.textarea-input {
+.correspondence-message-input {
     width: 100%;
     width: -moz-available;
     width: -webkit-stretch;
@@ -14,22 +14,23 @@ form {
     margin-top: 20px;
 }
 
-.suggest-page-input {
+.correspondence-name-input,
+.correspondence-email-input {
     display: block;
     width: 300px;
     margin-bottom: 30px;
     margin-top: 10px;
 }
 
-.submit-button {
+.correspondence-submit-button {
     float: right;
 }
 
-.small-title {
+.correspondence-small-title {
     font-weight: 500;
 }
 
-.input-field-error {
+.correspondence-field-error {
     color: red;
     display: block;
     font-size: 14px;

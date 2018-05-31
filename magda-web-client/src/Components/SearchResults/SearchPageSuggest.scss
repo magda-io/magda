@@ -12,12 +12,15 @@
 
 .suggest-dataset-div {
     padding: 4px;
+    position: relative;
 }
 
-.close-button {
+.correspondence-search-close-button {
     height: 2em;
     width: 2em;
-    float: right;
+    position: absolute;
+    top: 2px;
+    right: 2px;
     &:hover {
         cursor: pointer;
     }
