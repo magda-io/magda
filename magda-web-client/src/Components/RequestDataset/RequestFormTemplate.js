@@ -84,7 +84,7 @@ export default class RequestFormTemplate extends React.Component {
      */
     handleInputChange = event => {
         const inputId = event.target.id;
-        const inputVal = event.target.value.trim();
+        const inputVal = event.target.value;
         this.setState(
             () => {
                 return {
