@@ -15,6 +15,7 @@ import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers.{
   CustomAnalyzerDefinition,
+  TokenFilter,
   LowercaseTokenFilter,
   KeywordTokenizer,
   StandardTokenizer,
@@ -67,9 +68,17 @@ case object EnglishStemmerFilter extends TokenFilter {
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
+
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
       textField("english").analyzer("english"))
+
+    textField(name).fields(fields)
+  }
+
+  def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
+    val fields = extraFields ++ Seq(
+      textField("english").analyzer("english_with_synonym"))
 
     textField(name).fields(fields)
   }
@@ -107,17 +116,17 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("keyword_lowercase").analyzer("quote"))),
             nestedField("distributions").fields(
               keywordField("identifier"),
-              magdaTextField("title"),
-              magdaTextField("description"),
+              magdaSynonymTextField("title"),
+              magdaSynonymTextField("description"),
               magdaTextField("format",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             objectField("spatial").fields(
               geoshapeField("geoJson")),
-            magdaTextField("title"),
-            magdaTextField("description"),
-            magdaTextField("keywords"),
-            magdaTextField("themes"),
+            magdaSynonymTextField("title"),
+            magdaSynonymTextField("description"),
+            magdaSynonymTextField("keywords"),
+            magdaSynonymTextField("themes"),
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
@@ -134,18 +143,14 @@ object IndexDefinition extends DefaultJsonProtocol {
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
-            KeywordTokenizer,
-            List(
-              LowercaseTokenFilter,
-              MagdaSynonymTokenFilter
-            )
+            KeywordTokenizer
           ),
-          /* reimplemented english analyzer as per:
+          /* implemented new english analyzer as per:
              https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
              In order to apply synonym filter
            */
           CustomAnalyzerDefinition(
-            "english",
+            "english_with_synonym",
             StandardTokenizer,
             List(
               EnglishPossessiveStemmerFilter,
