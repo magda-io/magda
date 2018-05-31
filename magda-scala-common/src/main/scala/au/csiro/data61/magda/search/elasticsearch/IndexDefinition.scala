@@ -21,7 +21,7 @@ import com.sksamuel.elastic4s.analyzers.{
   StandardTokenizer,
   SynonymTokenFilter,
   UppercaseTokenFilter,
-  StemmerTokenFilter,
+  TokenFilterDefinition,
   NamedStopTokenFilter
 }
 import com.typesafe.config.Config
@@ -44,6 +44,7 @@ import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
+import org.elasticsearch.common.xcontent.XContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldDefinition
 
 case class IndexDefinition(
@@ -53,6 +54,21 @@ case class IndexDefinition(
     definition: (Indices, Config) => CreateIndexDefinition,
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
 }
+
+//-- due to an error of elastic4s `StemmerTokenFilter` definition
+//-- we need to use our own here
+case class StemmerTokenFilter(name: String, lang: String = "English")
+  extends TokenFilterDefinition {
+
+  val filterType = "stemmer"
+
+  override def build(source: XContentBuilder): Unit = {
+    source.field("language", lang)
+  }
+
+  def lang(l: String): StemmerTokenFilter = copy(lang = l)
+}
+
 
 object IndexDefinition extends DefaultJsonProtocol {
 
@@ -146,10 +162,10 @@ object IndexDefinition extends DefaultJsonProtocol {
             "english_with_synonym",
             StandardTokenizer,
             List(
-              StemmerTokenFilter("english_possessive_stemmer","possessive_english"),
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               LowercaseTokenFilter,
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-              StemmerTokenFilter("english_stemmer","english"),
+              StemmerTokenFilter("english_stemmer", "english"),
               MagdaSynonymTokenFilter
             )
           )
