@@ -198,6 +198,15 @@
         "location": "pancake/js/",
         "name": "pancake.min.js"
       }
+    },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
+    "react": {
+      "location": "pancake/react/"
     }
   },
   "config": {
