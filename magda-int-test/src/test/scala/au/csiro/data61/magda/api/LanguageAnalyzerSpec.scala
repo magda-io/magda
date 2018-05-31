@@ -49,8 +49,8 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
     def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-        .filterNot(term => Generators.stopWordRegex.r.matchesAny(term))
-        .filter(term => term.matches(".*[A-Z][a-z].*"))
+        .filter(term => term.matches(".*[A-Za-z].*"))
+        .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
         Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
@@ -111,10 +111,12 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     testLanguageFieldSearch(termExtractor, test)
   }
 
+  def isAStopWord(term: String) = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
+
   def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
     it("when searching for it directly") {
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
-        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
+        .filterNot(isAStopWord)
 
       doTest(innerTermExtractor)
     }
@@ -128,13 +130,13 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(_.contains("."))
         .filterNot(_.contains("'"))
         .filterNot(_.toLowerCase.endsWith("ss"))
-        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
         .filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
         .filterNot(_.isEmpty)
         .filterNot(term => term.toLowerCase.endsWith("e") ||
           term.toLowerCase.endsWith("ies") ||
           term.toLowerCase.endsWith("es") ||
           term.toLowerCase.endsWith("y")) // This plays havoc with pluralization because when you add "s" to it, ES chops off the "es at the end
+        .filterNot(isAStopWord)
         .flatMap {
           case term if term.last.toLower.equals('s') =>
             val depluralized = term.take(term.length - 1)
@@ -147,7 +149,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
               Some(pluralized)
             } else None
         }
-        .filterNot(term => Generators.luceneStopWords.contains(term.toLowerCase))
+        .filterNot(isAStopWord)
 
       doTest(innerTermExtractor)
     }
@@ -163,6 +165,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
             val terms = getIndividualTerms(innerTermExtractor(dataSet))
               .filter(_.length > 2)
               .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
+              .filterNot(isAStopWord)
 
             if (!terms.isEmpty) {
               val termGen = for {

@@ -127,7 +127,6 @@ correspondence-api:
     requests:
       cpu: 100m
       memory: 0
-  externalUrl: "https://magda-dev.terria.io"
   defaultRecipient: "magda-test@googlegroups.com"
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
