@@ -13,7 +13,13 @@ import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer }
+import com.sksamuel.elastic4s.analyzers.{
+  CustomAnalyzerDefinition,
+  LowercaseTokenFilter,
+  KeywordTokenizer,
+  StandardTokenizer,
+  SynonymTokenFilter
+}
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.GeometryFactory
@@ -34,8 +40,6 @@ import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
-import org.elasticsearch.common.xcontent.XContentBuilder
-import com.sksamuel.elastic4s.analyzers.Analyzer
 import com.sksamuel.elastic4s.mappings.FieldDefinition
 
 case class IndexDefinition(
@@ -46,6 +50,22 @@ case class IndexDefinition(
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
 }
 
+case object EnglishPossessiveStemmerFilter extends TokenFilter {
+  val name = "english_possessive_stemmer"
+}
+
+case object EnglishStopFilter extends TokenFilter {
+  val name = "english_stop"
+}
+
+case object EnglishKeywordsFilter extends TokenFilter {
+  val name = "english_keywords"
+}
+
+case object EnglishStemmerFilter extends TokenFilter {
+  val name = "english_keywords"
+}
+
 object IndexDefinition extends DefaultJsonProtocol {
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
@@ -54,9 +74,17 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).fields(fields)
   }
 
+  val MagdaSynonymTokenFilter = SynonymTokenFilter(
+    "synonym",
+    Some("analysis/wn_s.pl"),
+    Set.empty,
+    None,
+    Some("wordnet")
+  )
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 31,
+    version = 33,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -107,7 +135,28 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "quote",
             KeywordTokenizer,
-            LowercaseTokenFilter))
+            List(
+              LowercaseTokenFilter,
+              MagdaSynonymTokenFilter
+            )
+          ),
+          /* reimplemented english analyzer as per:
+             https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
+             In order to apply synonym filter
+           */
+          CustomAnalyzerDefinition(
+            "english",
+            StandardTokenizer,
+            List(
+              EnglishPossessiveStemmerFilter,
+              LowercaseTokenFilter,
+              EnglishStopFilter,
+              EnglishKeywordsFilter,
+              EnglishStemmerFilter,
+              MagdaSynonymTokenFilter
+            )
+          )
+        )
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
