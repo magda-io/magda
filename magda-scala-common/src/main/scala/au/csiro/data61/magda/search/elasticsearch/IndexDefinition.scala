@@ -15,12 +15,14 @@ import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers.{
   CustomAnalyzerDefinition,
-  TokenFilter,
+  StopTokenFilter,
   LowercaseTokenFilter,
   KeywordTokenizer,
   StandardTokenizer,
   SynonymTokenFilter,
-  UppercaseTokenFilter
+  UppercaseTokenFilter,
+  StemmerTokenFilter,
+  NamedStopTokenFilter
 }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
@@ -50,22 +52,6 @@ case class IndexDefinition(
     indicesIndex: Indices.Index,
     definition: (Indices, Config) => CreateIndexDefinition,
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
-}
-
-case object EnglishPossessiveStemmerFilter extends TokenFilter {
-  val name = "english_possessive_stemmer"
-}
-
-case object EnglishStopFilter extends TokenFilter {
-  val name = "english_stop"
-}
-
-case object EnglishKeywordsFilter extends TokenFilter {
-  val name = "english_keywords"
-}
-
-case object EnglishStemmerFilter extends TokenFilter {
-  val name = "english_keywords"
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
@@ -160,11 +146,10 @@ object IndexDefinition extends DefaultJsonProtocol {
             "english_with_synonym",
             StandardTokenizer,
             List(
-              EnglishPossessiveStemmerFilter,
+              StemmerTokenFilter("english_possessive_stemmer","possessive_english"),
               LowercaseTokenFilter,
-              EnglishStopFilter,
-              EnglishKeywordsFilter,
-              EnglishStemmerFilter,
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+              StemmerTokenFilter("english_stemmer","english"),
               MagdaSynonymTokenFilter
             )
           )
