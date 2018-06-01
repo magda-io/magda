@@ -44,7 +44,6 @@ import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
-import org.elasticsearch.common.xcontent.XContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldDefinition
 
 case class IndexDefinition(
@@ -150,8 +149,8 @@ object IndexDefinition extends DefaultJsonProtocol {
               LowercaseTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
-              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-              MagdaSynonymTokenFilter
+              MagdaSynonymTokenFilter,
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
             )
           )
         )
