@@ -150,6 +150,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
               MagdaSynonymTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
             )
           )
