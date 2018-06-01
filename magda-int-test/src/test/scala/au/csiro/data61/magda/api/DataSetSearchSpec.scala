@@ -584,32 +584,32 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
           }
       }
     }
+  }
 
-    def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
-      val gen = for {
-        index <- indexGen.suchThat(!_._2.isEmpty)
-        dataSet <- Gen.oneOf(index._2)
-        query = buildQuery(dataSet)
-        textQuery <- textQueryGen(query)
-      } yield (index, dataSet, textQuery)
+  def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
+    val gen = for {
+      index <- indexGen.suchThat(!_._2.isEmpty)
+      dataSet <- Gen.oneOf(index._2)
+      query = buildQuery(dataSet)
+      textQuery <- textQueryGen(query)
+    } yield (index, dataSet, textQuery)
 
-      forAll(gen) {
-        case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
-          whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
-            doFilterTest(textQuery, dataSets, routes) { response =>
-              test(query, response, dataSet)
-            }
+    forAll(gen) {
+      case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
+        whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
+          doFilterTest(textQuery, dataSets, routes) { response =>
+            test(query, response, dataSet)
           }
-      }
+        }
     }
+  }
 
-    def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-      Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
+  def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
+    Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
 
-        test(response)
-      }
+      test(response)
     }
   }
 
