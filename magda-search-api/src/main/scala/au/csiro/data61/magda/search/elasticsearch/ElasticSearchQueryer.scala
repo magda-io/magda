@@ -70,7 +70,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       throw t
   }
 
-  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 20f), ("description", 1f), "publisher.name", ("keywords", 10f), "themes")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 50f), ("description", 2f), "publisher.name", ("keywords", 10f), "themes")
   val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name", "publisher.acronym")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {

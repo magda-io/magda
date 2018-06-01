@@ -100,8 +100,8 @@ object IndexDefinition extends DefaultJsonProtocol {
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
       textField("english")
-        .analyzer("english_without_synonym_for_search")
-        .searchAnalyzer("english_with_synonym")
+        .analyzer("english_with_synonym")
+        .searchAnalyzer("english_without_synonym_for_search")
     )
 
     textField(name).fields(fields)
@@ -125,7 +125,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 39,
+    version = 33,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -148,16 +148,16 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("keyword_lowercase").analyzer("quote"))),
             nestedField("distributions").fields(
               keywordField("identifier"),
-              magdaSynonymTextField("title"),
+              magdaTextField("title"),
               magdaSynonymTextField("description"),
               magdaTextField("format",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             objectField("spatial").fields(
               geoshapeField("geoJson")),
-            magdaSynonymTextField("title"),
+            magdaTextField("title"),
             magdaSynonymTextField("description"),
-            magdaSynonymTextField("keywords"),
+            magdaTextField("keywords"),
             magdaSynonymTextField("themes"),
             doubleField("quality"),
             keywordField("catalog"),
