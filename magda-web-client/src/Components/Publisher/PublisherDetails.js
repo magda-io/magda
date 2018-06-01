@@ -8,6 +8,7 @@ import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import { Link } from "react-router-dom";
+import AUctaLink from "@gov.au/cta-link";
 
 import "./PublisherDetails.css";
 
@@ -49,14 +50,16 @@ class PublisherDetails extends Component {
                             <h3 className="section-heading">Overview</h3>
                             <OverviewBox content={description} />
                         </div>
+                        <br />
                         <div>
-                            <Link
-                                to={`/search?organisation=${encodeURIComponent(
+                            <AUctaLink
+                                link={`/search?organisation=${encodeURIComponent(
                                     publisher.name
                                 )}`}
-                            >
-                                View all datasets from {publisher.name}
-                            </Link>
+                                text={
+                                    "View all datasets from " + publisher.name
+                                }
+                            />
                         </div>
                     </div>
                 </div>

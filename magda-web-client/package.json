@@ -26,6 +26,7 @@
     "@gov.au/body": "^2.0.2",
     "@gov.au/buttons": "^2.0.1",
     "@gov.au/core": "^2.0.0",
+    "@gov.au/cta-link": "^2.0.2",
     "@gov.au/footer": "^2.0.1",
     "@gov.au/grid-12": "^2.0.1",
     "@gov.au/header": "^3.0.1",
@@ -207,6 +208,12 @@
     },
     "react": {
       "location": "pancake/react/"
+    },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
     }
   },
   "config": {
