@@ -1,6 +1,6 @@
 ## 0.0.41
 
-*   Added static class container for publisher, other pages. Removed `min-height` property for main containers
+*   Added `flex` display and set consistent padding from footer.
 
 ## 0.0.40
 
