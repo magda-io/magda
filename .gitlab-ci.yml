@@ -404,6 +404,7 @@ dockerize:dockerExtensions:
     - branches
   except:
     - master
+    - /^v.*$/
   dependencies: []
   cache:
     paths: []
@@ -448,7 +449,7 @@ dockerize:dockerExtensions:
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://magda-dev.terria.io --timeout 1200 --wait
 
-Stop Preview:
+Stop Preview: &stopPreview
   stage: preview
   when: manual
   only:
@@ -512,7 +513,7 @@ Release Tags To Docker Hub:
     - yarn install
     - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
 
-Deploy RC Tags As Staging:
+Deploy Released Tags As Staging:
   <<: *runAsPreview
   stage: deploy-staging
   when: on_success
@@ -521,7 +522,24 @@ Deploy RC Tags As Staging:
   except:
     - master
     - branches
+  environment:
+    name: staging/$CI_COMMIT_REF_NAME
+    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    on_stop: Stop Staging
   script:
+    # Get version from lerna json
     - apk add --update jq
     - TAG=$(jq -r ".version" lerna.json)
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+
+Stop Staging: 
+  <<: *stopPreview
+  stage: deploy-staging
+  only:
+    - /^v.*RC.*$/
+  environment:
+    name: staging/$CI_COMMIT_REF_NAME
+    action: stop
+  except:
+    - master
+    - branches
