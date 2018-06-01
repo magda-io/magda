@@ -21,7 +21,7 @@ import com.sksamuel.elastic4s.analyzers.{
   StandardTokenizer,
   SynonymTokenFilter,
   UppercaseTokenFilter,
-  TokenFilterDefinition,
+  StemmerTokenFilter,
   NamedStopTokenFilter
 }
 import com.typesafe.config.Config
@@ -54,21 +54,6 @@ case class IndexDefinition(
     definition: (Indices, Config) => CreateIndexDefinition,
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
 }
-
-//-- due to an error of elastic4s `StemmerTokenFilter` definition
-//-- we need to use our own here
-case class StemmerTokenFilter(name: String, lang: String = "English")
-  extends TokenFilterDefinition {
-
-  val filterType = "stemmer"
-
-  override def build(source: XContentBuilder): Unit = {
-    source.field("language", lang)
-  }
-
-  def lang(l: String): StemmerTokenFilter = copy(lang = l)
-}
-
 
 object IndexDefinition extends DefaultJsonProtocol {
 
@@ -154,7 +139,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             KeywordTokenizer,
             UppercaseTokenFilter
           ),
-          /* implemented new english analyzer as per:
+          /* Customised from new english analyzer as per:
              https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
              In order to apply synonym filter
            */
@@ -165,9 +150,8 @@ object IndexDefinition extends DefaultJsonProtocol {
               LowercaseTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
-              MagdaSynonymTokenFilter,
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-              StemmerTokenFilter("english_stemmer", "english")
+              MagdaSynonymTokenFilter
             )
           )
         )
