@@ -7,7 +7,6 @@ import ReactDocumentTitle from "react-document-title";
 import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
-import { Link } from "react-router-dom";
 import AUctaLink from "@gov.au/cta-link";
 
 import "./PublisherDetails.css";
