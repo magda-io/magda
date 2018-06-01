@@ -16,6 +16,8 @@ import RouteNotFound from "../Components/RouteNotFound";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
 
+import "./OtherPages.css";
+
 const renderBody = () => {
     return (
         <Switch>

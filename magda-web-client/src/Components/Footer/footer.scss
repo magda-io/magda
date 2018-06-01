@@ -1,8 +1,11 @@
 @import "../../variables";
 
 .footer {
+    height: 10em;
     display: flex;
-    margin-top: 150px;
+    bottom: 0;
+    width: 100%;
+    margin-top: 100px;
     padding: 2rem 0;
 
     .nav-title {
