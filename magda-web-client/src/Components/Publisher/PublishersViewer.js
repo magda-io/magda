@@ -109,7 +109,7 @@ class PublishersViewer extends Component {
     render() {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
-                <div className="static-page-container container publishers-viewer">
+                <div className="container publishers-viewer">
                     <h1>Organisations</h1>
                     <div className="row">
                         {!this.props.isFetching && this.renderContent()}
