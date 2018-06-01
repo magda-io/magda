@@ -22,24 +22,15 @@ object Queries {
   def publisherQuery(strategy: SearchStrategy, searchForAcronym: Boolean = false)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
-        case SearchStrategy.MatchAll => if(!searchForAcronym) {
-            matchQuery("publisher.name.keyword_lowercase", publisherString)
-        } else { 
-            multiMatchQuery(publisherString)
-                .fields("publisher.acronym", "publisher.name.keyword_lowercase")
-                .minimumShouldMatch("-50%")
-        }
-        case SearchStrategy.MatchPart => if(!searchForAcronym) {
-            multiMatchQuery(publisherString)
-                .fields("publisher.name", "publisher.name.english")
-                .minimumShouldMatch("-50%")
-        } else {
-            multiMatchQuery(publisherString)
-                .fields("publisher.acronym", "publisher.name", "publisher.name.english")
-                .minimumShouldMatch("-50%")
-        }
-      }, "publisher.name"
-    )
+        case SearchStrategy.MatchAll =>
+          matchQuery("publisher.name.keyword_lowercase", publisherString)
+
+        case SearchStrategy.MatchPart =>
+          multiMatchQuery(publisherString)
+            .fields("publisher.acronym", "publisher.name", "publisher.name.english")
+            .minimumShouldMatch("1")
+
+      }, "publisher.name")
   }
 
   def exactPublisherQuery(publisher: FilterValue[String]) = publisherQuery(SearchStrategy.MatchAll)(publisher)
@@ -76,8 +67,7 @@ object Queries {
         case _ => None
       },
       dateFrom.flatMap(_.map(dateFromQuery)),
-      dateTo.flatMap(_.map(dateToQuery))
-    ).flatten
+      dateTo.flatMap(_.map(dateToQuery))).flatten
   }
 
   def dateFromQuery(dateFrom: OffsetDateTime) = {
