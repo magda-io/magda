@@ -65,7 +65,10 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
-      textField("english").analyzer("english_with_synonym"))
+      textField("english")
+        .analyzer("english_without_synonym_for_search")
+        .searchAnalyzer("english_with_synonym")
+    )
 
     textField(name).fields(fields)
   }
@@ -80,7 +83,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 33,
+    version = 35,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -149,8 +152,19 @@ object IndexDefinition extends DefaultJsonProtocol {
               LowercaseTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
               MagdaSynonymTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
+            )
+          ),
+          CustomAnalyzerDefinition(
+            "english_without_synonym_for_search",
+            StandardTokenizer,
+            List(
+              LowercaseTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
             )
           )
