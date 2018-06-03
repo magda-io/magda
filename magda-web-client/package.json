@@ -22,11 +22,13 @@
     "prepare": "pancake"
   },
   "devDependencies": {
+    "@gov.au/accordion": "^2.0.1",
     "@gov.au/body": "^2.0.2",
     "@gov.au/buttons": "^2.0.1",
     "@gov.au/core": "^2.0.0",
     "@gov.au/footer": "^2.0.1",
     "@gov.au/grid-12": "^2.0.1",
+    "@gov.au/header": "^3.0.1",
     "@gov.au/link-list": "^2.0.1",
     "@gov.au/page-alerts": "^2.0.1",
     "@gov.au/pancake": "^1.2.0",
@@ -123,22 +125,12 @@
     "traverse": "^0.6.6",
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
-    "yaml-front-matter": "^4.0.0"
+    "yaml-front-matter": "^4.0.0",
+    "email-validator": "^2.0.3"
   },
   "proxy": {
     "/server-config.js": {
       "target": "http://localhost:6107/"
-    }
-  },
-  "config": {
-    "docker": {
-      "include": "node_modules build"
-    },
-    "magda": {
-      "language": "javascript",
-      "categories": {
-        "ui": true
-      }
     }
   },
   "pancake": {
@@ -169,8 +161,63 @@
       "location": "pancake/sass/",
       "name": "pancake.scss"
     },
+    "pancake": {
+      "auto-save": true,
+      "plugins": true,
+      "ignore": [],
+      "json": {
+        "enable": true,
+        "location": "pancake/",
+        "name": "pancake",
+        "content": {
+          "name": true,
+          "version": true,
+          "dependencies": true,
+          "path": true,
+          "settings": true
+        }
+      },
+      "css": {
+        "minified": true,
+        "modules": false,
+        "browsers": ["last 2 versions", "ie 8", "ie 9", "ie 10"],
+        "location": "pancake/css/",
+        "name": false
+      },
+      "sass": {
+        "modules": true,
+        "location": "pancake/sass/",
+        "name": "pancake.scss"
+      },
+      "react": {
+        "location": "pancake/react/"
+      },
+      "js": {
+        "minified": true,
+        "modules": false,
+        "location": "pancake/js/",
+        "name": "pancake.min.js"
+      }
+    },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
     "react": {
       "location": "pancake/react/"
+    }
+  },
+  "config": {
+    "docker": {
+      "include": "node_modules build"
+    },
+    "magda": {
+      "language": "javascript",
+      "categories": {
+        "ui": true
+      }
     }
   }
 }

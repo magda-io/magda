@@ -20,10 +20,18 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string
+    feedbackApiBaseUrl?: string,
+    correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-
+//this below const enables suggest/request/report dataset forms when enabled
+export const enableSuggestDatasetPage = true;
+export const correspondenceApiReportUrl =
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/:datasetId/report";
+export const correspondenceApiUrl =
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/request";
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
@@ -79,7 +87,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Give feedback", "feedback"]
                 ]
@@ -91,7 +104,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Privacy Policy", "page/privacy-policy"]
                 ]
             },
