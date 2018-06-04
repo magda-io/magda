@@ -1,0 +1,27 @@
+.suggest-dataset-text {
+    font-weight: 500;
+    padding-bottom: 20px;
+}
+.suggest-dataset-icon {
+    height: 1em;
+    width: 1em;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.suggest-dataset-div {
+    padding: 4px;
+    position: relative;
+}
+
+.correspondence-search-close-button {
+    height: 2em;
+    width: 2em;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    &:hover {
+        cursor: pointer;
+    }
+}

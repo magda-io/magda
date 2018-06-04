@@ -62,11 +62,14 @@
       "location": "pancake/sass/",
       "name": "pancake.scss"
     },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
     "react": {
       "location": "pancake/react/"
     }
-  },
-  "dependencies": {
-    "@gov.au/pancake-sass": "^1.3.0"
   }
 }
