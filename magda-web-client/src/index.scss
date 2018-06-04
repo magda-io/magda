@@ -19,6 +19,13 @@ html {
         border-color: $AU-color-foreground-action;
     }
 
+    button.au-btn,
+    a.au-btn {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+        border-color: $AU-color-foreground-action;
+    }
+
     .au-btn.au-btn--primary,
     a.au-btn.au-btn--primary {
         background: $AU-colordark-background;
@@ -31,6 +38,13 @@ html {
         color: $AU-colordark-foreground-focus;
         background: transparent;
         border-color: transparent;
+    }
+
+    .au-btn.au-btn--secondary,
+    a.au-btn.au-btn--secondary {
+        color: $AU-colordark-foreground-focus;
+        background: transparent;
+        color: $AU-colordark-foreground-focus;
     }
 
     a,
