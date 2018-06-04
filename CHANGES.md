@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
 *   Add Suggest a Dataset on search results page
 *   Fixed display of chart axis config dropdowns in Firefox.
