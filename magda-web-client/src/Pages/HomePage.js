@@ -116,4 +116,7 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null)(HomePage);
+export default connect(
+    mapStateToProps,
+    null
+)(HomePage);

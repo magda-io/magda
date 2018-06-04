@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
+import { Link } from "react-router-dom";
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
 import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
-import AUctaLink from "@gov.au/cta-link";
 
 import "./PublisherDetails.css";
 
@@ -51,14 +51,14 @@ class PublisherDetails extends Component {
                         </div>
                         <br />
                         <div>
-                            <AUctaLink
-                                link={`/search?organisation=${encodeURIComponent(
+                            <Link
+                                className="au-cta-link"
+                                to={`/search?organisation=${encodeURIComponent(
                                     publisher.name
                                 )}`}
-                                text={
-                                    "View all datasets from " + publisher.name
-                                }
-                            />
+                            >
+                                View all datasets from {publisher.name}
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -102,4 +102,7 @@ function mapStateToProps(state: Object, ownProps: Object) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PublisherDetails);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(PublisherDetails);

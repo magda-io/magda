@@ -1,7 +1,7 @@
 import React from "react";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
-import AUctaLink from "@gov.au/cta-link";
+import AUctaLink from "../../pancake/react/cta-link";
 import "./Login.css";
 import { config } from "../../config";
 const { baseUrl } = config;
