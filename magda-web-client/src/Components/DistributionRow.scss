@@ -50,8 +50,10 @@
     }
     .button-area {
         text-align: left;
+        margin-top: 1rem;
         @media (min-width: $medium) {
             text-align: right;
+            margin-top: 5px;
         }
     }
 }

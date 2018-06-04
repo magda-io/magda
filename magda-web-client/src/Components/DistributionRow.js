@@ -237,6 +237,7 @@ class DistributionRow extends Component {
                             window.open(distributionLink, distribution.title);
                         }}
                     >
+                        Open dataset in new tap{" "}
                         <img src={newTabIcon} alt="new tab" />
                     </button>
                 </div>
