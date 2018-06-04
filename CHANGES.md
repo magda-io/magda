@@ -1,6 +1,7 @@
 ## 0.0.41
 
 *   Do not load preview map on mobile, give user option to view in national map instead
+*   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
 *   Add Suggest a Dataset on search results page
 *   Fixed display of chart axis config dropdowns in Firefox.
