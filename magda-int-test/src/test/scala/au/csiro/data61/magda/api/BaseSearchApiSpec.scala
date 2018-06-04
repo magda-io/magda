@@ -63,7 +63,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
   def indexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
-      Gen.choose(50, 60).flatMap { size =>
+      Gen.choose(50, 70).flatMap { size =>
         genIndexForSize(size)
       }
     }
