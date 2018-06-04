@@ -174,6 +174,17 @@ class DistributionRow extends Component {
                                         </span>)
                                     </Link>
                                 )}
+                                <button
+                                    className="new-tab-button"
+                                    onClick={() => {
+                                        window.open(
+                                            distributionLink,
+                                            distribution.title
+                                        );
+                                    }}
+                                >
+                                    <img src={newTabIcon} alt="new tab" />
+                                </button>
                             </div>
 
                             <div
@@ -231,15 +242,6 @@ class DistributionRow extends Component {
                             </a>
                         </button>
                     ) : null}{" "}
-                    <button
-                        className="au-btn au-btn--secondary new-tab-button"
-                        onClick={() => {
-                            window.open(distributionLink, distribution.title);
-                        }}
-                    >
-                        Open dataset in new tap{" "}
-                        <img src={newTabIcon} alt="new tab" />
-                    </button>
                 </div>
             </div>
         );
