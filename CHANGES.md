@@ -6,6 +6,8 @@
 *   Fixed display of chart axis config dropdowns in Firefox.
 *   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+*   Positioned the buttons & format icons at middle position of the Files & APIs section
+*   Made publisher acronym search case insensitive & added test cases
 
 ## 0.0.40
 
