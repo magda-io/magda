@@ -35,7 +35,7 @@ import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import org.elasticsearch.common.xcontent.XContentBuilder
-import com.sksamuel.elastic4s.analyzers.Analyzer
+import com.sksamuel.elastic4s.analyzers.UppercaseTokenFilter
 import com.sksamuel.elastic4s.mappings.FieldDefinition
 
 case class IndexDefinition(
@@ -56,7 +56,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 31,
+    version = 32,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -73,7 +73,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("text"))),
             objectField("publisher").fields(
               keywordField("identifier"),
-              keywordField("acronym"),
+              textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("name",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote"))),
@@ -100,14 +100,19 @@ object IndexDefinition extends DefaultJsonProtocol {
             textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
-            keywordField("acronym"),
+            textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
             magdaTextField("value"),
             textField("english").analyzer("english")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
             KeywordTokenizer,
-            LowercaseTokenFilter))
+            LowercaseTokenFilter),
+          CustomAnalyzerDefinition(
+            "uppercase",
+            KeywordTokenizer,
+            UppercaseTokenFilter)
+        )
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
@@ -120,7 +125,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 20,
+      version = 21,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         create.index(indices.getIndex(config, Indices.RegionsIndex))

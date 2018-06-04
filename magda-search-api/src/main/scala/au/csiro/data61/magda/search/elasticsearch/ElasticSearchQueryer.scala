@@ -297,7 +297,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy, facetSize: Int) =
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
+      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
       .subAggregations(facetDef.aggregationDefinition(facetSize))
 
   /**
@@ -312,7 +312,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
-  private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
+  private def queryToQueryDef(query: Query, strategy: SearchStrategy, isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
       case MatchAll  => "and"
       case MatchPart => "or"

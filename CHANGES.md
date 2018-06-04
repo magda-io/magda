@@ -1,7 +1,12 @@
 ## 0.0.41
 
+*   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
+*   Fixed display of chart axis config dropdowns in Firefox.
+*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 *   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
+*   Made publisher acronym search case insensitive & added test cases
 
 ## 0.0.40
 
@@ -87,6 +92,7 @@
 *   Map Preview: Mute errors from users
 *   Map Preview: Report selected distribution to console
 *   Adjusted pagination button styles
+*   Bumped regions index version to 21 because of region shortname
 
 ## 0.0.38
 
