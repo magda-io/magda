@@ -54,7 +54,7 @@ import au.csiro.data61.magda.test.util.MagdaElasticSugar
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(31 seconds)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
   def buildConfig = TestActorSystem.config
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
