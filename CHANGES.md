@@ -6,6 +6,7 @@
 *   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 *   Made publisher acronym search case insensitive & added test cases
+*   Add call to action from design systems
 
 ## 0.0.40
 
