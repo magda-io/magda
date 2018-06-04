@@ -26,8 +26,9 @@ import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
 import com.sksamuel.elastic4s.Indexes
 import scala.collection.mutable
+import au.csiro.data61.magda.model.Registry.RegistryConverters
 
-trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
+trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols   {
   val INSERTION_WAIT_TIME = 500 seconds
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
@@ -62,7 +63,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
 
   def indexGen: Gen[(String, List[DataSet], Route)] =
     Gen.delay {
-      Gen.choose(50, 60).flatMap { size =>
+      Gen.choose(50, 70).flatMap { size =>
         genIndexForSize(size)
       }
     }
@@ -118,7 +119,14 @@ trait BaseSearchApiSpec extends BaseApiSpec with Protocols {
     val api = new SearchApi(searchQueryer)(config, logger)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
-    val stream = Source.fromIterator[DataSet](() => dataSets.iterator)
+    val convertedDataSets = dataSets.map( d=>
+      d.copy( publisher = d.publisher.map(p =>
+            p.copy( acronym = getAcronymFromPublisherName(p.name))
+        )
+      )
+    );
+
+    val stream = Source.fromIterator[DataSet](() => convertedDataSets.iterator)
 
     indexer.ready.await(INSERTION_WAIT_TIME)
     blockUntilIndexExists(indexName)
