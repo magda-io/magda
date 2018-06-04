@@ -1,10 +1,10 @@
 ## 0.0.41
 
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+*   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 
 ## 0.0.40
 
-*   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
 *   Location filter: Make state selectable on the inital region filter panel open
