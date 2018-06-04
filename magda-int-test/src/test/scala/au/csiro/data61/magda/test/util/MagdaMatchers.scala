@@ -6,7 +6,13 @@ import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 
 object MagdaMatchers extends org.scalatest.Matchers {
-  def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(indexed = None) should equal(ds2.copy(indexed = None))
+  def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(
+    indexed = None,
+    publisher = ds1.publisher.map(_.copy(acronym = None))
+  ) should equal(ds2.copy(
+    indexed = None,
+    publisher = ds2.publisher.map(_.copy(acronym = None))
+  ))
   def dataSetsEqual(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = dsSeq1.zip(dsSeq2).foreach { case (ds1, ds2) => dataSetEqual(ds1, ds2) }
   def dataSetsEqualIgnoreOrder(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = for {
     dataSet <- dsSeq1

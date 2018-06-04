@@ -8,6 +8,7 @@
     .format-icon {
         width: 32px;
         height: 32px;
+        margin-top: 14px;
     }
     .distribution-row-link {
         color: $AU-color-foreground-text;
@@ -50,6 +51,7 @@
     }
     .button-area {
         text-align: left;
+        margin-top: 11px;
         @media (min-width: $medium) {
             text-align: right;
         }
