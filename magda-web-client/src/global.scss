@@ -1,0 +1,140 @@
+@import "variables";
+html {
+    @include AU-fontgrid(sm);
+    font-family: inherit;
+}
+.au-body .au-grid a {
+    text-decoration: none;
+    overflow-x: hidden;
+    &:hover,
+    &:focus {
+        background: transparent;
+        color: inherit;
+        text-decoration: none;
+    }
+}
+
+.au-btn:hover:not(:disabled),
+a.au-btn:hover:not(:disabled) {
+    text-decoration: none;
+}
+
+.au-body p {
+    max-width: 100%;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+@keyframes hideMessage {
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.au-btn {
+    font-weight: 400;
+    text-transform: none;
+}
+
+div {
+    box-sizing: border-box;
+}
+
+.breadcrumb {
+    margin-left: 0;
+    padding-left: 0;
+    .breadcrumb-item {
+        display: inline-block;
+        padding-right: 16px;
+    }
+}
+
+a {
+    -webkit-appearance: none;
+    position: relative;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    border-bottom: solid 1px $AU-colordark-background;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+    cursor: pointer;
+    color: $AU-color-foreground-action;
+    &:hover {
+        color: $AU-colordark-foreground-text;
+        background-color: $AU-colordark-background;
+    }
+}
+
+.tab-navigation {
+    .au-link-list {
+        display: flex;
+    }
+
+    a {
+        display: inline-block;
+        padding: 1rem 1rem;
+        border-bottom: 5px solid #cfcfcf;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+            background-color: transparent;
+            color: $AU-color-foreground-action;
+        }
+    }
+    a.mainmenu--active {
+        color: $AU-color-foreground-action;
+        border-color: $AU-color-foreground-action;
+    }
+}
+
+.hidden-sm {
+    @media (max-width: $medium) {
+        display: none !important;
+    }
+}
+
+.au-btn + .au-btn {
+    margin-left: 0;
+}
+
+.list--unstyled {
+    padding-left: 0;
+    list-style: none;
+}
+
+// gold starts here
+
+h1 {
+    @include AU-fontgrid(xl, heading);
+    font-weight: 400;
+}
+
+h2 {
+    @include AU-fontgrid(lg, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(md, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(sm, heading);
+    font-weight: 400;
+}

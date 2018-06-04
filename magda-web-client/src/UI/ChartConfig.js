@@ -35,13 +35,17 @@ export default class ChartConfig extends Component {
                         ? options.map(
                               (o, idx) =>
                                   typeof o === "string" ? (
-                                      <option key={o} value={o} label={o} />
+                                      <option key={o} value={o} label={o}>
+                                          {o}
+                                      </option>
                                   ) : (
                                       <option
                                           key={idx}
                                           value={idx}
                                           label={o.label}
-                                      />
+                                      >
+                                          {o.label}
+                                      </option>
                                   )
                           )
                         : null}

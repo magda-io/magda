@@ -92,6 +92,26 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
+"@gov.au/accordion@^2.0.1":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@gov.au/accordion/-/accordion-2.0.3.tgz#0960967f76bd494ff7cc2372ab2b2a137d0a491b"
+  dependencies:
+    "@gov.au/animate" "^1.0.0"
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-js" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
+"@gov.au/animate@^1.0.0":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@gov.au/animate/-/animate-1.0.2.tgz#d780716455ae3b9a70fdb90e445d39686fb38d95"
+  dependencies:
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-js" "~1"
+    "@gov.au/pancake-json" "~1"
+
 "@gov.au/body@^2.0.0", "@gov.au/body@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@gov.au/body/-/body-2.0.2.tgz#614682524093b73d0f30844061a0b0697b03b8dc"
@@ -139,6 +159,16 @@
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-sass" "~1"
 
+"@gov.au/header@^3.0.1":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@gov.au/header/-/header-3.0.2.tgz#7954d6be86029a489aaf674faf032bec29380001"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@gov.au/link-list@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@gov.au/link-list/-/link-list-2.0.1.tgz#7589a1005474981f0d784de5f777f92c4ec26e78"
@@ -160,6 +190,14 @@
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
+
+"@gov.au/pancake-js@~1":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@gov.au/pancake-js/-/pancake-js-1.0.9.tgz#0ea8f80b4da798c4beed72648fe6c328a2f46096"
+  dependencies:
+    "@gov.au/pancake" "~1"
+    babel-runtime "6.23.0"
+    uglify-js "2.8.18"
 
 "@gov.au/pancake-json@^1.0.3", "@gov.au/pancake-json@~1":
   version "1.0.3"
@@ -2358,6 +2396,13 @@ babel-root-slash-import@^1.1.0:
   resolved "https://registry.yarnpkg.com/babel-root-slash-import/-/babel-root-slash-import-1.1.0.tgz#27db03489f99669c520a1486dd4ad75d55dad7d8"
   dependencies:
     babel "^6.1.18"
+
+babel-runtime@6.23.0:
+  version "6.23.0"
+  resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.23.0.tgz#0a9489f144de70efb3ce4300accdb329e2fc543b"
+  dependencies:
+    core-js "^2.4.0"
+    regenerator-runtime "^0.10.0"
 
 babel-runtime@6.26.0, babel-runtime@6.x.x, babel-runtime@^6.11.6, babel-runtime@^6.18.0, babel-runtime@^6.2.0, babel-runtime@^6.22.0, babel-runtime@^6.23.0, babel-runtime@^6.26.0, babel-runtime@^6.5.0, babel-runtime@^6.6.1, babel-runtime@^6.9.2:
   version "6.26.0"
@@ -12134,7 +12179,7 @@ regenerate@^1.2.1:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.3.3.tgz#0c336d3980553d755c39b586ae3b20aa49c82b7f"
 
-regenerator-runtime@^0.10.5:
+regenerator-runtime@^0.10.0, regenerator-runtime@^0.10.5:
   version "0.10.5"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#336c3efc1220adcedda2c9fab67b5a7955a33658"
 
@@ -14293,6 +14338,15 @@ uglify-es@^3.3.4:
 uglify-js@1.x:
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-1.3.5.tgz#4b5bfff9186effbaa888e4c9e94bd9fc4c94929d"
+
+uglify-js@2.8.18:
+  version "2.8.18"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.8.18.tgz#925d14bae48ab62d1883b41afe6e2261662adb8e"
+  dependencies:
+    source-map "~0.5.1"
+    yargs "~3.10.0"
+  optionalDependencies:
+    uglify-to-browserify "~1.0.0"
 
 uglify-js@3.3.x, uglify-js@^3.0.13:
   version "3.3.23"

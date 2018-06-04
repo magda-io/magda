@@ -146,6 +146,7 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -213,7 +214,8 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers"
+    "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
+    "organisations"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {

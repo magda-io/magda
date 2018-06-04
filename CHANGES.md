@@ -1,14 +1,28 @@
 ## 0.0.41
 
 *   Added `flex` display and set consistent padding from footer.
+*   Create Suggest a Dataset Page
+*   Add Suggest a Dataset on search results page
+*   Fixed display of chart axis config dropdowns in Firefox.
+*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+*   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+*   Made publisher acronym search case insensitive & added test cases
 
 ## 0.0.40
 
 *   Changed Publishers to Organisations in UI
 *   Modified `MonthPicker` tooltip icon's right padding
+*   Location filter: Make state selectable on the inital region filter panel open
+*   Made region and dataset configurable in search api.
+*   Added publisher name acronyms to elasticsearch
+*   Removed underline on coat of arms.
+*   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
+*   Made region and dataset configurable in search api.
+*   Fixed open in national map button not send correct URL
 
 ## 0.0.39
 
+*   implemented new UI palette with accessibility improvements
 *   remove MUI
 *   remove /contact page as it duplicates functions of feedback form
 *   Use DTA design system for Feedback form
@@ -72,7 +86,13 @@
 *   Added ui-only preview job to gitlab.
 *   Modified `DatasetSummary` description style to be default `au-body`
 *   Tweaked `au-btn` border-right to be white for search facets.
+*   Remove feedback form & button from both desktop & mobile view
 *   Made all data.gov.au environments use mailgun.
+*   Map Preview: Set default camera to Australia
+*   Map Preview: Mute errors from users
+*   Map Preview: Report selected distribution to console
+*   Adjusted pagination button styles
+*   Bumped regions index version to 21 because of region shortname
 
 ## 0.0.38
 

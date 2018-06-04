@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "//magda-dev.terria.io/";
+const fallbackApiHost = "https://magda-dev.terria.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -15,14 +15,23 @@ const homePageConfig: {
 const serverConfig: {
     authApiBaseUrl?: string,
     baseUrl?: string,
+    baseExternalUrl?: string,
     discussionsApiBaseUrl?: string,
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string
+    feedbackApiBaseUrl?: string,
+    correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-
+//this below const enables suggest/request/report dataset forms when enabled
+export const enableSuggestDatasetPage = true;
+export const correspondenceApiReportUrl =
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/:datasetId/report";
+export const correspondenceApiUrl =
+    serverConfig.correspondenceApiBaseUrl ||
+    fallbackApiHost + "api/v0/correspondence/send/dataset/request";
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
@@ -32,8 +41,9 @@ export const config = {
     homePageConfig: homePageConfig,
     appName: "data.gov.au",
     about:
-        "<p><span style='color:#00698f;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
+        "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl: serverConfig.baseUrl || fallbackApiHost,
+    baseExternalUrl: serverConfig.baseExternalUrl || fallbackApiHost,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
@@ -77,7 +87,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Give feedback", "feedback"]
                 ]
@@ -89,7 +104,12 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    ["Request a dataset", "mailto:data@digital.gov.au"],
+                    [
+                        "Suggest a dataset",
+                        !enableSuggestDatasetPage
+                            ? "mailto:data@digital.gov.au"
+                            : "suggest"
+                    ],
                     ["Privacy Policy", "page/privacy-policy"]
                 ]
             },

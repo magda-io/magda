@@ -11,11 +11,15 @@
 }
 
 .feedback-button {
-    background: $success;
-    color: $banner-text;
+    background: $AU-colordark-background;
+    color: $AU-colordark-foreground-text;
     border-radius: 30px;
-    padding-left: 40px;
+    padding-left: 50px;
     padding-right: 8px;
+    &:focus,
+    &:hover {
+        color: $AU-colordark-foreground-focus;
+    }
     img {
         height: 40px;
         width: 40px;

@@ -1,18 +1,18 @@
 {
-    "name": "@magda/registry-aspects",
-    "version": "0.0.39-0",
-    "description": "Common aspects for use with the registry.",
-    "scripts": {},
-    "author": "",
-    "license": "Apache-2.0",
-    "config": {
-        "docker": {
-            "include": "*"
-        }
-    },
-    "magda": {
-        "categories": {
-            "library": true
-        }
+  "name": "@magda/registry-aspects",
+  "version": "0.0.40-0",
+  "description": "Common aspects for use with the registry.",
+  "scripts": {},
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "include": "*"
     }
+  },
+  "magda": {
+    "categories": {
+      "library": true
+    }
+  }
 }

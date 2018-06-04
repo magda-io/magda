@@ -1,27 +1,51 @@
 @import "variables";
 @import "../pancake/sass/pancake.scss";
 html {
-    @include AU-fontgrid(sm);
-    font-family: $font-base;
 }
-.au-body .au-grid a {
-    text-decoration: none;
-    overflow-x: hidden;
-    &:hover,
-    &:focus {
+
+.au-body .au-grid {
+    p,
+    input,
+    a,
+    span {
+        &::selection {
+            background: $AU-color-foreground-action;
+        }
+    }
+    .au-btn.au-btn--secondary,
+    a.au-btn.au-btn--secondary,
+    a {
+        color: $AU-color-foreground-action;
+        border-color: $AU-color-foreground-action;
+    }
+
+    .au-btn.au-btn--primary,
+    a.au-btn.au-btn--primary {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+        border-color: $AU-color-foreground-action;
+    }
+
+    .au-btn.au-btn--tertiary,
+    a.au-btn.au-btn--tertiary {
+        color: $AU-colordark-foreground-focus;
         background: transparent;
-        color: inherit;
-        text-decoration: none;
+        border-color: transparent;
+    }
+
+    a,
+    button,
+    input,
+    select {
+        &:focus {
+            outline-color: $AU-colordark-foreground-focus !important;
+        }
     }
 }
 
 .au-btn:hover:not(:disabled),
 a.au-btn:hover:not(:disabled) {
     text-decoration: none;
-}
-
-.au-body p {
-    max-width: 100%;
 }
 
 .sr-only {
@@ -33,6 +57,21 @@ a.au-btn:hover:not(:disabled) {
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     border: 0;
+}
+
+.au-body.au-body--dark,
+.au-footer.au-footer--dark {
+    border-color: $AU-colordark-foreground-focus !important;
+    background: $AU-colordark-background !important;
+    color: $AU-colordark-foreground-text !important;
+    a,
+    button {
+        color: $AU-colordark-foreground-action !important;
+        &:hover,
+        &:focus {
+            color: $AU-colordark-foreground-focus !important;
+        }
+    }
 }
 
 @keyframes hideMessage {
@@ -50,6 +89,9 @@ a.au-btn:hover:not(:disabled) {
 .au-btn {
     font-weight: 400;
     text-transform: none;
+    &:focus {
+        outline: 3px solid $AU-color-foreground-focus;
+    }
 }
 
 div {
@@ -66,19 +108,6 @@ div {
 }
 
 a {
-    -webkit-appearance: none;
-    position: relative;
-    background: transparent;
-    text-decoration: none;
-    border: none;
-    border-bottom: solid 1px $magda;
-    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
-    cursor: pointer;
-    color: $body;
-    &:hover {
-        color: #ffffff;
-        background-color: $magda;
-    }
 }
 
 .tab-navigation {
@@ -94,12 +123,12 @@ a {
         &:focus {
             text-decoration: underline;
             background-color: transparent;
-            color: $main;
+            color: $AU-color-foreground-action;
         }
     }
     a.mainmenu--active {
-        color: #007099;
-        border-color: #007099;
+        color: $AU-color-foreground-action;
+        border-color: $AU-color-foreground-action;
     }
 }
 
@@ -138,4 +167,13 @@ h3 {
 h4 {
     @include AU-fontgrid(sm, heading);
     font-weight: 400;
+}
+
+.au-text-input {
+    border: 3px solid $AU-color-foreground-action;
+}
+
+.au-body ::selection {
+    background: $AU-color-foreground-action !important;
+    color: $AU-colordark-foreground-text !important;
 }

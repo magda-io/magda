@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.39-0",
+  "version": "0.0.40-0",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -22,11 +22,13 @@
     "prepare": "pancake"
   },
   "devDependencies": {
+    "@gov.au/accordion": "^2.0.1",
     "@gov.au/body": "^2.0.2",
     "@gov.au/buttons": "^2.0.1",
     "@gov.au/core": "^2.0.0",
     "@gov.au/footer": "^2.0.1",
     "@gov.au/grid-12": "^2.0.1",
+    "@gov.au/header": "^3.0.1",
     "@gov.au/link-list": "^2.0.1",
     "@gov.au/page-alerts": "^2.0.1",
     "@gov.au/pancake": "^1.2.0",
@@ -36,7 +38,7 @@
     "@gov.au/skip-link": "^2.0.2",
     "@gov.au/tags": "^2.0.1",
     "@gov.au/text-inputs": "^2.0.2",
-    "@magda/scripts": "^0.0.39-0",
+    "@magda/scripts": "^0.0.40-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",
@@ -114,6 +116,7 @@
     "react-tooltip": "^3.4.0",
     "react-transition-group": "^2.3.1",
     "redux": "^4.0.0",
+    "redux-devtools-extension": "^2.13.2",
     "redux-logger": "^3.0.6",
     "redux-mock-store": "^1.2.1",
     "redux-thunk": "^2.1.0",
@@ -123,22 +126,11 @@
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0",
-    "redux-devtools-extension": "^2.13.2"
+    "email-validator": "^2.0.3"
   },
   "proxy": {
     "/server-config.js": {
       "target": "http://localhost:6107/"
-    }
-  },
-  "config": {
-    "docker": {
-      "include": "node_modules build"
-    },
-    "magda": {
-      "language": "javascript",
-      "categories": {
-        "ui": true
-      }
     }
   },
   "pancake": {
@@ -160,12 +152,7 @@
     "css": {
       "minified": true,
       "modules": false,
-      "browsers": [
-        "last 2 versions",
-        "ie 8",
-        "ie 9",
-        "ie 10"
-      ],
+      "browsers": ["last 2 versions", "ie 8", "ie 9", "ie 10"],
       "location": "pancake/css/",
       "name": false
     },
@@ -174,8 +161,63 @@
       "location": "pancake/sass/",
       "name": "pancake.scss"
     },
+    "pancake": {
+      "auto-save": true,
+      "plugins": true,
+      "ignore": [],
+      "json": {
+        "enable": true,
+        "location": "pancake/",
+        "name": "pancake",
+        "content": {
+          "name": true,
+          "version": true,
+          "dependencies": true,
+          "path": true,
+          "settings": true
+        }
+      },
+      "css": {
+        "minified": true,
+        "modules": false,
+        "browsers": ["last 2 versions", "ie 8", "ie 9", "ie 10"],
+        "location": "pancake/css/",
+        "name": false
+      },
+      "sass": {
+        "modules": true,
+        "location": "pancake/sass/",
+        "name": "pancake.scss"
+      },
+      "react": {
+        "location": "pancake/react/"
+      },
+      "js": {
+        "minified": true,
+        "modules": false,
+        "location": "pancake/js/",
+        "name": "pancake.min.js"
+      }
+    },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
     "react": {
       "location": "pancake/react/"
+    }
+  },
+  "config": {
+    "docker": {
+      "include": "node_modules build"
+    },
+    "magda": {
+      "language": "javascript",
+      "categories": {
+        "ui": true
+      }
     }
   }
 }

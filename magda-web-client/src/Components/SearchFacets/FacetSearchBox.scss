@@ -1,5 +1,7 @@
+@import "../../variables";
 .react-autosuggest__input {
     display: block;
+    font-size: 0.9rem;
     width: 100%;
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -8,9 +10,9 @@
     padding: 0.5rem 1rem;
     height: 46px;
     height: 2.875rem;
-    border: 3px solid gray;
-    background-color: #fff;
-    color: #313131;
+    border: 3px solid $AU-color-foreground-action;
+    background-color: $AU-color-background;
+    color: $AU-color-foreground-action;
     border-radius: 4px;
     vertical-align: middle;
     appearance: none;
@@ -20,9 +22,9 @@
     margin: 0 -18px 0 -17px;
     padding: 0 8px;
     list-style-type: none;
-    border-right: 1px solid rgba(73, 73, 73, 0.25);
-    border-left: 1px solid rgba(73, 73, 73, 0.25);
-    border-bottom: 1px solid rgba(73, 73, 73, 0.25);
+    border-right: 1px solid rgba($AU-color-foreground-text, 0.25);
+    border-left: 1px solid rgba($AU-color-foreground-text, 0.25);
+    border-bottom: 1px solid rgba($AU-color-foreground-text, 0.25);
 }
 
 .react-autosuggest__container {
@@ -31,7 +33,7 @@
 }
 
 .react-autosuggest__input--focused {
-    outline: 3px solid #9263de;
+    outline: 3px solid $AU-color-foreground-focus;
     outline-offset: 2px;
 }
 
@@ -47,17 +49,17 @@
     right: -16px;
     padding: 0 16px;
     top: 51px;
-    background-color: #fff;
+    background-color: $AU-color-background;
     z-index: 2;
     overflow-y: auto;
     height: 320px;
     border-radius: 2px;
-    background-color: #ffffff;
-    box-shadow: 0px 6px 18px -1px rgba(0, 0, 0, 0.45);
+    background-color: $AU-color-background;
+    box-shadow: 0px 6px 18px -1px rgba($AU-color-foreground-action, 0.45);
 }
 .react-autosuggest__suggestion--highlighted {
     background-color: rgba(245, 88, 96, 0.1);
-    box-shadow: inset 0 -1px 0 0 rgba(73, 73, 73, 0.1);
+    box-shadow: inset 0 -1px 0 0 rgba($AU-color-foreground-action, 0.1);
 }
 
 .facet-search-box .search-icon {

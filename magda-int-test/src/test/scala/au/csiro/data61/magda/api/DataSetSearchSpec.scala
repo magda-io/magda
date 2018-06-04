@@ -30,6 +30,7 @@ import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.model.misc.Region
+import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.ApiGenerators.innerRegionQueryGen
@@ -47,8 +48,10 @@ import au.csiro.data61.magda.test.util.Generators.regionGen
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 import au.csiro.data61.magda.test.util.ApiGenerators
+import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.search.elasticsearch.Indices
 
-class DataSetSearchSpec extends BaseSearchApiSpec {
+class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()
@@ -103,6 +106,85 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
               response.hitCount shouldEqual dataSets.length
               MagdaMatchers.dataSetsEqual(response.dataSets, sortByQuality(dataSets))
             }
+        }
+      }
+    }
+
+    describe("searching for a dataset publisher's acronym should return that dataset eventually") {
+      it("for pre-defined pairs") {
+        case class GenResult(acronym: String, datasetWithPublisher: DataSet)
+
+        val pairs = Seq(
+          ("Australian Charities and Not-for-profits Commission", "ACNC"),
+          ("Department of Foreign Affairs and Trade", "DFAT"),
+          ("Department of Industry, Innovation and Science", "DIIS"))
+
+        val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
+        val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
+        val publisherPairs = pairs.map {
+          case (fullName, acronym) =>
+            val gen = for {
+              pair <- Gen.oneOf(pairs)
+              randomCaseFullName <- Generators.randomCaseGen(pair._1)
+              dataset <- Generators.dataSetGen(scala.collection.mutable.HashMap.empty)
+              datasetWithPublisher = dataset.copy(publisher = Some(Agent(name = Some(randomCaseFullName))))
+            } yield GenResult(pair._2, datasetWithPublisher)
+
+            gen.retryUntil(_ => true).sample.get
+        }
+        val publisherDatasets = publisherPairs.map(_.datasetWithPublisher)
+
+        val randomCaseAcronymGen = for {
+          pair <- Gen.oneOf(publisherPairs)
+          acronym = pair.acronym
+          randomCaseAcronym <- Generators.randomCaseGen(acronym)
+        } yield GenResult(randomCaseAcronym, pair.datasetWithPublisher)
+
+        val allDatasets = randomDatasets ++ publisherDatasets
+
+        val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
+        val indices = new FakeIndices(indexName)
+
+        try {
+          blockUntilExactCount(allDatasets.size, indexName, indices.getType(Indices.DataSetsIndexType))
+
+          forAll(randomCaseAcronymGen) {
+            case GenResult(randomCaseAcronym, datasetWithPublisher) =>
+              Get(s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}""") ~> routes ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+
+                withClue(s"acronym $randomCaseAcronym and dataset publisher ${datasetWithPublisher.publisher}") {
+                  response.strategy.get shouldBe MatchAll
+                  response.dataSets.size should be > 0
+                  response.dataSets.exists(_.identifier == datasetWithPublisher.identifier) shouldBe true
+                }
+              }
+          }
+        } finally {
+          this.deleteIndex(indexName)
+        }
+      }
+
+      it("for auto-generated publishers") {
+        def dataSetToQuery(dataSet: DataSet) = {
+          dataSet.publisher
+            .flatMap(d => getAcronymFromPublisherName(d.name))
+            .map(acronym => Generators.randomCaseGen(acronym)) match {
+              case Some(randomCaseAcronymGen) => randomCaseAcronymGen.flatMap(acronym => Query(freeText = Some(acronym)))
+              case None                       => Gen.const(Query())
+            }
+        }
+
+        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+          whenever(query != Query()) {
+
+            withClue(s"query ${query.freeText} and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
+              response.strategy.get should be(MatchAll)
+              response.dataSets.isEmpty should be(false)
+              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+            }
+          }
         }
       }
     }
@@ -489,6 +571,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
           }
         }
       }
+
     }
 
     def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
@@ -501,32 +584,32 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
           }
       }
     }
+  }
 
-    def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
-      val gen = for {
-        index <- indexGen.suchThat(!_._2.isEmpty)
-        dataSet <- Gen.oneOf(index._2)
-        query = buildQuery(dataSet)
-        textQuery <- textQueryGen(query)
-      } yield (index, dataSet, textQuery)
+  def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
+    val gen = for {
+      index <- indexGen.suchThat(!_._2.isEmpty)
+      dataSet <- Gen.oneOf(index._2)
+      query = buildQuery(dataSet)
+      textQuery <- textQueryGen(query)
+    } yield (index, dataSet, textQuery)
 
-      forAll(gen) {
-        case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
-          whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
-            doFilterTest(textQuery, dataSets, routes) { response =>
-              test(query, response, dataSet)
-            }
+    forAll(gen) {
+      case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
+        whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
+          doFilterTest(textQuery, dataSets, routes) { response =>
+            test(query, response, dataSet)
           }
-      }
+        }
     }
+  }
 
-    def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-      Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
+  def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
+    Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
 
-        test(response)
-      }
+      test(response)
     }
   }
 

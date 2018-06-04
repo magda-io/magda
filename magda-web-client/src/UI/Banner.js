@@ -41,15 +41,14 @@ class Banner extends React.Component {
     render() {
         if (this.state.isOpen) {
             return (
-                <div className="banner">
+                <div className="banner au-body au-body--dark">
                     <span>
                         A new look for Australia&apos;s data portal: our updated
                         site makes it easier for you to find relevant open data.
                         You can still{" "}
                         <a onClick={this.goBack} href="https://data.gov.au/">
-                            go back
-                        </a>{" "}
-                        to the old site
+                            go back to the old site
+                        </a>
                     </span>
                     <button
                         type="button"
