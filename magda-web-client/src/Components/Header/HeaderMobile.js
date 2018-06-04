@@ -27,7 +27,7 @@ class HeaderMobile extends Component {
                         <img
                             className="mobile-logo"
                             src={govtLogo}
-                            height={36}
+                            height={50}
                             alt="au Gov logo"
                         />
                     </Link>
