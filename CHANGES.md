@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Changed appearance of open in new tab link for distribution
 *   Do not load preview map on mobile, give user option to view in national map instead
 *   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
