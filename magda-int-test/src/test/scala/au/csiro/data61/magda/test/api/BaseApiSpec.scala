@@ -87,12 +87,22 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit object MockClientProvider extends ClientProvider {
     override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
   }
+
   def blockUntilNotRed(): Unit = {
-    blockUntil("Expected cluster to have green status") { () =>
+    blockUntil("Expected cluster to have NOT RED status") { () =>
       val status = client.execute {
         clusterHealth()
       }.await(90 seconds).getStatus
       status != ClusterHealthStatus.RED
+    }
+  }
+
+  def blockUntilNotYellow(): Unit = {
+    blockUntil("Expected cluster to have green status") { () =>
+      val status = client.execute {
+        clusterHealth()
+      }.await(90 seconds).getStatus
+      status != ClusterHealthStatus.RED && status != ClusterHealthStatus.YELLOW
     }
   }
 
