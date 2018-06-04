@@ -457,6 +457,7 @@ Stop Preview: &stopPreview
     - tags
   except:
     - master
+    - /^v.*RC.*$/
   dependencies: []
   cache:
     paths: []
