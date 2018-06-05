@@ -21,17 +21,19 @@ class LightEnglishStemmer {
 
    def stem(string: String): String = {
 
-    val KStemmAna = CustomAnalyzer.builder.withTokenizer(classOf[KeywordTokenizerFactory]).addTokenFilter(classOf[KStemFilterFactory]).build
-    val reader: Reader = new StringReader(string)
-    val stream: TokenStream = KStemmAna.tokenStream("", reader)
-    var output: String = "";
-    while ( {
-      stream.incrementToken
-    }) {
-      val term: CharTermAttribute = stream.getAttribute(classOf[CharTermAttribute])
-      output = output + term.toString
-    }
+     val KStemmAna = CustomAnalyzer.builder.withTokenizer(classOf[KeywordTokenizerFactory]).addTokenFilter(classOf[KStemFilterFactory]).build
+     val reader: Reader = new StringReader(string)
+     val stream: TokenStream = KStemmAna.tokenStream("", reader)
+     val term: CharTermAttribute = stream.getAttribute(classOf[CharTermAttribute])
+
+     stream.reset()
+     var output: String = "";
+     while (stream.incrementToken) {
+       output = output + term.toString
+     }
+     stream.end()
      stream.close()
+
      return output
   }
 
