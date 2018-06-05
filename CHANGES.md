@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Make mobile logo bigger, fixed a bug in safari
 *   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
 *   Add Suggest a Dataset on search results page
