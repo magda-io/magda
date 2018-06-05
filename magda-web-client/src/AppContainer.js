@@ -16,7 +16,7 @@ import OtherPages from "./Pages/OtherPages";
 
 import { Route, Switch } from "react-router-dom";
 import { Medium } from "./UI/Responsive";
-import AUskipLink from "@gov.au/skip-link";
+import AUskipLink from "./pancake/react/skip-link";
 
 import "./AppContainer.css";
 
@@ -95,4 +95,7 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(AppContainer);
