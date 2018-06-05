@@ -1,15 +1,28 @@
-.chart-config{
-  .chart-config_icon-select{
-    button{
-      background: transparent;
-      border: 0;
-      box-shadow: 0;
-      margin-right: 2px;
-      border: 1px solid rgba(0,0,0,0);
-      padding: 4px;
-      &.isActive, &:hover{
-        border: 1px solid rgba(0,0,0,.26);
-      }
+.chart-config {
+    .chart-config_icon-select {
+        button {
+            background: transparent;
+            border: 0;
+            box-shadow: 0;
+            margin-right: 2px;
+            border: 1px solid rgba(0, 0, 0, 0);
+            padding: 4px;
+            &.isActive,
+            &:hover {
+                border: 1px solid rgba(0, 0, 0, 0.26);
+            }
+        }
     }
-  }
+    .chart-type {
+        margin-top: 1em;
+    }
+    .chart-title {
+        margin-top: 1em;
+    }
+    .x-axis {
+        margin-top: 1em;
+    }
+    .y-axis {
+        margin-top: 1em;
+    }
 }
