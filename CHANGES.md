@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   improve preview tab active state and prevent scrolling when tab changes
 *   Make mobile logo bigger, fixed a bug in safari
 *   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
