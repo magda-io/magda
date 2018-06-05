@@ -140,7 +140,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .flatMap {
           case term if term.last.toLower.equals('s') =>
             if(useLightEnglishStemmer){
-              val depluralized = term.take(term.length - 2)
+              val depluralized = term.take(term.length - 1)
               if (MagdaMatchers.lightEnglishStem(term) == depluralized) {
                 Some(depluralized)
               } else None
@@ -157,7 +157,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
                 Some(pluralized)
               } else None
             }else{
-              val pluralized = term + "es"
+              val pluralized = term + "s"
               if (MagdaMatchers.porterStem(pluralized) == term) {
                 Some(pluralized)
               } else None
