@@ -9,7 +9,6 @@
     "src/pancake/**"
   ],
   "devDependencies": {
-    "@gov.au/select": "^2.0.3",
     "@types/lodash": "^4.14.74",
     "babel-eslint": "^8.2.2",
     "eslint": "^4.19.0",
