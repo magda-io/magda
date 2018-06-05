@@ -1,7 +1,5 @@
 @import "variables";
 @import "../pancake/sass/pancake.scss";
-html {
-}
 
 .au-body .au-grid {
     p,
@@ -61,7 +59,6 @@ a.au-btn:hover:not(:disabled) {
 
 .au-body.au-body--dark,
 .au-footer.au-footer--dark {
-    margin-top: 100px;
     border-color: $AU-colordark-foreground-focus !important;
     background: $AU-colordark-background !important;
     color: $AU-colordark-foreground-text !important;
@@ -73,6 +70,10 @@ a.au-btn:hover:not(:disabled) {
             color: $AU-colordark-foreground-focus !important;
         }
     }
+}
+
+.au-footer.au-footer--dark {
+    margin-top: 96px; //Match bottom-margin of search result pagination
 }
 
 @keyframes hideMessage {
