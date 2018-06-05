@@ -108,7 +108,7 @@ export default function Login(props) {
                     <p>
                         To register a new data.gov.au account,{" "}
                         <AUctaLink
-                            link="http://data.gov.au/user/register"
+                            link="https://data.gov.au/user/register"
                             target="_blank"
                             text="click here"
                         />.
