@@ -139,25 +139,23 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(isAStopWord)
         .flatMap {
           case term if term.last.toLower.equals('s') =>
+            val depluralized = term.take(term.length - 1)
             if(useLightEnglishStemmer){
-              val depluralized = term.take(term.length - 1)
               if (MagdaMatchers.lightEnglishStem(term) == depluralized) {
                 Some(depluralized)
               } else None
             }else{
-              val depluralized = term.take(term.length - 1)
               if (MagdaMatchers.porterStem(term) == depluralized) {
                 Some(depluralized)
               } else None
             }
           case term =>
+            val pluralized = term + "s"
             if(useLightEnglishStemmer){
-              val pluralized = term + "s"
               if (MagdaMatchers.lightEnglishStem(pluralized) == term) {
                 Some(pluralized)
               } else None
             }else{
-              val pluralized = term + "s"
               if (MagdaMatchers.porterStem(pluralized) == term) {
                 Some(pluralized)
               } else None
