@@ -48,15 +48,14 @@ case class IndexDefinition(
 
 object IndexDefinition extends DefaultJsonProtocol {
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(
-      textField("english").analyzer("english"))
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
 
-    textField(name).fields(fields)
+    textField(name).analyzer("english").fields(fields)
   }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 32,
+    version = 33,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -82,7 +81,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("title"),
               magdaTextField("description"),
               magdaTextField("format",
-                keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             objectField("spatial").fields(
               geoshapeField("geoJson")),
@@ -93,16 +91,13 @@ object IndexDefinition extends DefaultJsonProtocol {
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
-            dateField("indexed"),
-            textField("english").analyzer("english")),
+            dateField("indexed")),
           mapping(indices.getType(indices.typeForFacet(Format))).fields(
-            magdaTextField("value"),
-            textField("english").analyzer("english")),
+            magdaTextField("value")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value"),
-            textField("english").analyzer("english")))
+            magdaTextField("value")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
@@ -111,8 +106,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "uppercase",
             KeywordTokenizer,
-            UppercaseTokenFilter)
-        )
+            UppercaseTokenFilter))
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
