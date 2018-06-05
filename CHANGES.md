@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Improve mobile safari placeholder
 *   Changed appearance of open in new tab link for distribution
 *   Do not load preview map on mobile, give user option to view in national map instead
 *   Make mobile logo bigger, fixed a bug in safari
