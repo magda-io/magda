@@ -123,7 +123,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           val builtIndex = buildIndex()
           Await.result(builtIndex.indexer.index(Source.fromIterator(() => dataSets.iterator)), 30 seconds)
 
-          Await.result(builtIndex.indexer.ready, 30 seconds)
+          Await.result(builtIndex.indexer.ready, 120 seconds)
           refresh(builtIndex.indexId)
           blockUntilExactCount(dataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
 
@@ -175,7 +175,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       forAll(gen) {
         case (dataSetsToDelete, deletedDataSetsToSave) =>
           val builtIndex = buildIndex()
-          Await.result(builtIndex.indexer.ready, 30 seconds)
+          Await.result(builtIndex.indexer.ready, 120 seconds)
           refresh(builtIndex.indexId)
 
           val events = dataSetsToDelete.map(dataSet =>

@@ -2,6 +2,7 @@ package au.csiro.data61.magda.test.util
 
 import au.csiro.data61.magda.model.misc.DataSet
 import org.tartarus.snowball.ext.PorterStemmer
+import org.apache.lucene.analysis.en.EnglishMinimalStemmer
 import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 
@@ -24,6 +25,13 @@ object MagdaMatchers extends org.scalatest.Matchers {
     stemmer.setCurrent(string)
 
     if (stemmer.stem) stemmer.getCurrent else string
+  }
+
+  def lightEnglishStem(string: String): String = {
+    val stemmer = new EnglishMinimalStemmer()
+    val strArr = string.toArray
+    stemmer.stem(strArr, strArr.length)
+    return strArr.mkString
   }
 
   def toEnglishToken(string: String) = porterStem(string.toLowerCase)
