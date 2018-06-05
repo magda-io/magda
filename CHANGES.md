@@ -9,6 +9,7 @@
 *   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 *   Positioned the buttons & format icons at middle position of the Files & APIs section
 *   Made publisher acronym search case insensitive & added test cases
+*   Resolved comma spacing in no dataset results error.
 
 ## 0.0.40
 
