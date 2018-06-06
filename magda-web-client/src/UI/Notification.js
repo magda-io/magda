@@ -1,7 +1,7 @@
 import React from "react";
 import "./Notification.css";
 import close from "../assets/close.svg";
-import AUpageAlert from "@gov.au/page-alerts";
+import AUpageAlert from "../pancake/react/page-alerts";
 
 function Notification(props) {
     let type = props.type;

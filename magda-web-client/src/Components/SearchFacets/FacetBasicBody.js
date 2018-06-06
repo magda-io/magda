@@ -68,7 +68,7 @@ class FacetBasicBody extends Component {
             return null;
         }
         let maxWidth = defined(optionMax)
-            ? +option.hitCount / optionMax.hitCount * 200
+            ? (+option.hitCount / optionMax.hitCount) * 200
             : 0;
         let divStyle = {
             width: maxWidth + "px",
