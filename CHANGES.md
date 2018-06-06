@@ -2,6 +2,7 @@
 
 -   Made publisher acronym search case insensitive & added test cases
 -   Made elastic search supports synonyms
+-   improve preview tab active state and prevent scrolling when tab changes
 -   Automatically show homepage stories when scrolling starts on mobile
 -   Make organisation page more consistent with rest of the site
 -   Make mobile logo bigger, fixed a bug in safari
