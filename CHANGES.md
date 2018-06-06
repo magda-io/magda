@@ -11,13 +11,14 @@
 *   Made publisher acronym search case insensitive & added test cases
 *   Added vertical spacing for `DataPreview` chart fields.
 *   Add call to action from design systems
-*   Use Design System react components from local pancake to allow CSS color overrides
-*   Create Suggest a Dataset Page
-*   Add Suggest a Dataset on search results page
-*   Fixed display of chart axis config dropdowns in Firefox.
-*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
-*   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
-*   Updated About page links to be more inline with design system standards.
+
+-   Use Design System react components from local pancake to allow CSS color overrides
+-   Create Suggest a Dataset Page
+-   Add Suggest a Dataset on search results page
+-   Fixed display of chart axis config dropdowns in Firefox.
+-   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+-   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+-   Updated About page links to be more inline with design system standards.
 
 ## 0.0.40
 
@@ -27,7 +28,7 @@
 *   Made region and dataset configurable in search api.
 *   Added publisher name acronyms to elasticsearch
 *   Removed underline on coat of arms.
-*   Implemented `Tooltip` component to replace `react*tooltip` from `QualityIndicator`
+*   Implemented `Tooltip` component to replace `react-tooltip` from `QualityIndicator`
 *   Made region and dataset configurable in search api.
 *   Fixed open in national map button not send correct URL
 
@@ -40,17 +41,17 @@
 *   Use DTA design system for all form elements
 *   Changed linked data rating sleuther to `PUT` instead of `PATCH` data quality aspect
 *   Made linked data rating sleuther take output of broken link sleuther into account
-*   Removed datasetQualityAspectDef from sleuther*broken*link
+*   Removed datasetQualityAspectDef from sleuther-broken-link
 *   Update the look of facet searchbox to be consistent with DTA design system
 *   Mobile Aus Gov logo links to homepage
 *   Change the tag type of the background link on the homepage in order to correct the page refreshing when it shouldn't
 *   Added gitlab CI build config
 *   Fixed indexer's ability to make/retrieve ES backups
-*   Added ability for magda\*postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
+*   Added ability for magda-postgres to retrieve WAL backup as "immediate" rather than catching all the way up with the WAL log.
 *   Removed implied ability for magda postgres to use a backup method other than WAL (this never actually worked in practice)
-*   Replaced old `node*ci` script with `run*in*submodules`, which allows a command to be run in submodules based on matching
+*   Replaced old `node-ci` script with `run-in-submodules`, which allows a command to be run in submodules based on matching
     the values in `package.json`.
-*   Removed `border*bottom` property for `Open Data Quality:` from DatasetSummary/Details page
+*   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
 *   Apply Design System skip link/links styles
 *   Add schema.org/Dataset microdata semantic markup
 *   Use colours from DTA design guide
@@ -61,30 +62,30 @@
 *   Recent search will not save "\*" search
 *   Reduced homepage tagline bottom margin
 *   Brought back homepage animation
-*   Chart is available for Non\*time series CSV data files now
+*   Chart is available for Non-time series CSV data files now
 *   Map preview on `nationalmap` will be processed by `MagdaCatalogItem`
-*   Fixed a few issues with `format*sleuther`
-*   `format*sleuther` will use accessURL if download URL not available
-*   `format*sleuther` will recognise `www:download*1.0*http—csiro*oa*app` as `CSIRO Open App`
-*   `format*sleuther` will recognise `WWW:DOWNLOAD*1.0*http**downloaddata` as `html`
+*   Fixed a few issues with `format-sleuther`
+*   `format-sleuther` will use accessURL if download URL not available
+*   `format-sleuther` will recognise `www:download-1.0-http—csiro-oa-app` as `CSIRO Open App`
+*   `format-sleuther` will recognise `WWW:DOWNLOAD-1.0-http--downloaddata` as `html`
 *   `MagdaCatalogItem` will use accessURL if download URL not available
-*   `MagdaCatalogItem` will use `dataset*format` (if available) to determine CatalogItem type
+*   `MagdaCatalogItem` will use `dataset-format` (if available) to determine CatalogItem type
 *   Added `ESRI REST` (ArcGIS) support to `MapPreview`
 *   Fixed the GAP under preview map loading box
 *   Switched to using yarn as the package manager
 *   Merge duplicate publisher records before display on publisher page
 *   Made frontend GA post to both terria and dga google analytics.
 *   Tagged correspondence api as a typescript api.
-*   Made auto deploy for master \*> dev server reconfigure jobs.
+*   Made auto deploy for master -> dev server reconfigure jobs.
 *   Fixed up docker scripts to make them handle multiple versions of yarn packages coexisting.
 *   Updated footer with govau design systems components.
-*   Made magda*web*server look for magda*web*client using require.resolve.
+*   Made magda-web-server look for magda-web-client using require.resolve.
 *   Added tooltip to future dates on datepicker
 *   Header adjustment for new design system.
 *   Updated notification with govau design systems components & fixed a few minor error handling related issues
 *   Implemented SMTP client with `nodemailer` for correspondence api
 *   Simplified the way that search queries are sent to elasticsearch and boosted title to higher importance.
-*   Modified `Show full description` font\*size.
+*   Modified `Show full description` font-size.
 *   Added `recrawl` API endpoints to sleuther framework
 *   Added spacing between dataset publisher and created date.
 *   Fixed up datasets always showing as 0 stars.
@@ -94,9 +95,9 @@
 *   Added standard space in between Download / New tab buttons on `DatasetDetails`.
 *   Reimplemented links from publisher names to their respective page.
 *   Make search filters stay on until specifically dismissed
-*   Added ui\*only preview job to gitlab.
-*   Modified `DatasetSummary` description style to be default `au*body`
-*   Tweaked `au*btn` border\*right to be white for search facets.
+*   Added ui-only preview job to gitlab.
+*   Modified `DatasetSummary` description style to be default `au-body`
+*   Tweaked `au-btn` border-right to be white for search facets.
 *   Remove feedback form & button from both desktop & mobile view
 *   Made all data.gov.au environments use mailgun.
 *   Map Preview: Set default camera to Australia
@@ -110,7 +111,7 @@
 *   Use button styles from DTA design guide
 *   Use grid system from DTA design guide
 *   Mobile search filter new look
-*   Feedback CSP endpoint now accepts both `application/csp*report` & `application/json` content\*type
+*   Feedback CSP endpoint now accepts both `application/csp-report` & `application/json` content-type
 *   When closed, hamburger menu on mobile switches to a X
 *   Will Scroll to top of the page when goes from link to link
 *   Made search filter icons consistent in color when they are applied
@@ -138,10 +139,10 @@
 *   Brought back mobile version home page story style to avoid being run into each other
 *   Updated text for homepage articles.
 *   Update Privacy/About/Data Rating pages
-*   Updated SEO*friendliness of various headings (h3*>h2)
+*   Updated SEO-friendliness of various headings (h3->h2)
 *   Display all publishers and hide search on publishers page
-*   Added `margin*bottom` spacing for footer links on mobile.
-*   Removed `box*shadow` style from selected search facets buttons
+*   Added `margin-bottom` spacing for footer links on mobile.
+*   Removed `box-shadow` style from selected search facets buttons
 *   Hide the \* when I click on the Dataset link in header or click through from a Publisher
 *   If format info is available from sleuther, format sleuther info should be used
 *   Enable homepage stories and updated homepage config
@@ -178,27 +179,27 @@
 *   Added recent searches function
 *   Extend eslint ruleset to enforce the use of the prettier tool
 *   Upgrade public web interface (but not preview map) to React 16
-*   Set `node*sass` (required by magda*web*client) version to `4.8.1` to solve lerna bootstrap 404 error.
+*   Set `node-sass` (required by magda-web-client) version to `4.8.1` to solve lerna bootstrap 404 error.
 *   Added dataset quality page
 *   Added `Powered by Magda` footer link
 *   Modified `API Docs` footer link to use HTTPS
-*   Modified .vscode/settings to hide ALL `.css` files in @magda*web*client.
+*   Modified .vscode/settings to hide ALL `.css` files in @magda-web-client.
 *   Added Rollbar exception reporting for client side javascript
-*   Added IE9/10 polyfills so that the upgrade*your*browser message comes up
+*   Added IE9/10 polyfills so that the upgrade-your-browser message comes up
 *   Added a development unauthenticated API proxy for testing without CORS problems
 *   Updated date display format on search page
 *   Added Slash between created and updated date on dataset page
 *   Added in quality indicator tooltip for dataset lists
-*   Added new window link to Data61 from the "Developed by `data61*logo`" in footer.
+*   Added new window link to Data61 from the "Developed by `data61-logo`" in footer.
 *   Added tooltip to search icon
 *   Hid download button on dataset page when download url is not available
 *   Updated footer links and layout
-*   Fixed an issue that prevents csv*geo*au data source to be opened in national map
+*   Fixed an issue that prevents csv-geo-au data source to be opened in national map
 *   responsive background image for homepage
 *   Hidden top `go back to old site` for mobile views
 *   New Homepage Design except stories
 *   Open in National Map button now send config via postMessage (except IE <=11)
-*   Fixed web\*server crash in in kubernete pod
+*   Fixed web-server crash in in kubernete pod
 *   Removed query language from search api
 *   Stopped elasticsearch automatically creating indexes.
 *   Stopped recent searches showing "\*" as a dot
@@ -211,7 +212,7 @@
 *   Added feedback uri to server config.
 *   Modified search results `Quality:` text to `Open Data Quality:`
 *   Added eslint to travis build
-*   Fixed search.data.gov.au\*specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
+*   Fixed search.data.gov.au-specific problem where directing back to data.gov.au would cause an redirect back to search.data.gov.au
 
 ## 0.0.36
 
@@ -221,7 +222,7 @@
 ## 0.0.35
 
 *   Fixed preview map data loading issue: replaced dev site url
-*   Fixed `third*party.js` url in homepage
+*   Fixed `third-party.js` url in homepage
 
 ## 0.0.34
 
@@ -232,12 +233,12 @@
 *   Map previewer will communicate with TerriaJs via `postMessage` rather than url
 *   Default map for map previewer has been changed to `Positron (Light)`
 *   Implement new dataset page design. Brought back Map previewer & Charter previewer.
-*   Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda*web*client` module.
+*   Added `onLoadingStart` & `onLoadingEnd` event handlers to the `DataPreviewMap` component of `magda-web-client` module.
 *   Made a click on the "Go back" link on the banner tag the user with a `noPreview` cookie for VWO to pick up on.
-*   Added request logging to `magda*web*server`.
+*   Added request logging to `magda-web-server`.
 *   Added liveness probes to all helm services.
 *   Added a CSP and HSTS to magda web.
-*   Added default Cache\*Control header to GET requests that go through the gateway.
+*   Added default Cache-Control header to GET requests that go through the gateway.
 *   Fixed build process to produce minified release version of TerriaMap instead of dev version.
 *   Added robots.txt
 *   Minor visual adjustment based on Tash's feedback
@@ -245,40 +246,40 @@
 ## 0.0.33
 
 *   Added ability to get records from the registry by the value of their aspects.
-*   Set `kubernetes*client` (required by magda*admin*api) version to `3.17.2` to solve a travis build issue
-*   Stopped the registry api from timing out and returning an error code when trimming by source tag / id \* now returns 202 if it takes too long.
-*   Added route for `/pages/*` requests so that `magda*web*server` won't response `Cannot GET /page/*`
+*   Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to solve a travis build issue
+*   Stopped the registry api from timing out and returning an error code when trimming by source tag / id - now returns 202 if it takes too long.
+*   Added route for `/pages/*` requests so that `magda-web-server` won't response `Cannot GET /page/*`
 *   Added format sleuther
-*   Set `kubernetes*client` (required by magda*admin*api) version to `3.17.2` to solve the travis build issue.
+*   Set `kubernetes-client` (required by magda-admin-api) version to `3.17.2` to solve the travis build issue.
 *   Added ability to get records from the registry by the value of their aspects.
 *   Added access control layer to Authorization APIs: All `private` APIs (uri starts with /private/) can only be accessed by Admin users.
-*   Auth API will return `401` status code for un\*authorized users and `403` if the APIs require `admin` level access
+*   Auth API will return `401` status code for un-authorized users and `403` if the APIs require `admin` level access
 *   Added test cases for ApiClient class
 *   Added test cased for Authorization APIs
-*   Fixed minor frontend issue when Authorization APIs return non\*json response
+*   Fixed minor frontend issue when Authorization APIs return non-json response
 *   Updated visualization sleuther to stream file downloads and csv parsing, and relax time field specifications.
-*   Added `userId` parameter to `package.json` of `magda*gateway` module
-*   Added execution permission to `setup.sh` to solve the issue that `magda*elastic*search` failed to start in minikube
+*   Added `userId` parameter to `package.json` of `magda-gateway` module
+*   Added execution permission to `setup.sh` to solve the issue that `magda-elastic-search` failed to start in minikube
 *   Updated format sleuther to be a bit more optimistic in its sleuthing
-*   Re\*added viz sleuther to default helm config
+*   Re-added viz sleuther to default helm config
 *   Added index to `"publisher"` field in recordaspects table in order to stop indexer webhook queries taking 10 minutes.
 *   Added a CONTRIBUTING.md file
 *   Fixed an issue that `Preview Map` doesn't support WFS API
 *   Made the indexer listen to delete record events and remove the deleted record from the index
-*   Added prettier `pre*commit` hook to make sure consistent code style
+*   Added prettier `pre-commit` hook to make sure consistent code style
 *   Formatted existing typescript source code using `prettier`
-*   Updated `building*and*running.md`
+*   Updated `building-and-running.md`
 *   Added preview map support for geojson data type
-*   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda*preview*map` module
+*   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
 *   Map previewer will zoom to dataset (except KML data)
 *   Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 *   Added Google Analytics Tag Manager Code / VWO code to `<head>`
-*   Added `feedback*api` microservice to collect feedback and create GitHub issues from it.
+*   Added `feedback-api` microservice to collect feedback and create GitHub issues from it.
 *   Duplicated tags with different cases are now merged (at frontend)
 *   Tags contain possible separators (i.e. , ; | or /) are now split into shorter tags (at frontend)
-*   Separated database migrations from database images to facilitate use of managed SQL services * they now live in `magda*migrator\*xx` directories and run as jobs on helm upgrade/install
+*   Separated database migrations from database images to facilitate use of managed SQL services - they now live in `magda-migrator-xx` directories and run as jobs on helm upgrade/install
 *   Added configuration for Google Cloud SQL
-*   Normalised DB names * now everything is magda*xx\*db
+*   Normalised DB names - now everything is magda-xx-db
 *   Made docker build scripts automatically adjust `FROM` statements to add `localhost:5000/` and the correct version tag where necessary
 *   Made datasets with years < 1000 AD index as being from the year 2xxx, as all that we've seen are typos so far.
 *   Changes on feedback form: Added (\*) to `Email` & `Feedback` fields heading. Added tooltip to display the validation error.
@@ -286,13 +287,13 @@
 
 ## 0.0.32
 
-*   Connectors now create organizations, datasets, and distributions with IDs prefixed by the type of record and by the ID of the connector. For example, `org*bom*Australian Bureau of Meteorology` is the organization with the ID `Australian Bureau of Meteorology` from the connector with ID `bom`. Other type prefixes are `ds` for dataset and `dist` for distribution. This change avoids conflicting IDs from different sources.
+*   Connectors now create organizations, datasets, and distributions with IDs prefixed by the type of record and by the ID of the connector. For example, `org-bom-Australian Bureau of Meteorology` is the organization with the ID `Australian Bureau of Meteorology` from the connector with ID `bom`. Other type prefixes are `ds` for dataset and `dist` for distribution. This change avoids conflicting IDs from different sources.
 *   Fixed a race condition in the registry that could lead to an error when multiple requests tried to create/update the same record simultaneously, which is fairly common when creating organizations in the CSW connector.
 *   Updated hooks so that each hook when running can skip over irrelevant events
 *   Made sure hook processing resumes when either the registry or the sleuther wakes back up.
 *   SA1 regions are no longer named after the SA2 region that contains them, reducing noise in the region search results. To find an actual SA1, users will need to search for its ID.
 *   The broken link sleuther now has its retry count for external links configurable separately to the retry count for contacting the registry, with a default of 3.
-*   Connectors now tag datasets that they've created with a `sourcetag` attribute \* at the end of a crawl, they delete all records that were created by them without the latest `sourceTag`.
+*   Connectors now tag datasets that they've created with a `sourcetag` attribute - at the end of a crawl, they delete all records that were created by them without the latest `sourceTag`.
 *   Optimised the query that finds new events for each webhook
 *   Stopped async webhooks posting `success: false` on an uncaught failure, as this just causes them to process the same data and fail over and over.
-*   Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL \* now records as "broken".
+*   Stopped the broken link sleuther from failing completely when it gets a string that isn't a valid URL - now records as "broken".
