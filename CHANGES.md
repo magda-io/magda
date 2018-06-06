@@ -1,5 +1,6 @@
 ## 0.0.41
 
+*   Make organisation page more consistent with rest of the site
 *   Make mobile logo bigger, fixed a bug in safari
 *   Close mobile nav when navigation occurs
 *   Create Suggest a Dataset Page
