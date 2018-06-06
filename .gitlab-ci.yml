@@ -15,6 +15,9 @@ stages:
   - release
   - deploy-prod
 
+# Default retry is one
+retry: 1
+
 builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
