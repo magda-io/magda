@@ -321,12 +321,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText flatMap { inputText =>
         val text = if (inputText.trim.length == 0) "*" else inputText
-        val queryString = new SimpleStringQueryDefinition(text).defaultOperator(operator).quoteFieldSuffix("keyword")
+        val queryString = new SimpleStringQueryDefinition(text).defaultOperator(operator).quoteFieldSuffix(".quote")
 
         // For some reason to make english analysis work properly you need to specifically hit the english fields.
         def foldFieldsEnglish(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
-          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName + ".english", boost)
-          case (field: String, queryDef)                     => queryDef.field(field + ".english", 0)
+          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
+          case (field: String, queryDef)                     => queryDef.field(field, 0)
         }
         def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
           case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
@@ -339,7 +339,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .query(
             // If this was AND then a single distribution would have to match the entire query, this way you can
             // have multiple dists partially match
-            queryString.field("distributions.title.english").field("distributions.description.english").field("distributions.format.keyword_lowercase")
+            queryString.field("distributions.title").field("distributions.description").field("distributions.format.keyword_lowercase")
               .defaultOperator("or"))
           .scoreMode(ScoreMode.Max)
 
@@ -365,7 +365,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .defaultOperator("or")
           .analyzeWildcard(true)
           .field("_all")
-          .field("value.english"))
+          .field("value"))
         .start(start.toInt)
         .limit(limit))
         .flatMap { response =>

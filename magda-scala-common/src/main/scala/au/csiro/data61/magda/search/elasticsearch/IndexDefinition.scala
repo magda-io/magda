@@ -91,10 +91,9 @@ case class SynonymGraphTokenFilter(name: String,
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(
-      textField("english").analyzer("english"))
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
 
-    textField(name).fields(fields)
+    textField(name).analyzer("english").fields(fields)
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
@@ -151,7 +150,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("title"),
               magdaSynonymTextField("description"),
               magdaTextField("format",
-                keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             objectField("spatial").fields(
               geoshapeField("geoJson")),
@@ -162,16 +160,13 @@ object IndexDefinition extends DefaultJsonProtocol {
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
-            dateField("indexed"),
-            textField("english").analyzer("english")),
+            dateField("indexed")),
           mapping(indices.getType(indices.typeForFacet(Format))).fields(
-            magdaTextField("value"),
-            textField("english").analyzer("english")),
+            magdaTextField("value")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value"),
-            textField("english").analyzer("english")))
+            magdaTextField("value")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
