@@ -3,7 +3,7 @@ import React from "react";
 import "./MatchingStatus.css";
 import Stories from "../../Pages/HomePageComponents/Stories";
 import { Link } from "react-router-dom";
-import AUpageAlert from "@gov.au/page-alerts";
+import AUpageAlert from "../../pancake/react/page-alerts";
 import { config } from "../../config";
 export default function MatchingStatus(props: {
     datasets: Array<Object>,
