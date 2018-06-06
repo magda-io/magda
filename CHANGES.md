@@ -1,14 +1,8 @@
 ## 0.0.41
 
--   Close mobile nav when navigation occurs
--   Create Suggest a Dataset Page
--   Add Suggest a Dataset on search results page
--   Fixed display of chart axis config dropdowns in Firefox.
--   Fixed LanguageAnalyzerSpec from generating stop words as search values.
--   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
--   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
 -   Made elastic search supports synonyms
+-   improve preview tab active state and prevent scrolling when tab changes
 -   Automatically show homepage stories when scrolling starts on mobile
 -   Make organisation page more consistent with rest of the site
 -   Make mobile logo bigger, fixed a bug in safari
