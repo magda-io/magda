@@ -239,6 +239,16 @@
   dependencies:
     babel-runtime "6.26.0"
 
+"@gov.au/select@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@gov.au/select/-/select-2.0.3.tgz#0326d0b52c7581072b3917f8b24b5523c56664ec"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@gov.au/skip-link@^2.0.4":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@gov.au/skip-link/-/skip-link-2.0.4.tgz#a905badacfabbc01f208aec624621f8a249edfdb"
@@ -11802,7 +11812,7 @@ react-app-rewire-eslint@^0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/react-app-rewire-eslint/-/react-app-rewire-eslint-0.2.3.tgz#88e93d74569c33fe22185d46f6a2b521c4dd7fb6"
 
-react-app-rewired@^1.5.2:
+react-app-rewired@^1.1.4:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/react-app-rewired/-/react-app-rewired-1.5.2.tgz#0f5cdbc92f47f166bb0bcadf8a5d00999b90f68f"
   dependencies:
@@ -12061,7 +12071,7 @@ react-router@^4.2.0:
     prop-types "^15.5.4"
     warning "^3.0.0"
 
-react-scripts@^1.0.10, react-scripts@^1.1.4:
+react-scripts@^1.0.10:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-1.1.4.tgz#d5c230e707918d6dd2d06f303b10f5222d017c88"
   dependencies:

@@ -20,7 +20,8 @@
 -   Add Suggest a Dataset on search results page
 -   Fixed display of chart axis config dropdowns in Firefox.
 -   Fixed LanguageAnalyzerSpec from generating stop words as search values.
--   Updated prettier config to not reformat package.json in to an invalid 4 space tab width
+-   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+-   Add a missing module from design guide that caused select to not style properly
 
 ## 0.0.40
 
