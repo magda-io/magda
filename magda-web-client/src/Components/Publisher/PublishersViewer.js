@@ -149,4 +149,7 @@ PublishersViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(PublishersViewer);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(PublishersViewer);

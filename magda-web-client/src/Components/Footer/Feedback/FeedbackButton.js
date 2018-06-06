@@ -40,9 +40,11 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export const FeedbackButton = connect(mapStateToProps, mapDispatchToProps)(
-    RawFeedbackButton
-);
-export const FeedbackLink = connect(mapStateToProps, mapDispatchToProps)(
-    RawFeedbackLink
-);
+export const FeedbackButton = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(RawFeedbackButton);
+export const FeedbackLink = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(RawFeedbackLink);

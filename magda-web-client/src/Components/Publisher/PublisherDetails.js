@@ -102,4 +102,7 @@ function mapStateToProps(state: Object, ownProps: Object) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PublisherDetails);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(PublisherDetails);
