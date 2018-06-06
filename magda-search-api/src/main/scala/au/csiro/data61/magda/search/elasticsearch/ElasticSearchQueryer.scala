@@ -323,11 +323,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val text = if (inputText.trim.length == 0) "*" else inputText
         val queryString = new SimpleStringQueryDefinition(text).defaultOperator(operator).quoteFieldSuffix(".quote")
 
-        // For some reason to make english analysis work properly you need to specifically hit the english fields.
-        def foldFieldsEnglish(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
-          case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
-          case (field: String, queryDef)                     => queryDef.field(field, 0)
-        }
         def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
           case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
           case (field: String, queryDef)                     => queryDef.field(field, 0)
@@ -343,7 +338,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .defaultOperator("or"))
           .scoreMode(ScoreMode.Max)
 
-        val queries = Seq(foldFieldsEnglish(foldFields(queryString, NON_LANGUAGE_FIELDS), DATASETS_LANGUAGE_FIELDS), distributionsEnglishQueries)
+        val queries = Seq(foldFields(queryString, NON_LANGUAGE_FIELDS++DATASETS_LANGUAGE_FIELDS), distributionsEnglishQueries)
 
         Some(dismax(queries).tieBreaker(0.2))
       },
