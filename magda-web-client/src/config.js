@@ -26,17 +26,13 @@ const serverConfig: {
     window.magda_server_config || {};
 //this below const enables suggest/request/report dataset forms when enabled
 export const enableSuggestDatasetPage = true;
-export const correspondenceApiReportUrl =
-    serverConfig.correspondenceApiBaseUrl ||
-    fallbackApiHost + "api/v0/correspondence/send/dataset/:datasetId/report";
-export const correspondenceApiUrl =
-    serverConfig.correspondenceApiBaseUrl ||
-    fallbackApiHost + "api/v0/correspondence/send/dataset/request";
+
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
+
 export const config = {
     homePageConfig: homePageConfig,
     appName: "data.gov.au",
@@ -50,6 +46,9 @@ export const config = {
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
     authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
+    correspondenceApiUrl:
+        serverConfig.correspondenceApiBaseUrl ||
+        fallbackApiHost + "api/v0/correspondence/",
     discussionsApiUrl:
         serverConfig.discussionsApiBaseUrl ||
         fallbackApiHost + "api/v0/discussions/",
