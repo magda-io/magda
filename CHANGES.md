@@ -1,17 +1,18 @@
 ## 0.0.41
 
-*   Make organisation page more consistent with rest of the site
-*   Make mobile logo bigger, fixed a bug in safari
-*   Close mobile nav when navigation occurs
-*   Create Suggest a Dataset Page
-*   Add Suggest a Dataset on search results page
-*   Fixed display of chart axis config dropdowns in Firefox.
-*   Fixed LanguageAnalyzerSpec from generating stop words as search values.
-*   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
-*   Positioned the buttons & format icons at middle position of the Files & APIs section
-*   Made publisher acronym search case insensitive & added test cases
-*   Added vertical spacing for `DataPreview` chart fields.
-*   Add call to action from design systems
+-   Make organisation page more consistent with rest of the site
+-   Make mobile logo bigger, fixed a bug in safari
+-   Close mobile nav when navigation occurs
+-   Create Suggest a Dataset Page
+-   Add Suggest a Dataset on search results page
+-   Fixed display of chart axis config dropdowns in Firefox.
+-   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+-   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+-   Positioned the buttons & format icons at middle position of the Files & APIs section
+-   Made publisher acronym search case insensitive & added test cases
+-   Resolved comma spacing in no dataset results error.
+-   Added vertical spacing for `DataPreview` chart fields.
+-   Add call to action from design systems
 -   Use Design System react components from local pancake to allow CSS color overrides
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
