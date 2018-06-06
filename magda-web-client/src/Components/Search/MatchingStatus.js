@@ -37,7 +37,7 @@ export default function MatchingStatus(props: {
                             ) : (
                                 <a href="mailto:data@digital.gov.au">
                                     {" "}
-                                    request a new dataset{" "}
+                                    request a new dataset
                                 </a>
                             )}, or have a look at these great datasets
                         </p>

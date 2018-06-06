@@ -36,7 +36,8 @@
     "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
     "build-changed": "yarn run build-changed-ts && yarn run build-changed-scala",
     "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
-    "precommit": "pretty-quick --staged"
+    "precommit": "pretty-quick --staged",
+    "eslint": "./node_modules/.bin/eslint magda-web-client/src/"
   },
   "pancake": {
     "auto-save": true,
