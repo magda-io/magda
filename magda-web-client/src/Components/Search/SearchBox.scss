@@ -137,22 +137,45 @@
     input::-webkit-input-placeholder {
         /* Chrome/Opera/Safari */
         @include text();
-        color: rgba($AU-colordark-foreground-text, 0.9);
+        color: rgba($AU-color-foreground-action, 0.7);
+        padding: 0 10px;
     }
     input::-moz-placeholder {
         /* Firefox 19+ */
         @include text();
-        color: rgba($AU-colordark-foreground-text, 0.9);
+        color: rgba($AU-color-foreground-action, 0.7);
+        padding: 0 10px;
     }
     input:-ms-input-placeholder {
         /* IE 10+ */
         @include text();
-        color: rgba($AU-colordark-foreground-text, 0.9);
+        color: rgba($AU-color-foreground-action, 0.7);
+        padding: 0 10px;
     }
     input:-moz-placeholder {
         /* Firefox 18- */
         @include text();
-        color: rgba($AU-colordark-foreground-text, 0.9);
+        color: rgba($AU-color-foreground-action, 0.7);
+        padding: 0 10px;
+    }
+
+    @media (min-width: $medium) {
+        input::-webkit-input-placeholder {
+            /* Chrome/Opera/Safari */
+            color: rgba($AU-colordark-foreground-text, 0.9);
+        }
+        input::-moz-placeholder {
+            /* Firefox 19+ */
+            color: rgba($AU-colordark-foreground-text, 0.9);
+        }
+        input:-ms-input-placeholder {
+            /* IE 10+ */
+            color: rgba($AU-colordark-foreground-text, 0.9);
+        }
+        input:-moz-placeholder {
+            /* Firefox 18- */
+            color: rgba($AU-colordark-foreground-text, 0.9);
+        }
     }
 }
 
@@ -174,7 +197,6 @@
             color: rgba($AU-color-foreground-action, 0.7);
         }
         input:-moz-placeholder {
-            color: rgba($AU-color-foreground-action, 0.7);
         }
         input:focus::-webkit-input-placeholder {
             color: transparent;
