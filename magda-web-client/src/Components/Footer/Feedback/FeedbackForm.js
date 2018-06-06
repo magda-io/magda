@@ -246,4 +246,7 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(FeedbackForm);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(FeedbackForm);
