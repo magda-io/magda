@@ -97,13 +97,12 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(
-      textField("english")
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+
+    textField(name)
         .analyzer("english_with_synonym")
         .searchAnalyzer("english_without_synonym_for_search")
-    )
-
-    textField(name).fields(fields)
+        .fields(fields)
   }
 
   val MagdaSynonymTokenFilter = SynonymTokenFilter(
@@ -124,7 +123,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 33,
+    version = 34,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
