@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
+import { Link } from "react-router-dom";
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
 import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
-import { Link } from "react-router-dom";
 
 import "./PublisherDetails.css";
 
@@ -49,8 +49,10 @@ class PublisherDetails extends Component {
                             <h3 className="section-heading">Overview</h3>
                             <OverviewBox content={description} />
                         </div>
+                        <br />
                         <div>
                             <Link
+                                className="au-cta-link"
                                 to={`/search?organisation=${encodeURIComponent(
                                     publisher.name
                                 )}`}

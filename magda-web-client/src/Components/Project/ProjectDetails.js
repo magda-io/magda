@@ -85,7 +85,7 @@ class ProjectDetails extends Component {
                                     typeName="project"
                                     typeId={this.props.project.id}
                                     location={this.props.location}
-                                /> 
+                                />
                                 */}
                             </div>
                             <div className="col-sm-4">

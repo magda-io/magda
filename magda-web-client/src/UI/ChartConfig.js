@@ -57,7 +57,7 @@ export default class ChartConfig extends Component {
     renderIconSelect() {
         return (
             <div className="chart-config_icon-select">
-                <label tabIndex="-1">Chart type</label>
+                <label tabIndex="-1">Chart Type</label>
                 {ChartDatasetEncoder.avlChartTypes.map(v => (
                     <button
                         className={this.props.chartType === v ? "isActive" : ""}
@@ -81,7 +81,7 @@ export default class ChartConfig extends Component {
             <div className="chart-config">
                 <div className="chart-type">{this.renderIconSelect()}</div>
                 <div className="chart-title">
-                    <label htmlFor="chart-title">chart title</label>
+                    <label htmlFor="chart-title">Chart Title</label>
                     <input
                         className="au-text-input"
                         name="text-input"
@@ -95,14 +95,14 @@ export default class ChartConfig extends Component {
                         value={this.props.chartTitle}
                     />
                 </div>
-                <div className="y-axis">
+                <div className="x-axis">
                     {this.renderDropdownSelect(
                         this.props.xAxisOptions,
                         "xAxis",
                         "xAxis"
                     )}
                 </div>
-                <div className="x-axis">
+                <div className="y-axis">
                     {this.renderDropdownSelect(
                         this.props.yAxisOptions,
                         "yAxis",
