@@ -1,5 +1,6 @@
 ## 0.0.41
 
+-   improve preview tab active state and prevent scrolling when tab changes
 -   Automatically show homepage stories when scrolling starts on mobile
 -   Make organisation page more consistent with rest of the site
 -   Make mobile logo bigger, fixed a bug in safari
