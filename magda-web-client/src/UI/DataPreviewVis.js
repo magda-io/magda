@@ -42,8 +42,6 @@ class DataPreviewVis extends Component<{
      * @param {Array} tabs - Array of tab items
      */
     renderTabs(tabs) {
-        const hash = window.location.hash;
-
         const activeTab = tabs.find(
             (item, i) =>
                 item.value.toLowerCase() === this.state.visType.toLowerCase()
