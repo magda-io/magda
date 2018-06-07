@@ -2,6 +2,7 @@
 
 -   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
 -   Fixed pagination bar shows incorrect result count
+-   Added Zendesk feedback widget activated via footer link
 
 ## 0.0.41
 
