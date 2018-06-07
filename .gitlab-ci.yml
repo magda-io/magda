@@ -14,18 +14,17 @@ stages:
   - deploy-staging
   - deploy-prod
 
-
 builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-yarn-cache
     paths:
-    - "node_modules"
-    - "*/node_modules"
+    - .yarn
     - "yarn.lock"
   before_script:
+    - yarn config set cache-folder .yarn
     - yarn install
   services:
     - docker:dind
@@ -72,7 +71,6 @@ generate-connector-jobs:
     paths:
       - "deploy/kubernetes/generated"
     expire_in: 30 days
-
 
 buildtest:search-with-index-cache:
   stage: buildtest

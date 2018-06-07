@@ -48,8 +48,6 @@ class RegionMap extends Component {
     updateRegion(previousProps, nextProps) {
         if (this.shouldRegionUpdate(previousProps, nextProps)) {
             this.addRegion(nextProps);
-        } else if (!defined(nextProps.region.regionType)) {
-            this.removeRegion();
         }
 
         if (defined(nextProps.region)) {

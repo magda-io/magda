@@ -7,8 +7,8 @@ import debounce from "lodash.debounce";
 import defined from "../../helpers/defined";
 import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
-import searchGrey from "../../assets/search-grey.svg";
-import searchDark from "../../assets/search-dark.svg";
+import searchLight from "../../assets/search-grey.svg";
+import searchDark from "../../assets/search-purple.svg";
 // eslint-disable-next-line
 import PropTypes from "prop-types";
 import queryString from "query-string";
@@ -160,6 +160,8 @@ class SearchBox extends Component {
             />
         );
 
+        const icon =
+            this.props.isHome || this.props.isMobile ? searchDark : searchLight;
         return (
             <div className="searchBox">
                 <label htmlFor="search">
@@ -181,10 +183,7 @@ class SearchBox extends Component {
                         className="search-btn"
                         type="button"
                     >
-                        <img
-                            src={this.props.isMobile ? searchDark : searchGrey}
-                            alt="search button"
-                        />
+                        <img src={icon} alt="search button" />
                         <span className="sr-only">submit search</span>
                     </button>
                 </label>
