@@ -21,14 +21,14 @@ builders-and-yarn:
   cache:
     key: $CI_JOB_NAME
     paths:
-    - "node_modules"
-    - "*/node_modules"
+    - .yarn
     - "yarn.lock"
   before_script:
     - yarn install
   services:
     - docker:dind
   script:
+    - yarn config set cache-folder .yarn
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
   artifacts:
