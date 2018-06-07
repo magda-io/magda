@@ -17,8 +17,10 @@ class DataPreviewVis extends Component<{
             yAxis: null,
             xAxis: null,
             xScale: "temporal",
-            yScale: "quantitative"
+            yScale: "quantitative",
+            visType: "chart"
         };
+        this.onChangeTab = this.onChangeTab.bind(this);
     }
 
     renderChart() {
@@ -29,34 +31,38 @@ class DataPreviewVis extends Component<{
         return <DataPreviewTable distribution={this.props.distribution} />;
     }
 
+    onChangeTab(e) {
+        this.setState({
+            visType: e.target.value
+        });
+    }
+
     /**
      * Return rendered <Tabs> object with tab items
      * @param {Array} tabs - Array of tab items
      */
     renderTabs(tabs) {
-        const hash = window.location.hash;
-        const activeTabName = hash ? hash.slice(1, hash.length) : "chart";
-
         const activeTab = tabs.find(
             (item, i) =>
-                item.value.toLowerCase() === activeTabName.toLowerCase()
+                item.value.toLowerCase() === this.state.visType.toLowerCase()
         );
+
         return (
             <nav className="tab-navigation">
-                <ul className="au-link-list  au-link-list--inline">
+                <ul className="au-link-list  au-link-list--inline tab-list">
                     {tabs.map(t => (
                         <li key={t.value}>
-                            <a
-                                className={`${
-                                    t.value.toLowerCase() ===
-                                    activeTabName.toLowerCase()
-                                        ? "mainmenu--active"
+                            <button
+                                className={`au-link ${
+                                    t.value.toLowerCase() === activeTab.value
+                                        ? "tab-active"
                                         : null
                                 }`}
-                                href={`#${t.value}`}
+                                value={t.value.toLowerCase()}
+                                onClick={this.onChangeTab}
                             >
                                 {t.label}
-                            </a>
+                            </button>
                         </li>
                     ))}
                 </ul>

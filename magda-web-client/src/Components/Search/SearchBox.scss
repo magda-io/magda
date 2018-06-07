@@ -165,15 +165,19 @@
             color: $AU-color-foreground-action;
         }
         input::-webkit-input-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-action, 0.7);
         }
         input::-moz-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-action, 0.7);
         }
         input:-ms-input-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-action, 0.7);
         }
         input:-moz-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-action, 0.7);
         }
         input:focus::-webkit-input-placeholder {
