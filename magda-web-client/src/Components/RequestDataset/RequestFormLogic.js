@@ -1,7 +1,7 @@
 import React from "react";
 import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
-import { correspondenceApiUrl, correspondenceApiReportUrl } from "../../config";
+import { config } from "../../config";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -42,12 +42,11 @@ export default class RequestFormLogic extends React.Component {
         var url = "";
         //check to see the type of request. This will change the api url accordingly
         if (this.props.requestType === "request") {
-            url = correspondenceApiUrl;
+            url = config.correspondenceApiUrl + "send/dataset/request";
         } else {
-            url = correspondenceApiReportUrl.replace(
-                ":datasetId",
-                this.props.datasetId
-            );
+            url =
+                config.correspondenceApiUrl +
+                `send/dataset/${this.props.datasetId}/report`;
         }
         fetch(url, {
             method: "POST",

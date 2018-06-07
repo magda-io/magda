@@ -29,6 +29,7 @@
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
 -   Added vertical spacing for `DataPreview` chart fields.
+-   Corrected email template style to be inline with designs.
 
 ## 0.0.40
 
