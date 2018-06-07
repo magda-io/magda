@@ -260,7 +260,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
       val quoteGen = for {
         (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
-        dataSetsWithDesc = dataSets.filter(_.description.isDefined)
+        dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
         dataSet <- Gen.oneOf(dataSetsWithDesc)
         description = dataSet.description.get
         descWords = description.split(" ")

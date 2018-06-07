@@ -24,7 +24,8 @@ import com.sksamuel.elastic4s.analyzers.{
   StemmerTokenFilter,
   NamedStopTokenFilter,
   Tokenizer,
-  TokenFilterDefinition
+  TokenFilterDefinition,
+  WhitespaceTokenizer
 }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
@@ -97,7 +98,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote_partial_match"))
 
     textField(name)
         .analyzer("english_with_synonym")
@@ -170,6 +171,15 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "quote",
             KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          /*
+            allow quoted query string match a portion of the field content rather than whole field
+            the exact form of whole quoted query string still have to be matched exactly in field content
+          */
+          CustomAnalyzerDefinition(
+            "quote_partial_match",
+            WhitespaceTokenizer,
             LowercaseTokenFilter
           ),
           CustomAnalyzerDefinition(
