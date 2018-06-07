@@ -211,6 +211,7 @@ if (argv.build) {
 
 function updateDockerFile(sourceDir, destDir) {
     const tags = getVersions(argv.local, argv.version);
+    console.log(tags);
     const repository = getRepository(argv.local, argv.repository);
     const dockerFileContents = fse.readFileSync(
         path.resolve(sourceDir, "Dockerfile"),
@@ -218,11 +219,9 @@ function updateDockerFile(sourceDir, destDir) {
     );
     const replacedDockerFileContents = dockerFileContents
         // Add a repository if this is a magda image
-        .replace(/FROM (.*magda-.*)(\s|$)/, "FROM " + repository + "$1$2")
-        // Add a tag if none specified
         .replace(
-            /FROM (.+\/[^:\s]+)(\s|$)/,
-            "FROM $1" + (tags[0] ? ":" + tags[0] : "") + "$2"
+            /FROM (.*magda-[^:\s]+)(:[^\s]+)/,
+            "FROM " + repository + "$1" + (tags[0] ? ":" + tags[0] : "$2")
         );
 
     fse.writeFileSync(
