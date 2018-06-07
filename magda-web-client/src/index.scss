@@ -72,10 +72,6 @@ a.au-btn:hover:not(:disabled) {
     }
 }
 
-.au-footer.au-footer--dark {
-    margin-top: 96px; //Match bottom-margin of search result pagination
-}
-
 @keyframes hideMessage {
     0% {
         opacity: 1;

@@ -1,4 +1,12 @@
 @import "./variables";
+
 #root {
     font-family: inherit;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
 }
