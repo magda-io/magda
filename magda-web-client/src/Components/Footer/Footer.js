@@ -1,6 +1,6 @@
 import React from "react";
 
-import AUfooter, { AUfooterNav } from "@gov.au/footer";
+import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
 // temporary disable feedback from so we can try something else
 // import FeedbackForm from "./Feedback/FeedbackForm";

@@ -28,7 +28,7 @@ jobs:
             - ./magda-web-client/node_modules
       - run:
           name: eslint
-          command: ./node_modules/.bin/eslint magda-web-client/src/
+          command: yarn run eslint
       - run:
           name: npm build
           command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 yarn run build
