@@ -12,8 +12,6 @@
 -   Fixed display of chart axis config dropdowns in Firefox.
 -   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 -   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
--   Positioned the buttons & format icons at middle position of the Files & APIs section
--   Made publisher acronym search case insensitive & added test cases
 -   Resolved comma spacing in no dataset results error.
 -   Added vertical spacing for `DataPreview` chart fields.
 -   Add call to action from design systems
@@ -28,6 +26,9 @@
 -   Made publisher acronym search case insensitive & added test cases
 -   Added vertical spacing for `DataPreview` chart fields.
 -   Updated About page links to be more inline with design system standards.
+-   Positioned the buttons & format icons at middle position of the Files & APIs section
+-   Made publisher acronym search case insensitive & added test cases
+-   Added vertical spacing for `DataPreview` chart fields.
 
 ## 0.0.40
 
