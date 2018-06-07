@@ -184,16 +184,23 @@
             color: $AU-color-foreground-focus;
         }
         input::-webkit-input-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-focus, 0.7);
         }
         input::-moz-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-focus, 0.7);
         }
         input:-ms-input-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-focus, 0.7);
         }
         input:-moz-placeholder {
+            padding: 0 10px;
             color: rgba($AU-color-foreground-focus, 0.7);
+        }
+        input:focus::-webkit-input-placeholder {
+            color: transparent;
         }
     }
     .search-input__highlight {
