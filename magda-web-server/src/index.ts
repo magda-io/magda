@@ -196,6 +196,13 @@ app.get("/server-config.js", function(req, res) {
                     .segment("feedback")
                     .segment("user")
                     .toString()
+        ),
+        correspondenceApiBaseUrl: addTrailingSlash(
+            argv.correspondenceApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("correspondence")
+                    .toString()
         )
     };
     res.type("application/javascript");
