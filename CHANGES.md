@@ -30,6 +30,8 @@
 -   Made publisher acronym search case insensitive & added test cases
 -   Added vertical spacing for `DataPreview` chart fields.
 -   Stopped format/publisher filter search returning wrong doc counts when there's no text query.
+-   Fixed a issue that state region layer could be removed from region filter panel map
+-   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 -   Corrected email template style to be inline with designs.
 
 ## 0.0.40
