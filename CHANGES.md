@@ -16,10 +16,22 @@
 -   Added vertical spacing for `DataPreview` chart fields.
 -   Add call to action from design systems
 -   Use Design System react components from local pancake to allow CSS color overrides
+-   Create Suggest a Dataset Page
+-   Add Suggest a Dataset on search results page
+-   Fixed display of chart axis config dropdowns in Firefox.
+-   Fixed LanguageAnalyzerSpec from generating stop words as search values.
+-   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
+-   Add a missing module from design guide that caused select to not style properly
+-   Positioned the buttons & format icons at middle position of the Files & APIs section
+-   Made publisher acronym search case insensitive & added test cases
+-   Added vertical spacing for `DataPreview` chart fields.
+-   Updated About page links to be more inline with design system standards.
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
 -   Added vertical spacing for `DataPreview` chart fields.
 -   Fixed a issue that state region layer could be removed from region filter panel map
+-   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
+-   Corrected email template style to be inline with designs.
 
 ## 0.0.40
 
