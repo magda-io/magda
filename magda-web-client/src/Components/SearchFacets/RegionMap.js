@@ -16,6 +16,7 @@ class RegionMap extends Component {
     }
 
     componentDidMount() {
+        console.log(this.props.region);
         this.map = L.map(this._c, {
             zoomControl: this.props.interaction,
             maxZoom: 12

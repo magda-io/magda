@@ -6,14 +6,17 @@ import {
 } from "../../actions/datasetSearchActions";
 import { connect } from "react-redux";
 import defined from "../../helpers/defined";
-import FacetTemporal from "./FacetTemporal";
 import React, { Component } from "react";
+import TemporalWrapper from "./TemporalWrapper";
 
 class Temporal extends Component {
     constructor(props) {
         super(props);
         this.onResetTemporalFacet = this.onResetTemporalFacet.bind(this);
         this.onToggleTemporalOption = this.onToggleTemporalOption.bind(this);
+        this.state = {
+            facetClicked: false
+        };
     }
 
     onToggleTemporalOption(datesArray) {
@@ -27,6 +30,11 @@ class Temporal extends Component {
         this.props.dispatch(setDateTo(dateTo));
         this.props.dispatch(setDateFrom(dateFrom));
         this.props.closeFacet();
+        // this.setState(() => {
+        //     return {
+        //         facetClicked: false
+        //     };
+        // });
     }
 
     onResetTemporalFacet() {
@@ -35,15 +43,20 @@ class Temporal extends Component {
             dateTo: undefined,
             page: undefined
         });
-        this.props.closeFacet();
         // dispatch event
         this.props.dispatch(resetDateFrom());
         this.props.dispatch(resetDateTo());
+        this.props.closeFacet();
+        this.setState(() => {
+            return {
+                facetClicked: false
+            };
+        });
     }
 
     render() {
         return (
-            <FacetTemporal
+            <TemporalWrapper
                 title="date range"
                 id="temporal"
                 hasQuery={
@@ -59,6 +72,7 @@ class Temporal extends Component {
                 toggleFacet={this.props.toggleFacet}
                 isOpen={this.props.isOpen}
                 temporalRange={this.props.temporalRange}
+                facetClicked={this.state.facetClicked}
             />
         );
     }

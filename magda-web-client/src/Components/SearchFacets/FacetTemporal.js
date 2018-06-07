@@ -1,6 +1,5 @@
 import "./FacetTemporal.css";
 import React, { Component } from "react";
-import FacetHeader from "./FacetHeader";
 import defined from "../../helpers/defined";
 import MonthPicker from "../../UI/MonthPicker";
 import range from "../../assets/range.svg";
@@ -19,7 +18,9 @@ class FacetTemporal extends Component {
             this
         );
         this.state = {
-            startYear: undefined,
+            startYear: defined(this.props.activeDates[0])
+                ? new Date(this.props.activeDates[0])
+                : undefined,
             startMonth: undefined,
             endYear: undefined,
             endMonth: undefined,
@@ -27,11 +28,15 @@ class FacetTemporal extends Component {
         };
     }
 
+    componentWillMount() {
+        this.componentWillReceiveProps(this.props);
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.temporalRange) {
             const dateFrom = defined(nextProps.activeDates[0])
                 ? new Date(nextProps.activeDates[0])
-                : new Date(nextProps.temporalRange[0]);
+                : new Date(this.props.temporalRange[0]);
             const dateTo = defined(nextProps.activeDates[1])
                 ? new Date(nextProps.activeDates[1])
                 : new Date(nextProps.temporalRange[1]);
@@ -45,6 +50,36 @@ class FacetTemporal extends Component {
         }
     }
 
+    /**
+     * only apply filter if the year is defined/selected
+     * and also if the facetheader close button has not been clicked
+     */
+    componentWillUnmount() {
+        if (this.state.startYear !== undefined && !this.props.facetReset) {
+            this.onApplyFilter();
+        }
+        this.props.toggleDateReset();
+    }
+
+    resetTemporalFacet = () => {
+        this.setState(
+            () => {
+                return {
+                    startYear: undefined,
+                    startMonth: undefined,
+                    endYear: undefined,
+                    endMonth: undefined,
+                    applyButtonDisabled: true
+                };
+            },
+            //make sure the dates are cleared
+            // before calling reset and close
+            () => {
+                this.props.onResetFacet();
+            }
+        );
+    };
+
     onClearDates() {
         let datesArray = [undefined, undefined];
         this.props.onToggleOption(datesArray);
@@ -57,6 +92,7 @@ class FacetTemporal extends Component {
             this.state.startMonth + 1
         );
         const dateTo = new Date(this.state.endYear, this.state.endMonth + 1);
+
         this.props.onToggleOption([
             dateFrom.toISOString(),
             dateTo.toISOString()
@@ -143,45 +179,31 @@ class FacetTemporal extends Component {
     }
 
     render() {
-        if (this.props.temporalRange) {
-            return (
-                <div className="facet-wrapper">
-                    <FacetHeader
-                        onResetFacet={this.props.onResetFacet}
-                        title={this.props.title}
-                        id={this.props.id}
-                        activeOptions={this.props.activeDates}
-                        hasQuery={this.props.hasQuery}
-                        onClick={this.props.toggleFacet}
-                        isOpen={this.props.isOpen}
-                    />
-                    {this.props.isOpen && (
-                        <div className="clearfix facet-temporal facet-body">
-                            {this.renderDatePicker()}
-                            <div className="facet-footer">
-                                <button
-                                    className="au-btn au-btn--secondary"
-                                    disabled={this.state.applyButtonDisabled}
-                                    onClick={this.props.onResetFacet}
-                                >
-                                    {" "}
-                                    Clear{" "}
-                                </button>
-                                <button
-                                    className="au-btn au-btn--primary"
-                                    disabled={this.state.applyButtonDisabled}
-                                    onClick={this.onApplyFilter}
-                                >
-                                    {" "}
-                                    Apply{" "}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+        return (
+            <div>
+                <div className="clearfix facet-temporal facet-body">
+                    {this.renderDatePicker()}
+                    <div className="facet-footer">
+                        <button
+                            className="au-btn au-btn--secondary"
+                            // disabled={this.state.applyButtonDisabled}
+                            onClick={this.resetTemporalFacet}
+                        >
+                            {" "}
+                            Clear{" "}
+                        </button>
+                        <button
+                            className="au-btn au-btn--primary"
+                            disabled={this.state.applyButtonDisabled}
+                            onClick={this.onApplyFilter}
+                        >
+                            {" "}
+                            Apply{" "}
+                        </button>
+                    </div>
                 </div>
-            );
-        }
-        return null;
+            </div>
+        );
     }
 }
 

@@ -31,6 +31,18 @@ class FacetRegion extends Component {
         };
     }
 
+    /**
+     * When component is mounted, the state is lost so we have to
+     * make sure state is initialised from redux store
+     */
+    componentWillMount() {
+        this.setState(() => {
+            return {
+                _activeRegion: this.props.activeRegion
+            };
+        });
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.activeRegion !== this.state._activeRegion) {
             this.setState({
@@ -63,9 +75,16 @@ class FacetRegion extends Component {
             _activeRegion: region
         });
     }
+    componentWillUnmount() {
+        if (this.state._activeRegion.regionId !== undefined) {
+            this.onApplyFilter();
+        }
+    }
 
     onApplyFilter() {
-        this.props.onToggleOption(this.state._activeRegion);
+        if (this.state._activeRegion.regionId !== undefined) {
+            this.props.onToggleOption(this.state._activeRegion);
+        }
     }
 
     searchBoxValueChange(value) {
@@ -156,20 +175,7 @@ class FacetRegion extends Component {
     }
 
     render() {
-        return (
-            <div className="facet-wrapper">
-                <FacetHeader
-                    onResetFacet={this.props.onResetFacet}
-                    title={this.props.title}
-                    id={this.props.id}
-                    activeOptions={[this.props.activeRegion]}
-                    hasQuery={this.props.hasQuery}
-                    onClick={this.props.toggleFacet}
-                    isOpen={this.props.isOpen}
-                />
-                {this.props.isOpen && this.renderBox()}
-            </div>
-        );
+        return <div className="facet-wrapper">{this.renderBox()}</div>;
     }
 }
 
