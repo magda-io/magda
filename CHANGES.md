@@ -19,6 +19,7 @@
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
 -   Added vertical spacing for `DataPreview` chart fields.
+-   Fixed a issue that state region layer could be removed from region filter panel map
 
 ## 0.0.40
 
