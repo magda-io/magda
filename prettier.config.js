@@ -6,7 +6,7 @@ module.exports = {
     useTabs: false,
     overrides: [
         {
-            files: "**/package.json",
+            files: ["**/package.json", "lerna.json"],
             options: {
                 tabWidth: 2
             }
