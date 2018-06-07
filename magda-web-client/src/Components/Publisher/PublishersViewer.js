@@ -14,8 +14,8 @@ import sortBy from "lodash.sortby";
 import reduce from "lodash/reduce";
 import findIndex from "lodash/findIndex";
 import trim from "lodash/trim";
-
 import "./PublishersViewer.css";
+
 class PublishersViewer extends Component {
     componentWillMount() {
         this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
@@ -109,7 +109,7 @@ class PublishersViewer extends Component {
     render() {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
-                <div className="container publishers-viewer">
+                <div className="publishers-viewer">
                     <h1>Organisations</h1>
                     <div className="row">
                         {!this.props.isFetching && this.renderContent()}
@@ -149,4 +149,7 @@ PublishersViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(PublishersViewer);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(PublishersViewer);
