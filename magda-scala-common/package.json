@@ -1,16 +1,16 @@
 {
-    "name": "@magda/scala-common",
-    "version": "0.0.39-0",
-    "description": "Common Scala code shared between components.",
-    "scripts": {
-        "test": "cd .. && sbt common/test",
-        "compile": "cd .. && sbt common/compile"
-    },
-    "license": "Apache-2.0",
-    "magda": {
-        "language": "scala",
-        "categories": {
-            "library": true
-        }
+  "name": "@magda/scala-common",
+  "version": "0.0.40-0",
+  "description": "Common Scala code shared between components.",
+  "scripts": {
+    "test": "cd .. && sbt common/test",
+    "compile": "cd .. && sbt common/compile"
+  },
+  "license": "Apache-2.0",
+  "magda": {
+    "language": "scala",
+    "categories": {
+      "library": true
     }
+  }
 }

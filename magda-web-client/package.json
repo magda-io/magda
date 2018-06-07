@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.39-0",
+  "version": "0.0.40-0",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -36,7 +36,7 @@
     "@gov.au/skip-link": "^2.0.2",
     "@gov.au/tags": "^2.0.1",
     "@gov.au/text-inputs": "^2.0.2",
-    "@magda/scripts": "^0.0.39-0",
+    "@magda/scripts": "^0.0.40-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",
@@ -114,6 +114,7 @@
     "react-tooltip": "^3.4.0",
     "react-transition-group": "^2.3.1",
     "redux": "^4.0.0",
+    "redux-devtools-extension": "^2.13.2",
     "redux-logger": "^3.0.6",
     "redux-mock-store": "^1.2.1",
     "redux-thunk": "^2.1.0",
@@ -122,8 +123,7 @@
     "traverse": "^0.6.6",
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
-    "yaml-front-matter": "^4.0.0",
-    "redux-devtools-extension": "^2.13.2"
+    "yaml-front-matter": "^4.0.0"
   },
   "proxy": {
     "/server-config.js": {

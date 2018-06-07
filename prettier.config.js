@@ -1,7 +1,15 @@
 module.exports = {
     tabWidth: 4,
     singleQuote: false,
-    prettyWidth: 80,
+    printWidth: 80,
     trailingComma: "none",
-    useTabs: false
+    useTabs: false,
+    overrides: [
+        {
+            files: "**/package.json",
+            options: {
+                tabWidth: 2
+            }
+        }
+    ]
 };
