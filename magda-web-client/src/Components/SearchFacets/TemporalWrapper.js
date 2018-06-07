@@ -2,6 +2,7 @@ import React from "react";
 import FacetTemporal from "./FacetTemporal";
 import FacetHeader from "./FacetHeader";
 
+//Wrapper for the facetHeader and facetTemporal components
 export default class TemporalWrapper extends React.Component {
     constructor(props) {
         super(props);
@@ -50,23 +51,22 @@ export default class TemporalWrapper extends React.Component {
                     onClick={this.props.toggleFacet}
                     isOpen={this.props.isOpen}
                 />
-                {this.props.isOpen && this.props.temporalRange ? (
-                    <FacetTemporal
-                        title={this.props.title}
-                        id={this.props.id}
-                        hasQuery={this.props.hasQuery}
-                        activeDates={this.props.activeDates}
-                        onToggleOption={this.props.onToggleOption}
-                        onResetFacet={this.props.onResetFacet}
-                        toggleFacet={this.props.toggleFacet}
-                        isOpen={this.props.isOpen}
-                        temporalRange={this.props.temporalRange}
-                        facetReset={this.state.facetResetClicked}
-                        toggleDateReset={this.toggleDateReset}
-                        // startYear={undefined}
-                        // endYear={undefined}
-                    />
-                ) : null}
+                {this.props.isOpen &&
+                    this.props.temporalRange && (
+                        <FacetTemporal
+                            title={this.props.title}
+                            id={this.props.id}
+                            hasQuery={this.props.hasQuery}
+                            activeDates={this.props.activeDates}
+                            onToggleOption={this.props.onToggleOption}
+                            onResetFacet={this.props.onResetFacet}
+                            toggleFacet={this.props.toggleFacet}
+                            isOpen={this.props.isOpen}
+                            temporalRange={this.props.temporalRange}
+                            facetReset={this.state.facetResetClicked}
+                            toggleDateReset={this.toggleDateReset}
+                        />
+                    )}
             </React.Fragment>
         );
     }

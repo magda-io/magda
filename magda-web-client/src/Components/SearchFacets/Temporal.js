@@ -30,11 +30,6 @@ class Temporal extends Component {
         this.props.dispatch(setDateTo(dateTo));
         this.props.dispatch(setDateFrom(dateFrom));
         this.props.closeFacet();
-        // this.setState(() => {
-        //     return {
-        //         facetClicked: false
-        //     };
-        // });
     }
 
     onResetTemporalFacet() {

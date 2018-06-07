@@ -61,6 +61,10 @@ class FacetTemporal extends Component {
         this.props.toggleDateReset();
     }
 
+    /**
+     * Makes sure that when clear button is called,
+     * start year and end years are reset.
+     */
     resetTemporalFacet = () => {
         this.setState(
             () => {
