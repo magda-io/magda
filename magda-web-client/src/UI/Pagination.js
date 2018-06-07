@@ -19,7 +19,7 @@ class Pagination extends Component {
         return (
             <button
                 onClick={this.onClick.bind(this, currentIndex - 1)}
-                className="btn-prev au-btn"
+                className="btn-prev"
             >
                 {" "}
                 <img src={left_arrow} alt="previous page" />{" "}
@@ -31,7 +31,7 @@ class Pagination extends Component {
         return (
             <button
                 onClick={this.onClick.bind(this, currentIndex + 1)}
-                className="btn-next au-btn au-btn--secondary"
+                className="btn-nexty"
             >
                 {" "}
                 <img src={right_arrow} alt="next page" />{" "}
@@ -40,11 +40,7 @@ class Pagination extends Component {
     }
 
     renderDisabledButton() {
-        return (
-            <button className="au-btn" disabled={true}>
-                ...
-            </button>
-        );
+        return <button disabled={true}>...</button>;
     }
 
     renderPageList(max, current) {
@@ -60,7 +56,9 @@ class Pagination extends Component {
                                 <button
                                     onClick={this.onClick.bind(this, i)}
                                     className={`${
-                                        i === current ? "current" : ""
+                                        i === current
+                                            ? "current"
+                                            : "non-current"
                                     }`}
                                 >
                                     {i}
@@ -72,7 +70,7 @@ class Pagination extends Component {
                             <button
                                 onClick={this.onClick.bind(this, max)}
                                 className={`${
-                                    max === current ? "current" : ""
+                                    max === current ? "current" : "non-current"
                                 }`}
                             >
                                 {max}
@@ -118,7 +116,9 @@ class Pagination extends Component {
                         <li key={i}>
                             <button
                                 onClick={this.onClick.bind(this, i)}
-                                className={`${i === current ? "current" : ""}`}
+                                className={`${
+                                    i === current ? "current" : "non-current"
+                                }`}
                             >
                                 {i}
                             </button>

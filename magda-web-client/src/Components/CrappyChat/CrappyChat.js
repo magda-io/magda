@@ -127,4 +127,7 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CrappyChat);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CrappyChat);

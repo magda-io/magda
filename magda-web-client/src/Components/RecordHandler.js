@@ -19,8 +19,15 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import "./RecordHandler.css";
-
+import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 class RecordHandler extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            addMargin: false
+        };
+    }
+
     componentWillMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
@@ -31,6 +38,11 @@ class RecordHandler extends React.Component {
             );
         }
     }
+
+    toggleMargin = addMargin => {
+        this.setState({ addMargin });
+    };
+
     componentWillReceiveProps(nextProps) {
         if (
             nextProps.match.params.datasetId !==
@@ -133,14 +145,27 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
-                        <h1 itemProp="name">{this.props.dataset.title}</h1>
+                        <div
+                            className={
+                                this.state.addMargin ? "form-margin" : ""
+                            }
+                        >
+                            <DatasetSuggestForm
+                                title={this.props.dataset.title}
+                                toggleMargin={this.toggleMargin}
+                                datasetId={this.props.dataset.identifier}
+                            />
+                        </div>
+                        <h1 className="dataset-title" itemProp="name">
+                            {this.props.dataset.title}
+                        </h1>
                         <div className="publisher-basic-info-row">
                             <span
                                 itemProp="publisher"
                                 itemScope
                                 itemType="http://schema.org/Organization"
                             >
-                                <Link to={`/publishers/${publisherId}`}>
+                                <Link to={`/organisations/${publisherId}`}>
                                     {publisherName}
                                 </Link>
                             </span>
@@ -225,4 +250,7 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(RecordHandler);

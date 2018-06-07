@@ -146,6 +146,7 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -195,6 +196,13 @@ app.get("/server-config.js", function(req, res) {
                     .segment("feedback")
                     .segment("user")
                     .toString()
+        ),
+        correspondenceApiBaseUrl: addTrailingSlash(
+            argv.correspondenceApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("correspondence")
+                    .toString()
         )
     };
     res.type("application/javascript");
@@ -213,7 +221,9 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers"
+    "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
+    "organisations",
+    "suggest"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -239,14 +249,13 @@ app.get("/page/*", function(req, res) {
 if (argv.devProxy) {
     app.get("/api/*", function(req, res) {
         console.log(argv.devProxy + req.params[0]);
-        req
-            .pipe(
-                request({
-                    url: argv.devProxy + req.params[0],
-                    qs: req.query,
-                    method: req.method
-                })
-            )
+        req.pipe(
+            request({
+                url: argv.devProxy + req.params[0],
+                qs: req.query,
+                method: req.method
+            })
+        )
             .on("error", err => {
                 const msg = "Error on connecting to the webservice.";
                 console.error(msg, err);

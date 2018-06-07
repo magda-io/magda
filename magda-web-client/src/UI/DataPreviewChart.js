@@ -67,6 +67,7 @@ class DataPreviewChart extends Component {
                 const chartOption = this.chartDatasetEncoder.getChartOption(
                     this.state.chartTitle
                 );
+
                 this.setState({
                     error: null,
                     isLoading: false,
@@ -164,9 +165,10 @@ class DataPreviewChart extends Component {
                 <div className="col-md-8">
                     <ReactEcharts
                         className="data-preview-chart-container"
-                        style={{ height: "450px" }}
+                        style={{ height: "450px", color: "yellow" }}
                         lazyUpdate={true}
                         option={this.state.chartOption}
+                        theme="au_dga"
                     />
                 </div>
                 <Medium>

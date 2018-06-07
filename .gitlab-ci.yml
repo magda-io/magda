@@ -1,5 +1,3 @@
-image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_SLUG
-
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
@@ -16,9 +14,11 @@ stages:
   - deploy-staging
   - deploy-prod
 
+
 builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
+  retry: 1
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -42,6 +42,7 @@ builders-and-yarn:
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 1
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -60,6 +61,7 @@ registry-typescript-api:
 generate-connector-jobs:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   cache: {}
   script:
     - cd deploy
@@ -75,6 +77,7 @@ generate-connector-jobs:
 buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 2
   dependencies: []
   cache:
     key: $CI_JOB_NAME
@@ -97,7 +100,6 @@ buildtest:search-with-index-cache:
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  retry: 2
   tags:
     - heavy
   script:
@@ -112,6 +114,7 @@ buildtest:search-with-index-cache:
 buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 2
   dependencies: []
   before_script:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
@@ -142,7 +145,6 @@ buildtest:search-no-index-cache:
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  retry: 2
   tags:
     - heavy
   script:
@@ -157,6 +159,7 @@ buildtest:search-no-index-cache:
 buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
   cache:
@@ -203,6 +206,7 @@ buildtest:registry:
 buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
   cache:
@@ -217,11 +221,11 @@ buildtest:map:
     - "*/dist"
     - "magda-preview-map/wwwroot/build"
     expire_in: 30 days
-  retry: 1
 
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -238,6 +242,7 @@ buildtest:typescript-apis:
 buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -254,6 +259,7 @@ buildtest:sleuthers:
 buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -410,6 +416,7 @@ dockerize:dockerExtensions:
     paths: []
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
     url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
@@ -463,6 +470,7 @@ Stop Preview: &stopPreview
     paths: []
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -482,6 +490,7 @@ Deploy Master To Dev:
   cache: {}
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: dev

@@ -15,13 +15,13 @@ class Particles extends Component {
                                 value: 3
                             },
                             color: {
-                                value: "#00698f"
+                                value: "#4C2A85"
                             },
                             shape: {
                                 type: "circle",
                                 stroke: {
                                     width: 0,
-                                    color: "#00698f"
+                                    color: "#4C2A85"
                                 }
                             },
                             size: {

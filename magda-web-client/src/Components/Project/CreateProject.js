@@ -296,4 +296,7 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateProject);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CreateProject);

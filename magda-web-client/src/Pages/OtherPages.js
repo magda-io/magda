@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import Search from "../Components/Search/Search";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
@@ -12,10 +12,10 @@ import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
 import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
-
+import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-
+import { enableSuggestDatasetPage } from "../config";
 const renderBody = () => {
     return (
         <Switch>
@@ -31,9 +31,26 @@ const renderBody = () => {
             <Route exact path="/projects" component={ProjectsViewer} />
             <Route exact path="/projects/new" component={CreateProject} />
             <Route path="/projects/:projectId" component={ProjectDetails} />
-            <Route exact path="/publishers" component={PublishersViewer} />
+            {/* hide in prod */}
+            {enableSuggestDatasetPage && (
+                <Route exact path="/suggest" component={SuggestDataset} />
+            )}
+            <Route exact path="/organisations" component={PublishersViewer} />
+            <Route
+                exact
+                path="/publishers"
+                render={() => <Redirect to="/organisations" />}
+            />
             <Route
                 path="/publishers/:publisherId"
+                render={({ match }) => (
+                    <Redirect
+                        to={`/organisations/${match.params.publisherId}`}
+                    />
+                )}
+            />
+            <Route
+                path="/organisations/:publisherId"
                 component={PublisherDetails}
             />
             {staticPageRegister.map(item => (
@@ -53,7 +70,7 @@ const OtherPages = props => {
     return (
         <div className="other-page">
             <Header />
-            {props.location.pathname !== "/publishers" && (
+            {props.location.pathname !== "/organisations" && (
                 <SearchBoxSwitcher
                     location={props.location}
                     theme="none-home"

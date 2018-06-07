@@ -71,7 +71,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   val DATASETS_LANGUAGE_FIELDS = Seq(("title", 20f), ("description", 5f), "publisher.name", ("keywords", 5f), "themes")
-  val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name")
+  val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name", "publisher.acronym")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
@@ -297,7 +297,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy, facetSize: Int) =
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
+      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
       .subAggregations(facetDef.aggregationDefinition(facetSize))
 
   /**
@@ -312,7 +312,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
-  private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
+  private def queryToQueryDef(query: Query, strategy: SearchStrategy, isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
       case MatchAll  => "and"
       case MatchPart => "or"

@@ -445,6 +445,7 @@ class ElasticSearchIndexer(
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
+          "acronym" -> publisher.acronym.toJson,
           "value" -> publisherName.toJson).toJson)))
 
     val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>

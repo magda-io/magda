@@ -16,8 +16,8 @@
 
     .month-picker-prompt {
         border: 1px solid rgba(73, 73, 73, 0.05);
-        background-color: $body;
-        color: #ffffff;
+        background-color: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
         font-size: 12px;
         line-height: 14px;
         font-weight: 400;
@@ -35,6 +35,13 @@
         border-radius: 0;
         height: auto;
         margin: 0;
+        border-bottom: 5px solid transparent;
+        background-color: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+    }
+    .btn-month.is-active {
+        border-bottom: 5px solid $AU-colordark-foreground-focus;
+        text-decoration: underline;
     }
 }
 
@@ -44,7 +51,7 @@
 
 .help-icon-position {
     position: absolute;
-    right: 5px;
+    right: 11px;
     transition: right 0.2s;
     top: 11px;
 }

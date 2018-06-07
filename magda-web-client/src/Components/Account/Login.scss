@@ -21,10 +21,17 @@
     }
 
     &__email-icon {
-        color: #c0392b;
+        color: $AU-color-foreground-action;
         @include AU-fontgrid(lg);
     }
     &__input-group {
         margin-bottom: 10px;
     }
+    &__form {
+        padding-top: 15px;
+    }
+}
+
+.au-cta-link {
+    font-size: 1rem !important;
 }

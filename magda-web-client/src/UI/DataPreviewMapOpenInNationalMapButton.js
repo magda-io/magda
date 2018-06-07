@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import browser from "browser-detect";
+import { config } from "../config";
 import "./DataPreviewMapOpenInNationalMapButton.css";
 
 class DataPreviewMapOpenInNationalMapButton extends Component {
@@ -31,7 +32,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
     }
 
     createCatalogItemFromDistribution(withoutBaseMap = false) {
-        const config = {
+        const catConfig = {
             initSources: [
                 {
                     catalog: [
@@ -39,7 +40,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                             name: this.props.distribution.title,
                             type: "magda-item",
                             distributionId: this.props.distribution.identifier,
-                            url: "/",
+                            url: config.baseExternalUrl,
                             isEnabled: true,
                             zoomOnEnable: true
                         }
@@ -49,9 +50,9 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         };
         if (!withoutBaseMap) {
             //--- will not set baseMap if pass config by URL
-            config.initSources[0].baseMapName = "Positron (Light)";
+            catConfig.initSources[0].baseMapName = "Positron (Light)";
         }
-        return config;
+        return catConfig;
     }
 
     onButtonClick() {

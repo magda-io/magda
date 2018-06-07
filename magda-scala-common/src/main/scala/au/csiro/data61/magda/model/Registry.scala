@@ -171,11 +171,18 @@ object Registry {
 
   trait RegistryConverters extends RegistryProtocols {
 
+    def getAcronymFromPublisherName(publisherName:Option[String]): Option[String] = {
+      publisherName
+        .map("""[^a-zA-Z\s]""".r.replaceAllIn(_,""))
+        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("","AND","THE","OF").contains(_)).map(_.take(1)).mkString)
+    }
+
     private def convertPublisher(publisher: Record): Agent = {
       val organizationDetails = publisher.aspects.getOrElse("organization-details", JsObject())
       Agent(
         identifier = Some(publisher.id),
         name = organizationDetails.extract[String]('title.?),
+        acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?))
     }
 

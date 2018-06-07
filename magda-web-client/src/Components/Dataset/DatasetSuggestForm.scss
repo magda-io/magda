@@ -1,0 +1,25 @@
+.ask-dataset-form {
+    padding: 10px;
+    border: solid;
+    border-color: rgba(189, 189, 189, 0.3);
+    background-color: #f7f7f7;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.correspondence-dataset-close-button {
+    height: 2em;
+    width: 2em;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@media only screen and (max-width: 700px) {
+    .dataset-correspondence-container {
+        display: inline-block;
+    }
+}
