@@ -61,6 +61,7 @@ if (pullProcess.status !== 0) {
 }
 
 const toTag = argv.toPrefix + getName() + ":" + argv.toVersion;
+console.log(toTag);
 
 const tagProcess = childProcess.spawnSync("docker", ["tag", fromTag, toTag], {
     stdio: ["pipe", "inherit", "inherit"],
@@ -75,3 +76,5 @@ const pushProcess = childProcess.spawnSync("docker", ["push", toTag], {
     stdio: ["pipe", "inherit", "inherit"],
     env: env
 });
+
+process.exit(pushProcess.status);
