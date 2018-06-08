@@ -65,29 +65,19 @@ class Pagination extends Component {
         //-- Rule 4: first button always be page 1
         pageButtons[0] = 1;
 
-        //-- Rule 3: unless reach (currentPageButtonNum - current) or (max - current)
+        //-- Rule 3
         const minButtonsOnRight = 2;
 
-        //-- Rule 5
-        const numOfButtonsOnRight = Math.min(
-            Math.max(
-                //-- when current is close to the right boundary, we won't create more buttons
-                Math.min(currentPageButtonNum - current, minButtonsOnRight),
-                //-- when current is close to the left boundary, we try create as many button as possible
-                max - current
-            ),
-            //-- Still keep in mind that we only want to generate limited number of buttons
-            currentPageButtonNum - current
-        );
+        let currentButtonPos = Math.min(current, currentPageButtonNum);
+        if (currentPageButtonNum - currentButtonPos < minButtonsOnRight) {
+            currentButtonPos =
+                currentPageButtonNum -
+                Math.min(minButtonsOnRight, max - current);
+        }
 
-        for (
-            //-- start from `current page`
-            let initialPos = currentPageButtonNum - numOfButtonsOnRight - 1,
-                i = initialPos;
-            i < pageButtons.length;
-            i++
-        )
-            pageButtons[i] = current + (i - initialPos);
+        for (let i = 0; currentButtonPos - 1 + i < pageButtons.length; i++) {
+            pageButtons[currentButtonPos - 1 + i] = current + i;
+        }
 
         console.log(max, current, currentPageButtonNum);
         const pages = [...Array(max).keys()].map(x => ++x);
