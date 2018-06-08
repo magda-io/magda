@@ -68,6 +68,8 @@ class Pagination extends Component {
         //-- Rule 3
         const minButtonsOnRight = 2;
 
+        //-- current page button is freely move within 1 to currentPageButtonNum
+        //-- plus it must not beyond `maxPageNo` and must meet Rule 3
         let currentButtonPos = Math.min(current, currentPageButtonNum);
         if (currentPageButtonNum - currentButtonPos < minButtonsOnRight) {
             currentButtonPos =
@@ -75,10 +77,52 @@ class Pagination extends Component {
                 Math.min(minButtonsOnRight, max - current);
         }
 
+        //-- how many buttons aren't filled yet on the left (excluding current)
+        let leftButtonsNum = currentPageButtonNum;
+        //-- fill buttons on the right (including current)
         for (let i = 0; currentButtonPos - 1 + i < pageButtons.length; i++) {
             pageButtons[currentButtonPos - 1 + i] = current + i;
+            leftButtonsNum--;
         }
 
+        //-- first button has been taken -- always be 1 (Rule 4)
+        //-- thus, take 1 off
+        leftButtonsNum--;
+        //-- fill buttons on the left
+        if (leftButtonsNum > 0) {
+            //-- We need to leave one place for potential `...` button
+            let nextPageNum = current - 1;
+            for (let i = 0; i < leftButtonsNum - 1; i++) {
+                pageButtons[currentButtonPos - 1 - 1 - i] = nextPageNum;
+                nextPageNum--;
+            }
+            //-- if more than 1 place to fill, create `...` button (use 0 stands for `...`)
+            if (nextPageNum - 1 > 1) pageButtons[1] = 0;
+            else pageButtons[1] = nextPageNum;
+        }
+
+        return (
+            <ul className="pagination-list">
+                {pageButtons.map(i => (
+                    <li key={i}>
+                        <button
+                            onClick={this.onClick.bind(
+                                this,
+                                //-- if i===0 then it's `...` button, Rule 6 applies
+                                i === 0 ? current - 4 : i
+                            )}
+                            className={`${
+                                i === current ? "current" : "non-current"
+                            }`}
+                        >
+                            {i === 0 ? "..." : i}
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        );
+
+        /*
         console.log(max, current, currentPageButtonNum);
         const pages = [...Array(max).keys()].map(x => ++x);
         const margins = [...Array(3).keys()].map(x => ++x);
