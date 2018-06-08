@@ -6,6 +6,8 @@ import QualityIndicator from "../../UI/QualityIndicator";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
+import fileIcon from "../../assets/format-passive-dark.svg";
+import Divider from "../../UI/Divider";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -21,6 +23,7 @@ export default class DatasetSummary extends Component {
         );
         return (
             <div className="dataset-summary-downloads">
+                <img src={fileIcon} alt="File icon" />{" "}
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
             </div>
         );
@@ -64,12 +67,13 @@ export default class DatasetSummary extends Component {
                     {defined(dataset.modified) && (
                         <span className="dataset-summary-updated">
                             Dataset Updated {getDateString(dataset.modified)}
+                            <Divider />
                         </span>
                     )}
                     {defined(dataset.quality) && (
                         <div className="dataset-summary-quality">
-                            {" "}
                             <QualityIndicator quality={dataset.quality} />
+                            <Divider />
                         </div>
                     )}
                     {defined(
