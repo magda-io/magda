@@ -44,6 +44,52 @@ class Pagination extends Component {
     }
 
     renderPageList(max, current) {
+        //--- make sure values always stay in range
+        if (!(current >= 1)) current = 1;
+        if (!(max >= current)) {
+            if (max >= 1) current = max;
+            else max = current;
+        }
+
+        //-- Rule 1: detail see my issue comment on github
+        const maxPageButtonNum = 7;
+        //-- Rule 2
+        const minPageButtonNum = Math.min(max, 5);
+        const currentPageButtonNum = Math.min(
+            current - 1 + minPageButtonNum,
+            max,
+            maxPageButtonNum
+        );
+
+        const pageButtons = new Array(currentPageButtonNum);
+        //-- Rule 4: first button always be page 1
+        pageButtons[0] = 1;
+
+        //-- Rule 3: unless reach (currentPageButtonNum - current) or (max - current)
+        const minButtonsOnRight = 2;
+
+        //-- Rule 5
+        const numOfButtonsOnRight = Math.min(
+            Math.max(
+                //-- when current is close to the right boundary, we won't create more buttons
+                Math.min(currentPageButtonNum - current, minButtonsOnRight),
+                //-- when current is close to the left boundary, we try create as many button as possible
+                max - current
+            ),
+            //-- Still keep in mind that we only want to generate limited number of buttons
+            currentPageButtonNum - current
+        );
+
+        for (
+            //-- start from `current page`
+            let initialPos = currentPageButtonNum - numOfButtonsOnRight - 1,
+                i = initialPos;
+            i < pageButtons.length;
+            i++
+        )
+            pageButtons[i] = current + (i - initialPos);
+
+        console.log(max, current, currentPageButtonNum);
         const pages = [...Array(max).keys()].map(x => ++x);
         const margins = [...Array(3).keys()].map(x => ++x);
         if (max > 5) {
