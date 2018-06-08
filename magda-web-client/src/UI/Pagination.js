@@ -103,6 +103,7 @@ class Pagination extends Component {
 
         return (
             <ul className="pagination-list">
+                {current > 1 && this.renderPrevButton(current)}
                 {pageButtons.map(i => (
                     <li key={i}>
                         <button
@@ -119,95 +120,9 @@ class Pagination extends Component {
                         </button>
                     </li>
                 ))}
+                {current < max && this.renderNextButton(current)}
             </ul>
         );
-
-        /*
-        console.log(max, current, currentPageButtonNum);
-        const pages = [...Array(max).keys()].map(x => ++x);
-        const margins = [...Array(3).keys()].map(x => ++x);
-        if (max > 5) {
-            if (current <= 3 || current === max) {
-                return (
-                    <ul className="pagination-list">
-                        {current > 1 && this.renderPrevButton(current)}
-                        {margins.map(i => (
-                            <li key={i}>
-                                <button
-                                    onClick={this.onClick.bind(this, i)}
-                                    className={`${
-                                        i === current
-                                            ? "current"
-                                            : "non-current"
-                                    }`}
-                                >
-                                    {i}
-                                </button>
-                            </li>
-                        ))}
-                        <li>{this.renderDisabledButton()}</li>
-                        <li>
-                            <button
-                                onClick={this.onClick.bind(this, max)}
-                                className={`${
-                                    max === current ? "current" : "non-current"
-                                }`}
-                            >
-                                {max}
-                            </button>
-                        </li>
-                        {current < max && this.renderNextButton(current)}
-                    </ul>
-                );
-            }
-            return (
-                <ul className="pagination-list">
-                    {current > 1 && this.renderPrevButton(current)}
-                    {margins.map(i => (
-                        <li key={i}>
-                            <button onClick={this.onClick.bind(this, i)}>
-                                {i}
-                            </button>
-                        </li>
-                    ))}
-                    <li>{this.renderDisabledButton()}</li>
-                    <li>
-                        <button
-                            onClick={this.onClick.bind(this, current)}
-                            className="current"
-                        >
-                            {current}
-                        </button>
-                    </li>
-                    <li>{this.renderDisabledButton()}</li>
-                    <li>
-                        <button onClick={this.onClick.bind(this, max)}>
-                            {max}
-                        </button>
-                    </li>
-                    {current < max && this.renderNextButton(current)}
-                </ul>
-            );
-        } else {
-            return (
-                <ul className="pagination-list">
-                    {current > 1 && this.renderPrevButton(current)}
-                    {pages.map(i => (
-                        <li key={i}>
-                            <button
-                                onClick={this.onClick.bind(this, i)}
-                                className={`${
-                                    i === current ? "current" : "non-current"
-                                }`}
-                            >
-                                {i}
-                            </button>
-                        </li>
-                    ))}
-                    {current < max && this.renderNextButton(current)}
-                </ul>
-            );
-        }
     }
 
     render() {
