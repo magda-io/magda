@@ -1,3 +1,10 @@
-.markdown__wrap{
-  word-wrap: break-word;
+.markdown__wrap {
+    word-wrap: break-word;
+}
+
+.markdown {
+    strong {
+        font-size: 0.875rem;
+        font-weight: inherit;
+    }
 }
