@@ -1,5 +1,6 @@
 ## 0.0.42
 
+-   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
 -   Do not load preview map on mobile, give user option to view in national map instead
 -   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
 -   Fixed pagination bar shows incorrect result count
