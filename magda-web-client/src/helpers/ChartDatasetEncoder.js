@@ -119,6 +119,7 @@ const defaultChartOption = {
     grid: {
         right: 10
     },
+    //http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3
     color: ["#8856a7", "#9ebcda", "#e0ecf4"]
 };
 
