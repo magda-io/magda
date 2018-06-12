@@ -3,6 +3,7 @@
 -   Do not load preview map on mobile, give user option to view in national map instead
 -   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
 -   Fixed pagination bar shows incorrect result count
+-   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
 
