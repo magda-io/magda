@@ -5,10 +5,11 @@ metadata:
 spec:
   secretName: magda-io-tls
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt
     kind: ClusterIssuer
   commonName: '*.magda.io'
   dnsNames:
+  - '*.dev.magda.io'
   - magda.io
   acme:
     config:
@@ -16,4 +17,5 @@ spec:
         provider: prod-dns
       domains:
       - '*.magda.io'
+      - '*.dev.magda.io'
       - magda.io
