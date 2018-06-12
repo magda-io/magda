@@ -247,10 +247,6 @@ class RecordHandler extends React.Component {
     getBreadcrumbs() {
         const params = Object.keys(this.props.match.params);
         const breadcrumbs = params.map(p => {
-            let title = p;
-            let id = p;
-            let url = null;
-
             if (p === "datasetId") {
                 return (
                     <li key="datasetId">
@@ -272,6 +268,8 @@ class RecordHandler extends React.Component {
                     </li>
                 );
             }
+
+            return null;
         });
 
         return breadcrumbs;
