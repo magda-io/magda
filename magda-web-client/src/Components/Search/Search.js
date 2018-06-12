@@ -1,5 +1,6 @@
 import "./Search.css";
 import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
@@ -164,6 +165,19 @@ class Search extends Component {
                                             />
                                         )}
 
+                                        {// redirect if we came from a 404 error and there is only one result
+                                        queryString.parse(
+                                            this.props.location.search
+                                        ).notfound &&
+                                            this.props.datasets.length ===
+                                                1 && (
+                                                <Redirect
+                                                    to={`/dataset/${encodeURI(
+                                                        this.props.datasets[0]
+                                                            .identifier
+                                                    )}/details`}
+                                                />
+                                            )}
                                         <SearchResults
                                             strategy={this.props.strategy}
                                             searchResults={this.props.datasets}

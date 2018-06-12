@@ -45,7 +45,7 @@ class Publisher extends Component {
     onSearchPublisherFacet() {
         this.props.dispatch(
             fetchPublisherSearchResults(
-                queryString.parse(this.props.location.search).q
+                queryString.parse(this.props.location.search).q || "*"
             )
         );
     }

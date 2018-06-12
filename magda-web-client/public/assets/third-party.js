@@ -33,6 +33,19 @@
 
 ga("create", "UA-92539508-1", "auto", "terria");
 
+// Zendesk Widget
+window.zEmbed ||
+    (function() {
+        var queue = [];
+
+        window.zEmbed = function() {
+            queue.push(arguments);
+        };
+        window.zE = window.zE || window.zEmbed;
+        document.zendeskHost = "datagovau.zendesk.com";
+        document.zEQueue = queue;
+    })();
+
 // rollbar
 !(function(r) {
     function e(n) {

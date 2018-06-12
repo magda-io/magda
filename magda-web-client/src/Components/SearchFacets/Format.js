@@ -43,7 +43,7 @@ class Format extends Component {
     onSearchFormatFacet() {
         this.props.dispatch(
             fetchFormatSearchResults(
-                queryString.parse(this.props.location.search).q
+                queryString.parse(this.props.location.search).q || "*"
             )
         );
     }
