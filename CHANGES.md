@@ -36,6 +36,7 @@
 -   Fixed a issue that state region layer could be removed from region filter panel map
 -   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 -   Corrected email template style to be inline with designs.
+-   Fixed pagination bar shows incorrect result count
 
 ## 0.0.40
 
