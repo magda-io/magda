@@ -13,7 +13,6 @@
 
     .publisher-title {
         @include AU-fontgrid(md);
-        color: $AU-color-foreground-action;
         font-weight: 300;
         margin-bottom: 0;
         a {
@@ -41,5 +40,13 @@
 
     .publisher-dataset-count {
         color: $AU-color-foreground-action;
+        a {
+            text-decoration: none;
+            &:hover,
+            &:focus {
+                text-decoration: underline;
+                color: $AU-color-foreground-focus;
+            }
+        }
     }
 }

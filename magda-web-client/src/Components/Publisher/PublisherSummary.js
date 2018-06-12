@@ -16,9 +16,14 @@ function PublisherSummary(props) {
                     {props.publisher.name}
                 </Link>
             </h2>
-            <div className="publisher-dataset-count">{`[${
-                props.publisher.datasetCount
-            }] datasets`}</div>
+            <div className="publisher-dataset-count">
+                <Link
+                    to={
+                        "organisations/" +
+                        encodeURIComponent(props.publisher.id)
+                    }
+                >{`[${props.publisher.datasetCount}] datasets`}</Link>
+            </div>
             <br />
             <div className="publisher-description">
                 {details.description &&
