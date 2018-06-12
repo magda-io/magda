@@ -40,13 +40,13 @@ object ClassloaderLocalNodeProvider {
 
     if(!Files.exists(analysisFolderPath)) Files.createDirectories(analysisFolderPath)
 
-    if(!Files.exists(cwdPath.resolve("magda-elastic-search/wn_s.pl"))) {
-        throw new Exception("Cannot locate WordNet synonym lib.")
+    if(!Files.exists(cwdPath.resolve("magda-elastic-search/wn_s_test.pl"))) {
+        throw new Exception("Cannot locate sample WordNet synonym lib.")
     }
 
     if(!Files.exists(analysisFolderPath.resolve("wn_s.pl"))){
         println("**** WordNet synonym lib not exists. Copying...****")
-        copy (cwdPath.resolve("magda-elastic-search/wn_s.pl"), analysisFolderPath.resolve("wn_s.pl"), REPLACE_EXISTING)
+        copy (cwdPath.resolve("magda-elastic-search/wn_s_test.pl"), analysisFolderPath.resolve("wn_s.pl"), REPLACE_EXISTING)
         println("**** WordNet synonym lib creation completed! ****")
     }else{
         println("**** WordNet synonym lib exists before creation****")
