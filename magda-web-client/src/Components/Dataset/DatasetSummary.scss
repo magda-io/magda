@@ -43,11 +43,6 @@
         clear: both;
     }
 
-    .dataset-summary-updated,
-    .dataset-summary-quality {
-        margin-right: 24px;
-    }
-
     .dataset-summary-downloads {
         span {
             @include AU-fontgrid(xs);
@@ -61,6 +56,11 @@
             &:last-child:after {
                 content: "";
             }
+        }
+        img {
+            vertical-align: text-top;
+            height: 16px;
+            width: 16px;
         }
     }
 
