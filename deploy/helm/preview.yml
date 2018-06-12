@@ -9,6 +9,8 @@ tags:
   all: true
   dev-ingress: true
 
+dev-ingress:
+  ipName: dev-magda-io
 gateway:
   auth:
     facebookClientId: "173073926555600"
@@ -19,8 +21,6 @@ gateway:
       memory: 100Mi
   autoscaler:
     enabled: false
-  service:
-    type: ClusterIP
 combined-db:
   resources:
     requests:
