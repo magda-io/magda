@@ -134,6 +134,10 @@ class Search extends Component {
         });
     }
 
+    /**
+     * counts the number of filters that have active values
+     * this is then appended to the results text on the search page
+     */
     filterCount = () => {
         var count = 0;
         if (this.props.activePublishers.length > 0) {
