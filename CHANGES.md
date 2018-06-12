@@ -2,6 +2,7 @@
 
 ## 0.0.41
 
+-   reset pagination on query change
 -   Make mobile logo bigger, fixed a bug in safari
 -   Close mobile nav when navigation occurs
 -   improve preview tab active state and prevent scrolling when tab changes
