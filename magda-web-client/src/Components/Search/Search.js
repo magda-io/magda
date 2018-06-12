@@ -150,7 +150,7 @@ class Search extends Component {
         if (this.props.activeDateFrom) {
             count++;
         }
-        if (count != 0) {
+        if (count !== 0) {
             var filterText = count === 1 ? " filter" : " filters";
             return " with " + count + filterText;
         } else {
