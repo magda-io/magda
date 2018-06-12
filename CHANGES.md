@@ -7,6 +7,7 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Organisation page now displays the number of datasets for that organisation
 
 ## 0.0.41
 
