@@ -1,0 +1,26 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: alex.gilleran@data61.csiro.au
+
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-staging
+
+    # ACME DNS-01 provider configurations
+    dns01:
+
+      # Here we define a list of DNS-01 providers that can solve DNS challenges
+      providers:
+        - name: prod-dns
+          route53:
+            region: ap-southeast-2
+            hostedZoneID: Z1FY04JPVA0ZUP
+            accessKeyID: AKIAJLPF6GKZMIUFYOXQ 
+            secretAccessKeySecretRef:
+              name: prod-route53-credentials-secret
+              key: secret-access-key
