@@ -8,6 +8,7 @@ import ReactDocumentTitle from "react-document-title";
 import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 import "./PublisherDetails.css";
 
@@ -34,10 +35,20 @@ class PublisherDetails extends Component {
             details.description && details.description.length > 0
                 ? details.description
                 : "This publisher has no description";
+
+        const breadcrumbs = [
+            <li>
+                <a href="/organisations">Organisations</a>
+            </li>,
+            <li>
+                <span>{publisher.name}</span>
+            </li>
+        ];
         return (
-            <div className="publisher-details container">
+            <div className="publisher-details">
                 {this.props.isFetching && <ProgressBar />}
-                <div className="row">
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                     <div className="publisher-details__body col-sm-8">
                         <div className="media">
                             <div className="media-body">
