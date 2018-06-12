@@ -43,15 +43,39 @@ class Pagination extends Component {
         return <button disabled={true}>...</button>;
     }
 
-    renderPageList(max, current) {
+    /**
+     * The `renderPageList` function implementation should meet the following rules:
+     * Rule 1: The maximum total no. of page no. buttons is 7 (including a ... button)
+     *   unless total page no. is less than 7
+     * Rule 2: The minimum total no. of page no. buttons is 5 unless total page no. is less than 5
+     * Rule 3: There should be 2 buttons on the right hand side of the current page button
+     *   unless ( total page no. - current page) is unless than 2.
+     * Rule 4: Page 1 button should always be the first button
+     * Rule 5: Buttons on the left hand side of current page button should be listed sequentially
+     *   (higher page no to lower, from right to left) one by one until page 1
+     *   or total button no. reaches no. specified by rule 1 & 2.
+     *   If any page no. are left, a ... button will be created.
+     * Rule 6: `...` button is clickable and it will take user to current page - 4
+     */
+
+    renderPageList(maxPage, currentPage) {
+        let current = currentPage,
+            max = maxPage;
+
         //--- make sure values always stay in range
-        if (!(current >= 1)) current = 1;
-        if (!(max >= current)) {
-            if (max >= 1) current = max;
-            else max = current;
+        if (!(current >= 1)) {
+            current = 1;
         }
 
-        //-- Rule 1: detail see my issue comment on github
+        if (!(max >= current)) {
+            if (max >= 1) {
+                current = max;
+            } else {
+                max = current;
+            }
+        }
+
+        //-- Rule 1
         const maxPageButtonNum = 7;
         //-- Rule 2
         const minPageButtonNum = Math.min(max, 5);
@@ -97,8 +121,11 @@ class Pagination extends Component {
                 nextPageNum--;
             }
             //-- if more than 1 place to fill, create `...` button (use 0 stands for `...`)
-            if (nextPageNum - 1 > 1) pageButtons[1] = 0;
-            else pageButtons[1] = nextPageNum;
+            if (nextPageNum - 1 > 1) {
+                pageButtons[1] = 0;
+            } else {
+                pageButtons[1] = nextPageNum;
+            }
         }
 
         return (
