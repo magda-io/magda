@@ -1,6 +1,9 @@
-## 0.0.41
+## 0.0.42
 
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
+
+## 0.0.41
+
 -   Make mobile logo bigger, fixed a bug in safari
 -   Close mobile nav when navigation occurs
 -   improve preview tab active state and prevent scrolling when tab changes
