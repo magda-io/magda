@@ -62,6 +62,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
   override def beforeAll() {
+    
+    blockUntilNotRed()
+
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
       client.execute(

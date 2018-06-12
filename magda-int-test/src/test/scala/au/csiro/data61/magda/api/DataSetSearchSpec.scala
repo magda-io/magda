@@ -52,6 +52,9 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
+  
+  blockUntilNotRed()
+
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()

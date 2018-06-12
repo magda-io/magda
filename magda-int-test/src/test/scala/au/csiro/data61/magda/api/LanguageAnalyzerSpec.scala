@@ -17,6 +17,8 @@ import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.util.Regex._
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
+  
+  blockUntilNotRed()
 
   describe("should return the right dataset when searching for that dataset's") {
     describe("title") {

@@ -39,17 +39,17 @@ object ClassloaderLocalNodeProvider {
     val analysisFolderPath: Path = pathHome.resolve("config/analysis")
 
     if(!Files.exists(analysisFolderPath)) Files.createDirectories(analysisFolderPath)
-    
+
     if(!Files.exists(cwdPath.resolve("magda-elastic-search/wn_s.pl"))) {
         throw new Exception("Cannot locate WordNet synonym lib.")
     }
 
     if(!Files.exists(analysisFolderPath.resolve("wn_s.pl"))){
-        println("**** WordNet synonym lib not exsits. Copying...****")
+        println("**** WordNet synonym lib not exists. Copying...****")
         copy (cwdPath.resolve("magda-elastic-search/wn_s.pl"), analysisFolderPath.resolve("wn_s.pl"), REPLACE_EXISTING)
         println("**** WordNet synonym lib creation completed! ****")
     }else{
-        println("**** WordNet synonym lib exsits before creation****")
+        println("**** WordNet synonym lib exists before creation****")
     }
 
     val settings = requiredSettings ++ Map(
