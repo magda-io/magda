@@ -16,6 +16,10 @@ function PublisherSummary(props) {
                     {props.publisher.name}
                 </Link>
             </h2>
+            <div className="publisher-dataset-count">{`[${
+                props.publisher.datasetCount
+            }] datasets`}</div>
+            <br />
             <div className="publisher-description">
                 {details.description &&
                     details.description.slice(0, 200) + "..."}

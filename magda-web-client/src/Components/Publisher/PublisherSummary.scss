@@ -28,6 +28,7 @@
 
     .publisher-description {
         @include AU-fontgrid(xs);
+        font-weight: lighter;
         margin-bottom: 8px;
         overflow: hidden;
         h1,
@@ -36,5 +37,9 @@
         h4 {
             margin: 0 0 10px;
         }
+    }
+
+    .publisher-dataset-count {
+        color: $AU-color-foreground-action;
     }
 }
