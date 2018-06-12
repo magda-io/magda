@@ -102,7 +102,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("description")
+            magdaTextField("description"),
             magdaTextField("value"),
             textField("english").analyzer("english")))
         .analysis(
