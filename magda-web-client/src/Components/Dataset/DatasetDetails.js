@@ -55,11 +55,11 @@ class DatasetDetails extends Component {
                 <div className="row">
                     <div className="col-sm-12">
                         <div className="dataset-details-files-apis">
-                            <h2 className="clearfix">
+                            <h3 className="clearfix">
                                 <span className="section-heading">
                                     Files and APIs
                                 </span>
-                            </h2>
+                            </h3>
                             <div className="clearfix">
                                 {dataset.distributions.map(s => (
                                     <DistributionRow
@@ -72,7 +72,7 @@ class DatasetDetails extends Component {
                             </div>
                         </div>
                         <div className="dataset-details-source">
-                            <h2 className="section-heading">Data Source</h2>
+                            <h3 className="section-heading">Data Source</h3>
                             <MarkdownViewer
                                 markdown={source}
                                 truncate={false}
