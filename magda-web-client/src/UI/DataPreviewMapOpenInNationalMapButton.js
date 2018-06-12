@@ -88,13 +88,13 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         return (
             <div style={this.props.style}>
                 <button
-                    className="open-in-national-map-button"
+                    className="open-in-national-map-button au-btn au-btn--secondary"
                     onClick={() => this.onButtonClick()}
                 >
                     <div className="rectangle-2" />
                     <div className="rectangle-1" />
                     <div className="open-national-map-button-text">
-                        Open In National Map
+                        {this.props.buttonText}
                     </div>
                 </button>
             </div>

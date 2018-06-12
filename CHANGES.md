@@ -1,12 +1,13 @@
 ## 0.0.42
 
+-   Do not load preview map on mobile, give user option to view in national map instead
 -   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
 -   Fixed pagination bar shows incorrect result count
 -   Made end of content spacing consistent
+-   Added `flex` display and set consistent padding from footer.
 
 ## 0.0.41
 
--   Added `flex` display and set consistent padding from footer.
 -   Close mobile nav when navigation occurs
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
