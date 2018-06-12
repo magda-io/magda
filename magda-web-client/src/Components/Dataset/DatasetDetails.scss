@@ -39,6 +39,8 @@
 .dataset-details-overview {
     margin-top: 20px;
     line-height: 19px;
+    z-index: -1;
+    position: relative;
 
     .markdown {
         opacity: 0.75;

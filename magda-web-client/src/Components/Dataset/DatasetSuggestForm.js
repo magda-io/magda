@@ -55,6 +55,7 @@ export default class DatasetSuggestForm extends React.Component {
             };
         });
         this.props.toggleMargin(!this.state.showSuggest);
+        document.body.classList.add("modal-open");
     };
 
     render() {
@@ -78,19 +79,22 @@ export default class DatasetSuggestForm extends React.Component {
             failHeader: "Uh oh. There was an error sending your form!"
         };
         return (
-            <div>
+            <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest ? (
-                    <div className="dataset-correspondence-container">
+                    <div className="dataset-button-container">
                         <AUbutton
-                            className="ask-question-button"
+                            className="au-btn--secondary ask-question-button"
                             onClick={this.toggleShowForm}
                         >
-                            Ask question about this dataset
+                            Ask a question about this dataset
                         </AUbutton>
                     </div>
                 ) : (
-                    <div className="ask-dataset-form">
+                    <div
+                        name="cform"
+                        className="ask-dataset-form ask-dataset-form-responsive"
+                    >
                         <img
                             src={close}
                             className="correspondence-dataset-close-button"
@@ -114,7 +118,7 @@ export default class DatasetSuggestForm extends React.Component {
                         />
                     </div>
                 )}
-            </div>
+            </React.Fragment>
         );
     }
 }

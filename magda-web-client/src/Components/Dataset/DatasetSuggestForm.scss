@@ -3,8 +3,17 @@
     border: solid;
     border-color: rgba(189, 189, 189, 0.3);
     background-color: #f7f7f7;
-    overflow-y: scroll;
     position: relative;
+    float: right;
+    width: 800px;
+    z-index: 2;
+    height: auto;
+}
+
+@media only screen and (max-width: 1200px) {
+    .ask-dataset-form-responsive {
+        max-width: 700px !important;
+    }
 }
 
 .correspondence-dataset-close-button {
@@ -18,8 +27,13 @@
     }
 }
 
-@media only screen and (max-width: 700px) {
-    .dataset-correspondence-container {
+@media only screen and (max-width: 990px) {
+    .dataset-button-container {
         display: inline-block;
+    }
+    .ask-dataset-form-responsive {
+        width: auto;
+        float: none;
+        overflow-y: auto;
     }
 }

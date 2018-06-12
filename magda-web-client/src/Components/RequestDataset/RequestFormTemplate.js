@@ -14,22 +14,39 @@ export default class RequestFormTemplate extends React.Component {
             senderEmail: "",
             senderEmailValid: true,
             messageValid: true,
-            senderNameValid: true
+            senderNameValid: true,
+            clearButtonDisabled: true
         };
     }
+
     componentDidMount() {
         const message = this.props.message ? this.props.message : "";
         const senderEmail = this.props.senderEmail
             ? this.props.senderEmail
             : "";
         const senderName = this.props.senderName ? this.props.senderName : "";
-        this.setState(() => {
-            return {
-                senderEmail,
-                message,
-                senderName
-            };
-        });
+        this.setState(
+            () => {
+                return {
+                    senderEmail,
+                    message,
+                    senderName
+                };
+            },
+            () => {
+                if (
+                    (this.state.message && this.state.message !== "") ||
+                    this.state.senderName ||
+                    this.state.senderEmail
+                ) {
+                    this.setState(() => {
+                        return {
+                            clearButtonDisabled: false
+                        };
+                    });
+                }
+            }
+        );
     }
 
     /**
@@ -78,6 +95,26 @@ export default class RequestFormTemplate extends React.Component {
         this.props.handleSubmit(this.state);
     };
 
+    handleClear = e => {
+        e.preventDefault();
+        this.setState(
+            () => {
+                return {
+                    message: "",
+                    senderName: "",
+                    senderEmail: "",
+                    senderEmailValid: true,
+                    messageValid: true,
+                    senderNameValid: true,
+                    clearButtonDisabled: true
+                };
+            },
+            () => {
+                this.props.handleChange(this.state);
+            }
+        );
+    };
+
     /**
      * Handles change event when typed into any of the form inputs.
      * Sets the state according to which input is being typed in
@@ -94,6 +131,24 @@ export default class RequestFormTemplate extends React.Component {
             () => {
                 // put this in a callback since setState is async
                 this.props.handleChange(this.state);
+                //the below toggles the disabled state of the clear
+                if (
+                    (this.state.message && this.state.message !== "") ||
+                    (this.state.senderName && this.state.senderName !== "") ||
+                    (this.state.senderEmail && this.state.senderEmail !== "")
+                ) {
+                    this.setState(() => {
+                        return {
+                            clearButtonDisabled: false
+                        };
+                    });
+                } else {
+                    this.setState(() => {
+                        return {
+                            clearButtonDisabled: true
+                        };
+                    });
+                }
             }
         );
     };
@@ -110,7 +165,7 @@ export default class RequestFormTemplate extends React.Component {
                         <AUheader title={this.props.title} />
                     ))}
                 <label htmlFor="message" className="field-label">
-                    {this.props.textAreaLabel} *
+                    {this.props.textAreaLabel}
                 </label>
                 <AUtextInput
                     as="textarea"
@@ -132,7 +187,7 @@ export default class RequestFormTemplate extends React.Component {
                     </label>
                 )}
                 <label htmlFor="senderName" className="field-label">
-                    Your Name *
+                    Your Name
                 </label>
                 <AUtextInput
                     id="senderName"
@@ -153,7 +208,7 @@ export default class RequestFormTemplate extends React.Component {
                     </label>
                 )}
                 <label htmlFor="senderEmail" className={"field-label"}>
-                    Email *
+                    Email
                 </label>
                 <AUtextInput
                     id="senderEmail"
@@ -179,6 +234,13 @@ export default class RequestFormTemplate extends React.Component {
                     disabled={this.props.isSending}
                 >
                     {this.props.isSending ? "Sending..." : "Send"}
+                </AUbutton>
+                <AUbutton
+                    onClick={this.handleClear}
+                    className="au-btn--secondary correspondence-clear-button"
+                    disabled={this.state.clearButtonDisabled}
+                >
+                    Clear
                 </AUbutton>
             </form>
         );
