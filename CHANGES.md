@@ -1,3 +1,5 @@
+## 0.0.42
+
 ## 0.0.41
 
 -   Make mobile logo bigger, fixed a bug in safari
