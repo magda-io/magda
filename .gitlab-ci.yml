@@ -1,5 +1,3 @@
-image: registry.gitlab.com/magda-data/magda/data61/magda-builder:$CI_COMMIT_REF_SLUG
-
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
@@ -18,13 +16,14 @@ stages:
 builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
+  retry: 1
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-yarn-cache
     paths:
-    - "node_modules"
-    - "*/node_modules"
+    - .yarn
     - "yarn.lock"
   before_script:
+    - yarn config set cache-folder .yarn
     - yarn install
   services:
     - docker:dind
@@ -41,6 +40,7 @@ builders-and-yarn:
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 1
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -59,6 +59,7 @@ registry-typescript-api:
 generate-connector-jobs:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   cache: {}
   script:
     - cd deploy
@@ -70,10 +71,10 @@ generate-connector-jobs:
       - "deploy/kubernetes/generated"
     expire_in: 30 days
 
-
 buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 2
   dependencies: []
   cache:
     key: $CI_JOB_NAME
@@ -96,7 +97,6 @@ buildtest:search-with-index-cache:
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  retry: 2
   tags:
     - heavy
   script:
@@ -111,6 +111,7 @@ buildtest:search-with-index-cache:
 buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 2
   dependencies: []
   before_script:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
@@ -141,7 +142,6 @@ buildtest:search-no-index-cache:
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  retry: 2
   tags:
     - heavy
   script:
@@ -156,6 +156,7 @@ buildtest:search-no-index-cache:
 buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
   cache:
@@ -163,6 +164,7 @@ buildtest:ui:
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
+    - yarn install
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:
@@ -201,6 +203,7 @@ buildtest:registry:
 buildtest:map:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
   cache:
@@ -214,11 +217,11 @@ buildtest:map:
     - "*/dist"
     - "magda-preview-map/wwwroot/build"
     expire_in: 30 days
-  retry: 1
 
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -235,6 +238,7 @@ buildtest:typescript-apis:
 buildtest:sleuthers:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -251,6 +255,7 @@ buildtest:sleuthers:
 buildtest:connectors:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -406,6 +411,7 @@ Run As Preview (Full):
     paths: []
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -452,6 +458,7 @@ Run As Preview (UI Only):
     paths: []
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -484,6 +491,7 @@ Stop Preview:
     paths: []
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -503,6 +511,7 @@ deploy-master-to-dev:
   cache: {}
   image:
     name: dtzar/helm-kubectl
+  retry: 1
   before_script: []
   environment:
     name: dev

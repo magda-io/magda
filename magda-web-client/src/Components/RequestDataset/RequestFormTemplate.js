@@ -1,7 +1,7 @@
 import React from "react";
-import AUtextInput from "@gov.au/text-inputs";
-import AUbutton from "@gov.au/buttons";
-import AUheader from "@gov.au/header";
+import AUtextInput from "../../pancake/react/text-inputs";
+import AUbutton from "../../pancake/react/buttons";
+import AUheader from "../../pancake/react/header";
 import "./FormTemplate.css";
 
 //This is the react form template

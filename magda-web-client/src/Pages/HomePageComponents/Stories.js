@@ -12,6 +12,21 @@ class Stories extends Component {
         this.state = {
             shouldShowStories: false
         };
+        this.showStories = this.showStories.bind(this);
+    }
+
+    componentWillMount() {
+        window.addEventListener("scroll", this.showStories);
+    }
+
+    showStories() {
+        this.setState({
+            shouldShowStories: true
+        });
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("scroll", this.showStories);
     }
 
     render() {
@@ -75,7 +90,7 @@ class Stories extends Component {
                             }}
                         >
                             <div>Latest News</div>
-                            <img src={downArrow} alt="more-stories-button" />
+                            <img src={downArrow} alt="more-stories" />
                         </button>
                     )}
                 </Small>

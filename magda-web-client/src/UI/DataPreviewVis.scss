@@ -9,7 +9,22 @@
         @include AU-fontgrid(sm);
         line-height: 19px;
     }
-    .tabs__bar {
-        margin-bottom: 40px;
+    .tab-list {
+        button {
+            border: none;
+            border-bottom: 0.5rem solid $AU-colordark-foreground-action;
+            padding: 1rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            display: block;
+            text-decoration: none;
+            &.tab-active {
+                border-color: $AU-color-foreground-action;
+            }
+            &:hover,
+            &:focus {
+                cursor: pointer;
+            }
+        }
     }
 }

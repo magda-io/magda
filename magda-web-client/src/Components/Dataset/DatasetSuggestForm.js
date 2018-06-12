@@ -2,7 +2,7 @@ import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
 import close from "../../assets/close.svg";
 import "./DatasetSuggestForm.css";
-import AUbutton from "@gov.au/buttons";
+import AUbutton from "../../pancake/react/buttons";
 
 //This is the question/report on a dataset form on the
 //individual dataset page

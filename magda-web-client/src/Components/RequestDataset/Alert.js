@@ -1,5 +1,5 @@
 import React from "react";
-import AUpageAlert from "@gov.au/page-alerts";
+import AUpageAlert from "../../pancake/react/page-alerts";
 import "./Alert.css";
 
 const Alert = props => {

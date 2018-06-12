@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import queryString from "query-string";
-import AUbuttons from "@gov.au/buttons";
+import AUbuttons from "../../pancake/react/buttons";
 import { resetRegion } from "../../actions/datasetSearchActions";
 import removePassiveIcon from "../../assets/remove-passive.svg";
 
