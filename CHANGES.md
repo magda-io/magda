@@ -7,6 +7,7 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Added filter count to search results
 
 ## 0.0.41
 

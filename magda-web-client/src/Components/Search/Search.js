@@ -39,7 +39,8 @@ class Search extends Component {
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
         this.state = {
-            searchText: undefined
+            searchText: undefined,
+            filterCount: 0
         };
     }
 
@@ -133,6 +134,30 @@ class Search extends Component {
         });
     }
 
+    filterCount = () => {
+        var count = 0;
+        if (this.props.activePublishers.length > 0) {
+            count++;
+        }
+        if (this.props.activeFormats.length > 0) {
+            count++;
+        }
+
+        if (this.props.activeRegion.regionId) {
+            count++;
+        }
+
+        if (this.props.activeDateFrom) {
+            count++;
+        }
+        if (count != 0) {
+            var filterText = count === 1 ? " filter" : " filters";
+            return " with " + count + filterText;
+        } else {
+            return "";
+        }
+    };
+
     render() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
@@ -152,7 +177,10 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results ( {this.props.hitCount} )
+                                        results {this.filterCount()} ({
+                                            this.props.hitCount
+                                        }
+                                        )
                                     </div>
                                 )}
                             {!this.props.isFetching &&
@@ -244,6 +272,10 @@ function mapStateToProps(state, ownProps) {
     let { datasetSearch } = state;
     return {
         datasets: datasetSearch.datasets,
+        activeFormats: datasetSearch.activeFormats,
+        activePublishers: datasetSearch.activePublishers,
+        activeRegion: datasetSearch.activeRegion,
+        activeDateFrom: datasetSearch.activeDateFrom,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
         progress: datasetSearch.progress,
