@@ -132,16 +132,18 @@ class Pagination extends Component {
 
     render() {
         let currentPage = this.props.currentPage;
-        let startIndex =
-            currentPage === 1 ? 1 : currentPage * config.resultsPerPage + 1;
 
         return (
             <div className="pagination">
                 {this.renderPageList(this.props.maxPage, currentPage)}
                 <div className="pagination-summray">
                     {" "}
-                    {startIndex} - {startIndex + config.resultsPerPage} of{" "}
-                    {this.props.totalItems} results
+                    {(currentPage - 1) * config.resultsPerPage + 1} -{" "}
+                    {Math.min(
+                        currentPage * config.resultsPerPage,
+                        this.props.totalItems
+                    )}{" "}
+                    of {this.props.totalItems} results
                 </div>
             </div>
         );

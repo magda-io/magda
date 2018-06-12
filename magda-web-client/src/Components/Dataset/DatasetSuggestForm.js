@@ -86,7 +86,7 @@ export default class DatasetSuggestForm extends React.Component {
                             className="ask-question-button"
                             onClick={this.toggleShowForm}
                         >
-                            Ask question about this dataset
+                            Ask a question about this dataset
                         </AUbutton>
                     </div>
                 ) : (
