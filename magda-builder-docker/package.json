@@ -1,25 +1,22 @@
 {
   "name": "@magda/builder-docker",
-  "version": "0.0.40-0",
+  "version": "0.0.42-0",
   "description": "Builder image for nodejs magda projects",
   "scripts": {
-    "docker-build-prod":
-      "create-docker-context-for-node-component --build --push",
-    "docker-build-local":
-      "create-docker-context-for-node-component --build --push --local"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --local"
   },
   "author": "",
   "license": "Apache-2.0",
   "config": {
     "docker": {
       "name": "data61/magda-builder-docker",
-      "include":
-        "Dockerfile modprobe.sh docker-entrypoint.sh release-architectures"
+      "include": "Dockerfile modprobe.sh docker-entrypoint.sh release-architectures"
     }
   },
   "devDependencies": {
-    "@magda/builder-nodejs": "^0.0.40-0",
-    "@magda/scripts": "^0.0.40-0"
+    "@magda/builder-nodejs": "^0.0.42-0",
+    "@magda/scripts": "^0.0.42-0"
   },
   "magda": {
     "categories": {

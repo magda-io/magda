@@ -1,3 +1,8 @@
+## 0.0.42
+
+-   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
+-   Fixed pagination bar shows incorrect result count
+
 ## 0.0.41
 
 -   Make mobile logo bigger, fixed a bug in safari
@@ -34,7 +39,6 @@
 -   Fixed a issue that state region layer could be removed from region filter panel map
 -   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
 -   Corrected email template style to be inline with designs.
--   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
 
 ## 0.0.40
 
