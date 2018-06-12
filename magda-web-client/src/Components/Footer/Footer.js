@@ -22,11 +22,13 @@ function FooterLink({ link }) {
         // return <FeedbackLink caption={link[0]} />;
         return (
             <a
-                onClick={() =>
+                href="#feedback"
+                onClick={() => {
                     zE(function() {
                         zE.activate();
-                    })
-                }
+                    });
+                    return false;
+                }}
             >
                 {link[0]}
             </a>
