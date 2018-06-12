@@ -27,18 +27,15 @@
         @include AU-fontgrid(xs);
     }
 
-    button {
-        border: 1px solid rgba(73, 73, 73, 0.05);
-    }
     .download-button {
         padding: 5px 10px;
 
         .button-text {
-            margin-left: 35px;
+            margin-left: 25px;
         }
         img {
             position: absolute;
-            top: 12px;
+            top: 13px;
         }
     }
     .new-tab-button {

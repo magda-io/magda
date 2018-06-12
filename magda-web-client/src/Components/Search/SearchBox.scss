@@ -37,6 +37,10 @@
         }
         .searchBox {
             background-color: transparent;
+            @media (max-width: $medium - 1) {
+                border-bottom: 2px solid rgba($AU-color-foreground-action, 0.5);
+                margin: 10px;
+            }
         }
     }
 }

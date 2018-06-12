@@ -1,14 +1,10 @@
 @import "../variables";
 .data-preview-map {
-    .open-in-national-map-button {
-        @media (min-width: $medium) {
-            border: 1px solid rgba(73, 73, 73, 0.05);
-        }
+    .open-in-national-map-button.au-btn.au-btn--secondary {
         position: relative;
         height: 40px;
-        width: 202px;
-        border-radius: 2px;
-        background-color: $AU-color-background;
+        width: 210px;
+        background: #ffffff;
     }
 
     .rectangle-1 {
@@ -17,7 +13,7 @@
         height: 13px;
         width: 13px;
         border: 2px solid $AU-color-foreground-action;
-        top: 11px;
+        top: 9px;
         left: 15px;
         background-color: $AU-color-background;
     }
@@ -28,19 +24,18 @@
         height: 12px;
         width: 12px;
         border: 2px solid $AU-color-foreground-action;
-        top: 15px;
+        top: 13px;
         left: 12px;
     }
 
     .open-national-map-button-text {
         position: absolute;
         height: 17px;
-        width: 158px;
         color: $AU-color-foreground-action;
         font-family: inherit;
-        font-size: 14px;
         line-height: 17px;
-        right: 16px;
+        right: 8px;
+        left: 30px;
         top: 9px;
     }
 }
