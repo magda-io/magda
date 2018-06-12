@@ -1,7 +1,7 @@
 global:
   useCombinedDb: true
   useCloudSql: false
-  externalUrl: https://magda-dev.terria.io
+  externalUrl: https://dev.magda.io
   rollingUpdate:
     maxUnavailable: 1
   image:
@@ -9,11 +9,15 @@ global:
 
 tags:
   all: true
+  dev-ingress: true
   sleuther-broken-link: true
   sleuther-linked-data-rating: true
   sleuther-visualization: true
   sleuther-format: true
 
+dev-ingress:
+  ipName: dev-magda-io
+  hostname: dev.magda.io
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:
