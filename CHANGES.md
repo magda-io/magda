@@ -1,3 +1,20 @@
+## 0.0.42
+
+-   Implemented the new pagination design
+-   remove border for basal button style to prevent duplication
+-   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
+-   Do not load preview map on mobile, give user option to view in national map instead
+-   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
+-   Fixed pagination bar shows incorrect result count
+-   Added Zendesk feedback widget activated via footer link
+-   Made end of content spacing consistent
+-   Added `flex` display and set consistent padding from footer.
+-   reset pagination on query change
+-   Removed underline from organisations in search
+-   Modified styling for `ask a question` button to use secondary AUButton styling.
+-   Restricted markdown <strong> tag to be default style.
+-   Switched development/preview to use let's encrypt certificates for HTTPS.
+
 ## 0.0.41
 
 -   Make mobile logo bigger, fixed a bug in safari
