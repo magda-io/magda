@@ -415,7 +415,7 @@ Run As Preview (Full):
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
     on_stop: Stop Preview
   script:
   # Add PWGEN for generating passwords
@@ -444,7 +444,7 @@ Run As Preview (Full):
 
   # Helm upgrade
   - helm init --upgrade
-  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
 
 Run As Preview (UI Only):
   stage: preview
@@ -462,7 +462,7 @@ Run As Preview (UI Only):
   before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
     on_stop: Stop Preview
   script:
   # Kube Config
@@ -477,7 +477,7 @@ Run As Preview (UI Only):
 
   # Helm upgrade
   - helm init --upgrade
-  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://magda-dev.terria.io --timeout 1200 --wait
+  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://dev.magda.io --timeout 1200 --wait
 
 Stop Preview:
   stage: preview
@@ -515,7 +515,7 @@ deploy-master-to-dev:
   before_script: []
   environment:
     name: dev
-    url: https://magda-dev.terria.io
+    url: https://dev.magda.io
   script:
   - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
   - export KUBECONFIG=kubectlconfig.yaml
