@@ -17,6 +17,8 @@ import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.util.Regex._
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
+  
+  blockUntilNotRed()
 
   describe("should return the right dataset when searching for that dataset's") {
     describe("title") {
@@ -24,7 +26,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("description") {
-      testDataSetSearch(dataSet => dataSet.description.toSeq)
+      testDataSetSearch(dataSet => dataSet.description.toSeq, true)
     }
 
     describe("keywords") {
@@ -40,14 +42,14 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("distribution description") {
-      testDataSetSearch(dataSet => dataSet.distributions.flatMap(_.description.toSeq))
+      testDataSetSearch(dataSet => dataSet.distributions.flatMap(_.description.toSeq), true)
     }
 
     describe("theme") {
-      testDataSetSearch(dataSet => dataSet.themes)
+      testDataSetSearch(dataSet => dataSet.themes, true)
     }
 
-    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String]) = {
+    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String], useLightEnglishStemmer: Boolean = false) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
         .filter(term => term.matches(".*[A-Za-z].*"))
         .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
@@ -65,7 +67,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         }
       }
 
-      testLanguageFieldSearch(outerTermExtractor, test)
+      testLanguageFieldSearch(outerTermExtractor, test, useLightEnglishStemmer)
     }
   }
 
@@ -113,7 +115,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
   def isAStopWord(term: String) = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
 
-  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
+  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, useLightEnglishStemmer: Boolean = false) = {
     it("when searching for it directly") {
       def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
         .filterNot(isAStopWord)
@@ -140,14 +142,27 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .flatMap {
           case term if term.last.toLower.equals('s') =>
             val depluralized = term.take(term.length - 1)
-            if (MagdaMatchers.porterStem(term) == depluralized) {
-              Some(depluralized)
-            } else None
+            if(useLightEnglishStemmer){
+              if (MagdaMatchers.lightEnglishStem(term) == depluralized) {
+                Some(depluralized)
+              } else None
+            }else{
+              if (MagdaMatchers.porterStem(term) == depluralized) {
+                Some(depluralized)
+              } else None
+            }
           case term =>
             val pluralized = term + "s"
-            if (MagdaMatchers.porterStem(pluralized) == term) {
-              Some(pluralized)
-            } else None
+            if(useLightEnglishStemmer){
+              if (MagdaMatchers.lightEnglishStem(pluralized) == term) {
+                Some(pluralized)
+              } else None
+            }else{
+              if (MagdaMatchers.porterStem(pluralized) == term) {
+                Some(pluralized)
+              } else None
+            }
+
         }
         .filterNot(isAStopWord)
 

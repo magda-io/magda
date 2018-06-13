@@ -54,7 +54,7 @@ import au.csiro.data61.magda.test.util.MagdaElasticSugar
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(31 seconds)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
   def buildConfig = TestActorSystem.config
   implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
@@ -62,6 +62,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
   override def beforeAll() {
+    
+    blockUntilNotRed()
+
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
       client.execute(
@@ -87,12 +90,22 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit object MockClientProvider extends ClientProvider {
     override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
   }
+
   def blockUntilNotRed(): Unit = {
-    blockUntil("Expected cluster to have green status") { () =>
+    blockUntil("Expected cluster to have NOT RED status") { () =>
       val status = client.execute {
         clusterHealth()
       }.await(90 seconds).getStatus
       status != ClusterHealthStatus.RED
+    }
+  }
+
+  def blockUntilNotYellow(): Unit = {
+    blockUntil("Expected cluster to have green status") { () =>
+      val status = client.execute {
+        clusterHealth()
+      }.await(90 seconds).getStatus
+      status != ClusterHealthStatus.RED && status != ClusterHealthStatus.YELLOW
     }
   }
 

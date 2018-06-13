@@ -41,6 +41,8 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
+  
+  blockUntilNotRed()
 
   describe("when webhook received") {
     it("should index new datasets") {
@@ -123,7 +125,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           val builtIndex = buildIndex()
           Await.result(builtIndex.indexer.index(Source.fromIterator(() => dataSets.iterator)), 30 seconds)
 
-          Await.result(builtIndex.indexer.ready, 30 seconds)
+          Await.result(builtIndex.indexer.ready, 120 seconds)
           refresh(builtIndex.indexId)
           blockUntilExactCount(dataSets.size, builtIndex.indexId, builtIndex.indices.getType(Indices.DataSetsIndexType))
 
@@ -175,7 +177,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       forAll(gen) {
         case (dataSetsToDelete, deletedDataSetsToSave) =>
           val builtIndex = buildIndex()
-          Await.result(builtIndex.indexer.ready, 30 seconds)
+          Await.result(builtIndex.indexer.ready, 120 seconds)
           refresh(builtIndex.indexId)
 
           val events = dataSetsToDelete.map(dataSet =>

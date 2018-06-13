@@ -111,6 +111,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]) = {
+
+    blockUntilNotRed()
+
     val rawIndexName = java.util.UUID.randomUUID.toString
     val fakeIndices = FakeIndices(rawIndexName)
 
@@ -140,6 +143,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
   def cleanUpIndexes() = {
+    blockUntilNotRed()
     cleanUpQueue.iterator().forEachRemaining(
       new Consumer[String] {
         override def accept(indexName: String) = {

@@ -9,6 +9,8 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Made publisher acronym search case insensitive & added test cases
+-   Made elastic search supports synonyms
 -   reset pagination on query change
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.

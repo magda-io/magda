@@ -13,7 +13,20 @@ import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer }
+import com.sksamuel.elastic4s.analyzers.{
+  CustomAnalyzerDefinition,
+  StopTokenFilter,
+  LowercaseTokenFilter,
+  KeywordTokenizer,
+  StandardTokenizer,
+  SynonymTokenFilter,
+  UppercaseTokenFilter,
+  StemmerTokenFilter,
+  NamedStopTokenFilter,
+  Tokenizer,
+  TokenFilterDefinition,
+  WhitespaceTokenizer
+}
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.GeometryFactory
@@ -34,9 +47,9 @@ import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
-import org.elasticsearch.common.xcontent.XContentBuilder
-import com.sksamuel.elastic4s.analyzers.UppercaseTokenFilter
 import com.sksamuel.elastic4s.mappings.FieldDefinition
+import org.elasticsearch.common.xcontent.XContentBuilder
+import scala.collection.JavaConverters._
 
 case class IndexDefinition(
     name: String,
@@ -46,17 +59,72 @@ case class IndexDefinition(
     create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
 }
 
-object IndexDefinition extends DefaultJsonProtocol {
-  def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(
-      textField("english").analyzer("english"))
+case class SynonymGraphTokenFilter(name: String,
+                              path: Option[String] = None,
+                              synonyms: Set[String] = Set.empty,
+                              ignoreCase: Option[Boolean] = None,
+                              format: Option[String] = None,
+                              expand: Option[Boolean] = None,
+                              tokenizer: Option[Tokenizer] = None)
+  extends TokenFilterDefinition {
 
-    textField(name).fields(fields)
+  require(path.isDefined || synonyms.nonEmpty, "synonym_graph requires either `synonyms` or `synonyms_path` to be configured")
+
+  val filterType = "synonym_graph"
+
+  override def build(source: XContentBuilder): Unit = {
+    path.foreach(source.field("synonyms_path", _))
+    source.field("synonyms", synonyms.asJava)
+    format.foreach(source.field("format", _))
+    ignoreCase.foreach(source.field("ignore_case", _))
+    expand.foreach(source.field("expand", _))
+    tokenizer.foreach(t => source.field("tokenizer", t.name))
   }
+
+  def path(path: String): SynonymGraphTokenFilter = copy(path = Some(path))
+  def synonyms(synonyms: Iterable[String]): SynonymGraphTokenFilter = copy(synonyms = synonyms.toSet)
+  def tokenizer(tokenizer: Tokenizer): SynonymGraphTokenFilter = copy(tokenizer = Some(tokenizer))
+  def format(format: String): SynonymGraphTokenFilter = copy(format = Some(format))
+  def ignoreCase(ignoreCase: Boolean): SynonymGraphTokenFilter = copy(ignoreCase = Some(ignoreCase))
+  def expand(expand: Boolean): SynonymGraphTokenFilter = copy(expand = Some(expand))
+}
+
+object IndexDefinition extends DefaultJsonProtocol {
+
+  def magdaTextField(name: String, extraFields: FieldDefinition*) = {
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+
+    textField(name).analyzer("english").fields(fields)
+  }
+
+  def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote_partial_match"))
+
+    textField(name)
+        .analyzer("english_with_synonym")
+        .searchAnalyzer("english_without_synonym_for_search")
+        .fields(fields)
+  }
+
+  val MagdaSynonymTokenFilter = SynonymTokenFilter(
+    "synonym",
+    Some("analysis/wn_s.pl"),
+    Set.empty,
+    None,
+    Some("wordnet")
+  )
+
+  val MagdaSynonymGraphTokenFilter = SynonymGraphTokenFilter(
+    "synonym",
+    Some("analysis/wn_s.pl"),
+    Set.empty,
+    None,
+    Some("wordnet")
+  )
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 32,
+    version = 33,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -80,38 +148,72 @@ object IndexDefinition extends DefaultJsonProtocol {
             nestedField("distributions").fields(
               keywordField("identifier"),
               magdaTextField("title"),
-              magdaTextField("description"),
+              magdaSynonymTextField("description"),
               magdaTextField("format",
-                keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             objectField("spatial").fields(
               geoshapeField("geoJson")),
             magdaTextField("title"),
-            magdaTextField("description"),
+            magdaSynonymTextField("description"),
             magdaTextField("keywords"),
-            magdaTextField("themes"),
+            magdaSynonymTextField("themes"),
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
-            dateField("indexed"),
-            textField("english").analyzer("english")),
+            dateField("indexed")),
           mapping(indices.getType(indices.typeForFacet(Format))).fields(
-            magdaTextField("value"),
-            textField("english").analyzer("english")),
+            magdaTextField("value")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value"),
-            textField("english").analyzer("english")))
+            magdaTextField("value")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
             KeywordTokenizer,
-            LowercaseTokenFilter),
+            LowercaseTokenFilter
+          ),
+          /*
+            allow quoted query string match a portion of the field content rather than whole field
+            the exact form of whole quoted query string still have to be matched exactly in field content
+          */
+          CustomAnalyzerDefinition(
+            "quote_partial_match",
+            StandardTokenizer,
+            LowercaseTokenFilter
+          ),
           CustomAnalyzerDefinition(
             "uppercase",
             KeywordTokenizer,
-            UppercaseTokenFilter)
+            UppercaseTokenFilter
+          ),
+          /* Customised from new english analyzer as per:
+             https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
+             In order to apply synonym filter
+           */
+          CustomAnalyzerDefinition(
+            "english_with_synonym",
+            StandardTokenizer,
+            List(
+              LowercaseTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+              MagdaSynonymTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
+            )
+          ),
+          CustomAnalyzerDefinition(
+            "english_without_synonym_for_search",
+            StandardTokenizer,
+            List(
+              LowercaseTokenFilter,
+              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
+              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
+            )
+          )
         )
 
       if (config.hasPath("indexer.refreshInterval")) {
