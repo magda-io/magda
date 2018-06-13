@@ -39,8 +39,7 @@ class Search extends Component {
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
         this.state = {
-            searchText: undefined,
-            filterCount: 0
+            searchText: undefined
         };
     }
 
@@ -139,7 +138,7 @@ class Search extends Component {
      * this is then appended to the results text on the search page
      */
     filterCount = () => {
-        var count = 0;
+        let count = 0;
         if (this.props.activePublishers.length > 0) {
             count++;
         }
@@ -151,11 +150,11 @@ class Search extends Component {
             count++;
         }
 
-        if (this.props.activeDateFrom) {
+        if (this.props.activeDateFrom && this.props.activeDateTo) {
             count++;
         }
         if (count !== 0) {
-            var filterText = count === 1 ? " filter" : " filters";
+            const filterText = count === 1 ? " filter" : " filters";
             return " with " + count + filterText;
         } else {
             return "";
@@ -280,6 +279,7 @@ function mapStateToProps(state, ownProps) {
         activePublishers: datasetSearch.activePublishers,
         activeRegion: datasetSearch.activeRegion,
         activeDateFrom: datasetSearch.activeDateFrom,
+        activeDateTo: datasetSearch.activeDateTo,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
         progress: datasetSearch.progress,
