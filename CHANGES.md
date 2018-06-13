@@ -7,6 +7,7 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Made filter selections move only when applied on publisher and format
 
 ## 0.0.41
 
