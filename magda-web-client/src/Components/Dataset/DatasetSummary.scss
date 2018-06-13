@@ -19,11 +19,16 @@
         }
     }
 
-    .dataset-summary-publisher {
+    a.dataset-summary-publisher {
         opacity: 0.75;
         @include AU-fontgrid(xs);
         margin-bottom: 5px;
         display: inline-block;
+        text-decoration: none;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+        }
     }
 
     .dataset-summary-description {

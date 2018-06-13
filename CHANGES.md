@@ -8,6 +8,7 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 
 ## 0.0.41
