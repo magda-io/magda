@@ -1,5 +1,6 @@
 ## 0.0.42
 
+-   Implemented the new pagination design
 -   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
 -   Do not load preview map on mobile, give user option to view in national map instead
@@ -10,11 +11,13 @@
 -   Added `flex` display and set consistent padding from footer.
 -   Made publisher acronym search case insensitive & added test cases
 -   Made elastic search supports synonyms
+-   reset pagination on query change
+-   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
+-   Restricted markdown <strong> tag to be default style.
 
 ## 0.0.41
 
--   Close mobile nav when navigation occurs
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
 -   Fixed display of chart axis config dropdowns in Firefox.
