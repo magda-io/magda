@@ -417,7 +417,7 @@ dockerize:dockerExtensions:
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
     on_stop: Stop Preview
   before_script:
     # Add PWGEN for generating passwords
@@ -492,7 +492,7 @@ Deploy Master To Dev:
   before_script: []
   environment:
     name: dev
-    url: https://magda-dev.terria.io
+    url: https://dev.magda.io
   script:
   - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
   - export KUBECONFIG=kubectlconfig.yaml
