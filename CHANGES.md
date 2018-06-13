@@ -10,6 +10,7 @@
 -   Added `flex` display and set consistent padding from footer.
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
+-   Restricted markdown <strong> tag to be default style.
 
 ## 0.0.41
 
