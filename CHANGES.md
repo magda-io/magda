@@ -1,6 +1,8 @@
 ## 0.0.42
 
 -   add breadcrumb for dataset page and distribution page
+-   Implemented the new pagination design
+-   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
 -   Do not load preview map on mobile, give user option to view in national map instead
 -   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
@@ -8,6 +10,9 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Removed underline from organisations in search
+-   Modified styling for `ask a question` button to use secondary AUButton styling.
+-   Restricted markdown <strong> tag to be default style.
 
 ## 0.0.41
 
