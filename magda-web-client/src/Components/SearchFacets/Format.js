@@ -20,7 +20,8 @@ class Format extends Component {
     onToggleFormatOption(formats) {
         const queryOptions = formats.map(p => p.value);
         this.props.updateQuery({
-            format: queryOptions
+            format: queryOptions,
+            page: undefined
         });
         this.props.dispatch(updateFormats(formats));
         this.props.closeFacet();
