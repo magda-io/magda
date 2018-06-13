@@ -189,5 +189,8 @@
         "ui": true
       }
     }
+  },
+  "dependencies": {
+    "react-modal": "^3.4.5"
   }
 }
