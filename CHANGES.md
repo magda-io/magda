@@ -7,17 +7,10 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   reset pagination on query change
 
 ## 0.0.41
 
--   reset pagination on query change
--   Make mobile logo bigger, fixed a bug in safari
--   Close mobile nav when navigation occurs
--   improve preview tab active state and prevent scrolling when tab changes
--   Automatically show homepage stories when scrolling starts on mobile
--   Make organisation page more consistent with rest of the site
--   Make mobile logo bigger, fixed a bug in safari
--   Close mobile nav when navigation occurs
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
 -   Fixed display of chart axis config dropdowns in Firefox.
