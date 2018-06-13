@@ -44,6 +44,14 @@ html {
     }
 }
 
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
+    }
+}
+
 .au-btn:hover:not(:disabled),
 a.au-btn:hover:not(:disabled) {
     text-decoration: none;
