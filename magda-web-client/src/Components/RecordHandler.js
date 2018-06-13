@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
 import { bindActionCreators } from "redux";
@@ -13,7 +13,6 @@ import { config } from "../config";
 import defined from "../helpers/defined";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
-import { Route, Switch, Redirect } from "react-router-dom";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
@@ -134,15 +133,42 @@ class RecordHandler extends React.Component {
                 return <ProgressBar />;
             } else {
                 if (this.props.datasetFetchError) {
-                    return (
-                        <ErrorHandler error={this.props.datasetFetchError} />
-                    );
+                    if (this.props.datasetFetchError.detail === "Not Found") {
+                        return (
+                            <Redirect
+                                to={`/search?notfound=true&q="${encodeURI(
+                                    this.props.match.params.datasetId
+                                )}"`}
+                            />
+                        );
+                    } else {
+                        return (
+                            <ErrorHandler
+                                error={this.props.datasetFetchError}
+                            />
+                        );
+                    }
                 }
 
                 const baseUrlDataset = `/dataset/${encodeURI(
                     this.props.match.params.datasetId
                 )}`;
 
+                // redirect old CKAN URL slugs and UUIDs
+                if (
+                    this.props.dataset.identifier &&
+                    this.props.dataset.identifier !== "" &&
+                    this.props.dataset.identifier !==
+                        this.props.match.params.datasetId
+                ) {
+                    return (
+                        <Redirect
+                            to={`/dataset/${encodeURI(
+                                this.props.dataset.identifier
+                            )}/details?q=${searchText}`}
+                        />
+                    );
+                }
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
                         <div
@@ -199,6 +225,11 @@ class RecordHandler extends React.Component {
                                 <Redirect
                                     exact
                                     from="/dataset/:datasetId"
+                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                />
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId/resource/*"
                                     to={`${baseUrlDataset}/details?q=${searchText}`}
                                 />
                             </Switch>

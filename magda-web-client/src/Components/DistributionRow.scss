@@ -27,33 +27,37 @@
         @include AU-fontgrid(xs);
     }
 
-    button {
-        background-color: $AU-colordark-background;
-        border: 1px solid rgba(73, 73, 73, 0.05);
-    }
     .download-button {
         padding: 5px 10px;
 
         .button-text {
-            margin-left: 35px;
+            margin-left: 25px;
         }
         img {
             position: absolute;
-            top: 12px;
+            top: 13px;
         }
     }
     .new-tab-button {
         vertical-align: middle;
         padding: 5px;
+        border: 0;
+        background: transparent;
+        &:hover,
+        &:focus {
+            cursor: pointer;
+            color: $AU-color-foreground-action;
+        }
         img {
             vertical-align: top;
         }
     }
     .button-area {
         text-align: left;
-        margin-top: 11px;
+        margin-top: 1rem;
         @media (min-width: $medium) {
             text-align: right;
+            margin-top: 5px;
         }
     }
 }

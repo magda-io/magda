@@ -51,11 +51,32 @@ export function requestDistributionError(error: FetchError): RecordAction {
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
-        let url: string =
-            config.registryApiUrl +
-            `records/${encodeURIComponent(
-                id
-            )}?dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status&optionalAspect=dataset-quality-rating`;
+        let parameters =
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status&optionalAspect=dataset-quality-rating";
+        let url: string;
+        if (id.startsWith("ds-")) {
+            url =
+                config.registryApiUrl +
+                `records/${encodeURIComponent(id)}?${parameters}`;
+        } else if (
+            // lookup CKAN UUIDs
+            id.match(
+                /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g
+            )
+        ) {
+            url =
+                config.registryApiUrl +
+                `records?aspectQuery=ckan-dataset.id:${encodeURIComponent(
+                    id
+                )}&${parameters}`;
+        } else {
+            // lookup CKAN dataset slugs
+            url =
+                config.registryApiUrl +
+                `records?aspectQuery=ckan-dataset.name:${encodeURIComponent(
+                    id
+                )}&${parameters}`;
+        }
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
@@ -64,7 +85,15 @@ export function fetchDatasetFromRegistry(id: string): Function {
                 throw new Error(response.statusText);
             })
             .then((json: Object) => {
-                return dispatch(receiveDataset(json));
+                if (json.records) {
+                    if (json.records.length > 0) {
+                        return dispatch(receiveDataset(json.records[0]));
+                    } else {
+                        throw new Error("Not Found");
+                    }
+                } else {
+                    return dispatch(receiveDataset(json));
+                }
             })
             .catch(error =>
                 dispatch(

@@ -107,10 +107,17 @@ const cspDirectives = {
         "www.google-analytics.com",
         "rum-static.pingdom.net",
         "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js",
-        "https://tagmanager.google.com/debug"
+        "https://tagmanager.google.com/debug",
+        "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
+        "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
     ],
     objectSrc: ["'none'"],
-    sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"]
+    sandbox: [
+        "allow-scripts",
+        "allow-same-origin",
+        "allow-popups",
+        "allow-forms"
+    ]
 } as helmet.IHelmetContentSecurityPolicyDirectives;
 
 if (argv.cspReportUri) {

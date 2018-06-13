@@ -1,38 +1,26 @@
+## 0.0.42
+
+-   remove border for basal button style to prevent duplication
+-   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
+-   Do not load preview map on mobile, give user option to view in national map instead
+-   Added redirect for CKAN dataset URLs (UUID or slug) to their new canonical location
+-   Fixed pagination bar shows incorrect result count
+-   Added Zendesk feedback widget activated via footer link
+-   Made end of content spacing consistent
+-   Added `flex` display and set consistent padding from footer.
+-   Modified styling for `ask a question` button to use secondary AUButton styling.
+-   Restricted markdown <strong> tag to be default style.
+
 ## 0.0.41
 
--   Make mobile logo bigger, fixed a bug in safari
--   Close mobile nav when navigation occurs
--   improve preview tab active state and prevent scrolling when tab changes
--   Automatically show homepage stories when scrolling starts on mobile
--   Make organisation page more consistent with rest of the site
--   Make mobile logo bigger, fixed a bug in safari
 -   Close mobile nav when navigation occurs
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
 -   Fixed display of chart axis config dropdowns in Firefox.
 -   Fixed LanguageAnalyzerSpec from generating stop words as search values.
 -   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
--   Resolved comma spacing in no dataset results error.
--   Added vertical spacing for `DataPreview` chart fields.
--   Add call to action from design systems
--   Use Design System react components from local pancake to allow CSS color overrides
--   Create Suggest a Dataset Page
--   Add Suggest a Dataset on search results page
--   Fixed display of chart axis config dropdowns in Firefox.
--   Fixed LanguageAnalyzerSpec from generating stop words as search values.
--   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
--   Add a missing module from design guide that caused select to not style properly
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
--   Added vertical spacing for `DataPreview` chart fields.
--   Updated About page links to be more inline with design system standards.
--   Positioned the buttons & format icons at middle position of the Files & APIs section
--   Made publisher acronym search case insensitive & added test cases
--   Added vertical spacing for `DataPreview` chart fields.
--   Fixed a issue that state region layer could be removed from region filter panel map
--   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
--   Corrected email template style to be inline with designs.
--   Restricted markdown <strong> tag to be default style.
 
 ## 0.0.40
 
