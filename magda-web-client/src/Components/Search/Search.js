@@ -150,7 +150,7 @@ class Search extends Component {
             count++;
         }
 
-        if (this.props.activeDateFrom && this.props.activeDateTo) {
+        if (this.props.activeDateFrom || this.props.activeDateTo) {
             count++;
         }
         if (count !== 0) {
