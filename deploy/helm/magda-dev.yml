@@ -9,15 +9,19 @@ global:
 
 tags:
   all: true
-  dev-ingress: true
+  ingress: true
   sleuther-broken-link: true
   sleuther-linked-data-rating: true
   sleuther-visualization: true
   sleuther-format: true
 
-dev-ingress:
-  ipName: dev-magda-io
+ingress:
   hostname: dev.magda.io
+  ingressClass: nginx
+  domains:
+    - '*.magda.io'
+    - '*.dev.magda.io'
+    - magda.io
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:

@@ -415,6 +415,8 @@ dockerize:dockerExtensions:
   image:
     name: dtzar/helm-kubectl
   retry: 1
+  after_script:
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
   environment:
     name: preview/$CI_COMMIT_REF_NAME
     url: https://$CI_COMMIT_REF_SLUG.dev.magda.io

@@ -17,8 +17,8 @@ spec:
         - name: prod-dns
           route53:
             region: ap-southeast-2
-            hostedZoneID: Z1FY04JPVA0ZUP
-            accessKeyID: AKIAJLPF6GKZMIUFYOXQ 
+            hostedZoneID: {{ .Values.hostedZoneID }}
+            accessKeyID: {{ .Values.accessKeyID }}
             secretAccessKeySecretRef:
-              name: prod-route53-credentials-secret
-              key: secret-access-key
+              name: {{ .Values.secretAccessKeySecretRef.name }}
+              key: {{ .Values.secretAccessKeySecretRef.key }}

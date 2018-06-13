@@ -23,3 +23,5 @@ For route53 it also required you to create the right IAM policy:
     ]
 }
 ```
+
+Also don't forget to specify `hostedZoneID` (the hosted zone for the domain) and `accessKeyID` (the access key for the user with the above IAM policy).

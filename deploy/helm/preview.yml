@@ -7,10 +7,14 @@ global:
 
 tags:
   all: true
-  dev-ingress: true
+  ingress: true
 
-dev-ingress:
-  ipName: dev-magda-io
+ingress:
+  ingressClass: nginx
+  domains:
+    - '*.magda.io'
+    - '*.dev.magda.io'
+    - magda.io
 gateway:
   auth:
     facebookClientId: "173073926555600"

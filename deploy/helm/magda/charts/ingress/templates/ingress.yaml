@@ -3,11 +3,15 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingressClass | default "gce" }}
+    {{- if .Values.ipName }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
-  name: dev-ingress
+    {{- end }}
+  name: ingress
 spec:
   tls:
-    - secretName: magda-io-tls
+  - hosts:
+    - {{ .Values.hostname }}
+    secretName: magda-cert-tls
   rules:
   - host: {{ .Values.hostname }}
     http:
@@ -15,4 +19,4 @@ spec:
       - backend:
           serviceName: {{ .Values.targetService | default "gateway" }}
           servicePort: 80
-        path: /*
+        path: /
