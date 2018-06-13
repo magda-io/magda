@@ -98,7 +98,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote_partial_match").searchAnalyzer("quote"))
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote_partial_match"))
 
     textField(name)
         .analyzer("english_with_synonym")
@@ -179,7 +179,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           */
           CustomAnalyzerDefinition(
             "quote_partial_match",
-            WhitespaceTokenizer,
+            StandardTokenizer,
             LowercaseTokenFilter
           ),
           CustomAnalyzerDefinition(
