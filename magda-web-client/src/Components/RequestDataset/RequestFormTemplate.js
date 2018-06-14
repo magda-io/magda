@@ -14,8 +14,7 @@ export default class RequestFormTemplate extends React.Component {
             senderEmail: "",
             senderEmailValid: true,
             messageValid: true,
-            senderNameValid: true,
-            clearButtonDisabled: true
+            senderNameValid: true
         };
     }
 
@@ -25,28 +24,13 @@ export default class RequestFormTemplate extends React.Component {
             ? this.props.senderEmail
             : "";
         const senderName = this.props.senderName ? this.props.senderName : "";
-        this.setState(
-            () => {
-                return {
-                    senderEmail,
-                    message,
-                    senderName
-                };
-            },
-            () => {
-                if (
-                    (this.state.message && this.state.message !== "") ||
-                    this.state.senderName ||
-                    this.state.senderEmail
-                ) {
-                    this.setState(() => {
-                        return {
-                            clearButtonDisabled: false
-                        };
-                    });
-                }
-            }
-        );
+        this.setState(() => {
+            return {
+                senderEmail,
+                message,
+                senderName
+            };
+        });
     }
 
     /**
@@ -238,7 +222,16 @@ export default class RequestFormTemplate extends React.Component {
                 <AUbutton
                     onClick={this.handleClear}
                     className="au-btn--secondary correspondence-clear-button"
-                    disabled={this.state.clearButtonDisabled}
+                    disabled={
+                        !this.state.message &&
+                        this.state.message === "" &&
+                        (!this.state.senderName &&
+                            this.state.senderName === "") &&
+                        (!this.state.senderEmail &&
+                            this.state.senderEmail === "")
+                            ? true
+                            : false
+                    }
                 >
                     Clear
                 </AUbutton>

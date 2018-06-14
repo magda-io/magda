@@ -49,25 +49,12 @@ export default class DatasetSuggestForm extends React.Component {
      */
     toggleShowForm = () => {
         var showSuggest = this.state.showSuggest;
-        this.setState(
-            () => {
-                return {
-                    showSuggest: !showSuggest,
-                    formPosted: false
-                };
-            },
-            () => {
-                if (this.state.showSuggest) {
-                    document
-                        .querySelector("div > .au-grid")
-                        .classList.add("page-blur");
-                } else {
-                    document
-                        .querySelector("div > .au-grid")
-                        .classList.remove("page-blur");
-                }
-            }
-        );
+        this.setState(() => {
+            return {
+                showSuggest: !showSuggest,
+                formPosted: false
+            };
+        });
         this.props.toggleMargin(!this.state.showSuggest);
     };
 
@@ -81,9 +68,9 @@ export default class DatasetSuggestForm extends React.Component {
                 bottom: "auto",
                 marginRight: "-50%",
                 transform: "translate(-50%, -50%)",
-                "z-index": "1",
-                border: "2px solid rgb(204, 204, 204)",
-                padding: "10px"
+                zIndex: "11",
+                border: "3px solid rgb(204, 204, 204)",
+                padding: "0px"
             }
         };
         const formProps = {
@@ -123,6 +110,7 @@ export default class DatasetSuggestForm extends React.Component {
                         isOpen={this.state.showSuggest}
                         style={customStyles}
                         onRequestClose={this.toggleShowForm}
+                        ariaHideApp={false}
                     >
                         <div className="ask-dataset-form ask-dataset-form-responsive">
                             <img
@@ -149,13 +137,6 @@ export default class DatasetSuggestForm extends React.Component {
                         </div>
                     </Modal>
                 </React.Fragment>
-
-                <div
-                    id="suggest-page-overlay"
-                    className={
-                        this.state.showSuggest ? "overlay-request-dataset" : ""
-                    }
-                />
             </React.Fragment>
         );
     }

@@ -34,16 +34,6 @@
     }
 }
 
-.overlay-request-dataset {
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    position: fixed;
-    background-color: rgba(0, 0, 0, 0.35);
-    z-index: 0;
-}
-
 .page-blur {
     filter: blur(1.5px);
 }

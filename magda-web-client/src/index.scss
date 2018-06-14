@@ -186,3 +186,7 @@ h4 {
     background: $AU-color-foreground-action !important;
     color: $AU-colordark-foreground-text !important;
 }
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
+}
