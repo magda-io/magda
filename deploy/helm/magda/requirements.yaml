@@ -104,8 +104,8 @@ dependencies:
       - sleuther-linked-data-rating
 
 # One-namespace-per-PR dev ingress setup
-  - name: dev-ingress
+  - name: ingress
     version: 0.1.0
     tags:
-      - dev-ingress
+      - ingress
 

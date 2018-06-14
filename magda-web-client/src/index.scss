@@ -48,10 +48,19 @@ html {
     a,
     button,
     input,
-    select {
+    select,
+    textarea {
         &:focus {
             outline-color: $AU-colordark-foreground-focus !important;
         }
+    }
+}
+
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
     }
 }
 

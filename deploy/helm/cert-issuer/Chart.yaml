@@ -1,0 +1,4 @@
+apiVersion: v1
+description: "Cert issuer for magda"
+name: "magda-cert-issuer"
+version: "0.0.1"

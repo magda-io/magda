@@ -37,7 +37,7 @@ class SearchResults extends Component {
                                     </li>
                                     <li
                                         key={i - 5}
-                                        className="search-results__result"
+                                        className="search-results__result correspondence-dropdown-search"
                                     >
                                         <SearchPageSuggest />
                                     </li>
