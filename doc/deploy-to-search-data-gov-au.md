@@ -49,10 +49,12 @@ git pull
 git tag vx.x.x-RC1 # The "v" in the tag is very important!!
 git push vx.x.x-RC1
 ```
+
+This will cause a slightly different build pipeline to run - it will automatically push images to docker hub with the current version as specified in the root package json and create a full preview at https://vx-x-x-rc1.dev.magda.io using those images.
     
-    This will cause a slightly different build pipeline to run - it will automatically push images to docker hub with the current version as specified in the root package json and create a full preview at https://vx-x-x-rc1.dev.magda.io using those images.
-    
-*   [ ] Test https://vx-x-x-rc1.dev.magda.io
+*   [ ] Test https://vx-x-x-rc1.dev.magda.io. If it succeeds then proceed, otherwise fix it and go back to "Release the RC", bumping the RC version by one.
+
+*   [ ] Shut down the staging namespace in Gitlab.
 
 ### Publish to prod
 
@@ -87,69 +89,38 @@ kubectl apply -f kubernetes/generated/prod/cron
 cd ..
 ```
 
-*   [ ] Do a smoke test on prod to make sure everything works ok. If it works go to the next step, otherwise:
-    *   Fix it
-    *   Commit the changes
-    *   Do another `lerna publish --skip-npm --force-publish`, bumping the RC number by 1.
-    *   Rebuild/push the affected images
-    *   Restart the process starting from the dev deploy
-    *   Do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
+*   [ ] Test on prod:
+    * Make sure Google Analytics is reporting your presence
+    * Do a regression test
+    * Ensure that prod-specific settings (particularly absence of user accounts) are in place correctly
+    * If there's a problem then go back to "Release the RC", bumping the RC version by one.
+        * Also do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
-### Publish new version to git
+*   [ ] Mark the tag as a pre-release in github
 
-*   [ ] Push the new release tag and branch
+### Push the previous RC of last version as a release
+Now we've released a whole new version, presumably the previous version on prod proved stable enough to release as not an RC, so lets release that as a proper release.
 
-```bash
-git push origin <version>
-git push origin v<version>
-```
-
-*   [ ] Merge the release branch into master
+*   [ ] Check out last version's release branch
 
 ```bash
-git checkout master
-git pull
-git checkout -b merge-<version>
-git pull origin <version branch> -s recursive -X ours
-git push origin merge-<version>
-```
-
-... and open a PR. Be careful - any conflicts will be resolved by taking masters version, which sometimes causes lerna config to get clobbered - double check!
-
-### Create new pre-release version, publish to dev and push to git
-
-*   [ ] Checkout master
-
-```bash
-git checkout master
-git pull
-```
-
-*   [ ] Use lerna to create a new pre-patch version
-
-```
-lerna publish --force-publish --skip-npm
-```
-
-*   See "Publish to dev" for publishing instructions
-
-### Push the latest RC of last version as a release
-
-*   [ ] Check out last version's branch
-
-```bash
-git checkout <last version number>
+git checkout release/x.x.x
 ```
 
 *   [ ] Set the version number as an actual release version (no "-RCx") and push it to docker and github
 
 ```bash
-git checkout <version branch>
-lerna publish --skip-npm --force-publish
-git push origin v<version>
-lerna run build && lerna run docker-build-prod
+lerna publish --skip-npm --skip-git --force-publish
 ```
+
+*   [ ] Use a text editor to correct any references to the RC version that didn't get changed.
+
+*   [ ] Commit and tag as vx.x.x, then push the tag
+
+*   [ ] This will create a staging cluster just like the RC did - make sure everything's running ok.
+
+*   [ ] Shut down the staging cluster
 
 *   [ ] Set that latest tag as a "release" in github.
 
-*   [ ] Delete the version branch in github
+*   [ ] Delete the release branch in github
