@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import HeaderNav from "./HeaderNav";
 import { config } from "../../config.js";
-
+import PropTypes from "prop-types";
 import govtLogo from "../../assets/au-govt-logo-mobile.svg";
 
 class HeaderMobile extends Component {
@@ -11,6 +11,14 @@ class HeaderMobile extends Component {
         this.state = {
             isMobileMenuOpen: false
         };
+    }
+
+    componentDidMount() {
+        this.context.router.history.listen(() => {
+            this.setState({
+                isMobileMenuOpen: false
+            });
+        });
     }
 
     toggleMenu() {
@@ -27,7 +35,7 @@ class HeaderMobile extends Component {
                         <img
                             className="mobile-logo"
                             src={govtLogo}
-                            height={36}
+                            height={50}
                             alt="au Gov logo"
                         />
                     </Link>
@@ -57,5 +65,9 @@ class HeaderMobile extends Component {
         );
     }
 }
+
+HeaderMobile.contextTypes = {
+    router: PropTypes.object.isRequired
+};
 
 export default HeaderMobile;

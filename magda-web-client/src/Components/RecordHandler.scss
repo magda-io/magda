@@ -9,10 +9,23 @@
         display: table;
         width: 100%;
         padding-top: 10px;
+        display: inline-block;
         span.separator {
             width: 37px;
             display: inline-block;
             text-align: center;
         }
     }
+}
+
+.ask-question-button {
+    float: right;
+}
+
+.dataset-title {
+    display: inline;
+}
+
+.form-margin {
+    margin-bottom: 30px;
 }

@@ -1,6 +1,7 @@
+/* eslint-disable no-undef */
 import React from "react";
 
-import AUfooter, { AUfooterNav } from "@gov.au/footer";
+import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
 // temporary disable feedback from so we can try something else
 // import FeedbackForm from "./Feedback/FeedbackForm";
@@ -19,7 +20,19 @@ function FooterLink({ link }) {
         return <a href={link[1]}>{link[0]}</a>;
     } else if (link[1] === "feedback") {
         // return <FeedbackLink caption={link[0]} />;
-        return null;
+        return (
+            <a
+                href="#feedback"
+                onClick={() => {
+                    zE(function() {
+                        zE.activate();
+                    });
+                    return false;
+                }}
+            >
+                {link[0]}
+            </a>
+        );
     } else if (!regex.test(link[1])) {
         return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     } else {

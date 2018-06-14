@@ -107,10 +107,17 @@ const cspDirectives = {
         "www.google-analytics.com",
         "rum-static.pingdom.net",
         "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js",
-        "https://tagmanager.google.com/debug"
+        "https://tagmanager.google.com/debug",
+        "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
+        "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
     ],
     objectSrc: ["'none'"],
-    sandbox: ["allow-scripts", "allow-same-origin", "allow-popups"]
+    sandbox: [
+        "allow-scripts",
+        "allow-same-origin",
+        "allow-popups",
+        "allow-forms"
+    ]
 } as helmet.IHelmetContentSecurityPolicyDirectives;
 
 if (argv.cspReportUri) {
@@ -196,6 +203,13 @@ app.get("/server-config.js", function(req, res) {
                     .segment("feedback")
                     .segment("user")
                     .toString()
+        ),
+        correspondenceApiBaseUrl: addTrailingSlash(
+            argv.correspondenceApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("correspondence")
+                    .toString()
         )
     };
     res.type("application/javascript");
@@ -215,7 +229,8 @@ const topLevelRoutes = [
     "dataset",
     "projects",
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
-    "organisations"
+    "organisations",
+    "suggest"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -241,14 +256,13 @@ app.get("/page/*", function(req, res) {
 if (argv.devProxy) {
     app.get("/api/*", function(req, res) {
         console.log(argv.devProxy + req.params[0]);
-        req
-            .pipe(
-                request({
-                    url: argv.devProxy + req.params[0],
-                    qs: req.query,
-                    method: req.method
-                })
-            )
+        req.pipe(
+            request({
+                url: argv.devProxy + req.params[0],
+                qs: req.query,
+                method: req.method
+            })
+        )
             .on("error", err => {
                 const msg = "Error on connecting to the webservice.";
                 console.error(msg, err);

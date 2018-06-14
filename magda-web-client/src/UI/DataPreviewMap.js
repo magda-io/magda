@@ -201,17 +201,20 @@ class DataPreviewMap extends Component {
         if (!this.state.isInitLoading) {
             iframe = (
                 <div style={{ position: "relative" }}>
-                    <DataPreviewMapOpenInNationalMapButton
-                        distribution={this.state.selectedDistribution}
-                        style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "10px",
-                            visibility: this.state.isMapLoading
-                                ? "hidden"
-                                : "visible"
-                        }}
-                    />
+                    <Medium>
+                        <DataPreviewMapOpenInNationalMapButton
+                            distribution={this.state.selectedDistribution}
+                            buttonText="Open In National Map"
+                            style={{
+                                position: "absolute",
+                                right: "10px",
+                                top: "10px",
+                                visibility: this.state.isMapLoading
+                                    ? "hidden"
+                                    : "visible"
+                            }}
+                        />
+                    </Medium>
                     <Medium>
                         <iframe
                             title={this.state.selectedDistribution.title}
@@ -233,27 +236,6 @@ class DataPreviewMap extends Component {
                             }
                         />
                     </Medium>
-                    <Small>
-                        <iframe
-                            title={this.state.selectedDistribution.title}
-                            width="100%"
-                            height="200px"
-                            frameBorder="0"
-                            src={
-                                config.previewMapUrl +
-                                "#mode=preview&hideExplorerPanel=1&clean"
-                            }
-                            ref={f => (this.iframeRef = f)}
-                            style={
-                                this.state.isMapLoading
-                                    ? {
-                                          visibility: "hidden",
-                                          position: "absolute"
-                                      }
-                                    : {}
-                            }
-                        />
-                    </Small>
                 </div>
             );
         }
@@ -265,12 +247,20 @@ class DataPreviewMap extends Component {
                         <Medium>
                             <Spinner width="100%" height="420px" />
                         </Medium>
-                        <Small>
-                            <Spinner width="100%" height="200px" />
-                        </Small>
                     </div>
                 )}
-                {iframe}
+                <Small>
+                    <DataPreviewMapOpenInNationalMapButton
+                        distribution={this.state.selectedDistribution}
+                        style={{
+                            position: "relative",
+                            top: "10px",
+                            visibility: "visible"
+                        }}
+                        buttonText="View in national map"
+                    />
+                </Small>
+                <Medium>{iframe}</Medium>
             </div>
         );
     }

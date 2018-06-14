@@ -96,4 +96,7 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(StoryBox);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(StoryBox);

@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
 import { bindActionCreators } from "redux";
@@ -13,14 +13,20 @@ import { config } from "../config";
 import defined from "../helpers/defined";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
-import { Route, Switch, Redirect } from "react-router-dom";
 import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import "./RecordHandler.css";
-
+import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 class RecordHandler extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            addMargin: false
+        };
+    }
+
     componentWillMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
@@ -31,6 +37,11 @@ class RecordHandler extends React.Component {
             );
         }
     }
+
+    toggleMargin = addMargin => {
+        this.setState({ addMargin });
+    };
+
     componentWillReceiveProps(nextProps) {
         if (
             nextProps.match.params.datasetId !==
@@ -122,18 +133,58 @@ class RecordHandler extends React.Component {
                 return <ProgressBar />;
             } else {
                 if (this.props.datasetFetchError) {
-                    return (
-                        <ErrorHandler error={this.props.datasetFetchError} />
-                    );
+                    if (this.props.datasetFetchError.detail === "Not Found") {
+                        return (
+                            <Redirect
+                                to={`/search?notfound=true&q="${encodeURI(
+                                    this.props.match.params.datasetId
+                                )}"`}
+                            />
+                        );
+                    } else {
+                        return (
+                            <ErrorHandler
+                                error={this.props.datasetFetchError}
+                            />
+                        );
+                    }
                 }
 
                 const baseUrlDataset = `/dataset/${encodeURI(
                     this.props.match.params.datasetId
                 )}`;
 
+                // redirect old CKAN URL slugs and UUIDs
+                if (
+                    this.props.dataset.identifier &&
+                    this.props.dataset.identifier !== "" &&
+                    this.props.dataset.identifier !==
+                        this.props.match.params.datasetId
+                ) {
+                    return (
+                        <Redirect
+                            to={`/dataset/${encodeURI(
+                                this.props.dataset.identifier
+                            )}/details?q=${searchText}`}
+                        />
+                    );
+                }
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
-                        <h1 itemProp="name">{this.props.dataset.title}</h1>
+                        <div
+                            className={
+                                this.state.addMargin ? "form-margin" : ""
+                            }
+                        >
+                            <DatasetSuggestForm
+                                title={this.props.dataset.title}
+                                toggleMargin={this.toggleMargin}
+                                datasetId={this.props.dataset.identifier}
+                            />
+                        </div>
+                        <h1 className="dataset-title" itemProp="name">
+                            {this.props.dataset.title}
+                        </h1>
                         <div className="publisher-basic-info-row">
                             <span
                                 itemProp="publisher"
@@ -174,6 +225,11 @@ class RecordHandler extends React.Component {
                                 <Redirect
                                     exact
                                     from="/dataset/:datasetId"
+                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                />
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId/resource/*"
                                     to={`${baseUrlDataset}/details?q=${searchText}`}
                                 />
                             </Switch>
@@ -225,4 +281,7 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(RecordHandler);

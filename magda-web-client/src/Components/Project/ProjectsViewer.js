@@ -123,4 +123,7 @@ ProjectsViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectsViewer);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ProjectsViewer);

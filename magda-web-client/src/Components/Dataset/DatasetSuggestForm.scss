@@ -1,0 +1,28 @@
+@import "../../variables";
+
+.ask-dataset-form {
+    padding: 10px;
+    border: solid;
+    border-color: $AU-color-foreground-focus;
+    background-color: $AU-colordark-foreground-action;
+    overflow: -webkit-paged-y;
+    position: relative;
+}
+
+.correspondence-dataset-close-button {
+    height: 2em;
+    width: 2em;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@media only screen and (max-width: $small) {
+    .dataset-correspondence-container {
+        display: inline-block;
+        margin-top: 1rem;
+    }
+}
