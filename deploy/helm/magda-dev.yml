@@ -18,10 +18,6 @@ tags:
 ingress:
   hostname: dev.magda.io
   ingressClass: nginx
-  domains:
-    - '*.magda.io'
-    - '*.dev.magda.io'
-    - magda.io
 gateway:
   loadBalancerIP: "104.199.180.124"
   auth:

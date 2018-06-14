@@ -11,7 +11,9 @@ spec:
   tls:
   - hosts:
     - {{ .Values.hostname }}
+  {{- if .Values.enableTls }}
     secretName: magda-cert-tls
+  {{- end }}
   rules:
   - host: {{ .Values.hostname }}
     http:

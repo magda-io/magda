@@ -1,4 +1,4 @@
-{{- if .Values.enableTls }}
+{{- if .Values.defaultCertificate }}
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -8,9 +8,9 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
-  commonName: {{ index .Values.domains 0 | quote }}
+  commonName: {{ index .Values.defaultCertificate.domains 0 | quote }}
   dnsNames:
-  {{- range .Values.domains }}
+  {{- range .Values.defaultCertificate.domains }}
   - {{ . | quote }}
   {{- end }}
   acme:
@@ -18,7 +18,7 @@ spec:
     - dns01:
         provider: prod-dns
       domains:
-      {{- range .Values.domains }}
+      {{- range .Values.defaultCertificate.domains }}
       - {{ . | quote }}
       {{- end }}
 {{- end }}

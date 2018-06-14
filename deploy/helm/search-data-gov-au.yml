@@ -30,6 +30,7 @@ tags:
 ingress:
   hostname: search.data.gov.au
   ingressClass: gce
+  enableTls: true
   domains:
     - search.data.gov.au
 elasticsearch:
