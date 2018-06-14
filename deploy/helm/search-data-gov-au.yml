@@ -25,7 +25,13 @@ tags:
     sleuther-format: true
     web-server: true
     feedback-api: true
+    ingress: true
 
+ingress:
+  hostname: search.data.gov.au
+  ingressClass: gce
+  domains:
+    - search.data.gov.au
 elasticsearch:
     production: true
     client:
