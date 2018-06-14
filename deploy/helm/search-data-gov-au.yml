@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.40-RC1"
+        tag: "0.0.41-RC1"
     enableLivenessProbes: true
 tags:
     all: false
@@ -25,7 +25,13 @@ tags:
     sleuther-format: true
     web-server: true
     feedback-api: true
+    ingress: true
 
+ingress:
+  hostname: search.data.gov.au
+  ingressClass: gce
+  domains:
+    - search.data.gov.au
 elasticsearch:
     production: true
     client:

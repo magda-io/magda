@@ -14,7 +14,6 @@ spec:
         - args: 
             - /nginx-ingress-controller
             - "--default-backend-service=$(POD_NAMESPACE)/default-http-backend"
-            # - "--default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate"
             - "--publish-service=$(POD_NAMESPACE)/nginx-ingress"
           env: 
             - name: POD_NAME
@@ -39,14 +38,7 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
-            # - containerPort: 443
-            #   name: https
-            #   protocol: TCP
-          # volumeMounts: 
-          #   - mountPath: /etc/nginx-ssl/dhparam
-          #     name: tls-dhparam-vol
+            - containerPort: 443
+              name: https
+              protocol: TCP
       terminationGracePeriodSeconds: 60
-      # volumes: 
-      #   - name: tls-dhparam-vol
-      #     secret: 
-      #       secretName: tls-dhparam

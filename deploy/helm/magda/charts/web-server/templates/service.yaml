@@ -9,7 +9,7 @@ spec:
     targetPort: 80
 {{- if .Values.global.exposeNodePorts }}
     nodePort: 30107
-  type: NodePort
 {{- end }}
+  type: {{- if .Values.global.exposeNodePorts}} "NodePort" {{- else }} {{ .Values.service.type | default "ClusterIP" }} {{- end }}
   selector:
     service: web

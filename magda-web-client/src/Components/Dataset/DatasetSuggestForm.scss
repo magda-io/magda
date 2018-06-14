@@ -7,6 +7,14 @@
     background-color: $AU-colordark-foreground-action;
     overflow: -webkit-paged-y;
     position: relative;
+    float: right;
+    width: 800px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .ask-dataset-form-responsive {
+        max-width: 700px !important;
+    }
 }
 
 .correspondence-dataset-close-button {
@@ -25,4 +33,13 @@
         display: inline-block;
         margin-top: 1rem;
     }
+    .ask-dataset-form-responsive {
+        width: auto;
+        float: none;
+        overflow-y: auto;
+    }
+}
+
+.page-blur {
+    filter: blur(1.5px);
 }
