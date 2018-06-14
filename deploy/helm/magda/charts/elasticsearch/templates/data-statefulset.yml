@@ -35,6 +35,13 @@ spec:
                   values:
                   - data
               topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: init-sysctl
+        image: "{{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}"
+        imagePullPolicy: {{ .Values.image.init.pullPolicy }}
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
       containers:
       - name: es-data
         securityContext:
@@ -73,7 +80,7 @@ spec:
         - name: NODE_INGEST
           value: {{ not .Values.production | quote }}
         - name: ES_JAVA_OPTS
-          value: "-Xms{{ .Values.data.heapSize }} -Xmx{{ .Values.data.heapSize }}"
+          value: "-Xms{{ .Values.data.heapMemory }} -Xmx{{ .Values.data.heapSize }}"
         - name: ES_PLUGINS_INSTALL
           value: {{ .Values.data.pluginsInstall | quote }}
         - name: NETWORK_HOST
