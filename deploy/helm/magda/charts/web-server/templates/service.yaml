@@ -10,6 +10,6 @@ spec:
 {{- if .Values.global.exposeNodePorts }}
     nodePort: 30107
 {{- end }}
-  type: {{- if .Values.global.exposeNodePorts}} "NodePort" {{- else }} {{.Values.service.type | default "ClusterIP" }} {{- end }}
+  type: {{- if .Values.global.exposeNodePorts}} "NodePort" {{- else }} {{ .Values.service.type | default "ClusterIP" }} {{- end }}
   selector:
     service: web

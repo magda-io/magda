@@ -415,8 +415,6 @@ dockerize:dockerExtensions:
   image:
     name: dtzar/helm-kubectl
   retry: 1
-  after_script:
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
   environment:
     name: preview/$CI_COMMIT_REF_NAME
     url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
@@ -448,13 +446,16 @@ dockerize:dockerExtensions:
 
     # Helm upgrade
     - helm init --upgrade
+
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,correspondence-api.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,correspondence-api.externalUrl=http://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
 
 (UI) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://magda-dev.terria.io --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://dev.magda.io --timeout 1200 --wait
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 Stop Preview: &stopPreview
   stage: preview
@@ -534,13 +535,13 @@ Deploy Released Tags As Staging:
     - branches
   environment:
     name: staging/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    url: http://$CI_COMMIT_REF_SLUG.dev.magda.io
     on_stop: Stop Staging
   script:
     # Get version from lerna json
     - apk add --update jq
     - TAG=$(jq -r ".version" lerna.json)
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
 
 Stop Staging: 
   <<: *stopPreview
