@@ -98,6 +98,17 @@ cd ..
 
 *   [ ] Mark the tag as a pre-release in github
 
+### Merge the changes in the release branch back into master
+```
+git checkout master
+git pull
+git checkout -b merge-<version>
+git pull origin <version branch> -s recursive -X ours
+git push origin merge-<version>
+```
+
+And open a PR on master.
+
 ### Push the previous RC of last version as a release
 Now we've released a whole new version, presumably the previous version on prod proved stable enough to release as not an RC, so lets release that as a proper release.
 
