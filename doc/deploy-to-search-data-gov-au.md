@@ -1,4 +1,6 @@
-### Push the new version to dockerhub
+### Create a release branch
+
+This should happen just before or after a complete QA of the system. During the test issues will be created for bugs found - if any are release blockers, the PRs that fix them should be based on this release branch. Anything else should be based on `master`.
 
 *   [ ] Check out master and ensure you don't have any extra changes
 
@@ -15,61 +17,42 @@ git status
 git checkout -b release/0.0.x
 ```
 
-*   [ ] At the root, run `lerna bootstrap`
-
-*   [ ] Run `lerna publish` to bump the version number to a Release Candidate version (`v*.*._-RC_) and create a new release commit
+*   [ ] Run `lerna publish ` to bump the version number to a Release Candidate version (`v*.*.*-RC1)
 
 ```bash
-lerna publish --skip-npm --force-publish
+lerna publish --skip-npm --skip-git --force-publish
 ```
 
-*   [ ] Use a text editor to do a find-and-replace-in-project for the old version to make sure that there's not extra references to the old version number lying around - we want to automate this whereever possible but it happens. If anything needed changing, use `git commit --amend` to make it part of the release commit.
+*   [ ] Use a text editor to do a find-and-replace-in-project for the old version to make sure that there's not extra references to the old version number lying around. In particular update the prod config to point at this new version. Also make sure to change `deploy/helm/magda/Chart.yaml`.
 
-*   [ ] Build everything
+*   [ ] Commit and push.
+
+### Bump version in master
+*   [ ] Run `lerna publish ` to bump the version number to a the next development version (x.x.x-0).
 
 ```bash
-lerna run build --include-filtered-dependencies
+git checkout master
+lerna publish --skip-npm --skip-git --force-publish
 ```
 
-*   [ ] Build docker images for everything that needs it
+*   [ ] Use a text editor to do a find-and-replace-in-project for the old version to make sure that there's not extra references to the old version number lying around - we want to automate this whereever possible but it happens. Ensure that the prod config continues to point at a release version, but the dev config should point at the new version. Also make sure to change `deploy/helm/magda/Chart.yaml`.
+
+*   [ ] Commit the changes and create a PR against `master` for the version bump.
+
+### (When all release-blocker bugs resolved) Release the RC
+
+*   [ ] Check out the release branch and make sure it's up to date, then tag it as an RC and push it.
 
 ```bash
-lerna run docker-build-prod --include-filtered-dependencies
+git checkout release/x.x.x
+git pull
+git tag vx.x.x-RC1 # The "v" in the tag is very important!!
+git push vx.x.x-RC1
 ```
-
-### Publish to dev
-
-*   [ ] Connect to the dev cluster
-
-```bash
-kubectl config use-context <dev-cluster-name>
-```
-
-If you don't know the dev cluster name, use `kubectl config get-contexts`. If you've never connected to the dev cluster, go to the GKE page of google cloud and get the script to connect yourself.
-
-*   [ ] Run a helm upgrade to put dev on your new version
-
-```bash
-helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/magda-dev.yml deploy/helm/magda
-```
-
-*   [ ] Generate jobs files, deploy them and make sure they run ok
-
-```bash
-cd deploy
-yarn run create-connector-configmap
-yarn run generate-connector-jobs-dev
-mkdir kubernetes/generated/prod/cron
-mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
-kubectl apply -f kubernetes/generated/prod/cron
-cd ..
-```
-
-*   [ ] Do a smoke test on dev to make sure everything works ok. If it works go to the next step, otherwise:
-    *   Fix it
-    *   Commit the changes
-    *   Do another `lerna publish --skip-npm --force-publish`, bumping the RC number by 1.
-    *   Rebuild/push the affected images
+    
+    This will cause a slightly different build pipeline to run - it will automatically push images to docker hub with the current version as specified in the root package json and create a full preview at https://vx-x-x-rc1.dev.magda.io using those images.
+    
+*   [ ] Test https://vx-x-x-rc1.dev.magda.io
 
 ### Publish to prod
 
