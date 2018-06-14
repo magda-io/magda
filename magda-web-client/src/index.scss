@@ -36,10 +36,19 @@ html {
     a,
     button,
     input,
-    select {
+    select,
+    textarea {
         &:focus {
             outline-color: $AU-colordark-foreground-focus !important;
         }
+    }
+}
+
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
     }
 }
 
@@ -176,4 +185,8 @@ h4 {
 .au-body ::selection {
     background: $AU-color-foreground-action !important;
     color: $AU-colordark-foreground-text !important;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
 }
