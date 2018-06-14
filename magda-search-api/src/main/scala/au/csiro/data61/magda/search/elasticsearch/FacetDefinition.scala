@@ -170,7 +170,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .size(limit)
         .includeExclude(Seq(), Seq(""))
         .subAggregations {
-          aggregation reverseNested "reverse"
+          reverseNestedAggregation("reverse")
         }
     }
 

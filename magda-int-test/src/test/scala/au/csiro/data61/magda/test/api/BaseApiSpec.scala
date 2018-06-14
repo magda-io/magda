@@ -21,7 +21,7 @@ import org.scalatest.FunSpec
 import org.scalatest.Matchers
 
 import com.sksamuel.elastic4s.ElasticDsl
-import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -88,7 +88,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
+    override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[HttpClient] = Future(client)
   }
 
   def blockUntilNotRed(): Unit = {

@@ -5,11 +5,12 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import org.elasticsearch.search.aggregations.Aggregation
+import com.sksamuel.elastic4s.searches.aggs.AggregationApi
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
 
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.RichSearchResponse
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
@@ -54,6 +55,7 @@ import java.time.ZoneId
 import java.time.Instant
 import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
+import com.sksamuel.elastic4s.http.HttpClient
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -63,7 +65,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
 
-  val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec).recover {
+  val clientFuture: Future[HttpClient] = clientProvider.getClient(system.scheduler, logger, ec).recover {
     case t: Throwable =>
       logger.error(t, "Could not connect to elasticsearch - this is a fatal error, so I'm dying now.")
       System.exit(1)
@@ -367,7 +369,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
             case _ =>
-              val hits: Seq[(String, Option[String])] = response.hits
+              val hits: Seq[(String, Option[String])] = response.hits.hits
                 .map { hit =>
                   val map = hit.sourceAsMap
                   (
@@ -378,7 +380,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               // Create a dataset filter aggregation for each hit in the initial query
               val filters = hits.map {
                 case (name, identifier) =>
-                  aggregation.filter(name).filter(facetDef.exactMatchQuery(Specified(name)))
+                  filterAggregation(name).filter(facetDef.exactMatchQuery(Specified(name)))
               }
 
               // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
@@ -386,7 +388,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               client.execute {
                 buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
               } map { aggQueryResult =>
-                val aggregations = aggQueryResult.aggregations.map.mapValues {
+                val aggregations = aggQueryResult.aggregationsAsMap.mapValues {
                   case (bucket: InternalFilter) =>
                     new FacetOption(
                       identifier = None,
@@ -396,7 +398,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
                 FacetSearchResult(
                   hitCount = response.totalHits,
-                  options = hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+                  options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
               }
           }
         }
@@ -422,7 +424,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: TcpClient): Future[Option[Region]] = {
+  def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: HttpClient): Future[Option[Region]] = {
     queryRegionFV match {
       case Specified(region) =>
         client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))

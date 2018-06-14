@@ -22,7 +22,7 @@ import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 import org.elasticsearch.action.bulk.{ BulkResponse }
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.ElasticDsl
 
 import scala.collection.JavaConversions._
@@ -55,7 +55,7 @@ class ElasticSearchIndexer(
   val SNAPSHOT_REPO_NAME = "snapshots"
 
   /**
-   * Returns an initialised {@link TcpClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   * Returns an initialised {@link HttpClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
   private val setupFuture = setup()
@@ -131,8 +131,8 @@ class ElasticSearchIndexer(
       .to(Sink.ignore)
       .run()
 
-  private lazy val restoreQueue: SourceQueue[(TcpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(TcpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val restoreQueue: SourceQueue[(HttpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
+    Source.queue[(HttpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
           logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshotId.getName, definition.name, definition.version)
@@ -165,8 +165,8 @@ class ElasticSearchIndexer(
       .to(Sink.last)
       .run()
 
-  /** Initialises an {@link TcpClient}, handling initial connection to the ElasticSearch server and creation of the indices */
-  private def setup(): Future[TcpClient] = {
+  /** Initialises an {@link HttpClient}, handling initial connection to the ElasticSearch server and creation of the indices */
+  private def setup(): Future[HttpClient] = {
     clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
         .flatMap { indexPairs =>
@@ -198,7 +198,7 @@ class ElasticSearchIndexer(
   /**
    * Returns a future that gets a seq of each index paired with its current ES definition.
    */
-  private def getIndexDefinitions(client: TcpClient) = {
+  private def getIndexDefinitions(client: HttpClient) = {
     def indexNotFound(indexDef: IndexDefinition, inner: IndexNotFoundException) = {
       logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
@@ -216,7 +216,7 @@ class ElasticSearchIndexer(
       .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
   }
 
-  private def updateIndices(client: TcpClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
     Future.sequence(definitionPairs.map {
       case (mapping, definition) =>
         // If no index, create it
@@ -230,7 +230,7 @@ class ElasticSearchIndexer(
         }
     })
 
-  private def buildIndex(client: TcpClient, definition: IndexDefinition): Future[Any] = {
+  private def buildIndex(client: HttpClient, definition: IndexDefinition): Future[Any] = {
     val snapshotFuture = if (config.getBoolean("indexer.readSnapshots"))
       restoreLatestSnapshot(client, definition)
     else {
@@ -262,7 +262,7 @@ class ElasticSearchIndexer(
     }
   }
 
-  def deleteIndex(client: TcpClient, definition: IndexDefinition): Future[Unit] = client.execute {
+  def deleteIndex(client: HttpClient, definition: IndexDefinition): Future[Unit] = client.execute {
     ElasticDsl.deleteIndex(indices.getIndex(config, definition.indicesIndex))
   } recover {
     case RootCause(inner: IndexNotFoundException) => // Meh, we were trying to delete it anyway.
@@ -277,7 +277,7 @@ class ElasticSearchIndexer(
   case object RestoreSuccess extends RestoreResult
   case object RestoreFailure extends RestoreResult
 
-  private def restoreLatestSnapshot(client: TcpClient, index: IndexDefinition): Future[RestoreResult] = {
+  private def restoreLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[RestoreResult] = {
     logger.info("Attempting to restore snapshot for {} version {}", index.name, index.version)
 
     getLatestSnapshot(client, index) flatMap {
@@ -292,7 +292,7 @@ class ElasticSearchIndexer(
     }
   }
 
-  private def getLatestSnapshot(client: TcpClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+  private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
     def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
       get snapshot Seq() from SNAPSHOT_REPO_NAME
     }
@@ -315,7 +315,7 @@ class ElasticSearchIndexer(
       }
   }
 
-  private def createSnapshotRepo(client: TcpClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+  private def createSnapshotRepo(client: HttpClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
     val repoConfig = config.getConfig("elasticSearch.snapshotRepo")
     val repoType = repoConfig.getString("type")
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
@@ -394,7 +394,7 @@ class ElasticSearchIndexer(
     }
   }
 
-  private def createSnapshot(client: TcpClient, definition: IndexDefinition): Future[Unit] = {
+  private def createSnapshot(client: HttpClient, definition: IndexDefinition): Future[Unit] = {
     if (config.getBoolean("indexer.makeSnapshots")) {
       logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 

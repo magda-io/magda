@@ -7,9 +7,10 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.ElasticDsl
-import com.sksamuel.elastic4s.ElasticDsl._
+//import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.TcpClient
+import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
@@ -56,7 +57,7 @@ case class IndexDefinition(
     version: Int,
     indicesIndex: Indices.Index,
     definition: (Indices, Config) => CreateIndexDefinition,
-    create: Option[(TcpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
+    create: Option[(HttpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
 }
 
 case class SynonymGraphTokenFilter(name: String,
@@ -230,7 +231,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       version = 21,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
-        create.index(indices.getIndex(config, Indices.RegionsIndex))
+        createIndex(indices.getIndex(config, Indices.RegionsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
@@ -251,7 +252,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val indices = Seq(dataSets, regions)
 
-  def setupRegions(client: TcpClient, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: HttpClient, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
@@ -262,7 +263,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   implicit val geometryFactory = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: TcpClient, loader: RegionLoader, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: HttpClient, loader: RegionLoader, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
     loader.setupRegions
@@ -336,7 +337,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result.failures.foreach(failure =>
-          logger.error("Failure: {}", failure.failureMessage))
+          logger.error("Failure: {}", failure.error))
 
         result.successes.length
       }
