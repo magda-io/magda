@@ -1,4 +1,4 @@
-FROM quay.io/pires/docker-elasticsearch-kubernetes:5.6.3
+FROM quay.io/pires/docker-elasticsearch-kubernetes:6.2.4
 
 ADD component/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
 ADD component/setup.sh /setup.sh
