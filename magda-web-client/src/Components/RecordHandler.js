@@ -29,7 +29,7 @@ class RecordHandler extends React.Component {
         this.getBreadcrumbs = this.getBreadcrumbs.bind(this);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
         );
@@ -44,22 +44,21 @@ class RecordHandler extends React.Component {
         this.setState({ addMargin });
     };
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(props) {
         if (
-            nextProps.match.params.datasetId !==
-            this.props.match.params.datasetId
+            props.match.params.datasetId !== this.props.match.params.datasetId
         ) {
-            nextProps.fetchDataset(
-                decodeURIComponent(nextProps.match.params.datasetId)
+            props.fetchDataset(
+                decodeURIComponent(props.match.params.datasetId)
             );
         }
         if (
-            nextProps.match.params.distributionId &&
-            nextProps.match.params.distributionId !==
+            props.match.params.distributionId &&
+            props.match.params.distributionId !==
                 this.props.match.params.distributionId
         ) {
-            nextProps.fetchDistribution(
-                decodeURIComponent(nextProps.match.params.distributionId)
+            props.fetchDistribution(
+                decodeURIComponent(props.match.params.distributionId)
             );
         }
     }

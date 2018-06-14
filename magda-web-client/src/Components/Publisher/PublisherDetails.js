@@ -13,17 +13,17 @@ import Breadcrumbs from "../../UI/Breadcrumbs";
 import "./PublisherDetails.css";
 
 class PublisherDetails extends Component {
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchPublisherIfNeeded(this.props.match.params.publisherId);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         if (
-            nextProps.match.params.publisherId !==
+            prevProps.match.params.publisherId !==
             this.props.match.params.publisherId
         ) {
-            nextProps.fetchPublisherIfNeeded(
-                nextProps.match.params.publisherId
+            this.props.fetchPublisherIfNeeded(
+                this.props.match.params.publisherId
             );
         }
     }
