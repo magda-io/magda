@@ -62,7 +62,7 @@ const datasetSearchReducer = (
                               new Date(queryObject.dateFrom),
                               new Date(queryObject.dateTo)
                           ]
-                        : null,
+                        : state.temporalRange,
                 publisherOptions: initialData.publisherOptions,
                 formatOptions: initialData.formatOptions,
                 activePublishers: activePub,

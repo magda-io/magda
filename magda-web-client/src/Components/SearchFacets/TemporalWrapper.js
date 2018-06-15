@@ -11,6 +11,13 @@ export default class TemporalWrapper extends React.Component {
         };
     }
 
+    /**
+     * This is activated when the 'x' is clicked on on the facet header.
+     * in the case that temporalWrapper is open, if the FacetHeader 'x' buttton
+     * is clicked, it calls the ToggleReset, which calls the closeFacet() method,
+     * which in turns applies the selected dates. So we need to see if the 'x' has
+     * been clicked in the facetHeader. If it has, then don't applyFilter.
+     */
     resetTemporalFacet = () => {
         this.setState(
             () => {
@@ -31,6 +38,10 @@ export default class TemporalWrapper extends React.Component {
         });
     }
 
+    /**
+     * This is called once the componentWillUnmount is called in the
+     * FacetTemporal class.
+     */
     toggleDateReset = () => {
         this.setState(prevState => {
             return {

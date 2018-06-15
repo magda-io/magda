@@ -52,7 +52,10 @@ class FacetTemporal extends Component {
 
     /**
      * only apply filter if the year is defined/selected
-     * and also if the facetheader close button has not been clicked
+     * in the case that temporalWrapper is open, if the FacetHeader 'x' buttton
+     * is clicked, it calls the ToggleReset, which calls the closeFacet() method,
+     * which in turns applies the selected dates. So we need to see if the 'x' has
+     * been clicked in the facetHeader. If it has, then don't applyFilter.
      */
     componentWillUnmount() {
         if (this.state.startYear !== undefined && !this.props.facetReset) {
