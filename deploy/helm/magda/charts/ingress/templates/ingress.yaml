@@ -21,4 +21,4 @@ spec:
       - backend:
           serviceName: {{ .Values.targetService | default "gateway" }}
           servicePort: 80
-        path: /
+        path: /*

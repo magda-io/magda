@@ -37,7 +37,6 @@ dependencies:
   - name: feedback-api
     version: 0.1.0
     tags:
-      - all
       - feedback-api
   - name: gateway
     version: 0.1.0
@@ -103,7 +102,6 @@ dependencies:
     tags:
       - sleuther-linked-data-rating
 
-# One-namespace-per-PR dev ingress setup
   - name: ingress
     version: 0.1.0
     tags:

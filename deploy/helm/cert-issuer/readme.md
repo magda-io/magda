@@ -1,4 +1,14 @@
-First this requires you to create a secret for the route 53 credentials in the right namespace:
+Before you install this chart install `cert-manager`:
+
+```
+helm install \
+    --name cert-manager \
+    --namespace kube-system \
+    stable/cert-manager \
+    --set rbac.create=false
+```
+
+This requires you to create a secret for the route 53 credentials in the right namespace:
 
 ```
 kubectl create secret generic prod-route53-credentials-secret --from-literal=secret-access-key=aergaergaegargearger --namespace kube-system
