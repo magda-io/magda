@@ -450,7 +450,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       d.publisher.map(o=> o.copy(dataSetCount = innerHit.map(h=>{
         h.totalHits
       })))
-    }).filter(_.isDefined).map(_.getOrElse(new Agent)).toList
+    }).filter(_.isDefined).map(_.get).toList
 
     Future(OrganisationsSearchResult(queryString, 0, orgs))
   }
