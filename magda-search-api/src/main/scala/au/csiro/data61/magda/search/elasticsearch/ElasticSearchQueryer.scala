@@ -3,11 +3,9 @@ package au.csiro.data61.magda.search.elasticsearch
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
 import org.elasticsearch.search.aggregations.Aggregation
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
-
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.searches.RichSearchResponse
@@ -17,7 +15,6 @@ import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import com.typesafe.config.Config
-
 import spray.json._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
@@ -25,9 +22,8 @@ import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
-import au.csiro.data61.magda.api.model.RegionSearchResult
-import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.Temporal.{ PeriodOfTime, ApiDate }
+import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -38,6 +34,7 @@ import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
+
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
 import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
@@ -52,6 +49,7 @@ import java.time.ZoneOffset
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
+
 import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 
@@ -424,6 +422,64 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             case _ => Future(RegionSearchResult(query, response.totalHits, response.to[Region].toList))
           }
         }
+    }
+  }
+
+  override def searchOrganisations(queryString: Option[String], start: Long, limit: Int): Future[OrganisationsSearchResult] = {
+    /*clientFuture.flatMap { client =>
+      client.execute(
+        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
+          from start.toInt
+          limit limit
+          collapse (
+            field("Publisher.identifier")
+            inner hits "sds" size 0
+          )
+          sortBy (
+          scoreSort order SortOrder.DESC)
+          sourceExclude "geometry").flatMap { response =>
+        response.totalHits match {
+          case 0 => Future(OrganisationsSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
+          case _ => Future(OrganisationsSearchResult(query, response.totalHits, response.to[Agent].toList))
+        }
+      }
+    }*/
+
+    clientFuture.flatMap { client =>
+      client.execute(
+        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+          size 10
+          from 0
+          query{
+            simpleStringQuery(queryString, List("publisher.name","publisher.acronym"))
+
+          }
+          /*source {
+            """{
+              |    "size":10,
+              |    "query":{
+              |      "simple_query_string": {
+              |        "query": "south",
+              |        "fields": ["publisher.name","publisher.acronym"]
+              |      }
+              |    },
+              |    "collapse" : {
+              |        "field" : "publisher.identifier",
+              |        "inner_hits": {"name": "inner","size":0}
+              |
+              |    },
+              |
+              |    "sort": ["publisher.name.keyword"],
+              |    "from": 0
+              |}"""
+          }*/
+        ).flatMap { response =>
+        response.totalHits match {
+          case 0 => Future(OrganisationsSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
+          case _ => Future(OrganisationsSearchResult(query, 0, List()))
+        }
+      }
     }
   }
 

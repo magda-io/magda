@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.api.model
 
-import au.csiro.data61.magda.model.misc.{ DataSet, Facet, Region }
+import au.csiro.data61.magda.model.misc.{ DataSet, Facet, Region, Agent }
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.PeriodOfTime
 import au.csiro.data61.magda.model.misc
@@ -25,6 +25,12 @@ case class RegionSearchResult(
   query: Option[String],
   hitCount: Long,
   regions: List[Region])
+
+case class OrganisationsSearchResult(
+  query: Option[String],
+  hitCount: Long,
+  organisations: List[Agent]
+)
 
 trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Protocols {
   implicit object SearchStrategyFormat extends JsonFormat[SearchStrategy] {
@@ -53,6 +59,9 @@ trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Pr
   implicit val regionSearchResultFormat = {
     implicit val regionFormat = apiRegionFormat
     jsonFormat3(RegionSearchResult.apply)
+  }
+  implicit val OrganisationsSearchResultFormat = {
+    jsonFormat3(OrganisationsSearchResult.apply)
   }
 }
 
