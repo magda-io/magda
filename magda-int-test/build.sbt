@@ -8,7 +8,7 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
-    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "5.6.0" % "test",
+    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "6.2.9" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
     "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
