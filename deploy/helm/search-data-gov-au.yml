@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.40-RC1"
+        tag: "0.0.41-RC1"
     enableLivenessProbes: true
 tags:
     all: false
@@ -24,8 +24,17 @@ tags:
     sleuther-visualization: true
     sleuther-format: true
     web-server: true
-    feedback-api: true
+    correspondence-api: true
+    ingress: true
 
+ingress:
+  hostname: letest.search.data.gov.au
+  ipName: search-data-gov-au-ingress
+  ingressClass: gce
+  enableTls: true
+  domains:
+    - search.data.gov.au
+    - letest.search.data.gov.au
 elasticsearch:
     production: true
     client:
@@ -45,6 +54,7 @@ elasticsearch:
                 cpu: 800m
                 memory: 5000Mi
 gateway:
+    type: LoadBalancer
     loadBalancerIP: "35.189.8.102"
     autoscaler:
         minReplicas: 2
@@ -138,9 +148,6 @@ indexer:
         requests:
             cpu: 200m
             memory: 200Mi
-feedback-api:
-    gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
-    replicas: 2
 cloud-sql-proxy:
     replicas: 2
     instanceConnectionName: terriajs:australia-southeast1:magda-prod
