@@ -12,8 +12,7 @@ import com.sksamuel.elastic4s.searches.RichSearchResponse
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
+import com.sksamuel.elastic4s.searches.queries._
 import com.typesafe.config.Config
 import spray.json._
 import akka.actor.ActorSystem
@@ -37,10 +36,8 @@ import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
 
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
-import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
 import org.apache.lucene.search.join.ScoreMode
-import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
 import org.elasticsearch.index.query.MultiMatchQueryBuilder
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregator
@@ -50,6 +47,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
+import com.sksamuel.elastic4s.searches.collapse.CollapseDefinition
 import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 
@@ -425,62 +423,36 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  override def searchOrganisations(queryString: Option[String], start: Long, limit: Int): Future[OrganisationsSearchResult] = {
-    /*clientFuture.flatMap { client =>
-      client.execute(
-        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
-          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
-          from start.toInt
-          limit limit
-          collapse (
-            field("Publisher.identifier")
-            inner hits "sds" size 0
-          )
-          sortBy (
-          scoreSort order SortOrder.DESC)
-          sourceExclude "geometry").flatMap { response =>
-        response.totalHits match {
-          case 0 => Future(OrganisationsSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-          case _ => Future(OrganisationsSearchResult(query, response.totalHits, response.to[Agent].toList))
-        }
-      }
-    }*/
+  override def searchOrganisations(queryString: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult] = {
 
-    clientFuture.flatMap { client =>
-      client.execute(
-        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
-          size 10
-          from 0
-          query{
-            simpleStringQuery(queryString, List("publisher.name","publisher.acronym"))
-
-          }
-          /*source {
-            """{
-              |    "size":10,
-              |    "query":{
-              |      "simple_query_string": {
-              |        "query": "south",
-              |        "fields": ["publisher.name","publisher.acronym"]
-              |      }
-              |    },
-              |    "collapse" : {
-              |        "field" : "publisher.identifier",
-              |        "inner_hits": {"name": "inner","size":0}
-              |
-              |    },
-              |
-              |    "sort": ["publisher.name.keyword"],
-              |    "from": 0
-              |}"""
-          }*/
-        ).flatMap { response =>
-        response.totalHits match {
-          case 0 => Future(OrganisationsSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-          case _ => Future(OrganisationsSearchResult(query, 0, List()))
+    val client = clientFuture.await
+    val result = client.execute(
+      ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+        .start(start)
+        .limit(limit)
+        .query {
+          simpleStringQuery(queryString.getOrElse("*"))
+            .field("publisher.name")
+            .field("publisher.acronym")
+            .field("publisher.description")
         }
-      }
-    }
+        .sortByFieldAsc("publisher.name.keyword")
+        //.inner(new InnerHitDefinition )
+        .collapse(new CollapseDefinition(
+          "publisher.identifier",
+          Some(new InnerHitDefinition("datasetCount", Some(1)))
+        ))
+    ).await
+
+    val orgs = result.hits.map(h=>{
+      val d = h.to[DataSet]
+      val innerHit = h.innerHits.get("datasetCount")
+      d.publisher.map(o=> o.copy(dataSetCount = innerHit.map(h=>{
+        h.totalHits
+      })))
+    }).filter(_.isDefined).map(_.getOrElse(new Agent)).toList
+
+    Future(OrganisationsSearchResult(queryString, 0, orgs))
   }
 
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: TcpClient): Future[Option[Region]] = {
