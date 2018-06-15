@@ -65,7 +65,7 @@ kubectl config use-context <prod-cluster-name>
 ```
 
 *   [ ] Helm upgrade prod
-
+**REMEMBER** If there's been a search index upgrade, set the search index in search api to the previous version until the indexer catches up!!
 ```bash
 helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
