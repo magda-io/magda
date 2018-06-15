@@ -11,5 +11,13 @@ if [[ ! -z $GOOGLE_APPLICATION_CREDENTIALS ]]; then
     su-exec elasticsearch bin/elasticsearch-keystore add-file gcs.client.default.credentials_file $GOOGLE_APPLICATION_CREDENTIALS
 fi
 
+ulimit -n 65536
+echo "Current max locked memory in host: "
+ulimit -l
+echo "Set max locked memory to unlimited in host"
+ulimit -l unlimited
+echo "New max locked memory: "
+ulimit -l
+
 echo "Starting up"
 /run.sh 

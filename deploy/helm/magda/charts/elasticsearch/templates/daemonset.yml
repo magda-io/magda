@@ -28,4 +28,11 @@ spec:
           value: |
             #! /bin/sh
             sysctl -w vm.max_map_count=262144
+            ulimit -n 65536
+            echo "Current max locked memory in host: "
+            ulimit -l
+            echo "Set max locked memory to unlimited in host"
+            ulimit -l unlimited
+            echo "New max locked memory: "
+            ulimit -l
             echo "done"
