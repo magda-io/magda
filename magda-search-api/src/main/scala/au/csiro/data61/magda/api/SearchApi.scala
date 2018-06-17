@@ -70,11 +70,9 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
               "start" ? 0,
               "limit" ? 10
               )) { (generalQuery, start, limit) ⇒
-              val x = "ss"
-
               onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit)) { result =>
-                //val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
-                complete(StatusCodes.OK, result)
+                val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+                complete(status, result)
               }
             }
           } ~

@@ -29,7 +29,8 @@ case class RegionSearchResult(
 case class OrganisationsSearchResult(
   query: Option[String],
   hitCount: Long,
-  organisations: List[Agent]
+  organisations: List[Agent],
+  errorMessage: Option[String] = None
 )
 
 trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Protocols {
@@ -61,7 +62,7 @@ trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Pr
     jsonFormat3(RegionSearchResult.apply)
   }
   implicit val OrganisationsSearchResultFormat = {
-    jsonFormat3(OrganisationsSearchResult.apply)
+    jsonFormat4(OrganisationsSearchResult.apply)
   }
 }
 

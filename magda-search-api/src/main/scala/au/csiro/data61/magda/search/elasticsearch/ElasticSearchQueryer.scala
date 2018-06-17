@@ -453,6 +453,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         }).toList
         val totalCount = result.aggregations.cardinalityResult("totalCount").getValue
         Future(OrganisationsSearchResult(queryString, totalCount, orgs))
+      }.recover{
+        case RootCause(illegalArgument: IllegalArgumentException) =>
+          logger.error(illegalArgument, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Bad argument: " + illegalArgument.getMessage))
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Error: " + e.getMessage))
       }
     }
 
