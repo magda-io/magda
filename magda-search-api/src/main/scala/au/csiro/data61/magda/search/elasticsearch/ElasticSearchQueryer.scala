@@ -425,34 +425,37 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   override def searchOrganisations(queryString: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult] = {
 
-    val client = clientFuture.await
-    val result = client.execute(
-      ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
-        .start(start)
-        .limit(limit)
-        .query {
-          simpleStringQuery(queryString.getOrElse("*"))
-            .field("publisher.name")
-            .field("publisher.acronym")
-            .field("publisher.description")
-        }
-        .sortByFieldAsc("publisher.name.keyword")
-        //.inner(new InnerHitDefinition )
-        .collapse(new CollapseDefinition(
+    clientFuture.flatMap{ client =>
+      client.execute(
+        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+          .start(start)
+          .limit(limit)
+          .query {
+            simpleStringQuery(queryString.getOrElse("*"))
+              .field("publisher.name")
+              .field("publisher.acronym")
+              .field("publisher.description")
+          }
+          .aggs(cardinalityAgg("totalCount","publisher.identifier"))
+          .sortByFieldAsc("publisher.name.keyword")
+          //.inner(new InnerHitDefinition )
+          .collapse(new CollapseDefinition(
           "publisher.identifier",
           Some(new InnerHitDefinition("datasetCount", Some(1)))
         ))
-    ).await
+      ).flatMap{ result =>
+        val orgs = result.hits.flatMap(h=>{
+          val d = h.to[DataSet]
+          val innerHit = h.innerHits.get("datasetCount")
+          d.publisher.map(o=> o.copy(dataSetCount = innerHit.map(h=>{
+            h.totalHits
+          })))
+        }).toList
+        val totalCount = result.aggregations.cardinalityResult("totalCount").getValue
+        Future(OrganisationsSearchResult(queryString, totalCount, orgs))
+      }
+    }
 
-    val orgs = result.hits.map(h=>{
-      val d = h.to[DataSet]
-      val innerHit = h.innerHits.get("datasetCount")
-      d.publisher.map(o=> o.copy(dataSetCount = innerHit.map(h=>{
-        h.totalHits
-      })))
-    }).filter(_.isDefined).map(_.get).toList
-
-    Future(OrganisationsSearchResult(queryString, 0, orgs))
   }
 
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: TcpClient): Future[Option[Region]] = {
