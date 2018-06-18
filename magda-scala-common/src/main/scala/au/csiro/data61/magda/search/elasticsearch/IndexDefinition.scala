@@ -2,13 +2,13 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import scala.concurrent.Future
 import scala.math.BigDecimal.double2bigDecimal
-
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
-
 import com.monsanto.labs.mwundo.GeoJson
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.bulk.BulkResponse
+import com.sksamuel.elastic4s.mappings.{Analysis, Nulls, TextFieldDefinition}
 //import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.{ RequestFailure, RequestSuccess }
 import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
@@ -49,7 +49,7 @@ import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
-import org.elasticsearch.common.xcontent.XContentBuilder
+import com.sksamuel.elastic4s.json.XContentBuilder
 import scala.collection.JavaConverters._
 
 case class IndexDefinition(
@@ -75,7 +75,7 @@ case class SynonymGraphTokenFilter(name: String,
 
   override def build(source: XContentBuilder): Unit = {
     path.foreach(source.field("synonyms_path", _))
-    source.field("synonyms", synonyms.asJava)
+    source.array("synonyms", synonyms.toArray)
     format.foreach(source.field("format", _))
     ignoreCase.foreach(source.field("ignore_case", _))
     expand.foreach(source.field("expand", _))
@@ -93,9 +93,9 @@ case class SynonymGraphTokenFilter(name: String,
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+    val fieldsx = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
 
-    textField(name).analyzer("english").fields(fields)
+    textField(name).analyzer("english").fields(fieldsx)
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
@@ -312,8 +312,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           }
 
           geometryOpt.map(geometry =>
-            ElasticDsl.index
-              .into(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
+            indexInto(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
               .id(generateRegionId(regionSource.name, id))
               .source(JsObject(
                 "regionType" -> JsString(regionSource.name),
@@ -336,10 +335,15 @@ object IndexDefinition extends DefaultJsonProtocol {
         client.execute(bulk(values))
       }
       .map { result =>
+        result match {
+          case Left(failure) => logger.error("Failure: {}", failure.error)
+          case Right(results) => results.result.items.length
+        }
+        /*
         result.failures.foreach(failure =>
           logger.error("Failure: {}", failure.error))
 
-        result.successes.length
+        result.successes.length*/
       }
       .recover {
         case e: Throwable =>

@@ -20,6 +20,9 @@ libraryDependencies ++= {
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
+       "org.locationtech.spatial4j" % "spatial4j" % "0.6",
+       "org.elasticsearch" % "elasticsearch" % "6.2.4",
+
        // Via deps, elastic4s drags in two different versions of log4j - exclude them all then include our own that works.
        "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.2.9",
        "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.2.9" excludeAll(ExclusionRule(organization = "org.apache.logging.log4j")),

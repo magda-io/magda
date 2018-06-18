@@ -7,7 +7,6 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import spray.json._
 import collection.JavaConverters._
 import com.sksamuel.elastic4s.Indexable
-import com.sksamuel.elastic4s.searches.RichSearchHit
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket
