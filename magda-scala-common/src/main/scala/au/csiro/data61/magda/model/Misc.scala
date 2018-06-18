@@ -88,7 +88,7 @@ package misc {
     homePage: Option[String] = None,
     email: Option[String] = None,
     imageUrl: Option[String] = None,
-    dataSetCount: Option[Long] = None)
+    datasetCount: Option[Long] = None)
 
   case class Location(
     text: Option[String] = None,
