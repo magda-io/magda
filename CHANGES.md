@@ -15,6 +15,7 @@
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
+-   Added `bottom-border` property to make dataset filters stand out more.
 
 ## 0.0.41
 
