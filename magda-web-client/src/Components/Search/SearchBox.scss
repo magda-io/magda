@@ -37,6 +37,10 @@
         }
         .searchBox {
             background-color: transparent;
+            @media (max-width: $medium - 1) {
+                border-bottom: 2px solid rgba($AU-color-foreground-action, 0.5);
+                margin: 10px;
+            }
         }
     }
 }
@@ -50,20 +54,6 @@
     background-color: rgba($AU-color-foreground-action, 0.8);
     background: $AU-color-background;
     border-radius: 0px;
-    border-bottom: 1px solid rgba(73, 73, 73, 0.15);
-
-    input::-webkit-input-placeholder {
-        color: rgba($AU-color-foreground-action, 0.9);
-    }
-    input::-moz-placeholder {
-        color: rgba($AU-color-foreground-action, 0.9);
-    }
-    input:-ms-input-placeholder {
-        color: rgba($AU-color-foreground-action, 0.9);
-    }
-    input:-moz-placeholder {
-        color: rgba($AU-color-foreground-action, 0.9);
-    }
 
     input:focus::-webkit-input-placeholder {
         opacity: 0;
@@ -85,18 +75,6 @@
         border: 0;
         box-shadow: none;
         border-radius: 2px;
-        input::-webkit-input-placeholder {
-            color: rgba($AU-colordark-foreground-text, 0.9);
-        }
-        input::-moz-placeholder {
-            color: rgba($AU-colordark-foreground-text, 0.9);
-        }
-        input:-ms-input-placeholder {
-            color: rgba($AU-colordark-foreground-text, 0.9);
-        }
-        input:-moz-placeholder {
-            color: rgba($AU-colordark-foreground-text, 0.9);
-        }
     }
 
     label {
@@ -151,7 +129,6 @@
     }
 
     .search-input__highlight {
-        z-index: 10;
         position: absolute;
         bottom: 0px;
         left: -1px;
@@ -181,29 +158,10 @@
             0px 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 4px;
         input {
-            color: $AU-color-foreground-focus;
-        }
-        input::-webkit-input-placeholder {
-            padding: 0 10px;
-            color: rgba($AU-color-foreground-focus, 0.7);
-        }
-        input::-moz-placeholder {
-            padding: 0 10px;
-            color: rgba($AU-color-foreground-focus, 0.7);
-        }
-        input:-ms-input-placeholder {
-            padding: 0 10px;
-            color: rgba($AU-color-foreground-focus, 0.7);
-        }
-        input:-moz-placeholder {
-            padding: 0 10px;
-            color: rgba($AU-color-foreground-focus, 0.7);
-        }
-        input:focus::-webkit-input-placeholder {
-            color: transparent;
+            color: $AU-color-foreground-action;
         }
     }
     .search-input__highlight {
-        border-top: 2px solid rgba($AU-color-foreground-focus, 0.7);
+        border-top: 2px solid rgba($AU-color-foreground-action, 0.7);
     }
 }

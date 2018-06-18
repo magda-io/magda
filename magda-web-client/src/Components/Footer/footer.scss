@@ -3,6 +3,11 @@
 .footer {
     padding: 2rem 0;
 
+    &,
+    &.au-body {
+        margin-top: 34px; //Match bottom-margin of search result pagination
+    }
+
     .nav-title {
         font-weight: 600;
         margin-bottom: 10px;
@@ -21,9 +26,6 @@
         justify-content: flex-end;
         margin-top: 22px;
 
-        // @media (max-width: $small) {
-        //     padding-top: 50px;
-        // }
         .copyright-text {
             display: none;
 

@@ -22,7 +22,8 @@ class Publisher extends Component {
     onTogglePublisherOption(publishers) {
         const queryOptions = publishers.map(p => p.value);
         this.props.updateQuery({
-            organisation: queryOptions
+            organisation: queryOptions,
+            page: undefined
         });
         this.props.dispatch(updatePublishers(publishers));
         this.props.closeFacet();

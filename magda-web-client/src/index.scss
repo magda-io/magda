@@ -12,11 +12,16 @@ html {
             background: $AU-color-foreground-action;
         }
     }
-    .au-btn.au-btn--secondary,
-    a.au-btn.au-btn--secondary,
+    .au-btn,
+    a.au-btn,
     a {
         color: $AU-color-foreground-action;
-        border-color: $AU-color-foreground-action;
+    }
+
+    button.au-btn,
+    a.au-btn {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
     }
 
     .au-btn.au-btn--primary,
@@ -33,13 +38,29 @@ html {
         border-color: transparent;
     }
 
+    .au-btn.au-btn--secondary,
+    a.au-btn.au-btn--secondary {
+        color: $AU-color-foreground-action;
+        background: transparent;
+        color: $AU-color-foreground-action;
+    }
+
     a,
     button,
     input,
-    select {
+    select,
+    textarea {
         &:focus {
             outline-color: $AU-colordark-foreground-focus !important;
         }
+    }
+}
+
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
     }
 }
 
@@ -176,4 +197,8 @@ h4 {
 .au-body ::selection {
     background: $AU-color-foreground-action !important;
     color: $AU-colordark-foreground-text !important;
+}
+
+.au-link {
+    background: #ffffff;
 }

@@ -4,7 +4,7 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "https://magda-dev.terria.io/";
+const fallbackApiHost = "https://dev.magda.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -109,7 +109,8 @@ export const config = {
                             ? "mailto:data@digital.gov.au"
                             : "suggest"
                     ],
-                    ["Privacy Policy", "page/privacy-policy"]
+                    ["Privacy Policy", "page/privacy-policy"],
+                    ["Give feedback", "feedback"]
                 ]
             },
             {

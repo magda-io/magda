@@ -1,5 +1,6 @@
 import "./Search.css";
 import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
@@ -132,6 +133,34 @@ class Search extends Component {
         });
     }
 
+    /**
+     * counts the number of filters that have active values
+     * this is then appended to the results text on the search page
+     */
+    filterCount = () => {
+        let count = 0;
+        if (this.props.activePublishers.length > 0) {
+            count++;
+        }
+        if (this.props.activeFormats.length > 0) {
+            count++;
+        }
+
+        if (this.props.activeRegion.regionId) {
+            count++;
+        }
+
+        if (this.props.activeDateFrom || this.props.activeDateTo) {
+            count++;
+        }
+        if (count !== 0) {
+            const filterText = count === 1 ? " filter" : " filters";
+            return " with " + count + filterText;
+        } else {
+            return "";
+        }
+    };
+
     render() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
@@ -151,7 +180,10 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results ( {this.props.hitCount} )
+                                        results {this.filterCount()} ({
+                                            this.props.hitCount
+                                        }
+                                        )
                                     </div>
                                 )}
                             {!this.props.isFetching &&
@@ -164,6 +196,19 @@ class Search extends Component {
                                             />
                                         )}
 
+                                        {// redirect if we came from a 404 error and there is only one result
+                                        queryString.parse(
+                                            this.props.location.search
+                                        ).notfound &&
+                                            this.props.datasets.length ===
+                                                1 && (
+                                                <Redirect
+                                                    to={`/dataset/${encodeURI(
+                                                        this.props.datasets[0]
+                                                            .identifier
+                                                    )}/details`}
+                                                />
+                                            )}
                                         <SearchResults
                                             strategy={this.props.strategy}
                                             searchResults={this.props.datasets}
@@ -230,6 +275,11 @@ function mapStateToProps(state, ownProps) {
     let { datasetSearch } = state;
     return {
         datasets: datasetSearch.datasets,
+        activeFormats: datasetSearch.activeFormats,
+        activePublishers: datasetSearch.activePublishers,
+        activeRegion: datasetSearch.activeRegion,
+        activeDateFrom: datasetSearch.activeDateFrom,
+        activeDateTo: datasetSearch.activeDateTo,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
         progress: datasetSearch.progress,
@@ -239,7 +289,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

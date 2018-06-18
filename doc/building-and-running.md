@@ -47,6 +47,8 @@ Helm is the package manager for Kubernetes - we use it to make it so that you ca
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 
 ```bash
+kubectl apply -f deploy/kubernetes/rbac-config.yaml
+helm init --service-account tiller
 helm init
 ```
 
@@ -189,7 +191,7 @@ Running individual components is easy enough, but how do we get a fully working 
 | `magda-indexer`           | `magda-elastic-search`                                                                                           |
 | `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
 | `magda-search-api`        | `magda-elastic-search`                                                                                           |
-| `magda-web-client`        | `magda-web-server`, but uses API at http://magda-dev.terria.io/api if server is not running.                     |
+| `magda-web-client`        | `magda-web-server`, but uses API at https://dev.magda.io/api if server is not running.                           |
 | `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail.       |
 
 # Architecture Diagram
