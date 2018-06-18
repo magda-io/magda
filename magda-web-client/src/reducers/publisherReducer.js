@@ -40,11 +40,8 @@ const publisher = (
         case "RECEIVE_PUBLISHERS":
             return Object.assign({}, state, {
                 isFetchingPublishers: false,
-                publishers:
-                    action.json &&
-                    action.json.records &&
-                    action.json.records.map(r => parsePublisher(r)),
-                hitCount: action.json && action.json.totalCount
+                publishers: action.json && action.json.organisations,
+                hitCount: action.json && action.json.hitCount
             });
         case "REQUEST_PUBLISHERS_ERROR":
             return Object.assign({}, state, {

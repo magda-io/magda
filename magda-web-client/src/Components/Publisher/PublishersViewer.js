@@ -14,6 +14,7 @@ import sortBy from "lodash.sortby";
 import reduce from "lodash/reduce";
 import findIndex from "lodash/findIndex";
 import trim from "lodash/trim";
+import debounce from "lodash.debounce";
 import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 
@@ -21,20 +22,14 @@ class PublishersViewer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            searchText: ""
+            searchText: "*"
         };
         this.onUpdateSearchText = this.onUpdateSearchText.bind(this);
+        this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
+            this
+        );
     }
-    componentWillMount() {
-        this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (getPageNumber(this.props) !== getPageNumber(nextProps)) {
-            nextProps.fetchPublishersIfNeeded(getPageNumber(nextProps) || 1);
-        }
-    }
-
+    debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
     onPageChange(i) {
         this.context.router.history.push({
             pathname: this.props.location.pathname,
@@ -46,75 +41,132 @@ class PublishersViewer extends Component {
         });
     }
 
+    componentDidMount() {
+        this.props.fetchPublishersIfNeeded(
+            getPageNumber(this.props) || 1,
+            this.state.searchText
+        );
+    }
+
+    updateQuery(query) {
+        // this.context.router.history.push({
+        //     pathname: "/organisations/search",
+        //     search: queryString.stringify(
+        //         Object.assign(
+        //             queryString.parse(this.props.location.search),
+        //             query
+        //         )
+        //     )
+        // });
+    }
+
+    handleSearchFieldEnterKeyPress(event) {
+        // when user hit enter, no need to submit the form
+        if (event.charCode === 13) {
+            event.preventDefault();
+            this.debounceUpdateSearchQuery.flush(this.state.searchText);
+        }
+    }
+
+    updateSearchQuery(text) {
+        if (text === "") text = "*";
+        this.updateQuery({
+            q: text,
+            page: undefined
+        });
+        this.props.fetchPublishersIfNeeded(
+            getPageNumber(this.props) || 1,
+            text
+        );
+    }
+
     onUpdateSearchText(e) {
         this.setState({
             searchText: e.target.value
         });
+        this.debounceUpdateSearchQuery(e.target.value);
     }
 
-    mergedPublishers() {
-        const publishers = reduce(
-            this.props.publishers,
-            (r, p) => {
-                const idx = findIndex(
-                    r,
-                    item =>
-                        trim(item.name).toLowerCase() ===
-                        trim(p.name).toLowerCase()
-                );
-                if (idx === -1) {
-                    r.push(p);
-                    return r;
-                } else {
-                    const findItem = r[idx];
-                    if (
-                        !p.aspects ||
-                        !p.aspects["organization-details"] ||
-                        !p.aspects["organization-details"]["description"]
-                    )
-                        return r;
-                    else if (
-                        !findItem.aspects ||
-                        !findItem.aspects["organization-details"] ||
-                        !findItem.aspects["organization-details"]["description"]
-                    ) {
-                        r.splice(idx, 1, p);
-                        return r;
-                    } else {
-                        if (
-                            trim(
-                                p.aspects["organization-details"]["description"]
-                            ).length >
-                            trim(
-                                findItem.aspects["organization-details"][
-                                    "description"
-                                ]
-                            ).length
-                        ) {
-                            r.splice(idx, 1, p);
-                            return r;
-                        } else {
-                            return r;
-                        }
-                    }
-                }
-            },
-            []
-        );
-        return publishers;
-    }
+    // mergedPublishers() {
+    //     const publishers = reduce(
+    //         this.props.publishers,
+    //         (r, p) => {
+    //             const idx = findIndex(
+    //                 r,
+    //                 item =>
+    //                     trim(item.name).toLowerCase() ===
+    //                     trim(p.name).toLowerCase()
+    //             );
+    //             if (idx === -1) {
+    //                 r.push(p);
+    //                 return r;
+    //             } else {
+    //                 const findItem = r[idx];
+    //                 if (
+    //                     !p.aspects ||
+    //                     !p.aspects["organization-details"] ||
+    //                     !p.aspects["organization-details"]["description"]
+    //                 )
+    //                     return r;
+    //                 else if (
+    //                     !findItem.aspects ||
+    //                     !findItem.aspects["organization-details"] ||
+    //                     !findItem.aspects["organization-details"]["description"]
+    //                 ) {
+    //                     r.splice(idx, 1, p);
+    //                     return r;
+    //                 } else {
+    //                     if (
+    //                         trim(
+    //                             p.aspects["organization-details"]["description"]
+    //                         ).length >
+    //                         trim(
+    //                             findItem.aspects["organization-details"][
+    //                                 "description"
+    //                             ]
+    //                         ).length
+    //                     ) {
+    //                         r.splice(idx, 1, p);
+    //                         return r;
+    //                     } else {
+    //                         return r;
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         []
+    //     );
+    //     return publishers;
+    // }
+
+    // renderContent() {
+    //     if (this.props.error) {
+    //         return <ErrorHandler error={this.props.error} />;
+    //     } else {
+    //         return (
+    //             <div>
+    //                 {sortBy(this.mergedPublishers(), [
+    //                     function(o) {
+    //                         return o.name.toLowerCase();
+    //                     }
+    //                 ]).map(p => <PublisherSummary publisher={p} key={p.id} />)}
+    //             </div>
+    //         );
+    //     }
+    // }
 
     renderContent() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
+            if (this.props.publishers.length === 0) {
+                return <div> no results</div>;
+            }
             return (
                 <div>
-                    {sortBy(this.mergedPublishers(), [
-                        function(o) {
-                            return o.name.toLowerCase();
-                        }
-                    ]).map(p => <PublisherSummary publisher={p} key={p.id} />)}
+                    {this.props.publishers.map(p => (
+                        <PublisherSummary publisher={p} key={p.identifier} />
+                    ))}
                 </div>
             );
         }
@@ -127,13 +179,14 @@ class PublishersViewer extends Component {
                     Search for organisations
                 </label>
                 <input
-                    className="au-text-input au-text-input--block"
+                    className="au-text-input au-text-input--block organization-search"
                     name="organization-search"
                     id="organization-search"
                     type="text"
                     value={this.searchText}
                     placeholder="Search for organisations"
                     onChange={this.onUpdateSearchText}
+                    onKeyPress={this.handleSearchFieldEnterKeyPress}
                 />
                 <img className="search-icon" src={search} alt="search" />
             </div>
