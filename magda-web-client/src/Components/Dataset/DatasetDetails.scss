@@ -2,7 +2,6 @@
 
 .dataset-details {
     h3 {
-        color: $AU-color-foreground-action;
         @include AU-fontgrid(lg, heading);
         margin-bottom: 10px;
         margin-top: 3rem;

@@ -109,7 +109,8 @@ export const config = {
                             ? "mailto:data@digital.gov.au"
                             : "suggest"
                     ],
-                    ["Privacy Policy", "page/privacy-policy"]
+                    ["Privacy Policy", "page/privacy-policy"],
+                    ["Give feedback", "feedback"]
                 ]
             },
             {
