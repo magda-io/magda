@@ -38,7 +38,7 @@
     "@gov.au/pancake-sass": "^1.3.2",
     "@gov.au/select": "^2.0.3",
     "@gov.au/skip-link": "^2.0.4",
-    "@gov.au/tags": "^2.0.1",
+    "@gov.au/tags": "^3.1.0",
     "@gov.au/text-inputs": "^2.0.4",
     "@magda/scripts": "^0.0.42-0",
     "@storybook/addon-actions": "^3.3.3",

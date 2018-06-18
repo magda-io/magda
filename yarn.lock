@@ -259,9 +259,9 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
 
-"@gov.au/tags@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-2.0.2.tgz#e2716389d4238c72f13e1febb4cbfee8618fbf7a"
+"@gov.au/tags@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-3.1.0.tgz#f4ab49efb557544af0096ffc262b29d6e78b4aad"
   dependencies:
     "@gov.au/core" "^2.0.0"
     "@gov.au/pancake" "~1"
