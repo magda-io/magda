@@ -1,2 +1,2 @@
-FROM data61/magda-db-migrator
+FROM data61/magda-db-migrator:latest
 COPY component/sql/* /flyway/sql/postgres/

@@ -17,7 +17,7 @@ git status
 git checkout -b release/0.0.x
 ```
 
-*   [ ] Run `lerna publish ` to bump the version number to a Release Candidate version (`v*.*.*-RC1)
+*   [ ] Run `lerna publish` to bump the version number to a Release Candidate version (`v*.*.\*-RC1)
 
 ```bash
 lerna publish --skip-npm --skip-git --force-publish
@@ -28,7 +28,8 @@ lerna publish --skip-npm --skip-git --force-publish
 *   [ ] Commit and push.
 
 ### Bump version in master
-*   [ ] Run `lerna publish ` to bump the version number to a the next development version (x.x.x-0).
+
+*   [ ] Run `lerna publish` to bump the version number to a the next development version (x.x.x-0).
 
 ```bash
 git checkout master
@@ -51,7 +52,7 @@ git push vx.x.x-RC1
 ```
 
 This will cause a slightly different build pipeline to run - it will automatically push images to docker hub with the current version as specified in the root package json and create a full preview at https://vx-x-x-rc1.dev.magda.io using those images.
-    
+
 *   [ ] Test https://vx-x-x-rc1.dev.magda.io. If it succeeds then proceed, otherwise fix it and go back to "Release the RC", bumping the RC version by one.
 
 *   [ ] Shut down the staging namespace in Gitlab.
@@ -65,7 +66,8 @@ kubectl config use-context <prod-cluster-name>
 ```
 
 *   [ ] Helm upgrade prod
-**REMEMBER** If there's been a search index upgrade, set the search index in search api to the previous version until the indexer catches up!!
+        **REMEMBER** If there's been a search index upgrade, set the search index in search api to the previous version until the indexer catches up!!
+
 ```bash
 helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
@@ -90,15 +92,17 @@ cd ..
 ```
 
 *   [ ] Test on prod:
-    * Make sure Google Analytics is reporting your presence
-    * Do a regression test
-    * Ensure that prod-specific settings (particularly absence of user accounts) are in place correctly
-    * If there's a problem then go back to "Release the RC", bumping the RC version by one.
-        * Also do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
+
+    *   Make sure Google Analytics is reporting your presence
+    *   Do a regression test
+    *   Ensure that prod-specific settings (particularly absence of user accounts) are in place correctly
+    *   If there's a problem then go back to "Release the RC", bumping the RC version by one.
+        *   Also do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
 *   [ ] Mark the tag as a pre-release in github
 
 ### Merge the changes in the release branch back into master
+
 ```
 git checkout master
 git pull
@@ -110,6 +114,7 @@ git push origin merge-<version>
 And open a PR on master.
 
 ### Push the previous RC of last version as a release
+
 Now we've released a whole new version, presumably the previous version on prod proved stable enough to release as not an RC, so lets release that as a proper release.
 
 *   [ ] Check out last version's release branch
@@ -132,6 +137,6 @@ lerna publish --skip-npm --skip-git --force-publish
 
 *   [ ] Shut down the staging cluster
 
-*   [ ] Set that latest tag as a "release" in github.
+-   [ ] Set that latest tag as a "release" in github.
 
 *   [ ] Delete the release branch in github

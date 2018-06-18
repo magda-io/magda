@@ -14,6 +14,13 @@
     overflow-x: hidden;
 }
 
+.correspondence-dropdown-search {
+    margin-top: 6px !important;
+    padding-top: 6px !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 6px !important;
+}
+
 .search-results__count {
     @include AU-fontgrid(sm);
     color: $AU-color-background;
