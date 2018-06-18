@@ -27,5 +27,5 @@ kubectl config use-context docker-for-desktop
 Last thing to do is create the `standard` storageclass used by Magda:
 
 ```bash
-kubectl create -f deploy/kubernetes/docker-client-standard-storage
+kubectl create -f deploy/kubernetes/docker-client-standard-storage.yaml
 ```

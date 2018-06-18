@@ -211,7 +211,7 @@
                 "-r",
                 "tsconfig-paths/register",
                 "src/index.ts"
-                //"--devProxy","http://magda-dev.terria.io/api/"
+                //"--devProxy","https://dev.magda.io/api/"
             ],
             "cwd": "${workspaceRoot}/magda-web-server"
         },

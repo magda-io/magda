@@ -11,6 +11,7 @@ stages:
   - preview
   - deploy-dev
   - release
+  - deploy-staging
   - deploy-prod
 
 builders-and-yarn:
@@ -209,6 +210,7 @@ buildtest:map:
   cache:
     paths: []
   script:
+    - yarn install
     - yarn run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.map=true -- run test
   artifacts:
@@ -399,93 +401,71 @@ dockerize:dockerExtensions:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
-Run As Preview (Full):
+(Full) Run As Preview: &runAsPreview
   stage: preview
   when: manual
   only:
     - branches
   except:
     - master
+    - /^v.*$/
   dependencies: []
   cache:
     paths: []
   image:
     name: dtzar/helm-kubectl
   retry: 1
-  before_script: []
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
+    url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
     on_stop: Stop Preview
+  before_script:
+    # Add PWGEN for generating passwords
+    - apk add --update pwgen
+
+    # Env vars
+    - JWT_SECRET="${JWT_SECRET:-$(pwgen 16 1)}"
+    - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 16 1)}"
+    - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
+
+    # Kube Config
+    - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+    - export KUBECONFIG=kubectlconfig.yaml
+
+    # Create kube namespace
+    - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
+
+    # Create kube secrets
+    - 'echo {\"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"${JWT_SECRET}\", \"session-secret\":\"${SESSION_SECRET}\"}} | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -'
+    - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=discussions-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=discussions-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
+    - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+
+    # Helm upgrade
+    - helm init --upgrade
+
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
   script:
-  # Add PWGEN for generating passwords
-  - apk add --update pwgen
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,correspondence-api.externalUrl=http://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
 
-  # Env vars
-  - JWT_SECRET="${JWT_SECRET:-$(pwgen 16 1)}"
-  - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 16 1)}"
-  - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
+(UI) Run As Preview:
+  <<: *runAsPreview
+  script:
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://dev.magda.io --timeout 1200 --wait
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
-  # Kube Config
-  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
-  - export KUBECONFIG=kubectlconfig.yaml
-
-  # Create kube namespace
-  - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
-
-  # Create kube secrets
-  - 'echo {\"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"${JWT_SECRET}\", \"session-secret\":\"${SESSION_SECRET}\"}} | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -'
-  - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-  - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=discussions-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=discussions-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-  - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-  - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-  - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
-  - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-
-  # Helm upgrade
-  - helm init --upgrade
-  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io --timeout 1200 --wait
-
-Run As Preview (UI Only):
+Stop Preview: &stopPreview
   stage: preview
   when: manual
   only:
     - branches
+    - tags
   except:
     - master
-  dependencies: []
-  cache:
-    paths: []
-  image:
-    name: dtzar/helm-kubectl
-  retry: 1
-  before_script: []
-  environment:
-    name: preview/$CI_COMMIT_REF_NAME
-    url: http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io
-    on_stop: Stop Preview
-  script:
-  # Kube Config
-  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
-  - export KUBECONFIG=kubectlconfig.yaml
-
-  # Create kube namespace
-  - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
-
-  # Create kube secrets
-  - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-
-  # Helm upgrade
-  - helm init --upgrade
-  - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,dev-ingress.hostname=$CI_COMMIT_REF_SLUG.magda-dev.terria.io,global.externalUrl=http://$CI_COMMIT_REF_SLUG.magda-dev.terria.io,dev-ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://magda-dev.terria.io --timeout 1200 --wait
-
-Stop Preview:
-  stage: preview
-  when: manual
-  only:
-    - branches
-  except:
-    - master
+    - /^v.*RC.*$/
   dependencies: []
   cache:
     paths: []
@@ -502,7 +482,7 @@ Stop Preview:
   - helm del --purge $CI_COMMIT_REF_SLUG
   - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
-deploy-master-to-dev:
+Deploy Master To Dev:
   stage: deploy-dev
   only:
     - master
@@ -515,7 +495,7 @@ deploy-master-to-dev:
   before_script: []
   environment:
     name: dev
-    url: https://magda-dev.terria.io
+    url: https://dev.magda.io
   script:
   - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
   - export KUBECONFIG=kubectlconfig.yaml
@@ -523,3 +503,54 @@ deploy-master-to-dev:
   - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 1200 --wait
   - kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file deploy/connector-config/
   - kubectl apply -f deploy/kubernetes/generated/prod/cron
+
+Release Tags To Docker Hub:
+  stage: release
+  only:
+    - /^v.*$/
+  except:
+    - branches
+    - triggers
+  dependencies:
+    - builders-and-yarn
+  cache: {}
+  services:
+    - docker:dind
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  retry: 1
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
+    - yarn install
+    - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
+
+Deploy Released Tags As Staging:
+  <<: *runAsPreview
+  stage: deploy-staging
+  when: on_success
+  only:
+    - /^v.*RC.*$/
+  except:
+    - master
+    - branches
+  environment:
+    name: staging/$CI_COMMIT_REF_NAME
+    url: http://$CI_COMMIT_REF_SLUG.dev.magda.io
+    on_stop: Stop Staging
+  script:
+    # Get version from lerna json
+    - apk add --update jq
+    - TAG=$(jq -r ".version" lerna.json)
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
+
+Stop Staging: 
+  <<: *stopPreview
+  stage: deploy-staging
+  only:
+    - /^v.*RC.*$/
+  environment:
+    name: staging/$CI_COMMIT_REF_NAME
+    action: stop
+  except:
+    - master
+    - branches

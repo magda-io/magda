@@ -1,4 +1,4 @@
-const fallbackApiHost = "http://magda-dev.terria.io/";
+const fallbackApiHost = "https://dev.magda.io/";
 
 const serverConfig = window.magda_server_config || {};
 

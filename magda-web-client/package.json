@@ -111,6 +111,7 @@
     "react-document-title": "^2.0.3",
     "react-dom": "^16.3.2",
     "react-json-tree": "^0.10.9",
+    "react-modal": "^3.4.5",
     "react-particles-js": "^2.1.0",
     "react-pdf": "^2.0.0-alpha.7",
     "react-pdf-js": "^1.0.37",
