@@ -447,7 +447,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val orgs = result.hits.flatMap(h=>{
           val d = h.to[DataSet]
           val innerHit = h.innerHits.get("datasetCount")
-          d.publisher.map(o=> o.copy(dataSetCount = innerHit.map(h=>{
+          d.publisher.map(o=> o.copy(datasetCount = innerHit.map(h=>{
             h.totalHits
           })))
         }).toList
