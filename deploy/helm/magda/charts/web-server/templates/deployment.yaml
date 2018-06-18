@@ -22,6 +22,13 @@ spec:
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
             "--cspReportUri", {{ .Values.cspReportUri | quote }}
         ]
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:

@@ -25,7 +25,7 @@ spec:
           - "-DelasticSearch.indices.datasets.version={{ .Values.datasetsIndexVersion }}"
 {{- end }}
 {{- if .Values.regionsIndexVersion }}
-          - "-DelasticSearch.indices.datasets.version={{ .Values.regionsIndexVersion }}""
+          - "-DelasticSearch.indices.regions.version={{ .Values.regionsIndexVersion }}"
 {{- end }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

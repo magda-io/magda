@@ -2,16 +2,16 @@
 
 This should happen just before or after a complete QA of the system. During the test issues will be created for bugs found - if any are release blockers, the PRs that fix them should be based on this release branch. Anything else should be based on `master`.
 
-*   [ ] Check out master and ensure you don't have any extra changes
+-   [ ] Check out master and ensure you don't have any extra changes
 
 ```bash
 git checkout master
 git status
 ```
 
-*   [ ] `git pull`
+-   [ ] `git pull`
 
-*   [ ] Check this out into a release branch
+-   [ ] Check this out into a release branch
 
 ```
 git checkout -b release/0.0.x
@@ -58,7 +58,7 @@ This will cause a slightly different build pipeline to run - it will automatical
 
 ### Publish to prod
 
-*   [ ] Connect to the prod cluster
+-   [ ] Connect to the prod cluster
 
 ```bash
 kubectl config use-context <prod-cluster-name>
@@ -70,14 +70,14 @@ kubectl config use-context <prod-cluster-name>
 helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
-*   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
+-   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
 
 ```
 kubectl logs -f <registry-api-pod-name>
 kubectl port-forward <cloud-sql-proxy-pod-name> 5432:5432
 ```
 
-*   [ ] Generate/deploy new cron jobs
+-   [ ] Generate/deploy new cron jobs
 
 ```bash
 cd deploy
@@ -132,6 +132,6 @@ lerna publish --skip-npm --skip-git --force-publish
 
 *   [ ] Shut down the staging cluster
 
-*   [ ] Set that latest tag as a "release" in github.
+-   [ ] Set that latest tag as a "release" in github.
 
 *   [ ] Delete the release branch in github
