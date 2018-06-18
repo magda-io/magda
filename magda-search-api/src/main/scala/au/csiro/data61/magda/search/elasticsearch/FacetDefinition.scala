@@ -164,7 +164,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 
-  override def autocompleteQuery(textQuery: String) = matchPhrasePrefixQuery("publisher.name.keyword_lowercase", textQuery).slop(10)
+  override def autocompleteQuery(textQuery: String) = matchQuery("publisher.name.english", textQuery)
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
@@ -217,5 +217,5 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 
   override def autocompleteQuery(textQuery: String) = nestedQuery("distributions")
-    .query(matchPhrasePrefixQuery("distributions.format.keyword_lowercase", textQuery).slop(10))
+    .query(matchQuery("distributions.format.english", textQuery))
 }
