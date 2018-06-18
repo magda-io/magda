@@ -47,6 +47,8 @@ Helm is the package manager for Kubernetes - we use it to make it so that you ca
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 
 ```bash
+kubectl apply -f deploy/kubernetes/rbac-config.yaml
+helm init --service-account tiller
 helm init
 ```
 
