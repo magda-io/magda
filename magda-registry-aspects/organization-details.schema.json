@@ -19,10 +19,6 @@
             "title":
                 "The URL of an image representing the organization, such as its logo.",
             "type": "string"
-        },
-        "datasetCount": {
-            "title": "The number indexed datasets for this organization.",
-            "type": "integer"
         }
     }
 }
