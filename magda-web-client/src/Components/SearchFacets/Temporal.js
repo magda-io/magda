@@ -15,7 +15,7 @@ class Temporal extends Component {
         this.onResetTemporalFacet = this.onResetTemporalFacet.bind(this);
         this.onToggleTemporalOption = this.onToggleTemporalOption.bind(this);
         this.state = {
-            facetClicked: false
+            disableApplyTemporal: false
         };
     }
 
@@ -44,7 +44,7 @@ class Temporal extends Component {
         this.props.closeFacet();
         this.setState(() => {
             return {
-                facetClicked: false
+                disableApplyTemporal: false
             };
         });
     }
@@ -67,7 +67,7 @@ class Temporal extends Component {
                 toggleFacet={this.props.toggleFacet}
                 isOpen={this.props.isOpen}
                 temporalRange={this.props.temporalRange}
-                facetClicked={this.state.facetClicked}
+                disableApplyTemporal={this.state.disableApplyTemporal}
             />
         );
     }

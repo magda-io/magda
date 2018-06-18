@@ -29,10 +29,10 @@ class FacetTemporal extends Component {
     }
 
     componentWillMount() {
-        this.componentWillReceiveProps(this.props);
+        this.getDerivedStateFromProps(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    getDerivedStateFromProps(nextProps) {
         if (nextProps.temporalRange) {
             const dateFrom = defined(nextProps.activeDates[0])
                 ? new Date(nextProps.activeDates[0])
@@ -58,7 +58,7 @@ class FacetTemporal extends Component {
      * been clicked in the facetHeader. If it has, then don't applyFilter.
      */
     componentWillUnmount() {
-        if (this.state.startYear !== undefined && !this.props.facetReset) {
+        if (this.state.startYear !== undefined && !this.props.disableApply) {
             this.onApplyFilter();
         }
         this.props.toggleDateReset();
@@ -193,7 +193,6 @@ class FacetTemporal extends Component {
                     <div className="facet-footer">
                         <button
                             className="au-btn au-btn--secondary"
-                            // disabled={this.state.applyButtonDisabled}
                             onClick={this.resetTemporalFacet}
                         >
                             {" "}

@@ -7,7 +7,7 @@ export default class TemporalWrapper extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            facetResetClicked: this.props.facetClicked
+            disableApply: this.props.facetClicked
         };
     }
 
@@ -22,7 +22,7 @@ export default class TemporalWrapper extends React.Component {
         this.setState(
             () => {
                 return {
-                    facetResetClicked: true
+                    disableApply: true
                 };
             },
             () => {
@@ -30,12 +30,11 @@ export default class TemporalWrapper extends React.Component {
             }
         );
     };
-    componentWillReceiveProps(nextProps) {
-        this.setState(() => {
-            return {
-                facetResetClicked: nextProps.facetClicked
-            };
-        });
+
+    getDerivedStateFromProps(nextProps) {
+        return {
+            disableApply: nextProps.disableApplyTemporal
+        };
     }
 
     /**
@@ -45,7 +44,7 @@ export default class TemporalWrapper extends React.Component {
     toggleDateReset = () => {
         this.setState(prevState => {
             return {
-                facetResetClicked: false
+                disableApply: false
             };
         });
     };
@@ -74,7 +73,7 @@ export default class TemporalWrapper extends React.Component {
                             toggleFacet={this.props.toggleFacet}
                             isOpen={this.props.isOpen}
                             temporalRange={this.props.temporalRange}
-                            facetReset={this.state.facetResetClicked}
+                            disableApply={this.state.disableApply}
                             toggleDateReset={this.toggleDateReset}
                         />
                     )}

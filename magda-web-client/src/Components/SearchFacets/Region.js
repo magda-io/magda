@@ -38,16 +38,11 @@ class Region extends Component {
         this.props.dispatch(fetchRegionSearchResults(facetKeyword));
     }
 
-    myMeth = () => {
-        this.props.dispatch(resetRegion());
-    };
-
     render() {
         return (
             <RegionWrapper
                 title="location"
                 id="region"
-                myMeth={this.myMeth}
                 hasQuery={
                     defined(this.props.activeRegion.regionType) &&
                     defined(this.props.activeRegion.regionId)
