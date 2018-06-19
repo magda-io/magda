@@ -8,14 +8,14 @@ import type { FetchError } from "../types";
 
 export function requestOrganisations(generalQuery: string): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_PUBLISHERS,
+        type: actionTypes.FACET_REQUEST_ORGANISATIONS,
         generalQuery
     };
 }
 
 export function requestOrganisationsFailed(error: FetchError): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
+        type: actionTypes.FACET_REQUEST_ORGANISATIONS_FAILED,
         error
     };
 }
@@ -25,7 +25,7 @@ export function receiveOrganisations(
     json: Object
 ): FacetAction {
     return {
-        type: actionTypes.FACET_RECEIVE_PUBLISHERS,
+        type: actionTypes.FACET_RECEIVE_ORGANISATIONS,
         json: json,
         generalQuery
     };

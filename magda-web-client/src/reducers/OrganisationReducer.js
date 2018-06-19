@@ -33,11 +33,11 @@ const organisation = (
     action: recordAction
 ) => {
     switch (action.type) {
-        case "REQUEST_PUBLISHERS":
+        case "REQUEST_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetchingOrganisations: true
             });
-        case "RECEIVE_PUBLISHERS":
+        case "RECEIVE_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetchingOrganisations: false,
                 organisations:
@@ -46,21 +46,21 @@ const organisation = (
                     action.json.records.map(r => parseOrganisation(r)),
                 hitCount: action.json && action.json.totalCount
             });
-        case "REQUEST_PUBLISHERS_ERROR":
+        case "REQUEST_ORGANISATIONS_ERROR":
             return Object.assign({}, state, {
                 isFetchingOrganisations: false,
                 errorFetchingOrganisations: action.error
             });
-        case "REQUEST_PUBLISHER":
+        case "REQUEST_ORGANISATION":
             return Object.assign({}, state, {
                 isFetchingOrganisation: true
             });
-        case "RECEIVE_PUBLISHER":
+        case "RECEIVE_ORGANISATION":
             return Object.assign({}, state, {
                 isFetchingOrganisation: false,
                 organisation: action.json && parseOrganisation(action.json)
             });
-        case "REQUEST_PUBLISHER_ERROR":
+        case "REQUEST_ORGANISATION_ERROR":
             return Object.assign({}, state, {
                 isFetchingOrganisation: false,
                 errorFetchingOrganisation: action.error

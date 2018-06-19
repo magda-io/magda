@@ -8,40 +8,40 @@ import type { FacetAction } from "../helpers/datasetSearch";
 
 export function requestOrganisations(): FacetAction {
     return {
-        type: actionTypes.REQUEST_PUBLISHERS
+        type: actionTypes.REQUEST_ORGANISATIONS
     };
 }
 
 export function receiveOrganisations(json: Object): FacetAction {
     return {
-        type: actionTypes.RECEIVE_PUBLISHERS,
+        type: actionTypes.RECEIVE_ORGANISATIONS,
         json
     };
 }
 
 export function requestOrganisationsError(error: FetchError): FacetAction {
     return {
-        type: actionTypes.REQUEST_PUBLISHERS_ERROR,
+        type: actionTypes.REQUEST_ORGANISATIONS_ERROR,
         error
     };
 }
 
 export function requestOrganisation(): FacetAction {
     return {
-        type: actionTypes.REQUEST_PUBLISHER
+        type: actionTypes.REQUEST_ORGANISATION
     };
 }
 
 export function receiveOrganisation(json: Object): FacetAction {
     return {
-        type: actionTypes.RECEIVE_PUBLISHER,
+        type: actionTypes.RECEIVE_ORGANISATION,
         json
     };
 }
 
 export function requestOrganisationError(error: FetchError): FacetAction {
     return {
-        type: actionTypes.REQUEST_PUBLISHER_ERROR,
+        type: actionTypes.REQUEST_ORGANISATION_ERROR,
         error
     };
 }

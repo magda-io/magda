@@ -5,14 +5,14 @@ import { actionTypes } from "../constants/ActionTypes";
 
 export function requestOrganisations(ids: Array<string>) {
     return {
-        type: actionTypes.REQUEST_FEATURED_PUBLISHERS,
+        type: actionTypes.REQUEST_FEATURED_ORGANISATIONS,
         ids
     };
 }
 
 export function receiveOrganisations(json: Array<Object>) {
     return {
-        type: actionTypes.RECEIVE_FEATURED_PUBLISHERS,
+        type: actionTypes.RECEIVE_FEATURED_ORGANISATIONS,
         json
     };
 }

@@ -49,7 +49,7 @@ const datasetSearchReducer = (
     switch (action.type) {
         case "REQUEST_RESULTS":
             let queryObject = action.queryObject;
-            let activePub = queryFilterFormat(queryObject.organisation);
+            let activeOrg = queryFilterFormat(queryObject.organisation);
             let activeFormat = queryFilterFormat(queryObject.format);
             let regionSelected = regionToObject(queryObject);
             return Object.assign({}, state, {
@@ -62,7 +62,7 @@ const datasetSearchReducer = (
                 ],
                 organisationOptions: initialData.organisationOptions,
                 formatOptions: initialData.formatOptions,
-                activeOrganisations: activePub,
+                activeOrganisations: activeOrg,
                 activeRegions: regionSelected,
                 activeDateFrom: queryObject.dateFrom
                     ? queryObject.dateFrom
@@ -126,7 +126,7 @@ const datasetSearchReducer = (
 
             let freeText: string = data.query.freeText;
             let activeOrganisations: Array<FacetOption> = findMatchingObjs(
-                query.organisations,
+                query.publishers,
                 organisationOptions
             );
             let activeDateFrom: ?string = query.dateFrom
@@ -160,12 +160,12 @@ const datasetSearchReducer = (
                 error: null
             });
 
-        case "UPDATE_PUBLISHERS":
+        case "UPDATE_ORGANISATIONS":
             return Object.assign({}, state, {
                 activeOrganisations: action.items
             });
 
-        case "RESET_PUBLISHER":
+        case "RESET_ORGANISATION":
             return Object.assign({}, state, {
                 activeOrganisations: initialData.activeOrganisations
             });

@@ -21,17 +21,17 @@ const featuredOrganisationsReducer = (
     action: FeaturedAction
 ) => {
     switch (action.type) {
-        case "REQUEST_FEATURED_PUBLISHERS":
+        case "REQUEST_FEATURED_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null
             });
-        case "REQUEST_FEATURED_PUBLISHERS_ERROR":
+        case "REQUEST_FEATURED_ORGANISATIONS_ERROR":
             return Object.assign({}, state, {
                 isFetching: false,
                 error: action.error
             });
-        case "RECEIVE_FEATURED_PUBLISHERS":
+        case "RECEIVE_FEATURED_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: false,
                 organisations: action.json.map(p => parseOrganisation(p)),
