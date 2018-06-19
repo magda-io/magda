@@ -10,9 +10,6 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
-import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
-import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
 import org.elasticsearch.index.IndexNotFoundException
 import org.elasticsearch.repositories.RepositoryMissingException
 import org.elasticsearch.rest.RestStatus
@@ -20,8 +17,9 @@ import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import com.sksamuel.elastic4s.http.{ElasticDsl, HttpClient, RequestSuccess}
+import com.sksamuel.elastic4s.http.{ElasticDsl, HttpClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.http.bulk._
+import com.sksamuel.elastic4s.snapshots._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -29,7 +27,6 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 import com.typesafe.config.Config
 import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import org.elasticsearch.action.bulk.BulkItemResponse
 import com.sksamuel.elastic4s.http.bulk.BulkResponseItem
 import akka.NotUsed
 import com.sksamuel.elastic4s.indexes.{IndexDefinition => ESIndexDefinition}
@@ -42,8 +39,7 @@ import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
-
-import scala.concurrent
+import com.sksamuel.elastic4s.http.snapshots._
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -148,16 +144,19 @@ class ElasticSearchIndexer(
           logger.info("Restoring snapshot into {}", definition.name)
 
           client.execute {
-            restoreSnapshot(snapshot.snapshotId.getName) from SNAPSHOT_REPO_NAME indexes indices.getIndex(config, definition.indicesIndex) waitForCompletion true
-          } map { response =>
-            response.status match {
-              case RestStatus.OK =>
-                logger.info("Restored {} version {}", definition.name, definition.version)
-                promise.success(RestoreSuccess)
-              case status: RestStatus =>
-                logger.info("Failed to restore for {} version {} with status {}", definition.name, definition.version, status)
-                promise.success(RestoreFailure)
-            }
+            new RestoreSnapshot(
+              snapshotName = snapshot.snapshotId.getName,
+              repositoryName = SNAPSHOT_REPO_NAME,
+              indices = indices.getIndex(config, definition.indicesIndex),
+              waitForCompletion = Some(true)
+            )
+          } map {
+            case Right(results:Seq[RestoreSnapshotResponse]) =>
+              logger.info("Restored {} version {}", definition.name, definition.version)
+              promise.success(RestoreSuccess)
+            case Left(failure) =>
+              logger.info("Failed to restore for {} version {} with status {}", definition.name, definition.version, failure.status)
+              promise.success(RestoreFailure)
           }
       }
       .recover {
@@ -209,7 +208,7 @@ class ElasticSearchIndexer(
     val futures = IndexDefinition.indices.map(indexDef =>
       client.execute(getMapping(indices.getIndex(config, indexDef.indicesIndex)))
         .map (x=> x match {
-          case Right(results) => Some(results.result.asInstanceOf[IndexMappings])
+          case Right(results:Seq[IndexMappings]) => Some(results)
           case Left(failure) => failure.error {
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
             case RootCause(inner: IndexNotFoundException) => indexNotFound(indexDef, inner)
@@ -220,7 +219,7 @@ class ElasticSearchIndexer(
         })
     )
     Future.sequence(futures)
-      .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
+      .map(_.zip(IndexDefinition.indices))
   }
 
   private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[IndexMappings], IndexDefinition)]): Future[Object] =
@@ -300,11 +299,24 @@ class ElasticSearchIndexer(
   }
 
   private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
-    def getSnapshot(): Future[GetSnapshotsResponse] = client.execute {
-      get snapshot Seq() from SNAPSHOT_REPO_NAME
-    }
+    def getSnapshot(): Future[Either[RequestFailure, RequestSuccess[GetSnapshotResponse]]] = client.execute {
+      new GetSnapshots(Seq("_all"), SNAPSHOT_REPO_NAME)
+    }/*.map({
+      case Right(results:Seq[RestoreSnapshotResponse]) =>
+        logger.info("Restored {} version {}", definition.name, definition.version)
+        promise.success(RestoreSuccess)
+      case Left(failure) =>
+        None
+    })*/
 
     getSnapshot()
+      .map{
+        case Right(results:Seq[RestoreSnapshotResponse]) =>
+
+        case Left(failure) =>
+          failure.error.
+
+      }
       .map(x => Future.successful(x))
       .recover {
         case RootCause(e: RepositoryMissingException) =>
