@@ -1,5 +1,6 @@
 ## 0.0.42
 
+-   Change "Publisher" to "Organisation" in codebase
 -   Implemented the new pagination design
 -   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
