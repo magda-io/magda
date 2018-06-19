@@ -16,7 +16,14 @@ function PublisherSummary(props) {
                     {props.publisher.name}
                 </Link>
             </h2>
-            <div className="publisher-description" />
+            <div className="publisher-meta">
+                {props.publisher.datasetCount
+                    ? `${props.publisher.datasetCount} dataset`
+                    : ""}
+            </div>
+            <div className="publisher-description">
+                {props.publisher.description ? props.publisher.description : ""}
+            </div>
         </div>
     );
 }

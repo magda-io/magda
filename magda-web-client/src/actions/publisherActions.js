@@ -53,7 +53,7 @@ function fetchPublishers(start, query) {
         //     config.registryApiUrl
         // }records?aspect=organization-details&limit=1000`;
         // temp testing url
-        const url = `http://issue-1188.magda-dev.terria.io/api/v0/search/organisations?query=${query}&start=${(start -
+        const url = `https://issue-1188.dev.magda.io/api/v0/search/organisations?query=${query}&start=${(start -
             1) *
             20}&limit=20`;
         return fetch(url)

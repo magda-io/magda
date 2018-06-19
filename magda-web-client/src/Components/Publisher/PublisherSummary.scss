@@ -26,6 +26,11 @@
         }
     }
 
+    .publisher-meta {
+        @include AU-fontgrid(xs);
+        color: $AU-color-foreground-action;
+    }
+
     .publisher-description {
         @include AU-fontgrid(xs);
         margin-bottom: 8px;
