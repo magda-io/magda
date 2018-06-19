@@ -259,9 +259,9 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
 
-"@gov.au/tags@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-2.0.2.tgz#e2716389d4238c72f13e1febb4cbfee8618fbf7a"
+"@gov.au/tags@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-3.1.0.tgz#f4ab49efb557544af0096ffc262b29d6e78b4aad"
   dependencies:
     "@gov.au/core" "^2.0.0"
     "@gov.au/pancake" "~1"
@@ -11966,7 +11966,7 @@ react-load-script@0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/react-load-script/-/react-load-script-0.0.6.tgz#db6851236aaa25bb622677a2eb51dad4f8d2c258"
 
-react-modal@^3.3.2:
+react-modal@^3.3.2, react-modal@^3.4.5:
   version "3.4.5"
   resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.4.5.tgz#75a7eefb8f4c8247278d5ce1c41249d7785d9f69"
   dependencies:

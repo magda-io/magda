@@ -16,6 +16,7 @@
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
 -   Added `bottom-border` property to make dataset filters stand out more.
+-   Fixed page refresh when using a dataset tag as a link.
 
 ## 0.0.41
 
@@ -26,6 +27,13 @@
 -   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
+-   Added vertical spacing for `DataPreview` chart fields.
+-   Added file icon and divider to search results
+-   Stopped format/publisher filter search returning wrong doc counts when there's no text query.
+-   Fixed a issue that state region layer could be removed from region filter panel map
+-   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
+-   Corrected email template style to be inline with designs.
+-   Switched development/preview to use let's encrypt certificates for HTTPS.
 
 ## 0.0.40
 
