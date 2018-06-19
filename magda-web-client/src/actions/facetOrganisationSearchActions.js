@@ -36,7 +36,7 @@ export function fetchOrganisationSearchResults(generalQuery: string) {
         dispatch(requestOrganisations(generalQuery));
         return fetch(
             config.searchApiUrl +
-                `facets/organisation/options?generalQuery=${encodeURIComponent(
+                `facets/publisher/options?generalQuery=${encodeURIComponent(
                     generalQuery
                 )}&start=0&limit=10000`
         )
