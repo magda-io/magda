@@ -38,7 +38,7 @@ class PublisherDetails extends Component {
 
         const breadcrumbs = [
             <li>
-                <a href="/organisations">Organisations</a>
+                <Link to="/organisations">Organisations</Link>
             </li>,
             <li>
                 <span>{publisher.name}</span>

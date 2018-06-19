@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default class Breadcrumbs extends React.Component {
     render() {
@@ -6,7 +7,7 @@ export default class Breadcrumbs extends React.Component {
             <nav className="au-breadcrumbs" aria-label="breadcrumb">
                 <ul className="au-link-list au-link-list--inline">
                     <li>
-                        <a href="/#">Home</a>
+                        <Link to="/#">Home</Link>
                     </li>
                     {this.props.breadcrumbs.map(b => b)}
                 </ul>

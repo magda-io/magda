@@ -248,26 +248,26 @@ class RecordHandler extends React.Component {
         const params = Object.keys(this.props.match.params);
         const results = (
             <li key="result">
-                <a
-                    href={`/search?q=${queryString.parse(
+                <Link
+                    to={`/search?q=${queryString.parse(
                         this.props.location.search
                     ).q || ""}`}
                 >
                     Results
-                </a>
+                </Link>
             </li>
         );
         const breadcrumbs = params.map(p => {
             if (p === "datasetId") {
                 return (
                     <li key="datasetId">
-                        <a
-                            href={`/dataset/${this.props.match.params[p]}${
+                        <Link
+                            to={`/dataset/${this.props.match.params[p]}${
                                 this.props.location.search
                             }`}
                         >
                             {this.props.dataset.title}
-                        </a>
+                        </Link>
                     </li>
                 );
             }
