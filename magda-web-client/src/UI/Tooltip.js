@@ -14,9 +14,9 @@ const Tooltip = () => {
         <div className="tooltip">
             <img src={helpIcon} alt="Help Link" />
             <span className="tooltiptext">
-                Calculated on online availability, machine readability, open
-                formats, use of references and contextual information. More on
-                the <Link to="/page/dataset-quality">open data scale</Link>.
+                Calculated on criteria such as machine readability, open formats
+                and more. See{" "}
+                <Link to="/page/dataset-quality">open data scale</Link>.
             </span>
         </div>
     );
