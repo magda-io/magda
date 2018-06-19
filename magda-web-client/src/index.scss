@@ -202,3 +202,7 @@ h4 {
 .au-link {
     background: #ffffff;
 }
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
+}

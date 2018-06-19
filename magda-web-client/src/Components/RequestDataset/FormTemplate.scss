@@ -34,12 +34,15 @@ $form-width: 700px;
     margin-top: 10px;
 }
 
-.correspondence-clear-button,
 .correspondence-submit-button {
     float: right;
     margin: 5px;
 }
 
+.correspondence-clear-button {
+    float: right;
+    margin: 5px;
+}
 .correspondence-small-title {
     font-weight: 500;
 }
