@@ -1,16 +1,15 @@
 package au.csiro.data61.magda.indexer.search.elasticsearch
 
-import java.time.{ Instant, OffsetDateTime }
+import java.time.{Instant, OffsetDateTime}
 
 import akka.actor.ActorSystem
-import akka.stream.{ Materializer, OverflowStrategy, QueueOfferResult }
-import akka.stream.scaladsl.{ Sink, Source, SourceQueue }
-import au.csiro.data61.magda.model.misc.{ DataSet, Format, Publisher }
+import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
+import akka.stream.scaladsl.{Sink, Source, SourceQueue}
+import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.ErrorHandling.{ RootCause, retry }
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.mappings.GetMappingsResult
+import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryResponse
 import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotResponse
 import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
@@ -20,29 +19,31 @@ import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
-import org.elasticsearch.action.bulk.{ BulkResponse }
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import com.sksamuel.elastic4s.http.HttpClient
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.{ElasticDsl, HttpClient, RequestSuccess}
+import com.sksamuel.elastic4s.http.bulk._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.bulk.RichBulkResponse
+import com.sksamuel.elastic4s.http.bulk.BulkResponse
 import org.elasticsearch.action.bulk.BulkItemResponse
-import com.sksamuel.elastic4s.bulk.RichBulkItemResponse
+import com.sksamuel.elastic4s.http.bulk.BulkResponseItem
 import akka.NotUsed
-import com.sksamuel.elastic4s.indexes.{ IndexDefinition => ESIndexDefinition }
+import com.sksamuel.elastic4s.indexes.{IndexDefinition => ESIndexDefinition}
+
 import scala.util.Try
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import au.csiro.data61.magda.search.elasticsearch.Indices;
-
+import au.csiro.data61.magda.search.elasticsearch.Indices
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
-import com.sksamuel.elastic4s.index.RichIndexResponse
+import com.sksamuel.elastic4s.http.index.IndexResponse
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
+import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
+
+import scala.concurrent
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -90,27 +91,28 @@ class ElasticSearchIndexer(
               throw e
           }
       }
-      .map {
-        case (result: RichBulkResponse, sources) =>
-          val groupedResults = sources.map(_._3).foldLeft((0, Seq[Seq[RichBulkItemResponse]]())) {
+      .map{
+        case (Right(results:RequestSuccess[BulkResponse]), sources) =>
+
+          val groupedResults = sources.map(_._3).foldLeft((0, Seq[Seq[BulkResponseItem]]())) {
             case ((currentIndex, listSoFar), current) =>
-              val group = result.items.drop(currentIndex).take(current)
+              val group = results.result.items.drop(currentIndex).take(current)
               (currentIndex + group.size, listSoFar :+ group)
           }._2
 
           val resultTuples = groupedResults.zip(sources)
 
-          val failures = resultTuples.filter(_._1.exists(_.isFailure))
-          val successes = resultTuples.filter(_._1.forall(!_.isFailure))
+          val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
+          val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
 
           failures.foreach {
             case (results, (dataSet, promise, _)) =>
-              results.filter(_.isFailure).foreach { failure =>
-                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.failureMessage)
+              results.filter(_.error.isDefined).foreach { failure =>
+                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
               }
 
               // The dataset result is always the first
-              if (results.head.isFailure) {
+              if (results.head.error.isDefined) {
                 tryReindexSpatialFail(dataSet, results.head, promise)
               } else {
                 promise.failure(new Exception("Failed to index supplementary field"))
@@ -183,15 +185,15 @@ class ElasticSearchIndexer(
     }
   }
 
-  private def tryReindexSpatialFail(dataSet: DataSet, result: RichBulkItemResponse, promise: Promise[Unit]) = {
-    val geoFail = result.isFailure && result.failureMessage.contains("failed to parse [spatial.geoJson]")
+  private def tryReindexSpatialFail(dataSet: DataSet, result: BulkResponseItem, promise: Promise[Unit]) = {
+    val geoFail = result.error.isDefined && result.error.exists(_.reason.contains("failed to parse [spatial.geoJson]"))
 
     if (geoFail) {
       logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
       index(dataSetWithoutSpatial, promise)
     } else {
-      promise.failure(new Exception(s"Had failures other than geoJson parse: ${result.failureMessage}"))
+      promise.failure(new Exception(s"Had failures other than geoJson parse: ${result.error}"))
     }
   }
 
@@ -206,17 +208,22 @@ class ElasticSearchIndexer(
 
     val futures = IndexDefinition.indices.map(indexDef =>
       client.execute(getMapping(indices.getIndex(config, indexDef.indicesIndex)))
-        .map(Some(_))
-        .recover {
-          // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-          case RootCause(inner: IndexNotFoundException) => indexNotFound(indexDef, inner)
+        .map (x=> x match {
+          case Right(results) => Some(results.result.asInstanceOf[IndexMappings])
+          case Left(failure) => failure.error {
+            // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
+            case RootCause(inner: IndexNotFoundException) => indexNotFound(indexDef, inner)
+            case _ =>
+              logger.error("failed to get {} index, error: {}", indexDef.name, failure.error)
+              None
+          }
         })
-
+    )
     Future.sequence(futures)
       .map(esDefinitions => esDefinitions.zip(IndexDefinition.indices))
   }
 
-  private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[GetMappingsResult], IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[IndexMappings], IndexDefinition)]): Future[Object] =
     Future.sequence(definitionPairs.map {
       case (mapping, definition) =>
         // If no index, create it
@@ -239,7 +246,7 @@ class ElasticSearchIndexer(
     }
 
     snapshotFuture flatMap {
-      case RestoreSuccess => Future.successful(Unit) // no need to reindex 
+      case RestoreSuccess => Future.successful(Unit) // no need to reindex
       case RestoreFailure =>
         deleteIndex(client, definition)
           .flatMap { _ =>
