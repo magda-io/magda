@@ -16,6 +16,7 @@
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
 -   Fixed page refresh when using a dataset tag as a link.
+-   Tweaked open data tooltip text
 
 ## 0.0.41
 

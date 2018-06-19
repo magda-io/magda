@@ -14,8 +14,9 @@ const Tooltip = () => {
         <div className="tooltip">
             <img src={helpIcon} alt="Help Link" />
             <span className="tooltiptext">
-                Calculated using the{" "}
-                <Link to="/page/dataset-quality">Open data scale</Link>
+                Calculated on online availability, machine readability, open
+                formats, use of references and contextual information. More on
+                the <Link to="/page/dataset-quality">open data scale</Link>.
             </span>
         </div>
     );
