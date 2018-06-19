@@ -47,7 +47,7 @@
 
 .tooltiptext {
     @media screen {
-        transition: none !important;
+        transition-delay: 1s;
     }
     transition-delay: 1s;
     transition: all 1s ease;
