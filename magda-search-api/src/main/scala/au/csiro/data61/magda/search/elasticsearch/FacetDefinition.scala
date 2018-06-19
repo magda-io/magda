@@ -8,7 +8,7 @@ import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
@@ -18,7 +18,7 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 import collection.JavaConverters._
 import scalaz.Memo
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl
 import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.FilterValue._
 import au.csiro.data61.magda.api.Specified

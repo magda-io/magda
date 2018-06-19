@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import scala.collection.JavaConversions._
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.IndexesAndTypes
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigObject
@@ -37,6 +37,12 @@ object Indices {
   case object RegionsIndex extends Index {
     override def name = "regions"
   }
+  case object PublishersIndex extends Index {
+    override def name = "publishers"
+  }
+  case object FormatsIndex extends Index {
+    override def name = "formats"
+  }
 
   sealed trait IndexType {
     def name: String
@@ -49,9 +55,9 @@ object Indices {
     override def name() = "regions"
   }
   case object FormatsIndexType extends IndexType {
-    override def name() = Format.id
+    override def name() = "formats"
   }
   case object PublisherIndexType extends IndexType {
-    override def name() = Publisher.id
+    override def name() = "publishers"
   }
 }

@@ -93,9 +93,9 @@ case class SynonymGraphTokenFilter(name: String,
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fieldsx = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
 
-    textField(name).analyzer("english").fields(fieldsx)
+    textField(name).analyzer("english").fields(fields)
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
@@ -236,13 +236,15 @@ object IndexDefinition extends DefaultJsonProtocol {
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
             mapping(indices.getType(Indices.RegionsIndexType)).fields(
-              field("regionType", KeywordType),
-              field("regionId", KeywordType),
+              keywordField("regionType"),
+              keywordField("regionId"),
               magdaTextField("regionName"),
               magdaTextField("regionShortName"),
-              field("boundingBox", GeoShapeType),
-              field("geometry", GeoShapeType),
-              field("order", IntegerType)))
+              geoshapeField("boundingBox"),
+              geoshapeField("geometry"),
+              intField("order")
+            )
+          )
           .analysis(
             CustomAnalyzerDefinition(
               "quote",
@@ -250,7 +252,62 @@ object IndexDefinition extends DefaultJsonProtocol {
               LowercaseTokenFilter)),
       create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem)))
 
-  val indices = Seq(dataSets, regions)
+
+  val publishers: IndexDefinition =
+    new IndexDefinition(
+      name = "publishers",
+      version = 1,
+      indicesIndex = Indices.PublishersIndex,
+      definition = (indices, config) =>
+        createIndex(indices.getIndex(config, Indices.PublishersIndex))
+          .shards(config.getInt("elasticSearch.shardCount"))
+          .replicas(config.getInt("elasticSearch.replicaCount"))
+          .mappings(
+            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+              keywordField("identifier"),
+              textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+              magdaTextField("value")
+            ))
+          .analysis(
+            CustomAnalyzerDefinition(
+              "quote",
+              KeywordTokenizer,
+              LowercaseTokenFilter),
+            CustomAnalyzerDefinition(
+              "uppercase",
+              KeywordTokenizer,
+              UppercaseTokenFilter
+            )
+          )
+    )
+
+  val formats: IndexDefinition =
+    new IndexDefinition(
+      name = "formats",
+      version = 1,
+      indicesIndex = Indices.PublishersIndex,
+      definition = (indices, config) =>
+        createIndex(indices.getIndex(config, Indices.PublishersIndex))
+          .shards(config.getInt("elasticSearch.shardCount"))
+          .replicas(config.getInt("elasticSearch.replicaCount"))
+          .mappings(
+            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+              magdaTextField("value")
+            ))
+          .analysis(
+            CustomAnalyzerDefinition(
+              "quote",
+              KeywordTokenizer,
+              LowercaseTokenFilter),
+            CustomAnalyzerDefinition(
+              "uppercase",
+              KeywordTokenizer,
+              UppercaseTokenFilter
+            )
+          )
+    )
+
+  val indices = Seq(dataSets, regions, publishers, formats)
 
   def setupRegions(client: HttpClient, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
     val regionSourceConfig = config.getConfig("regionSources")
@@ -339,18 +396,13 @@ object IndexDefinition extends DefaultJsonProtocol {
           case Left(failure) => logger.error("Failure: {}", failure.error)
           case Right(results) => results.result.items.length
         }
-        /*
-        result.failures.foreach(failure =>
-          logger.error("Failure: {}", failure.error))
-
-        result.successes.length*/
       }
       .recover {
         case e: Throwable =>
           logger.error(e, "Encountered error while indexing regions")
           throw e
       }
-      .runWith(Sink.reduce((oldLength: Int, latestValuesLength: Int) => oldLength + latestValuesLength))
+      .runWith(Sink.reduce((oldLength: AnyVal, latestValuesLength: AnyVal) => oldLength.asInstanceOf[Int] + latestValuesLength.asInstanceOf[Int]))
       .map { count => logger.info("Successfully indexed {} regions", count) }
   }
 
