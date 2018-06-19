@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import queryString from "query-string";
 import { requestAuthProviders } from "../../actions/userManagementActions";
 import { bindActionCreators } from "redux";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 class Account extends React.Component {
     constructor(props) {
@@ -23,7 +24,14 @@ class Account extends React.Component {
 
     render() {
         return (
-            <div className="container account">
+            <div className="account">
+                <Breadcrumbs
+                    breadcrumbs={[
+                        <li key="account">
+                            <span>Acount</span>
+                        </li>
+                    ]}
+                />
                 {!this.props.user && (
                     <Login
                         signInError={
