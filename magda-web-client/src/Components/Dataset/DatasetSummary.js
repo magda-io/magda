@@ -31,9 +31,9 @@ export default class DatasetSummary extends Component {
 
     render() {
         const dataset = this.props.dataset;
-        const publisher = dataset.publisher && dataset.publisher.name;
-        const publisherIdent =
-            dataset.publisher && dataset.publisher.identifier;
+        const organisation = dataset.organisation && dataset.organisation.name;
+        const organisationIdent =
+            dataset.organisation && dataset.organisation.identifier;
         const searchText = defined(this.props.searchText)
             ? this.props.searchText
             : "";
@@ -48,12 +48,12 @@ export default class DatasetSummary extends Component {
                         {dataset.title}
                     </Link>
                 </h2>
-                {publisher && (
+                {organisation && (
                     <Link
-                        className="dataset-summary-publisher"
-                        to={`/organisations/${publisherIdent}`}
+                        className="dataset-summary-organisation"
+                        to={`/organisations/${organisationIdent}`}
                     >
-                        {publisher}
+                        {organisation}
                     </Link>
                 )}
 

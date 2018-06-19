@@ -8,9 +8,9 @@
     }
 }
 
-.publisher-basic-info-row {
+.organisation-basic-info-row {
     @include AU-fontgrid(sm);
-    .publisher {
+    .organisation {
         color: $AU-color-foreground-action;
     }
     .updated-date {

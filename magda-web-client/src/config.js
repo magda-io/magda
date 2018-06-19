@@ -1,5 +1,5 @@
 // @flow
-import Publisher from "./Components/SearchFacets/Publisher";
+import Organisation from "./Components/SearchFacets/Organisation";
 import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
@@ -68,7 +68,7 @@ export const config = {
     },
     appTitle: "Australian open data search",
     facets: [
-        { id: "publisher", component: Publisher },
+        { id: "organisation", component: Organisation },
         { id: "region", component: Region },
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
@@ -114,7 +114,7 @@ export const config = {
                 ]
             },
             {
-                category: "Publishers",
+                category: "Organisations",
                 links: [
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Open data toolkit", "https://toolkit.data.gov.au/"]

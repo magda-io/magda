@@ -6,49 +6,49 @@ import { actionTypes } from "../constants/ActionTypes";
 import type { FetchError } from "../types";
 import type { FacetAction } from "../helpers/datasetSearch";
 
-export function requestPublishers(): FacetAction {
+export function requestOrganisations(): FacetAction {
     return {
         type: actionTypes.REQUEST_PUBLISHERS
     };
 }
 
-export function receivePublishers(json: Object): FacetAction {
+export function receiveOrganisations(json: Object): FacetAction {
     return {
         type: actionTypes.RECEIVE_PUBLISHERS,
         json
     };
 }
 
-export function requestPublishersError(error: FetchError): FacetAction {
+export function requestOrganisationsError(error: FetchError): FacetAction {
     return {
         type: actionTypes.REQUEST_PUBLISHERS_ERROR,
         error
     };
 }
 
-export function requestPublisher(): FacetAction {
+export function requestOrganisation(): FacetAction {
     return {
         type: actionTypes.REQUEST_PUBLISHER
     };
 }
 
-export function receivePublisher(json: Object): FacetAction {
+export function receiveOrganisation(json: Object): FacetAction {
     return {
         type: actionTypes.RECEIVE_PUBLISHER,
         json
     };
 }
 
-export function requestPublisherError(error: FetchError): FacetAction {
+export function requestOrganisationError(error: FetchError): FacetAction {
     return {
         type: actionTypes.REQUEST_PUBLISHER_ERROR,
         error
     };
 }
 
-function fetchPublishers(start) {
+function fetchOrganisations(start) {
     return (dispatch: Function) => {
-        dispatch(requestPublishers());
+        dispatch(requestOrganisations());
         const url = `${
             config.registryApiUrl
         }records?aspect=organization-details&limit=1000`;
@@ -60,11 +60,11 @@ function fetchPublishers(start) {
                 throw new Error(response.statusText);
             })
             .then(json => {
-                return dispatch(receivePublishers(json));
+                return dispatch(receiveOrganisations(json));
             })
             .catch(error =>
                 dispatch(
-                    requestPublishersError({
+                    requestOrganisationsError({
                         title: error.name,
                         detail: error.message
                     })
@@ -73,27 +73,27 @@ function fetchPublishers(start) {
     };
 }
 
-function shouldFetchPublishers(state) {
-    const publisher = state.publisher;
-    if (publisher.isFetchingPublishers) {
+function shouldFetchOrganisations(state) {
+    const organisation = state.organisation;
+    if (organisation.isFetchingOrganisations) {
         return false;
     }
     return true;
 }
 
-export function fetchPublishersIfNeeded(start: number): Object {
+export function fetchOrganisationsIfNeeded(start: number): Object {
     return (dispatch: Function, getState: Function) => {
-        if (shouldFetchPublishers(getState())) {
-            return dispatch(fetchPublishers(start));
+        if (shouldFetchOrganisations(getState())) {
+            return dispatch(fetchOrganisations(start));
         } else {
             return Promise.resolve();
         }
     };
 }
 
-function fetchPublisher(id) {
+function fetchOrganisation(id) {
     return (dispatch: Function) => {
-        dispatch(requestPublisher());
+        dispatch(requestOrganisation());
         const url = `${
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
@@ -106,11 +106,11 @@ function fetchPublisher(id) {
                 throw new Error(response.statusText);
             })
             .then(json => {
-                return dispatch(receivePublisher(json));
+                return dispatch(receiveOrganisation(json));
             })
             .catch(error =>
                 dispatch(
-                    requestPublisherError({
+                    requestOrganisationError({
                         title: error.name,
                         detail: error.message
                     })
@@ -119,18 +119,18 @@ function fetchPublisher(id) {
     };
 }
 
-function shouldFetchPublisher(state) {
-    const publisher = state.publisher;
-    if (publisher.isFetchingPublisher) {
+function shouldFetchOrganisation(state) {
+    const organisation = state.organisation;
+    if (organisation.isFetchingOrganisation) {
         return false;
     }
     return true;
 }
 
-export function fetchPublisherIfNeeded(id: number): Object {
+export function fetchOrganisationIfNeeded(id: number): Object {
     return (dispatch: Function, getState: Function) => {
-        if (shouldFetchPublisher(getState())) {
-            return dispatch(fetchPublisher(id));
+        if (shouldFetchOrganisation(getState())) {
+            return dispatch(fetchOrganisation(id));
         } else {
             return Promise.resolve();
         }

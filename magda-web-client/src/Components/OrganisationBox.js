@@ -1,23 +1,25 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./PublisherBox.css";
+import "./OrganisationBox.css";
 
-export default function PublisherBox(props) {
-    const publisher = props.publisher;
+export default function OrganisationBox(props) {
+    const organisation = props.organisation;
     return (
-        <div className="white-box publisher-box">
+        <div className="white-box organisation-box">
             <div className="inner">
                 <h3>
                     <Link
-                        to={`organisations/${encodeURIComponent(publisher.id)}`}
+                        to={`organisations/${encodeURIComponent(
+                            organisation.id
+                        )}`}
                     >
-                        {publisher.name}
+                        {organisation.name}
                     </Link>
                 </h3>
-                <div className="">{publisher["description"]}</div>
+                <div className="">{organisation["description"]}</div>
                 <Link
                     to={`/search?organisation=${encodeURIComponent(
-                        publisher.name
+                        organisation.name
                     )}`}
                 >
                     View all datasets

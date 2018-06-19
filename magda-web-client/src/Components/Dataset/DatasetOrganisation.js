@@ -3,18 +3,18 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import OverviewBox from "../../UI/OverviewBox";
 
-class DatasetPublisher extends Component {
-    renderPublisher(publisher) {
+class DatasetOrganisation extends Component {
+    renderOrganisation(organisation) {
         return (
             <div className="col-sm-8">
                 <h3 className="section-heading">Overview</h3>
-                <OverviewBox content={publisher.name} />
+                <OverviewBox content={organisation.name} />
                 <Link
                     to={`/search?organisation=${encodeURIComponent(
-                        publisher.name
+                        organisation.name
                     )}`}
                 >
-                    View all datasets from {publisher.name}
+                    View all datasets from {organisation.name}
                 </Link>
             </div>
         );
@@ -22,9 +22,9 @@ class DatasetPublisher extends Component {
 
     render() {
         return (
-            <div className="dataset-publisher container">
+            <div className="dataset-organisation container">
                 <div className="row">
-                    {this.renderPublisher(this.props.dataset.publisher)}
+                    {this.renderOrganisation(this.props.dataset.organisation)}
                 </div>
             </div>
         );
@@ -39,4 +39,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(DatasetPublisher);
+export default connect(mapStateToProps)(DatasetOrganisation);

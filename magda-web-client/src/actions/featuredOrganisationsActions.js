@@ -3,34 +3,36 @@ import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 
-export function requestPublishers(ids: Array<string>) {
+export function requestOrganisations(ids: Array<string>) {
     return {
         type: actionTypes.REQUEST_FEATURED_PUBLISHERS,
         ids
     };
 }
 
-export function receivePublishers(json: Array<Object>) {
+export function receiveOrganisations(json: Array<Object>) {
     return {
         type: actionTypes.RECEIVE_FEATURED_PUBLISHERS,
         json
     };
 }
 
-export function fetchFeaturedPublishersFromRegistry(
+export function fetchFeaturedOrganisationsFromRegistry(
     ids: Array<string>
 ): Object {
     return (dispatch: Function, getState: Function) => {
-        if (getState().featuredPublishers.isFetching) {
+        if (getState().featuredOrganisations.isFetching) {
             return false;
         }
-        dispatch(requestPublishers(ids));
+        dispatch(requestOrganisations(ids));
         const fetches = ids.map(id =>
             fetch(
                 config.registryApiUrl +
                     `records/${id}?aspect=organization-details`
             ).then(response => response.json())
         );
-        Promise.all(fetches).then(jsons => dispatch(receivePublishers(jsons)));
+        Promise.all(fetches).then(jsons =>
+            dispatch(receiveOrganisations(jsons))
+        );
     };
 }

@@ -96,14 +96,14 @@ export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
     };
 }
 
-export function updatePublishers(publishers: Array<Object>): FacetAction {
+export function updateOrganisations(organisations: Array<Object>): FacetAction {
     return {
         type: actionTypes.UPDATE_PUBLISHERS,
-        items: publishers
+        items: organisations
     };
 }
 
-export function resetPublisher(): FacetAction {
+export function resetOrganisation(): FacetAction {
     return {
         type: actionTypes.RESET_PUBLISHER
     };

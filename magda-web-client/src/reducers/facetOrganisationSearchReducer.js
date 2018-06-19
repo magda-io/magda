@@ -8,7 +8,7 @@ const initialData = {
     error: null
 };
 
-const facetPublisher = (
+const facetOrganisation = (
     state: FacetSearchState = initialData,
     action: FacetAction
 ) => {
@@ -34,4 +34,4 @@ const facetPublisher = (
             return state;
     }
 };
-export default facetPublisher;
+export default facetOrganisation;

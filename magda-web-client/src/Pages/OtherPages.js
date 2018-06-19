@@ -8,8 +8,8 @@ import RecordHandler from "../Components/RecordHandler";
 import ProjectsViewer from "../Components/Project/ProjectsViewer";
 import ProjectDetails from "../Components/Project/ProjectDetails";
 import CreateProject from "../Components/Project/CreateProject";
-import PublishersViewer from "../Components/Publisher/PublishersViewer";
-import PublisherDetails from "../Components/Publisher/PublisherDetails";
+import OrganisationsViewer from "../Components/Organisation/OrganisationsViewer";
+import OrganisationDetails from "../Components/Organisation/OrganisationDetails";
 import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
@@ -38,23 +38,19 @@ const renderBody = () => {
             {enableSuggestDatasetPage && (
                 <Route exact path="/suggest" component={SuggestDataset} />
             )}
-            <Route exact path="/organisations" component={PublishersViewer} />
             <Route
                 exact
-                path="/publishers"
+                path="/organisations"
+                component={OrganisationsViewer}
+            />
+            <Route
+                exact
+                path="/organisations"
                 render={() => <Redirect to="/organisations" />}
             />
             <Route
-                path="/publishers/:publisherId"
-                render={({ match }) => (
-                    <Redirect
-                        to={`/organisations/${match.params.publisherId}`}
-                    />
-                )}
-            />
-            <Route
-                path="/organisations/:publisherId"
-                component={PublisherDetails}
+                path="/organisations/:organisationId"
+                component={OrganisationDetails}
             />
             {staticPageRegister.map(item => (
                 <Route
