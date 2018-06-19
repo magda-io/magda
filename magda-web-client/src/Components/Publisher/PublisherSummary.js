@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import "./PublisherSummary.css";
 
 function PublisherSummary(props) {
-    const details = "";
     return (
         <div className="publisher-summray">
             <h2 className="publisher-title">
