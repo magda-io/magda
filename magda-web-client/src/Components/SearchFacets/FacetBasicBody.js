@@ -3,6 +3,7 @@ import find from "lodash.find";
 import maxBy from "lodash.maxby";
 import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
+import "./FacetBasicBody.css";
 
 // extends Facet class
 class FacetBasicBody extends Component {
@@ -92,7 +93,7 @@ class FacetBasicBody extends Component {
                     className="btn-facet-option__volume-indicator"
                 />
                 <span className="btn-facet-option__name">
-                    {option.value} ({option.hitCount})
+                    {option.value} ( {option.hitCount} )
                 </span>
             </button>
         );

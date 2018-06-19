@@ -15,6 +15,7 @@
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
+-   Added `bottom-border` property to make dataset filters stand out more.
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
