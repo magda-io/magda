@@ -140,14 +140,9 @@ export default class RequestFormTemplate extends React.Component {
     render() {
         return (
             <form className="correspondence-form" method="post">
-                {this.props.title &&
-                    (this.props.smallTitle ? (
-                        <h3 className="correspondence-small-title">
-                            {this.props.title}
-                        </h3>
-                    ) : (
-                        <AUheader title={this.props.title} />
-                    ))}
+                {this.props.title && this.props.smallTitle ? (
+                    <AUheader title={this.props.title} />
+                ) : null}
                 <label htmlFor="message" className="field-label">
                     {this.props.textAreaLabel}
                 </label>

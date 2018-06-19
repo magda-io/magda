@@ -118,6 +118,18 @@ class DistributionRow extends Component {
         return matchedCategory;
     }
 
+    /**
+     * Replace underscores in links with spaces
+     * This stops the text from going off the edge of the screen
+     */
+    renderDistributionLink = title => {
+        if (title.includes("_")) {
+            return title.replace(/_/g, " ");
+        } else {
+            return title;
+        }
+    };
+
     render() {
         const { datasetId, distribution } = this.props;
         let distributionLink;
@@ -160,7 +172,9 @@ class DistributionRow extends Component {
                                 distribution.accessURL ? (
                                     <div>
                                         <span itemProp="name">
-                                            {distribution.title}
+                                            {this.renderDistributionLink(
+                                                distribution.title
+                                            )}
                                         </span>(<span itemProp="fileFormat">
                                             {distribution.format}
                                         </span>)
@@ -168,7 +182,9 @@ class DistributionRow extends Component {
                                 ) : (
                                     <Link to={distributionLink}>
                                         <span itemProp="name">
-                                            {distribution.title}
+                                            {this.renderDistributionLink(
+                                                distribution.title
+                                            )}
                                         </span>(<span itemProp="fileFormat">
                                             {distribution.format}
                                         </span>)
