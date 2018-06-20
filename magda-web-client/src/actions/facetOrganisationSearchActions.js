@@ -6,34 +6,34 @@ import { actionTypes } from "../constants/ActionTypes";
 import type { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
 import type { FetchError } from "../types";
 
-export function requestPublishers(generalQuery: string): FacetAction {
+export function requestOrganisations(generalQuery: string): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_PUBLISHERS,
+        type: actionTypes.FACET_REQUEST_ORGANISATIONS,
         generalQuery
     };
 }
 
-export function requestPublishersFailed(error: FetchError): FacetAction {
+export function requestOrganisationsFailed(error: FetchError): FacetAction {
     return {
-        type: actionTypes.FACET_REQUEST_PUBLISHERS_FAILED,
+        type: actionTypes.FACET_REQUEST_ORGANISATIONS_FAILED,
         error
     };
 }
 
-export function receivePublishers(
+export function receiveOrganisations(
     generalQuery: string,
     json: Object
 ): FacetAction {
     return {
-        type: actionTypes.FACET_RECEIVE_PUBLISHERS,
+        type: actionTypes.FACET_RECEIVE_ORGANISATIONS,
         json: json,
         generalQuery
     };
 }
 
-export function fetchPublisherSearchResults(generalQuery: string) {
+export function fetchOrganisationSearchResults(generalQuery: string) {
     return (dispatch: FacetAction => void) => {
-        dispatch(requestPublishers(generalQuery));
+        dispatch(requestOrganisations(generalQuery));
         return fetch(
             config.searchApiUrl +
                 `facets/publisher/options?generalQuery=${encodeURIComponent(
@@ -48,11 +48,11 @@ export function fetchPublisherSearchResults(generalQuery: string) {
                 }
             })
             .then((json: FacetSearchJson) => {
-                return dispatch(receivePublishers(generalQuery, json));
+                return dispatch(receiveOrganisations(generalQuery, json));
             })
             .catch(error =>
                 dispatch(
-                    requestPublishersFailed({
+                    requestOrganisationsFailed({
                         title: error.name,
                         detail: error.message
                     })

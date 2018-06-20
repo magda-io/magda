@@ -1,6 +1,6 @@
 @import "../../variables";
 
-.publisher-summray {
+.organisation-summray {
     height: auto;
     clear: both;
     height: auto;
@@ -11,7 +11,7 @@
     padding-bottom: 24px;
     overflow-x: hidden;
 
-    .publisher-title {
+    .organisation-title {
         @include AU-fontgrid(md);
         color: $AU-color-foreground-action;
         font-weight: 300;
@@ -26,7 +26,7 @@
         }
     }
 
-    .publisher-description {
+    .organisation-description {
         @include AU-fontgrid(xs);
         margin-bottom: 8px;
         overflow: hidden;

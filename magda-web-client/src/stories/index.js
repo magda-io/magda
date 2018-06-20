@@ -177,7 +177,7 @@ storiesOf("API viewer", module)
     ))
     .add("organisations viewer", () => (
         <ApiViewer
-            url="http://search.data.gov.au/api/v0/search/facets/publisher/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"
+            url="http://search.data.gov.au/api/v0/search/facets/organisation/options?generalQuery=*&facetQuery=*&limit=562&orderedBy=hitCount%22"
             type="table"
         />
     ))
@@ -189,7 +189,7 @@ storiesOf("API viewer", module)
     ))
     .add("dataset detail viewer", () => (
         <ApiViewer
-            url="http://search.data.gov.au/api/v0/registry/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status"
+            url="http://search.data.gov.au/api/v0/registry/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-organisation&optionalAspect=source&optionalAspect=link-status"
             type="json"
         />
     ));

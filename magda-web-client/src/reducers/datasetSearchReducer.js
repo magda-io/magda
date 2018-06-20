@@ -19,7 +19,7 @@ const initialData = {
     datasets: [],
     hitCount: 0,
     progress: 0,
-    activePublishers: [],
+    activeOrganisations: [],
     activeFormats: [],
     activeRegion: {
         regionId: undefined,
@@ -34,7 +34,7 @@ const initialData = {
     activeDateFrom: undefined,
     activeDateTo: undefined,
     freeText: "",
-    publisherOptions: [],
+    organisationOptions: [],
     formatOptions: [],
     temporalRange: null,
     apiQuery: "",
@@ -49,7 +49,7 @@ const datasetSearchReducer = (
     switch (action.type) {
         case "REQUEST_RESULTS":
             let queryObject = action.queryObject;
-            let activePub = queryFilterFormat(queryObject.organisation);
+            let activeOrg = queryFilterFormat(queryObject.organisation);
             let activeFormat = queryFilterFormat(queryObject.format);
             let regionSelected = regionToObject(queryObject);
             return Object.assign({}, state, {
@@ -60,9 +60,9 @@ const datasetSearchReducer = (
                     new Date(queryObject.dateFrom),
                     new Date(queryObject.dateTo)
                 ],
-                publisherOptions: initialData.publisherOptions,
+                organisationOptions: initialData.organisationOptions,
                 formatOptions: initialData.formatOptions,
-                activePublishers: activePub,
+                activeOrganisations: activeOrg,
                 activeRegions: regionSelected,
                 activeDateFrom: queryObject.dateFrom
                     ? queryObject.dateFrom
@@ -92,7 +92,7 @@ const datasetSearchReducer = (
                     freeText: "",
                     regions: [null],
                     formats: [],
-                    publishers: []
+                    organisations: []
                 },
                 hitCount: 0,
                 dataSets: [],
@@ -115,19 +115,19 @@ const datasetSearchReducer = (
                       ]
                     : initialData.temporalRange;
 
-            let publisherOptions: Array<FacetOption> =
+            let organisationOptions: Array<FacetOption> =
                 data && data.facets && data.facets[0]
                     ? data.facets[0].options
-                    : initialData.publisherOptions;
+                    : initialData.organisationOptions;
             let formatOptions: Array<FacetOption> =
                 data && data.facets && data.facets[1]
                     ? data.facets[1].options
                     : initialData.formatOptions;
 
             let freeText: string = data.query.freeText;
-            let activePublishers: Array<FacetOption> = findMatchingObjs(
+            let activeOrganisations: Array<FacetOption> = findMatchingObjs(
                 query.publishers,
-                publisherOptions
+                organisationOptions
             );
             let activeDateFrom: ?string = query.dateFrom
                 ? query.dateFrom
@@ -148,11 +148,11 @@ const datasetSearchReducer = (
                 strategy: data.strategy && data.strategy,
                 datasets,
                 hitCount,
-                publisherOptions,
+                organisationOptions,
                 formatOptions,
                 temporalRange,
                 freeText,
-                activePublishers,
+                activeOrganisations,
                 activeRegion,
                 activeDateFrom,
                 activeDateTo,
@@ -160,14 +160,14 @@ const datasetSearchReducer = (
                 error: null
             });
 
-        case "UPDATE_PUBLISHERS":
+        case "UPDATE_ORGANISATIONS":
             return Object.assign({}, state, {
-                activePublishers: action.items
+                activeOrganisations: action.items
             });
 
-        case "RESET_PUBLISHER":
+        case "RESET_ORGANISATION":
             return Object.assign({}, state, {
-                activePublishers: initialData.activePublishers
+                activeOrganisations: initialData.activeOrganisations
             });
 
         case "ADD_REGION":

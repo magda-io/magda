@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import "./FacetHeader.css";
-import publisher_passive from "../../assets/publisher-passive.svg";
+import organisation_passive from "../../assets/organisation-passive.svg";
 import format_passive from "../../assets/format-passive.svg";
 import temporal_passive from "../../assets/temporal-passive.svg";
 import region_passive from "../../assets/region-passive.svg";
-import publisher_active from "../../assets/publisher-active.svg";
+import organisation_active from "../../assets/organisation-active.svg";
 import format_active from "../../assets/format-active.svg";
 import temporal_active from "../../assets/temporal-active.svg";
 import region_active from "../../assets/region-active.svg";
@@ -12,11 +12,11 @@ import remove_light from "../../assets/remove-light.svg";
 import { config } from "../../config";
 
 const IconList = {
-    publisher_passive,
+    organisation_passive,
     format_passive,
     temporal_passive,
     region_passive,
-    publisher_active,
+    organisation_active,
     format_active,
     temporal_active,
     region_active

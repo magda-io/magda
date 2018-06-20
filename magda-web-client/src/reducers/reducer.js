@@ -1,16 +1,16 @@
 // @flow
 
 import datasetSearch from "./datasetSearchReducer";
-import facetPublisherSearch from "./facetPublisherSearchReducer";
+import facetOrganisationSearch from "./facetOrganisationSearchReducer";
 import facetRegionSearch from "./facetRegionSearchReducer";
 import facetFormatSearch from "./facetFormatSearchReducer";
 import regionMapping from "./regionMappingReducer";
 import record from "./recordReducer";
-import publisher from "./publisherReducer";
+import organisation from "./organisationReducer";
 import project from "./projectReducer";
 import userManagement from "./userManagementReducer";
 import featuredDatasets from "./featuredDatasetsReducer";
-import featuredPublishers from "./featuredPublishersReducer";
+import featuredOrganisations from "./featuredOrganisationsReducer";
 import news from "./newsReducer";
 import stats from "./statsReducer";
 import discussions from "./discussionReducer";
@@ -26,15 +26,15 @@ import { combineReducers } from "redux";
 const reducer = combineReducers({
     regionMapping,
     datasetSearch,
-    facetPublisherSearch,
+    facetOrganisationSearch,
     facetRegionSearch,
     facetFormatSearch,
     record,
-    publisher,
+    organisation,
     project,
     userManagement,
     featuredDatasets,
-    featuredPublishers,
+    featuredOrganisations,
     news,
     stats,
     discussions,

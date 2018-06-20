@@ -7,7 +7,7 @@ type Query = {
     q: string,
     dateFrom: string,
     dateTo: string,
-    publisher: string | Array<string>,
+    organisation: string | Array<string>,
     format: string | Array<string>,
     regionId: string,
     regionType: string,
@@ -18,9 +18,10 @@ export default function(query: Query) {
     let keywords = queryToString("query", query.q);
     let dateFroms = queryToString("dateFrom", query.dateFrom);
     let dateTos = queryToString("dateTo", query.dateTo);
-    let publishers = queryToString(
+    // when we send query to server, organisation is changed to 'publisher'
+    let organisations = queryToString(
         "publisher",
-        query.organisation || query.publisher
+        query.organisation || query.organisation
     );
     let formats = queryToString("format", query.format);
     let locations = queryToString(
@@ -35,7 +36,7 @@ export default function(query: Query) {
         keywords,
         dateFroms,
         dateTos,
-        publishers,
+        organisations,
         formats,
         locations,
         "start=" + startIndex,

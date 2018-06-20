@@ -5,58 +5,60 @@ import { Link } from "react-router-dom";
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
-import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
+import { fetchOrganisationIfNeeded } from "../../actions/organisationActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 
-import "./PublisherDetails.css";
+import "./OrganisationDetails.css";
 
-class PublisherDetails extends Component {
+class OrganisationDetails extends Component {
     componentWillMount() {
-        this.props.fetchPublisherIfNeeded(this.props.match.params.publisherId);
+        this.props.fetchOrganisationIfNeeded(
+            this.props.match.params.organisationId
+        );
     }
 
     componentWillReceiveProps(nextProps) {
         if (
-            nextProps.match.params.publisherId !==
-            this.props.match.params.publisherId
+            nextProps.match.params.organisationId !==
+            this.props.match.params.organisationId
         ) {
-            nextProps.fetchPublisherIfNeeded(
-                nextProps.match.params.publisherId
+            nextProps.fetchOrganisationIfNeeded(
+                nextProps.match.params.organisationId
             );
         }
     }
 
     renderContent() {
-        const publisher = this.props.publisher;
-        const details = publisher.aspects["organization-details"];
+        const organisation = this.props.organisation;
+        const details = organisation.aspects["organization-details"];
         const description =
             details.description && details.description.length > 0
                 ? details.description
-                : "This publisher has no description";
+                : "This organisation has no description";
 
         const breadcrumbs = [
             <li>
                 <Link to="/organisations">Organisations</Link>
             </li>,
             <li>
-                <span>{publisher.name}</span>
+                <span>{organisation.name}</span>
             </li>
         ];
         return (
-            <div className="publisher-details">
+            <div className="organisation-details">
                 {this.props.isFetching && <ProgressBar />}
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
-                    <div className="publisher-details__body col-sm-8">
+                    <div className="organisation-details__body col-sm-8">
                         <div className="media">
                             <div className="media-body">
-                                <h1>{publisher.name}</h1>
+                                <h1>{organisation.name}</h1>
                             </div>
                         </div>
 
-                        <div className="publisher-details-overview">
+                        <div className="organisation-details-overview">
                             <h3 className="section-heading">Overview</h3>
                             <OverviewBox content={description} />
                         </div>
@@ -65,10 +67,10 @@ class PublisherDetails extends Component {
                             <Link
                                 className="au-cta-link"
                                 to={`/search?organisation=${encodeURIComponent(
-                                    publisher.name
+                                    organisation.name
                                 )}`}
                             >
-                                View all datasets from {publisher.name}
+                                View all datasets from {organisation.name}
                             </Link>
                         </div>
                     </div>
@@ -83,7 +85,7 @@ class PublisherDetails extends Component {
         }
         return (
             <ReactDocumentTitle
-                title={this.props.publisher.name + " | " + config.appName}
+                title={this.props.organisation.name + " | " + config.appName}
             >
                 {this.renderContent()}
             </ReactDocumentTitle>
@@ -94,19 +96,19 @@ class PublisherDetails extends Component {
 function mapDispatchToProps(dispatch) {
     return bindActionCreators(
         {
-            fetchPublisherIfNeeded: fetchPublisherIfNeeded
+            fetchOrganisationIfNeeded: fetchOrganisationIfNeeded
         },
         dispatch
     );
 }
 
 function mapStateToProps(state: Object, ownProps: Object) {
-    const publisher: Object = state.publisher.publisher;
-    const isFetching: boolean = state.publisher.isFetchingPublisher;
-    const error: object = state.publisher.errorFetchingPublisher;
+    const organisation: Object = state.organisation.organisation;
+    const isFetching: boolean = state.organisation.isFetchingOrganisation;
+    const error: object = state.organisation.errorFetchingOrganisation;
     const location: Location = ownProps.location;
     return {
-        publisher,
+        organisation,
         isFetching,
         location,
         error
@@ -116,4 +118,4 @@ function mapStateToProps(state: Object, ownProps: Object) {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(PublisherDetails);
+)(OrganisationDetails);

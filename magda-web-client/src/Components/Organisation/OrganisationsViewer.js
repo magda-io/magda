@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { config } from "../../config";
 import { bindActionCreators } from "redux";
-import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
+import { fetchOrganisationsIfNeeded } from "../../actions/organisationActions";
 import ReactDocumentTitle from "react-document-title";
-import PublisherSummary from "./PublisherSummary";
+import OrganisationSummary from "./OrganisationSummary";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
 import ProgressBar from "../../UI/ProgressBar";
@@ -15,16 +15,16 @@ import sortBy from "lodash.sortby";
 import reduce from "lodash/reduce";
 import findIndex from "lodash/findIndex";
 import trim from "lodash/trim";
-import "./PublishersViewer.css";
+import "./OrganisationsViewer.css";
 
-class PublishersViewer extends Component {
+class OrganisationsViewer extends Component {
     componentWillMount() {
-        this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
+        this.props.fetchOrganisationsIfNeeded(getPageNumber(this.props) || 1);
     }
 
     componentWillReceiveProps(nextProps) {
         if (getPageNumber(this.props) !== getPageNumber(nextProps)) {
-            nextProps.fetchPublishersIfNeeded(getPageNumber(nextProps) || 1);
+            nextProps.fetchOrganisationsIfNeeded(getPageNumber(nextProps) || 1);
         }
     }
 
@@ -39,9 +39,9 @@ class PublishersViewer extends Component {
         });
     }
 
-    mergedPublishers() {
-        const publishers = reduce(
-            this.props.publishers,
+    mergedOrganisations() {
+        const organisations = reduce(
+            this.props.organisations,
             (r, p) => {
                 const idx = findIndex(
                     r,
@@ -88,7 +88,7 @@ class PublishersViewer extends Component {
             },
             []
         );
-        return publishers;
+        return organisations;
     }
 
     renderContent() {
@@ -97,11 +97,13 @@ class PublishersViewer extends Component {
         } else {
             return (
                 <div className="col-sm-8">
-                    {sortBy(this.mergedPublishers(), [
+                    {sortBy(this.mergedOrganisations(), [
                         function(o) {
                             return o.name.toLowerCase();
                         }
-                    ]).map(p => <PublisherSummary publisher={p} key={p.id} />)}
+                    ]).map(p => (
+                        <OrganisationSummary organisation={p} key={p.id} />
+                    ))}
                 </div>
             );
         }
@@ -110,7 +112,7 @@ class PublishersViewer extends Component {
     render() {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
-                <div className="publishers-viewer">
+                <div className="organisations-viewer">
                     <Breadcrumbs
                         breadcrumbs={[
                             <li>
@@ -132,20 +134,20 @@ class PublishersViewer extends Component {
 function mapDispatchToProps(dispatch: Function) {
     return bindActionCreators(
         {
-            fetchPublishersIfNeeded: fetchPublishersIfNeeded
+            fetchOrganisationsIfNeeded: fetchOrganisationsIfNeeded
         },
         dispatch
     );
 }
 
 function mapStateToProps(state, ownProps) {
-    const publishers: Array<Object> = state.publisher.publishers;
-    const isFetching: boolean = state.publisher.isFetchingPublishers;
-    const hitCount: number = state.publisher.hitCount;
-    const error: Object = state.publisher.errorFetchingPublishers;
+    const organisations: Array<Object> = state.organisation.organisations;
+    const isFetching: boolean = state.organisation.isFetchingOrganisations;
+    const hitCount: number = state.organisation.hitCount;
+    const error: Object = state.organisation.errorFetchingOrganisations;
     const location: Location = ownProps.location;
     return {
-        publishers,
+        organisations,
         isFetching,
         hitCount,
         location,
@@ -153,11 +155,11 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-PublishersViewer.contextTypes = {
+OrganisationsViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(PublishersViewer);
+)(OrganisationsViewer);

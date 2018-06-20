@@ -1,6 +1,10 @@
+## 0.0.43
+
+-   Change "Publisher" to "Organisation" in codebase
+-   add breadcrumb for dataset page and distribution page
+
 ## 0.0.42
 
--   add breadcrumb for dataset page and distribution page
 -   Implemented the new pagination design
 -   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette

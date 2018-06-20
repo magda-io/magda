@@ -1,40 +1,40 @@
 // @flow
-import { parsePublisher } from "../helpers/publisher";
+import { parseOrganisation } from "../helpers/organisation";
 import type { FeaturedAction } from "../types";
-import type { Publisher } from "../helpers/record";
+import type { Organisation } from "../helpers/record";
 
-type FeaturedPublisher = {
-    publishers: Array<Publisher>,
+type FeaturedOrganisation = {
+    organisations: Array<Organisation>,
     isFetching: boolean,
     error: ?number
 };
 
 const initialData = {
-    publishers: [],
+    organisations: [],
     isFetching: false,
     error: null,
     hitCount: 0
 };
 
-const featuredPublishersReducer = (
-    state: FeaturedPublisher = initialData,
+const featuredOrganisationsReducer = (
+    state: FeaturedOrganisation = initialData,
     action: FeaturedAction
 ) => {
     switch (action.type) {
-        case "REQUEST_FEATURED_PUBLISHERS":
+        case "REQUEST_FEATURED_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null
             });
-        case "REQUEST_FEATURED_PUBLISHERS_ERROR":
+        case "REQUEST_FEATURED_ORGANISATIONS_ERROR":
             return Object.assign({}, state, {
                 isFetching: false,
                 error: action.error
             });
-        case "RECEIVE_FEATURED_PUBLISHERS":
+        case "RECEIVE_FEATURED_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: false,
-                publishers: action.json.map(p => parsePublisher(p)),
+                organisations: action.json.map(p => parseOrganisation(p)),
                 error: null
             });
 
@@ -42,4 +42,4 @@ const featuredPublishersReducer = (
             return state;
     }
 };
-export default featuredPublishersReducer;
+export default featuredOrganisationsReducer;

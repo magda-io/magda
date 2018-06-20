@@ -65,11 +65,11 @@ class RecordHandler extends React.Component {
     }
 
     renderByState() {
-        const publisherName = this.props.dataset.publisher.name;
+        const organisationName = this.props.dataset.organisation.name;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
-        const publisherId = this.props.dataset.publisher
-            ? this.props.dataset.publisher.id
+        const organisationId = this.props.dataset.organisation
+            ? this.props.dataset.organisation.id
             : null;
 
         if (this.props.match.params.distributionId) {
@@ -96,7 +96,7 @@ class RecordHandler extends React.Component {
                 return (
                     <div className="">
                         <h1>{this.props.distribution.title}</h1>
-                        <div className="publisher">{publisherName}</div>
+                        <div className="organisation">{organisationName}</div>
                         {defined(this.props.distribution.updatedDate) && (
                             <div className="updated-date">
                                 Updated {this.props.distribution.updatedDate}
@@ -187,14 +187,14 @@ class RecordHandler extends React.Component {
                         <h1 className="dataset-title" itemProp="name">
                             {this.props.dataset.title}
                         </h1>
-                        <div className="publisher-basic-info-row">
+                        <div className="organisation-basic-info-row">
                             <span
-                                itemProp="publisher"
+                                itemProp="organisation"
                                 itemScope
                                 itemType="http://schema.org/Organization"
                             >
-                                <Link to={`/organisations/${publisherId}`}>
-                                    {publisherName}
+                                <Link to={`/organisations/${organisationId}`}>
+                                    {organisationName}
                                 </Link>
                             </span>
                             <span className="separator hidden-sm"> / </span>

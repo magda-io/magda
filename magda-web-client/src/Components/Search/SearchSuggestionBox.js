@@ -164,7 +164,7 @@ class SearchSuggestionBox extends Component {
         if (data.organisation)
             filters.push(
                 "from organisation " +
-                    this.createSearchOptionListTextFromArray(data.publisher)
+                    this.createSearchOptionListTextFromArray(data.organisation)
             );
         if (data.dateFrom)
             filters.push("from *" + getDateString(data.dateFrom) + "*");
@@ -200,7 +200,7 @@ class SearchSuggestionBox extends Component {
 
     executeSearchItem(item: searchDataType) {
         const searchData = { ...item.data };
-        if (searchData.publisher) delete searchData.publisher;
+        if (searchData.organisation) delete searchData.organisation;
         const qStr = queryString.stringify(searchData);
         this.props.history.push(`/search?${qStr}`);
         this.setState({

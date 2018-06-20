@@ -4,7 +4,7 @@ import { isSupportedFormat as isSupportedMapPreviewFormat } from "../UI/DataPrev
 import type { FetchError } from "../types";
 import weightedMean from "weighted-mean";
 // dataset query:
-//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
+//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-organisation&optionalAspect=source
 
 export type RecordAction = {
     json?: Object,
@@ -36,7 +36,7 @@ type DcatDatasetStrings = {
     modified: string
 };
 
-export type Publisher = {
+export type Organisation = {
     id: string,
     name: string,
     aspects: {
@@ -53,8 +53,8 @@ export type Publisher = {
     }
 };
 
-export type DatasetPublisher = {
-    publisher: Publisher
+export type DatasetOrganisation = {
+    organisation: Organisation
 };
 
 type CompatiblePreviews = {
@@ -98,7 +98,7 @@ export type RawDataset = {
             name: string,
             type: string
         },
-        "dataset-publisher"?: DatasetPublisher,
+        "dataset-organisation"?: DatasetOrganisation,
         "dataset-distributions"?: {
             distributions: Array<RawDistribution>
         },
@@ -133,13 +133,13 @@ export type ParsedDataset = {
     description: string,
     distributions: Array<ParsedDistribution>,
     temporalCoverage: ?TemporalCoverage,
-    publisher: Publisher,
+    organisation: Organisation,
     source: string,
     linkedDataRating: number,
     error: ?FetchError
 };
 
-export const defaultPublisher: Publisher = {
+export const defaultOrganisation: Organisation = {
     id: "",
     name: "",
     aspects: {
@@ -169,7 +169,7 @@ const defaultDatasetAspects = {
         distributions: []
     },
     "temporal-coverage": null,
-    "dataset-publisher": { publisher: defaultPublisher },
+    "dataset-organisation": { organisation: defaultOrganisation },
     source: {
         url: "",
         name: "",
@@ -352,9 +352,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const updatedDate = datasetInfo.modified
         ? getDateString(datasetInfo.modified)
         : null;
-    const publisher = aspects["dataset-publisher"]
-        ? aspects["dataset-publisher"]["publisher"]
-        : defaultPublisher;
+    const organisation = aspects["dataset-organisation"]
+        ? aspects["dataset-organisation"]["organisation"]
+        : defaultOrganisation;
 
     const source: string = aspects["source"]
         ? aspects["source"]["name"]
@@ -432,7 +432,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         distributions,
         source,
         temporalCoverage,
-        publisher,
+        organisation,
         error,
         linkedDataRating
     };

@@ -14,7 +14,7 @@ export type DatasetDistribution = {
     title: string
 };
 
-export type DatasetPublisher = {
+export type DatasetOrganisation = {
     name: string,
     extraFields: {
         description: string
@@ -45,7 +45,7 @@ export type Dataset = {
     },
     language: string,
     distributions: Array<DatasetDistribution>,
-    publisher: DatasetPublisher,
+    organisation: DatasetOrganisation,
     title: string,
     theme: Array<any>
 };
@@ -94,7 +94,7 @@ export type Query = {
     freeText: string,
     regions: (?Region)[],
     formats: Array<string>,
-    publishers: Array<string>,
+    organisations: Array<string>,
     dateFrom?: string,
     dateTo?: string
 };
@@ -133,13 +133,13 @@ export type SearchState = {
     datasets: Array<Object>,
     hitCount: number,
     progress: number,
-    activePublishers: Array<FacetOption>,
+    activeOrganisations: Array<FacetOption>,
     activeFormats: Array<FacetOption>,
     activeRegion: Region,
     activeDateFrom: ?string,
     activeDateTo: ?string,
     freeText: string,
-    publisherOptions: Array<Object>,
+    organisationOptions: Array<Object>,
     formatOptions: Array<Object>,
     apiQuery: string,
     error: ?FetchError,

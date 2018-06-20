@@ -73,7 +73,7 @@ class Search extends Component {
     updateSearchText(text: string) {
         this.updateQuery({
             q: text,
-            publisher: [],
+            organisation: [],
             regionId: undefined,
             regionType: undefined,
             dateFrom: undefined,
@@ -139,7 +139,7 @@ class Search extends Component {
      */
     filterCount = () => {
         let count = 0;
-        if (this.props.activePublishers.length > 0) {
+        if (this.props.activeOrganisations.length > 0) {
             count++;
         }
         if (this.props.activeFormats.length > 0) {
@@ -276,7 +276,7 @@ function mapStateToProps(state, ownProps) {
     return {
         datasets: datasetSearch.datasets,
         activeFormats: datasetSearch.activeFormats,
-        activePublishers: datasetSearch.activePublishers,
+        activeOrganisations: datasetSearch.activeOrganisations,
         activeRegion: datasetSearch.activeRegion,
         activeDateFrom: datasetSearch.activeDateFrom,
         activeDateTo: datasetSearch.activeDateTo,

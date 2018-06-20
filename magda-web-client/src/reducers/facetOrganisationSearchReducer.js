@@ -8,23 +8,23 @@ const initialData = {
     error: null
 };
 
-const facetPublisher = (
+const facetOrganisation = (
     state: FacetSearchState = initialData,
     action: FacetAction
 ) => {
     switch (action.type) {
-        case "FACET_REQUEST_PUBLISHERS":
+        case "FACET_REQUEST_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null
             });
-        case "FACET_RECEIVE_PUBLISHERS":
+        case "FACET_RECEIVE_ORGANISATIONS":
             return Object.assign({}, state, {
                 isFetching: false,
                 data: action.json && action.json.options && action.json.options,
                 generalQuery: action.generalQuery && action.generalQuery
             });
-        case "FACET_REQUEST_PUBLISHERS_FAILED":
+        case "FACET_REQUEST_ORGANISATIONS_FAILED":
             return Object.assign({}, state, {
                 isFetching: false,
                 data: [],
@@ -34,4 +34,4 @@ const facetPublisher = (
             return state;
     }
 };
-export default facetPublisher;
+export default facetOrganisation;
