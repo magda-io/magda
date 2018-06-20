@@ -11,9 +11,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.index.IndexNotFoundException
-import org.elasticsearch.repositories.RepositoryMissingException
 import org.elasticsearch.rest.RestStatus
-import org.elasticsearch.snapshots.SnapshotInfo
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 import com.sksamuel.elastic4s.bulk.BulkDefinition
@@ -32,14 +30,14 @@ import akka.NotUsed
 import com.sksamuel.elastic4s.indexes.{IndexDefinition => ESIndexDefinition}
 
 import scala.util.Try
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import au.csiro.data61.magda.search.elasticsearch.Indices
+import au.csiro.data61.magda.search.elasticsearch._
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.snapshots._
+import au.csiro.data61.magda.search.elasticsearch.Exceptions._
+import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -52,7 +50,7 @@ class ElasticSearchIndexer(
   val SNAPSHOT_REPO_NAME = "snapshots"
 
   /**
-   * Returns an initialised {@link HttpClient} on completion. Using this to get the client rather than just keeping a reference to an initialised client
+   * Returns an initialised HttpClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
    */
   private val setupFuture = setup()
@@ -166,12 +164,12 @@ class ElasticSearchIndexer(
       .to(Sink.last)
       .run()
 
-  /** Initialises an {@link HttpClient}, handling initial connection to the ElasticSearch server and creation of the indices */
+  /** Initialises an HttpClient, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[HttpClient] = {
     clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
         .flatMap { indexPairs =>
-          updateIndices(client, indexPairs)
+          updateIndices(client, indexPairs.asInstanceOf)
             .map { _ =>
               // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
               client
@@ -298,49 +296,36 @@ class ElasticSearchIndexer(
     }
   }
 
-  private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+  private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[Snapshot]] = {
     def getSnapshot(): Future[Either[RequestFailure, RequestSuccess[GetSnapshotResponse]]] = client.execute {
       new GetSnapshots(Seq("_all"), SNAPSHOT_REPO_NAME)
-    }/*.map({
-      case Right(results:Seq[RestoreSnapshotResponse]) =>
-        logger.info("Restored {} version {}", definition.name, definition.version)
-        promise.success(RestoreSuccess)
-      case Left(failure) =>
-        None
-    })*/
+    }.asInstanceOf
 
     getSnapshot()
-      .map{
-        case Right(results:Seq[RestoreSnapshotResponse]) =>
-
-        case Left(failure) =>
-          failure.error.
-
-      }
-      .map(x => Future.successful(x))
-      .recover {
-        case RootCause(e: RepositoryMissingException) =>
-          createSnapshotRepo(client, index).flatMap(_ => getSnapshot)
-        case e: Throwable => throw new RuntimeException(e)
-      }
-      .flatMap(identity)
-      .map { response =>
-        response.getSnapshots
-          .view
-          .filter(_.snapshotId.getName.startsWith(snapshotPrefix(index)))
-          .filter(_.failedShards() == 0)
-          .sortBy(-_.endTime)
-          .headOption
+      .flatMap {
+        case Right(results:RequestSuccess[GetSnapshotResponse]) => Future(results)
+        case Left(RepositoryMissingException(e)) =>
+          createSnapshotRepo(client, index).map(_ => getSnapshot)
+        case Left(ESGenericException(e)) => throw e
+      }.map{
+        case Left(ESGenericException(e)) => throw e
+        case Right(results:RequestSuccess[GetSnapshotResponse]) =>
+          results.result.snapshots
+            .filter(_.snapshot.startsWith(snapshotPrefix(index)))
+            .filter(_.shards.failed==0)
+            .sortBy(_.endTimeInMillis)
+            .headOption
       }
   }
 
-  private def createSnapshotRepo(client: HttpClient, definition: IndexDefinition): Future[PutRepositoryResponse] = {
+  private def createSnapshotRepo(client: HttpClient, definition: IndexDefinition) = {
     val repoConfig = config.getConfig("elasticSearch.snapshotRepo")
     val repoType = repoConfig.getString("type")
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
     client.execute(
-      create repository SNAPSHOT_REPO_NAME `type` repoType settings settings)
+      new CreateRepository(SNAPSHOT_REPO_NAME, repoType, None, settings)
+    )
   }
 
   private def snapshotPrefix(definition: IndexDefinition) = s"${definition.name}-${definition.version}"
@@ -392,24 +377,22 @@ class ElasticSearchIndexer(
       client.execute(
         deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           rangeQuery("indexed").lt(before.toString)))
-    }.map { response =>
-      logger.info("Trimmed {} old datasets", response.getDeleted)
-
-      Unit
+    }.map {
+      case Right(results) =>
+        logger.info("Trimmed {} old datasets", results.result.deleted)
+      case Left(f) =>
+        logger.info("Failed to Trimmed old datasets, {}: {}", f.error.`type`, f.error.reason)
     }
 
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
       client.execute(bulk(identifiers.map(identifier =>
         ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
-    }.map { response =>
-      logger.info("Deleted {} datasets", response.successes.length)
-
-      response.failures.foreach { failure =>
-        logger.warning("Failed to delete: {}", failure.failureMessage)
-      }
-
-      Unit
+    }.map {
+      case Right(results) =>
+        logger.info("Deleted {} datasets", results.result.successes.length)
+      case Left(f) =>
+        logger.warning("Failed to delete: {}, {}", f.error.`type`, f.error.reason)
     }
   }
 
@@ -417,34 +400,41 @@ class ElasticSearchIndexer(
     if (config.getBoolean("indexer.makeSnapshots")) {
       logger.info("Creating snapshot for {} at version {}", definition.name, definition.version)
 
-      val future = client.execute {
-        create snapshot snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase in SNAPSHOT_REPO_NAME waitForCompletion true indexes indices.getIndex(config, definition.indicesIndex)
+      client.execute {
+        com.sksamuel.elastic4s.snapshots.CreateSnapshot(
+          snapshotPrefix(definition) + "-" + Instant.now().toString.toLowerCase,
+          SNAPSHOT_REPO_NAME,
+          indices.getIndex(config, definition.indicesIndex),
+          None,
+          Some(true)
+        )
+      }.map{
+        case Right(results) =>
+          val snapshot = results.result.asInstanceOf[CreateSnapshotResponse].snapshot
+          logger.info("Snapshotted {} shards of {} for {}",
+            snapshot.shards.successful,
+            snapshot.shards.total,
+            indices.getIndex(config, definition.indicesIndex)
+          )
+        case Left(ESGenericException(e)) =>
+            logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
+            throw e
       }
-
-      future.onComplete {
-        case Success(result) =>
-          val info = result.getSnapshotInfo
-          logger.info("Snapshotted {} shards of {} for {}", info.successfulShards(), info.totalShards(), indices.getIndex(config, definition.indicesIndex))
-        case Failure(e) =>
-          logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
-          throw e
-      }
-
-      future.map(_ => Unit)
     } else {
       logger.info("Snapshotting disabled, skipping")
       Future(Unit)
     }
   }
 
-  private def bulkIndex(definition: BulkDefinition): Future[RichBulkResponse] =
+  private def bulkIndex(definition: BulkDefinition): Future[BulkResponse] =
     setupFuture.flatMap { client =>
-      client.execute(definition)
-        .recover {
-          case t: Throwable =>
-            logger.error(t, "Error when indexing records")
-            throw t
-        }
+      client.execute(definition).map{
+        case Left(ESGenericException(e)) =>
+          logger.error(e, "Error when indexing records")
+          throw e
+        case Right(r) =>
+          r.result
+      }
     }
 
   /**
