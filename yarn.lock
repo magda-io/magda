@@ -233,6 +233,16 @@
     node-sass "^4.9.0"
     postcss "6.0.14"
 
+"@gov.au/pancake-sass@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gov.au/pancake-sass/-/pancake-sass-2.0.0.tgz#20670b67e123250d0b7cbb1dab8f4fc5e18dfe5b"
+  dependencies:
+    "@gov.au/pancake" "~1"
+    autoprefixer "7.1.6"
+    babel-runtime "6.26.0"
+    postcss "6.0.14"
+    sass "^1.6.0"
+
 "@gov.au/pancake@^1.2.2", "@gov.au/pancake@~1":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@gov.au/pancake/-/pancake-1.2.2.tgz#5755dae66fba7c3dd94d9fee13539f261ae8b669"
@@ -13047,6 +13057,12 @@ sass-loader@^6.0.3:
 sass-versioning@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/sass-versioning/-/sass-versioning-0.3.0.tgz#2c222bec23ebc1e48158d7bbba06337ce02cc4bf"
+
+sass@^1.6.0:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.6.2.tgz#665cadcbd853e9e497cbd298de645440a992cd1a"
+  dependencies:
+    chokidar "^2.0.0"
 
 sax@1.2.1:
   version "1.2.1"
