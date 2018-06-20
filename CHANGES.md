@@ -1,6 +1,10 @@
-## 0.0.42
+## 0.0.43
 
 -   Change "Publisher" to "Organisation" in codebase
+-   add breadcrumb for dataset page and distribution page
+
+## 0.0.42
+
 -   Implemented the new pagination design
 -   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette
@@ -16,7 +20,10 @@
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
+-   Added `bottom-border` property to make dataset filters stand out more.
 -   Fixed page refresh when using a dataset tag as a link.
+-   Replaced underscores with spaces on distribution links, making them wrap on mobile
+-   Improved modal design on report/ask a question on a dataset
 
 ## 0.0.41
 

@@ -8,6 +8,7 @@ import ReactDocumentTitle from "react-document-title";
 import { fetchOrganisationIfNeeded } from "../../actions/organisationActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 import "./OrganisationDetails.css";
 
@@ -36,10 +37,20 @@ class OrganisationDetails extends Component {
             details.description && details.description.length > 0
                 ? details.description
                 : "This organisation has no description";
+
+        const breadcrumbs = [
+            <li>
+                <Link to="/organisations">Organisations</Link>
+            </li>,
+            <li>
+                <span>{organisation.name}</span>
+            </li>
+        ];
         return (
-            <div className="organisation-details container">
+            <div className="organisation-details">
                 {this.props.isFetching && <ProgressBar />}
-                <div className="row">
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                     <div className="organisation-details__body col-sm-8">
                         <div className="media">
                             <div className="media-body">
