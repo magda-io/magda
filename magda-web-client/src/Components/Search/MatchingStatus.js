@@ -4,7 +4,6 @@ import "./MatchingStatus.css";
 import Stories from "../../Pages/HomePageComponents/Stories";
 import { Link } from "react-router-dom";
 import AUpageAlert from "../../pancake/react/page-alerts";
-import { config } from "../../config";
 export default function MatchingStatus(props: {
     datasets: Array<Object>,
     strategy: string
@@ -32,14 +31,8 @@ export default function MatchingStatus(props: {
                         </p>
                         <p>
                             Try another search,{"  "}
-                            {config.enableSuggestDatasetPage ? (
-                                <Link to="suggest">suggest a new dataset</Link>
-                            ) : (
-                                <a href="mailto:data@digital.gov.au">
-                                    {" "}
-                                    request a new dataset
-                                </a>
-                            )}, or have a look at these great datasets
+                            <Link to="suggest">suggest a new dataset</Link>
+                            , or have a look at these great datasets
                         </p>
                     </AUpageAlert>
                 </div>
