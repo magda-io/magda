@@ -148,7 +148,7 @@ class ElasticSearchIndexer(
               waitForCompletion = Some(true)
             )
           } map {
-            case Right(results:Seq[RestoreSnapshotResponse]) =>
+            case Right(_) =>
               logger.info("Restored {} version {}", definition.name, definition.version)
               promise.success(RestoreSuccess)
             case Left(failure) =>
@@ -300,18 +300,21 @@ class ElasticSearchIndexer(
 
     getSnapshot()
       .flatMap {
-        case Right(results) => Future(results)
+        case Right(results) => Future.successful(results.result.asInstanceOf[GetSnapshotResponse])
         case Left(RepositoryMissingException(e)) =>
-          createSnapshotRepo(client, index).map(_ => getSnapshot)
+          createSnapshotRepo(client, index).flatMap(_ => getSnapshot).map{
+            case Left(ESGenericException(e)) => throw e
+            case Right(results) => Future.successful(results.result.asInstanceOf[GetSnapshotResponse])
+          }
         case Left(ESGenericException(e)) => throw e
-      }.map{
-        case Left(ESGenericException(e)) => throw e
-        case Right(results:RequestSuccess[GetSnapshotResponse]) =>
-          results.result.snapshots
+      }.map {
+        case results:GetSnapshotResponse =>
+            results.snapshots
             .filter(_.snapshot.startsWith(snapshotPrefix(index)))
-            .filter(_.shards.failed==0)
-            .sortBy(_.endTimeInMillis)
-            .headOption
+          .filter(_.shards.failed == 0)
+          .sortBy(_.endTimeInMillis)
+          .headOption
+        case _ => throw new Exception("getLatestSnapshot: Invalid response")
       }
   }
 
