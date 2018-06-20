@@ -1,6 +1,7 @@
 import React from "react";
 import { contents } from "../content/register";
 import { config } from "../config";
+import Breadcrumbs from "../UI/Breadcrumbs";
 import ReactDocumentTitle from "react-document-title";
 import { Redirect } from "react-router-dom";
 import "./StaticPage.css";
@@ -8,6 +9,12 @@ import "./StaticPage.css";
 export default function StaticPage(props) {
     const id = props.match.params.id;
     const content = contents.get(id);
+
+    const breadcrumb = [
+        <li>
+            <span>{content.title}</span>
+        </li>
+    ];
     if (content) {
         return (
             <ReactDocumentTitle
@@ -18,6 +25,7 @@ export default function StaticPage(props) {
                 }
             >
                 <div className={`static-page-container container page-${id}`}>
+                    <Breadcrumbs breadcrumbs={breadcrumb} />
                     <h1> {content.title && content.title} </h1>
                     <div
                         className="markdown-body"

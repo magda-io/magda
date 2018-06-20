@@ -121,6 +121,17 @@
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-sass" "~1"
 
+"@gov.au/breadcrumbs@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@gov.au/breadcrumbs/-/breadcrumbs-2.0.3.tgz#b7d035df1c566ab1ed86e7737e9e525bf1de1f56"
+  dependencies:
+    "@gov.au/core" "^2.0.0"
+    "@gov.au/link-list" "^2.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~1"
+
 "@gov.au/buttons@^2.0.3":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@gov.au/buttons/-/buttons-2.0.3.tgz#087792533987851c75c978d83264a8c1a2c9b387"
@@ -179,7 +190,7 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~1"
 
-"@gov.au/link-list@^2.0.3":
+"@gov.au/link-list@^2.0.0", "@gov.au/link-list@^2.0.3":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@gov.au/link-list/-/link-list-2.0.3.tgz#a0949b29800acea220be0dd5c4178a496d9981ad"
   dependencies:
