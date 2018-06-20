@@ -21,6 +21,15 @@ import com.sksamuel.elastic4s.http.RequestFailure
     }
   }
 
+  object IndexNotFoundException{
+    def unapply(failure: RequestFailure): Option[RuntimeException] = {
+      failure.error.`type` match {
+        case "index_not_found_exception" => Some(new RuntimeException(s"""${failure.error.`type`}: ${failure.error.reason}"""))
+        case _ => None
+      }
+    }
+  }
+
   object ESGenericException{
     def unapply(failure: RequestFailure): Option[RuntimeException] = {
       failure.error.`type` match {

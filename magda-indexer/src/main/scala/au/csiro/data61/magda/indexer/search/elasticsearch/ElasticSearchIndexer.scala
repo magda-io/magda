@@ -10,7 +10,6 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import org.elasticsearch.index.IndexNotFoundException
 import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
@@ -36,7 +35,7 @@ import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.snapshots._
-import au.csiro.data61.magda.search.elasticsearch.Exceptions._
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IndexNotFoundException, InvalidSnapshotNameException, RepositoryMissingException}
 import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 
 class ElasticSearchIndexer(
@@ -86,11 +85,11 @@ class ElasticSearchIndexer(
           }
       }
       .map{
-        case (Right(results:RequestSuccess[BulkResponse]), sources) =>
+        case (results, sources) =>
 
           val groupedResults = sources.map(_._3).foldLeft((0, Seq[Seq[BulkResponseItem]]())) {
             case ((currentIndex, listSoFar), current) =>
-              val group = results.result.items.drop(currentIndex).take(current)
+              val group = results.items.drop(currentIndex).take(current)
               (currentIndex + group.size, listSoFar :+ group)
           }._2
 
@@ -127,11 +126,11 @@ class ElasticSearchIndexer(
       .to(Sink.ignore)
       .run()
 
-  private lazy val restoreQueue: SourceQueue[(HttpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(HttpClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
+  private lazy val restoreQueue: SourceQueue[(HttpClient, IndexDefinition, Snapshot, Promise[RestoreResult])] =
+    Source.queue[(HttpClient, IndexDefinition, Snapshot, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
-          logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshotId.getName, definition.name, definition.version)
+          logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshot, definition.name, definition.version)
 
           logger.info("First deleting existing index if present...")
 
@@ -143,7 +142,7 @@ class ElasticSearchIndexer(
 
           client.execute {
             new RestoreSnapshot(
-              snapshotName = snapshot.snapshotId.getName,
+              snapshotName = snapshot.snapshot,
               repositoryName = SNAPSHOT_REPO_NAME,
               indices = indices.getIndex(config, definition.indicesIndex),
               waitForCompletion = Some(true)
@@ -169,7 +168,7 @@ class ElasticSearchIndexer(
     clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
       retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
         .flatMap { indexPairs =>
-          updateIndices(client, indexPairs.asInstanceOf)
+          updateIndices(client, indexPairs)
             .map { _ =>
               // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
               client
@@ -198,33 +197,32 @@ class ElasticSearchIndexer(
    * Returns a future that gets a seq of each index paired with its current ES definition.
    */
   private def getIndexDefinitions(client: HttpClient) = {
-    def indexNotFound(indexDef: IndexDefinition, inner: IndexNotFoundException) = {
+    def indexNotFound(indexDef: IndexDefinition, inner: RuntimeException) = {
       logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
     }
 
     val futures = IndexDefinition.indices.map(indexDef =>
       client.execute(getMapping(indices.getIndex(config, indexDef.indicesIndex)))
-        .map (x=> x match {
-          case Right(results:Seq[IndexMappings]) => Some(results)
-          case Left(failure) => failure.error {
+        .map {
+          case Right(results) => Some(results.result)
+          case Left(IndexNotFoundException(e)) =>
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-            case RootCause(inner: IndexNotFoundException) => indexNotFound(indexDef, inner)
-            case _ =>
-              logger.error("failed to get {} index, error: {}", indexDef.name, failure.error)
+            indexNotFound(indexDef, e)
+          case Left(ESGenericException(e)) =>
+              logger.error("failed to get {} index, error: {}", indexDef.name, e.getMessage)
               None
-          }
-        })
+        }
     )
     Future.sequence(futures)
       .map(_.zip(IndexDefinition.indices))
   }
 
-  private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[IndexMappings], IndexDefinition)]): Future[Object] =
+  private def updateIndices(client: HttpClient, definitionPairs: Seq[(Option[Seq[IndexMappings]], IndexDefinition)]): Future[Object] =
     Future.sequence(definitionPairs.map {
-      case (mapping, definition) =>
+      case (mappings, definition) =>
         // If no index, create it
-        mapping match {
+        mappings match {
           case Some(_) =>
             logger.info("{} index version {} already exists", definition.name, definition.version)
             Future.successful(Unit)
@@ -268,13 +266,12 @@ class ElasticSearchIndexer(
 
   def deleteIndex(client: HttpClient, definition: IndexDefinition): Future[Unit] = client.execute {
     ElasticDsl.deleteIndex(indices.getIndex(config, definition.indicesIndex))
-  } recover {
-    case RootCause(inner: IndexNotFoundException) => // Meh, we were trying to delete it anyway.
-    case e =>
-      logger.debug("Exception class {}", e.getClass.toString)
+  }.map{
+    case Left(IndexNotFoundException(e)) => // Meh, we were trying to delete it anyway.
+    case Left(ESGenericException(e)) =>
+      logger.debug("Exception class {}", e.getMessage)
       throw e
-  } map { _ =>
-    Unit
+    case Right(r) => Unit
   }
 
   sealed trait RestoreResult
@@ -289,7 +286,7 @@ class ElasticSearchIndexer(
         logger.info("Could not find a snapshot for {} version {}", index.name, index.version)
         Future.successful(RestoreFailure)
       case Some(snapshot) =>
-        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.snapshotId.getName, index.name, index.version)
+        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.snapshot, index.name, index.version)
         val promise = Promise[RestoreResult]()
         restoreQueue.offer((client, index, snapshot, promise))
         promise.future
@@ -297,13 +294,13 @@ class ElasticSearchIndexer(
   }
 
   private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[Snapshot]] = {
-    def getSnapshot(): Future[Either[RequestFailure, RequestSuccess[GetSnapshotResponse]]] = client.execute {
+    def getSnapshot() = client.execute {
       new GetSnapshots(Seq("_all"), SNAPSHOT_REPO_NAME)
-    }.asInstanceOf
+    }
 
     getSnapshot()
       .flatMap {
-        case Right(results:RequestSuccess[GetSnapshotResponse]) => Future(results)
+        case Right(results) => Future(results)
         case Left(RepositoryMissingException(e)) =>
           createSnapshotRepo(client, index).map(_ => getSnapshot)
         case Left(ESGenericException(e)) => throw e
@@ -375,7 +372,7 @@ class ElasticSearchIndexer(
   def trim(before: OffsetDateTime): Future[Unit] =
     setupFuture.flatMap { client =>
       client.execute(
-        deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
+        deleteIn(indices.getIndex(config, Indices.DataSetsIndex)).by(
           rangeQuery("indexed").lt(before.toString)))
     }.map {
       case Right(results) =>
@@ -387,7 +384,7 @@ class ElasticSearchIndexer(
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
       client.execute(bulk(identifiers.map(identifier =>
-        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
+        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex)))))
     }.map {
       case Right(results) =>
         logger.info("Deleted {} datasets", results.result.successes.length)
@@ -446,11 +443,10 @@ class ElasticSearchIndexer(
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now))
 
-    val indexDataSet = ElasticDsl.index into indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType) id dataSet.uniqueId source (
-      dataSet.toJson)
+    val indexDataSet = ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex)).id(dataSet.uniqueId).source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>
-      ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Publisher)))
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.PublishersIndex))
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
@@ -460,7 +456,7 @@ class ElasticSearchIndexer(
     val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>
       val format = distribution.format.get
 
-      ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(Format)))
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.FormatsIndex))
         .id(format.toLowerCase)
         .source(Map("value" -> format).toJson)
     }
