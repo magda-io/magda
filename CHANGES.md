@@ -1,3 +1,7 @@
+## 0.0.43
+
+-   Add breadcrumb for dataset page and distribution page
+
 ## 0.0.42
 
 -   Implemented the new pagination design
@@ -9,11 +13,17 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
+-   Added filter count to search results
+-   Made filter selections move only when applied on publisher and format
 -   reset pagination on query change
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
 -   Location and Date filters can be applied by clicking outside of the box
+-   Added `bottom-border` property to make dataset filters stand out more.
+-   Fixed page refresh when using a dataset tag as a link.
+-   Replaced underscores with spaces on distribution links, making them wrap on mobile
+-   Improved modal design on report/ask a question on a dataset
 
 ## 0.0.41
 
@@ -26,6 +36,13 @@
 -   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 -   Positioned the buttons & format icons at middle position of the Files & APIs section
 -   Made publisher acronym search case insensitive & added test cases
+-   Added vertical spacing for `DataPreview` chart fields.
+-   Added file icon and divider to search results
+-   Stopped format/publisher filter search returning wrong doc counts when there's no text query.
+-   Fixed a issue that state region layer could be removed from region filter panel map
+-   Adjust search box placeholder color to be more visible on mobile and more consistent on desktop
+-   Corrected email template style to be inline with designs.
+-   Switched development/preview to use let's encrypt certificates for HTTPS.
 
 ## 0.0.40
 

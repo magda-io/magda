@@ -29,6 +29,7 @@
     }
     .landing-page {
         color: $AU-color-foreground-action;
+        word-wrap: break-word;
         &:hover {
             color: $AU-color-foreground-focus;
         }

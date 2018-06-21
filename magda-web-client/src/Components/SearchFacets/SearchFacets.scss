@@ -131,10 +131,12 @@
     padding: 0 8px;
     cursor: pointer;
     &.is-active,
-    &:hover,
-    &:focus {
+    &:hover {
         background-color: $AU-color-foreground-action;
         color: $AU-color-background;
+    }
+    &:focus {
+        outline: none;
     }
 }
 

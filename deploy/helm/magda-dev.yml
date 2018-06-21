@@ -1,20 +1,24 @@
 global:
   useCombinedDb: true
   useCloudSql: false
-  externalUrl: https://magda-dev.terria.io
+  externalUrl: https://dev.magda.io
   rollingUpdate:
     maxUnavailable: 1
-  image:
-    tag: "0.0.42-0"
 
 tags:
   all: true
+  ingress: true
   sleuther-broken-link: true
   sleuther-linked-data-rating: true
   sleuther-visualization: true
   sleuther-format: true
 
+ingress:
+  hostname: dev.magda.io
+  ingressClass: nginx
 gateway:
+  service:
+    type: LoadBalancer
   loadBalancerIP: "104.199.180.124"
   auth:
     facebookClientId: "173073926555600"

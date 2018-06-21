@@ -33,4 +33,4 @@ tags:
   sleuther-visualization: false
   sleuther-format: false
   web-server: false
-  dev-ingress: false
+  ingress: false
