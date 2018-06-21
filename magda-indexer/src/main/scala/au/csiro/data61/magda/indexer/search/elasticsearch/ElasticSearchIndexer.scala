@@ -9,12 +9,13 @@ import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
-import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import com.sksamuel.elastic4s.http.{ElasticDsl, HttpClient, RequestFailure, RequestSuccess}
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.{ HttpClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.http.bulk._
 import com.sksamuel.elastic4s.snapshots._
 
@@ -33,10 +34,11 @@ import au.csiro.data61.magda.search.elasticsearch._
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
-import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
+import au.csiro.data61.magda.search.elasticsearch.Executables.IndexMappings
 import com.sksamuel.elastic4s.http.snapshots._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IndexNotFoundException, InvalidSnapshotNameException, RepositoryMissingException}
 import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
+import com.sksamuel.elastic4s.mappings.GetMappingDefinition
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -203,8 +205,8 @@ class ElasticSearchIndexer(
     }
 
     val futures = IndexDefinition.indices.map(indexDef =>
-      client.execute(getMapping(indices.getIndex(config, indexDef.indicesIndex)))
-        .map {
+      client.execute(ElasticDsl.getMapping(indices.getIndex(config, indexDef.indicesIndex)))
+        .map{
           case Right(results) => Some(results.result)
           case Left(IndexNotFoundException(e)) =>
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
