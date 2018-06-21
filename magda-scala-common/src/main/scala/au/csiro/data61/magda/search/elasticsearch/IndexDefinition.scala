@@ -161,13 +161,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
-            dateField("indexed")),
-          mapping(indices.getType(indices.typeForFacet(Format))).fields(
-            magdaTextField("value")),
-          mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
-            keywordField("identifier"),
-            textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value")))
+            dateField("indexed"))
+        )
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
@@ -264,7 +259,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
-            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+            mapping(indices.getType(Indices.PublisherIndexType)).fields(
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("value")
@@ -292,7 +287,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
-            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+            mapping(indices.getType(Indices.FormatsIndexType)).fields(
               magdaTextField("value")
             ))
           .analysis(
