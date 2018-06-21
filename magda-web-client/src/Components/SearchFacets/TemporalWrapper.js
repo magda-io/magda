@@ -7,7 +7,7 @@ export default class TemporalWrapper extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            disableApply: this.props.facetClicked
+            disableApply: this.props.disableApplyTemporal
         };
     }
 
@@ -31,10 +31,10 @@ export default class TemporalWrapper extends React.Component {
         );
     };
 
-    getDerivedStateFromProps(nextProps) {
-        return {
+    componentWillReceiveProps(nextProps) {
+        this.setState({
             disableApply: nextProps.disableApplyTemporal
-        };
+        });
     }
 
     /**

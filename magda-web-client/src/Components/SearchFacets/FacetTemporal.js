@@ -29,10 +29,10 @@ class FacetTemporal extends Component {
     }
 
     componentWillMount() {
-        this.getDerivedStateFromProps(this.props);
+        this.componentWillReceiveProps(this.props);
     }
 
-    getDerivedStateFromProps(nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (nextProps.temporalRange) {
             const dateFrom = defined(nextProps.activeDates[0])
                 ? new Date(nextProps.activeDates[0])
@@ -193,6 +193,7 @@ class FacetTemporal extends Component {
                     <div className="facet-footer">
                         <button
                             className="au-btn au-btn--secondary"
+                            disabled={this.state.applyButtonDisabled}
                             onClick={this.resetTemporalFacet}
                         >
                             {" "}

@@ -67,7 +67,7 @@ class Temporal extends Component {
                 toggleFacet={this.props.toggleFacet}
                 isOpen={this.props.isOpen}
                 temporalRange={this.props.temporalRange}
-                disableApplyTemporal={this.state.disableApplyTemporal}
+                disableApply={this.state.disableApplyTemporal}
             />
         );
     }
