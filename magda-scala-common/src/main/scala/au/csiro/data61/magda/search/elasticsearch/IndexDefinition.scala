@@ -199,7 +199,8 @@ object IndexDefinition extends DefaultJsonProtocol {
               LowercaseTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
-              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+              //Es 6.x doesn't allow `stop` before Synonym
+              //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
               MagdaSynonymTokenFilter,
               StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
               StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
