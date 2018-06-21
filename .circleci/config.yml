@@ -2,37 +2,30 @@ version: 2
 jobs:
   build_web:
     docker:
-      #- image: circleci/openjdk:8-jdk-node-browsers
-      - image: circleci/node:9
+      - image: circleci/node:8
     steps:
       - checkout
-#      - run:
-#          name: install sbt
-#          command: sudo apt-get install apt-transport-https
-#                   && echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-#                   && sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
-#                   && sudo apt-get update
-#                   && sudo apt-get install sbt
       - run:
           name: install npm/lerna/eslint dev tools
           command: 'sudo yarn global add npm@latest lerna @gov.au/pancake'
-      - restore_cache:
-          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
       - run:
-          name: lerna-bootstrap
-          command: lerna bootstrap
+          name: set yarn cache
+          command: yarn config set cache-folder .yarn
+      - restore_cache:
+          key: v1-dependency-cache-{{ checksum "yarn.lock" }}
+      - run:
+          name: yarn install
+          command: yarn install
       - save_cache:
-          key: v1-dependency-cache-{{ checksum "lerna.json" }}-{{ checksum "magda-web-client/package.json" }}
+          key: v1-dependency-cache-{{ checksum "yarn.lock" }}
           paths:
-            - ./node_modules
-            - ./magda-web-client/node_modules
+            - ./.yarn
       - run:
           name: eslint
           command: yarn run eslint
       - run:
           name: npm build
           command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 yarn run build
-
       - store_artifacts:
           path: lerna-debug.log
           path: magda-web-client/build
