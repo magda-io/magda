@@ -4,8 +4,6 @@ global:
   externalUrl: https://dev.magda.io
   rollingUpdate:
     maxUnavailable: 1
-  image:
-    tag: "0.0.42-0"
 
 tags:
   all: true
