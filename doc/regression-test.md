@@ -12,7 +12,8 @@
   * [ ] Does the data quality tooltip link to the data quality page?																			
 																									
 ### Dataset page																									
-  * [ ] Can you land on a dataset page?																									
+  * [ ] Can you land on a dataset page?
+  * [ ] Can you land on a dataset page that has a URL as a dataset ID? (such as https://dev.magda.io/dataset/ds-launceston-http%3A%2F%2Fopendata.launceston.tas.gov.au%2Fdatasets%2Fe1c80176d3d44078bae02d6a9f27cc8b_0)
   * [ ] Is every module available on the dataset page?																									
   * [ ] Does a resource download?																									
   * [ ] Does a resource link to a distribution page?																									
