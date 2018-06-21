@@ -31,26 +31,13 @@ matrix:
         directories:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
-          - node_modules
-          - magda-admin-api/node_modules
-          - magda-authorization-api/node_modules
-          - magda-ckan-connector/node_modules
-          - magda-csw-connector/node_modules
-          - magda-discussions-api/node_modules
-          - magda-feedback-api/node_modules
-          - magda-gateway/node_modules
-          - magda-project-open-data-connector/node_modules
-          - magda-sleuther-broken-link/node_modules
-          - magda-sleuther-format/node_modules
-          - magda-sleuther-framework/node_modules
-          - magda-sleuther-linked-data-rating/node_modules
-          - magda-sleuther-visualization/node_modules
-          - magda-typescript-common/node_modules
+          - .yarn
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
       script: 
+        - yarn config set cache-folder .yarn
         - yarn install
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
@@ -65,12 +52,9 @@ matrix:
       node_js: "8"
       cache:
         directories:
-          - node_modules
-          - magda-web-client/node_modules
-          - magda-preview-map/node_modules
-          - magda-web-admin/node_modules
-          - magda-web-server/node_modules
+          - .yarn
       script:
+        - yarn config set cache-folder .yarn
         - yarn global add lerna
         - yarn install
         - yarn run eslint
