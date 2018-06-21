@@ -27,21 +27,21 @@ class FacetTemporal extends Component {
         };
     }
 
-    static getDerivedStateFromProps(props) {
-        if (props.temporalRange) {
-            const dateFrom = defined(props.activeDates[0])
-                ? new Date(props.activeDates[0])
-                : new Date(props.temporalRange[0]);
-            const dateTo = defined(props.activeDates[1])
-                ? new Date(props.activeDates[1])
-                : new Date(props.temporalRange[1]);
-            return {
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if (nextProps.temporalRange) {
+            const dateFrom = defined(nextProps.activeDates[0])
+                ? new Date(nextProps.activeDates[0])
+                : new Date(nextProps.temporalRange[0]);
+            const dateTo = defined(nextProps.activeDates[1])
+                ? new Date(nextProps.activeDates[1])
+                : new Date(nextProps.temporalRange[1]);
+            this.setState({
                 startYear: dateFrom.getUTCFullYear(),
                 startMonth: dateFrom.getUTCMonth(),
                 endYear: dateTo.getUTCFullYear(),
                 endMonth: dateTo.getUTCMonth(),
-                applyButtonDisabled: !props.hasQuery
-            };
+                applyButtonDisabled: !this.props.hasQuery
+            });
         }
     }
 

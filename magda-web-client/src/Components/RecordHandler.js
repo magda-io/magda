@@ -155,21 +155,6 @@ class RecordHandler extends React.Component {
                     this.props.match.params.datasetId
                 )}`;
 
-                // redirect old CKAN URL slugs and UUIDs
-                if (
-                    this.props.dataset.identifier &&
-                    this.props.dataset.identifier !== "" &&
-                    this.props.dataset.identifier !==
-                        this.props.match.params.datasetId
-                ) {
-                    return (
-                        <Redirect
-                            to={`/dataset/${encodeURI(
-                                this.props.dataset.identifier
-                            )}/details?q=${searchText}`}
-                        />
-                    );
-                }
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
                         <div

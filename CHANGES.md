@@ -1,11 +1,10 @@
 ## 0.0.43
 
 -   Add breadcrumb for dataset page and distribution page
+-   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
 
 ## 0.0.42
 
--   add breadcrumb for dataset page and distribution page
--   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
 -   Implemented the new pagination design
 -   remove border for basal button style to prevent duplication
 -   Use http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3 for data vis palette

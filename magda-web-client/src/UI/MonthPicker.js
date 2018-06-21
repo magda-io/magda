@@ -37,7 +37,7 @@ class MonthPicker extends Component {
         });
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         if (prevProps.year !== this.props.year) {
             this.setState({
                 yearValue: this.props.year
