@@ -1,3 +1,7 @@
+## 0.0.43
+
+-   Add breadcrumb for dataset page and distribution page
+
 ## 0.0.42
 
 -   Implemented the new pagination design

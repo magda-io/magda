@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
+import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
@@ -25,6 +26,7 @@ class RecordHandler extends React.Component {
         this.state = {
             addMargin: false
         };
+        this.getBreadcrumbs = this.getBreadcrumbs.bind(this);
     }
 
     componentWillMount() {
@@ -92,7 +94,7 @@ class RecordHandler extends React.Component {
                     this.props.match.params.distributionId
                 )}`;
                 return (
-                    <div className="container">
+                    <div className="">
                         <h1>{this.props.distribution.title}</h1>
                         <div className="publisher">{publisherName}</div>
                         {defined(this.props.distribution.updatedDate) && (
@@ -241,13 +243,59 @@ class RecordHandler extends React.Component {
         return <RouteNotFound />;
     }
 
+    // build breadcrumbs
+    getBreadcrumbs() {
+        const params = Object.keys(this.props.match.params);
+        const results = (
+            <li key="result">
+                <Link
+                    to={`/search?q=${queryString.parse(
+                        this.props.location.search
+                    ).q || ""}`}
+                >
+                    Results
+                </Link>
+            </li>
+        );
+        const breadcrumbs = params.map(p => {
+            if (p === "datasetId") {
+                return (
+                    <li key="datasetId">
+                        <Link
+                            to={`/dataset/${this.props.match.params[p]}${
+                                this.props.location.search
+                            }`}
+                        >
+                            {this.props.dataset.title}
+                        </Link>
+                    </li>
+                );
+            }
+
+            if (p === "distributionId") {
+                return (
+                    <li key="distribution">
+                        <span>{this.props.distribution.title}</span>
+                    </li>
+                );
+            }
+
+            return null;
+        });
+        breadcrumbs.unshift(results);
+        return breadcrumbs;
+    }
+
     render() {
         const title = this.props.match.params.distributionId
             ? this.props.distribution.title
             : this.props.dataset.title;
         return (
             <ReactDocumentTitle title={title + "|" + config.appName}>
-                <div>{this.renderByState()}</div>
+                <div>
+                    <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                    {this.renderByState()}
+                </div>
             </ReactDocumentTitle>
         );
     }
