@@ -32,13 +32,13 @@ matrix:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
           - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
       script: 
-        - yarn config set cache-folder .yarn
-        - yarn install
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
         - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
@@ -53,10 +53,10 @@ matrix:
       cache:
         directories:
           - .yarn
-      script:
+      before_install:
         - yarn config set cache-folder .yarn
+      script:
         - yarn global add lerna
-        - yarn install
         - yarn run eslint
         - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
         - lerna run test --scope @magda/preview-map --scope @magda/web-client
