@@ -6,7 +6,6 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.http.bulk.BulkResponse
 import com.sksamuel.elastic4s.mappings.{Analysis, Nulls, TextFieldDefinition}
-//import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.{ RequestFailure, RequestSuccess }
 import com.sksamuel.elastic4s.IndexAndTypes.apply
@@ -20,13 +19,16 @@ import com.sksamuel.elastic4s.analyzers.{
   LowercaseTokenFilter,
   KeywordTokenizer,
   StandardTokenizer,
-  SynonymTokenFilter,
   UppercaseTokenFilter,
   StemmerTokenFilter,
   NamedStopTokenFilter,
   Tokenizer,
   TokenFilterDefinition,
   WhitespaceTokenizer
+}
+import au.csiro.data61.magda.search.elasticsearch.TokenFilters.{
+  SynonymTokenFilter,
+  SynonymGraphTokenFilter
 }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
@@ -49,7 +51,6 @@ import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
-import com.sksamuel.elastic4s.json.XContentBuilder
 import scala.collection.JavaConverters._
 
 case class IndexDefinition(
@@ -58,36 +59,6 @@ case class IndexDefinition(
     indicesIndex: Indices.Index,
     definition: (Indices, Config) => CreateIndexDefinition,
     create: Option[(HttpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
-}
-
-case class SynonymGraphTokenFilter(name: String,
-                              path: Option[String] = None,
-                              synonyms: Set[String] = Set.empty,
-                              ignoreCase: Option[Boolean] = None,
-                              format: Option[String] = None,
-                              expand: Option[Boolean] = None,
-                              tokenizer: Option[Tokenizer] = None)
-  extends TokenFilterDefinition {
-
-  require(path.isDefined || synonyms.nonEmpty, "synonym_graph requires either `synonyms` or `synonyms_path` to be configured")
-
-  val filterType = "synonym_graph"
-
-  override def build(source: XContentBuilder): Unit = {
-    path.foreach(source.field("synonyms_path", _))
-    source.array("synonyms", synonyms.toArray)
-    format.foreach(source.field("format", _))
-    ignoreCase.foreach(source.field("ignore_case", _))
-    expand.foreach(source.field("expand", _))
-    tokenizer.foreach(t => source.field("tokenizer", t.name))
-  }
-
-  def path(path: String): SynonymGraphTokenFilter = copy(path = Some(path))
-  def synonyms(synonyms: Iterable[String]): SynonymGraphTokenFilter = copy(synonyms = synonyms.toSet)
-  def tokenizer(tokenizer: Tokenizer): SynonymGraphTokenFilter = copy(tokenizer = Some(tokenizer))
-  def format(format: String): SynonymGraphTokenFilter = copy(format = Some(format))
-  def ignoreCase(ignoreCase: Boolean): SynonymGraphTokenFilter = copy(ignoreCase = Some(ignoreCase))
-  def expand(expand: Boolean): SynonymGraphTokenFilter = copy(expand = Some(expand))
 }
 
 object IndexDefinition extends DefaultJsonProtocol {
@@ -108,14 +79,6 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   val MagdaSynonymTokenFilter = SynonymTokenFilter(
-    "synonym",
-    Some("analysis/wn_s.pl"),
-    Set.empty,
-    None,
-    Some("wordnet")
-  )
-
-  val MagdaSynonymGraphTokenFilter = SynonymGraphTokenFilter(
     "synonym",
     Some("analysis/wn_s.pl"),
     Set.empty,
