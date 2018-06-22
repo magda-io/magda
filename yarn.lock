@@ -249,7 +249,7 @@
   dependencies:
     babel-runtime "6.26.0"
 
-"@gov.au/select@^2.0.3":
+"@gov.au/select@^2.0.5":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@gov.au/select/-/select-2.0.5.tgz#31e76c1c32909cb80563e6641ce229f661dc5a15"
   dependencies:
@@ -259,7 +259,7 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/skip-link@^2.0.4":
+"@gov.au/skip-link@^2.0.6":
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/@gov.au/skip-link/-/skip-link-2.0.6.tgz#d544998974ad75f22974568c77d97a4fa3bdfdb5"
   dependencies:
@@ -269,7 +269,7 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/tags@^3.1.0":
+"@gov.au/tags@^3.1.1":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-3.1.1.tgz#b16deb6566296299e2cf2b1e986a79de0cea6d73"
   dependencies:
@@ -279,7 +279,7 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/text-inputs@^2.0.4":
+"@gov.au/text-inputs@^2.0.6":
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/@gov.au/text-inputs/-/text-inputs-2.0.6.tgz#69813b20ca6e6997df721d988e9a265958f9d79c"
   dependencies:
@@ -8527,9 +8527,9 @@ jsonpointer@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-4.0.1.tgz#4fd92cb34e0e9db3c89c8622ecf51f9b978c6cb9"
 
-"jsonschema@git+https://github.com/terriajs/jsonschema":
+jsonschema@terriajs/jsonschema:
   version "1.0.3"
-  resolved "git+https://github.com/terriajs/jsonschema#55cedb27a265bbae2b366a3824863c586c5d34cf"
+  resolved "https://codeload.github.com/terriajs/jsonschema/tar.gz/55cedb27a265bbae2b366a3824863c586c5d34cf"
 
 jsonwebtoken@^7.3.0, jsonwebtoken@^7.4.1:
   version "7.4.3"
