@@ -27,7 +27,7 @@ class FacetTemporal extends Component {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.temporalRange) {
             const dateFrom = defined(nextProps.activeDates[0])
                 ? new Date(nextProps.activeDates[0])

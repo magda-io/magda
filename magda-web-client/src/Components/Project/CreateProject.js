@@ -43,7 +43,7 @@ class CreateProject extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const datasetId: string = queryString.parse(this.props.location.search)
             .dataset;
         if (datasetId) {
@@ -56,7 +56,7 @@ class CreateProject extends Component {
             });
         }
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const datasetId: string = queryString.parse(nextProps.location.search)
             .dataset;
         const prevDatasetId: string = queryString.parse(

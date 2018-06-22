@@ -19,21 +19,22 @@ class FacetBasicBody extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.props.searchFacet();
         this.setState({
             _activeOptions: this.props.activeOptions
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.resetFilterEvent !== this.props.resetFilterEvent) {
-            // filter has been reset!
-            this.setState({
-                _activeOptions: []
-            });
+    static getDerivedStateFromProps(props) {
+        if (props.resetFilterEvent !== this.props.resetFilterEvent) {
             this.props.closeFacet();
+            // filter has been reset!
+            return {
+                _activeOptions: []
+            };
         }
+        return null;
     }
 
     componentWillUnmount() {

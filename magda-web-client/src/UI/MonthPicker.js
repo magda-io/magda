@@ -27,7 +27,7 @@ class MonthPicker extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.setState({
             yearValue: this.props.year,
             // whether the current year is default or by user selection
@@ -37,10 +37,10 @@ class MonthPicker extends Component {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.year !== this.props.year) {
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.year !== this.props.year) {
             this.setState({
-                yearValue: nextProps.year
+                yearValue: this.props.year
             });
         }
     }

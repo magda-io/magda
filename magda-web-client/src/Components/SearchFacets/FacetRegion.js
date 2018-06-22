@@ -31,10 +31,10 @@ class FacetRegion extends Component {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.activeRegion !== this.state._activeRegion) {
+    componentDidUpdate(prevProps) {
+        if (this.props.activeRegion !== this.state._activeRegion) {
             this.setState({
-                _activeRegion: nextProps.activeRegion
+                _activeRegion: this.props.activeRegion
             });
         }
     }

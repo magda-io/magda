@@ -18,13 +18,13 @@ import trim from "lodash/trim";
 import "./PublishersViewer.css";
 
 class PublishersViewer extends Component {
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (getPageNumber(this.props) !== getPageNumber(nextProps)) {
-            nextProps.fetchPublishersIfNeeded(getPageNumber(nextProps) || 1);
+    componentDidUpdate(prevProps) {
+        if (getPageNumber(this.props) !== getPageNumber(prevProps)) {
+            this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
         }
     }
 
