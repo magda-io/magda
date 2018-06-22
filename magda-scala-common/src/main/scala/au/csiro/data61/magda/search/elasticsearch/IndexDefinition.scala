@@ -56,7 +56,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 33,
+    version = 32,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -100,7 +100,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value", textField("autocomplete").analyzer("autocomplete"))))
+            magdaTextField("value")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
@@ -109,12 +109,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "uppercase",
             KeywordTokenizer,
-            UppercaseTokenFilter),
-          CustomAnalyzerDefinition(
-            "autocomplete",
-            StandardTokenizer,
-            LowercaseTokenFilter,
-            EdgeNGramTokenFilter(name = "autocomplete_filter", minGram = 3, maxGram = 100)))
+            UppercaseTokenFilter))
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))

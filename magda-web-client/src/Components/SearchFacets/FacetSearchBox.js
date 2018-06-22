@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import debounce from "lodash.debounce";
+
 import "./FacetSearchBox.css";
 import search from "../../assets/search-dark.svg";
 
@@ -18,8 +20,13 @@ class FacetSearchBox extends Component {
         this.setState({
             value
         });
+        this.debounceDoSearch(value);
+    };
+
+    doSearch = value => {
         this.props.searchBoxValueChange(value);
     };
+    debounceDoSearch = debounce(this.doSearch, 500);
 
     render() {
         const { value } = this.state;
