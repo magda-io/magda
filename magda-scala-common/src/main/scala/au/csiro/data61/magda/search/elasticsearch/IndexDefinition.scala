@@ -244,9 +244,9 @@ object IndexDefinition extends DefaultJsonProtocol {
     new IndexDefinition(
       name = "formats",
       version = 1,
-      indicesIndex = Indices.PublishersIndex,
+      indicesIndex = Indices.FormatsIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.PublishersIndex))
+        createIndex(indices.getIndex(config, Indices.FormatsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(

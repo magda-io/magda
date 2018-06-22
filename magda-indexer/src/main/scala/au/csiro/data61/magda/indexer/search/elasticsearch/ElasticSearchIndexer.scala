@@ -377,7 +377,7 @@ class ElasticSearchIndexer(
   def trim(before: OffsetDateTime): Future[Unit] =
     setupFuture.flatMap { client =>
       client.execute(
-        deleteIn(indices.getIndex(config, Indices.DataSetsIndex)).by(
+        deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
           rangeQuery("indexed").lt(before.toString)))
     }.map {
       case Right(results) =>
@@ -389,7 +389,7 @@ class ElasticSearchIndexer(
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
       client.execute(bulk(identifiers.map(identifier =>
-        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex)))))
+        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
     }.map {
       case Right(results) =>
         logger.info("Deleted {} datasets", results.result.successes.length)
@@ -448,10 +448,10 @@ class ElasticSearchIndexer(
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now))
 
-    val indexDataSet = ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex)).id(dataSet.uniqueId).source(dataSet.toJson)
+    val indexDataSet = ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).id(dataSet.uniqueId).source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>
-      ElasticDsl.indexInto(indices.getIndex(config, Indices.PublishersIndex))
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.PublishersIndex) / indices.getType(Indices.PublisherIndexType))
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
@@ -461,12 +461,12 @@ class ElasticSearchIndexer(
     val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>
       val format = distribution.format.get
 
-      ElasticDsl.indexInto(indices.getIndex(config, Indices.FormatsIndex))
+      ElasticDsl.indexInto(indices.getIndex(config, Indices.FormatsIndex) / indices.getType(Indices.FormatsIndexType))
         .id(format.toLowerCase)
         .source(Map("value" -> format).toJson)
     }
 
-    indexDataSet :: indexPublisher.toList ++ indexFormats
+    List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
   }
 }
 
