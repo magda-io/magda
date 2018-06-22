@@ -24,6 +24,7 @@
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
+-   Update some results found message
 
 ## 0.0.41
 
