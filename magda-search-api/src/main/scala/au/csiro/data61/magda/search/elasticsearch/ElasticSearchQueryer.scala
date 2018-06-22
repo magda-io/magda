@@ -359,39 +359,53 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
-      def doQuery(thisGeneralQuery: Query): Future[FacetSearchResult] = {
-        client.execute {
-          ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
-            .limit(0)
-            .query(
-              boolQuery.must(
-                buildEsQuery(facetDef.removeFromQuery(thisGeneralQuery), MatchAll),
-                facetDef.autocompleteQuery(facetQuery.get)))
-            .aggs(facetDef.aggregationDefinition(limit))
-        } map { aggQueryResult =>
-          val hits = facetDef.extractFacetOptions(aggQueryResult.aggregations.getAs[InternalAggregation](facetType.id))
+      // First do a normal query search on the type we created for values in this facet
+      client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
+        .query(new SimpleStringQueryDefinition(facetQuery.getOrElse("*"))
+          .defaultOperator("or")
+          .analyzeWildcard(true)
+          .field("_all")
+          .field("value.autocomplete")
+          .field("value.english"))
+        .start(start.toInt)
+        .limit(limit))
+        .flatMap { response =>
+          response.totalHits match {
+            case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
+            case _ =>
+              val hits: Seq[(String, Option[String])] = response.hits
+                .map { hit =>
+                  val map = hit.sourceAsMap
+                  (
+                    map("value")toString,
+                    map.get("identifier").map(_.toString))
+                }
 
-          FacetSearchResult(
-            hitCount = hits.length,
-            options = hits)
-        }
-      }
+              // Create a dataset filter aggregation for each hit in the initial query
+              val filters = hits.map {
+                case (name, identifier) =>
+                  aggregation.filter(name).filter(facetDef.exactMatchQuery(Specified(name)))
+              }
 
-      doQuery(generalQuery) flatMap { result =>
-        if (result.hitCount < limit) {
-          doQuery(Query(Some("*"))).map { generalResult =>
-            val matchedOptions = result.options.map(_.copy(matched = true)).filter(facetDef.isFilterOptionRelevant(Query(formats = Set(Specified(facetQuery.get)))))
-            val generalOptions = generalResult.options.filter(option => !matchedOptions.contains(option.value)).map(_.copy(hitCount = 0))
-            val options = (matchedOptions ++ generalOptions).take(10)
+              // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
+              // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
+              client.execute {
+                buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
+              } map { aggQueryResult =>
+                val aggregations = aggQueryResult.aggregations.map.mapValues {
+                  case (bucket: InternalFilter) =>
+                    new FacetOption(
+                      identifier = None,
+                      value = bucket.getName,
+                      hitCount = bucket.getDocCount)
+                }
 
-            FacetSearchResult(
-              hitCount = options.length,
-              options = options)
+                FacetSearchResult(
+                  hitCount = response.totalHits,
+                  options = hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+              }
           }
-        } else {
-          Future(result.copy(options = result.options.map(_.copy(matched = true))))
         }
-      }
     }
   }
 
