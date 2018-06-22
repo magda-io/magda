@@ -4,14 +4,14 @@
     word-wrap: break-word;
 }
 
-.dataset-summary-description {
-    .markdown strong,
+.markdown {
+    strong,
     p > strong {
         font-size: 0.875rem;
         font-weight: inherit;
     }
 
-    .markdown code {
+    code {
         font-size: 0.875rem;
         font-weight: inherit;
         font-family: $AU-font;
@@ -21,12 +21,17 @@
         border: none;
     }
 
-    .markdown ul {
+    ul {
         list-style: none;
         display: inline;
 
         li strong {
-            font-weight: normal;
+            font-size: 0.875rem;
+            font-weight: inherit;
         }
+    }
+
+    hr {
+        display: none;
     }
 }
