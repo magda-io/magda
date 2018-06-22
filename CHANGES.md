@@ -1,6 +1,7 @@
 ## 0.0.43
 
 -   Add breadcrumb for dataset page and distribution page
+-   Added further styling filters to coverup markdown rendering on dataset pages
 
 ## 0.0.42
 
