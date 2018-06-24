@@ -1,10 +1,10 @@
 @import "../_variables.scss";
 
-.dataset-summary-description {
-    .markdown__wrap {
-        word-wrap: break-word;
-    }
+.markdown__wrap {
+    word-wrap: break-word;
+}
 
+.dataset-summary-description {
     .markdown {
         strong,
         p > strong {
