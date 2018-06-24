@@ -1,37 +1,36 @@
 @import "../_variables.scss";
 
-.markdown__wrap {
-    word-wrap: break-word;
-}
-
-.markdown {
-    strong,
-    p > strong {
-        font-size: 0.875rem;
-        font-weight: inherit;
+.dataset-summary-description {
+    .markdown__wrap {
+        word-wrap: break-word;
     }
 
-    code {
-        font-size: 0.875rem;
-        font-weight: inherit;
-        font-family: $AU-font;
-        padding: 0;
-        background-color: transparent;
-        display: inline;
-        border: none;
-    }
-
-    ul {
-        list-style: none;
-        display: inline;
-
-        li strong {
+    .markdown {
+        strong,
+        p > strong {
             font-size: 0.875rem;
             font-weight: inherit;
         }
-    }
 
-    hr {
-        display: none;
+        code {
+            font-size: 0.875rem;
+            font-weight: inherit;
+            font-family: $AU-font;
+            padding: 0;
+            background-color: transparent;
+            display: inline;
+            border: none;
+        }
+
+        ul {
+            li strong {
+                font-size: 0.875rem;
+                font-weight: inherit;
+            }
+        }
+
+        hr {
+            display: none;
+        }
     }
 }
