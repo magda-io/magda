@@ -167,7 +167,7 @@ class ElasticSearchIndexer(
 
   /** Initialises an HttpClient, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[HttpClient] = {
-    clientProvider.getClient(system.scheduler, logger, ec).flatMap(client =>
+    clientProvider.getClient.flatMap(client =>
       retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
         .flatMap { indexPairs =>
           updateIndices(client, indexPairs)
