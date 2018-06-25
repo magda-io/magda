@@ -2,7 +2,7 @@
 
 This is a _loose_ plan of what we're planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it's going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don't make any plans based on this that you can't change! Get in touch if you want to contribute!
 
-## Current Priorities Jan - June 2018
+## Past Priorities Jan - June 2018
 
 ✅ **New Design**: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.
 
@@ -18,13 +18,11 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ✅ **Data Quality**: We currently calculate "data quality" based on an average of how many links work in a dataset and the Tim Berners-Lee 5-star data quality scale, but don't really explain this very well. We're changing this so that it's strictly based on the 5 star scale (broken link = 0 stars, naturally, as it isn't accessible), and making sure we explain this whereever its present.
 
-**MVP Dataset Feedback/Collaboration**: Using the contactPoint info attached to datasets to allow users to directly email data custodians... precursor of the more advanced features below.
+✅ **MVP Dataset Feedback/Collaboration**: Using the contactPoint info attached to datasets to allow users to directly email data custodians... precursor of the more advanced features below.
 
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-## Near-Term Priorities June 2018 - June 2019
-
-**Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
+## Current Priorities June 2018 - June 2019
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 
@@ -62,3 +60,5 @@ We're planning to do a lot of research into what exactly data consumers find use
 *   Allowing each user to search over data that they're allowed to see
 *   Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.
 *   Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.
+
+**Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
