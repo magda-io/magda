@@ -125,10 +125,6 @@ class RecordsServiceSpec extends ApiSpec {
           }
         }
 
-        DB autoCommit { implicit session =>
-          sql"ANALYZE records".update.apply()
-        }
-
         Get("/v0/records/count") ~> param.api.routes ~> check {
           status shouldEqual StatusCodes.OK
           val countResponse = responseAs[CountResponse]
@@ -804,6 +800,56 @@ class RecordsServiceSpec extends ApiSpec {
             page.records.length shouldBe 1
             page.records(0).name shouldBe "5"
             page
+          }
+        }
+
+        it("provides hasMore correctly") { param =>
+          val aspectDefinition = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          for (i <- 1 to 5) {
+            val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+            param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+          }
+
+          Get(s"/v0/records${path}start=0&limit=4") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe true
+          }
+
+          Get(s"/v0/records${path}start=0&limit=5") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe false
+          }
+
+          Get(s"/v0/records${path}start=0&limit=6") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe false
+          }
+
+          Get(s"/v0/records${path}start=3&limit=1") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe true
+          }
+
+          Get(s"/v0/records${path}start=4&limit=1") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe false
+          }
+
+          Get(s"/v0/records${path}start=5&limit=1") ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[RecordType]]
+            page.hasMore shouldBe false
           }
         }
       }
