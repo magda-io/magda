@@ -8,10 +8,13 @@ import com.sksamuel.elastic4s.ElasticsearchClientUri
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import com.sksamuel.elastic4s.http.HttpClient
+import com.sksamuel.elastic4s.http.{HttpClient, NoOpHttpClientConfigCallback}
 import com.typesafe.config.Config
+import org.apache.http.HttpHost
 import org.apache.http.client.config.RequestConfig
+import org.elasticsearch.client.RestClient
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback
+
 
 trait ClientProvider {
   def getClient(): Future[HttpClient]
@@ -63,6 +66,14 @@ class DefaultClientProvider(implicit val system: ActorSystem,
 
   override def getClient(): Future[HttpClient] = {
 
+    var maxRetryTimeout = 30000
+    try{
+      maxRetryTimeout = config.getConfig("elasticSearch").getInt("maxRetryTimeout")
+    }catch{
+      //--- mute the error, default value will be used
+      case _ : Throwable =>
+    }
+
     val outerFuture = clientFuture match {
       case Some(future) => future
       case None =>
@@ -72,10 +83,20 @@ class DefaultClientProvider(implicit val system: ActorSystem,
               val uri = ElasticsearchClientUri(AppConfig
                 .conf()
                 .getString("elasticSearch.serverUrl") + "?cluster.name=myesdb")
-              HttpClient(
-                uri,
-                MagdaRequestConfigCallback
-              )
+
+              val hosts = uri.hosts.map {
+                case (host, port) =>
+                  new HttpHost(host, port, if (uri.options.getOrElse("ssl", "false") == "true") "https" else "http")
+              }
+
+              val client = RestClient
+                .builder(hosts: _*)
+                .setMaxRetryTimeoutMillis(maxRetryTimeout)
+                .setRequestConfigCallback(MagdaRequestConfigCallback)
+                .setHttpClientConfigCallback(NoOpHttpClientConfigCallback)
+                .build()
+
+              HttpClient.fromRestClient(client)
           },
           10 seconds,
           10,

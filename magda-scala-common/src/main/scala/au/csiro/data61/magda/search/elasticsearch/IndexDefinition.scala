@@ -341,8 +341,10 @@ object IndexDefinition extends DefaultJsonProtocol {
 
       }
       .filter(_.isDefined).map(_.get)
-      // This creates a buffer of regionBufferMb (roughly) of indexed regions that will be bulk-indexed in the next ES request
-      .batchWeighted(config.getLong("regionLoading.regionBufferMb") * 1000000, defin => IndexContentBuilder(defin).string.length, Seq(_))(_ :+ _)
+      //--Set only max 1000 document to be processed in one request
+      //--It's the same value as default elastic Bulk processor setting
+      //--We are having troubles with more than 1000
+      .batch(1000, Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away
