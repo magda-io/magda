@@ -29,3 +29,27 @@
 .form-margin {
     margin-bottom: 30px;
 }
+
+.distribution-meta {
+    display: flex;
+
+    .created-date {
+        margin-bottom: 1em;
+    }
+}
+
+.distribution-props {
+    display: inherit;
+}
+
+.distribution-download-button {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.distribution-format {
+    display: inline;
+}
+.distribution-license {
+    display: inline;
+}

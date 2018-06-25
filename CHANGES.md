@@ -2,6 +2,7 @@
 
 -   Add breadcrumb for dataset page and distribution page
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
+-   Modified the look and layout of the distribution pages.
 
 ## 0.0.42
 
