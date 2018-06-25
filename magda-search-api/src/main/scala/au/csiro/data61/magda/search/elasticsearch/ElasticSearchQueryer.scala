@@ -65,7 +65,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
 
-  val clientFuture: Future[HttpClient] = clientProvider.getClient(system.scheduler, logger, ec).recover {
+  val clientFuture: Future[HttpClient] = clientProvider.getClient.recover {
     case t: Throwable =>
       logger.error(t, "Could not connect to elasticsearch - this is a fatal error, so I'm dying now.")
       System.exit(1)

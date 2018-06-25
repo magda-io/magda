@@ -88,7 +88,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[HttpClient] = Future(client)
+    override def getClient(): Future[HttpClient] = Future(client)
   }
 
   def blockUntilNotRed(): Unit = {
