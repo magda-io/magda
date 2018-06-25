@@ -820,36 +820,42 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe true
+            page.nextPageToken.isDefined shouldBe true
           }
 
           Get(s"/v0/records${path}start=0&limit=5") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe false
+            page.nextPageToken.isDefined shouldBe false
           }
 
           Get(s"/v0/records${path}start=0&limit=6") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe false
+            page.nextPageToken.isDefined shouldBe false
           }
 
           Get(s"/v0/records${path}start=3&limit=1") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe true
+            page.nextPageToken.isDefined shouldBe true
           }
 
           Get(s"/v0/records${path}start=4&limit=1") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe false
+            page.nextPageToken.isDefined shouldBe false
           }
 
           Get(s"/v0/records${path}start=5&limit=1") ~> param.api.routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[RecordType]]
             page.hasMore shouldBe false
+            page.nextPageToken.isDefined shouldBe false
           }
         }
       }
