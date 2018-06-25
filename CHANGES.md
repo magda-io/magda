@@ -2,6 +2,7 @@
 
 -   Add breadcrumb for dataset page and distribution page
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
+-   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 
 ## 0.0.42
 
