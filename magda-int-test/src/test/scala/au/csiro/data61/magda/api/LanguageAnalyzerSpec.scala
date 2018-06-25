@@ -88,7 +88,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       }
     }
 
-    testLanguageFieldSearch(termExtractor, test)
+    testLanguageFieldSearch(termExtractor, test, true)
   }
 
   describe("should return the right format when searching by format value") {
@@ -108,17 +108,16 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       }
     }
 
-    testLanguageFieldSearch(termExtractor, test)
+    testLanguageFieldSearch(termExtractor, test, true)
   }
 
   def isAStopWord(term: String) = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
 
-  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit) = {
+  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false) = {
     it("when searching for it directly") {
-      def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet)
-        .filterNot(isAStopWord)
+      def innerTermExtractor(dataSet: DataSet) = outerTermExtractor(dataSet).flatMap(MagdaMatchers.tokenize)
 
-      doTest(innerTermExtractor)
+      doTest(innerTermExtractor, keepOrder)
     }
 
     it(s"regardless of pluralization/depluralization") {
@@ -151,10 +150,10 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         }
         .filterNot(isAStopWord)
 
-      doTest(innerTermExtractor)
+      doTest(innerTermExtractor, keepOrder)
     }
 
-    def doTest(innerTermExtractor: DataSet => Seq[String]) = {
+    def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean) = {
       def getIndividualTerms(terms: Seq[String]) = terms.flatMap(MagdaMatchers.tokenize)
 
       val indexAndTermsGen = smallIndexGen.flatMap {
@@ -162,20 +161,41 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
 
           val dataSetAndTermGens = indexedDataSets.flatMap { dataSet =>
-            val terms = getIndividualTerms(innerTermExtractor(dataSet))
-              .filter(_.length > 2)
-              .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
-              .filterNot(isAStopWord)
+            val rawTerms = getIndividualTerms(innerTermExtractor(dataSet))
 
-            if (!terms.isEmpty) {
-              val termGen = for {
-                noOfTerms <- Gen.choose(1, terms.length)
-                selectedTerms <- Gen.pick(noOfTerms, terms)
-              } yield selectedTerms.mkString(" ")
+            val termGen = if (keepOrder) {
+              /** Checks that there's at least one searchable term in this seq of strings */
+              def check = (list: Seq[String]) =>
+                list.exists(_.length > 2) &&
+                  list.exists(term => !Seq("and", "or").contains(term.trim.toLowerCase)) &&
+                  list.exists(!isAStopWord(_))
 
-              Seq(termGen.map((dataSet, _)))
-            } else
-              Nil
+              val x = for {
+                len <- 1 to rawTerms.length
+                combinations <- rawTerms.s len
+              } yield combinations
+
+              val validCombinations = x.filter(check)
+
+              // Make sure there's _some_ sublist that can be successfully searched - if so try to generate one, otherwise return none
+              if (!validCombinations.isEmpty) {
+                Some(Gen.oneOf(validCombinations))
+              } else None
+            } else {
+              val terms = rawTerms
+                .filter(_.length > 2)
+                .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
+                .filterNot(isAStopWord)
+
+              if (!terms.isEmpty) {
+                Some(for {
+                  noOfTerms <- Gen.choose(1, terms.length)
+                  selectedTerms <- Gen.pick(noOfTerms, terms) //Gen.pick shuffles the order
+                } yield selectedTerms)
+              } else None
+            }
+
+            termGen.map(gen => gen.map(list => (dataSet, list.mkString(" ")))).toSeq
           }
 
           val combinedDataSetAndTermGen = dataSetAndTermGens.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>

@@ -392,7 +392,7 @@ object Generators {
   val INDEXED_REGIONS_COUNT = 12
   def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)
 
-  def subListGen[T](list: List[T]) = list match {
+  def subListGen[T](list: Seq[T]) = list match {
     case Nil => Gen.const(Nil)
     case _ =>
       for {
