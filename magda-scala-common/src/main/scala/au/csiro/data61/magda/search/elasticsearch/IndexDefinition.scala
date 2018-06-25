@@ -341,9 +341,8 @@ object IndexDefinition extends DefaultJsonProtocol {
 
       }
       .filter(_.isDefined).map(_.get)
-      //--Set only max 1000 document to be processed in one request
-      //--It's the same value as default elastic Bulk processor setting
-      //--We are having troubles with more than 1000
+      // Limit to max 2000 region to bulk index
+      // ES recommended 1000 ~ 5000 actions in one bulk request and previous buffer could lead to over 6K actions in one request
       .batch(1000, Seq(_))(_ :+ _)
       // This ensures that only one indexing request is executed at a time - while the index request is in flight, the entire stream backpressures
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
@@ -355,7 +354,9 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map { result =>
         result match {
           case Left(failure) => logger.error("Failure: {}", failure.error)
-          case Right(results) => results.result.items.length
+          case Right(results) =>
+            logger.debug("Took {} seconds to execute request.", results.result.took)
+            results.result.items.length
         }
       }
       .recover {
