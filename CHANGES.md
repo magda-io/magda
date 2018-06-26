@@ -21,6 +21,10 @@
 -   Improved modal design on report/ask a question on a dataset
 -   Removed `totalCount` field from registry api pagination objects.
 -   Added `/count` endpoint to registry api
+-   Set default quality to 0 when indexing
+-   Use Async appender for logback logging
+-   Removed logging to file
+-   Akka logging setting adjustment
 
 ## 0.0.41
 
