@@ -3,22 +3,19 @@ package au.csiro.data61.magda.search.elasticsearch
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
 import org.elasticsearch.search.aggregations.Aggregation
 import com.sksamuel.elastic4s.searches.aggs.AggregationApi
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import org.elasticsearch.search.sort.SortOrder
-
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.RichSearchResponse
+import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import com.typesafe.config.Config
-
 import spray.json._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
@@ -28,7 +25,7 @@ import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.api.model.RegionSearchResult
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.Temporal.{ PeriodOfTime, ApiDate }
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -39,11 +36,12 @@ import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
+
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
 import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
-import org.apache.lucene.search.join.ScoreMode
+import com.sksamuel.elastic4s.searches.ScoreMode
 import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
 import org.elasticsearch.index.query.MultiMatchQueryBuilder
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
@@ -53,9 +51,14 @@ import java.time.ZoneOffset
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
+
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 import com.sksamuel.elastic4s.http.HttpClient
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.{
+  IllegalArgumentException
+}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -83,13 +86,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
       val query = buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize).explain(true)
 
-      Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap(response =>
-        if (response.totalHits > 0)
-          Future.successful((response, MatchAll))
-        else
-          client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchPart, requestedFacetSize)).map((_, MatchPart)))))
+      Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap{
+        case Right(results) =>
+          if ( results.result.totalHits > 0)
+            Future.successful((results.result, MatchAll))
+          else
+            client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchPart, requestedFacetSize)).map{
+              case Right(results) => Future.successful((results.result, MatchPart))
+              case Left(IllegalArgumentException(e)) => throw e
+              case Left(ESGenericException(e)) => throw e
+            }
+        case Left(IllegalArgumentException(e)) => throw e
+        case Left(ESGenericException(e)) => throw e
+      }))
     } map {
-      case Seq(fullRegions: List[Option[Region]], (response: RichSearchResponse, strategy: SearchStrategy)) =>
+      case Seq(fullRegions: List[Option[Region]], (response: SearchResponse, strategy: SearchStrategy)) =>
         val newQueryRegions =
           inputRegionsList
             .zip(fullRegions)
@@ -125,8 +136,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /**
    * Turns an ES response into a magda SearchResult.
    */
-  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
-    val aggs = response.aggregations
+  def buildSearchResult(query: Query, response: SearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
+    val aggs = response.aggregations.data
 
     def getDateAggResult(agg: SingleValue) = {
       val minDateEpoch = agg.value().toLong
@@ -137,14 +148,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       }
     }
 
+
     new SearchResult(
       strategy = Some(strategy),
       query = query,
-      hitCount = response.getHits.totalHits().toInt,
+      hitCount = response.totalHits.toInt,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(PeriodOfTime(
-        start = getDateAggResult(aggs.getAs[SingleValue]("minDate")), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
-        end = getDateAggResult(aggs.getAs[SingleValue]("maxDate")))),
+        start = getDateAggResult(aggs.get("minDate").asInstanceOf[SingleValue]), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
+        end = getDateAggResult(aggs.get("maxDate").asInstanceOf[SingleValue]))),
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
@@ -153,7 +165,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
             val filteredOptions =
-              (Option(aggs.getAs[InternalAggregation](facetType.id + "-filter")) match {
+              (Option(aggs.get(facetType.id + "-filter").asInstanceOf[InternalAggregation]) match {
                 case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[InternalAggregation])
                 case None            => Nil
               }).filter(definition.isFilterOptionRelevant(query))
@@ -166,7 +178,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .map {
                 case (name, query) => (
                   name,
-                  aggs.getAs[InternalAggregation](facetType.id + "-exact-" + name + "-filter"))
+                  aggs.get(facetType.id + "-exact-" + name + "-filter").asInstanceOf[InternalAggregation])
               }
               .map {
                 case (name, agg: InternalFilter) => name -> agg
@@ -183,7 +195,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                     val aggProp = List(value).asJava
                     (
                       name,
-                      aggs.getAs[InternalAggregation](facetType.id + "-global").getProperty(aggProp))
+                      aggs.get(facetType.id + "-global").asInstanceOf[InternalAggregation].getProperty(aggProp))
                 }
                 .flatMap {
                   case (name, agg: InternalFilter) =>
@@ -205,7 +217,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
             val alternativeOptions =
               definition.extractFacetOptions(
-                aggs.getAs[InternalAggregation](facetType.id + "-global")
+                aggs.get(facetType.id + "-global").asInstanceOf[InternalAggregation]
                   .getProperty("filter").asInstanceOf[InternalAggregation]
                   .getProperty(facetType.id).asInstanceOf[InternalAggregation])
 

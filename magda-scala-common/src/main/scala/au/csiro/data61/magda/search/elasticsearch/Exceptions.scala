@@ -30,6 +30,15 @@ import com.sksamuel.elastic4s.http.RequestFailure
     }
   }
 
+  object IllegalArgumentException{
+    def unapply(failure: RequestFailure): Option[RuntimeException] = {
+      failure.error.`type` match {
+        case "illegal_argument_exception" => Some(new java.lang.IllegalArgumentException(failure.error.reason))
+        case _ => None
+      }
+    }
+  }
+
   object ESGenericException{
     def unapply(failure: RequestFailure): Option[RuntimeException] = {
       failure.error.`type` match {
