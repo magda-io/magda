@@ -19,6 +19,8 @@
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
+-   Removed `totalCount` field from registry api pagination objects.
+-   Added `/count` endpoint to registry api
 
 ## 0.0.41
 
