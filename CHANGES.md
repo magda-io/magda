@@ -20,6 +20,9 @@
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
 -   Set default quality to 0 when indexing
+-   Use Async appender for logback logging
+-   Removed logging to file
+-   Akka logging setting adjustment
 
 ## 0.0.41
 
