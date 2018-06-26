@@ -348,7 +348,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       // right up to reading from the file, so that new bytes will only be read from the file, parsed, turned into IndexDefinitions etc if ES is
       // available to index them right away
       .mapAsync(1) { values =>
-        logger.debug("Indexing {} regions", values.length)
+        logger.info("Indexing {} regions", values.length)
         client.execute(bulk(values))
       }
       .map { result =>
