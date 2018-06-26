@@ -94,7 +94,7 @@ class RecordHandler extends React.Component {
                 )}`;
                 return (
                     <div className="">
-                        <span>
+                        <span className="distribution-title">
                             <img
                                 className="distribution-icon"
                                 src={DistributionIcon}
