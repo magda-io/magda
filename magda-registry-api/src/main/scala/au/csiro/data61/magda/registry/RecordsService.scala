@@ -49,27 +49,15 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getAll = get {
     pathEnd {
-      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+      parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long]?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
         (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
           val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-          try{
-            val pageTokenConverted = pageToken.map(_.toLong)
-            complete {
-              DB readOnly { session =>
-                recordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageTokenConverted, start, limit, dereference, parsedAspectQueries)
-              }
-            }
-          }catch{
-            case e: NumberFormatException =>
-              complete(StatusCodes.BadRequest,
-                s"""The query parameter 'pageToken' was malformed:
-                   |'${pageToken.get}' is not a valid 64-bit signed integer value
-                 """.stripMargin)
-            case e: Throwable =>
-              logger.error("Error when process `/records` request: {}", e)
-              complete(StatusCodes.InternalServerError)
-          }
 
+          complete {
+            DB readOnly { session =>
+              recordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+            }
+          }
       }
     }
   }
