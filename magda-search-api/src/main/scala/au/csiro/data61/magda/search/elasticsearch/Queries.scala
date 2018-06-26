@@ -2,15 +2,15 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
 
-import org.apache.lucene.search.join.ScoreMode
-import org.elasticsearch.common.geo.ShapeRelation
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.searches.ScoreMode
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.queries.NestedQueryDefinition
 import com.typesafe.config.Config
 
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.GeoShapeDefinition
+import com.sksamuel.elastic4s.searches.queries.geo.PreindexedShape
+import com.sksamuel.elastic4s.searches.queries.geo.ShapeRelation
 import au.csiro.data61.magda.api.FilterValue
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import au.csiro.data61.magda.api.Specified
@@ -51,10 +51,15 @@ object Queries {
   }
 
   def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
-    def normal(region: Region) = geoShapeQuery("spatial.geoJson", generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId), indices.getType(Indices.RegionsIndexType))
+    def normal(region: Region) = geoShapeQuery("spatial.geoJson",
+        PreindexedShape(
+          generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId),
+          indices.getIndex(config, Indices.RegionsIndex),
+          indices.getType(Indices.RegionsIndexType),
+          "geometry"
+        )
+      )
       .relation(ShapeRelation.INTERSECTS)
-      .indexedShapeIndex(indices.getIndex(config, Indices.RegionsIndex))
-      .indexedShapePath("geometry")
 
     handleFilterValue(regionValue, normal, "spatial.geoJson")
   }
