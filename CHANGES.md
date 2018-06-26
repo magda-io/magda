@@ -1,6 +1,7 @@
 ## 0.0.43
 
 -   Add breadcrumb for dataset page and distribution page
+-   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
 
 ## 0.0.42
 
@@ -24,6 +25,7 @@
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
+-   Update some results found message
 
 ## 0.0.41
 

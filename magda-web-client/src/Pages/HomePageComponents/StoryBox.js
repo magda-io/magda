@@ -25,7 +25,12 @@ class StoryBox extends Component {
     getClickableElement(el, url) {
         if (!url) return el;
         return (
-            <a target="_blank" href={url} className="story-title-link">
+            <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={url}
+                className="story-title-link"
+            >
                 {el}
             </a>
         );

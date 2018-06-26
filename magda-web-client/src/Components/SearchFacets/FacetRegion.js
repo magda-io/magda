@@ -21,7 +21,7 @@ class FacetRegion extends Component {
          * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
          */
         this.state = {
-            _activeRegion: {
+            _activeRegion: props.activeRegion || {
                 regionId: undefined,
                 regionType: undefined
             },
@@ -30,22 +30,10 @@ class FacetRegion extends Component {
         };
     }
 
-    /**
-     * When component is mounted, the state is lost so we have to
-     * make sure state is initialised from redux store
-     */
-    componentWillMount() {
-        this.setState(() => {
-            return {
-                _activeRegion: this.props.activeRegion
-            };
-        });
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.activeRegion !== this.state._activeRegion) {
+    componentDidUpdate(prevProps) {
+        if (this.props.activeRegion !== this.state._activeRegion) {
             this.setState({
-                _activeRegion: nextProps.activeRegion
+                _activeRegion: this.props.activeRegion
             });
         }
     }
