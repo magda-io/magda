@@ -6,7 +6,7 @@ import scala.concurrent.Future
 import org.elasticsearch.search.aggregations.Aggregation
 import com.sksamuel.elastic4s.searches.aggs.AggregationApi
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
-import org.elasticsearch.search.sort.SortOrder
+import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.search.SearchResponse
@@ -378,6 +378,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .start(start.toInt)
         .limit(limit))
         .flatMap {
+          case Left(ESGenericException(e)) => throw e
           case Right(results) =>
             results.result.totalHits match {
               case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -394,25 +395,27 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 // Create a dataset filter aggregation for each hit in the initial query
                 val filters = hits.map {
                   case (name, identifier) =>
-                    filterAggregation(name).filter(facetDef.exactMatchQuery(Specified(name)))
+                    filterAggregation(name).query(facetDef.exactMatchQuery(Specified(name)))
                 }
 
                 // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
                 // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
                 client.execute {
                   buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
-                } map { aggQueryResult =>
-                  val aggregations = aggQueryResult.aggregationsAsMap.mapValues {
-                    case (bucket: InternalFilter) =>
-                      new FacetOption(
-                        identifier = None,
-                        value = bucket.getName,
-                        hitCount = bucket.getDocCount)
-                  }
+                } map {
+                  case Left(ESGenericException(e)) => throw e
+                  case Right(results) =>
+                    val aggregations = results.result.aggregationsAsMap.mapValues {
+                      case (bucket: InternalFilter) =>
+                        new FacetOption(
+                          identifier = None,
+                          value = bucket.getName,
+                          hitCount = bucket.getDocCount)
+                    }
 
-                  FacetSearchResult(
-                    hitCount = response.totalHits,
-                    options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+                    FacetSearchResult(
+                      hitCount = results.result.totalHits,
+                      options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
                 }
             }
         }
@@ -422,17 +425,20 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
+        ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
           query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
           start start.toInt
           limit limit
           sortBy (
             fieldSort("order") order SortOrder.ASC,
             scoreSort order SortOrder.DESC)
-            sourceExclude "geometry").flatMap { response =>
-          response.totalHits match {
+            sourceExclude "geometry"
+      ).flatMap {
+        case Left(ESGenericException(e)) => throw e
+        case Right(results) =>
+          results.result.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-            case _ => Future(RegionSearchResult(query, response.totalHits, response.to[Region].toList))
+            case _ => Future(RegionSearchResult(query, results.result.totalHits, results.result.to[Region].toList))
           }
         }
     }
@@ -441,14 +447,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: HttpClient): Future[Option[Region]] = {
     queryRegionFV match {
       case Specified(region) =>
-        client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-          query { idsQuery((region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
-          .flatMap { response =>
-            response.totalHits match {
+        client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+          query { idsQuery((region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry"
+        ).flatMap {
+          case Left(ESGenericException(e)) => throw e
+          case Right(results) =>
+            results.result.totalHits match {
               case 0 => Future(None)
-              case _ => Future(response.to[Region].headOption)
+              case _ => Future(results.result.to[Region].headOption)
             }
-          }
+        }
       case Unspecified() => Future(None)
     }
 
