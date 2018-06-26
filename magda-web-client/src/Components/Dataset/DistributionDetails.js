@@ -68,7 +68,7 @@ class DistributionDetails extends Component {
                         {this.renderLinkText(distribution).length > 0 && (
                             <div>
                                 {" "}
-                                <h2>Source</h2>
+                                <h3>Source</h3>
                                 {this.renderLinkText(distribution)}
                             </div>
                         )}

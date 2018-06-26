@@ -19,9 +19,10 @@ import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 import AUbutton from "@gov.au/buttons";
-import OverviewBox from "../UI/OverviewBox";
 import Separator from "../UI/Separator";
-
+import { Small, Medium } from "../UI/Responsive";
+import DescriptionBox from "../UI/DescriptionBox";
+import DistributionIcon from "../assets/distribution_icon.svg";
 import "./RecordHandler.css";
 
 class RecordHandler extends React.Component {
@@ -93,7 +94,14 @@ class RecordHandler extends React.Component {
                 )}`;
                 return (
                     <div className="">
-                        <h1>{this.props.distribution.title}</h1>
+                        <span>
+                            <img
+                                className="distribution-icon"
+                                src={DistributionIcon}
+                                alt="distribution icon"
+                            />
+                            <h1>{this.props.distribution.title}</h1>
+                        </span>
                         <div className="distribution-meta">
                             <div className="publisher">
                                 <Link to={`/organisations/${publisherId}`}>
@@ -129,9 +137,18 @@ class RecordHandler extends React.Component {
                         >
                             Download
                         </AUbutton>{" "}
-                        <OverviewBox
-                            content={this.props.distribution.description}
-                        />
+                        <Small>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={200}
+                            />
+                        </Small>
+                        <Medium>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={500}
+                            />
+                        </Medium>
                         <div className="tab-content">
                             <Switch>
                                 <Route
