@@ -4,7 +4,8 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "https://dev.magda.io/";
+// const fallbackApiHost = "https://dev.magda.io/";
+const fallbackApiHost = "http://localhost:30100/";
 
 const homePageConfig: {
     baseUrl: string,
