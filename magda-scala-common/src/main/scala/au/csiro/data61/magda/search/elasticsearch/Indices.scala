@@ -23,6 +23,11 @@ trait Indices {
     case Publisher => Indices.PublisherIndexType
   }
 
+  def indexForFacet(facetType: FacetType)(implicit config: Config) = facetType match {
+    case Format    => getIndex(config, Indices.FormatsIndex)
+    case Publisher => getIndex(config, Indices.PublishersIndex)
+  }
+
 }
 
 object DefaultIndices extends Indices {}

@@ -369,7 +369,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
+      client.execute(ElasticDsl.search(indices.indexForFacet(facetType))
         .query(new SimpleStringQueryDefinition(facetQuery.getOrElse("*"))
           .defaultOperator("or")
           .analyzeWildcard(true)
@@ -377,42 +377,44 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .field("value"))
         .start(start.toInt)
         .limit(limit))
-        .flatMap { response =>
-          response.totalHits match {
-            case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
-            case _ =>
-              val hits: Seq[(String, Option[String])] = response.hits.hits
-                .map { hit =>
+        .flatMap {
+          case Right(results) =>
+            results.result.totalHits match {
+              case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
+              case _ =>
+
+                val hits: Seq[(String, Option[String])] = results.result.hits.hits.map{ hit =>
                   val map = hit.sourceAsMap
                   (
-                    map("value")toString,
-                    map.get("identifier").map(_.toString))
+                    map("value").toString,
+                    map.get("identifier").map(_.toString)
+                  )
                 }
 
-              // Create a dataset filter aggregation for each hit in the initial query
-              val filters = hits.map {
-                case (name, identifier) =>
-                  filterAggregation(name).filter(facetDef.exactMatchQuery(Specified(name)))
-              }
-
-              // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
-              // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
-              client.execute {
-                buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
-              } map { aggQueryResult =>
-                val aggregations = aggQueryResult.aggregationsAsMap.mapValues {
-                  case (bucket: InternalFilter) =>
-                    new FacetOption(
-                      identifier = None,
-                      value = bucket.getName,
-                      hitCount = bucket.getDocCount)
+                // Create a dataset filter aggregation for each hit in the initial query
+                val filters = hits.map {
+                  case (name, identifier) =>
+                    filterAggregation(name).filter(facetDef.exactMatchQuery(Specified(name)))
                 }
 
-                FacetSearchResult(
-                  hitCount = response.totalHits,
-                  options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
-              }
-          }
+                // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
+                // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
+                client.execute {
+                  buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
+                } map { aggQueryResult =>
+                  val aggregations = aggQueryResult.aggregationsAsMap.mapValues {
+                    case (bucket: InternalFilter) =>
+                      new FacetOption(
+                        identifier = None,
+                        value = bucket.getName,
+                        hitCount = bucket.getDocCount)
+                  }
+
+                  FacetSearchResult(
+                    hitCount = response.totalHits,
+                    options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+                }
+            }
         }
     }
   }
