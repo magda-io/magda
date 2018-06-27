@@ -1,7 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import "./FacetRegion.css";
 import React, { Component } from "react";
-import FacetHeader from "./FacetHeader";
 import RegionMap from "./RegionMap";
 import RegionSearchBox from "./RegionSearchBox";
 import defined from "../../helpers/defined";
@@ -22,7 +21,7 @@ class FacetRegion extends Component {
          * @property {boolean} popUpIsOpen whether the popup window that shows the bigger map is open or not
          */
         this.state = {
-            _activeRegion: {
+            _activeRegion: props.activeRegion || {
                 regionId: undefined,
                 regionType: undefined
             },
@@ -31,8 +30,8 @@ class FacetRegion extends Component {
         };
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.activeRegion !== this.state._activeRegion) {
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.activeRegion !== prevState._activeRegion) {
             this.setState({
                 _activeRegion: this.props.activeRegion
             });
@@ -63,9 +62,16 @@ class FacetRegion extends Component {
             _activeRegion: region
         });
     }
+    componentWillUnmount() {
+        if (this.state._activeRegion.regionId !== undefined) {
+            this.onApplyFilter();
+        }
+    }
 
     onApplyFilter() {
-        this.props.onToggleOption(this.state._activeRegion);
+        if (this.state._activeRegion.regionId !== undefined) {
+            this.props.onToggleOption(this.state._activeRegion);
+        }
     }
 
     searchBoxValueChange(value) {
@@ -156,20 +162,7 @@ class FacetRegion extends Component {
     }
 
     render() {
-        return (
-            <div className="facet-wrapper">
-                <FacetHeader
-                    onResetFacet={this.props.onResetFacet}
-                    title={this.props.title}
-                    id={this.props.id}
-                    activeOptions={[this.props.activeRegion]}
-                    hasQuery={this.props.hasQuery}
-                    onClick={this.props.toggleFacet}
-                    isOpen={this.props.isOpen}
-                />
-                {this.props.isOpen && this.renderBox()}
-            </div>
-        );
+        return <div className="facet-wrapper">{this.renderBox()}</div>;
     }
 }
 
