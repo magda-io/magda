@@ -25,6 +25,7 @@
 -   Use Async appender for logback logging
 -   Removed logging to file
 -   Akka logging setting adjustment
+-   Made publisher and format filter search use the search backend instead of client-side autocomplete.
 -   Updated data quality explanation
 
 ## 0.0.41
