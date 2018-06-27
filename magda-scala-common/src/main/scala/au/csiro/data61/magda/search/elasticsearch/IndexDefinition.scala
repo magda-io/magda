@@ -96,11 +96,13 @@ object IndexDefinition extends DefaultJsonProtocol {
             dateField("indexed"),
             textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Format))).fields(
-            magdaTextField("value")),
+            magdaTextField("value"),
+            textField("english").analyzer("english")),
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-            magdaTextField("value")))
+            magdaTextField("value"),
+            textField("english").analyzer("english")))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
