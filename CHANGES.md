@@ -2,6 +2,7 @@
 
 -   Add breadcrumb for dataset page and distribution page
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
+-   Location and Date filters can be applied by clicking outside of the box
 
 ## 0.0.42
 
@@ -20,7 +21,6 @@
 -   Removed underline from organisations in search
 -   Modified styling for `ask a question` button to use secondary AUButton styling.
 -   Restricted markdown <strong> tag to be default style.
--   Location and Date filters can be applied by clicking outside of the box
 -   Added `bottom-border` property to make dataset filters stand out more.
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
@@ -29,8 +29,6 @@
 
 ## 0.0.41
 
--   Fixed LanguageAnalyzerSpec from generating stop words as search values.
--   Updated prettier config to not reformat package.json in to an invalid 4 space tab width.
 -   Create Suggest a Dataset Page
 -   Add Suggest a Dataset on search results page
 -   Fixed display of chart axis config dropdowns in Firefox.

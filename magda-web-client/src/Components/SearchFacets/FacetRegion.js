@@ -30,8 +30,8 @@ class FacetRegion extends Component {
         };
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.activeRegion !== this.state._activeRegion) {
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.activeRegion !== prevState._activeRegion) {
             this.setState({
                 _activeRegion: this.props.activeRegion
             });

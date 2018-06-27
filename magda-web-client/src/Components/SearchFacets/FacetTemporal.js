@@ -14,39 +14,29 @@ class FacetTemporal extends Component {
         this.selectEndYear = this.selectEndYear.bind(this);
         this.selectStartMonth = this.selectStartMonth.bind(this);
         this.selectEndMonth = this.selectEndMonth.bind(this);
-        this.toggleDisableApplyButton = this.toggleDisableApplyButton.bind(
-            this
-        );
-        this.state = {
-            startYear: defined(this.props.activeDates[0])
+
+        if (this.props.temporalRange) {
+            const dateFrom = defined(this.props.activeDates[0])
                 ? new Date(this.props.activeDates[0])
-                : undefined,
-            startMonth: undefined,
-            endYear: undefined,
-            endMonth: undefined,
-            applyButtonDisabled: true
-        };
-    }
-
-    componentWillMount() {
-        this.UNSAFE_componentWillReceiveProps(this.props);
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (nextProps.temporalRange) {
-            const dateFrom = defined(nextProps.activeDates[0])
-                ? new Date(nextProps.activeDates[0])
                 : new Date(this.props.temporalRange[0]);
-            const dateTo = defined(nextProps.activeDates[1])
-                ? new Date(nextProps.activeDates[1])
-                : new Date(nextProps.temporalRange[1]);
-            this.setState({
+            const dateTo = defined(this.props.activeDates[1])
+                ? new Date(this.props.activeDates[1])
+                : new Date(this.props.temporalRange[1]);
+            this.state = {
                 startYear: dateFrom.getUTCFullYear(),
                 startMonth: dateFrom.getUTCMonth(),
                 endYear: dateTo.getUTCFullYear(),
-                endMonth: dateTo.getUTCMonth(),
-                applyButtonDisabled: !this.props.hasQuery
-            });
+                endMonth: dateTo.getUTCMonth()
+            };
+        } else {
+            this.state = {
+                startYear: defined(this.props.activeDates[0])
+                    ? new Date(this.props.activeDates[0])
+                    : undefined,
+                startMonth: undefined,
+                endYear: undefined,
+                endMonth: undefined
+            };
         }
     }
 
@@ -58,10 +48,27 @@ class FacetTemporal extends Component {
      * been clicked in the facetHeader. If it has, then don't applyFilter.
      */
     componentWillUnmount() {
-        if (this.state.startYear !== undefined && !this.props.disableApply) {
+        console.log(this.state);
+
+        if (this.canApply() && !this.props.disableApply) {
             this.onApplyFilter();
         }
         this.props.toggleDateReset();
+    }
+
+    canApply() {
+        const dateFrom = new Date(this.props.temporalRange[0]);
+        const dateTo = new Date(this.props.temporalRange[1]);
+        return (
+            defined(this.state.startYear) &&
+            defined(this.state.startMonth) &&
+            defined(this.state.endMonth) &&
+            defined(this.state.endYear) &&
+            (this.state.startYear !== dateFrom.getUTCFullYear() ||
+                this.state.startMonth !== dateFrom.getUTCMonth() ||
+                this.state.endYear !== dateTo.getUTCFullYear() ||
+                this.state.endMonth !== dateTo.getUTCMonth())
+        );
     }
 
     /**
@@ -75,8 +82,7 @@ class FacetTemporal extends Component {
                     startYear: undefined,
                     startMonth: undefined,
                     endYear: undefined,
-                    endMonth: undefined,
-                    applyButtonDisabled: true
+                    endMonth: undefined
                 };
             },
             //make sure the dates are cleared
@@ -110,33 +116,23 @@ class FacetTemporal extends Component {
         this.setState({
             startYear
         });
-        this.toggleDisableApplyButton(false);
     }
 
     selectEndYear(endYear) {
         this.setState({
             endYear
         });
-        this.toggleDisableApplyButton(false);
     }
 
     selectStartMonth(startMonth) {
         this.setState({
             startMonth
         });
-        this.toggleDisableApplyButton(false);
     }
 
     selectEndMonth(endMonth) {
         this.setState({
             endMonth
-        });
-        this.toggleDisableApplyButton(false);
-    }
-
-    toggleDisableApplyButton(disabled) {
-        this.setState({
-            applyButtonDisabled: disabled
         });
     }
 
@@ -153,7 +149,6 @@ class FacetTemporal extends Component {
         return (
             <div className="facet-temporal-month-picker">
                 <MonthPicker
-                    onInvalidInput={this.toggleDisableApplyButton}
                     showingDefault={!this.props.hasQuery}
                     year={this.state.startYear}
                     month={this.state.startMonth}
@@ -169,7 +164,6 @@ class FacetTemporal extends Component {
                     <img src={range} alt="date range" />
                 </div>
                 <MonthPicker
-                    onInvalidInput={this.toggleDisableApplyButton}
                     showingDefault={!this.props.hasQuery}
                     year={this.state.endYear}
                     month={this.state.endMonth}
@@ -193,7 +187,7 @@ class FacetTemporal extends Component {
                     <div className="facet-footer">
                         <button
                             className="au-btn au-btn--secondary"
-                            disabled={this.state.applyButtonDisabled}
+                            disabled={!this.canApply()}
                             onClick={this.resetTemporalFacet}
                         >
                             {" "}
@@ -201,7 +195,7 @@ class FacetTemporal extends Component {
                         </button>
                         <button
                             className="au-btn au-btn--primary"
-                            disabled={this.state.applyButtonDisabled}
+                            disabled={!this.canApply()}
                             onClick={this.onApplyFilter}
                         >
                             {" "}
