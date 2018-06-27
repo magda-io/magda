@@ -3,14 +3,18 @@ package au.csiro.data61.magda.search.elasticsearch
 import java.time.OffsetDateTime
 
 import com.sksamuel.elastic4s.searches.ScoreMode
-import com.sksamuel.elastic4s.http.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
 import com.sksamuel.elastic4s.searches.queries.NestedQueryDefinition
 import com.typesafe.config.Config
 
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.PreindexedShape
-import com.sksamuel.elastic4s.searches.queries.geo.ShapeRelation
+import com.sksamuel.elastic4s.searches.queries.geo.{
+//import au.csiro.data61.magda.search.elasticsearch.QueryDefinitions.{
+  ShapeRelation,
+  PreindexedShape,
+  GeoShapeQueryDefinition
+}
 import au.csiro.data61.magda.api.FilterValue
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import au.csiro.data61.magda.api.Specified
@@ -51,15 +55,16 @@ object Queries {
   }
 
   def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
-    def normal(region: Region) = geoShapeQuery("spatial.geoJson",
-        PreindexedShape(
-          generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId),
-          indices.getIndex(config, Indices.RegionsIndex),
-          indices.getType(Indices.RegionsIndexType),
-          "geometry"
-        )
-      )
-      .relation(ShapeRelation.INTERSECTS)
+    def normal(region: Region) = new GeoShapeQueryDefinition(
+      "spatial.geoJson",
+      PreindexedShape(
+        generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId),
+        indices.getIndex(config, Indices.RegionsIndex),
+        indices.getType(Indices.RegionsIndexType),
+        "geometry"
+      ),
+      Some(ShapeRelation.INTERSECTS)
+    )
 
     handleFilterValue(regionValue, normal, "spatial.geoJson")
   }
@@ -76,12 +81,12 @@ object Queries {
   }
 
   def dateFromQuery(dateFrom: OffsetDateTime) = {
-    filter(should(
+    boolQuery().filter(should(
       rangeQuery("temporal.end.date").gte(dateFrom.toString),
       rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))
   }
   def dateToQuery(dateTo: OffsetDateTime) = {
-    filter(should(
+    boolQuery().filter(should(
       rangeQuery("temporal.end.date").lte(dateTo.toString),
       rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
   }

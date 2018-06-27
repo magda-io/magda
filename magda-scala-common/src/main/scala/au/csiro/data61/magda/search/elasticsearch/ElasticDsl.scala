@@ -13,12 +13,15 @@ import com.sksamuel.elastic4s.http.get.GetImplicits
 import com.sksamuel.elastic4s.http.index._
 import com.sksamuel.elastic4s.http.index.admin.IndexAdminImplicits
 import com.sksamuel.elastic4s.http.index.alias.IndexAliasImplicits
+//--- In order to override the response parsing logic
 import au.csiro.data61.magda.search.elasticsearch.Executables.MappingExecutables
 import com.sksamuel.elastic4s.http.locks.LocksImplicits
 import com.sksamuel.elastic4s.http.nodes.NodesImplicits
 import com.sksamuel.elastic4s.http.reindex.ReindexImplicits
 import com.sksamuel.elastic4s.http.search.template.SearchTemplateImplicits
-import com.sksamuel.elastic4s.http.search.{SearchImplicits, SearchScrollImplicits}
+import com.sksamuel.elastic4s.http.search.{SearchScrollImplicits}
+//--- In order to override the builder logic
+import au.csiro.data61.magda.search.elasticsearch.Executables.SearchImplicits
 import com.sksamuel.elastic4s.http.settings.SettingsImplicits
 import com.sksamuel.elastic4s.http.snapshots.SnapshotHttpImplicits
 import com.sksamuel.elastic4s.http.task.TaskImplicits
