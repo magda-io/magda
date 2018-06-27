@@ -25,6 +25,7 @@
 -   Use Async appender for logback logging
 -   Removed logging to file
 -   Akka logging setting adjustment
+-   Updated data quality explanation
 
 ## 0.0.41
 
