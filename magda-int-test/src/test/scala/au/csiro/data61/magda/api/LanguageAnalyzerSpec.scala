@@ -122,7 +122,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false) = {
     it("when searching for it directly") {
       def innerTermExtractor(dataSet: DataSet) = if (keepOrder) {
-        outerTermExtractor(dataSet).map(MagdaMatchers.tokenize).map(_.mkString(" "))
+        outerTermExtractor(dataSet).map(term => MagdaMatchers.tokenize(term).map(_.trim)).flatMap(getAllSlices).map(_.mkString(" "))
       } else {
         outerTermExtractor(dataSet).flatMap(MagdaMatchers.tokenize)
       }
@@ -131,24 +131,65 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     it(s"regardless of pluralization/depluralization") {
+      def innerTermExtractor(dataSet: DataSet) =
+        if (keepOrder) {
+          // If we're keeping order we want to create terms that are sub-slices of the terms created by outerTermExtractor
+          outerTermExtractor(dataSet)
+            // Split everything into individual words but don't mix the words from terms together
+            .map(term =>
+              MagdaMatchers.tokenize(term).map(_.trim))
+            // Generate all subslices from those terms
+            .flatMap(getAllSlices)
+            // Get rid of all the subslices that feature words we can't pluralize or unpluralize reliably
+            .filterNot(terms =>
+              terms.exists(term =>
+                term.contains(".") ||
+                  term.contains("'") ||
+                  term.toLowerCase.endsWith("ss") ||
+                  term.toLowerCase.endsWith("e") ||
+                  term.toLowerCase.endsWith("ies") ||
+                  term.toLowerCase.endsWith("es") ||
+                  term.toLowerCase.endsWith("y") ||
+                  isAStopWord(term)))
+            // Pluralize/depluralize individual words in each subslice where possible - if we can't
+            // do it reliably then discard the entire subslice
+            .map { terms =>
+              val pluralized = terms.map {
+                case term if term.last.toLower.equals('s') =>
+                  val depluralized = term.take(term.length - 1)
+                  if (MagdaMatchers.porterStem(term) == depluralized) {
+                    Some(depluralized)
+                  } else None
+                case term =>
+                  val pluralized = term + "s"
+                  if (MagdaMatchers.porterStem(pluralized) == term) {
+                    Some(pluralized)
+                  } else None
+              }
 
-      def innerTermExtractor(dataSet: DataSet) = if (keepOrder) {
-
-        outerTermExtractor(dataSet)
-          .map(term =>
-            MagdaMatchers.tokenize(term).map(_.trim))
-          .filterNot(terms =>
-            terms.exists(term =>
-              term.contains(".") ||
-                term.contains("'") ||
-                term.toLowerCase.endsWith("ss") ||
-                term.toLowerCase.endsWith("e") ||
-                term.toLowerCase.endsWith("ies") ||
-                term.toLowerCase.endsWith("es") ||
-                term.toLowerCase.endsWith("y") ||
-                isAStopWord(term)))
-          .map { terms =>
-            val pluralized = terms.map {
+              if (pluralized.forall(_.isDefined)) pluralized.map(_.get) else Seq()
+            }
+            // Check we haven't introduced more stop words by pluralizing.
+            .filterNot(terms => terms.exists(term => isAStopWord(term)))
+            .map(_.mkString(" "))
+        } else {
+          // If we don't care about order then we just split all the terms into their individual words and 
+          // filter out ones that won't work
+          outerTermExtractor(dataSet)
+            .flatMap(MagdaMatchers.tokenize)
+            .view
+            .map(_.trim)
+            .filterNot(_.contains("."))
+            .filterNot(_.contains("'"))
+            .filterNot(_.toLowerCase.endsWith("ss"))
+            .filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
+            .filterNot(_.isEmpty)
+            .filterNot(term => term.toLowerCase.endsWith("e") ||
+              term.toLowerCase.endsWith("ies") ||
+              term.toLowerCase.endsWith("es") ||
+              term.toLowerCase.endsWith("y")) // This plays havoc with pluralization because when you add "s" to it, ES chops off the "es at the end
+            .filterNot(isAStopWord)
+            .flatMap {
               case term if term.last.toLower.equals('s') =>
                 val depluralized = term.take(term.length - 1)
                 if (MagdaMatchers.porterStem(term) == depluralized) {
@@ -160,40 +201,8 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
                   Some(pluralized)
                 } else None
             }
-
-            if (pluralized.forall(_.isDefined)) pluralized.map(_.get) else Seq()
-          }
-          .filterNot(terms => terms.exists(term => isAStopWord(term)))
-          .map(_.mkString(" "))
-      } else {
-        outerTermExtractor(dataSet)
-          .flatMap(MagdaMatchers.tokenize)
-          .view
-          .map(_.trim)
-          .filterNot(_.contains("."))
-          .filterNot(_.contains("'"))
-          .filterNot(_.toLowerCase.endsWith("ss"))
-          .filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
-          .filterNot(_.isEmpty)
-          .filterNot(term => term.toLowerCase.endsWith("e") ||
-            term.toLowerCase.endsWith("ies") ||
-            term.toLowerCase.endsWith("es") ||
-            term.toLowerCase.endsWith("y")) // This plays havoc with pluralization because when you add "s" to it, ES chops off the "es at the end
-          .filterNot(isAStopWord)
-          .flatMap {
-            case term if term.last.toLower.equals('s') =>
-              val depluralized = term.take(term.length - 1)
-              if (MagdaMatchers.porterStem(term) == depluralized) {
-                Some(depluralized)
-              } else None
-            case term =>
-              val pluralized = term + "s"
-              if (MagdaMatchers.porterStem(pluralized) == term) {
-                Some(pluralized)
-              } else None
-          }
-          .filterNot(isAStopWord)
-      }
+            .filterNot(isAStopWord)
+        }
 
       doTest(innerTermExtractor, keepOrder)
     }
@@ -202,7 +211,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       def getIndividualTerms(terms: Seq[String]) = terms.map(MagdaMatchers.tokenize)
 
       /** Checks that there's at least one searchable term in this seq of strings */
-      def check = (list: Seq[String]) =>
+      def checkForSearchableTerm = (list: Seq[String]) =>
         list.forall(_.length > 2) &&
           list.exists(term => !Seq("and", "or").contains(term.trim.toLowerCase)) &&
           list.exists(!isAStopWord(_))
@@ -215,12 +224,11 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
             val rawTerms = getIndividualTerms(innerTermExtractor(dataSet))
 
             val termGen = if (keepOrder) {
-              val combinations = rawTerms.flatMap(getAllSlices)
-              val validCombinations = combinations.filter(check)
+              val validTerms = rawTerms.filter(checkForSearchableTerm)
 
               // Make sure there's _some_ sublist that can be successfully searched - if so try to generate one, otherwise return none
-              if (!validCombinations.isEmpty) {
-                Some(Gen.oneOf(validCombinations))
+              if (!validTerms.isEmpty) {
+                Some(Gen.oneOf(validTerms))
               } else None
             } else {
               val terms = rawTerms.flatten
