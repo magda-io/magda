@@ -145,6 +145,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
               terms.exists(term =>
                 term.contains(".") ||
                   term.contains("'") ||
+                  term.equalsIgnoreCase("s") ||
                   term.toLowerCase.endsWith("ss") ||
                   term.toLowerCase.endsWith("e") ||
                   term.toLowerCase.endsWith("ies") ||
