@@ -6,28 +6,30 @@ import com.sksamuel.elastic4s.ElasticApi
 import com.sksamuel.elastic4s.http.bulk.BulkImplicits
 import com.sksamuel.elastic4s.http.cat.CatImplicits
 import com.sksamuel.elastic4s.http.cluster.ClusterImplicits
-import com.sksamuel.elastic4s.http.count.CountImplicits
-import com.sksamuel.elastic4s.http.delete.DeleteImplicits
-import com.sksamuel.elastic4s.http.explain.ExplainImplicits
 import com.sksamuel.elastic4s.http.get.GetImplicits
 import com.sksamuel.elastic4s.http.index._
 import com.sksamuel.elastic4s.http.index.admin.IndexAdminImplicits
-import com.sksamuel.elastic4s.http.index.alias.IndexAliasImplicits
-//--- In order to override the response parsing logic
-import au.csiro.data61.magda.search.elasticsearch.Executables.MappingExecutables
 import com.sksamuel.elastic4s.http.locks.LocksImplicits
 import com.sksamuel.elastic4s.http.nodes.NodesImplicits
-import com.sksamuel.elastic4s.http.reindex.ReindexImplicits
 import com.sksamuel.elastic4s.http.search.template.SearchTemplateImplicits
 import com.sksamuel.elastic4s.http.search.{SearchScrollImplicits}
 //--- In order to override the builder logic
-import au.csiro.data61.magda.search.elasticsearch.Executables.SearchImplicits
+import au.csiro.data61.magda.search.elasticsearch.Executables.{
+  MappingExecutables,
+  SearchImplicits,
+  CountImplicits,
+  DeleteImplicits,
+  ExplainImplicits,
+  IndexAliasImplicits,
+  IndexTemplateImplicits,
+  ReindexImplicits,
+  UpdateImplicits,
+  ValidateImplicits
+}
 import com.sksamuel.elastic4s.http.settings.SettingsImplicits
 import com.sksamuel.elastic4s.http.snapshots.SnapshotHttpImplicits
 import com.sksamuel.elastic4s.http.task.TaskImplicits
 import com.sksamuel.elastic4s.http.termvectors.TermVectorsExecutables
-import com.sksamuel.elastic4s.http.update.UpdateImplicits
-import com.sksamuel.elastic4s.http.validate.ValidateImplicits
 import com.sksamuel.exts.Logging
 
 trait ElasticDsl
