@@ -124,6 +124,13 @@ object IndexDefinition extends DefaultJsonProtocol {
             doubleField("quality"),
             keywordField("catalog"),
             keywordField("years"),
+            /*
+            * not sure whether is Elasticsearch or elastic4s
+            * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
+            * */
+            keywordField("identifier"),
+            objectField("contactPoint").fields(
+              keywordField("identifier")),
             dateField("indexed"))
         )
         .analysis(
