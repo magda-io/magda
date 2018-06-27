@@ -25,6 +25,7 @@
 -   Use Async appender for logback logging
 -   Removed logging to file
 -   Akka logging setting adjustment
+-   Made publisher and format filter search use the search backend instead of client-side autocomplete.
 
 ## 0.0.41
 
@@ -128,6 +129,7 @@
 -   Map Preview: Report selected distribution to console
 -   Adjusted pagination button styles
 -   Bumped regions index version to 21 because of region shortname
+
 *   Removed `border-bottom` property for `Open Data Quality:` from DatasetSummary/Details page
 *   Apply Design System skip link/links styles
 *   Add schema.org/Dataset microdata semantic markup
