@@ -147,18 +147,22 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
                 term.toLowerCase.endsWith("es") ||
                 term.toLowerCase.endsWith("y") ||
                 isAStopWord(term)))
-          .map(terms => terms.flatMap {
-            case term if term.last.toLower.equals('s') =>
-              val depluralized = term.take(term.length - 1)
-              if (MagdaMatchers.porterStem(term) == depluralized) {
-                Some(depluralized)
-              } else None
-            case term =>
-              val pluralized = term + "s"
-              if (MagdaMatchers.porterStem(pluralized) == term) {
-                Some(pluralized)
-              } else None
-          })
+          .map { terms =>
+            val pluralized = terms.map {
+              case term if term.last.toLower.equals('s') =>
+                val depluralized = term.take(term.length - 1)
+                if (MagdaMatchers.porterStem(term) == depluralized) {
+                  Some(depluralized)
+                } else None
+              case term =>
+                val pluralized = term + "s"
+                if (MagdaMatchers.porterStem(pluralized) == term) {
+                  Some(pluralized)
+                } else None
+            }
+
+            if (pluralized.forall(_.isDefined)) pluralized.map(_.get) else Seq()
+          }
           .filterNot(terms => terms.exists(term => isAStopWord(term)))
           .map(_.mkString(" "))
       } else {
