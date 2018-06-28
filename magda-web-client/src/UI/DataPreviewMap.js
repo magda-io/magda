@@ -183,7 +183,7 @@ class DataPreviewMap extends Component {
                             top: "10px",
                             visibility: "visible"
                         }}
-                        buttonText="View in national map"
+                        buttonText="View in NationalMap"
                     />
                 </Small>
                 <Medium>
@@ -197,7 +197,7 @@ class DataPreviewMap extends Component {
                         )}
                         <DataPreviewMapOpenInNationalMapButton
                             distribution={selectedDistribution}
-                            buttonText="Open In National Map"
+                            buttonText="Open in NationalMap"
                             style={{
                                 position: "absolute",
                                 right: "10px",
