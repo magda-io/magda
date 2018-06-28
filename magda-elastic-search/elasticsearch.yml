@@ -20,7 +20,7 @@ bootstrap:
   memory_lock: true
 
 action:
-  auto_create_index: true
+  auto_create_index: ".security*,.monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*"
 
 http:
   compression: true
