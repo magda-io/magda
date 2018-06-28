@@ -20,7 +20,7 @@ trait RecordPersistence {
   def getAllWithAspects(implicit session: DBSession,
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
-                        pageToken: Option[String] = None,
+                        pageToken: Option[Long] = None,
                         start: Option[Int] = None,
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
@@ -86,7 +86,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   def getAllWithAspects(implicit session: DBSession,
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
-                        pageToken: Option[String] = None,
+                        pageToken: Option[Long] = None,
                         start: Option[Int] = None,
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
@@ -549,7 +549,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   private def getRecords(implicit session: DBSession,
                          aspectIds: Iterable[String],
                          optionalAspectIds: Iterable[String],
-                         pageToken: Option[String] = None,
+                         pageToken: Option[Long] = None,
                          start: Option[Int] = None,
                          limit: Option[Int] = None,
                          dereference: Option[Boolean] = None,
@@ -567,7 +567,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
 
     var lastSequence: Option[Long] = None
-    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token}")
     val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val pageResults =

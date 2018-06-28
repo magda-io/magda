@@ -31,8 +31,8 @@ const initialData = {
             north: -5
         }
     },
-    activeDateFrom: undefined,
-    activeDateTo: undefined,
+    activeDateFrom: null,
+    activeDateTo: null,
     freeText: "",
     publisherOptions: [],
     formatOptions: [],
@@ -56,10 +56,13 @@ const datasetSearchReducer = (
                 isFetching: true,
                 error: null,
                 apiQuery: action.apiQuery && action.apiQuery,
-                temporalRange: [
-                    new Date(queryObject.dateFrom),
-                    new Date(queryObject.dateTo)
-                ],
+                temporalRange:
+                    queryObject.dateFrom && queryObject.dateTo
+                        ? [
+                              new Date(queryObject.dateFrom),
+                              new Date(queryObject.dateTo)
+                          ]
+                        : state.temporalRange,
                 publisherOptions: initialData.publisherOptions,
                 formatOptions: initialData.formatOptions,
                 activePublishers: activePub,
@@ -182,12 +185,12 @@ const datasetSearchReducer = (
 
         case "SET_DATE_FROM":
             return Object.assign({}, state, {
-                activeDateFrom: +action.item
+                activeDateFrom: action.item
             });
 
         case "SET_DATE_TO":
             return Object.assign({}, state, {
-                activeDateTo: +action.item
+                activeDateTo: action.item
             });
 
         case "RESET_DATE_FROM":
