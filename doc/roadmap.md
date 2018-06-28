@@ -20,9 +20,29 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ✅ **MVP Dataset Feedback/Collaboration**: Using the contactPoint info attached to datasets to allow users to directly email data custodians... precursor of the more advanced features below.
 
+## Current Priorities June 2018 - June 2019
+
+**APIification**: The ability to turn well-formatted datasets into RESTful APIs - this is something that's already offered by CKAN and is depended upon by users of data.gov.au. This may mean replicating how CKAN does it - ingesting the data into a single database and running queries on it - or adopting an AWS Lambda-esque approach where we spin up containers on demand to server requests.
+
 **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-## Current Priorities June 2018 - June 2019
+**Research: Magda as an Internal Portal**: Building on publishing and access-control, we want to extend Magda so that it's useful for government agencies to run as internal data portals. This involves:
+
+*   Being able to publish data directly
+*   Ingesting data from a range of existing applications
+*   Allowing each user to search over data that they're allowed to see
+*   Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.
+*   Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.
+
+**Authorisation**: User access controls and basic UI
+
+**Publishing**: Currently datasets can only be ingested into Magda from other sources. We want to build in the ability to publish data directly and explore data hosting, making Magda a complete data portal solution in its own right. Our philosophy for data publishing will be opinionated - we want to force custodians to publish data with metadata defined strictly, but we also want to automate this wherever possible - e.g. we won't allow spatial extent to be specified as free text, but we'll also scan the data to auto-generate it where possible.
+
+**User Management/Administration**: Currently it's possible to create an account with Magda and log in, but there's very little ability to change your details, or for administrators to ban or delete abusive accounts - these features need to be added.
+
+**Access Control**: Currently Magda has two roles: `isAdmin=true` and `isAdmin=false`. We want to build Role-Based Access Control into magda so that fine-grained policies can be set as to what users are allowed to change or see what within the system.
+
+## Long-Term Priorities (next 2 years)
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 
@@ -39,26 +59,10 @@ We're planning to do a lot of research into what exactly data consumers find use
 
 **Dataset Feedback/Collaboration V2**: Closing the loop between data users and custodians by providing a Quora-styled Q&A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset's metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators and the ability to have some Q&As private.
 
-**User Management/Administration**: Currently it's possible to create an account with Magda and log in, but there's very little ability to change your details, or for administrators to ban or delete abusive accounts - these features need to be added.
-
 **Layering**: Allowing for parts of an aspect to be changed in such a way that the next time the dataset is harvested the changes aren't overwritten.
 
 **GraphQL API**: The structure of the registry is effectively a graph, and hence lends itself well to being queries via GraphQL.
 
-**APIification**: The ability to turn well-formatted datasets into RESTful APIs - this is something that's already offered by CKAN and is depended upon by users of data.gov.au. This may mean replicating how CKAN does it - ingesting the data into a single database and running queries on it - or adopting an AWS Lambda-esque approach where we spin up containers on demand to server requests.
-
-## Long-Term Priorities (next 2 years)
-
-**Publishing**: Currently datasets can only be ingested into Magda from other sources. We want to build in the ability to publish data directly, making Magda a complete data portal solution in its own right. Our philosophy for data publishing will be opinionated - we want to force custodians to publish data with metadata defined strictly, but we also want to automate this wherever possible - e.g. we won't allow spatial extent to be specified as free text, but we'll also scan the data to auto-generate it where possible.
-
-**Access Control**: Currently Magda has two roles: `isAdmin=true` and `isAdmin=false`. We want to build Role-Based Access Control into magda so that fine-grained policies can be set as to what users are allowed to change or see what within the system.
-
-**Magda as an Internal Portal**: Building on publishing and access-control, we want to extend Magda so that it's useful for government agencies to run as internal data portals. This involves:
-
-*   Being able to publish data directly
-*   Ingesting data from a range of existing applications
-*   Allowing each user to search over data that they're allowed to see
-*   Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.
-*   Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.
+## Backlog
 
 **Saved Search**: Just as with eBay you can search for something you want to buy and be emailed when there's new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.
