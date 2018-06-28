@@ -167,11 +167,6 @@ class DataPreviewMap extends Component {
 
         if (!selectedDistribution) return null; // hide the section if no data available
 
-        // 3 states:
-        // - loading component (isInitLoading === true) -> Show spinner
-        // - loading terria (isMapLoading === true) -> Continue showing spinner and start loading map hidden
-        // - everything loaded (neither true) -> No spinner, show map
-
         return (
             <div>
                 <h3>Map Preview</h3>
@@ -201,10 +196,7 @@ class DataPreviewMap extends Component {
                             style={{
                                 position: "absolute",
                                 right: "10px",
-                                top: "10px",
-                                visibility: this.state.isMapLoading
-                                    ? "hidden"
-                                    : "visible"
+                                top: "10px"
                             }}
                         />
                         {selectedDistribution.identifier != null && (
