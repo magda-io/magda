@@ -17,21 +17,6 @@ import MapNavigationStyles from "terriajs/lib/ReactViews/Map/map-navigation.scss
 
 import "./global.scss";
 
-function loadAugmentedVirtuality(callback) {
-    require.ensure(
-        "terriajs/lib/ReactViews/Map/Navigation/AugmentedVirtualityTool",
-        () => {
-            const AugmentedVirtualityTool = require("terriajs/lib/ReactViews/Map/Navigation/AugmentedVirtualityTool");
-            callback(AugmentedVirtualityTool);
-        },
-        "AugmentedVirtuality"
-    );
-}
-
-function isBrowserSupportedAV() {
-    return /Android|iPhone|iPad/i.test(navigator.userAgent);
-}
-
 export default function UserInterface(props) {
     const customElements = processCustomElements(
         props.viewState.useSmallScreenInterface
