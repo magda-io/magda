@@ -15,11 +15,11 @@ import PropTypes from "prop-types";
 import "./ProjectsViewer.css";
 
 class ProjectsViewer extends Component {
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.props.fetchProjectsIfNeeded(getPageNumber(this.props) || 1);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (getPageNumber(this.props) !== getPageNumber(nextProps)) {
             nextProps.fetchProjectsIfNeeded(getPageNumber(nextProps) || 1);
         }

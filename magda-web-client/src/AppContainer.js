@@ -21,7 +21,7 @@ import AUskipLink from "./pancake/react/skip-link";
 import "./AppContainer.css";
 
 class AppContainer extends React.Component {
-    componentWillMount() {
+    componentDidMount() {
         this.props.requestWhoAmI();
     }
 

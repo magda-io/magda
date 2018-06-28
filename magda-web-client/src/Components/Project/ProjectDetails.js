@@ -13,11 +13,11 @@ import ProgressBar from "../../UI/ProgressBar";
 // import CrappyChat from "../../Components/CrappyChat/CrappyChat";
 
 class ProjectDetails extends Component {
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.props.fetchProjectIfNeeded(this.props.match.params.projectId);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (
             this.props.match.params.projectId !==
             nextProps.match.params.projectId

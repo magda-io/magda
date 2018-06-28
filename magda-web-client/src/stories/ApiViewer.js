@@ -6,7 +6,7 @@ class ApiViewer extends React.Component {
         super(props);
         this.state = { data: null, hitCount: 0 };
     }
-    componentWillMount() {
+    componentDidMount() {
         fetch(this.props.url)
             .then(response => {
                 if (response.status === 200) {

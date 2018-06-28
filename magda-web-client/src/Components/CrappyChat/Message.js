@@ -33,7 +33,7 @@ export default class Message extends React.Component {
         clearInterval(this.interval);
     }
 
-    componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props) {
         this.setState({
             editorState: EditorState.push(
                 this.state.editorState,
