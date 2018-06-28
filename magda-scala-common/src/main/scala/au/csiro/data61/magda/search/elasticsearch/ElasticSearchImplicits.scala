@@ -1,17 +1,15 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region, QueryRegion, Agent }
+import au.csiro.data61.magda.model.misc.{Agent, BoundingBox, DataSet, FacetOption, QueryRegion, Region}
 import au.csiro.data61.magda.model.misc.Protocols
-import org.elasticsearch.search.aggregations.Aggregation
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import spray.json._
+
 import collection.JavaConverters._
 import com.sksamuel.elastic4s.Indexable
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket
-import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import java.util.HashMap
+
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -35,12 +33,21 @@ object ElasticSearchImplicits extends Protocols {
     }
   }
 
-  def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
-      new FacetOption(
-        identifier = None,
-        value = bucket.getKeyAsString,
-        hitCount = bucket.getDocCount))
-    case (_) => throw new RuntimeException("Halp")
+  def aggregationsToFacetOptions(aggregation: Option[Aggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      val buckets = if (agg.contains("buckets")){
+        Some(agg.data("buckets"))
+      }else{
+        agg.data.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
+      }
+
+      buckets.toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+        .map(m => new FacetOption(
+          identifier = None,
+          value = m("key").toString,
+          hitCount = m("doc_count").toString.toLong
+        ))
+      )
   }
 }

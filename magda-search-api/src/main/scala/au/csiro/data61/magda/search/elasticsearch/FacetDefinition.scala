@@ -18,7 +18,6 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 import collection.JavaConverters._
 import scalaz.Memo
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.http.ElasticDsl
 import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.FilterValue._
 import au.csiro.data61.magda.api.Specified
@@ -27,7 +26,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -67,7 +66,7 @@ trait FacetDefinition {
    * Given an aggregation resolved from ElasticSearch, extract the actual individual FacetOptions. This has to be specified
    * per-facet because some facets use nested aggregations, so we need code to reach into the right sub-aggregation.
    */
-  def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
+  def extractFacetOptions(aggregation: Option[Aggregations]): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
 
   /**
    * Returns a query with the details relevant to this facet removed - useful for showing what options there *would* be
@@ -128,7 +127,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
         topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
   }
 
-  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregation match {
+  override def extractFacetOptions(aggregation: Aggregations): Seq[FacetOption] = aggregation match {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
       val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
 
@@ -174,7 +173,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         }
     }
 
-  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = {
+  override def extractFacetOptions(aggregation: Aggregations): Seq[FacetOption] = {
     val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
 
     nested.getBuckets.asScala.map { bucket =>

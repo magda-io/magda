@@ -15,17 +15,17 @@ import com.sksamuel.elastic4s.json.JacksonSupport
 import com.sksamuel.elastic4s.searches.queries.term.{BuildableTermsQuery, TermsQueryDefinition}
 import com.sksamuel.elastic4s.searches.{MultiSearchDefinition, SearchDefinition, SearchType}
 import org.apache.http.entity.ContentType
+import au.csiro.data61.magda.search.elasticsearch.{
+  MultisearchResponseItem,
+  MultiSearchResponse,
+  SearchResponse,
+  SearchError
+}
 import com.sksamuel.elastic4s.http.search.{
   MultiSearchBuilderFn,
-  MultiSearchResponse,
-  SearchError,
-  SearchResponse,
-  MultisearchResponseItem,
   SearchTypeHttpParameters
 }
-import au.csiro.data61.magda.search.elasticsearch.BuilderFns.{
-  SearchBodyBuilderFn
-}
+import au.csiro.data61.magda.search.elasticsearch.BuilderFns.SearchBodyBuilderFn
 
 import scala.concurrent.Future
 

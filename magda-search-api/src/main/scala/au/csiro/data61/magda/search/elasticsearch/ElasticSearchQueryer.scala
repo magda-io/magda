@@ -58,7 +58,7 @@ import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -171,12 +171,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           id = facetType.id,
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions =
-              (Option(aggs.data.get(facetType.id + "-filter").asInstanceOf[InternalAggregation]) match {
-                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[InternalAggregation])
-                case None            => Nil
+            val filteredOptions = (aggs.contains(facetType.id + "-filter") match {
+                case true  =>
+                  definition.extractFacetOptions(
+                    aggs.filter(facetType.id + "-filter")
+                      .getAgg(facetType.id))
+                case false => Nil
               }).filter(definition.isFilterOptionRelevant(query))
-                .map(_.copy(matched = true))
+               .map(_.copy(matched = true))
 
             // filteredExact aggregations are those that exactly match a filter (e.g. "Ballarat Council" exactly) but are also filtered by
             // the rest of the query - we use this to filter the exact options below and make sure we don't show 0 results for a filtered
@@ -455,7 +457,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     queryRegionFV match {
       case Specified(region) =>
         client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-          query { idsQuery((region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry"
+          query { idsQuery((region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry"
         ).flatMap {
           case Left(ESGenericException(e)) => throw e
           case Right(results) =>
