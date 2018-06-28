@@ -2,8 +2,6 @@ import React from "react";
 import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
 import { config } from "../../config";
-import ReactDocumentTitle from "react-document-title";
-import Breadcrumbs from "../../UI/Breadcrumbs";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -162,21 +160,6 @@ export default class RequestFormLogic extends React.Component {
     }
 
     render() {
-        return (
-            <ReactDocumentTitle
-                title={this.props.formProps.title + "|" + config.appName}
-            >
-                <div>
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li>
-                                <span>Request a dataset</span>
-                            </li>
-                        ]}
-                    />
-                    {this.renderPage()}
-                </div>
-            </ReactDocumentTitle>
-        );
+        return this.renderPage();
     }
 }
