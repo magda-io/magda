@@ -92,7 +92,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             Future.successful((results.result, MatchAll))
           else
             client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchPart, requestedFacetSize)).map{
-              case Right(results) => Future.successful((results.result, MatchPart))
+              case Right(results) => (results.result, MatchPart)
               case Left(IllegalArgumentException(e)) => throw e
               case Left(ESGenericException(e)) => throw e
             }
