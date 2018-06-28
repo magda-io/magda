@@ -1,6 +1,7 @@
 ## 0.0.43
 
 -   Add breadcrumb for dataset page and distribution page
+-   Added further styling filters to coverup markdown rendering on dataset pages
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
 -   Location and Date filters can be applied by clicking outside of the box
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
