@@ -1,5 +1,6 @@
 ## 0.0.43
 
+-   Fix design system react import for SASS overrides
 -   Add breadcrumb for dataset page and distribution page
 -   Added further styling filters to coverup markdown rendering on dataset pages
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
