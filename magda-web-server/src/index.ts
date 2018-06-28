@@ -116,6 +116,7 @@ const cspDirectives = {
         "allow-scripts",
         "allow-same-origin",
         "allow-popups",
+        "allow-popups-to-escape-sandbox",
         "allow-forms"
     ]
 } as helmet.IHelmetContentSecurityPolicyDirectives;
