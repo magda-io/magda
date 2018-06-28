@@ -27,6 +27,7 @@
 -   Akka logging setting adjustment
 -   Made publisher and format filter search use the search backend instead of client-side autocomplete.
 -   Updated data quality explanation
+-   Made go-to-external-distribution button into an <a> tag instead of a javascript button.
 
 ## 0.0.41
 
