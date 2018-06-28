@@ -15,8 +15,10 @@ window.magda_client_homepage_config = {
         "twenty-2160w.jpg",
         "twenty-2880w.jpg"
     ],
-    tagLineTextDesktop: "An easy way to find, access and reuse public data",
-    tagLineTextMobile: "An easy way to find, access and reuse public data",
+    tagLineTextDesktop:
+        "An easy way to find, explore and reuse Australia's public data",
+    tagLineTextMobile:
+        "An easy way to find, explore and reuse Australia's public data",
     Lozenge: {
         icon: "camara.svg",
         text: "Explore QLD road data",

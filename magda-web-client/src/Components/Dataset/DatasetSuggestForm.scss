@@ -25,8 +25,10 @@
     height: 2em;
     width: 2em;
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: 10px;
+    right: 10px;
+    height: 20px;
+    width: 20px;
     &:hover {
         cursor: pointer;
     }

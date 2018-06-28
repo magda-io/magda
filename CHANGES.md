@@ -1,3 +1,14 @@
+## 0.0.43
+
+-   Add breadcrumb for dataset page and distribution page
+-   Added further styling filters to coverup markdown rendering on dataset pages
+-   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
+-   Modified the look and layout of the distribution pages.
+-   Made close button on suggest form rounded and thicker
+-   Location and Date filters can be applied by clicking outside of the box
+-   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
+-   Updated homepage tagline.
+
 ## 0.0.42
 
 -   Implemented the new pagination design
@@ -28,6 +39,7 @@
 -   Made publisher and format filter search use the search backend instead of client-side autocomplete.
 -   Updated data quality explanation
 -   Made go-to-external-distribution button into an <a> tag instead of a javascript button.
+-   Update some results found message
 
 ## 0.0.41
 

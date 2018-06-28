@@ -49,7 +49,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getAll = get {
     pathEnd {
-      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+      parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long]?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
         (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
           val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 

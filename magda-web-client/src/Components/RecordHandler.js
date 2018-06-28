@@ -3,12 +3,12 @@ import { connect } from "react-redux";
 import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
 import ReactDocumentTitle from "react-document-title";
+import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
     fetchDistributionFromRegistry
 } from "../actions/recordActions";
-import Tabs from "../UI/Tabs";
 import { config } from "../config";
 import defined from "../helpers/defined";
 import ErrorHandler from "./ErrorHandler";
@@ -17,17 +17,24 @@ import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
-import "./RecordHandler.css";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
+import AUbutton from "@gov.au/buttons";
+import Separator from "../UI/Separator";
+import { Small, Medium } from "../UI/Responsive";
+import DescriptionBox from "../UI/DescriptionBox";
+import DistributionIcon from "../assets/distribution_icon.svg";
+import "./RecordHandler.css";
+
 class RecordHandler extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             addMargin: false
         };
+        this.getBreadcrumbs = this.getBreadcrumbs.bind(this);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchDataset(
             decodeURIComponent(this.props.match.params.datasetId)
         );
@@ -42,22 +49,21 @@ class RecordHandler extends React.Component {
         this.setState({ addMargin });
     };
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(props) {
         if (
-            nextProps.match.params.datasetId !==
-            this.props.match.params.datasetId
+            props.match.params.datasetId !== this.props.match.params.datasetId
         ) {
-            nextProps.fetchDataset(
-                decodeURIComponent(nextProps.match.params.datasetId)
+            props.fetchDataset(
+                decodeURIComponent(props.match.params.datasetId)
             );
         }
         if (
-            nextProps.match.params.distributionId &&
-            nextProps.match.params.distributionId !==
+            props.match.params.distributionId &&
+            props.match.params.distributionId !==
                 this.props.match.params.distributionId
         ) {
-            nextProps.fetchDistribution(
-                decodeURIComponent(nextProps.match.params.distributionId)
+            props.fetchDistribution(
+                decodeURIComponent(props.match.params.distributionId)
             );
         }
     }
@@ -81,34 +87,68 @@ class RecordHandler extends React.Component {
                         />
                     );
                 }
-                const tabList = [
-                    { id: "details", name: "Details", isActive: true },
-                    { id: "preview", name: "Preview", isActive: true }
-                ];
-
                 const baseUrlDistribution = `/dataset/${encodeURI(
                     this.props.match.params.datasetId
                 )}/distribution/${encodeURI(
                     this.props.match.params.distributionId
                 )}`;
                 return (
-                    <div className="container">
-                        <h1>{this.props.distribution.title}</h1>
-                        <div className="publisher">{publisherName}</div>
-                        {defined(this.props.distribution.updatedDate) && (
-                            <div className="updated-date">
-                                Updated {this.props.distribution.updatedDate}
+                    <div className="">
+                        <span className="distribution-title">
+                            <img
+                                className="distribution-icon"
+                                src={DistributionIcon}
+                                alt="distribution icon"
+                            />
+                            <h1>{this.props.distribution.title}</h1>
+                        </span>
+                        <div className="distribution-meta">
+                            <div className="publisher">
+                                <Link to={`/organisations/${publisherId}`}>
+                                    {publisherName}
+                                </Link>
                             </div>
-                        )}
-
-                        <Tabs
-                            list={tabList}
-                            baseUrl={baseUrlDistribution}
-                            params={`q=${searchText}`}
-                            onTabChange={tab => {
-                                console.log(tab);
-                            }}
-                        />
+                            <Separator />
+                            {defined(this.props.distribution.updatedDate) && (
+                                <div className="updated-date">
+                                    Updated{" "}
+                                    {this.props.distribution.updatedDate}
+                                </div>
+                            )}
+                            <Separator />
+                            {defined(this.props.dataset.issuedDate) && (
+                                <div className="created-date">
+                                    Created {this.props.dataset.issuedDate}
+                                </div>
+                            )}
+                        </div>
+                        <div className="distribution-format">
+                            {this.props.distribution.format}
+                        </div>
+                        <Separator />
+                        <div className="distribution-license">
+                            {this.props.distribution.license}
+                        </div>
+                        <br />
+                        <AUbutton
+                            className="distribution-download-button"
+                            href={this.props.distribution.downloadURL}
+                            alt="distribution download button"
+                        >
+                            Download
+                        </AUbutton>{" "}
+                        <Small>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={200}
+                            />
+                        </Small>
+                        <Medium>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={500}
+                            />
+                        </Medium>
                         <div className="tab-content">
                             <Switch>
                                 <Route
@@ -154,21 +194,6 @@ class RecordHandler extends React.Component {
                     this.props.match.params.datasetId
                 )}`;
 
-                // redirect old CKAN URL slugs and UUIDs
-                if (
-                    this.props.dataset.identifier &&
-                    this.props.dataset.identifier !== "" &&
-                    this.props.dataset.identifier !==
-                        this.props.match.params.datasetId
-                ) {
-                    return (
-                        <Redirect
-                            to={`/dataset/${encodeURI(
-                                this.props.dataset.identifier
-                            )}/details?q=${searchText}`}
-                        />
-                    );
-                }
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
                         <div
@@ -241,13 +266,59 @@ class RecordHandler extends React.Component {
         return <RouteNotFound />;
     }
 
+    // build breadcrumbs
+    getBreadcrumbs() {
+        const params = Object.keys(this.props.match.params);
+        const results = (
+            <li key="result">
+                <Link
+                    to={`/search?q=${queryString.parse(
+                        this.props.location.search
+                    ).q || ""}`}
+                >
+                    Results
+                </Link>
+            </li>
+        );
+        const breadcrumbs = params.map(p => {
+            if (p === "datasetId") {
+                return (
+                    <li key="datasetId">
+                        <Link
+                            to={`/dataset/${this.props.match.params[p]}${
+                                this.props.location.search
+                            }`}
+                        >
+                            {this.props.dataset.title}
+                        </Link>
+                    </li>
+                );
+            }
+
+            if (p === "distributionId") {
+                return (
+                    <li key="distribution">
+                        <span>{this.props.distribution.title}</span>
+                    </li>
+                );
+            }
+
+            return null;
+        });
+        breadcrumbs.unshift(results);
+        return breadcrumbs;
+    }
+
     render() {
         const title = this.props.match.params.distributionId
             ? this.props.distribution.title
             : this.props.dataset.title;
         return (
             <ReactDocumentTitle title={title + "|" + config.appName}>
-                <div>{this.renderByState()}</div>
+                <div>
+                    <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                    {this.renderByState()}
+                </div>
             </ReactDocumentTitle>
         );
     }
