@@ -52,22 +52,13 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
+import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 import com.sksamuel.elastic4s.http.HttpClient
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.{
-  IllegalArgumentException
-}
-import com.sksamuel.elastic4s.http.{
-  SourceAsContentBuilder
-}
-import com.sksamuel.elastic4s.http.search.{
-  AggBucket,
-Aggregations,
-MaxAggResult
-}
-import com.sksamuel.elastic4s.json.JacksonSupport
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
+
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -146,21 +137,23 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    * Turns an ES response into a magda SearchResult.
    */
   def buildSearchResult(query: Query, response: SearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
-    val aggs = response.aggs
+    val aggs = response.aggregations
 
-    def getDateAggResult(agg: Map[String, Any]) = {
-        val minDateEpoch = agg.get("value").map(_.toString.toDouble.toLong)
-        if( minDateEpoch.isEmpty || agg.get("value_as_string").isEmpty || minDateEpoch.exists{ v =>
-          v == Long.MaxValue || v == Long.MinValue
-        } ) {
+    def getDateAggResult(agg: Option[Map[String, Any]]) : Option[Temporal.ApiDate] = agg match {
+        case None => None
+        case Some(aggData) =>
+        val minDateEpoch = aggData.get ("value").filter(_ != null).map (_.toString.toDouble.toLong)
+        if (minDateEpoch.isEmpty ||
+          aggData.get ("value_as_string").isEmpty ||
+          minDateEpoch.exists (_ == Long.MinValue) ||
+          minDateEpoch.exists (_ == Long.MaxValue) ||
+          minDateEpoch.exists (_ == NullFieldValue)
+        ) {
           None
-        }else{
-          Some(ApiDate(Some(OffsetDateTime.parse(agg("value_as_string").toString)), ""))
+        } else {
+          Some (ApiDate (Some (OffsetDateTime.parse (agg.get ("value_as_string").toString) ), "") )
         }
     }
-
-    val x = response.aggregationsAsString
-    JacksonSupport.mapper.readValue[U](entity.content)
 
     new SearchResult(
       strategy = Some(strategy),
@@ -168,8 +161,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       hitCount = response.totalHits.toInt,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(PeriodOfTime(
-        start = getDateAggResult(aggs.data("minDate").asInstanceOf[Map[String, Any]]), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
-        end = getDateAggResult(aggs.data("maxDate").asInstanceOf[Map[String, Any]])
+        start = getDateAggResult(aggs.data.get("minDate").asInstanceOf[Option[Map[String, Any]]]), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
+        end = getDateAggResult(aggs.data.get("maxDate").asInstanceOf[Option[Map[String, Any]]])
       )),
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
