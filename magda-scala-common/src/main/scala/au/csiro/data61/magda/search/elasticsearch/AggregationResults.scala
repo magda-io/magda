@@ -382,6 +382,10 @@ trait HasAggregations extends Transformable {
   def get(name: String):Option[Any] = data.get(name)
   def getAsMap(name: String):Option[Map[String,Any]] = data.get(name).asInstanceOf[Option[Map[String, Any]]]
   def getAgg(name: String):Option[Aggregations] = data.get(name).map(aggData => Aggregations(aggData.asInstanceOf[Map[String, Any]]))
+  def getBuckets():Option[Seq[UnnamedFilterAggregationResult]] = data.get("buckets")
+    .map(_.asInstanceOf[Seq[Map[String, Any]]]
+      .map(m => UnnamedFilterAggregationResult(m("doc_count").toString.toLong, data = m))
+    )
 
   // bucket aggs
   def global(name: String): GlobalAggregationResult =
@@ -512,10 +516,6 @@ trait MetricAggregation {
 
 trait BucketAggregation {
   def name: String
-  def getBuckets(implicit data: Map[String, Any]):Option[Seq[UnnamedFilterAggregationResult]] = data.get("buckets")
-    .map(_.asInstanceOf[Seq[Map[String, Any]]]
-      .map(m => UnnamedFilterAggregationResult(m("doc_count").toString.toLong, data = m))
-    )
 }
 
 trait PipelineAggregation {

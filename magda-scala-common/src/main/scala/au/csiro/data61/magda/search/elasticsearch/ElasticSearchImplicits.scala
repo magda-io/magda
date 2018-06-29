@@ -5,9 +5,7 @@ import au.csiro.data61.magda.model.misc.Protocols
 import spray.json._
 
 import collection.JavaConverters._
-import com.sksamuel.elastic4s.Indexable
-import com.sksamuel.elastic4s.HitReader
-import com.sksamuel.elastic4s.Hit
+import com.sksamuel.elastic4s.{AggReader, Hit, HitReader, Indexable}
 import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
 
 object ElasticSearchImplicits extends Protocols {
@@ -23,6 +21,12 @@ object ElasticSearchImplicits extends Protocols {
   implicit object DataSetHitAs extends HitReader[DataSet] {
     override def read(hit: Hit): Either[Throwable, DataSet] = {
       Right(hit.sourceAsString.parseJson.convertTo[DataSet])
+    }
+  }
+
+  implicit object DataSetHitAggAs extends AggReader[DataSet] {
+    override def read(json: String): Either[Throwable, DataSet] = {
+      Right(json.parseJson.convertTo[DataSet])
     }
   }
 

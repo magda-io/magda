@@ -50,7 +50,6 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, FilterAggregationResult}
-import au.csiro.data61.magda.search.elasticsearch.Readers.DatasetReaders._
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
