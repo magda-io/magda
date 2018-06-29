@@ -5,7 +5,6 @@ import org.tartarus.snowball.ext.PorterStemmer
 import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.analysis.en._
-import au.csiro.data61.magda.test.util.LightEnglishStemmer
 
 object MagdaMatchers extends org.scalatest.Matchers {
   def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(

@@ -23,12 +23,8 @@ libraryDependencies ++= {
        "org.locationtech.spatial4j" % "spatial4j" % "0.6",
        "org.elasticsearch" % "elasticsearch" % "6.2.4",
 
-       // Via deps, elastic4s drags in two different versions of log4j - exclude them all then include our own that works.
        "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.2.9",
-       "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.2.9" excludeAll(ExclusionRule(organization = "org.apache.logging.log4j")),
-       //"com.sksamuel.elastic4s" %% "elastic4s-xpack-security" % "5.6.0",
-       "org.apache.logging.log4j" % "log4j-core" % "2.9.1",
-       "org.apache.logging.log4j" % "log4j-api" % "2.9.1",
+       "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.2.9",
 
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
