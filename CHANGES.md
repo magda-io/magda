@@ -8,6 +8,7 @@
 -   Location and Date filters can be applied by clicking outside of the box
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 -   Updated homepage tagline.
+-   Changed chart icons on dataset page
 
 ## 0.0.42
 
