@@ -218,7 +218,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             val alternativeOptions =
               definition.extractFacetOptions(
                 aggs.getAgg(facetType.id + "-global")
-                  .flatMap(_.getAgg(facetType.id))
+                  .flatMap(_.getAgg("filter").flatMap(_.getAgg(facetType.id)))
               )
             definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
           })
