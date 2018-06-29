@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.indexer
 
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
@@ -41,7 +43,7 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
-  
+
   blockUntilNotRed()
 
   describe("when webhook received") {

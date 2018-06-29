@@ -40,6 +40,7 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import com.sksamuel.elastic4s.http.get.GetResponse
 
 class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with MagdaElasticSugar {
   implicit val ec = system.dispatcher
@@ -128,30 +129,30 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
           case Left(ESGenericException(e)) => throw e
           case Right(r) =>
             r.result.exists should be(true)
+            val indexedGeometry = r.result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
+            val indexedGeometryJts = indexedGeometry.toJTSGeo
+
+            def holeCount(geometry: Geometry): Int = geometry match {
+              case polygon: Polygon       => polygon.coordinates.tail.size
+              case MultiPolygon(polygons) => polygons.map(_.tail.size).reduce(_ + _)
+              case _                      => 0
+            }
+
+            // Hole elimination means that areas can be wildly different even if the outside of the shape is the same.
+            if (holeCount(indexedGeometry) == holeCount(inputGeometry)) {
+              withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
+            }
+
+            val inputRectangle = inputGeometryJts.getEnvelopeInternal
+            val indexedRectangle = indexedGeometryJts.getEnvelopeInternal
+
+            def recToSeq(rect: Envelope) = Seq(rect.getMinX, rect.getMaxY, rect.getMaxX, rect.getMinY)
+
+            recToSeq(inputRectangle).zip(recToSeq(indexedRectangle)).foreach {
+              case (inputDim, indexedDim) => withinFraction(indexedDim, inputDim, inputGeometryJts.getLength, 0.1)
+            }
         }
 
-        val indexedGeometry = result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
-        val indexedGeometryJts = indexedGeometry.toJTSGeo
-
-        def holeCount(geometry: Geometry): Int = geometry match {
-          case polygon: Polygon       => polygon.coordinates.tail.size
-          case MultiPolygon(polygons) => polygons.map(_.tail.size).reduce(_ + _)
-          case _                      => 0
-        }
-
-        // Hole elimination means that areas can be wildly different even if the outside of the shape is the same.
-        if (holeCount(indexedGeometry) == holeCount(inputGeometry)) {
-          withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
-        }
-
-        val inputRectangle = inputGeometryJts.getEnvelopeInternal
-        val indexedRectangle = indexedGeometryJts.getEnvelopeInternal
-
-        def recToSeq(rect: Envelope) = Seq(rect.getMinX, rect.getMaxY, rect.getMaxX, rect.getMinY)
-
-        recToSeq(inputRectangle).zip(recToSeq(indexedRectangle)).foreach {
-          case (inputDim, indexedDim) => withinFraction(indexedDim, inputDim, inputGeometryJts.getLength, 0.1)
-        }
       }
     }
 
