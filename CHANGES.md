@@ -10,6 +10,7 @@
 -   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
 -   Upgraded `basemaps.cartocdn.com` url to HTTPS.
+-   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 
 ## 0.0.42
 
