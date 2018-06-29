@@ -1,7 +1,10 @@
 package au.csiro.data61.magda.spatial
 
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 import java.nio.file.FileSystems
 import java.nio.file.Files
+
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfterAll
@@ -28,11 +31,12 @@ import spray.json._
 import akka.stream.scaladsl.Sink
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
+
 import scala.util.Try
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.ElasticDsl
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
@@ -120,7 +124,11 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
       val result = client.execute(get(regionId).from(fakeIndices.getIndex(config, Indices.RegionsIndex) / fakeIndices.getType(Indices.RegionsIndexType))).await(60 seconds)
 
       withClue("region " + regionId) {
-        result.exists should be(true)
+        result match {
+          case Left(ESGenericException(e)) => throw e
+          case Right(r) =>
+            r.result.exists should be(true)
+        }
 
         val indexedGeometry = result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
         val indexedGeometryJts = indexedGeometry.toJTSGeo
