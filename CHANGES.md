@@ -7,6 +7,7 @@
 -   Made close button on suggest form rounded and thicker
 -   Location and Date filters can be applied by clicking outside of the box
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
+-   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
 
 ## 0.0.42
