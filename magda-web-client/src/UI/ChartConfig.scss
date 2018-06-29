@@ -10,6 +10,10 @@
             &.isActive,
             &:hover {
                 border: 1px solid rgba(0, 0, 0, 0.26);
+                background: #4b3081;
+                img {
+                    filter: grayscale(1) brightness(10);
+                }
             }
         }
     }
