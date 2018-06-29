@@ -34,7 +34,6 @@ import com.sksamuel.elastic4s.ElasticDsl
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
 import org.scalactic.anyvals.PosInt
-import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
 

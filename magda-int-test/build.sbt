@@ -5,10 +5,12 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 libraryDependencies ++= {
   val akkaV       = "2.4.18"
   val scalaTestV  = "2.2.6"
+  val elastic4sVersion = "6.2.9"
   Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
-    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % "6.2.9" % "test",
+    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test",
+    "com.sksamuel.elastic4s" %% "elastic4s-embedded" % elastic4sVersion % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
     "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",

@@ -1,8 +1,10 @@
 
 package au.csiro.data61.magda.crawler
 
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
+import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
 import scala.concurrent.Future
@@ -32,7 +34,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   implicit val ec = system.dispatcher
-  
+
   blockUntilNotRed()
 
   it("should correctly store new datasets when reindexed") {

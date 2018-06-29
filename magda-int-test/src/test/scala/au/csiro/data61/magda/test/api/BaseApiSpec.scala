@@ -17,12 +17,15 @@ import org.scalacheck.Gen
 import org.scalacheck.Shrink
 import org.scalatest.BeforeAndAfter
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.FunSpec
+import org.scalatest.{
+  FunSpec,
+  FunSuite
+}
 import org.scalatest.Matchers
 
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.HttpClient
-import com.sksamuel.elastic4s.testkit.SharedElasticSugar
+import com.sksamuel.elastic4s.testkit.HttpElasticSugar
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
@@ -50,7 +53,10 @@ import com.sksamuel.elastic4s.embedded.LocalNode
 import java.nio.file.Path
 import java.util.UUID
 import org.elasticsearch.common.settings.Settings
+import com.sksamuel.elastic4s.testkit.LocalNodeProvider
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
@@ -62,7 +68,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
   override def beforeAll() {
-    
+
     blockUntilNotRed()
 
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
@@ -93,19 +99,23 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have NOT RED status") { () =>
-      val status = client.execute {
+      client.execute {
         clusterHealth()
-      }.await(90 seconds).getStatus
-      status != ClusterHealthStatus.RED
+      }.await(90 seconds) match {
+        case Right(r) => r.result.status != ClusterHealthStatus.RED
+        case Left(f) => false
+      }
     }
   }
 
   def blockUntilNotYellow(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
-      val status = client.execute {
+      client.execute {
         clusterHealth()
-      }.await(90 seconds).getStatus
-      status != ClusterHealthStatus.RED && status != ClusterHealthStatus.YELLOW
+      }.await(90 seconds) match {
+        case Right(r) => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
+        case Left(f) => false
+      }
     }
   }
 
@@ -126,7 +136,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
         }
       } catch {
         case e: Throwable ⇒
-          logger.error(e, "")
+          logger.error("", e)
           throw e
       }
     }

@@ -12,7 +12,8 @@ import scala.concurrent.duration.DurationInt
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
 
-import com.sksamuel.elastic4s.ElasticDsl
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
@@ -24,7 +25,6 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
-import com.sksamuel.elastic4s.Indexes
 import scala.collection.mutable
 import au.csiro.data61.magda.model.Registry.RegistryConverters
 
