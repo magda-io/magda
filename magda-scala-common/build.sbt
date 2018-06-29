@@ -21,10 +21,12 @@ libraryDependencies ++= {
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
        "org.locationtech.spatial4j" % "spatial4j" % "0.6",
-       "org.elasticsearch" % "elasticsearch" % "6.2.4",
+       "org.elasticsearch" % "elasticsearch" % "6.3.0",
 
        "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.2.9",
        "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.2.9",
+       "org.apache.logging.log4j" % "log4j-core" % "2.9.1",
+       "org.apache.logging.log4j" % "log4j-api" % "2.9.1",
 
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",

@@ -23,9 +23,7 @@ import org.scalatest.{
 }
 import org.scalatest.Matchers
 
-import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.HttpClient
-import com.sksamuel.elastic4s.testkit.HttpElasticSugar
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
@@ -48,12 +46,6 @@ import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import java.nio.file.Paths
-import com.sksamuel.elastic4s.embedded.LocalNode
-import java.nio.file.Path
-import java.util.UUID
-import org.elasticsearch.common.settings.Settings
-import com.sksamuel.elastic4s.testkit.LocalNodeProvider
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl

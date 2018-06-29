@@ -18,8 +18,8 @@ trait SharedElasticSugar extends HttpElasticSugar
 trait HttpElasticSugar extends LocalNodeProvider{
 
   val node = getNode
-  val client = getNode.http(false)
-  val http = getNode.http(false)
+  val client = getNode.client(false)
+  val http = getNode.client(false)
 
   private val esLogger : Logger = LoggerFactory getLogger getClass.getName
   // refresh all indexes

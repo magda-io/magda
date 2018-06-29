@@ -4,7 +4,6 @@ import java.nio.file.{Path, Paths}
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
-import com.sksamuel.elastic4s.embedded.{LocalNode, RemoteLocalNode}
 import com.sksamuel.elastic4s.http.HttpClient
 
 import scala.util.{Failure, Random, Success, Try}

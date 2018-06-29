@@ -4,7 +4,7 @@ import java.nio.file.Paths
 import scala.concurrent.duration._
 import java.nio.file.Path
 import java.util.UUID
-import com.sksamuel.elastic4s.embedded.LocalNode
+import au.csiro.data61.magda.test.util.testkit.LocalNode
 import org.scalatest.Suite
 import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.Indexes

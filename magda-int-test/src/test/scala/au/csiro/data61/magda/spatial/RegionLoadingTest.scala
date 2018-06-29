@@ -13,7 +13,6 @@ import org.scalatest.Matchers
 import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
 import com.monsanto.labs.mwundo.GeoJson._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.ConfigFactory
 import com.vividsolutions.jts.geom.Envelope
 import akka.actor.ActorSystem
