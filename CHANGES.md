@@ -9,6 +9,7 @@
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 -   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
+-   Upgraded `basemaps.cartocdn.com` url to HTTPS.
 
 ## 0.0.42
 
