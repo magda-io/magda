@@ -404,14 +404,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 } map {
                   case Left(ESGenericException(e)) => throw e
                   case Right(results) =>
-                    val aggregations = results.result.aggregationsAsMap.mapValues {
-                      case (bucket: InternalFilter) =>
-                        new FacetOption(
+                    val aggregations = results.result.aggregations.data.map {
+                      case (name:String, value:Map[String,Any]) =>
+                        (name, new FacetOption(
                           identifier = None,
-                          value = bucket.getName,
-                          hitCount = bucket.getDocCount)
+                          value = name,
+                          hitCount = value.get("doc_count").map(_.toString.toLong).getOrElse(0l)))
                     }
-
                     FacetSearchResult(
                       hitCount = results.result.totalHits,
                       options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
