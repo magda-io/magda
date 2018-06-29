@@ -15,6 +15,13 @@ const chartIcons = {
     scatter
 };
 
+const chartTitles = {
+    bar: "Bar Chart",
+    pie: "Pie Chart",
+    line: "Line Chart",
+    scatter: "Scatter Chart"
+};
+
 export default class ChartConfig extends Component {
     renderDropdownSelect(options, id, label) {
         return (
@@ -63,7 +70,7 @@ export default class ChartConfig extends Component {
                         className={this.props.chartType === v ? "isActive" : ""}
                         onClick={e => this.onChange("chartType", v)}
                         key={v}
-                        title={v}
+                        title={chartTitles[v]}
                     >
                         <img alt={v} src={chartIcons[v]} />
                     </button>
