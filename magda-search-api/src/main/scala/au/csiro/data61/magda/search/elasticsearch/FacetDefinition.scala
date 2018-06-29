@@ -26,7 +26,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -66,7 +66,7 @@ trait FacetDefinition {
    * Given an aggregation resolved from ElasticSearch, extract the actual individual FacetOptions. This has to be specified
    * per-facet because some facets use nested aggregations, so we need code to reach into the right sub-aggregation.
    */
-  def extractFacetOptions(aggregation: Option[Aggregations]): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
+  def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
 
   /**
    * Returns a query with the details relevant to this facet removed - useful for showing what options there *would* be
@@ -127,7 +127,9 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
         topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
   }
 
-  override def extractFacetOptions(aggregation: Aggregations): Seq[FacetOption] = aggregation match {
+  /*
+  Don't need override as FacetDefinition::extractFacetOptions can handle both situation
+  override def extractFacetOptions(aggregation: HasAggregations): Seq[FacetOption] = aggregation match {
     case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
       val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
 
@@ -142,7 +144,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
         hitCount = bucket.getDocCount)
     })
     case (_) => throw new RuntimeException("Halp")
-  }
+  }*/
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
@@ -173,7 +175,9 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         }
     }
 
-  override def extractFacetOptions(aggregation: Aggregations): Seq[FacetOption] = {
+  /*
+  Don't need override as FacetDefinition::extractFacetOptions can handle both situation
+  override def extractFacetOptions(aggregation: HasAggregations): Seq[FacetOption] = {
     val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
 
     nested.getBuckets.asScala.map { bucket =>
@@ -184,7 +188,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         value = bucket.getKeyAsString,
         hitCount = innerBucket.getDocCount)
     }
-  }
+  }*/
 
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 

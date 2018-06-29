@@ -58,7 +58,7 @@ import org.elasticsearch.search.aggregations.metrics.min.InternalMin
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, FilterAggregationResult}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -158,7 +158,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     new SearchResult(
       strategy = Some(strategy),
       query = query,
-      hitCount = response.totalHits.toInt,
+      hitCount = response.totalHits,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(PeriodOfTime(
         start = getDateAggResult(aggs.data.get("minDate").asInstanceOf[Option[Map[String, Any]]]), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
@@ -187,10 +187,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .map {
                 case (name, query) => (
                   name,
-                  aggs.data.get(facetType.id + "-exact-" + name + "-filter").asInstanceOf[InternalAggregation])
+                  aggs.filter(facetType.id + "-exact-" + name + "-filter"))
               }
               .map {
-                case (name, agg: InternalFilter) => name -> agg
+                case (name, agg: FilterAggregationResult) => name -> agg
               }
               .toMap
 
@@ -201,22 +201,22 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 .map {
                   case (name, query) =>
                     val value = facetType.id + "-exact-" + name
-                    val aggProp = List(value).asJava
                     (
                       name,
-                      aggs.data.get(facetType.id + "-global").asInstanceOf[InternalAggregation].getProperty(aggProp))
+                      aggs.global(facetType.id + "-global").filter(value))
                 }
                 .flatMap {
-                  case (name, agg: InternalFilter) =>
-                    if (agg.getDocCount > 0 && filteredExact.get(name).map(_.getDocCount).getOrElse(0l) == 0l) {
+                  case (name, agg) =>
+                    if (agg.docCount > 0 && filteredExact.get(name).map(_.docCount).getOrElse(0l) == 0l) {
                       Some(
                         FacetOption(
-                          identifier = agg.getAggregations.asMap().asScala.get("topHits").flatMap {
-                            case hit: InternalTopHits =>
-                              val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
-
-                              dataSet.publisher.flatMap(_.identifier)
-                          },
+                          identifier = if(!agg.contains("topHits")) None
+                            else {
+                              agg.tophits("topHits")
+                                .hits
+                                .headOption
+                                .flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
+                            },
                           value = name.getOrElse(config.getString("strings.unspecifiedWord")),
                           hitCount = 0,
                           matched = true))
@@ -226,10 +226,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
             val alternativeOptions =
               definition.extractFacetOptions(
-                aggs.data.get(facetType.id + "-global").asInstanceOf[InternalAggregation]
-                  .getProperty("filter").asInstanceOf[InternalAggregation]
-                  .getProperty(facetType.id).asInstanceOf[InternalAggregation])
-
+                aggs.getAgg(facetType.id + "-global")
+                  .flatMap(_.getAgg(facetType.id))
+              )
             definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
           })
       }.toSeq))

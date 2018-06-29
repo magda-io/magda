@@ -512,6 +512,10 @@ trait MetricAggregation {
 
 trait BucketAggregation {
   def name: String
+  def getBuckets(implicit data: Map[String, Any]):Option[Seq[UnnamedFilterAggregationResult]] = data.get("buckets")
+    .map(_.asInstanceOf[Seq[Map[String, Any]]]
+      .map(m => UnnamedFilterAggregationResult(m("doc_count").toString.toLong, data = m))
+    )
 }
 
 trait PipelineAggregation {

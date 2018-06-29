@@ -8,8 +8,7 @@ import collection.JavaConverters._
 import com.sksamuel.elastic4s.Indexable
 import com.sksamuel.elastic4s.HitReader
 import com.sksamuel.elastic4s.Hit
-
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.Aggregations
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -33,7 +32,7 @@ object ElasticSearchImplicits extends Protocols {
     }
   }
 
-  def aggregationsToFacetOptions(aggregation: Option[Aggregations]): Seq[FacetOption] = aggregation match {
+  def aggregationsToFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
       val buckets = if (agg.contains("buckets")){
