@@ -9,7 +9,6 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s._
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
@@ -42,23 +41,16 @@ import org.elasticsearch.search.aggregations.InternalAggregation
 import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
 import com.sksamuel.elastic4s.searches.ScoreMode
-import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
-import org.elasticsearch.index.query.MultiMatchQueryBuilder
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregator
-import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import java.time.ZoneOffset
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
-import org.elasticsearch.search.aggregations.metrics.min.InternalMin
-import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation.SingleValue
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, FilterAggregationResult}
+import au.csiro.data61.magda.search.elasticsearch.Readers.DatasetReaders._
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
