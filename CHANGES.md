@@ -10,6 +10,7 @@
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 -   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
+-   Added community link to header
 
 ## 0.0.42
 

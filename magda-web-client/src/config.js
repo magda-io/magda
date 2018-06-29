@@ -75,8 +75,9 @@ export const config = {
     ],
     headerNavigation: [
         ["Datasets", "search"],
-        ["About", "page/about"],
         ["Organisations", "organisations"],
+        ["Community", "https://community.digital.gov.au/c/open-data"],
+        ["About", "page/about"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: {
