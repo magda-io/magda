@@ -19,7 +19,7 @@ import com.monsanto.labs.mwundo.GeoJson.MultiPoint
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.Polygon
-import com.vividsolutions.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.GeometryFactory
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
@@ -52,7 +52,7 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
-  
+
   blockUntilNotRed()
 
   describe("meta") {

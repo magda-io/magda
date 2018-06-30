@@ -14,7 +14,7 @@ import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
 import com.monsanto.labs.mwundo.GeoJson._
 import com.typesafe.config.ConfigFactory
-import com.vividsolutions.jts.geom.Envelope
+import org.locationtech.jts.geom.Envelope
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source

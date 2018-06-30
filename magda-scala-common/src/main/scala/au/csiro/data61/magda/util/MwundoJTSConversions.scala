@@ -1,11 +1,14 @@
 package au.csiro.data61.magda.util
 
-import com.vividsolutions.jts.geom.GeometryFactory
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-import com.vividsolutions.jts.geom.LinearRing
-import com.vividsolutions.jts.geom._
-import com.monsanto.labs.mwundo._
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.LinearRing
+import org.locationtech.jts.geom._
+import com.monsanto.labs.mwundo.{
+  GeoJson
+}
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import au.csiro.data61.magda.spatial.JTSGeoFormat
 
 object MwundoJTSConversions {
   implicit val gf = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory

@@ -12,7 +12,6 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
-    "org.elasticsearch" % "elasticsearch" % "6.3.0",
     "org.elasticsearch.plugin" % "reindex-client" % "6.3.0" % "test",
     "org.elasticsearch.plugin" % "percolator-client" % "6.3.0" % "test",
     "org.elasticsearch.plugin" % "lang-mustache-client" % "6.3.0" % "test",

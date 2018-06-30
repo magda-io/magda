@@ -20,7 +20,8 @@ libraryDependencies ++= {
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
-       "org.locationtech.spatial4j" % "spatial4j" % "0.6",
+       "org.locationtech.spatial4j" % "spatial4j" % "0.7",
+       "org.locationtech.jts" % "jts-core" % "1.15.0",
        "org.elasticsearch" % "elasticsearch" % "6.3.0",
 
        "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.2.9",
