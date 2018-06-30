@@ -12,6 +12,7 @@ import org.elasticsearch.percolator.PercolatorPlugin
 import org.elasticsearch.plugins.Plugin
 import org.elasticsearch.script.mustache.MustachePlugin
 import org.elasticsearch.transport.Netty4Plugin
+import org.elasticsearch.analysis.common.CommonAnalysisPlugin
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
@@ -143,7 +144,7 @@ object LocalNode {
     require(settings.get("path.repo") != null)
 
     val plugins =
-      List(classOf[Netty4Plugin], classOf[MustachePlugin], classOf[PercolatorPlugin], classOf[ReindexPlugin])
+      List(classOf[Netty4Plugin], classOf[MustachePlugin], classOf[PercolatorPlugin], classOf[ReindexPlugin], classOf[CommonAnalysisPlugin])
 
     val mergedSettings = Settings
       .builder()
