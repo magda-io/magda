@@ -264,12 +264,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             CustomAnalyzerDefinition(
               "quote",
               KeywordTokenizer,
-              LowercaseTokenFilter),
-            CustomAnalyzerDefinition(
-              "uppercase",
-              KeywordTokenizer,
-              UppercaseTokenFilter
-            )
+              LowercaseTokenFilter)
           )
     )
 
