@@ -252,7 +252,11 @@ class ElasticSearchIndexer(
             case e: Throwable =>
               logger.error(e, "Failed to set up the index")
               throw e
-          } flatMap { _ =>
+          } flatMap {
+          case Left(ESGenericException(e)) =>
+            logger.error(e, "Failed to set up the index")
+            throw e
+          case Right(r) =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
             definition.create match {
