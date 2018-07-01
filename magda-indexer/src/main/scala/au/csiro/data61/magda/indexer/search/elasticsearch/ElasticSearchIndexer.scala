@@ -15,7 +15,7 @@ import spray.json._
 import com.sksamuel.elastic4s.bulk.BulkDefinition
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ HttpClient, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.http.{HttpClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.http.bulk._
 import com.sksamuel.elastic4s.snapshots._
 
@@ -36,7 +36,7 @@ import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
 import au.csiro.data61.magda.search.elasticsearch.Executables.IndexMappings
 import com.sksamuel.elastic4s.http.snapshots._
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IndexNotFoundException, InvalidSnapshotNameException, RepositoryMissingException}
+import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.mappings.GetMappingDefinition
 
@@ -253,9 +253,6 @@ class ElasticSearchIndexer(
               logger.error(e, "Failed to set up the index")
               throw e
           } flatMap {
-          case Left(ESGenericException(e)) =>
-            logger.error(e, "Failed to set up the index")
-            throw e
           case Right(r) =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
@@ -266,6 +263,19 @@ class ElasticSearchIndexer(
                 })
               case None => Future(Unit)
             }
+          case Left(ResourceAlreadyExistsException(e)) =>
+            logger.info("Index {} version {} has already been created. ", definition.name, definition.version)
+
+            definition.create match {
+              case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
+                .flatMap(_ => {
+                  createSnapshot(client, definition)
+                })
+              case None => Future(Unit)
+            }
+          case Left(ESGenericException(e)) =>
+            logger.error(e, "Failed to set up the index")
+            throw e
           }
     }
   }

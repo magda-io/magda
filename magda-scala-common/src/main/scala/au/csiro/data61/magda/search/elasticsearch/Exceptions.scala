@@ -39,6 +39,15 @@ import com.sksamuel.elastic4s.http.RequestFailure
     }
   }
 
+  object ResourceAlreadyExistsException{
+    def unapply(failure: RequestFailure): Option[RuntimeException] = {
+      failure.error.`type` match {
+        case "resource_already_exists_exception" => Some(new RuntimeException(s"""${failure.error.`type`}: ${failure.error.reason}"""))
+        case _ => None
+      }
+    }
+  }
+
   object ESGenericException{
     def unapply(failure: RequestFailure): Option[RuntimeException] = {
       failure.error.`type` match {
