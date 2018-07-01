@@ -183,7 +183,9 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
           new FacetOption(
             identifier = None,
             value = agg.data("key").toString,
-            hitCount = agg.data("doc_count").toString.toLong)
+            hitCount = Aggregations(agg.data("reverse").asInstanceOf[Map[String, Any]])
+                        .data("doc_count").toString.toLong
+          )
         })
   }
 
