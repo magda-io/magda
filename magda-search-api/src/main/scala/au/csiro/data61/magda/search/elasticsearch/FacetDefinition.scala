@@ -127,24 +127,22 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
         topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
   }
 
-  /*
-  Don't need override as FacetDefinition::extractFacetOptions can handle both situation
-  override def extractFacetOptions(aggregation: HasAggregations): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
-      val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
-
-      new FacetOption(
-        identifier = topHit.flatMap {
-          case hit: InternalTopHits =>
-            val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
-
-            dataSet.publisher.flatMap(_.identifier)
-        },
-        value = bucket.getKeyAsString,
-        hitCount = bucket.getDocCount)
-    })
-    case (_) => throw new RuntimeException("Halp")
-  }*/
+  override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      agg.data.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+        .map{m =>
+          val agg = Aggregations(m)
+          new FacetOption(
+            identifier = if(agg.contains("topHits")) {
+              agg.tophits("topHits").hits.headOption.flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
+            } else {
+              None
+            },
+            value = agg.data("key").toString,
+            hitCount = agg.data("doc_count").toString.toLong)
+          })
+  }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
@@ -175,20 +173,19 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         }
     }
 
-  /*
-  Don't need override as FacetDefinition::extractFacetOptions can handle both situation
-  override def extractFacetOptions(aggregation: HasAggregations): Seq[FacetOption] = {
-    val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
-
-    nested.getBuckets.asScala.map { bucket =>
-      val innerBucket = bucket.getAggregations.asScala.head.asInstanceOf[InternalReverseNested]
-
-      new FacetOption(
-        identifier = None,
-        value = bucket.getKeyAsString,
-        hitCount = innerBucket.getDocCount)
-    }
-  }*/
+  override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      agg.getAgg("nested").flatMap(_.data.get("buckets"))
+        .toSeq
+        .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+          val agg = Aggregations(m)
+          new FacetOption(
+            identifier = None,
+            value = agg.data("key").toString,
+            hitCount = agg.data("doc_count").toString.toLong)
+        })
+  }
 
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
 
