@@ -23,6 +23,7 @@ class PublishersViewer extends Component {
         this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
         );
+        this.onPageChange = this.onPageChange.bind(this);
     }
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
@@ -35,12 +36,19 @@ class PublishersViewer extends Component {
                 })
             )
         });
+
+        this.updateSearchQuery(
+            queryString.parse(this.props.location.search).q,
+            i
+        );
     }
 
     componentDidMount() {
+        const q = queryString.parse(this.props.location.search).q;
+
         this.props.fetchPublishersIfNeeded(
             getPageNumber(this.props) || 1,
-            queryString.parse(this.props.location.search).q
+            q.trim() > 0 ? q : "*"
         );
     }
 
@@ -60,27 +68,30 @@ class PublishersViewer extends Component {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery(
-                queryString.parse(this.props.location.search).q
+            this.updateSearchQuery(
+                queryString.parse(this.props.location.search).q,
+                1
             );
-            this.debounceUpdateSearchQuery.flush();
         }
     }
 
-    updateSearchQuery(text) {
-        if (text === "") text = "*";
-        this.props.fetchPublishersIfNeeded(
-            getPageNumber(this.props) || 1,
-            text
-        );
+    updateSearchQuery(text, page) {
+        this.debounceUpdateSearchQuery.flush();
+        if (text.trim() === "") text = "*";
+        const pageIndex = page
+            ? page
+            : getPageNumber(this.props)
+                ? getPageNumber(this.props)
+                : 1;
+        this.props.fetchPublishersIfNeeded(pageIndex, text);
     }
 
     onUpdateSearchText(e) {
         this.updateQuery({
             q: e.target.value,
-            page: undefined
+            page: 1
         });
-        this.debounceUpdateSearchQuery(e.target.value);
+        this.debounceUpdateSearchQuery(e.target.value, 1);
     }
 
     renderContent() {
