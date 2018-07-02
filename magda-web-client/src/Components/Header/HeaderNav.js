@@ -13,13 +13,26 @@ const HeaderNav = props => {
                     props.isMobile ? "" : "au-link-list--inline"
                 }`}
             >
-                {headerNavs.map(nav => (
-                    <li key={nav[1]}>
-                        <Link key={nav[1]} to={`/${encodeURI(nav[1])}`}>
-                            {nav[0]}
-                        </Link>
-                    </li>
-                ))}
+                {headerNavs.map(
+                    (nav, i) =>
+                        nav[0] === "Community" ? (
+                            <li key={i}>
+                                <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={nav[1]}
+                                >
+                                    {nav[0]}
+                                </a>
+                            </li>
+                        ) : (
+                            <li key={i}>
+                                <Link key={i} to={`/${encodeURI(nav[1])}`}>
+                                    {nav[0]}
+                                </Link>
+                            </li>
+                        )
+                )}
                 {config.disableAuthenticationFeatures || <AccountNavbar />}
             </ul>
         </nav>

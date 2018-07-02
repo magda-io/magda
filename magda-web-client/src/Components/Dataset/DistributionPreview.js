@@ -51,7 +51,7 @@ class DistributionPreview extends Component {
         return (
             <div className="data-previewer">
                 <h3 className="section-heading">
-                    <a href={url} target="_blank">
+                    <a href={url} target="_blank" rel="noopener noreferrer">
                         {url && url.substring(url.lastIndexOf("/") + 1)}
                     </a>
                 </h3>

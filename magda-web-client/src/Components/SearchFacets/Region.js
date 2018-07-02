@@ -2,7 +2,7 @@ import { addRegion, resetRegion } from "../../actions/datasetSearchActions";
 import { connect } from "react-redux";
 import { fetchRegionSearchResults } from "../../actions/facetRegionSearchActions";
 import defined from "../../helpers/defined";
-import FacetRegion from "./FacetRegion";
+import RegionWrapper from "./RegionWrapper";
 import React, { Component } from "react";
 
 class Region extends Component {
@@ -24,13 +24,13 @@ class Region extends Component {
         this.props.closeFacet();
     }
 
-    onResetRegionFacet() {
+    async onResetRegionFacet() {
         this.props.updateQuery({
             regionId: undefined,
             regionType: undefined,
             page: undefined
         });
-        this.props.dispatch(resetRegion());
+        await this.props.dispatch(resetRegion());
         this.props.closeFacet();
     }
 
@@ -40,7 +40,7 @@ class Region extends Component {
 
     render() {
         return (
-            <FacetRegion
+            <RegionWrapper
                 title="location"
                 id="region"
                 hasQuery={

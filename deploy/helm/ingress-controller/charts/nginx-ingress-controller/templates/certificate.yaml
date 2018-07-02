@@ -1,0 +1,24 @@
+{{- if .Values.defaultCertificate }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: magda-cert
+spec:
+  secretName: magda-cert-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  commonName: {{ index .Values.defaultCertificate.domains 0 | quote }}
+  dnsNames:
+  {{- range .Values.defaultCertificate.domains }}
+  - {{ . | quote }}
+  {{- end }}
+  acme:
+    config:
+    - dns01:
+        provider: prod-dns
+      domains:
+      {{- range .Values.defaultCertificate.domains }}
+      - {{ . | quote }}
+      {{- end }}
+{{- end }}

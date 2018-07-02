@@ -16,14 +16,12 @@ html {
     a.au-btn,
     a {
         color: $AU-color-foreground-action;
-        border-color: $AU-color-foreground-action;
     }
 
     button.au-btn,
     a.au-btn {
         background: $AU-colordark-background;
         color: $AU-colordark-foreground-text;
-        border-color: $AU-color-foreground-action;
     }
 
     .au-btn.au-btn--primary,
@@ -50,10 +48,19 @@ html {
     a,
     button,
     input,
-    select {
+    select,
+    textarea {
         &:focus {
             outline-color: $AU-colordark-foreground-focus !important;
         }
+    }
+}
+
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
     }
 }
 
@@ -194,4 +201,8 @@ h4 {
 
 .au-link {
     background: #ffffff;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
 }

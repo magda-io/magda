@@ -3,8 +3,7 @@
     padding-bottom: 20px;
 }
 .suggest-dataset-icon {
-    height: 1em;
-    width: 1em;
+    vertical-align: middle;
     &:hover {
         cursor: pointer;
     }
@@ -13,6 +12,10 @@
 .suggest-dataset-div {
     padding: 4px;
     position: relative;
+
+    & a:hover {
+        cursor: pointer;
+    }
 }
 
 .correspondence-search-close-button {

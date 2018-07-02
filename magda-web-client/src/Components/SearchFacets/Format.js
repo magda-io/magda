@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import { fetchFormatSearchResults } from "../../actions/facetFormatSearchActions";
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
-import queryString from "query-string";
 
 class Format extends Component {
     constructor(props) {
@@ -20,7 +19,8 @@ class Format extends Component {
     onToggleFormatOption(formats) {
         const queryOptions = formats.map(p => p.value);
         this.props.updateQuery({
-            format: queryOptions
+            format: queryOptions,
+            page: undefined
         });
         this.props.dispatch(updateFormats(formats));
         this.props.closeFacet();
@@ -40,11 +40,9 @@ class Format extends Component {
         });
     }
 
-    onSearchFormatFacet() {
+    onSearchFormatFacet(facetQuery) {
         this.props.dispatch(
-            fetchFormatSearchResults(
-                queryString.parse(this.props.location.search).q || "*"
-            )
+            fetchFormatSearchResults(this.props.generalQuery, facetQuery)
         );
     }
 
@@ -54,9 +52,10 @@ class Format extends Component {
                 title="format"
                 id="format"
                 hasQuery={Boolean(this.props.activeFormats.length)}
-                options={this.props.formatOptions}
+                options={
+                    this.props.formatSearchResults || this.props.formatOptions
+                }
                 activeOptions={this.props.activeFormats}
-                facetSearchResults={this.props.formatSearchResults}
                 onToggleOption={this.onToggleFormatOption}
                 onResetFacet={this.onResetFormatFacet}
                 searchFacet={this.onSearchFormatFacet}
@@ -74,7 +73,8 @@ function mapStateToProps(state) {
     return {
         formatOptions: datasetSearch.formatOptions,
         activeFormats: datasetSearch.activeFormats,
-        formatSearchResults: facetFormatSearch.data
+        formatSearchResults: facetFormatSearch.data,
+        generalQuery: datasetSearch.queryObject
     };
 }
 

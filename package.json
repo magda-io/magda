@@ -37,6 +37,7 @@
     "build-changed": "yarn run build-changed-ts && yarn run build-changed-scala",
     "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
     "precommit": "pretty-quick --staged",
+    "retag-and-push": "lerna run retag-and-push --stream",
     "eslint": "./node_modules/.bin/eslint magda-web-client/src/"
   },
   "pancake": {
@@ -55,6 +56,12 @@
         "settings": true
       }
     },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
     "css": {
       "minified": true,
       "modules": false,
@@ -71,12 +78,6 @@
       "modules": false,
       "location": "pancake/sass/",
       "name": "pancake.scss"
-    },
-    "js": {
-      "minified": true,
-      "modules": false,
-      "location": "pancake/js/",
-      "name": "pancake.min.js"
     },
     "react": {
       "location": "pancake/react/"

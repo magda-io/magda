@@ -18,6 +18,8 @@ import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{ initWeb
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.RegistryExternalInterface
 import scala.concurrent.Future
+import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
+import au.csiro.data61.magda.search.elasticsearch.Indices
 
 object IndexerApp extends App {
   implicit val config = AppConfig.conf()
@@ -35,11 +37,10 @@ object IndexerApp extends App {
 
   logger.debug("Starting Crawler")
 
-  val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
-
   val registryInterface = new RegistryExternalInterface()
-
+  val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = new RegistryCrawler(registryInterface, indexer)
+
   val api = new IndexerApi(crawler, indexer)
 
   logger.info(s"Listening on ${config.getString("http.interface")}:${config.getInt("http.port")}")
@@ -51,9 +52,20 @@ object IndexerApp extends App {
     } else {
       Future(ShouldCrawl)
     }
+  } flatMap {
+    case ShouldCrawl => Future(ShouldCrawl)
+    case ShouldNotCrawl => {
+      logger.info("Checking to see if index is empty")
+      indexer.isEmpty(Indices.DataSetsIndex).map(isEmpty => if (isEmpty) {
+        logger.info("Datasets index is empty, recrawling")
+        ShouldCrawl
+      } else { ShouldNotCrawl })
+    }
   } map {
-    case ShouldCrawl => crawler.crawl()
-    case _           => // this means we were able to resume a webhook, so all good now :)
+    case ShouldCrawl => {
+      crawler.crawl()
+    }
+    case _ => // this means we were able to resume a webhook, so all good now :)
   } recover {
     case e: Throwable =>
       logger.error(e, "Error while initializing")

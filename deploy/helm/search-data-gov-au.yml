@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.40-RC1"
+        tag: "0.0.42-RC1"
     enableLivenessProbes: true
 tags:
     all: false
@@ -24,8 +24,17 @@ tags:
     sleuther-visualization: true
     sleuther-format: true
     web-server: true
-    feedback-api: true
+    correspondence-api: true
+    ingress: true
 
+ingress:
+  hostname: letest.search.data.gov.au
+  ipName: search-data-gov-au-ingress
+  ingressClass: gce
+  enableTls: true
+  domains:
+    - search.data.gov.au
+    - letest.search.data.gov.au
 elasticsearch:
     production: true
     client:
@@ -45,6 +54,7 @@ elasticsearch:
                 cpu: 800m
                 memory: 5000Mi
 gateway:
+    type: LoadBalancer
     loadBalancerIP: "35.189.8.102"
     autoscaler:
         minReplicas: 2
@@ -54,14 +64,14 @@ gateway:
         googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
     resources:
         requests:
-            cpu: 200m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
 preview-map:
     replicas: 2
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
 registry-api:
     logLevel: INFO
     livenessProbe:
@@ -75,13 +85,13 @@ authorization-api:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
 search-api:
     replicas: 2
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 500Mi
         limits:
             cpu: 1000m
             memory: 1000Mi
@@ -92,14 +102,14 @@ web-server:
         maxReplicas: 4
     resources:
         requests:
-            cpu: 250m
-            memory: 200Mi
+            cpu: 100m
+            memory: 100Mi
     disableAuthenticationFeatures: true
 sleuther-broken-link:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -107,7 +117,7 @@ sleuther-linked-data-rating:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -123,7 +133,7 @@ sleuther-format:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
         limits:
             cpu: 500m
             memory: 500Mi
@@ -138,9 +148,6 @@ indexer:
         requests:
             cpu: 200m
             memory: 200Mi
-feedback-api:
-    gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
-    replicas: 2
 cloud-sql-proxy:
     replicas: 2
     instanceConnectionName: terriajs:australia-southeast1:magda-prod
@@ -149,7 +156,7 @@ correspondence-api:
     resources:
         requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 100Mi
     defaultRecipient: "data@digital.gov.au"
     smtpHostname: "smtp.mailgun.org"
     smtpPort: 2525

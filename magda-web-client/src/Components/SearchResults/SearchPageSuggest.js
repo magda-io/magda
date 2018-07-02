@@ -77,7 +77,7 @@ export default class SearchPageSuggest extends React.Component {
             <div className="suggest-dataset-div">
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.formPosted ? (
-                    <p className="suggest-dataset-text">
+                    <h3 className="suggest-dataset-text">
                         Can't find what you're looking for?{" "}
                         <a onClick={this.toggleSuggest}>
                             {" "}
@@ -89,7 +89,7 @@ export default class SearchPageSuggest extends React.Component {
                             src={this.state.showSuggest ? upArrow : downArrow}
                             onClick={this.toggleSuggest}
                         />
-                    </p>
+                    </h3>
                 ) : (
                     <img
                         src={close}
