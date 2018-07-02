@@ -20,7 +20,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
   blockUntilNotRed()
 
-  ignore("should return the right dataset when searching for that dataset's") {
+  describe("should return the right dataset when searching for that dataset's") {
     describe("title") {
       testDataSetSearch(dataSet => dataSet.title.toSeq)
     }
@@ -93,7 +93,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     testLanguageFieldSearch(termExtractor, test, true)
   }
 
-  ignore("should return the right format when searching by format value") {
+  describe("should return the right format when searching by format value") {
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -132,7 +132,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       doTest(innerTermExtractor, keepOrder)
     }
 
-    ignore(s"regardless of pluralization/depluralization") {
+    it(s"regardless of pluralization/depluralization") {
 
       def innerTermExtractor(dataSet: DataSet) =
         if (keepOrder) {
