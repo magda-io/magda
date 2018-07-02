@@ -117,7 +117,12 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     val rawIndexName = java.util.UUID.randomUUID.toString
     val fakeIndices = FakeIndices(rawIndexName)
 
-    val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
+    val indexNames = List(
+      fakeIndices.getIndex(config, Indices.DataSetsIndex),
+      fakeIndices.getIndex(config, Indices.PublishersIndex),
+      fakeIndices.getIndex(config, Indices.FormatsIndex)
+    )
+
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
     val api = new SearchApi(searchQueryer)(config, logger)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
@@ -127,18 +132,26 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
             p.copy( acronym = getAcronymFromPublisherName(p.name))
         )
       )
-    );
+    )
 
     val stream = Source.fromIterator[DataSet](() => convertedDataSets.iterator)
 
     indexer.ready.await(INSERTION_WAIT_TIME)
-    blockUntilIndexExists(indexName)
+
+    indexNames.foreach{ idxName =>
+      blockUntilIndexExists(idxName)
+    }
+
     indexer.index(stream).await(INSERTION_WAIT_TIME)
-    refresh(indexName)
 
-    blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
+    indexNames.foreach{ idxName =>
+      refresh(idxName)
+    }
 
-    (indexName, dataSets, api.routes)
+    blockUntilExactCount(dataSets.size, indexNames(0))
+
+
+    (indexNames(0), dataSets, api.routes)
   }
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")

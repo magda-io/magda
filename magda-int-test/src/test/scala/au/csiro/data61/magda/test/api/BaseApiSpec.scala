@@ -149,8 +149,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
-      case Indices.DataSetsIndex => rawIndexName
-      case _                     => DefaultIndices.getIndex(config, index)
+      case Indices.DataSetsIndex => s"dataset-idx-${rawIndexName}"
+      case Indices.PublishersIndex => s"publisher-idx-${rawIndexName}"
+      case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
+      case _ => DefaultIndices.getIndex(config, index)
     }
   }
 }
