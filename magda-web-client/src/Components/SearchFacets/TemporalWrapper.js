@@ -31,7 +31,7 @@ export default class TemporalWrapper extends React.Component {
         );
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             disableApply: nextProps.disableApplyTemporal
         });
