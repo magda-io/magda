@@ -183,6 +183,19 @@ trait HttpElasticSugar extends LocalNodeProvider{
         .totalHits
     }
 
+  def blockUntilExactCount(expected: Long, index: String): Unit =
+    blockUntil(s"Expected count of $expected") { () =>
+      expected == http
+        .execute {
+          search(index).size(0)
+        }
+        .await
+        .right
+        .get
+        .result
+        .totalHits
+    }
+
   def blockUntilEmpty(index: String): Unit =
     blockUntil(s"Expected empty index $index") { () =>
       http
