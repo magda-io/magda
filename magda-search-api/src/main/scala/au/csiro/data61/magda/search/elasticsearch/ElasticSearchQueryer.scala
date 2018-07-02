@@ -363,7 +363,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
-  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
@@ -375,7 +375,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .field("_all")
           .field("value"))
         .start(start.toInt)
-        .limit(limit))
+        .limit(10000))
         .flatMap {
           case Left(ESGenericException(e)) => throw e
           case Right(results) =>
@@ -411,9 +411,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                           value = name,
                           hitCount = value.get("doc_count").map(_.toString.toLong).getOrElse(0l)))
                     }
+
+                    val options = (hits.map {
+                      case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier)
+                    }).sortBy(-_.hitCount).drop(start).take(limit)
+
                     FacetSearchResult(
                       hitCount = results.result.totalHits,
-                      options =  hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+                      options =  options)
                 }
             }
         }

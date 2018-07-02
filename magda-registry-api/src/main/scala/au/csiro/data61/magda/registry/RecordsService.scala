@@ -49,7 +49,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getAll = get {
     pathEnd {
-      parameters('aspect.*, 'optionalAspect.*, 'pageToken.?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+      parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long]?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
         (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
           val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
@@ -76,6 +76,26 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
             recordPersistence.getAll(session, pageToken, start, limit)
           }
         }
+      }
+    }
+  }
+
+  @Path("/count")
+  @ApiOperation(value = "Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.", nickname = "getCount", httpMethod = "GET", response = classOf[CountResponse])
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
+    new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
+  def getCount = get {
+    path("count") {
+      parameters('aspect.*, 'aspectQuery.*) {
+        (aspects, aspectQueries) =>
+          val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+
+          complete {
+            DB readOnly { session =>
+              CountResponse(recordPersistence.getCount(session, aspects, parsedAspectQueries))
+            }
+          }
       }
     }
   }
@@ -288,6 +308,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   val route =
     getAll ~
+      getCount ~
       getAllSummary ~
       getPageTokens ~
       getById ~

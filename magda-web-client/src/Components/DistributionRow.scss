@@ -12,9 +12,10 @@
     }
     .distribution-row-link {
         color: $AU-color-foreground-text;
+
         @include AU-fontgrid(md);
         a {
-            border-bottom: none;
+            text-decoration: none;
         }
         a:hover {
             background-color: $AU-color-background;

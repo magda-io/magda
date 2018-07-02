@@ -32,6 +32,14 @@ object MagdaMatchers extends org.scalatest.Matchers {
     return stemmer.stem(string)
   }
 
+  def stemString(term: String, useLightEnglishStemmer:Boolean = false) = {
+    if(useLightEnglishStemmer) {
+      MagdaMatchers.lightEnglishStem(term)
+    }else{
+      MagdaMatchers.porterStem(term)
+    }
+  }
+
   def toEnglishToken(string: String) = porterStem(string.toLowerCase)
 
   def extractAlphaNum(string: String) = string.filter(_.isLetterOrDigit).toLowerCase

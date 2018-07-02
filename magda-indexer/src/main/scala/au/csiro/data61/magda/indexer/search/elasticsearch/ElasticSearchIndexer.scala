@@ -40,6 +40,11 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.mappings.GetMappingDefinition
 
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
     val indices: Indices)(
@@ -242,6 +247,16 @@ class ElasticSearchIndexer(
       Future(RestoreFailure)
     }
 
+    def processingDefinitionCreateHandler()= {
+      (definition.create) match {
+        case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
+          .flatMap(_ => {
+            createSnapshot(client, definition)
+          })
+        case None => Future(Unit)
+      }
+    }
+
     snapshotFuture flatMap {
       case RestoreSuccess => Future.successful(Unit) // no need to reindex
       case RestoreFailure =>
@@ -256,23 +271,13 @@ class ElasticSearchIndexer(
           case Right(r) =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            definition.create match {
-              case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
-                .flatMap(_ => {
-                  createSnapshot(client, definition)
-                })
-              case None => Future(Unit)
-            }
+            processingDefinitionCreateHandler()
+
           case Left(ResourceAlreadyExistsException(e)) =>
             logger.info("Index {} version {} has already been created. ", definition.name, definition.version)
 
-            definition.create match {
-              case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
-                .flatMap(_ => {
-                  createSnapshot(client, definition)
-                })
-              case None => Future(Unit)
-            }
+            processingDefinitionCreateHandler()
+
           case Left(ESGenericException(e)) =>
             logger.error(e, "Failed to set up the index")
             throw e
@@ -284,10 +289,24 @@ class ElasticSearchIndexer(
     ElasticDsl.deleteIndex(indices.getIndex(config, definition.indicesIndex))
   }.map{
     case Left(IndexNotFoundException(e)) => // Meh, we were trying to delete it anyway.
-    case Left(ESGenericException(e)) =>
-      logger.debug("Exception class {}", e.getMessage)
-      throw e
+    case Left(ESGenericException(e)) => throw e
     case Right(r) => Unit
+  }.recover{
+    case e: Throwable =>
+      logger.debug("Exception class {}", e.getClass.toString)
+      throw e
+  }.map { _ =>
+    Unit
+  }
+
+  def isEmpty(index: Indices.Index): Future[Boolean] = {
+    for {
+        client <- setupFuture
+        result <- client.execute(ElasticDsl.search(indices.getIndex(config, index)))
+      } yield (result match{
+        case Right(r) => r.result.isEmpty
+        case Left(ESGenericException(e)) => throw e
+      })
   }
 
   sealed trait RestoreResult

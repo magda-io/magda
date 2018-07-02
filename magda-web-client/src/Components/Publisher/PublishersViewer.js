@@ -8,6 +8,7 @@ import PublisherSummary from "./PublisherSummary";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
 import ProgressBar from "../../UI/ProgressBar";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 import queryString from "query-string";
 import PropTypes from "prop-types";
 import sortBy from "lodash.sortby";
@@ -17,13 +18,13 @@ import trim from "lodash/trim";
 import "./PublishersViewer.css";
 
 class PublishersViewer extends Component {
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (getPageNumber(this.props) !== getPageNumber(nextProps)) {
-            nextProps.fetchPublishersIfNeeded(getPageNumber(nextProps) || 1);
+    componentDidUpdate(prevProps) {
+        if (getPageNumber(this.props) !== getPageNumber(prevProps)) {
+            this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
         }
     }
 
@@ -110,6 +111,13 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            <li>
+                                <span>Organisations</span>
+                            </li>
+                        ]}
+                    />
                     <h1>Organisations</h1>
                     <div className="row">
                         {!this.props.isFetching && this.renderContent()}
