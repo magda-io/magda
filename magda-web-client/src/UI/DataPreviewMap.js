@@ -29,12 +29,13 @@ const determineDistribution = memoize(function determineDistribution(
     distributions,
     dataSourcePreference
 ) {
-    if (!dataSourcePreference || !dataSourcePreference.length)
-        dataSourcePreference = defaultDataSourcePreference;
-    dataSourcePreference = dataSourcePreference.map(item => item.toLowerCase());
     if (!distributions || !distributions.length) return null;
+    if (!dataSourcePreference || !dataSourcePreference.length) {
+        dataSourcePreference = defaultDataSourcePreference;
+    }
+    dataSourcePreference = dataSourcePreference.map(item => item.toLowerCase());
     let selectedDis = null,
-        perferenceOrder = -1;
+        preferenceOrder = -1;
     distributions
         .filter(
             item =>
@@ -43,15 +44,15 @@ const determineDistribution = memoize(function determineDistribution(
         )
         .forEach(dis => {
             const format = dis.format.toLowerCase();
-            const distributionPerferenceOrder = dataSourcePreference.indexOf(
+            const distributionPreferenceOrder = dataSourcePreference.indexOf(
                 format
             );
-            if (distributionPerferenceOrder === -1) return;
+            if (distributionPreferenceOrder === -1) return;
             if (
-                perferenceOrder === -1 ||
-                distributionPerferenceOrder < perferenceOrder
+                preferenceOrder === -1 ||
+                distributionPreferenceOrder < preferenceOrder
             ) {
-                perferenceOrder = distributionPerferenceOrder;
+                preferenceOrder = distributionPreferenceOrder;
                 selectedDis = dis;
                 return;
             }
