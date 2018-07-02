@@ -114,9 +114,11 @@ object Registry {
 
     val values = findValues
   }
+  case class RegistryCountResponse(
+    count: Long)
 
   case class RegistryRecordsResponse(
-    totalCount: Long,
+    hasMore: Boolean,
     nextPageToken: Option[String],
     records: List[Record])
 
@@ -151,6 +153,7 @@ object Registry {
     implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
     implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
+    implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
 
     implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
       def write(obj: RecordType) = obj match {
@@ -171,10 +174,10 @@ object Registry {
 
   trait RegistryConverters extends RegistryProtocols {
 
-    def getAcronymFromPublisherName(publisherName:Option[String]): Option[String] = {
+    def getAcronymFromPublisherName(publisherName: Option[String]): Option[String] = {
       publisherName
-        .map("""[^a-zA-Z\s]""".r.replaceAllIn(_,""))
-        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("","AND","THE","OF").contains(_)).map(_.take(1)).mkString)
+        .map("""[^a-zA-Z\s]""".r.replaceAllIn(_, ""))
+        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("", "AND", "THE", "OF").contains(_)).map(_.take(1)).mkString)
     }
 
     private def convertPublisher(publisher: Record): Agent = {
@@ -206,8 +209,8 @@ object Registry {
           if (totalWeighting > 0) {
             ratings.map(rating =>
               (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
-          } else 1d
-        case _ => 1d
+          } else 0d
+        case _ => 0d
       }
 
       val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
@@ -264,7 +267,7 @@ object Registry {
         mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
         format = betterFormatString match {
           case Some(format) => Some(format)
-          case None => formatString
+          case None         => formatString
         })
     }
 
