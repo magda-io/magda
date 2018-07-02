@@ -15,6 +15,8 @@
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
 -   Map filter clear button only active when region is selected
+-   Made `elasticsearch` supports synonyms
+-   Upgraded `elasticsearch` to v6.3.0
 
 ## 0.0.42
 
@@ -27,8 +29,6 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
--   Made publisher acronym search case insensitive & added test cases
--   Made elastic search supports synonyms
 -   Added filter count to search results
 -   Made filter selections move only when applied on publisher and format
 -   reset pagination on query change
