@@ -18,10 +18,12 @@ class FacetBasicBody extends Component {
         };
     }
 
-    static getDerivedStateFromProps(props) {
-        return {
-            _activeOptions: props.activeOptions
-        };
+    static getDerivedStateFromProps(props, state) {
+        if (state._activeOptions.length == 0 && props.activeOptions.length) {
+            return {
+                _activeOptions: props.activeOptions
+            };
+        }
     }
 
     componentDidMount() {
