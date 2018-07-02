@@ -49,13 +49,9 @@ export function requestPublisherError(error: FetchError): FacetAction {
 function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        // const url = `${
-        //     config.registryApiUrl
-        // }records?aspect=organization-details&limit=1000`;
-        // temp testing url
-        const url = `https://org-search-ui.dev.magda.io/api/v0/search/organisations?query=${query}&start=${(start -
-            1) *
-            20}&limit=20`;
+        const url = `${
+            config.organizationApiUrl
+        }?query=${query}&start=${(start - 1) * 20}&limit=20`;
         console.log(url);
         return fetch(url)
             .then(response => {
