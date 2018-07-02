@@ -53,6 +53,8 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
       case Indices.DataSetsIndex => throw new RuntimeException("Why are we here this is the regions test?")
+      case Indices.PublishersIndex => throw new RuntimeException("Why are we here this is the regions test?")
+      case Indices.FormatsIndex => throw new RuntimeException("Why are we here this is the regions test?")
       case Indices.RegionsIndex  => "regions"
     }
   }
@@ -110,11 +112,10 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   def checkRegionLoading(regionLoader: RegionLoader, regions: Seq[(RegionSource, JsObject)])(implicit config: Config) = {
     IndexDefinition.setupRegions(client, regionLoader, fakeIndices).await(120 seconds)
     val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
-    val typeName = fakeIndices.getType(Indices.RegionsIndexType)
 
     refresh(indexName)
 
-    blockUntilExactCount(regions.size, indexName, typeName)
+    blockUntilExactCount(regions.size, indexName)
 
     regions.foreach { region =>
       val regionId = region._1.name.toLowerCase + "/" + region._2.fields("properties").asJsObject.fields(region._1.idProperty).asInstanceOf[JsString].value

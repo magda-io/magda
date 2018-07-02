@@ -66,14 +66,22 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     forAll(gen) {
       case (source) =>
         val indexId = UUID.randomUUID().toString
+        val indices = new FakeIndices(indexId.toString)
+        val indexNames = List(
+          indices.getIndex(config, Indices.DataSetsIndex),
+          indices.getIndex(config, Indices.PublishersIndex),
+          indices.getIndex(config, Indices.FormatsIndex)
+        )
 
-        doTest(indexId, source, true)
-        doTest(indexId, source, false)
+        doTest(indices, indexNames, source, true)
+        doTest(indices, indexNames, source, false)
 
-        deleteIndex(indexId)
+        indexNames.foreach{ idxName =>
+          deleteIndex(idxName)
+        }
     }
 
-    def doTest(indexId: String, source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {
+    def doTest(indices: Indices, indexNames: List[String], source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {
       val filteredSource = source match {
         case (initialDataSets, afterDataSets) =>
           (if (firstIndex) initialDataSets else afterDataSets)
@@ -94,7 +102,6 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
             }
           }
       }
-      val indices = new FakeIndices(indexId.toString)
       val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
       val crawler = new RegistryCrawler(externalInterface, indexer)
       val crawlerApi = new CrawlerApi(crawler, indexer)
@@ -109,13 +116,15 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       // Combine all the datasets but keep what interface they come from
       val allDataSets = filteredSource
 
-      refresh(indexId)
+      indexNames.foreach{ idxName =>
+        refresh(idxName)
+      }
 
       try {
-        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+        blockUntilExactCount(allDataSets.size, indexNames(0))
       } catch {
         case (e: Throwable) =>
-          val sizeQuery = search(indexId).size(10000)
+          val sizeQuery = search(indexNames(0)).size(10000)
           val result = client.execute(sizeQuery).await(60 seconds) match {
             case Right(r) =>
               logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
