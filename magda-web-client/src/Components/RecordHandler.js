@@ -9,7 +9,6 @@ import {
     fetchDatasetFromRegistry,
     fetchDistributionFromRegistry
 } from "../actions/recordActions";
-import Tabs from "../UI/Tabs";
 import { config } from "../config";
 import defined from "../helpers/defined";
 import ErrorHandler from "./ErrorHandler";
@@ -18,8 +17,14 @@ import DatasetDetails from "./Dataset/DatasetDetails";
 import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
-import "./RecordHandler.css";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
+import AUbutton from "../pancake/react/buttons";
+import Separator from "../UI/Separator";
+import { Small, Medium } from "../UI/Responsive";
+import DescriptionBox from "../UI/DescriptionBox";
+import DistributionIcon from "../assets/distribution_icon.svg";
+import "./RecordHandler.css";
+
 class RecordHandler extends React.Component {
     constructor(props) {
         super(props);
@@ -82,11 +87,6 @@ class RecordHandler extends React.Component {
                         />
                     );
                 }
-                const tabList = [
-                    { id: "details", name: "Details", isActive: true },
-                    { id: "preview", name: "Preview", isActive: true }
-                ];
-
                 const baseUrlDistribution = `/dataset/${encodeURI(
                     this.props.match.params.datasetId
                 )}/distribution/${encodeURI(
@@ -94,22 +94,61 @@ class RecordHandler extends React.Component {
                 )}`;
                 return (
                     <div className="">
-                        <h1>{this.props.distribution.title}</h1>
-                        <div className="publisher">{publisherName}</div>
-                        {defined(this.props.distribution.updatedDate) && (
-                            <div className="updated-date">
-                                Updated {this.props.distribution.updatedDate}
+                        <span className="distribution-title">
+                            <img
+                                className="distribution-icon"
+                                src={DistributionIcon}
+                                alt="distribution icon"
+                            />
+                            <h1>{this.props.distribution.title}</h1>
+                        </span>
+                        <div className="distribution-meta">
+                            <div className="publisher">
+                                <Link to={`/organisations/${publisherId}`}>
+                                    {publisherName}
+                                </Link>
                             </div>
-                        )}
-
-                        <Tabs
-                            list={tabList}
-                            baseUrl={baseUrlDistribution}
-                            params={`q=${searchText}`}
-                            onTabChange={tab => {
-                                console.log(tab);
-                            }}
-                        />
+                            <Separator />
+                            {defined(this.props.distribution.updatedDate) && (
+                                <div className="updated-date">
+                                    Updated{" "}
+                                    {this.props.distribution.updatedDate}
+                                </div>
+                            )}
+                            <Separator />
+                            {defined(this.props.dataset.issuedDate) && (
+                                <div className="created-date">
+                                    Created {this.props.dataset.issuedDate}
+                                </div>
+                            )}
+                        </div>
+                        <div className="distribution-format">
+                            {this.props.distribution.format}
+                        </div>
+                        <Separator />
+                        <div className="distribution-license">
+                            {this.props.distribution.license}
+                        </div>
+                        <br />
+                        <AUbutton
+                            className="distribution-download-button"
+                            href={this.props.distribution.downloadURL}
+                            alt="distribution download button"
+                        >
+                            Download
+                        </AUbutton>{" "}
+                        <Small>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={200}
+                            />
+                        </Small>
+                        <Medium>
+                            <DescriptionBox
+                                content={this.props.distribution.description}
+                                truncateLength={500}
+                            />
+                        </Medium>
                         <div className="tab-content">
                             <Switch>
                                 <Route

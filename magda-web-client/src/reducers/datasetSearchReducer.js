@@ -39,7 +39,8 @@ const initialData = {
     temporalRange: null,
     apiQuery: "",
     strategy: "match-all",
-    error: null
+    error: null,
+    queryObject: null
 };
 
 const datasetSearchReducer = (
@@ -56,13 +57,11 @@ const datasetSearchReducer = (
                 isFetching: true,
                 error: null,
                 apiQuery: action.apiQuery && action.apiQuery,
-                temporalRange:
-                    queryObject.dateFrom && queryObject.dateTo
-                        ? [
-                              new Date(queryObject.dateFrom),
-                              new Date(queryObject.dateTo)
-                          ]
-                        : state.temporalRange,
+                queryObject,
+                temporalRange: [
+                    new Date(queryObject.dateFrom),
+                    new Date(queryObject.dateTo)
+                ],
                 publisherOptions: initialData.publisherOptions,
                 formatOptions: initialData.formatOptions,
                 activePublishers: activePub,

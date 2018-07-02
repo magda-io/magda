@@ -26,6 +26,10 @@ trait RecordPersistence {
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record]
 
+  def getCount(implicit session: DBSession,
+               aspectIds: Iterable[String],
+               aspectQueries: Iterable[AspectQuery] = Nil): Long
+
   def getById(implicit session: DBSession, id: String): Option[RecordSummary]
 
   def getByIdWithAspects(implicit session: DBSession,
@@ -91,12 +95,17 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val selectors = aspectQueries.map { query =>
-      val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
-      sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
-    } map (Some.apply)
+    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
 
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
+  }
+
+  def getCount(implicit session: DBSession,
+               aspectIds: Iterable[String],
+               aspectQueries: Iterable[AspectQuery] = Nil): Long = {
+    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
+
+    this.getCountInner(session, aspectIds, selectors)
   }
 
   def getById(implicit session: DBSession, id: String): Option[RecordSummary] = {
@@ -117,7 +126,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage[Record] = {
     if (ids.isEmpty)
-      RecordsPage(0, Some("0"), List())
+      RecordsPage(false, Some("0"), List())
     else
       this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in (${ids})")))
   }
@@ -131,7 +140,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     if (linkAspects.isEmpty) {
       // There are no linking aspects, so there cannot be any records linking to these IDs.
-      RecordsPage(0, None, List())
+      RecordsPage(false, None, List())
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
@@ -516,14 +525,12 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
+  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], rawLimit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
     val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
-    val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
-
-    var lastSequence: Option[Long] = None
     val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+    val limit = rawLimit.getOrElse(defaultResultCount)
 
-    val pageResults =
+    val result =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
@@ -532,16 +539,20 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             ${makeWhereClause(whereClauseParts)}
             order by sequence
             offset ${start.getOrElse(0)}
-            limit ${limit.getOrElse(defaultResultCount)}"""
+            limit ${limit + 1}"""
         .map(rs => {
-          // Side-effectily track the sequence number of the very last result.
-          lastSequence = Some(rs.long("sequence"))
-          rowToRecordSummary(rs)
+          (rs.long("sequence"),
+            rowToRecordSummary(rs))
         })
         .list.apply()
 
+    val hasMore = result.length > limit
+    val trimmed = result.take(limit)
+    val lastSequence = if (hasMore) Some(trimmed.last._1) else None
+    val pageResults = trimmed.map(_._2)
+
     RecordsPage[RecordSummary](
-      totalCount,
+      lastSequence.isDefined,
       lastSequence.map(_.toString),
       pageResults)
   }
@@ -551,11 +562,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          optionalAspectIds: Iterable[String],
                          pageToken: Option[Long] = None,
                          start: Option[Int] = None,
-                         limit: Option[Int] = None,
+                         rawLimit: Option[Int] = None,
                          dereference: Option[Boolean] = None,
                          recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): RecordsPage[Record] = {
-    val countWhereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
-    val totalCount = sql"select count(*) from Records ${makeWhereClause(countWhereClauseParts)}".map(_.int(1)).single.apply().getOrElse(0)
 
     // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
     val dereferenceLinks = dereference.getOrElse(false)
@@ -566,11 +575,12 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       Map[String, PropertyWithLink]()
     }
 
-    var lastSequence: Option[Long] = None
-    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token}")
+    val whereClauseParts = (aspectIdsToWhereClause(aspectIds) ++ recordSelector) :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
     val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
-    val pageResults =
+    val limit = rawLimit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)
+
+    val result =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName
@@ -580,18 +590,39 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             ${makeWhereClause(whereClauseParts)}
             order by Records.sequence
             offset ${start.getOrElse(0)}
-            limit ${limit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)}"""
-        .map(rs => {
-          // Side-effectily track the sequence number of the very last result.
-          lastSequence = Some(rs.long("sequence"))
-          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
-        })
+            limit ${limit + 1}""".map(rs => {
+        (rs.long("sequence"), rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs))
+      })
         .list.apply()
 
+    val hasMore = result.length > limit
+    val trimmed = result.take(limit)
+    val lastSequence = if (hasMore) Some(trimmed.last._1) else None
+    val pageResults = trimmed.map(_._2)
+
     RecordsPage(
-      totalCount,
+      hasMore,
       lastSequence.map(_.toString),
       pageResults)
+  }
+
+  private def getCountInner(implicit session: DBSession,
+                            aspectIds: Iterable[String],
+                            recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): Long = {
+    val statement = if (aspectIds.size == 1) {
+      // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
+      // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
+      // is equivalent to counting the records with that type
+      val aspectIdsWhereClause = aspectIds.map(aspectId => sqls"RecordAspects.aspectId=${aspectId}").toSeq
+      val recordSelectorWhereClause = recordSelector.flatten.map(recordSelectorInner => sqls"EXISTS(SELECT 1 FROM Records WHERE RecordAspects.recordId=Records.recordId AND ${recordSelectorInner})").toSeq
+      val clauses = (aspectIdsWhereClause ++ recordSelectorWhereClause).map(Some.apply)
+      sql"select count(*) from RecordAspects ${makeWhereClause(clauses)}"
+    } else {
+      // If there's zero or > 1 aspect ids involved then there's no advantage to querying record aspects instead.
+      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(aspectIds) ++ recordSelector)}"
+    }
+
+    statement.map(_.long(1)).single.apply().getOrElse(0l)
   }
 
   private def makeWhereClause(andParts: Seq[Option[SQLSyntax]]) = {
@@ -732,5 +763,10 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   private def aspectIdToWhereClause(aspectId: String) = {
     Some(sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})")
+  }
+
+  private def aspectQueryToWhereClause(query: AspectQuery) = {
+    val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
+    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
   }
 }

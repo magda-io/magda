@@ -5,9 +5,6 @@ import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
 import SignInRedirect from "../Components/Account/SignInRedirect";
 import RecordHandler from "../Components/RecordHandler";
-import ProjectsViewer from "../Components/Project/ProjectsViewer";
-import ProjectDetails from "../Components/Project/ProjectDetails";
-import CreateProject from "../Components/Project/CreateProject";
 import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
 import { staticPageRegister } from "../content/register";
@@ -31,9 +28,6 @@ const renderBody = () => {
                 component={RecordHandler}
             />
             <Route path="/dataset/:datasetId" component={RecordHandler} />
-            <Route exact path="/projects" component={ProjectsViewer} />
-            <Route exact path="/projects/new" component={CreateProject} />
-            <Route path="/projects/:projectId" component={ProjectDetails} />
             {/* hide in prod */}
             {enableSuggestDatasetPage && (
                 <Route exact path="/suggest" component={SuggestDataset} />
