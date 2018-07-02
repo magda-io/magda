@@ -8,7 +8,6 @@ import Temporal from "./Components/SearchFacets/Temporal";
 // const fallbackApiHost = "http://localhost:30100/";
 // Dev server
 const fallbackApiHost = "https://dev.magda.io/";
-const fallbackOrgApiHost = "https://org-search-ui.dev.magda.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -36,7 +35,7 @@ const registryApiUrl =
 
 const organizationApiUrl =
     serverConfig.registryApiBaseUrl ||
-    fallbackOrgApiHost + "api/v0/search/organisations";
+    fallbackApiHost + "api/v0/search/organisations";
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
