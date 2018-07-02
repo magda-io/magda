@@ -13,7 +13,8 @@ export default function MatchingStatus(props: {
         if (props.strategy === "match-part") {
             return (
                 <div className="no-matching">
-                    Sorry, no dataset matches all of your search criteria.
+                    The following datasets match some but not all of your search
+                    criteria
                 </div>
             );
         } else {

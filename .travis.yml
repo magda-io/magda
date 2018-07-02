@@ -31,27 +31,14 @@ matrix:
         directories:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
-          - node_modules
-          - magda-admin-api/node_modules
-          - magda-authorization-api/node_modules
-          - magda-ckan-connector/node_modules
-          - magda-csw-connector/node_modules
-          - magda-discussions-api/node_modules
-          - magda-feedback-api/node_modules
-          - magda-gateway/node_modules
-          - magda-project-open-data-connector/node_modules
-          - magda-sleuther-broken-link/node_modules
-          - magda-sleuther-format/node_modules
-          - magda-sleuther-framework/node_modules
-          - magda-sleuther-linked-data-rating/node_modules
-          - magda-sleuther-visualization/node_modules
-          - magda-typescript-common/node_modules
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
       script: 
-        - yarn install
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
         - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
@@ -65,14 +52,11 @@ matrix:
       node_js: "8"
       cache:
         directories:
-          - node_modules
-          - magda-web-client/node_modules
-          - magda-preview-map/node_modules
-          - magda-web-admin/node_modules
-          - magda-web-server/node_modules
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
       script:
         - yarn global add lerna
-        - yarn install
         - yarn run eslint
         - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
         - lerna run test --scope @magda/preview-map --scope @magda/web-client

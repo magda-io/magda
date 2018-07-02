@@ -43,6 +43,10 @@ import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.index.RichIndexResponse
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -251,7 +255,7 @@ class ElasticSearchIndexer(
           } flatMap { _ =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
-            definition.create match {
+            (definition.create) match {
               case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
                 .flatMap(_ => {
                   createSnapshot(client, definition)
@@ -271,6 +275,13 @@ class ElasticSearchIndexer(
       throw e
   } map { _ =>
     Unit
+  }
+
+  def isEmpty(index: Indices.Index): Future[Boolean] = {
+    for {
+      client <- setupFuture
+      result <- client.execute(ElasticDsl.search(indices.getIndex(config, index)))
+    } yield (result.isEmpty)
   }
 
   sealed trait RestoreResult
@@ -420,6 +431,7 @@ class ElasticSearchIndexer(
 
   private def bulkIndex(definition: BulkDefinition): Future[RichBulkResponse] =
     setupFuture.flatMap { client =>
+
       client.execute(definition)
         .recover {
           case t: Throwable =>

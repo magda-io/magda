@@ -8,21 +8,22 @@ import ReactDocumentTitle from "react-document-title";
 import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 import "./PublisherDetails.css";
 
 class PublisherDetails extends Component {
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchPublisherIfNeeded(this.props.match.params.publisherId);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         if (
-            nextProps.match.params.publisherId !==
+            prevProps.match.params.publisherId !==
             this.props.match.params.publisherId
         ) {
-            nextProps.fetchPublisherIfNeeded(
-                nextProps.match.params.publisherId
+            this.props.fetchPublisherIfNeeded(
+                this.props.match.params.publisherId
             );
         }
     }
@@ -34,10 +35,20 @@ class PublisherDetails extends Component {
             details.description && details.description.length > 0
                 ? details.description
                 : "This publisher has no description";
+
+        const breadcrumbs = [
+            <li>
+                <Link to="/organisations">Organisations</Link>
+            </li>,
+            <li>
+                <span>{publisher.name}</span>
+            </li>
+        ];
         return (
-            <div className="publisher-details container">
+            <div className="publisher-details">
                 {this.props.isFetching && <ProgressBar />}
-                <div className="row">
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                     <div className="publisher-details__body col-sm-8">
                         <div className="media">
                             <div className="media-body">

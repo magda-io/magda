@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import close from "../../assets/close.svg";
+import close from "../../assets/close-round.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "../../pancake/react/buttons";
 import Modal from "react-modal";
@@ -66,16 +66,17 @@ export default class DatasetSuggestForm extends React.Component {
                 left: "50%",
                 right: "auto",
                 bottom: "auto",
-                marginRight: "-50%",
+                marginRight: "-35%",
                 transform: "translate(-50%, -50%)",
+                "background-color": "#4b3081",
                 zIndex: "11",
-                border: "3px solid rgb(204, 204, 204)",
+                border: "1px solid rgb(204, 204, 204)",
                 padding: "0px"
             }
         };
         const formProps = {
-            title: "Ask a question about " + this.props.title,
-            smallTitle: true,
+            title: false,
+            showTitle: false,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
@@ -112,13 +113,18 @@ export default class DatasetSuggestForm extends React.Component {
                         onRequestClose={this.toggleShowForm}
                         ariaHideApp={false}
                     >
-                        <div className="ask-dataset-form ask-dataset-form-responsive">
+                        <div className="row modal-header">
+                            <h3 className="suggest-modal-heading">
+                                {"Ask a question about this dataset"}
+                            </h3>
                             <img
                                 src={close}
                                 className="correspondence-dataset-close-button"
                                 alt="close"
                                 onClick={this.toggleShowForm}
                             />
+                        </div>
+                        <div className="ask-dataset-form ask-dataset-form-responsive">
                             {/*
                             Since this form is the the report/ask a question on a dataset
                             //I will be passing down the datasetID

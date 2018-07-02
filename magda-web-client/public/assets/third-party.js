@@ -45,7 +45,11 @@ window.zEmbed ||
         document.zendeskHost = "datagovau.zendesk.com";
         document.zEQueue = queue;
     })();
-
+zE(function() {
+    if (window.innerWidth < 992) {
+        zE.hide();
+    }
+});
 // rollbar
 !(function(r) {
     function e(n) {

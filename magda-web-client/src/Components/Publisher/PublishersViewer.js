@@ -8,6 +8,7 @@ import PublisherSummary from "./PublisherSummary";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
 import ProgressBar from "../../UI/ProgressBar";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 import queryString from "query-string";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
@@ -125,6 +126,13 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            <li>
+                                <span>Organisations</span>
+                            </li>
+                        ]}
+                    />
                     <h1>Organisations</h1>
                     <div className="row">
                         <div className="col-sm-8">
