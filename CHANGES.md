@@ -11,7 +11,10 @@
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 -   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
+-   Upgraded `basemaps.cartocdn.com` url to HTTPS.
+-   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
+-   Map filter clear button only active when region is selected
 
 ## 0.0.42
 

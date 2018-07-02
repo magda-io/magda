@@ -68,7 +68,7 @@ zE(function() {
         (_rollbarConfig = _rollbarConfig || {}),
             (_rollbarConfig.rollbarJsUrl =
                 _rollbarConfig.rollbarJsUrl ||
-                "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js"),
+                "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js"),
             (_rollbarConfig.async =
                 void 0 === _rollbarConfig.async || _rollbarConfig.async);
         var a = n.setupShim(window, _rollbarConfig),
