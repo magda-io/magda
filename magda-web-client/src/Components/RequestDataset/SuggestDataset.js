@@ -61,7 +61,7 @@ export default class Suggest extends React.Component {
                     <Breadcrumbs
                         breadcrumbs={[
                             <li>
-                                <span>Request a dataset</span>
+                                <span>Suggest a dataset</span>
                             </li>
                         ]}
                     />
