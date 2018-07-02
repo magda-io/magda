@@ -12,21 +12,20 @@ import Breadcrumbs from "../../UI/Breadcrumbs";
 import queryString from "query-string";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
+import Pagination from "../../UI/Pagination";
 import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 
 class PublishersViewer extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            searchText: "*"
-        };
         this.onUpdateSearchText = this.onUpdateSearchText.bind(this);
         this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
         );
     }
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
+
     onPageChange(i) {
         this.context.router.history.push({
             pathname: this.props.location.pathname,
@@ -41,36 +40,35 @@ class PublishersViewer extends Component {
     componentDidMount() {
         this.props.fetchPublishersIfNeeded(
             getPageNumber(this.props) || 1,
-            this.state.searchText
+            queryString.parse(this.props.location.search).q
         );
     }
 
     updateQuery(query) {
-        // this.context.router.history.push({
-        //     pathname: "/organisations/search",
-        //     search: queryString.stringify(
-        //         Object.assign(
-        //             queryString.parse(this.props.location.search),
-        //             query
-        //         )
-        //     )
-        // });
+        this.context.router.history.push({
+            pathname: "/organisations",
+            search: queryString.stringify(
+                Object.assign(
+                    queryString.parse(this.props.location.search),
+                    query
+                )
+            )
+        });
     }
 
     handleSearchFieldEnterKeyPress(event) {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery.flush(this.state.searchText);
+            this.debounceUpdateSearchQuery(
+                queryString.parse(this.props.location.search).q
+            );
+            this.debounceUpdateSearchQuery.flush();
         }
     }
 
     updateSearchQuery(text) {
         if (text === "") text = "*";
-        this.updateQuery({
-            q: text,
-            page: undefined
-        });
         this.props.fetchPublishersIfNeeded(
             getPageNumber(this.props) || 1,
             text
@@ -78,8 +76,9 @@ class PublishersViewer extends Component {
     }
 
     onUpdateSearchText(e) {
-        this.setState({
-            searchText: e.target.value
+        this.updateQuery({
+            q: e.target.value,
+            page: undefined
         });
         this.debounceUpdateSearchQuery(e.target.value);
     }
@@ -102,6 +101,7 @@ class PublishersViewer extends Component {
     }
 
     renderSearchBar() {
+        const q = queryString.parse(this.props.location.search).q;
         return (
             <div className="organization-search">
                 <label htmlFor="organization-search" className="sr-only">
@@ -112,7 +112,7 @@ class PublishersViewer extends Component {
                     name="organization-search"
                     id="organization-search"
                     type="text"
-                    value={this.searchText}
+                    value={q ? q : " "}
                     placeholder="Search for organisations"
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
@@ -128,7 +128,7 @@ class PublishersViewer extends Component {
                 <div className="publishers-viewer">
                     <Breadcrumbs
                         breadcrumbs={[
-                            <li>
+                            <li key="organisations">
                                 <span>Organisations</span>
                             </li>
                         ]}
@@ -141,6 +141,19 @@ class PublishersViewer extends Component {
                         {this.props.isFetching && <ProgressBar />}
                         <div className="col-sm-4">{this.renderSearchBar()}</div>
                     </div>
+                    {this.props.hitCount > config.resultsPerPage && (
+                        <Pagination
+                            currentPage={
+                                +queryString.parse(this.props.location.search)
+                                    .page || 1
+                            }
+                            maxPage={Math.ceil(
+                                this.props.hitCount / config.resultsPerPage
+                            )}
+                            onPageChange={this.onPageChange}
+                            totalItems={this.props.hitCount}
+                        />
+                    )}
                 </div>
             </ReactDocumentTitle>
         );
