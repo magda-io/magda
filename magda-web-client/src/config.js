@@ -4,6 +4,9 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
+// Local minikube/docker k8s cluster
+// const fallbackApiHost = "http://localhost:30100/";
+// Dev server
 const fallbackApiHost = "https://dev.magda.io/";
 
 const homePageConfig: {

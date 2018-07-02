@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "echo \"No dev mode available, use helm instead.\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
   },
   "license": "Apache-2.0",
   "config": {

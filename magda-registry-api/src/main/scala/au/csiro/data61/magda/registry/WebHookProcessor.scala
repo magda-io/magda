@@ -60,7 +60,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         val directRecordIds = directRecordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
 
         // Get records directly modified by these events.
-        val directRecords = if (directRecordIds.isEmpty) RecordsPage(0, None, List()) else recordPersistence.getByIdsWithAspects(
+        val directRecords = if (directRecordIds.isEmpty) RecordsPage(false, None, List()) else recordPersistence.getByIdsWithAspects(
           session,
           directRecordIds,
           webHook.config.aspects.getOrElse(List()),
