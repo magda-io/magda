@@ -138,7 +138,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           val payload = WebHookPayload(
             action = "records.changed",
             lastEventId = 104856,
-            events = Some(events),
+            events = Some(events.toList),
             records = None,
             aspectDefinitions = None,
             deferredResponseUrl = None)
@@ -189,8 +189,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           val payload = WebHookPayload(
             action = "records.changed",
             lastEventId = 104856,
-            events = Some(events),
-            records = Some(deletedDataSetsToSave.map(x => dataSetToRecord((x, Nil)))),
+            events = Some(events.toList),
+            records = Some(deletedDataSetsToSave.map(x => dataSetToRecord((x, Nil))).toList),
             aspectDefinitions = None,
             deferredResponseUrl = None)
 

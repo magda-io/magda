@@ -8,7 +8,7 @@ import scala.concurrent.Future
 
 trait SearchQueryer {
   def search(query: Query, start: Long, limit: Int, facetSize: Int): Future[SearchResult]
-  def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult]
+  def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int): Future[FacetSearchResult]
   def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult]
 }
 

@@ -133,14 +133,15 @@ class DistributionRow extends Component {
     render() {
         const { datasetId, distribution } = this.props;
         let distributionLink;
-        if (!distribution.downloadURL && distribution.accessURL)
+        if (!distribution.downloadURL && distribution.accessURL) {
             distributionLink = distribution.accessURL;
-        else
+        } else {
             distributionLink = `/dataset/${encodeURIComponent(
                 datasetId
             )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
                 this.props.searchText
             }`;
+        }
 
         return (
             <div
@@ -190,17 +191,14 @@ class DistributionRow extends Component {
                                         </span>)
                                     </Link>
                                 )}
-                                <button
+                                <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={distributionLink}
                                     className="new-tab-button"
-                                    onClick={() => {
-                                        window.open(
-                                            distributionLink,
-                                            distribution.title
-                                        );
-                                    }}
                                 >
                                     <img src={newTabIcon} alt="new tab" />
-                                </button>
+                                </a>
                             </div>
 
                             <div

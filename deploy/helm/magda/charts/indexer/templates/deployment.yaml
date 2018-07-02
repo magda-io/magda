@@ -40,8 +40,8 @@ spec:
             "-Dhttp.port=80",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
-            "-Dindexer.readSnapshots={{ .Values.readSnapshots | default true }}",
-            "-Dindexer.makeSnapshots={{ .Values.makeSnapshots | default true }}",
+            "-Dindexer.readSnapshots={{ .Values.readSnapshots }}",
+            "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
             "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
 {{- if .Values.elasticsearch.useGcsSnapshots }}

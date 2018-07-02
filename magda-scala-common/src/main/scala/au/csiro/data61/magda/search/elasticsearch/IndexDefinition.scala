@@ -13,7 +13,7 @@ import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer }
+import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer, EdgeNGramTokenFilter }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.GeometryFactory
@@ -111,8 +111,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "uppercase",
             KeywordTokenizer,
-            UppercaseTokenFilter)
-        )
+            UppercaseTokenFilter))
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))

@@ -1,8 +1,10 @@
 ## 0.0.43
 
+-   Fix design system react import for SASS overrides
 -   Add breadcrumb for dataset page and distribution page
 -   Added further styling filters to coverup markdown rendering on dataset pages
 -   Added UNSAFE\_ annotations or refactored to prepare for [React async rendering](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
+-   Hide zendesk floating feedback button on mobile
 -   Modified the look and layout of the distribution pages.
 -   Made close button on suggest form rounded and thicker
 -   Location and Date filters can be applied by clicking outside of the box
@@ -11,6 +13,7 @@
 -   Updated homepage tagline.
 -   Upgraded `basemaps.cartocdn.com` url to HTTPS.
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
+-   Added community link to header
 
 ## 0.0.42
 
@@ -33,6 +36,15 @@
 -   Fixed page refresh when using a dataset tag as a link.
 -   Replaced underscores with spaces on distribution links, making them wrap on mobile
 -   Improved modal design on report/ask a question on a dataset
+-   Removed `totalCount` field from registry api pagination objects.
+-   Added `/count` endpoint to registry api
+-   Set default quality to 0 when indexing
+-   Use Async appender for logback logging
+-   Removed logging to file
+-   Akka logging setting adjustment
+-   Made publisher and format filter search use the search backend instead of client-side autocomplete.
+-   Updated data quality explanation
+-   Made go-to-external-distribution button into an <a> tag instead of a javascript button.
 -   Update some results found message
 
 ## 0.0.41
