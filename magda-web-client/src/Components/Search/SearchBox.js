@@ -41,13 +41,10 @@ class SearchBox extends Component {
 
     debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchRegionMapping();
-    }
-
-    componentWillReceiveProps(nextProps) {
         this.setState({
-            searchText: nextProps.location.search.q
+            searchText: this.props.location.search.q
         });
     }
 
@@ -120,15 +117,6 @@ class SearchBox extends Component {
     onDismissError() {
         // remove all current configurations
         this.updateSearchText("");
-    }
-
-    componentDidMount() {
-        // if(this.state.height !== this.container.offsetHeight || this.state.width !== this.container.offsetWidth){
-        //   this.setState({
-        //     width: this.container.offsetWidth,
-        //     height: this.container.offsetHeight
-        //   })
-        // }
     }
 
     render() {

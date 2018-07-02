@@ -108,7 +108,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("name",
                 keywordField("keyword"),
-                textField("keyword_lowercase").analyzer("quote"))),
+                textField("keyword_lowercase").analyzer("quote").fielddata(true))),
             nestedField("distributions").fields(
               keywordField("identifier"),
               magdaTextField("title"),

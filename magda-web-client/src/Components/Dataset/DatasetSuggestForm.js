@@ -1,8 +1,9 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import close from "../../assets/close.svg";
+import close from "../../assets/close-round.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "../../pancake/react/buttons";
+import Modal from "react-modal";
 
 //This is the question/report on a dataset form on the
 //individual dataset page
@@ -58,9 +59,24 @@ export default class DatasetSuggestForm extends React.Component {
     };
 
     render() {
+        //parameters of the modal pop out
+        const customStyles = {
+            content: {
+                top: "50%",
+                left: "50%",
+                right: "auto",
+                bottom: "auto",
+                marginRight: "-35%",
+                transform: "translate(-50%, -50%)",
+                "background-color": "#4b3081",
+                zIndex: "11",
+                border: "1px solid rgb(204, 204, 204)",
+                padding: "0px"
+            }
+        };
         const formProps = {
-            title: "Ask a question about " + this.props.title,
-            smallTitle: true,
+            title: false,
+            showTitle: false,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
@@ -78,10 +94,10 @@ export default class DatasetSuggestForm extends React.Component {
             failHeader: "Uh oh. There was an error sending your form!"
         };
         return (
-            <div>
+            <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
-                {!this.state.showSuggest ? (
-                    <div className="dataset-correspondence-container">
+                {!this.state.showSuggest && (
+                    <div className="dataset-button-container">
                         <AUbutton
                             className="au-btn--secondary ask-question-button"
                             onClick={this.toggleShowForm}
@@ -89,32 +105,45 @@ export default class DatasetSuggestForm extends React.Component {
                             Ask a question about this dataset
                         </AUbutton>
                     </div>
-                ) : (
-                    <div className="ask-dataset-form">
-                        <img
-                            src={close}
-                            className="correspondence-dataset-close-button"
-                            alt="close"
-                            onClick={this.toggleShowForm}
-                        />
-                        {/*
+                )}
+                <React.Fragment>
+                    <Modal
+                        isOpen={this.state.showSuggest}
+                        style={customStyles}
+                        onRequestClose={this.toggleShowForm}
+                        ariaHideApp={false}
+                    >
+                        <div className="row modal-header">
+                            <h3 className="suggest-modal-heading">
+                                {"Ask a question about this dataset"}
+                            </h3>
+                            <img
+                                src={close}
+                                className="correspondence-dataset-close-button"
+                                alt="close"
+                                onClick={this.toggleShowForm}
+                            />
+                        </div>
+                        <div className="ask-dataset-form ask-dataset-form-responsive">
+                            {/*
                             Since this form is the the report/ask a question on a dataset
                             //I will be passing down the datasetID
                          */}
-                        <RequestFormLogic
-                            formProps={formProps}
-                            alertProps={alertProps}
-                            formSubmitState={this.getFormSubmitState}
-                            datasetId={this.props.datasetId}
-                            requestType="report"
-                            handleChange={this.handleChange}
-                            senderEmail={this.state.senderEmail}
-                            senderName={this.state.senderName}
-                            message={this.state.message}
-                        />
-                    </div>
-                )}
-            </div>
+                            <RequestFormLogic
+                                formProps={formProps}
+                                alertProps={alertProps}
+                                formSubmitState={this.getFormSubmitState}
+                                datasetId={this.props.datasetId}
+                                requestType="report"
+                                handleChange={this.handleChange}
+                                senderEmail={this.state.senderEmail}
+                                senderName={this.state.senderName}
+                                message={this.state.message}
+                            />
+                        </div>
+                    </Modal>
+                </React.Fragment>
+            </React.Fragment>
         );
     }
 }

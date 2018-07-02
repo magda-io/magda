@@ -43,16 +43,16 @@ class Search extends Component {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.resetDatasetSearch();
         this.props.fetchSearchResultsIfNeeded(
             queryString.parse(this.props.location.search)
         );
     }
 
-    componentWillReceiveProps(nextProps) {
-        nextProps.fetchSearchResultsIfNeeded(
-            queryString.parse(nextProps.location.search)
+    componentDidUpdate() {
+        this.props.fetchSearchResultsIfNeeded(
+            queryString.parse(this.props.location.search)
         );
     }
 
@@ -133,6 +133,34 @@ class Search extends Component {
         });
     }
 
+    /**
+     * counts the number of filters that have active values
+     * this is then appended to the results text on the search page
+     */
+    filterCount = () => {
+        let count = 0;
+        if (this.props.activePublishers.length > 0) {
+            count++;
+        }
+        if (this.props.activeFormats.length > 0) {
+            count++;
+        }
+
+        if (this.props.activeRegion.regionId) {
+            count++;
+        }
+
+        if (this.props.activeDateFrom || this.props.activeDateTo) {
+            count++;
+        }
+        if (count !== 0) {
+            const filterText = count === 1 ? " filter" : " filters";
+            return " with " + count + filterText;
+        } else {
+            return "";
+        }
+    };
+
     render() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
@@ -152,7 +180,10 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results ( {this.props.hitCount} )
+                                        results {this.filterCount()} ({
+                                            this.props.hitCount
+                                        }
+                                        )
                                     </div>
                                 )}
                             {!this.props.isFetching &&
@@ -244,6 +275,11 @@ function mapStateToProps(state, ownProps) {
     let { datasetSearch } = state;
     return {
         datasets: datasetSearch.datasets,
+        activeFormats: datasetSearch.activeFormats,
+        activePublishers: datasetSearch.activePublishers,
+        activeRegion: datasetSearch.activeRegion,
+        activeDateFrom: datasetSearch.activeDateFrom,
+        activeDateTo: datasetSearch.activeDateTo,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
         progress: datasetSearch.progress,

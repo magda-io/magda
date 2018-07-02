@@ -118,17 +118,30 @@ class DistributionRow extends Component {
         return matchedCategory;
     }
 
+    /**
+     * Replace underscores in links with spaces
+     * This stops the text from going off the edge of the screen
+     */
+    renderDistributionLink = title => {
+        if (title.includes("_")) {
+            return title.replace(/_/g, " ");
+        } else {
+            return title;
+        }
+    };
+
     render() {
         const { datasetId, distribution } = this.props;
         let distributionLink;
-        if (!distribution.downloadURL && distribution.accessURL)
+        if (!distribution.downloadURL && distribution.accessURL) {
             distributionLink = distribution.accessURL;
-        else
+        } else {
             distributionLink = `/dataset/${encodeURIComponent(
                 datasetId
             )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
                 this.props.searchText
             }`;
+        }
 
         return (
             <div
@@ -160,7 +173,9 @@ class DistributionRow extends Component {
                                 distribution.accessURL ? (
                                     <div>
                                         <span itemProp="name">
-                                            {distribution.title}
+                                            {this.renderDistributionLink(
+                                                distribution.title
+                                            )}
                                         </span>(<span itemProp="fileFormat">
                                             {distribution.format}
                                         </span>)
@@ -168,23 +183,22 @@ class DistributionRow extends Component {
                                 ) : (
                                     <Link to={distributionLink}>
                                         <span itemProp="name">
-                                            {distribution.title}
+                                            {this.renderDistributionLink(
+                                                distribution.title
+                                            )}
                                         </span>(<span itemProp="fileFormat">
                                             {distribution.format}
                                         </span>)
                                     </Link>
                                 )}
-                                <button
+                                <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={distributionLink}
                                     className="new-tab-button"
-                                    onClick={() => {
-                                        window.open(
-                                            distributionLink,
-                                            distribution.title
-                                        );
-                                    }}
                                 >
                                     <img src={newTabIcon} alt="new tab" />
-                                </button>
+                                </a>
                             </div>
 
                             <div

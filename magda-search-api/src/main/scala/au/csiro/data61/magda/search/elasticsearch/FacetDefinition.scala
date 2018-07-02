@@ -6,7 +6,7 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
+import com.sksamuel.elastic4s.searches.aggs.{AggregationDefinition, TermsOrder}
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
@@ -107,6 +107,8 @@ trait FacetDefinition {
       .map(lookup.get(_).get.head)
       .take(limit)
   }
+
+  def autocompleteQuery(textQuery: String): QueryDefinition
 }
 
 object FacetDefinition {
@@ -157,6 +159,8 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = exactPublisherQuery(query)
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
+
+  override def autocompleteQuery(textQuery: String) = matchQuery("publisher.name.english", textQuery)
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
@@ -171,6 +175,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .subAggregations {
           reverseNestedAggregation("reverse")
         }
+        .order(TermsOrder("reverse", false))
     }
 
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
@@ -209,4 +214,6 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = Queries.formatQuery(SearchStrategy.MatchAll)(query)
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
+
+  override def autocompleteQuery(textQuery: String) = nestedQuery("distributions").query(matchQuery("distributions.format.english", textQuery))
 }

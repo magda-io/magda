@@ -4,7 +4,10 @@ import Format from "./Components/SearchFacets/Format";
 import Region from "./Components/SearchFacets/Region";
 import Temporal from "./Components/SearchFacets/Temporal";
 
-const fallbackApiHost = "https://magda-dev.terria.io/";
+// Local minikube/docker k8s cluster
+// const fallbackApiHost = "http://localhost:30100/";
+// Dev server
+const fallbackApiHost = "https://dev.magda.io/";
 
 const homePageConfig: {
     baseUrl: string,
@@ -75,8 +78,9 @@ export const config = {
     ],
     headerNavigation: [
         ["Datasets", "search"],
-        ["About", "page/about"],
         ["Organisations", "organisations"],
+        ["Community", "https://community.digital.gov.au/c/open-data"],
+        ["About", "page/about"],
         ...(serverConfig.disableAuthenticationFeatures ? [] : [])
     ],
     footerNavigation: {

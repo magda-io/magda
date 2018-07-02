@@ -7,17 +7,17 @@
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    width: 258px;
+    width: 140px;
     background-color: #222;
     color: #fff;
     text-align: center;
-    padding: 8px 21px;
+    padding: 7px;
     position: absolute;
     z-index: 1;
     bottom: 150%;
-    left: -513%;
-    margin-left: -60px;
-    border-radius: 2px;
+    left: 50%;
+    margin-left: -77px;
+    border-radius: 4px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
     a {

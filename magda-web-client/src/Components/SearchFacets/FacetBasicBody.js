@@ -3,8 +3,8 @@ import find from "lodash.find";
 import maxBy from "lodash.maxby";
 import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
+import "./FacetBasicBody.css";
 
-// extends Facet class
 class FacetBasicBody extends Component {
     constructor(props) {
         super(props);
@@ -18,20 +18,22 @@ class FacetBasicBody extends Component {
         };
     }
 
-    componentWillMount() {
-        this.props.searchFacet();
-        this.setState({
-            _activeOptions: this.props.activeOptions
-        });
+    static getDerivedStateFromProps(props) {
+        return {
+            _activeOptions: props.activeOptions
+        };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.resetFilterEvent !== this.props.resetFilterEvent) {
-            // filter has been reset!
+    componentDidMount() {
+        this.props.searchFacet();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.resetFilterEvent !== this.props.resetFilterEvent) {
+            this.props.closeFacet();
             this.setState({
                 _activeOptions: []
             });
-            this.props.closeFacet();
         }
     }
 
@@ -49,6 +51,7 @@ class FacetBasicBody extends Component {
     onToggleOption(option) {
         const existingOptions = this.state._activeOptions.map(o => o.value);
         const index = existingOptions.indexOf(option.value);
+        // if the option is already selected remove it from _activeOptions
         if (index > -1) {
             this.setState({
                 _activeOptions: [
@@ -56,6 +59,7 @@ class FacetBasicBody extends Component {
                     ...this.state._activeOptions.slice(index + 1)
                 ]
             });
+            //else add it to the activeOptions
         } else {
             this.setState({
                 _activeOptions: [...this.state._activeOptions, option]
@@ -90,16 +94,14 @@ class FacetBasicBody extends Component {
                     className="btn-facet-option__volume-indicator"
                 />
                 <span className="btn-facet-option__name">
-                    {option.value} ({option.hitCount})
+                    {option.value} ( {option.hitCount} )
                 </span>
             </button>
         );
     }
 
     searchBoxValueChange(value) {
-        this.setState({
-            showOptions: !value || value.length === 0
-        });
+        this.props.searchFacet(value);
     }
 
     onApplyFilter() {
@@ -107,19 +109,14 @@ class FacetBasicBody extends Component {
     }
 
     render() {
-        let that = this;
-        // default list of options to display for the facet filter except those already active, which will be displayed in a seperate list
-        let inactiveOptions = this.props.options.filter(
-            o => !this.checkActiveOption(o)
-        );
-        // the option that has the max object.value value, use to calculate volumne indicator
+        let options = this.props.options;
+        // the option that has the max hit value, use to calculate volumne indicator
         let maxOptionOptionList = maxBy(this.props.options, o => +o.hitCount);
         return (
             <div className={`facet-body facet-${this.props.title}`}>
                 <div className="clearfix facet-body__header">
                     <FacetSearchBox
                         renderOption={this.renderOption}
-                        options={this.props.facetSearchResults}
                         onToggleOption={this.onToggleOption}
                         searchBoxValueChange={this.searchBoxValueChange}
                         title={this.props.title}
@@ -128,24 +125,7 @@ class FacetBasicBody extends Component {
                 {this.state.showOptions && (
                     <div>
                         <div className="facet-body-buttons">
-                            <ul className="list--unstyled facet-option__list">
-                                {that.state._activeOptions
-                                    .sort((a, b) => b.hitCount - a.hitCount)
-                                    .map(o => (
-                                        <li key={`${o.value}-${o.hitCount}`}>
-                                            {that.renderOption(
-                                                o,
-                                                maxOptionOptionList
-                                            )}
-                                        </li>
-                                    ))}
-                                {this.props.options.length === 0 && (
-                                    <li className="no-data">
-                                        No {this.props.title} available
-                                    </li>
-                                )}
-                            </ul>
-                            {inactiveOptions.map(o =>
+                            {options.map(o =>
                                 this.renderOption(o, maxOptionOptionList)
                             )}
                         </div>
@@ -167,7 +147,6 @@ class FacetBasicBody extends Component {
                                 }
                                 onClick={this.onApplyFilter}
                             >
-                                {" "}
                                 Apply{" "}
                             </button>
                         </div>

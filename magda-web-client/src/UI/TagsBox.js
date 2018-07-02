@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import uniq from "lodash.uniq";
 import reduce from "lodash.reduce";
@@ -41,6 +42,7 @@ function TagsBox(props) {
                             text: t
                         }))
                 }
+                linkComponent={Link}
             />
         </div>
     );
