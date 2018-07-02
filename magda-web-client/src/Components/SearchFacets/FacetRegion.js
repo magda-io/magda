@@ -129,6 +129,10 @@ class FacetRegion extends Component {
                     <button
                         className="au-btn au-btn--secondary"
                         onClick={this.props.onResetFacet}
+                        disabled={
+                            this.state._activeRegion.regionId === undefined &&
+                            this.state._activeRegion.regionType === undefined
+                        }
                     >
                         {" "}
                         Clear{" "}
