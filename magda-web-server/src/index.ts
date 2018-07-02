@@ -106,7 +106,7 @@ const cspDirectives = {
         "www.googletagmanager.com",
         "www.google-analytics.com",
         "rum-static.pingdom.net",
-        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.9/rollbar.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js",
         "https://tagmanager.google.com/debug",
         "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
         "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
