@@ -1,5 +1,7 @@
 ## 0.0.44
+
 -   Modified error message text and omitted homepage articles if search error occurs.
+-   Changed chart icons on dataset page
 
 ## 0.0.43
 
