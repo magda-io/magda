@@ -223,6 +223,7 @@ class DistributionRow extends Component {
                             className="download-button au-btn au-btn--secondary"
                             target="_blank"
                             rel="noopener noreferrer"
+                            href={distribution.downloadURL}
                             onClick={() => {
                                 // google analytics download tracking
                                 const resource_url = encodeURIComponent(
