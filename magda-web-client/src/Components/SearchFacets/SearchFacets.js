@@ -87,43 +87,6 @@ class SearchFacets extends Component {
         );
     }
 
-    // temporarily disable until better UX solution is available
-    // renderMobile() {
-    //     return (
-    //         <div className="search-facets-mobile">
-    //             <button
-    //                 className="filter-toggle-button au-btn"
-    //                 onClick={this.onToggleFacetOnMobile}
-    //             >
-    //                 Filters <img src={downArrowDark} alt="open filter" />
-    //             </button>
-    //             {this.state.showFilterOnMobile &&
-    //                 config.facets.map(c => (
-    //                     <div
-    //                         className="search-facet"
-    //                         key={c.id}
-    //                         onClick={ev => ev.stopPropagation()}
-    //                     >
-    //                         <c.component
-    //                             updateQuery={this.props.updateQuery}
-    //                             location={this.props.location}
-    //                             title={c.id}
-    //                             isOpen={this.state.openFacet === c.id}
-    //                             toggleFacet={this.toggleFacet.bind(this, c.id)}
-    //                             closeFacet={this.closeFacet.bind(this, c.id)}
-    //                         />
-    //                     </div>
-    //                 ))}
-    //             {this.state.showFilterOnMobile && (
-    //                 <ClearAllButtom key={"clear-all-button"} />
-    //             )}
-    //             {this.state.openFacet && (
-    //                 <div className="mobile-facet-background" />
-    //             )}
-    //         </div>
-    //     );
-    // }
-
     render() {
         return (
             <div>
