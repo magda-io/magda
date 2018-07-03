@@ -113,7 +113,7 @@ class PublishersViewer extends Component {
                 <div className="publishers-viewer">
                     <Breadcrumbs
                         breadcrumbs={[
-                            <li>
+                            <li key="breadcrumb">
                                 <span>Organisations</span>
                             </li>
                         ]}

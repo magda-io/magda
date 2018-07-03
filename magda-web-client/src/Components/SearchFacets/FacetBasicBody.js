@@ -13,14 +13,8 @@ class FacetBasicBody extends Component {
         this.onToggleOption = this.onToggleOption.bind(this);
         this.searchBoxValueChange = this.searchBoxValueChange.bind(this);
         this.state = {
-            _activeOptions: [],
+            _activeOptions: props.activeOptions || [],
             showOptions: true
-        };
-    }
-
-    static getDerivedStateFromProps(props) {
-        return {
-            _activeOptions: props.activeOptions
         };
     }
 
@@ -51,6 +45,7 @@ class FacetBasicBody extends Component {
     onToggleOption(option) {
         const existingOptions = this.state._activeOptions.map(o => o.value);
         const index = existingOptions.indexOf(option.value);
+
         // if the option is already selected remove it from _activeOptions
         if (index > -1) {
             this.setState({
