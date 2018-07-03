@@ -48,8 +48,6 @@ class FacetTemporal extends Component {
      * been clicked in the facetHeader. If it has, then don't applyFilter.
      */
     componentWillUnmount() {
-        console.log(this.state);
-
         if (this.canApply() && !this.props.disableApply) {
             this.onApplyFilter();
         }

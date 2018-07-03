@@ -78,7 +78,6 @@ class DataPreviewChart extends Component {
                     chartType,
                     chartOption
                 });
-                if (console && console.log) console.log(chartOption);
             }
         } catch (e) {
             console.log(e);

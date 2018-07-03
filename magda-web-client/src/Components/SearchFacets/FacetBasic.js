@@ -18,6 +18,7 @@ class FacetBasic extends Component {
                 />
                 {this.props.isOpen && (
                     <FacetBasicBody
+                        key={this.props.activeOptions}
                         options={this.props.options}
                         activeOptions={this.props.activeOptions}
                         facetSearchResults={this.props.facetSearchResults}
