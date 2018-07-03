@@ -220,21 +220,12 @@ class DistributionRow extends Component {
                     </div>
                 </div>
                 <div className="col-md-3 button-area">
-                    {distribution.downloadURL ? (
-                        <button
+                    {distribution.downloadURL && (
+                        <a
                             className="download-button au-btn au-btn--secondary"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={() => {
-                                if (!distribution.downloadURL) {
-                                    this.props.dispatch(
-                                        showTopNotification(
-                                            "Download link is not available for this data source!",
-                                            "Error:",
-                                            "error"
-                                        )
-                                    );
-                                    return;
-                                }
-
                                 // google analytics download tracking
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
@@ -247,13 +238,10 @@ class DistributionRow extends Component {
                                         eventLabel: resource_url
                                     });
                                 }
-                                window.open(distribution.downloadURL);
                             }}
                         >
                             Download <img src={downloadIcon} alt="download" />
-                        </button>
-                    ) : (
-                        undefined
+                        </a>
                     )}
                 </div>
             </div>

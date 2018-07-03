@@ -1,3 +1,7 @@
+## 0.0.44
+
+-   Removed `a` link inside of dataset download button component.
+
 ## 0.0.43
 
 -   Add breadcrumb for dataset page and distribution page
@@ -8,7 +12,6 @@
 -   Location and Date filters can be applied by clicking outside of the box
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
 -   Updated homepage tagline.
--   Removed `a` link inside of dataset download button component.
 
 ## 0.0.42
 
