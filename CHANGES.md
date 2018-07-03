@@ -1,3 +1,6 @@
+## 0.0.44
+-   Modified error message text and omitted homepage articles if search error occurs.
+
 ## 0.0.43
 
 -   Fix design system react import for SASS overrides
@@ -9,7 +12,6 @@
 -   Made close button on suggest form rounded and thicker
 -   Location and Date filters can be applied by clicking outside of the box
 -   Changed registry /records api `pageToken` as long type parameter to avoid runtime error
--   Modified error message text and ommited homepage articles.
 -   Improved mobile responsiveness on dataset and search results page
 -   Updated homepage tagline.
 
