@@ -11,7 +11,6 @@ import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 import ga from "../analytics/googleAnalytics";
 import ReactTooltip from "react-tooltip";
-import AUbutton from "@gov.au/buttons";
 
 const formatIcons = {
     default: defaultFormatIcon
@@ -222,7 +221,7 @@ class DistributionRow extends Component {
                 </div>
                 <div className="col-md-3 button-area">
                     {distribution.downloadURL ? (
-                        <AUbutton
+                        <button
                             className="download-button au-btn au-btn--secondary"
                             onClick={() => {
                                 if (!distribution.downloadURL) {
@@ -248,12 +247,14 @@ class DistributionRow extends Component {
                                         eventLabel: resource_url
                                     });
                                 }
-                                window.location = distribution.downloadURL;
+                                window.open(distribution.downloadURL);
                             }}
                         >
                             Download <img src={downloadIcon} alt="download" />
-                        </AUbutton>
-                    ) : null}
+                        </button>
+                    ) : (
+                        undefined
+                    )}
                 </div>
             </div>
         );
