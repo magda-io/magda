@@ -1,3 +1,7 @@
+## 0.0.44
+
+-   Updated documentation for setting up `Docker Edge` for Kubeernetes.
+
 ## 0.0.43
 
 -   Fix design system react import for SASS overrides
@@ -26,7 +30,6 @@
 -   Added Zendesk feedback widget activated via footer link
 -   Made end of content spacing consistent
 -   Added `flex` display and set consistent padding from footer.
--   Updated documentation for setting up `Docker Edge` for Kubeernetes.
 -   Added filter count to search results
 -   Made filter selections move only when applied on publisher and format
 -   reset pagination on query change
