@@ -130,13 +130,13 @@ class RecordHandler extends React.Component {
                             {this.props.distribution.license}
                         </div>
                         <br />
-                        <AUbutton
-                            className="distribution-download-button"
+                        <a
+                            className="au-btn distribution-download-button"
                             href={this.props.distribution.downloadURL}
                             alt="distribution download button"
                         >
                             Download
-                        </AUbutton>{" "}
+                        </a>{" "}
                         <Small>
                             <DescriptionBox
                                 content={this.props.distribution.description}
