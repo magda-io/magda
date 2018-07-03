@@ -1,7 +1,6 @@
 // @flow
 import React from "react";
 import "./MatchingStatus.css";
-import Stories from "../../Pages/HomePageComponents/Stories";
 import { Link } from "react-router-dom";
 import AUpageAlert from "../../pancake/react/page-alerts";
 import { config } from "../../config";
@@ -28,23 +27,23 @@ export default function MatchingStatus(props: {
                         <p>
                             <strong>
                                 Sorry, we couldn't find any datasets that match
-                                your search query.
+                                your search
                             </strong>
                         </p>
                         <p>
-                            Try another search,{"  "}
+                            Please try a different search term, check your
+                            spelling or
                             {config.enableSuggestDatasetPage ? (
-                                <Link to="suggest">suggest a new dataset</Link>
+                                <Link to="suggest">suggest a dataset</Link>
                             ) : (
                                 <a href="mailto:data@digital.gov.au">
                                     {" "}
                                     request a new dataset
                                 </a>
-                            )}, or have a look at these great datasets
+                            )}
                         </p>
                     </AUpageAlert>
                 </div>
-                <Stories />
             </div>
         );
     }

@@ -1,3 +1,6 @@
+## 0.0.44
+-   Modified error message text and omitted homepage articles if search error occurs.
+
 ## 0.0.43
 
 -   Fix design system react import for SASS overrides
