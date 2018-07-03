@@ -57,10 +57,6 @@ class DataPreviewMap extends Component {
             });
             return;
         } else {
-            if (console && console.log) {
-                console.log("map preview distribution selection: ");
-                console.log(selectedDistribution);
-            }
             this.setState({
                 isInitLoading: false,
                 isMapLoading: true,
@@ -169,7 +165,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingStart();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;
@@ -181,7 +177,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingEnd();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;

@@ -12,47 +12,63 @@ import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import { config } from "../config";
+import chrono from "chrono-node";
 import type { ParsedDistribution } from "../helpers/record";
 
-let Papa = null;
+const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
+const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
 
-const avlChartTypes = ["bar", "pie", "scatter", "line"];
+const getPapaParse = (() => {
+    let Papa = null;
+
+    return async () => {
+        if (!Papa) {
+            Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
+        }
+
+        return Papa;
+    };
+})();
+
 const fetchData = function(url) {
-    return new Promise((resolve, reject) => {
-        Papa.parse(config.proxyUrl + "_0d/" + url, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            trimHeader: true,
-            complete: results => {
-                resolve(results);
-            },
-            error: err => {
-                let e;
-                if (!err)
-                    e = new Error("Failed to retrieve or parse the file.");
-                else e = err;
-                reject(e);
-            }
-        });
-    });
+    return getPapaParse().then(
+        Papa =>
+            new Promise((resolve, reject) => {
+                Papa.parse(config.proxyUrl + "_0d/" + url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    trimHeader: true,
+                    complete: results => {
+                        resolve(results);
+                    },
+                    error: err => {
+                        let e;
+                        if (!err)
+                            e = new Error(
+                                "Failed to retrieve or parse the file."
+                            );
+                        else e = err;
+                        reject(e);
+                    }
+                });
+            })
+    );
 };
 
-const stripNumberRegex = /[^\-\d.+]/g;
 const parseNumber = str => {
     let parsedResult = 0;
     try {
         if (typeof str === "number") return str;
         if (typeof str !== "string") return 0;
         const isFloat = str.indexOf(".") !== -1;
-        str = str.replace(stripNumberRegex, "");
+        str = str.replace(STRIP_NUMBER_REGEX, "");
         if (isFloat) parsedResult = parseFloat(str);
         else parsedResult = parseInt(str, 10);
         if (isNaN(parsedResult)) return 0;
         return parsedResult;
     } catch (e) {
-        console.log("Failed to parse number!");
-        console.log(e);
+        console.error(e);
         return 0;
     }
 };
@@ -123,6 +139,131 @@ const defaultChartOption = {
     color: ["#8856a7", "#9ebcda", "#e0ecf4"]
 };
 
+function testKeywords(str, keywords) {
+    if (!str) {
+        return false;
+    } else if (!keywords || !keywords.length) {
+        return false;
+    } else {
+        const r = new RegExp(`.*(${keywords.join("|")}).*`, "i");
+        return !!r.test(str);
+    }
+}
+
+function fieldDefAdjustment(field) {
+    if (
+        testKeywords(field.label, [
+            "id",
+            "code",
+            "identifier",
+            "postcode",
+            "age",
+            "sex",
+            "suburb",
+            "occupation",
+            "gender",
+            "abn",
+            "acn",
+            "afsl",
+            "pcode",
+            "lic num"
+        ])
+    ) {
+        return {
+            numeric: false,
+            category: true,
+            time: false
+        };
+    } else if (testKeywords(field.label, ["date", "year"])) {
+        field.numeric = false;
+        field.category = false;
+        field.time = true;
+    } else if (testKeywords(field.label, ["amt", "amount", "sum"])) {
+        field.numeric = true;
+        field.category = false;
+        field.time = false;
+    }
+    return field;
+}
+
+function preProcessFields(headerRow, distribution) {
+    let disFields =
+        distribution.visualizationInfo && distribution.visualizationInfo.fields;
+    if (!disFields) disFields = [];
+
+    let newFields = map(disFields, (field, key) =>
+        fieldDefAdjustment({
+            ...field,
+            idx: indexOf(headerRow, key),
+            name: key,
+            label: startCase(key),
+            category: !field.time && !field.numeric,
+            isAggr: false
+        })
+    );
+    //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
+    newFields = filter(newFields, item => item.idx !== -1);
+    if (!newFields.length) {
+        //--- we will not exit but make our own guess
+        newFields = map(headerRow, (headerName, idx) => ({
+            idx,
+            name: headerName,
+            label: startCase(headerName),
+            category: true,
+            time: false,
+            numeric: false,
+            isAggr: false
+        }));
+    }
+    newFields = filter(newFields, item => trim(item.name) !== "");
+    if (!newFields.length) {
+        throw new Error("The data file contains no non-empty header.");
+    }
+    return newFields;
+}
+
+/**
+ * Simple aggregation function.
+ * @param {Array} data : data rows
+ * @param {String} aggrFuncName
+ * @param {Function} aggrFunc
+ * @param {Array} aggrfields
+ *
+ * Examples:
+ *  with data:
+ *
+ * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
+ *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
+ *   {"name":"jim","amount":45,"date":"12/01/2015"},
+ *   {"name":"stacy","amount":12.00,"date":"01/04/2016"},
+ *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
+ *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
+ * ];
+ *
+ *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
+ *  or:
+ *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
+ *
+ */
+function groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
+    if (!data) {
+        throw new Error("`data` cannot be empty!");
+    }
+    if (!aggrfields.length) {
+        throw new Error("`aggrfields` cannot be empty array!");
+    }
+    let nest = d3.nest();
+    forEach(aggrfields, field => (nest = nest.key(d => d[field])));
+    const result = nest.rollup(v => aggrFunc(v)).entries(data);
+    return rollupResult2Rows(result, aggrfields, aggrFuncName);
+}
+
+function getFieldDataType(field) {
+    if (field.time) return "time";
+    if (field.numeric) return "number";
+    return "ordinal";
+}
+
 class ChartDatasetEncoder {
     constructor(distribution: ParsedDistribution) {
         this.fields = null;
@@ -155,141 +296,19 @@ class ChartDatasetEncoder {
         return filter(this.fields, field => field.category);
     }
 
-    get1stNumericColumn() {
-        return find(this.fields, field => field.numeric);
-    }
-
-    get1stTimeColumn() {
-        return find(this.fields, field => field.time);
-    }
-
-    get1stCategoryColumn() {
-        return find(this.fields, field => field.category);
-    }
-
-    testKeyword(str, keyword) {
-        let r = new RegExp(`(^|\\W+)${keyword}(\\W+|$)`, "i");
-        if (r.test(str)) return true;
-        return false;
-    }
-
-    testKeywords(str, keywords) {
-        if (!str) return false;
-        if (!keywords || !keywords.length) return false;
-        for (let i = 0; i < keywords.length; i++) {
-            if (this.testKeyword(str, keywords[i])) return true;
-        }
-        return false;
-    }
-
-    fieldDefAdjustment(field) {
-        if (
-            this.testKeywords(field.label, [
-                "id",
-                "code",
-                "identifier",
-                "postcode",
-                "age",
-                "sex",
-                "suburb",
-                "occupation",
-                "gender"
-            ])
-        ) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (
-            this.testKeywords(field.label, [
-                "abn",
-                "acn",
-                "afsl",
-                "pcode",
-                "lic num"
-            ])
-        ) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (this.testKeywords(field.label, ["year", "date"])) {
-            field.numeric = false;
-            field.category = false;
-            field.time = true;
-        } else if (this.testKeywords(field.label, ["month", "day"])) {
-            if (field.numeric) {
-                field.numeric = false;
-                field.category = false;
-                field.time = true;
-            } else {
-                field.numeric = false;
-                field.category = true;
-                field.time = false;
-            }
-        } else if (this.testKeywords(field.label, ["longitude", "latitude"])) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (this.testKeywords(field.label, ["amt", "amount", "sum"])) {
-            field.numeric = true;
-            field.category = false;
-            field.time = false;
-        }
-        return field;
-    }
-
-    predictInitDataFieldType(headerName, field) {
-        //--- to do: implment more accurate prediction later
-        //--- do nothing is good enough for now as there will be adjustments later
-        return field;
-    }
-
-    preProcessFields(headerRow) {
-        let disFields =
-            this.distribution.visualizationInfo &&
-            this.distribution.visualizationInfo.fields;
-        if (!disFields) disFields = [];
-
-        let newFields = map(disFields, (field, key) =>
-            this.fieldDefAdjustment({
-                ...field,
-                idx: indexOf(headerRow, key),
-                name: key,
-                label: startCase(key),
-                category: !field.time && !field.numeric,
-                isAggr: false
-            })
-        );
-        //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
-        newFields = filter(newFields, item => item.idx !== -1);
-        if (!newFields.length) {
-            //--- we will not exit but make our own guess
-            newFields = map(headerRow, (headerName, idx) => {
-                return this.predictInitDataFieldType(headerName, {
-                    idx,
-                    name: headerName,
-                    label: startCase(headerName),
-                    category: true,
-                    time: false,
-                    numeric: false,
-                    isAggr: false
-                });
-            });
-        }
-        newFields = filter(newFields, item => trim(item.name) !== "");
-        if (!newFields.length) {
-            throw new Error("The data file contains no non-empty header.");
-        }
-        this.fields = newFields;
-        return newFields;
-    }
-
     preProcessData() {
-        if (!this.data || this.data.length < 1)
+        if (!this.data || this.data.length < 1) {
             throw new Error("The data file loaded is empty.");
-        this.preProcessFields(Object.keys(this.data[0]));
+        }
+
+        this.fields = preProcessFields(
+            Object.keys(this.data[0]),
+            this.distribution
+        );
+
         //--- if only one non-numeric column, add new column by count
         if (this.fields.length === 1 && !this.fields[0].numeric) {
-            const newFieldName = "count_" + Math.random();
+            const newFieldName = "count";
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
@@ -300,16 +319,13 @@ class ChartDatasetEncoder {
                 isAggr: true,
                 isAggrDone: true
             });
-            this.data = this.groupBy(
-                this.data,
-                newFieldName,
-                aggregators.count,
-                [this.fields[0].name]
-            );
+            this.data = groupBy(this.data, newFieldName, aggregators.count, [
+                this.fields[0].name
+            ]);
         }
         //--- if unfortunately no numeric cols, present data by selected col's count
         if (!this.getNumericColumns().length) {
-            const newFieldName = "count_" + Math.random();
+            const newFieldName = "count";
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
@@ -345,44 +361,9 @@ class ChartDatasetEncoder {
         }
     }
 
-    /**
-     * Simply aggregation function.
-     * @param {Array} data : data rows
-     * @param {String} aggrFuncName
-     * @param {Function} aggrFunc
-     * @param {Array} aggrfields
-     *
-     * Examples:
-     *  with data:
-     *
-     * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
-     *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
-     *   {"name":"jim","amount":45,"date":"12/01/2015"},
-     *   {"name":"stacy","amount":12.00,"date":"01/04/2016"},
-     *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
-     *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
-     * ];
-     *
-     *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
-     *  or:
-     *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
-     *
-     */
-    groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
-        if (!data) throw new Error("`data` cannot be empty!");
-        if (!aggrfields.length)
-            throw new Error("`aggrfields` cannot be empty array!");
-        let nest = d3.nest();
-        forEach(aggrfields, field => (nest = nest.key(d => d[field])));
-        const result = nest.rollup(v => aggrFunc(v)).entries(data);
-        return rollupResult2Rows(result, aggrfields, aggrFuncName);
-    }
-
     async performDataLoading(url) {
         try {
             this.isDataLoading = true;
-            if (!Papa)
-                Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
             const result = await fetchData(url);
             //--- detect if another loading has started
             if (this.loadingUrl !== url) return;
@@ -444,7 +425,7 @@ class ChartDatasetEncoder {
         if (avlCatXcols.length) {
             //--- CatCol has higher priority
             const xAxis = find(avlCatXcols, field =>
-                this.testKeywords(field.label, higherPriorityNames)
+                testKeywords(field.label, higherPriorityNames)
             );
             if (xAxis) this.setX(xAxis);
             else if (avlCatXcols.length > 1) this.setX(avlCatXcols[1]);
@@ -472,73 +453,48 @@ class ChartDatasetEncoder {
     }
 
     setChartType(chartType) {
-        if (indexOf(avlChartTypes, chartType) === -1)
+        if (indexOf(AVAILABLE_CHART_TYPES, chartType) === -1)
             throw new Error("Unsupported chart type.");
         this.chartType = chartType;
     }
 
-    getFieldDataType(field) {
-        if (field.numeric) return "number";
-        //if(field.time) return "time"; disable time support for now
-        return "ordinal";
-    }
-
-    getEncodeXYNames() {
-        switch (this.chartType) {
-            case "pie":
-                return { xName: "itemName", yName: "value" };
-            case "funnel":
-                return { xName: "itemName", yName: "value" };
-            default:
-                return { xName: "x", yName: "y" };
-        }
-    }
-
-    encodeDataset() {
-        if (!this.chartType || !this.xAxis || !this.yAxis)
-            throw new Error(
-                "`Chart Type`, preferred `xAxis` or `yAxis` are required."
-            );
-        let data, dimensions, encode;
-        const { xName, yName } = this.getEncodeXYNames();
+    getData() {
         if (this.yAxis.isAggr) {
-            //--- we need aggregate data first
-            if (this.yAxis.isAggrDone) data = this.data;
-            else
-                data = this.groupBy(
-                    this.data,
-                    this.yAxis.name,
-                    aggregators.count,
-                    [this.xAxis.name]
-                );
-            dimensions = [
-                {
-                    name: this.xAxis.name,
-                    type: "ordinal",
-                    displayName: this.xAxis.label
-                },
-                {
-                    name: this.yAxis.name,
-                    type: "int",
-                    displayName: this.yAxis.label
-                }
-            ];
-            encode = {
-                [xName]: 0,
-                [yName]: 1,
-                tooltip: [1]
-            };
-        } else if (this.chartType === "pie") {
-            data = this.groupBy(
+            //--- we need to aggregate data first
+            if (this.yAxis.isAggrDone) {
+                return this.data;
+            } else {
+                return groupBy(this.data, this.yAxis.name, aggregators.count, [
+                    this.xAxis.name
+                ]);
+            }
+        } else if (this.chartType === "scatter") {
+            return this.data;
+        } else {
+            return groupBy(
                 this.data,
                 this.yAxis.name,
                 aggregators.sum(this.yAxis.name),
                 [this.xAxis.name]
             );
-            dimensions = [
+        }
+    }
+
+    getDimensions() {
+        if (this.chartType === "scatter") {
+            return map(this.fields, (field, idx) => {
+                const dimensionDef = {
+                    name: field.name,
+                    type: getFieldDataType(field),
+                    displayName: field.label
+                };
+                return dimensionDef;
+            });
+        } else {
+            return [
                 {
                     name: this.xAxis.name,
-                    type: "ordinal",
+                    type: getFieldDataType(this.xAxis),
                     displayName: this.xAxis.label
                 },
                 {
@@ -547,33 +503,77 @@ class ChartDatasetEncoder {
                     displayName: this.yAxis.label
                 }
             ];
-            encode = {
-                [xName]: 0,
-                [yName]: 1,
-                tooltip: [1]
-            };
-        } else {
-            let xAxisIdx = null;
-            let yAxisIdx = null;
-            let tooltipCols = [];
-            dimensions = map(this.fields, (field, idx) => {
-                if (this.yAxis === field) yAxisIdx = idx;
-                else if (this.xAxis === field) xAxisIdx = idx;
-                else tooltipCols.push(idx);
-                const dimensionDef = {
-                    name: field.name,
-                    type: this.getFieldDataType(field),
-                    displayName: field.label
-                };
-                return dimensionDef;
-            });
-            encode = {
+        }
+    }
+
+    getEncodeXYNames() {
+        switch (this.chartType) {
+            case "pie":
+                return { xName: "itemName", yName: "value" };
+            default:
+                return { xName: "x", yName: "y" };
+        }
+    }
+
+    getEncode() {
+        const { xName, yName } = this.getEncodeXYNames();
+
+        if (this.chartType === "scatter") {
+            const { xAxisIdx, yAxisIdx, tooltipCols } = this.fields.reduce(
+                (prevValue, field, idx) => {
+                    if (this.yAxis === field) {
+                        return {
+                            ...prevValue,
+                            yAxisIdx: idx
+                        };
+                    } else if (this.xAxis === field) {
+                        return {
+                            ...prevValue,
+                            xAxisIdx: idx
+                        };
+                    } else {
+                        return {
+                            ...prevValue,
+                            tooltipCols: prevValue.tooltipCols.concat([idx])
+                        };
+                    }
+                },
+                { tooltipCols: [] }
+            );
+
+            return {
                 [xName]: xAxisIdx,
                 [yName]: yAxisIdx,
                 tooltip: concat([yAxisIdx], tooltipCols)
             };
-            data = this.data;
+        } else {
+            return {
+                [xName]: 0,
+                [yName]: 1,
+                tooltip: [1]
+            };
         }
+    }
+
+    encodeDataset() {
+        if (!this.chartType || !this.xAxis || !this.yAxis)
+            throw new Error(
+                "`Chart Type`, preferred `xAxis` or `yAxis` are required."
+            );
+
+        const data = this.getData();
+        const dimensions = this.getDimensions();
+        const encode = this.getEncode();
+
+        if (getFieldDataType(this.xAxis) === "time") {
+            data.forEach(datum => {
+                const rawDate = datum[this.xAxis.name];
+                const parsedDate = chrono.en_GB.parseDate(rawDate);
+                // console.log(rawDate + " vs " + parsedDate);
+                datum[this.xAxis.name] = parsedDate || rawDate;
+            });
+        }
+
         return { dimensions, encode, data };
     }
 
@@ -601,9 +601,15 @@ class ChartDatasetEncoder {
         };
         if (xName === "x") {
             option["xAxis"] = {
-                //type : this.xAxis.time ? "time" : "category"
-                //--- disable time series support for now due to various date format issue
-                type: "category",
+                type: (() => {
+                    if (this.xAxis.time) {
+                        return "time";
+                    } else if (this.xAxis.numeric) {
+                        return "value";
+                    } else {
+                        return "category";
+                    }
+                })(),
                 show: true
             };
             option["yAxis"] = {
@@ -611,6 +617,7 @@ class ChartDatasetEncoder {
                 show: true
             };
         }
+
         if (this.chartType === "pie") {
             option.series[0].label = {
                 show: false
@@ -629,6 +636,7 @@ class ChartDatasetEncoder {
         } else if (this.chartType === "line") {
             option.series[0].areaStyle = {};
         }
+
         return option;
     }
 }
@@ -656,18 +664,9 @@ ChartDatasetEncoder.validateDistributionData = function(
         throw new Error(
             "Cannot locate `downloadURL` field of the distribution data"
         );
-    /*
-    if (
-        !distribution.visualizationInfo ||
-        !distribution.visualizationInfo.fields
-    )
-        throw new Error(
-            "Cannot locate `visualization Information` of the distribution data"
-        );
-    */ //--- we will try to work out something even no visualization info
 };
 
 ChartDatasetEncoder.aggregators = aggregators;
-ChartDatasetEncoder.avlChartTypes = avlChartTypes;
+ChartDatasetEncoder.avlChartTypes = AVAILABLE_CHART_TYPES;
 
 export default ChartDatasetEncoder;

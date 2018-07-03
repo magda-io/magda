@@ -114,7 +114,6 @@ function fetchPublisher(id) {
         const url = `${
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
-        console.log(url);
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {

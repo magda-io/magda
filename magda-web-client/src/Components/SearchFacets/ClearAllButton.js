@@ -25,7 +25,6 @@ const ClearAllButton = ({ location, history, dispatch }) => {
                         as="secondary"
                         className="btn-facet"
                         onClick={() => {
-                            console.log(location);
                             const query = queryString.parse(location.search);
                             const qStr = queryString.stringify({
                                 q: query.q ? query.q : ""
