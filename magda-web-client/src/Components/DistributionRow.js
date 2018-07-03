@@ -132,6 +132,11 @@ class DistributionRow extends Component {
 
     render() {
         const { datasetId, distribution } = this.props;
+
+        const linkActive =
+            distribution.linkActive &&
+            (distribution.downloadURL || distribution.accessURL);
+
         let distributionLink;
         if (!distribution.downloadURL && distribution.accessURL) {
             distributionLink = distribution.accessURL;
@@ -219,18 +224,8 @@ class DistributionRow extends Component {
                     {distribution.downloadURL ? (
                         <button
                             className="download-button au-btn au-btn--secondary"
+                            disabled={!linkActive}
                             onClick={() => {
-                                if (!distribution.downloadURL) {
-                                    this.props.dispatch(
-                                        showTopNotification(
-                                            "Download link is not available for this data source!",
-                                            "Error:",
-                                            "error"
-                                        )
-                                    );
-                                    return;
-                                }
-
                                 // google analytics download tracking
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
@@ -250,6 +245,7 @@ class DistributionRow extends Component {
                             <a
                                 className="button-text"
                                 itemProp="contentUrl"
+                                disabled={!linkActive}
                                 href={distribution.downloadURL}
                             >
                                 Download

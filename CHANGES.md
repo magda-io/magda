@@ -21,6 +21,7 @@
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
 -   Map filter clear button only active when region is selected
+-   Disable interaction with broken links
 
 ## 0.0.42
 

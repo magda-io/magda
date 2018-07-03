@@ -14,37 +14,38 @@ class DistributionDetails extends Component {
     }
 
     renderLinkText(distribution) {
-        const downloadText = distribution.downloadURL ? (
-            <span key={distribution.identifier}>
-                This data file or API can be downloaded from: <br />
-                <a
-                    onClick={distribution => {
-                        // google analytics download tracking
-                        const resource_url = encodeURIComponent(
-                            distribution.downloadURL
-                        );
-                        if (resource_url) {
-                            ga("send", {
-                                hitType: "event",
-                                eventCategory: "Resource",
-                                eventAction: "Download",
-                                eventLabel: resource_url
-                            });
-                        }
-                    }}
-                    href={distribution.downloadURL}
-                >
-                    {" "}
-                    {distribution.downloadURL}
-                </a>
-                {this.renderLinkStatus(
-                    distribution.linkStatusAvailable,
-                    distribution.linkActive
-                )}
-            </span>
-        ) : (
-            ""
-        );
+        const downloadText =
+            distribution.downloadURL && distribution.linkActive ? (
+                <span key={distribution.identifier}>
+                    This data file or API can be downloaded from: <br />
+                    <a
+                        onClick={distribution => {
+                            // google analytics download tracking
+                            const resource_url = encodeURIComponent(
+                                distribution.downloadURL
+                            );
+                            if (resource_url) {
+                                ga("send", {
+                                    hitType: "event",
+                                    eventCategory: "Resource",
+                                    eventAction: "Download",
+                                    eventLabel: resource_url
+                                });
+                            }
+                        }}
+                        href={distribution.downloadURL}
+                    >
+                        {" "}
+                        {distribution.downloadURL}
+                    </a>
+                    {this.renderLinkStatus(
+                        distribution.linkStatusAvailable,
+                        distribution.linkActive
+                    )}
+                </span>
+            ) : (
+                ""
+            );
         const accessText = distribution.accessURL ? (
             <span>
                 This dataset can be accessed from: <br />{" "}
