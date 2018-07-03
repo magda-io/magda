@@ -232,7 +232,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             mapping(indices.getType(Indices.PublisherIndexType)).fields(
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-              magdaTextField("value")
+              magdaTextField("value"),
+              dateField("indexed")
             ))
           .analysis(
             CustomAnalyzerDefinition(
@@ -258,7 +259,8 @@ object IndexDefinition extends DefaultJsonProtocol {
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
             mapping(indices.getType(Indices.FormatsIndexType)).fields(
-              magdaTextField("value")
+              magdaTextField("value"),
+              dateField("indexed")
             ))
           .analysis(
             CustomAnalyzerDefinition(

@@ -335,16 +335,16 @@ class ElasticSearchIndexer(
 
     getSnapshot()
       .flatMap {
-        case Right(results) => Future.successful(results.result.asInstanceOf[GetSnapshotResponse])
+        case Right(results) => Future.successful(results.result.snapshots)
         case Left(RepositoryMissingException(e)) =>
           createSnapshotRepo(client, index).flatMap(_ => getSnapshot).map{
             case Left(ESGenericException(e)) => throw e
-            case Right(results) => Future.successful(results.result.asInstanceOf[GetSnapshotResponse])
+            case Right(results) => Future.successful(results.result)
           }
         case Left(ESGenericException(e)) => throw e
       }.map {
-        case results:GetSnapshotResponse =>
-            results.snapshots
+        case snapshots : Seq[Snapshot] =>
+          snapshots
             .filter(_.snapshot.startsWith(snapshotPrefix(index)))
           .filter(_.shards.failed == 0)
           .sortBy(_.endTimeInMillis)
@@ -405,19 +405,40 @@ class ElasticSearchIndexer(
       }
   }
 
-  def snapshot(): Future[Unit] = setupFuture.flatMap(client => createSnapshot(client, IndexDefinition.dataSets)).map(_ => Unit)
-
-  def trim(before: OffsetDateTime): Future[Unit] =
-    setupFuture.flatMap { client =>
-      client.execute(
-        deleteIn(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).by(
-          rangeQuery("indexed").lt(before.toString)))
-    }.map {
-      case Right(results) =>
-        logger.info("Trimmed {} old datasets", results.result.deleted)
-      case Left(f) =>
-        logger.info("Failed to Trimmed old datasets, {}: {}", f.error.`type`, f.error.reason)
+  def snapshot(): Future[Unit] = {
+    val indexFutureList = List(
+      IndexDefinition.dataSets,
+      IndexDefinition.publishers,
+      IndexDefinition.formats
+    ).map{ idxDef =>
+      setupFuture.flatMap(client => createSnapshot(client, idxDef))
     }
+
+    Future.sequence(indexFutureList).map(_=> Unit)
+  }
+
+
+  def trim(before: OffsetDateTime): Future[Unit] = {
+    val trimIndexFutureList = List(
+      indices.getIndex(config, Indices.DataSetsIndex),
+      indices.getIndex(config, Indices.PublishersIndex),
+      indices.getIndex(config, Indices.FormatsIndex)
+    ).map{ idxName =>
+      setupFuture.flatMap { client =>
+        client.execute(
+          deleteIn(idxName).by(
+            rangeQuery("indexed").lt(before.toString)))
+      }.map {
+        case Right(results) =>
+          logger.info("Trimmed index {} for {} old datasets", idxName, results.result.deleted)
+        case Left(ESGenericException(e)) =>
+          logger.info("Failed to Trimmed index {} old datasets: {}", idxName, e.getMessage)
+      }
+    }
+
+    Future.sequence(trimIndexFutureList).map(_=> Unit)
+  }
+
 
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
@@ -489,14 +510,19 @@ class ElasticSearchIndexer(
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
           "acronym" -> publisher.acronym.toJson,
-          "value" -> publisherName.toJson).toJson)))
+          "value" -> publisherName.toJson,
+          "indexed" -> OffsetDateTime.now.toString.toJson).toJson)
+    ))
 
     val indexFormats = dataSet.distributions.filter(dist => dist.format.isDefined && !"".equals(dist.format.get)).map { distribution =>
       val format = distribution.format.get
 
       ElasticDsl.indexInto(indices.getIndex(config, Indices.FormatsIndex) / indices.getType(Indices.FormatsIndexType))
         .id(format.toLowerCase)
-        .source(Map("value" -> format).toJson)
+        .source(Map(
+          "value" -> format.toJson,
+          "indexed" -> OffsetDateTime.now.toString.toJson
+        ).toJson)
     }
 
     List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
