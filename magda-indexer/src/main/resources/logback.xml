@@ -13,9 +13,9 @@
     <!-- Mute debug message from logback itself-->
     <logger name="ch.qos.logback" level="ERROR" />
     <!-- Mute debug message from elastic4s-->
-    <logger name="com.sksamuel" level="DEBUG" />
+    <logger name="com.sksamuel" level="ERROR" />
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="ASYNC" />
     </root>
 

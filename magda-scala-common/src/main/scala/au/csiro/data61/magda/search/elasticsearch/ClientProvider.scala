@@ -77,8 +77,6 @@ class DefaultClientProvider(implicit val system: ActorSystem,
       case _ : Throwable =>
     }
 
-    logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
-
     val outerFuture = clientFuture match {
       case Some(future) => future
       case None =>
@@ -93,6 +91,8 @@ class DefaultClientProvider(implicit val system: ActorSystem,
                 case (host, port) =>
                   new HttpHost(host, port, if (uri.options.getOrElse("ssl", "false") == "true") "https" else "http")
               }
+
+              logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
 
               val client = RestClient
                 .builder(hosts: _*)
