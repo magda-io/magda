@@ -70,7 +70,7 @@ class DataPreviewMap extends Component {
         }
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.createStateFromProps(this.props);
     }
 
@@ -82,7 +82,7 @@ class DataPreviewMap extends Component {
         window.removeEventListener("message", this.onIframeMessageReceived);
     }
 
-    componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props) {
         this.createStateFromProps(props);
     }
 

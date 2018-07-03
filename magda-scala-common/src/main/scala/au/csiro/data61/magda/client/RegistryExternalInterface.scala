@@ -16,7 +16,7 @@ import akka.http.scaladsl.model.StatusCodes.{ OK, NotFound }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Registry.{ Record, RegistryConverters, RegistryRecordsResponse, WebHook, RegistryConstants, WebHookAcknowledgement, WebHookAcknowledgementResponse }
+import au.csiro.data61.magda.model.Registry.{ Record, RegistryConverters, RegistryRecordsResponse, WebHook, RegistryConstants, WebHookAcknowledgement, WebHookAcknowledgementResponse, RegistryCountResponse }
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
 import java.net.URL
@@ -37,7 +37,8 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
   val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
   val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
-  val baseRecordsPath = s"${baseApiPath}/records?$aspectQueryString&$optionalAspectQueryString"
+  val recordsQueryStrong = s"?$aspectQueryString&$optionalAspectQueryString"
+  val baseRecordsPath = s"${baseApiPath}/records$recordsQueryStrong"
 
   def onError(response: HttpResponse)(entity: String) = {
     val error = s"Registry request failed with status code ${response.status} and entity $entity"
@@ -70,14 +71,6 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
       }
     }
   }
-
-  def getTotalDataSetCount(): Future[Long] =
-    fetcher.get(s"${baseRecordsPath}&limit=0").flatMap { response =>
-      response.status match {
-        case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map(_.totalCount)
-        case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
-      }
-    }
 
   def getWebhooks(): Future[List[WebHook]] = {
     fetcher.get(s"${baseApiPath}/hooks", Seq(authHeader)).flatMap { response =>

@@ -193,9 +193,9 @@ class SearchSuggestionBox extends Component {
         this.setState({ recentSearches });
     }
 
-    componentWillReceiveProps(newProps) {
-        this.saveRecentSearch(newProps, this.props);
-        this.setupSearchInputListener(newProps);
+    componentDidUpdate(prevProps) {
+        this.saveRecentSearch(this.props, prevProps);
+        this.setupSearchInputListener(this.props);
     }
 
     executeSearchItem(item: searchDataType) {

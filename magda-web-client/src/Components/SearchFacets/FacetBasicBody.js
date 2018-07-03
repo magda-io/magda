@@ -5,7 +5,6 @@ import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
 import "./FacetBasicBody.css";
 
-// extends Facet class
 class FacetBasicBody extends Component {
     constructor(props) {
         super(props);
@@ -19,20 +18,22 @@ class FacetBasicBody extends Component {
         };
     }
 
-    componentWillMount() {
-        this.props.searchFacet();
-        this.setState({
-            _activeOptions: this.props.activeOptions
-        });
+    static getDerivedStateFromProps(props) {
+        return {
+            _activeOptions: props.activeOptions
+        };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.resetFilterEvent !== this.props.resetFilterEvent) {
-            // filter has been reset!
+    componentDidMount() {
+        this.props.searchFacet();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.resetFilterEvent !== this.props.resetFilterEvent) {
+            this.props.closeFacet();
             this.setState({
                 _activeOptions: []
             });
-            this.props.closeFacet();
         }
     }
 
@@ -100,9 +101,7 @@ class FacetBasicBody extends Component {
     }
 
     searchBoxValueChange(value) {
-        this.setState({
-            showOptions: !value || value.length === 0
-        });
+        this.props.searchFacet(value);
     }
 
     onApplyFilter() {
@@ -118,7 +117,6 @@ class FacetBasicBody extends Component {
                 <div className="clearfix facet-body__header">
                     <FacetSearchBox
                         renderOption={this.renderOption}
-                        options={this.props.facetSearchResults}
                         onToggleOption={this.onToggleOption}
                         searchBoxValueChange={this.searchBoxValueChange}
                         title={this.props.title}

@@ -49,18 +49,35 @@ export function requestPublisherError(error: FetchError): FacetAction {
 function fetchPublishers(start) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `${
+
+        const ASPECT_QUERY_STRING = "aspect=organization-details";
+
+        const publishersUrl = `${
             config.registryApiUrl
-        }records?aspect=organization-details&limit=1000`;
-        return fetch(url)
-            .then(response => {
+        }records?limit=1000&${ASPECT_QUERY_STRING}`;
+
+        const publisherCountUrl = `${
+            config.registryApiUrl
+        }records/count?${ASPECT_QUERY_STRING}`;
+
+        const fetchResult = url =>
+            fetch(url).then(response => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 throw new Error(response.statusText);
-            })
-            .then(json => {
-                return dispatch(receivePublishers(json));
+            });
+
+        Promise.all([
+            fetchResult(publishersUrl),
+            fetchResult(publisherCountUrl)
+        ])
+            .then(([publishersJson, countJson]) => {
+                const result = {
+                    ...publishersJson,
+                    totalCount: countJson.count
+                };
+                return dispatch(receivePublishers(result));
             })
             .catch(error =>
                 dispatch(

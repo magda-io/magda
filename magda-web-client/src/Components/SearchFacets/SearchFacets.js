@@ -17,9 +17,8 @@ class SearchFacets extends Component {
         this.renderDesktop = this.renderDesktop.bind(this);
     }
 
-    componentWillMount() {
-        const that = this;
-        window.addEventListener("click", that.closeFacetWithKeyBoard);
+    componentDidMount() {
+        window.addEventListener("click", this.closeFacetWithKeyBoard);
     }
 
     closeFacetWithKeyBoard(event) {

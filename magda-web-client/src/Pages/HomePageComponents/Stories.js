@@ -15,7 +15,7 @@ class Stories extends Component {
         this.showStories = this.showStories.bind(this);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         window.addEventListener("scroll", this.showStories);
     }
 

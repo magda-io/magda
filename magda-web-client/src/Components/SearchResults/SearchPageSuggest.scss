@@ -12,6 +12,10 @@
 .suggest-dataset-div {
     padding: 4px;
     position: relative;
+
+    & a:hover {
+        cursor: pointer;
+    }
 }
 
 .correspondence-search-close-button {

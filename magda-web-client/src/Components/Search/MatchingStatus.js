@@ -1,7 +1,6 @@
 // @flow
 import React from "react";
 import "./MatchingStatus.css";
-import Stories from "../../Pages/HomePageComponents/Stories";
 import { Link } from "react-router-dom";
 import AUpageAlert from "../../pancake/react/page-alerts";
 export default function MatchingStatus(props: {
@@ -12,7 +11,8 @@ export default function MatchingStatus(props: {
         if (props.strategy === "match-part") {
             return (
                 <div className="no-matching">
-                    Sorry, no dataset matches all of your search criteria.
+                    The following datasets match some but not all of your search
+                    criteria
                 </div>
             );
         } else {
@@ -26,17 +26,16 @@ export default function MatchingStatus(props: {
                         <p>
                             <strong>
                                 Sorry, we couldn't find any datasets that match
-                                your search query.
+                                your search
                             </strong>
                         </p>
                         <p>
-                            Try another search,{"  "}
-                            <Link to="suggest">suggest a new dataset</Link>
-                            , or have a look at these great datasets
+                            Please try a different search term, check your
+                            spelling or{" "}
+                            <Link to="suggest">suggest a dataset</Link>.
                         </p>
                     </AUpageAlert>
                 </div>
-                <Stories />
             </div>
         );
     }

@@ -43,16 +43,16 @@ class Search extends Component {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.resetDatasetSearch();
         this.props.fetchSearchResultsIfNeeded(
             queryString.parse(this.props.location.search)
         );
     }
 
-    componentWillReceiveProps(nextProps) {
-        nextProps.fetchSearchResultsIfNeeded(
-            queryString.parse(nextProps.location.search)
+    componentDidUpdate() {
+        this.props.fetchSearchResultsIfNeeded(
+            queryString.parse(this.props.location.search)
         );
     }
 

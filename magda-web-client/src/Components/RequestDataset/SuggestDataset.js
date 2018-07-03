@@ -1,5 +1,8 @@
 import React from "react";
 import RequestFormLogic from "./RequestFormLogic";
+import { config } from "../../config";
+import ReactDocumentTitle from "react-document-title";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 export default class Suggest extends React.Component {
     //this is the page on /suggest url
@@ -53,15 +56,26 @@ export default class Suggest extends React.Component {
         };
 
         return (
-            <RequestFormLogic
-                formProps={formProps}
-                alertProps={alertProps}
-                requestType="request"
-                senderName={this.state.senderName}
-                senderEmail={this.state.senderEmail}
-                message={this.state.message}
-                handleChange={this.handleChange}
-            />
+            <ReactDocumentTitle title={"Suggest a Dataset |" + config.appName}>
+                <div>
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            <li>
+                                <span>Suggest a Dataset</span>
+                            </li>
+                        ]}
+                    />
+                    <RequestFormLogic
+                        formProps={formProps}
+                        alertProps={alertProps}
+                        requestType="request"
+                        senderName={this.state.senderName}
+                        senderEmail={this.state.senderEmail}
+                        message={this.state.message}
+                        handleChange={this.handleChange}
+                    />
+                </div>
+            </ReactDocumentTitle>
         );
     }
 }

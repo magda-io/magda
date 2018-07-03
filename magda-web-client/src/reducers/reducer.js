@@ -7,7 +7,6 @@ import facetFormatSearch from "./facetFormatSearchReducer";
 import regionMapping from "./regionMappingReducer";
 import record from "./recordReducer";
 import publisher from "./publisherReducer";
-import project from "./projectReducer";
 import userManagement from "./userManagementReducer";
 import featuredDatasets from "./featuredDatasetsReducer";
 import featuredPublishers from "./featuredPublishersReducer";
@@ -31,7 +30,6 @@ const reducer = combineReducers({
     facetFormatSearch,
     record,
     publisher,
-    project,
     userManagement,
     featuredDatasets,
     featuredPublishers,

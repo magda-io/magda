@@ -355,19 +355,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
-  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
       client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
-        .query(new SimpleStringQueryDefinition(facetQuery.getOrElse("*"))
-          .defaultOperator("or")
-          .analyzeWildcard(true)
-          .field("_all")
-          .field("value.english"))
-        .start(start.toInt)
-        .limit(limit))
+        .query(dismax(Seq(matchPhrasePrefixQuery("value.english", facetQuery.getOrElse("")), matchPhrasePrefixQuery("acronym", facetQuery.getOrElse("")))).tieBreaker(0))
+        .limit(10000))
         .flatMap { response =>
           response.totalHits match {
             case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -399,9 +394,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                       hitCount = bucket.getDocCount)
                 }
 
+                val options = (hits.map {
+                  case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier)
+                }).sortBy(-_.hitCount).drop(start).take(limit)
+
                 FacetSearchResult(
                   hitCount = response.totalHits,
-                  options = hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
+                  options = options)
               }
           }
         }

@@ -37,12 +37,12 @@ export default class DataPreviewTable extends Component<
     componentDidMount() {
         this.fetchData(this.props.distribution.downloadURL);
     }
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         if (
-            nextProps.distribution.downloadURL !==
+            prevProps.distribution.downloadURL !==
             this.props.distribution.downloadURL
         ) {
-            this.fetchData(nextProps.distribution.downloadURL);
+            this.fetchData(this.props.distribution.downloadURL);
         }
         // this.updateDimensions();
     }

@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import close from "../../assets/close-light.svg";
+import close from "../../assets/close-round.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "../../pancake/react/buttons";
 import Modal from "react-modal";

@@ -5,24 +5,9 @@ import SearchPageSuggest from "./SearchPageSuggest";
 import { enableSuggestDatasetPage } from "../../config";
 
 class SearchResults extends Component {
-    getSummaryText() {
-        if (this.props.searchResults.length) {
-            if (this.props.strategy === "match-part") {
-                return (
-                    <div className="search-recomendations__count">
-                        The following {this.props.totalNumberOfResults} datasets
-                        match some but not all of your search criteria
-                    </div>
-                );
-            }
-        }
-        return null;
-    }
-
     render() {
         return (
             <div className="search-results">
-                {this.getSummaryText()}
                 <ul className="list--unstyled">
                     {this.props.searchResults.map(
                         (result, i) =>
