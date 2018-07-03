@@ -76,6 +76,40 @@ class RecordHandler extends React.Component {
             ? this.props.dataset.publisher.id
             : null;
 
+        const downloadLink =
+            this.props.distribution.linkActive &&
+            this.props.distribution.downloadURL ? (
+                <div>
+                    <AUbutton
+                        className="distribution-download-button"
+                        href={this.props.distribution.downloadURL}
+                        alt="distribution download button"
+                    >
+                        Download
+                    </AUbutton>
+                    <Small>
+                        <DescriptionBox
+                            content={this.props.distribution.description}
+                            truncateLength={200}
+                        />
+                    </Small>
+                    <Medium>
+                        <DescriptionBox
+                            content={this.props.distribution.description}
+                            truncateLength={500}
+                        />
+                    </Medium>
+                </div>
+            ) : (
+                <div
+                    role="alert"
+                    className="au-page-alerts au-page-alerts--info"
+                    aria-label="download not available"
+                >
+                    Oops this data set is not available
+                </div>
+            );
+
         if (this.props.match.params.distributionId) {
             if (this.props.distributionIsFetching) {
                 return <ProgressBar />;
@@ -130,25 +164,7 @@ class RecordHandler extends React.Component {
                             {this.props.distribution.license}
                         </div>
                         <br />
-                        <AUbutton
-                            className="distribution-download-button"
-                            href={this.props.distribution.downloadURL}
-                            alt="distribution download button"
-                        >
-                            Download
-                        </AUbutton>{" "}
-                        <Small>
-                            <DescriptionBox
-                                content={this.props.distribution.description}
-                                truncateLength={200}
-                            />
-                        </Small>
-                        <Medium>
-                            <DescriptionBox
-                                content={this.props.distribution.description}
-                                truncateLength={500}
-                            />
-                        </Medium>
+                        {downloadLink}
                         <div className="tab-content">
                             <Switch>
                                 <Route

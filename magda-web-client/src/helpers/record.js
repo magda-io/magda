@@ -75,7 +75,8 @@ export type RawDistribution = {
     aspects: {
         "dcat-distribution-strings": dcatDistributionStrings,
         "source-link-status": {
-            status: ?string
+            status: ?string,
+            httpStatusCode: number
         },
         "visualization-info": {
             fields: Object,
