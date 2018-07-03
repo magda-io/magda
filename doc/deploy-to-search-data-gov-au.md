@@ -128,9 +128,11 @@ lerna publish --skip-npm --skip-git --force-publish
 
 *   [ ] Commit and tag as vx.x.x, then push the tag
 
-*   [ ] This will create a staging cluster just like the RC did - make sure everything's running ok.
+*   [ ] Retag the last RC docker images as the new version
 
-*   [ ] Shut down the staging cluster
+```bash
+yarn run retag-and-push -- -- --fromVersion=x.x.x-RC1 --toVersion=x.x.x
+```
 
 -   [ ] Set that latest tag as a "release" in github.
 

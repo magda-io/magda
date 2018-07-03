@@ -28,11 +28,11 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **Research: Magda as an Internal Portal**: Building on publishing and access-control, we want to extend Magda so that it's useful for government agencies to run as internal data portals. This involves:
 
-*   Being able to publish data directly
-*   Ingesting data from a range of existing applications
-*   Allowing each user to search over data that they're allowed to see
-*   Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.
-*   Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.
+-   Being able to publish data directly
+-   Ingesting data from a range of existing applications
+-   Allowing each user to search over data that they're allowed to see
+-   Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.
+-   Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.
 
 **Authorisation**: User access controls and basic UI
 
@@ -48,12 +48,12 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 **Subjective Data Usefulness/Usability/Ease-of-Use/Interest**: On data.gov.au there are many datasets that rate well on the 5-star scale (say a CC-licensed CSV), but are subjectively not as useful as other datasets. Ideally in addition to applying _objective_ measures of quality like the 5-star scale, Magda would also measure datasets _subjectively_, taking into account how useful, usable and relevant to the average user a dataset is. When an internet user searches for a document on the web via Google, they don't just expect the most relevant results to come back, they also expect the highest quality results, which Google determines via a number of measures, some of which apply quite a subjective view of what a high-quality page is. We'd like to develop something similar for Magda: we want to make it so that a search for specific data always returns that data, but more general searches return the most useful and interesting datasets that fit the criteria. Some ideas we're considering:
 
-*   General vs. Specific Interest: e.g. a CSV of a single local council's bin collection dates is only ever going to be useful to a handful of people, and ideally would show up in the search below datasets of a more general interest unless directly searched for.
-*   Promoting datasets that match established formats and schemas - e.g. CSV-Geo-Au, Frictionless data
-*   Promoting datasets with clear and commonly-used member/column names, e.g. "latitude", "longitude", "date" etc, as these are easier to understand, interpret, link together, visualise etc.
-*   Demoting datasets where the primary information is present as ids: e.g. a CSV of dates along with the id of a record of whatever correlates with that date. Sometimes the data that goes along with the ids is present elsewhere and hence the dataset is still useful, but these kinds of datasets are less useful than those that put all the relevant information together for easy consumption, or use IDs in a way that makes it possible to easily combine datasets, e.g. with linked data formats.
-*   Demoting datasets where the data is unnecessarily split up into many files, e.g. a CSV for each month: this is easier to publish, but harder to consume.
-*   Demoting datasets with inconsistently formatted data: e.g. columns shouldn't switch from one date format to another in row 21000, or introduce text into a column that otherwise consists of numbers.
+-   General vs. Specific Interest: e.g. a CSV of a single local council's bin collection dates is only ever going to be useful to a handful of people, and ideally would show up in the search below datasets of a more general interest unless directly searched for.
+-   Promoting datasets that match established formats and schemas - e.g. CSV-Geo-Au, Frictionless data
+-   Promoting datasets with clear and commonly-used member/column names, e.g. "latitude", "longitude", "date" etc, as these are easier to understand, interpret, link together, visualise etc.
+-   Demoting datasets where the primary information is present as ids: e.g. a CSV of dates along with the id of a record of whatever correlates with that date. Sometimes the data that goes along with the ids is present elsewhere and hence the dataset is still useful, but these kinds of datasets are less useful than those that put all the relevant information together for easy consumption, or use IDs in a way that makes it possible to easily combine datasets, e.g. with linked data formats.
+-   Demoting datasets where the data is unnecessarily split up into many files, e.g. a CSV for each month: this is easier to publish, but harder to consume.
+-   Demoting datasets with inconsistently formatted data: e.g. columns shouldn't switch from one date format to another in row 21000, or introduce text into a column that otherwise consists of numbers.
 
 We're planning to do a lot of research into what exactly data consumers find useful
 

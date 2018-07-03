@@ -1,6 +1,6 @@
 // @flow
 import fetch from "isomorphic-fetch";
-import parseQuery from "../helpers/parseQuery";
+import buildSearchQueryString from "../helpers/buildSearchQueryString";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import type { FetchError } from "../types";
@@ -88,7 +88,7 @@ export function shouldFetchSearchResults(
 }
 
 export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
-    const apiQuery = parseQuery(urlQueryObject);
+    const apiQuery = buildSearchQueryString(urlQueryObject);
     return (dispatch, getState) => {
         if (shouldFetchSearchResults(getState(), urlQueryObject.q, apiQuery)) {
             return dispatch(fetchSearchResults(apiQuery, urlQueryObject));

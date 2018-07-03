@@ -1,24 +1,8 @@
 import React, { Component } from "react";
+import debounce from "lodash.debounce";
+
 import "./FacetSearchBox.css";
-import Autosuggest from "react-autosuggest";
 import search from "../../assets/search-dark.svg";
-
-// Teach Autosuggest how to calculate suggestions for any given input value.
-const getSuggestions = (source, value) => {
-    const inputValue = value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-
-    return inputLength === 0
-        ? []
-        : source.filter(
-              s => s.value.toLowerCase().slice(0, inputLength) === inputValue
-          );
-};
-
-// When suggestion is clicked, Autosuggest needs to populate the input
-// based on the clicked suggestion. Teach Autosuggest how to calculate the
-// input value for every given suggestion.
-const getSuggestionValue = suggestion => suggestion.value;
 
 /**
  * Searchbox for facet facet
@@ -26,48 +10,26 @@ const getSuggestionValue = suggestion => suggestion.value;
 class FacetSearchBox extends Component {
     constructor(props) {
         super(props);
-        this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
         this.state = {
-            value: "",
-            suggestions: []
+            value: ""
         };
     }
 
-    onChange = (event, { newValue }) => {
+    onChange = event => {
+        const value = event.target.value;
         this.setState({
-            value: newValue
+            value
         });
-        this.props.searchBoxValueChange(newValue);
+        this.debounceDoSearch(value);
     };
 
-    onSuggestionsFetchRequested = ({ value }) => {
-        this.setState({
-            suggestions: getSuggestions(this.props.options, value)
-        });
+    doSearch = value => {
+        this.props.searchBoxValueChange(value);
     };
-
-    // Autosuggest will call this function every time you need to clear suggestions.
-    onSuggestionsClearRequested = () => {
-        this.setState({
-            suggestions: []
-        });
-    };
-
-    renderSuggestion(suggestion) {
-        return (
-            <div className="btn-facet-option__name">
-                {suggestion.value} ({suggestion.hitCount})
-            </div>
-        );
-    }
-
-    onSuggestionSelected(event, { suggestion }) {
-        this.props.onToggleOption(suggestion);
-        this.onChange(null, { newValue: "" });
-    }
+    debounceDoSearch = debounce(this.doSearch, 500);
 
     render() {
-        const { value, suggestions } = this.state;
+        const { value } = this.state;
 
         // Autosuggest will pass through all these props to the input.
         const inputProps = {
@@ -80,26 +42,15 @@ class FacetSearchBox extends Component {
         return (
             <div className="facet-search-box">
                 <img className="search-icon" src={search} alt="search" />
-                <Autosuggest
+                <input
                     className="au-text-input au-text-input--block"
-                    suggestions={suggestions}
-                    onSuggestionsFetchRequested={
-                        this.onSuggestionsFetchRequested
-                    }
-                    onSuggestionsClearRequested={
-                        this.onSuggestionsClearRequested
-                    }
-                    getSuggestionValue={getSuggestionValue}
-                    renderSuggestion={this.renderSuggestion}
-                    inputProps={inputProps}
-                    onSuggestionSelected={this.onSuggestionSelected}
-                    focusInputOnSuggestionClick={false}
+                    {...inputProps}
                 />
             </div>
         );
     }
 }
 
-FacetSearchBox.defaultProps = { options: [] };
+FacetSearchBox.defaultProps = {};
 
 export default FacetSearchBox;

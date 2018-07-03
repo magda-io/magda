@@ -108,7 +108,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           rowToEvent(rs)
         }).list.apply()
 
-    EventsPage(lastEventIdInPage.map(_.toString), events)
+    EventsPage(lastEventIdInPage.isDefined, lastEventIdInPage.map(_.toString), events)
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {
