@@ -92,6 +92,7 @@ class DefaultClientProvider(implicit val system: ActorSystem,
                   new HttpHost(host, port, if (uri.options.getOrElse("ssl", "false") == "true") "https" else "http")
               }
 
+              logger.info("Elastic Client server Url: {}", uri.uri)
               logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
 
               val client = RestClient
