@@ -140,7 +140,7 @@ export default class RequestFormTemplate extends React.Component {
     render() {
         return (
             <form className="correspondence-form" method="post">
-                {this.props.title && <AUheader title={this.props.title} />}
+                {this.props.title && <AUheader>{this.props.title}</AUheader>}
                 <label htmlFor="message" className="field-label">
                     {this.props.textAreaLabel}
                 </label>
