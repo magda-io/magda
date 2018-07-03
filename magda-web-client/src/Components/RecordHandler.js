@@ -134,6 +134,20 @@ class RecordHandler extends React.Component {
                             className="au-btn distribution-download-button"
                             href={this.props.distribution.downloadURL}
                             alt="distribution download button"
+                            onClick={() => {
+                                // google analytics download tracking
+                                const resource_url = encodeURIComponent(
+                                    this.props.distribution.downloadURL
+                                );
+                                if (resource_url) {
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Resource",
+                                        eventAction: "Download",
+                                        eventLabel: resource_url
+                                    });
+                                }
+                            }}
                         >
                             Download
                         </a>{" "}
