@@ -20,7 +20,7 @@ spec:
           - "/app/bin/magda-search-api"
           - "-Dhttp.port=80"
           - "-Dakka.loglevel={{ .Values.global.logLevel }}"
-          - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300"
+          - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
 {{- if .Values.datasetsIndexVersion }}
           - "-DelasticSearch.indices.datasets.version={{ .Values.datasetsIndexVersion }}"
 {{- end }}
