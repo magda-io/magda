@@ -406,23 +406,23 @@ class ElasticSearchIndexer(
   }
 
   def snapshot(): Future[Unit] = {
-    val indexFutureList = List(
+    List(
       IndexDefinition.dataSets,
       IndexDefinition.publishers,
       IndexDefinition.formats
-    ).map{ idxDef =>
-      setupFuture.flatMap(client => createSnapshot(client, idxDef))
-    }
-
-    Future.sequence(indexFutureList).map(_=> Unit)
+    ).foldLeft(Future.successful(Unit)){ (f, idxDef) =>
+      f.flatMap(_=> setupFuture.flatMap(client => createSnapshot(client, idxDef)).map(_=>Unit))
+    }.map(_=>Unit)
   }
 
 
   def trim(before: OffsetDateTime): Future[Unit] = {
+    //-- Caution: Elastic4s incorrect add _all to the endpoint if idx `type` not provide
+    //-- Before it's fixed, we cannot remove the idx type
     val trimIndexFutureList = List(
-      indices.getIndex(config, Indices.DataSetsIndex),
-      indices.getIndex(config, Indices.PublishersIndex),
-      indices.getIndex(config, Indices.FormatsIndex)
+      indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType),
+      indices.getIndex(config, Indices.PublishersIndex) / indices.getType(Indices.PublisherIndexType),
+      indices.getIndex(config, Indices.FormatsIndex) / indices.getType(Indices.FormatsIndexType)
     ).map{ idxName =>
       setupFuture.flatMap { client =>
         client.execute(
@@ -436,7 +436,7 @@ class ElasticSearchIndexer(
       }
     }
 
-    Future.sequence(trimIndexFutureList).map(_=> Unit)
+    Future.sequence(trimIndexFutureList).map(_=>Unit)
   }
 
 
