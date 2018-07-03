@@ -1,6 +1,8 @@
 ## 0.0.44
 
 -   Updated documentation for setting up `Docker Edge` for Kubeernetes.
+-   Modified error message text and omitted homepage articles if search error occurs.
+-   Changed chart icons on dataset page
 
 ## 0.0.43
 
@@ -18,6 +20,7 @@
 -   Upgraded `basemaps.cartocdn.com` url to HTTPS.
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
+-   Map filter clear button only active when region is selected
 
 ## 0.0.42
 
