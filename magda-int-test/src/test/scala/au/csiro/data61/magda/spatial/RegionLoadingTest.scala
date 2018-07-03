@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.spatial
 
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticDsl, IndexDefinition, Indices}
 import java.nio.file.FileSystems
 import java.nio.file.Files
 
@@ -13,7 +13,7 @@ import org.scalatest.Matchers
 import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
 import com.monsanto.labs.mwundo.GeoJson._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.locationtech.jts.geom.Envelope
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -21,8 +21,6 @@ import akka.stream.scaladsl.Source
 import akka.testkit.TestKit
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import au.csiro.data61.magda.util.MwundoJTSConversions._
@@ -32,13 +30,13 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
 
 import scala.util.Try
-import com.typesafe.config.Config
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.http.get.GetResponse
 
 class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with MagdaElasticSugar {
@@ -48,7 +46,12 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(20), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
-  implicit val config = TestActorSystem.config
+  val node = getNode
+  implicit val config = TestActorSystem.config.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+
+  val clientProvider = new DefaultClientProvider
+
+  override def client(): HttpClient = clientProvider.getClient().await
 
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {

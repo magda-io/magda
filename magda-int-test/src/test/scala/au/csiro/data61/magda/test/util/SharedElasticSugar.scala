@@ -2,11 +2,12 @@ package au.csiro.data61.magda.test.util.testkit
 
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
 import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.{IndexAndTypes, Indexes}
 import org.elasticsearch.ResourceAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
-import org.slf4j.{LoggerFactory, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 trait SharedElasticSugar extends HttpElasticSugar
 
@@ -17,10 +18,12 @@ trait SharedElasticSugar extends HttpElasticSugar
   */
 trait HttpElasticSugar extends LocalNodeProvider{
 
-  val client = getNode.client(false)
+  private val esLogger : Logger = LoggerFactory getLogger getClass.getName
+
+  //val client = getNode.client(false)
+  def client():HttpClient
   def http = client
 
-  private val esLogger : Logger = LoggerFactory getLogger getClass.getName
   // refresh all indexes
   def refreshAll(): RefreshIndexResponse = refresh(Indexes.All)
 

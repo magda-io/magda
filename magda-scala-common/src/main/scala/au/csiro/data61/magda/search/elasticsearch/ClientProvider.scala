@@ -48,6 +48,9 @@ class DefaultClientProvider(implicit val system: ActorSystem,
         case _ : Throwable  =>
       }
 
+      logger.info("Elastic Client connectTimeout: {}", connectTimeout)
+      logger.info("Elastic Client socketTimeout: {}", socketTimeout)
+
       requestConfigBuilder
         /* It's a long lasting bug in upstream Elasticsearch project Rest Client Code
          * See https://github.com/elastic/elasticsearch/issues/24069
@@ -73,6 +76,8 @@ class DefaultClientProvider(implicit val system: ActorSystem,
       //--- mute the error, default value will be used
       case _ : Throwable =>
     }
+
+    logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
 
     val outerFuture = clientFuture match {
       case Some(future) => future

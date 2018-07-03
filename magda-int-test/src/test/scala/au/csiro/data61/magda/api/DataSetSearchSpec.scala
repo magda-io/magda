@@ -148,7 +148,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val indices = new FakeIndices(indexName)
 
         try {
-          blockUntilExactCount(allDatasets.size, indexName, indices.getType(Indices.DataSetsIndexType))
+          blockUntilExactCount(allDatasets.size, indexName)
 
           forAll(searchKeywordGen) {
             case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
@@ -206,7 +206,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val indices = new FakeIndices(indexName)
 
         try {
-          blockUntilExactCount(allDatasets.size, indexName, indices.getType(Indices.DataSetsIndexType))
+          blockUntilExactCount(allDatasets.size, indexName)
 
           forAll(randomCaseAcronymGen) {
             case GenResult(randomCaseAcronym, datasetWithPublisher) =>

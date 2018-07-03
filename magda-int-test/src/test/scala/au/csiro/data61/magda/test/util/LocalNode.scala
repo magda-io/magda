@@ -150,7 +150,6 @@ object LocalNode {
       .builder()
       .put(settings)
       .put("http.type", "netty4")
-      .put("http.enabled", "true")
       .put("node.max_local_storage_nodes", "10")
       .build()
 
