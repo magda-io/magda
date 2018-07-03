@@ -62,8 +62,8 @@ indexer:
     requests:
       cpu: 100m
       memory: 0
-  readSnapshots: true
-  makeSnapshots: true
+  readSnapshots: false
+  makeSnapshots: false
   elasticsearch:
     useGcsSnapshots: true
     gcsSnapshotBucket: "magda-es-snapshots-dev"

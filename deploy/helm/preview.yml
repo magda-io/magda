@@ -59,7 +59,7 @@ indexer:
     requests:
       cpu: 100m
       memory: 0
-  readSnapshots: true
+  readSnapshots: false
   makeSnapshots: false
   elasticsearch:
     useGcsSnapshots: true
