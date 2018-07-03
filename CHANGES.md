@@ -2,6 +2,7 @@
 
 -   Removed `a` link inside of dataset download button component.
 -   Modified error message text and omitted homepage articles if search error occurs.
+-   Changed chart icons on dataset page
 
 ## 0.0.43
 
