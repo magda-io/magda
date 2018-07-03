@@ -84,7 +84,6 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
             override def getDataSetsReturnToken(start: Long = 0, number: Int = 10): Future[(Option[String], List[DataSet])] = {
               Future(Some((start.toInt + number).toString), dataSets.drop(start.toInt).take(number))
             }
-            override def getTotalDataSetCount(): Future[Long] = Future(dataSets.length)
           }
       }
       val indices = new FakeIndices(indexId.toString)

@@ -28,6 +28,9 @@ import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
+import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
+import org.elasticsearch.search.aggregations.bucket.terms.Terms
+import com.sksamuel.elastic4s.searches.aggs.TermsOrder
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -108,6 +111,8 @@ trait FacetDefinition {
       .map(lookup.get(_).get.head)
       .take(limit)
   }
+
+  def autocompleteQuery(textQuery: String): QueryDefinition
 }
 
 object FacetDefinition {
@@ -158,6 +163,8 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = exactPublisherQuery(query)
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
+
+  override def autocompleteQuery(textQuery: String) = matchQuery("publisher.name.english", textQuery)
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
@@ -170,8 +177,9 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .size(limit)
         .includeExclude(Seq(), Seq(""))
         .subAggregations {
-          aggregation reverseNested "reverse"
+          reverseNestedAggregation("reverse")
         }
+        .order(TermsOrder("reverse", false))
     }
 
   override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = {
@@ -207,4 +215,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def exactMatchQuery(query: FilterValue[String]): QueryDefinition = Queries.formatQuery(SearchStrategy.MatchAll)(query)
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
+
+  override def autocompleteQuery(textQuery: String) = nestedQuery("distributions")
+    .query(matchQuery("distributions.format.english", textQuery))
 }

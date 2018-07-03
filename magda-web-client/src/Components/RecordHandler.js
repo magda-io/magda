@@ -18,7 +18,7 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
-import AUbutton from "@gov.au/buttons";
+import AUbutton from "../pancake/react/buttons";
 import Separator from "../UI/Separator";
 import { Small, Medium } from "../UI/Responsive";
 import DescriptionBox from "../UI/DescriptionBox";

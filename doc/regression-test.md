@@ -3,8 +3,6 @@
 -   [ ] Do all of the links in the header work?
 -   [ ] Do all of the links in the footer work?
 -   [ ] Does all of the links and content on the homepage go somewhere?
--   [ ] Are you able to login, log out, reset password?
--   [ ] Does the website show you what state of login you are in?
 
 ### Search
 

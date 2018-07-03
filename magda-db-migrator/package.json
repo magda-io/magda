@@ -5,7 +5,8 @@
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "make-latest": "bash -c \"docker tag data61/magda-postgres:$npm_package_version data61/magda-postgres:latest && docker push data61/magda-postgres:latest\"",
-    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local"
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "retag-and-push": "retag-and-push"
   },
   "author": "",
   "license": "Apache-2.0",
