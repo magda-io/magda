@@ -12,8 +12,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
+import com.sksamuel.elastic4s.searches.queries.{InnerHitDefinition, QueryDefinition, QueryStringQueryDefinition, SimpleStringQueryDefinition}
 import com.typesafe.config.Config
 import spray.json._
 import akka.actor.ActorSystem
@@ -22,8 +21,7 @@ import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
-import au.csiro.data61.magda.api.model.RegionSearchResult
-import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
@@ -38,13 +36,13 @@ import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
 
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
-import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
 import com.sksamuel.elastic4s.searches.ScoreMode
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
+import com.sksamuel.elastic4s.searches.collapse.CollapseDefinition
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import com.sksamuel.elastic4s.http.HttpClient
@@ -440,6 +438,50 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           }
         }
     }
+  }
+
+  override def searchOrganisations(queryString: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult] = {
+
+    clientFuture.flatMap{ client =>
+      client.execute(
+        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex))
+          .start(start)
+          .limit(limit)
+          .query {
+            simpleStringQuery(queryString.getOrElse("*"))
+              .field("publisher.name")
+              .field("publisher.acronym")
+              .field("publisher.description")
+          }
+          .aggs(cardinalityAgg("totalCount","publisher.identifier"))
+          .sortByFieldAsc("publisher.name.keyword")
+          .collapse(new CollapseDefinition(
+          "publisher.identifier",
+          Some(new InnerHitDefinition("datasetCount", Some(1)))
+        ))
+      ).flatMap{
+        case Right(r) =>
+          val orgs = r.result.hits.hits.flatMap(h=>{
+            val d = h.to[DataSet]
+            val innerHit = h.innerHits.get("datasetCount")
+            d.publisher.map(o=> o.copy(datasetCount = innerHit.map(h=>{
+              h.total
+            })))
+          }).toList
+
+          val totalCount = r.result.aggregations.cardinality("totalCount").value
+          Future(OrganisationsSearchResult(queryString, totalCount.toLong, orgs))
+        case Left(ESGenericException(e)) => throw e
+      }.recover{
+        case RootCause(illegalArgument: IllegalArgumentException) =>
+          logger.error(illegalArgument, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Bad argument: " + illegalArgument.getMessage))
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Error: " + e.getMessage))
+      }
+    }
+
   }
 
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: HttpClient): Future[Option[Region]] = {

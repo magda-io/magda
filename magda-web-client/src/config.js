@@ -32,6 +32,10 @@ export const enableSuggestDatasetPage = true;
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
+
+const organizationApiUrl =
+    serverConfig.searchApiBaseUrl ||
+    fallbackApiHost + "api/v0/search/organisations";
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
@@ -46,6 +50,7 @@ export const config = {
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
+    organizationApiUrl: organizationApiUrl,
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
     authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",

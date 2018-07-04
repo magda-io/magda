@@ -5,6 +5,7 @@
 -   Changed chart icons on dataset page
 -   Made `elasticsearch` supports synonyms
 -   Upgraded `elasticsearch` to v6.3.0
+-   Enable organisation search
 
 ## 0.0.43
 

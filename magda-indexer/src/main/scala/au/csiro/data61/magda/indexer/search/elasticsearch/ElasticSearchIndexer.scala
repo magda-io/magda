@@ -511,6 +511,7 @@ class ElasticSearchIndexer(
           "identifier" -> publisher.identifier.toJson,
           "acronym" -> publisher.acronym.toJson,
           "value" -> publisherName.toJson,
+          "description" -> publisher.description.toJson,
           "indexed" -> OffsetDateTime.now.toString.toJson).toJson)
     ))
 

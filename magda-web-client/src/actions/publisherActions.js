@@ -46,38 +46,22 @@ export function requestPublisherError(error: FetchError): FacetAction {
     };
 }
 
-function fetchPublishers(start) {
+function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-
-        const ASPECT_QUERY_STRING = "aspect=organization-details";
-
-        const publishersUrl = `${
-            config.registryApiUrl
-        }records?limit=1000&${ASPECT_QUERY_STRING}`;
-
-        const publisherCountUrl = `${
-            config.registryApiUrl
-        }records/count?${ASPECT_QUERY_STRING}`;
-
-        const fetchResult = url =>
-            fetch(url).then(response => {
+        const url = `${
+            config.organizationApiUrl
+        }?query=${query}&start=${(start - 1) * 20}&limit=20`;
+        console.log(url);
+        return fetch(url)
+            .then(response => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 throw new Error(response.statusText);
-            });
-
-        Promise.all([
-            fetchResult(publishersUrl),
-            fetchResult(publisherCountUrl)
-        ])
-            .then(([publishersJson, countJson]) => {
-                const result = {
-                    ...publishersJson,
-                    totalCount: countJson.count
-                };
-                return dispatch(receivePublishers(result));
+            })
+            .then(json => {
+                return dispatch(receivePublishers(json));
             })
             .catch(error =>
                 dispatch(
@@ -98,10 +82,10 @@ function shouldFetchPublishers(state) {
     return true;
 }
 
-export function fetchPublishersIfNeeded(start: number): Object {
+export function fetchPublishersIfNeeded(start: number, query: string): Object {
     return (dispatch: Function, getState: Function) => {
         if (shouldFetchPublishers(getState())) {
-            return dispatch(fetchPublishers(start));
+            return dispatch(fetchPublishers(start, query));
         } else {
             return Promise.resolve();
         }
@@ -115,6 +99,7 @@ function fetchPublisher(id) {
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
         console.log(url);
+
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
