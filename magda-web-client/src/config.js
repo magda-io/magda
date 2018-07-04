@@ -34,7 +34,7 @@ const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 
 const organizationApiUrl =
-    serverConfig.registryApiBaseUrl ||
+    serverConfig.searchApiBaseUrl ||
     fallbackApiHost + "api/v0/search/organisations";
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
