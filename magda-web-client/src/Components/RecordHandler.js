@@ -11,6 +11,7 @@ import {
 } from "../actions/recordActions";
 import { config } from "../config";
 import defined from "../helpers/defined";
+import ga from "../analytics/googleAnalytics";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
 import DatasetDetails from "./Dataset/DatasetDetails";
@@ -18,7 +19,6 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
-import AUbutton from "../pancake/react/buttons";
 import Separator from "../UI/Separator";
 import { Small, Medium } from "../UI/Responsive";
 import DescriptionBox from "../UI/DescriptionBox";
