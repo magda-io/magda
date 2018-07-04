@@ -1,9 +1,3 @@
-## 0.0.44
-
--   Updated documentation for setting up `Docker Edge` for Kubernetes.
--   Modified error message text and omitted homepage articles if search error occurs.
--   Changed chart icons on dataset page
-
 ## 0.0.43
 
 -   Fix design system react import for SASS overrides
