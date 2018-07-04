@@ -17,6 +17,12 @@
         padding: 4px;
         display: flex;
     }
+
+    @media (min-width: $medium) {
+        .btn-facet {
+            height: 38px;
+        }
+    }
     @media (max-width: $medium) {
         .btn-facet {
             width: 100%;
