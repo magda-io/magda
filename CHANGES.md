@@ -14,6 +14,7 @@
 -   Upgraded `basemaps.cartocdn.com` url to HTTPS.
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
+-   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 
 ## 0.0.42
 
