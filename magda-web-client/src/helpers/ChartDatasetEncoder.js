@@ -322,9 +322,9 @@ class ChartDatasetEncoder {
             this.data = groupBy(this.data, newFieldName, aggregators.count, [
                 this.fields[0].name
             ]);
-        }
-        //--- if unfortunately no numeric cols, present data by selected col's count
-        if (!this.getNumericColumns().length) {
+        } else {
+            //--- if unfortunately no numeric cols, present data by selected col's count
+            // if (!this.getNumericColumns().length) {
             const newFieldName = "count";
             this.fields.push({
                 idx: 1,
@@ -414,10 +414,10 @@ class ChartDatasetEncoder {
             "sex",
             "occupation",
             "state",
-            "name",
             "city",
             "company",
-            "postcode"
+            "postcode",
+            "category"
         ];
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
@@ -459,25 +459,66 @@ class ChartDatasetEncoder {
     }
 
     getData() {
-        if (this.yAxis.isAggr) {
-            //--- we need to aggregate data first
-            if (this.yAxis.isAggrDone) {
+        const inner = () => {
+            if (this.yAxis.isAggr) {
+                //--- we need to aggregate data first
+                if (this.yAxis.isAggrDone) {
+                    return this.data;
+                } else {
+                    return groupBy(
+                        this.data,
+                        this.yAxis.name,
+                        aggregators.count,
+                        [this.xAxis.name]
+                    );
+                }
+            } else if (this.chartType === "scatter") {
                 return this.data;
             } else {
-                return groupBy(this.data, this.yAxis.name, aggregators.count, [
-                    this.xAxis.name
-                ]);
+                return groupBy(
+                    this.data,
+                    this.yAxis.name,
+                    aggregators.sum(this.yAxis.name),
+                    [this.xAxis.name]
+                );
             }
-        } else if (this.chartType === "scatter") {
-            return this.data;
-        } else {
-            return groupBy(
-                this.data,
-                this.yAxis.name,
-                aggregators.sum(this.yAxis.name),
-                [this.xAxis.name]
-            );
-        }
+        };
+
+        const unsortedData = inner().map(datum => {
+            const rawValue = datum[this.xAxis.name];
+
+            if (getFieldDataType(this.xAxis) === "time") {
+                // Parse a date
+                const parsedDate = chrono.en_GB.parseDate(rawValue);
+                return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
+                // } else if (getFieldDataType(this.xAxis) === "ordinal") {
+                //     // Truncate the category
+                //     return {
+                //         ...datum,
+                //         [this.xAxis.name]:
+                //             rawValue.length > 15
+                //                 ? rawValue.substring(0, 12) + "..."
+                //                 : rawValue
+                //     };
+            } else {
+                return datum;
+            }
+        });
+
+        const sortFunc = (() => {
+            if (getFieldDataType(this.xAxis) === "time") {
+                return datum => {
+                    const xValue = datum[this.xAxis.name];
+                    return xValue.getTime ? xValue.getTime() : xValue;
+                };
+            } else {
+                return datum => datum[this.xAxis.name];
+            }
+        })();
+
+        const data = sortBy(unsortedData, sortFunc);
+
+        return data;
     }
 
     getDimensions() {
@@ -565,15 +606,6 @@ class ChartDatasetEncoder {
         const dimensions = this.getDimensions();
         const encode = this.getEncode();
 
-        if (getFieldDataType(this.xAxis) === "time") {
-            data.forEach(datum => {
-                const rawDate = datum[this.xAxis.name];
-                const parsedDate = chrono.en_GB.parseDate(rawDate);
-                // console.log(rawDate + " vs " + parsedDate);
-                datum[this.xAxis.name] = parsedDate || rawDate;
-            });
-        }
-
         return { dimensions, encode, data };
     }
 
@@ -597,22 +629,37 @@ class ChartDatasetEncoder {
                     type: this.chartType,
                     encode
                 }
-            ]
+            ],
+            grid: { bottom: 120, y2: 100 }
         };
+
         if (xName === "x") {
-            option["xAxis"] = {
-                type: (() => {
-                    if (this.xAxis.time) {
-                        return "time";
-                    } else if (this.xAxis.numeric) {
-                        return "value";
-                    } else {
-                        return "category";
-                    }
-                })(),
+            const getType = () => {
+                if (this.xAxis.time) {
+                    return "time";
+                } else if (this.xAxis.numeric) {
+                    return "value";
+                } else {
+                    return "category";
+                }
+            };
+
+            const type = getType();
+
+            const axisLabel = type === "category" && {
+                rotate: type === "category" ? 45 : 0,
+                formatter: value =>
+                    value.length > 18 ? value.substring(0, 15) + "..." : value
+            };
+
+            option.xAxis = {
+                ...option.xAxis,
+                type,
+                axisLabel,
                 show: true
             };
-            option["yAxis"] = {
+            option.yAxis = {
+                ...option.yAxis,
                 type: "value",
                 show: true
             };
@@ -633,7 +680,17 @@ class ChartDatasetEncoder {
                     100
                 );
             }
-        } else if (this.chartType === "line") {
+            option.dataZoom = [{ show: false }];
+        } else {
+            option.dataZoom = [
+                {
+                    type: "slider",
+                    show: true
+                }
+            ];
+        }
+
+        if (this.chartType === "line") {
             option.series[0].areaStyle = {};
         }
 

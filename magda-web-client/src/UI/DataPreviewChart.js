@@ -136,6 +136,8 @@ class DataPreviewChart extends Component {
     }
 
     render() {
+        console.log(this.state.chartOption);
+
         if (this.state.error)
             return (
                 <div className="error">
