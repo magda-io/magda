@@ -15,6 +15,7 @@
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
 -   Map filter clear button only active when region is selected
+-   Fixed a bug on not able to get correct distribution and blank dataset title in breadcrumb
 -   Changed chart icons on dataset page
 
 ## 0.0.42

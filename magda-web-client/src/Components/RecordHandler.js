@@ -34,38 +34,44 @@ class RecordHandler extends React.Component {
         this.getBreadcrumbs = this.getBreadcrumbs.bind(this);
     }
 
-    componentDidMount() {
-        this.props.fetchDataset(
-            decodeURIComponent(this.props.match.params.datasetId)
-        );
-        if (this.props.match.params.distributionId) {
-            this.props.fetchDistribution(
-                decodeURIComponent(this.props.match.params.distributionId)
-            );
-        }
-    }
-
     toggleMargin = addMargin => {
         this.setState({ addMargin });
     };
 
-    componentDidUpdate(props) {
-        if (
-            props.match.params.datasetId !== this.props.match.params.datasetId
-        ) {
-            props.fetchDataset(
-                decodeURIComponent(props.match.params.datasetId)
-            );
+    static getDerivedStateFromProps(props, state) {
+        // fetch if
+        // 1. on dataset page, no dataset has been fetched or the cached dataset is not the one we are looking for
+        // 2. on distribution page and no distribution has been fetched or the cached distribution is not the one we are looking for
+
+        // check if we are on distribution page:
+        if (props.match.params.distributionId) {
+            // now check if we have distribution already fetched and if it's the correct one
+            if (
+                !props.distribution ||
+                !props.distribution.identifier ||
+                props.match.params.distributionId !==
+                    props.distribution.identifier
+            ) {
+                props.fetchDistribution(
+                    decodeURIComponent(props.match.params.distributionId)
+                );
+            }
+            return null;
         }
-        if (
-            props.match.params.distributionId &&
-            props.match.params.distributionId !==
-                this.props.match.params.distributionId
-        ) {
-            props.fetchDistribution(
-                decodeURIComponent(props.match.params.distributionId)
-            );
+        // if we are on dataset page, check if dataset has already been fetched and if it's the correct one
+        else if (props.match.params.datasetId) {
+            if (
+                !props.dataset ||
+                !props.dataset.identifier ||
+                props.match.params.datasetId !== props.dataset.identifier
+            ) {
+                props.fetchDataset(
+                    decodeURIComponent(props.match.params.datasetId)
+                );
+            }
+            return null;
         }
+        return null;
     }
 
     renderByState() {
@@ -281,7 +287,8 @@ class RecordHandler extends React.Component {
             </li>
         );
         const breadcrumbs = params.map(p => {
-            if (p === "datasetId") {
+            if (p === "datasetId" && this.props.dataset.identifier) {
+                // if no dataset identifier (eg, coming to distribution page directly from url rather than from dataset page)
                 return (
                     <li key="datasetId">
                         <Link
@@ -302,7 +309,6 @@ class RecordHandler extends React.Component {
                     </li>
                 );
             }
-
             return null;
         });
         breadcrumbs.unshift(results);
