@@ -49,9 +49,8 @@ export function requestPublisherError(error: FetchError): FacetAction {
 function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `${
-            config.organizationApiUrl
-        }?query=${query}&start=${(start - 1) * 20}&limit=20`;
+        const url = `${config.searchApiUrl +
+            "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
         console.log(url);
         return fetch(url)
             .then(response => {

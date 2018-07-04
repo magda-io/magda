@@ -6,6 +6,7 @@
 -   Made `elasticsearch` supports synonyms
 -   Upgraded `elasticsearch` to v6.3.0
 -   Enable organisation search
+-   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
 
 ## 0.0.43
 
