@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import "./ChartConfig.css";
-import bar from "../assets/bar-chart.svg";
-import pie from "../assets/circle-chart.svg";
-import line from "../assets/line-chart.svg";
-import scatter from "../assets/point-chart.svg";
+import bar from "../assets/chart-bar.svg";
+import pie from "../assets/chart-pie.svg";
+import line from "../assets/chart-line.svg";
+import scatter from "../assets/chart-dot.svg";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import findIndex from "lodash/findIndex";
 
@@ -13,6 +13,13 @@ const chartIcons = {
     pie,
     line,
     scatter
+};
+
+const chartTitles = {
+    bar: "Bar Chart",
+    pie: "Pie Chart",
+    line: "Line Chart",
+    scatter: "Scatter Chart"
 };
 
 export default class ChartConfig extends Component {
@@ -63,7 +70,7 @@ export default class ChartConfig extends Component {
                         className={this.props.chartType === v ? "isActive" : ""}
                         onClick={e => this.onChange("chartType", v)}
                         key={v}
-                        title={v}
+                        title={chartTitles[v]}
                     >
                         <img alt={v} src={chartIcons[v]} />
                     </button>
