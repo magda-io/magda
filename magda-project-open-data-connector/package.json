@@ -1,7 +1,7 @@
 {
   "name": "@magda/project-open-data-connector",
   "description": "MAGDA Project Open Data (data.json) Connector",
-  "version": "0.0.43-0",
+  "version": "0.0.44-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -12,10 +12,11 @@
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.43-0",
+    "@magda/scripts": "^0.0.44-0",
     "@types/node": "^8.0.14",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.34",
@@ -25,8 +26,8 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.43-0",
-    "@magda/typescript-common": "^0.0.43-0",
+    "@magda/registry-aspects": "^0.0.44-0",
+    "@magda/typescript-common": "^0.0.44-0",
     "moment": "^2.17.1",
     "request": "^2.79.0",
     "urijs": "^1.18.12",

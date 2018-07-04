@@ -73,8 +73,7 @@ class SearchBox extends Component {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery(this.getSearchBoxValue());
-            this.debounceUpdateSearchQuery.flush();
+            this.debounceUpdateSearchQuery.flush(this.getSearchBoxValue());
         }
     }
 

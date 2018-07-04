@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import close from "../../assets/close-light.svg";
+import close from "../../assets/close-round.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "../../pancake/react/buttons";
 import Modal from "react-modal";
@@ -76,7 +76,6 @@ export default class DatasetSuggestForm extends React.Component {
         };
         const formProps = {
             title: false,
-            showTitle: false,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:

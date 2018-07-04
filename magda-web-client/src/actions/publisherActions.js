@@ -46,12 +46,12 @@ export function requestPublisherError(error: FetchError): FacetAction {
     };
 }
 
-function fetchPublishers(start) {
+function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `${
-            config.registryApiUrl
-        }records?aspect=organization-details&limit=1000`;
+        const url = `${config.searchApiUrl +
+            "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
+        console.log(url);
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
@@ -81,10 +81,10 @@ function shouldFetchPublishers(state) {
     return true;
 }
 
-export function fetchPublishersIfNeeded(start: number): Object {
+export function fetchPublishersIfNeeded(start: number, query: string): Object {
     return (dispatch: Function, getState: Function) => {
         if (shouldFetchPublishers(getState())) {
-            return dispatch(fetchPublishers(start));
+            return dispatch(fetchPublishers(start, query));
         } else {
             return Promise.resolve();
         }
@@ -98,6 +98,7 @@ function fetchPublisher(id) {
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
         console.log(url);
+
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {

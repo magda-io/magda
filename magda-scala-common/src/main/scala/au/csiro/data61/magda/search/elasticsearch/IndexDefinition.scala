@@ -13,7 +13,7 @@ import com.sksamuel.elastic4s.TcpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
 import com.sksamuel.elastic4s.indexes.IndexContentBuilder
 import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer }
+import com.sksamuel.elastic4s.analyzers.{ CustomAnalyzerDefinition, LowercaseTokenFilter, KeywordTokenizer, StandardTokenizer, EdgeNGramTokenFilter }
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.geom.GeometryFactory
@@ -56,7 +56,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 32,
+    version = 34,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -74,6 +74,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("publisher").fields(
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+              magdaTextField("description"),
               magdaTextField("name",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote"))),
@@ -101,6 +102,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           mapping(indices.getType(indices.typeForFacet(Publisher))).fields(
             keywordField("identifier"),
             textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+            magdaTextField("description"),
             magdaTextField("value"),
             textField("english").analyzer("english")))
         .analysis(
@@ -111,8 +113,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           CustomAnalyzerDefinition(
             "uppercase",
             KeywordTokenizer,
-            UppercaseTokenFilter)
-        )
+            UppercaseTokenFilter))
 
       if (config.hasPath("indexer.refreshInterval")) {
         baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
