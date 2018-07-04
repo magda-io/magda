@@ -25,12 +25,6 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
         window.removeEventListener("message", this.onPopUpMessageReceived);
     }
 
-    determineCatalogItemType() {
-        let format = this.props.distribution.format.toLowerCase();
-        if (format === "csv-geo-au") format = "csv";
-        return format;
-    }
-
     createCatalogItemFromDistribution(withoutBaseMap = false) {
         const catConfig = {
             initSources: [
