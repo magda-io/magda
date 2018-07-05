@@ -53,11 +53,9 @@ class RecordHandler extends React.Component {
                     props.distribution.identifier
             ) {
                 if (
-                    props.distributionIsFetching ||
-                    props.distributionFetchError
+                    !props.distributionIsFetching &&
+                    !props.distributionFetchError
                 ) {
-                    return false;
-                } else {
                     props.fetchDistribution(
                         decodeURIComponent(props.match.params.distributionId)
                     );
@@ -73,9 +71,7 @@ class RecordHandler extends React.Component {
                 decodeURIComponent(props.match.params.datasetId) !==
                     props.dataset.identifier
             ) {
-                if (props.datasetIsFetching || props.datasetFetchError) {
-                    return false;
-                } else {
+                if (!props.datasetIsFetching && !props.datasetFetchError) {
                     props.fetchDataset(
                         decodeURIComponent(props.match.params.datasetId)
                     );
