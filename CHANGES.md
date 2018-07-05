@@ -17,6 +17,7 @@
 -   Map filter clear button only active when region is selected
 -   Fixed a bug on not able to get correct distribution and blank dataset title in breadcrumb
 -   Changed chart icons on dataset page
+-   Fixed: Enter a dataset page with `*` query string will see a blank page
 
 ## 0.0.42
 

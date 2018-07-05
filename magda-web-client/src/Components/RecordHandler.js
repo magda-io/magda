@@ -181,7 +181,10 @@ class RecordHandler extends React.Component {
                                 />
                                 <Redirect
                                     from="/dataset/:datasetId/distribution/:distributionId"
-                                    to={`${baseUrlDistribution}/details?q=${searchText}`}
+                                    to={{
+                                        pathname: `${baseUrlDistribution}/details`,
+                                        search: `?q=${searchText}`
+                                    }}
                                 />
                             </Switch>
                         </div>
@@ -270,12 +273,18 @@ class RecordHandler extends React.Component {
                                 <Redirect
                                     exact
                                     from="/dataset/:datasetId"
-                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                    to={{
+                                        pathname: `${baseUrlDataset}/details`,
+                                        search: `?q=${searchText}`
+                                    }}
                                 />
                                 <Redirect
                                     exact
                                     from="/dataset/:datasetId/resource/*"
-                                    to={`${baseUrlDataset}/details?q=${searchText}`}
+                                    to={{
+                                        pathname: `${baseUrlDataset}/details`,
+                                        search: `?q=${searchText}`
+                                    }}
                                 />
                             </Switch>
                         </div>
