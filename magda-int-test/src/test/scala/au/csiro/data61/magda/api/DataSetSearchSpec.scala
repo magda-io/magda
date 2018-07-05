@@ -119,8 +119,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
         val synonyms = List("agile", "nimble", "quick", "spry")
         val pairs = synonyms.map(s => {
-          val listWithItself = synonyms.filterNot(_===s)
-          (s, listWithItself)
+          val listWithoutItself = synonyms.filterNot(_==s)
+          (s, listWithoutItself)
         })
 
         val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
