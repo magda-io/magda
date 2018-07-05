@@ -1,16 +1,12 @@
 import React, { Component } from "react";
 import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
 import DatasetPreview from "./DatasetPreview";
-import DescriptionBox from "../../UI/DescriptionBox";
 import MarkdownViewer from "../../UI/MarkdownViewer";
-import QualityIndicator from "../../UI/QualityIndicator";
-import TagsBox from "../../UI/TagsBox";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
-import { Small, Medium } from "../../UI/Responsive";
 
 class DatasetDetails extends Component {
     state = {
