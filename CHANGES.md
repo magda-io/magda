@@ -1,10 +1,13 @@
 ## 0.0.44
 
+-   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.
 -   Changed chart icons on dataset page
 -   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
 -   Improve filter button icon alignment
+-   adjust dataset page layout to accomodate new mobile design
+-   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 
 ## 0.0.43
