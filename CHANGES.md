@@ -5,6 +5,7 @@
 -   Changed chart icons on dataset page
 -   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
 -   Change appearance of mobile search box
+-   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 
 ## 0.0.43
 
