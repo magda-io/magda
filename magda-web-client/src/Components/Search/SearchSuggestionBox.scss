@@ -3,12 +3,7 @@
 .search-suggestion-box {
     left: 0px;
     right: 0px;
-    @media (max-width: $medium - 1) {
-        top: 56px;
-    }
-    @media (min-width: $medium) {
-        top: 75px;
-    }
+    top: 75px;
     position: absolute;
     z-index: 2;
     color: $AU-color-foreground-action;
