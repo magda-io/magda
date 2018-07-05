@@ -4,6 +4,7 @@
 -   Modified error message text and omitted homepage articles if search error occurs.
 -   Changed chart icons on dataset page
 -   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
+-   Change appearance of mobile search box
 
 ## 0.0.43
 
