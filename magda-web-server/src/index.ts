@@ -3,7 +3,6 @@ import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
-import * as helmet from "helmet";
 import * as request from "request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
@@ -76,61 +75,9 @@ const argv = yargs
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
-    })
-    .option("cspReportUri", {
-        describe:
-            "The URI to send Content Security Policy violation reports to.",
-        type: "string"
     }).argv;
 
 var app = express();
-
-app.use(
-    helmet({
-        hsts: {
-            maxAge: 31536000,
-            includeSubdomains: true,
-            preload: true
-        }
-    })
-);
-
-const cspDirectives = {
-    scriptSrc: [
-        "'self'",
-        "'unsafe-inline'", // for VWO until... we get rid of that? :(
-        "data:", // ditto
-        "browser-update.org",
-        "dev.visualwebsiteoptimizer.com",
-        "platform.twitter.com",
-        "www.googletagmanager.com",
-        "www.google-analytics.com",
-        "rum-static.pingdom.net",
-        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js",
-        "https://tagmanager.google.com/debug",
-        "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
-        "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
-    ],
-    objectSrc: ["'none'"],
-    sandbox: [
-        "allow-scripts",
-        "allow-same-origin",
-        "allow-popups",
-        "allow-forms",
-        "allow-popups-to-escape-sandbox"
-    ]
-} as helmet.IHelmetContentSecurityPolicyDirectives;
-
-if (argv.cspReportUri) {
-    cspDirectives.reportUri = argv.cspReportUri;
-}
-
-app.use(
-    helmet.contentSecurityPolicy({
-        directives: cspDirectives,
-        browserSniff: false
-    })
-);
 
 app.use(morgan("combined"));
 

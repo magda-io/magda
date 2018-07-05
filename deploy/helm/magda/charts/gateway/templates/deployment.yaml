@@ -33,6 +33,7 @@ spec:
             "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
             "--ckanUrl", "https://data.gov.au",
+            "--cspReportUri", {{ .Values.cspReportUri | quote }}
         ]
         volumeMounts:
           - name: routes

@@ -10,9 +10,8 @@ global:
   useCloudSql: false
   useCombinedDb: true
 
-web-server:
-  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
 gateway:
+  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
