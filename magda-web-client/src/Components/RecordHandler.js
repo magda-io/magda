@@ -44,7 +44,6 @@ class RecordHandler extends React.Component {
         // 2. on distribution page and no distribution has been fetched or the cached distribution is not the one we are looking for
 
         // check if we are on distribution page:
-        debugger;
         if (props.match.params.distributionId) {
             // now check if we have distribution already fetched and if it's the correct one
             if (
