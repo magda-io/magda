@@ -14,7 +14,7 @@ trait SharedElasticSugar extends HttpElasticSugar
 /**
   * Provides helper methods for things like refreshing an index, and blocking until an
   * index has a certain count of documents. These methods are very useful when writing
-  * tests to allow for blocking, iterative coding
+  * tests to allow for blocking, imperative coding
   */
 trait HttpElasticSugar extends LocalNodeProvider{
 
