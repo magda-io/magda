@@ -145,25 +145,33 @@
         position: absolute;
         width: 100%;
         z-index: 1;
-        li {
-            border-bottom: 1px solid gray;
-            padding-left: 10px;
-        }
-        li:last-child {
-            border-bottom: none;
-        }
-        ul {
-            padding-bottom: 0px;
-        }
     }
 
     .mobile-nav {
         background: #fff;
         overflow-y: hidden;
         height: 0;
-        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
         &.isOpen {
             height: auto;
+        }
+        ul {
+            padding: 0;
+        }
+        li {
+            padding: 0;
+            margin: 0;
+            a {
+                display: block;
+                padding: 10px 8px;
+                border-left: 10px;
+                border-bottom: 1px solid rgba($AU-color-foreground-action, 0.2);
+                border-left: 10px solid $AU-color-foreground-action;
+                margin: 0;
+                &:hover,
+                &:focus {
+                    background: #fafafa;
+                }
+            }
         }
     }
 }
