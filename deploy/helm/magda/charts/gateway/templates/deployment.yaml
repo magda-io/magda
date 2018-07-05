@@ -28,6 +28,9 @@ spec:
 {{- if .Values.auth.googleClientId }}
             "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
+{{- if .Values.enableAuthEndpoint }}
+            "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
+{{- end }}
             "--proxyRoutesPath", "/etc/routes/routes.json",
             "--web", "http://web",
             "--authorizationApi", "http://authorization-api/v0",
@@ -40,7 +43,7 @@ spec:
             mountPath: /etc/routes
         readinessProbe:
           httpGet:
-            path: /auth
+            path: /v0/healthz
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -48,7 +51,7 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /auth
+            path: /v0/healthz
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
