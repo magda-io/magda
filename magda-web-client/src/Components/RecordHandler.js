@@ -198,78 +198,90 @@ class RecordHandler extends React.Component {
 
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
-                        <div className="col-sm-8">
-                            <h1 className="dataset-title" itemProp="name">
-                                {this.props.dataset.title}
-                            </h1>
-                            <div className="publisher-basic-info-row">
-                                <span
-                                    itemProp="publisher"
-                                    itemScope
-                                    itemType="http://schema.org/Organization"
-                                >
-                                    <Link to={`/organisations/${publisherId}`}>
-                                        {publisherName}
-                                    </Link>
-                                </span>
-                                <span className="separator hidden-sm"> / </span>
-                                {defined(this.props.dataset.issuedDate) && (
-                                    <span className="updated-date hidden-sm">
-                                        Created{" "}
-                                        <span itemProp="dateCreated">
-                                            {this.props.dataset.issuedDate}
-                                        </span>&nbsp;
+                        <div className="row">
+                            <div className="col-sm-8">
+                                <h1 className="dataset-title" itemProp="name">
+                                    {this.props.dataset.title}
+                                </h1>
+                                <div className="publisher-basic-info-row">
+                                    <span
+                                        itemProp="publisher"
+                                        itemScope
+                                        itemType="http://schema.org/Organization"
+                                    >
+                                        <Link
+                                            to={`/organisations/${publisherId}`}
+                                        >
+                                            {publisherName}
+                                        </Link>
                                     </span>
-                                )}
-                                <span className="separator hidden-sm">
-                                    &nbsp;/&nbsp;
-                                </span>
-                                {defined(this.props.dataset.updatedDate) && (
-                                    <span className="updated-date hidden-sm">
-                                        Updated{" "}
-                                        <span itemProp="dateModified">
-                                            {this.props.dataset.updatedDate}
+                                    <span className="separator hidden-sm">
+                                        {" "}
+                                        /{" "}
+                                    </span>
+                                    {defined(this.props.dataset.issuedDate) && (
+                                        <span className="updated-date hidden-sm">
+                                            Created{" "}
+                                            <span itemProp="dateCreated">
+                                                {this.props.dataset.issuedDate}
+                                            </span>&nbsp;
                                         </span>
+                                    )}
+                                    <span className="separator hidden-sm">
+                                        &nbsp;/&nbsp;
                                     </span>
-                                )}
-                                <div className="dataset-details-overview">
-                                    <Small>
-                                        <DescriptionBox
-                                            content={
-                                                this.props.dataset.description
+                                    {defined(
+                                        this.props.dataset.updatedDate
+                                    ) && (
+                                        <span className="updated-date hidden-sm">
+                                            Updated{" "}
+                                            <span itemProp="dateModified">
+                                                {this.props.dataset.updatedDate}
+                                            </span>
+                                        </span>
+                                    )}
+                                    <div className="dataset-details-overview">
+                                        <Small>
+                                            <DescriptionBox
+                                                content={
+                                                    this.props.dataset
+                                                        .description
+                                                }
+                                                truncateLength={200}
+                                            />
+                                        </Small>
+                                        <Medium>
+                                            <DescriptionBox
+                                                content={
+                                                    this.props.dataset
+                                                        .description
+                                                }
+                                                truncateLength={500}
+                                            />
+                                        </Medium>
+                                    </div>
+                                    <div className="quality-rating-box">
+                                        <QualityIndicator
+                                            quality={
+                                                this.props.dataset
+                                                    .linkedDataRating
                                             }
-                                            truncateLength={200}
                                         />
-                                    </Small>
-                                    <Medium>
-                                        <DescriptionBox
-                                            content={
-                                                this.props.dataset.description
-                                            }
-                                            truncateLength={500}
-                                        />
-                                    </Medium>
+                                    </div>
+                                    <TagsBox tags={this.props.dataset.tags} />
                                 </div>
-                                <div className="quality-rating-box">
-                                    <QualityIndicator
-                                        quality={
-                                            this.props.dataset.linkedDataRating
-                                        }
-                                    />
-                                </div>
-                                <TagsBox tags={this.props.dataset.tags} />
                             </div>
-                        </div>
-                        <div
-                            className={` col-sm-4 ${
-                                this.state.addMargin ? "form-margin" : ""
-                            }`}
-                        >
-                            <DatasetSuggestForm
-                                title={this.props.dataset.title}
-                                toggleMargin={this.toggleMargin}
-                                datasetId={this.props.dataset.identifier}
-                            />
+                            <div
+                                className={` col-sm-4 ${
+                                    this.state.addMargin ? "form-margin" : ""
+                                }`}
+                            >
+                                <DatasetSuggestForm
+                                    title={this.props.dataset.title}
+                                    toggleMargin={this.toggleMargin}
+                                    datasetId={this.props.dataset.identifier}
+                                />
+                            </div>
                         </div>
                         <div className="tab-content">
                             <Switch>
