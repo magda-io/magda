@@ -157,7 +157,6 @@ function fieldDefAdjustment(field) {
             "code",
             "identifier",
             "postcode",
-            "age",
             "sex",
             "suburb",
             "occupation",
@@ -166,10 +165,12 @@ function fieldDefAdjustment(field) {
             "acn",
             "afsl",
             "pcode",
-            "lic num"
+            "month",
+            "reason"
         ])
     ) {
         return {
+            ...field,
             numeric: false,
             category: true,
             time: false
@@ -419,17 +420,31 @@ class ChartDatasetEncoder {
             "postcode",
             "category"
         ];
+
+        const lowerPriorityNames = ["name"];
+
         const avlXcols = this.getAvailableXCols();
         const avlTimeXcols = filter(avlXcols, field => field.time);
         const avlCatXcols = filter(avlXcols, field => field.category);
         if (avlCatXcols.length) {
             //--- CatCol has higher priority
-            const xAxis = find(avlCatXcols, field =>
+            const highPriorityXAxis = find(avlCatXcols, field =>
                 testKeywords(field.label, higherPriorityNames)
             );
-            if (xAxis) this.setX(xAxis);
-            else if (avlCatXcols.length > 1) this.setX(avlCatXcols[1]);
-            else this.setX(avlCatXcols[0]);
+            if (highPriorityXAxis) {
+                this.setX(highPriorityXAxis);
+            } else if (avlCatXcols.length > 1) {
+                const mediumPriorityCatCol = avlCatXcols.find(
+                    field => !testKeywords(field.label, lowerPriorityNames)
+                );
+                if (mediumPriorityCatCol) {
+                    this.setX(mediumPriorityCatCol);
+                } else {
+                    this.setX(avlCatXcols[0]);
+                }
+            } else {
+                this.setX(avlCatXcols[0]);
+            }
         } else {
             this.setX(avlTimeXcols[0]);
         }
