@@ -18,11 +18,6 @@
         display: flex;
     }
 
-    @media (min-width: $medium) {
-        .btn-facet {
-            height: 38px;
-        }
-    }
     @media (max-width: $medium) {
         .btn-facet {
             width: 100%;
@@ -34,9 +29,10 @@
         background-color: $AU-colordark-background;
         font-size: 14px;
         text-align: center;
-        padding: 0 16px;
+        padding: 0 16px 0 10px;
         text-transform: capitalize;
         pointer: cursor;
+        line-height: 1;
         .facet-icon {
             padding: 6px 6px 4px 0;
             height: 24px;
