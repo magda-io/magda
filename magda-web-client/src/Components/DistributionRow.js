@@ -238,7 +238,7 @@ class DistributionRow extends Component {
                                 }
                             }}
                         >
-                            Download <img src={downloadIcon} alt="download" />
+                            <img src={downloadIcon} alt="download" /> Download
                         </a>
                     )}
                 </div>
