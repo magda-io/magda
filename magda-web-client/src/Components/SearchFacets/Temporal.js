@@ -50,26 +50,29 @@ class Temporal extends Component {
     }
 
     render() {
-        return (
-            <TemporalWrapper
-                title="date range"
-                id="temporal"
-                hasQuery={
-                    defined(this.props.activeDateFrom) ||
-                    defined(this.props.activeDateTo)
-                }
-                activeDates={[
-                    this.props.activeDateFrom,
-                    this.props.activeDateTo
-                ]}
-                onToggleOption={this.onToggleTemporalOption}
-                onResetFacet={this.onResetTemporalFacet}
-                toggleFacet={this.props.toggleFacet}
-                isOpen={this.props.isOpen}
-                temporalRange={this.props.temporalRange}
-                disableApply={this.state.disableApplyTemporal}
-            />
-        );
+        if (defined(this.props.temporalRange)) {
+            return (
+                <TemporalWrapper
+                    title="date range"
+                    id="temporal"
+                    hasQuery={
+                        defined(this.props.activeDateFrom) ||
+                        defined(this.props.activeDateTo)
+                    }
+                    activeDates={[
+                        this.props.activeDateFrom,
+                        this.props.activeDateTo
+                    ]}
+                    onToggleOption={this.onToggleTemporalOption}
+                    onResetFacet={this.onResetTemporalFacet}
+                    toggleFacet={this.props.toggleFacet}
+                    isOpen={this.props.isOpen}
+                    temporalRange={this.props.temporalRange}
+                    disableApply={this.state.disableApplyTemporal}
+                />
+            );
+        }
+        return null;
     }
 }
 
