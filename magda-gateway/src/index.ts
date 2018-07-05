@@ -99,6 +99,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The URL of a CKAN server to use for authentication.",
             type: "string"
         })
+        .options("enableAuthEndpoint", {
+            describe: "Whether enable the AuthEndpoint",
+            type: "boolean",
+            default: false
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -133,21 +138,28 @@ app.set("view engine", "ejs");
 app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 app.use(require("morgan")("combined"));
 
-app.use(
-    "/auth",
-    createAuthRouter({
-        authenticator: authenticator,
-        jwtSecret: argv.jwtSecret,
-        facebookClientId: argv.facebookClientId,
-        facebookClientSecret: argv.facebookClientSecret,
-        googleClientId: argv.googleClientId,
-        googleClientSecret: argv.googleClientSecret,
-        ckanUrl: argv.ckanUrl,
-        authorizationApi: argv.authorizationApi,
-        externalUrl: argv.externalUrl,
-        userId: argv.userId
-    })
-);
+app.get("/v0/healthz", function(req, res) {
+    res.status(200).send("OK");
+});
+
+if (argv.enableAuthEndpoint) {
+    app.use(
+        "/auth",
+        createAuthRouter({
+            authenticator: authenticator,
+            jwtSecret: argv.jwtSecret,
+            facebookClientId: argv.facebookClientId,
+            facebookClientSecret: argv.facebookClientSecret,
+            googleClientId: argv.googleClientId,
+            googleClientSecret: argv.googleClientSecret,
+            ckanUrl: argv.ckanUrl,
+            authorizationApi: argv.authorizationApi,
+            externalUrl: argv.externalUrl,
+            userId: argv.userId
+        })
+    );
+}
+
 app.use(
     "/api/v0",
     createApiRouter({

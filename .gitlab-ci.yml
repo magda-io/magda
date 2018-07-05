@@ -166,6 +166,7 @@ buildtest:ui:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
     - yarn install
+    - yarn run eslint
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:
@@ -408,7 +409,7 @@ dockerize:dockerExtensions:
     - branches
   except:
     - master
-    - /^v.*$/
+    - /^v.*RC.*$/
   dependencies: []
   cache:
     paths: []
@@ -512,7 +513,7 @@ Deploy Master To Dev:
 Release Tags To Docker Hub:
   stage: release
   only:
-    - /^v.*$/
+    - /^v.*RC.*$/
   except:
     - branches
     - triggers

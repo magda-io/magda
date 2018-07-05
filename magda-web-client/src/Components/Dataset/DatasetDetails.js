@@ -1,16 +1,12 @@
 import React, { Component } from "react";
 import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
 import DatasetPreview from "./DatasetPreview";
-import DescriptionBox from "../../UI/DescriptionBox";
 import MarkdownViewer from "../../UI/MarkdownViewer";
-import QualityIndicator from "../../UI/QualityIndicator";
-import TagsBox from "../../UI/TagsBox";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
-import { Small, Medium } from "../../UI/Responsive";
 
 class DatasetDetails extends Component {
     state = {
@@ -27,24 +23,6 @@ class DatasetDetails extends Component {
 
         return (
             <div className="dataset-details">
-                <div className="dataset-details-overview">
-                    <Small>
-                        <DescriptionBox
-                            content={dataset.description}
-                            truncateLength={200}
-                        />
-                    </Small>
-                    <Medium>
-                        <DescriptionBox
-                            content={dataset.description}
-                            truncateLength={500}
-                        />
-                    </Medium>
-                </div>
-                <div className="quality-rating-box">
-                    <QualityIndicator quality={dataset.linkedDataRating} />
-                </div>
-                <TagsBox tags={dataset.tags} />
                 <div className="dataset-preview">
                     <DatasetPreview
                         location={this.props.location}

@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
-import type { ParsedDistribution } from "../helpers/record";
+import { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import { showTopNotification } from "../actions/topNotificationAction";
 import "./DistributionRow.css";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
@@ -11,9 +10,11 @@ import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 import ga from "../analytics/googleAnalytics";
 import ReactTooltip from "react-tooltip";
+
 const formatIcons = {
     default: defaultFormatIcon
 };
+
 const dataFormatCategories = [
     "api",
     "archive",
@@ -216,21 +217,13 @@ class DistributionRow extends Component {
                     </div>
                 </div>
                 <div className="col-md-3 button-area">
-                    {distribution.downloadURL ? (
-                        <button
+                    {distribution.downloadURL && (
+                        <a
                             className="download-button au-btn au-btn--secondary"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={distribution.downloadURL}
                             onClick={() => {
-                                if (!distribution.downloadURL) {
-                                    this.props.dispatch(
-                                        showTopNotification(
-                                            "Download link is not available for this data source!",
-                                            "Error:",
-                                            "error"
-                                        )
-                                    );
-                                    return;
-                                }
-
                                 // google analytics download tracking
                                 const resource_url = encodeURIComponent(
                                     distribution.downloadURL
@@ -243,19 +236,11 @@ class DistributionRow extends Component {
                                         eventLabel: resource_url
                                     });
                                 }
-                                window.location = distribution.downloadURL;
                             }}
                         >
-                            <img src={downloadIcon} alt="download" />
-                            <a
-                                className="button-text"
-                                itemProp="contentUrl"
-                                href={distribution.downloadURL}
-                            >
-                                Download
-                            </a>
-                        </button>
-                    ) : null}{" "}
+                            <img src={downloadIcon} alt="download" /> Download
+                        </a>
+                    )}
                 </div>
             </div>
         );
