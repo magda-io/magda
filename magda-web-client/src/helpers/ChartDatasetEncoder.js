@@ -18,6 +18,54 @@ import type { ParsedDistribution } from "../helpers/record";
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
 
+/** Columns with these names are more likely to be picked as the default column on the x axis */
+const HIGH_PRIORITY_X_AXES = [
+    "gender",
+    "sex",
+    "occupation",
+    "state",
+    "city",
+    "company",
+    "postcode",
+    "category"
+];
+/** Columns with these names will not be picked as the default column on the x axis unless there's nothing else */
+const LOW_PRIORITY_X_AXES = ["name"];
+/** Columns with these names are more likely to be picked as the default column on the y axis */
+const HIGH_PRIORITY_Y_AXES = [];
+/** Columns with these names will not be picked as the default column on the y axis unless there's nothing else */
+const LOW_PRIORITY_Y_AXES = ["count", "id"];
+
+/** Columns with these terms in them will be overridden as category types */
+const OVERRIDE_TO_CATEGORY_COLUMNS = [
+    "id",
+    "code",
+    "identifier",
+    "postcode",
+    "sex",
+    "suburb",
+    "occupation",
+    "gender",
+    "abn",
+    "acn",
+    "afsl",
+    "pcode",
+    "month",
+    "reason"
+];
+/** Columns with these terms in them will be overridden as time types */
+const OVERRIDE_TO_TIME_COLUMNS = ["date", "year"];
+/** Columns with these terms in them will be overridden as numeric types */
+const OVERRIDE_TO_NUMERIC_COLUMNS = [
+    "amt",
+    "amount",
+    "sum",
+    "count",
+    "tax",
+    "value",
+    "length"
+];
+
 const getPapaParse = (() => {
     let Papa = null;
 
@@ -30,6 +78,7 @@ const getPapaParse = (() => {
     };
 })();
 
+/** Fetches and parses a CSV */
 const fetchData = function(url) {
     return getPapaParse().then(
         Papa =>
@@ -151,35 +200,18 @@ function testKeywords(str, keywords) {
 }
 
 function fieldDefAdjustment(field) {
-    if (
-        testKeywords(field.label, [
-            "id",
-            "code",
-            "identifier",
-            "postcode",
-            "sex",
-            "suburb",
-            "occupation",
-            "gender",
-            "abn",
-            "acn",
-            "afsl",
-            "pcode",
-            "month",
-            "reason"
-        ])
-    ) {
+    if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
         return {
             ...field,
             numeric: false,
             category: true,
             time: false
         };
-    } else if (testKeywords(field.label, ["date", "year"])) {
+    } else if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
         field.numeric = false;
         field.category = false;
         field.time = true;
-    } else if (testKeywords(field.label, ["amt", "amount", "sum"])) {
+    } else if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
         field.numeric = true;
         field.category = false;
         field.time = false;
@@ -192,18 +224,17 @@ function preProcessFields(headerRow, distribution) {
         distribution.visualizationInfo && distribution.visualizationInfo.fields;
     if (!disFields) disFields = [];
 
-    let newFields = map(disFields, (field, key) =>
-        fieldDefAdjustment({
-            ...field,
-            idx: indexOf(headerRow, key),
-            name: key,
-            label: startCase(key),
-            category: !field.time && !field.numeric,
-            isAggr: false
-        })
-    );
+    let newFields = map(disFields, (field, key) => ({
+        ...field,
+        idx: indexOf(headerRow, key),
+        name: key,
+        label: startCase(key),
+        category: !field.time && !field.numeric,
+        isAggr: false
+    }));
     //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
-    newFields = filter(newFields, item => item.idx !== -1);
+    newFields = filter(disFields, item => item.idx !== -1);
+    newFields = filter(newFields, item => trim(item.name) !== "");
     if (!newFields.length) {
         //--- we will not exit but make our own guess
         newFields = map(headerRow, (headerName, idx) => ({
@@ -216,7 +247,8 @@ function preProcessFields(headerRow, distribution) {
             isAggr: false
         }));
     }
-    newFields = filter(newFields, item => trim(item.name) !== "");
+    console.log(newFields);
+    newFields = newFields.map(fieldDefAdjustment);
     if (!newFields.length) {
         throw new Error("The data file contains no non-empty header.");
     }
@@ -263,6 +295,34 @@ function getFieldDataType(field) {
     if (field.time) return "time";
     if (field.numeric) return "number";
     return "ordinal";
+}
+
+function getDefaultColumn(
+    availableColumns,
+    highPriorityColumnNames = [],
+    lowPriorityColumnNames = []
+) {
+    if (!availableColumns.length) {
+        return null;
+    }
+
+    const firstAvailableHighPriorityCol = find(availableColumns, field =>
+        testKeywords(field.label, highPriorityColumnNames)
+    );
+
+    if (firstAvailableHighPriorityCol) {
+        return firstAvailableHighPriorityCol;
+    }
+
+    const firstNotLowPriorityCol = availableColumns.find(
+        field => !testKeywords(field.label, lowPriorityColumnNames)
+    );
+
+    if (firstNotLowPriorityCol) {
+        return firstNotLowPriorityCol;
+    }
+
+    return availableColumns[0];
 }
 
 class ChartDatasetEncoder {
@@ -313,7 +373,7 @@ class ChartDatasetEncoder {
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
-                label: "Count",
+                label: "# of Rows",
                 time: false,
                 numeric: true,
                 category: false,
@@ -330,7 +390,7 @@ class ChartDatasetEncoder {
             this.fields.push({
                 idx: 1,
                 name: newFieldName,
-                label: "Count",
+                label: "# of Rows",
                 time: false,
                 numeric: true,
                 category: false,
@@ -405,48 +465,26 @@ class ChartDatasetEncoder {
     }
 
     setDefaultAxis() {
-        const avlYcols = this.getAvailableYCols();
-        //-- avoid set an ID col to Y by default
-        if (avlYcols.length > 1) this.setY(avlYcols[1]);
-        else this.setY(avlYcols[0]);
-
-        const higherPriorityNames = [
-            "gender",
-            "sex",
-            "occupation",
-            "state",
-            "city",
-            "company",
-            "postcode",
-            "category"
-        ];
-
-        const lowerPriorityNames = ["name"];
-
-        const avlXcols = this.getAvailableXCols();
-        const avlTimeXcols = filter(avlXcols, field => field.time);
-        const avlCatXcols = filter(avlXcols, field => field.category);
-        if (avlCatXcols.length) {
-            //--- CatCol has higher priority
-            const highPriorityXAxis = find(avlCatXcols, field =>
-                testKeywords(field.label, higherPriorityNames)
+        const availableYColumns = this.getAvailableYCols();
+        if (availableYColumns && availableYColumns.length > 0) {
+            this.setY(
+                getDefaultColumn(
+                    availableYColumns,
+                    HIGH_PRIORITY_Y_AXES,
+                    LOW_PRIORITY_Y_AXES
+                )
             );
-            if (highPriorityXAxis) {
-                this.setX(highPriorityXAxis);
-            } else if (avlCatXcols.length > 1) {
-                const mediumPriorityCatCol = avlCatXcols.find(
-                    field => !testKeywords(field.label, lowerPriorityNames)
-                );
-                if (mediumPriorityCatCol) {
-                    this.setX(mediumPriorityCatCol);
-                } else {
-                    this.setX(avlCatXcols[0]);
-                }
-            } else {
-                this.setX(avlCatXcols[0]);
-            }
-        } else {
-            this.setX(avlTimeXcols[0]);
+        }
+
+        const availableXColumns = this.getAvailableXCols();
+        if (availableXColumns && availableXColumns.length > 0) {
+            this.setX(
+                getDefaultColumn(
+                    availableXColumns,
+                    HIGH_PRIORITY_X_AXES,
+                    LOW_PRIORITY_X_AXES
+                )
+            );
         }
     }
 
@@ -506,15 +544,6 @@ class ChartDatasetEncoder {
                 // Parse a date
                 const parsedDate = chrono.en_GB.parseDate(rawValue);
                 return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
-                // } else if (getFieldDataType(this.xAxis) === "ordinal") {
-                //     // Truncate the category
-                //     return {
-                //         ...datum,
-                //         [this.xAxis.name]:
-                //             rawValue.length > 15
-                //                 ? rawValue.substring(0, 12) + "..."
-                //                 : rawValue
-                //     };
             } else {
                 return datum;
             }
@@ -661,10 +690,14 @@ class ChartDatasetEncoder {
 
             const type = getType();
 
-            const axisLabel = type === "category" && {
+            const axisLabel = {
                 rotate: type === "category" ? 45 : 0,
-                formatter: value =>
-                    value.length > 18 ? value.substring(0, 15) + "..." : value
+                formatter:
+                    type === "category" &&
+                    (value =>
+                        value.length > 25
+                            ? value.substring(0, 23) + "..."
+                            : value)
             };
 
             option.xAxis = {
@@ -695,18 +728,12 @@ class ChartDatasetEncoder {
                     100
                 );
             }
-            option.dataZoom = [{ show: false }];
-        } else {
-            option.dataZoom = [
-                {
-                    type: "slider",
-                    show: true
-                }
-            ];
         }
 
         if (this.chartType === "line") {
             option.series[0].areaStyle = {};
+            option.series[0].symbolSize = data.length < 100 ? 4 : 1;
+            option.series[0].lineStyle = { width: data.length < 100 ? 2 : 1 };
         }
 
         return option;
