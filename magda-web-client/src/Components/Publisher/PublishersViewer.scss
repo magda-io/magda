@@ -3,4 +3,15 @@
     h1 {
         margin-top: 3rem;
     }
+    .organization-search {
+        input {
+            position: relative;
+            padding-right: 40px;
+        }
+    }
+    .search-icon {
+        position: absolute;
+        right: 28px;
+        top: 12px;
+    }
 }

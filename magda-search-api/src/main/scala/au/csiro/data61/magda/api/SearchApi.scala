@@ -64,6 +64,18 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 }
               }
           } ~
+          pathPrefix("organisations") {
+            (get & parameters(
+              'query?,
+              "start" ? 0,
+              "limit" ? 10
+              )) { (generalQuery, start, limit) ⇒
+              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit)) { result =>
+                val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+                complete(status, result)
+              }
+            }
+          } ~
           path("region-types") { get { getFromResource("regionMapping.json") } } ~
           path("regions") {
             (get & parameters('query?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
