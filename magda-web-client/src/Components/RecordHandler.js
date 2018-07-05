@@ -49,12 +49,17 @@ class RecordHandler extends React.Component {
             if (
                 !props.distribution ||
                 !props.distribution.identifier ||
-                props.match.params.distributionId !==
+                decodeURIComponent(props.match.params.distributionId) !==
                     props.distribution.identifier
             ) {
-                props.fetchDistribution(
-                    decodeURIComponent(props.match.params.distributionId)
-                );
+                if (
+                    !props.distributionIsFetching &&
+                    !props.distributionFetchError
+                ) {
+                    props.fetchDistribution(
+                        decodeURIComponent(props.match.params.distributionId)
+                    );
+                }
             }
             return null;
         }
@@ -63,11 +68,14 @@ class RecordHandler extends React.Component {
             if (
                 !props.dataset ||
                 !props.dataset.identifier ||
-                props.match.params.datasetId !== props.dataset.identifier
+                decodeURIComponent(props.match.params.datasetId) !==
+                    props.dataset.identifier
             ) {
-                props.fetchDataset(
-                    decodeURIComponent(props.match.params.datasetId)
-                );
+                if (!props.datasetIsFetching && !props.datasetFetchError) {
+                    props.fetchDataset(
+                        decodeURIComponent(props.match.params.datasetId)
+                    );
+                }
             }
             return null;
         }
