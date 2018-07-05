@@ -185,6 +185,7 @@ object Registry {
       Agent(
         identifier = Some(publisher.id),
         name = organizationDetails.extract[String]('title.?),
+        description = organizationDetails.extract[String]('description.?),
         acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?))
     }

@@ -4,7 +4,7 @@ In the latest Edge release for MacOS, Docker have included a local kubernetes cl
 
 Download and install:
 
-*   [Docker for Mac Edge Client](https://docs.docker.com/docker-for-mac/install/#download-docker-for-mac)
+-   [Docker for Mac Edge Client](https://docs.docker.com/docker-for-mac/install/#download-docker-for-mac)
 
 Make sure you get the EDGE client - as of the time of writing Kubernetes isn't in the stable client.
 
@@ -16,7 +16,7 @@ Start up Docker for Mac. Find the icon in the top-right hand corner of the scree
 
 Then enable Kubernetes
 
-![Kubernetes Tab Screenshot](./screenshots/enable-kubernetes-docker-macos.png)
+![Kubernetes Tab Screenshot](./screenshots/enable-kubernetes-docker-macos-1805.png)
 
 Once it's enabled you can switch your `kubectl` context via the docker menu, or run
 
