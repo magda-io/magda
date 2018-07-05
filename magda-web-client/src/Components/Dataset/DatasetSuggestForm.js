@@ -76,7 +76,6 @@ export default class DatasetSuggestForm extends React.Component {
         };
         const formProps = {
             title: false,
-            showTitle: false,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:

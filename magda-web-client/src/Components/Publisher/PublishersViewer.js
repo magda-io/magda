@@ -11,22 +11,21 @@ import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import queryString from "query-string";
 import PropTypes from "prop-types";
-import sortBy from "lodash.sortby";
-import reduce from "lodash/reduce";
-import findIndex from "lodash/findIndex";
-import trim from "lodash/trim";
+import debounce from "lodash.debounce";
+import Pagination from "../../UI/Pagination";
 import "./PublishersViewer.css";
+import search from "../../assets/search-dark.svg";
 
 class PublishersViewer extends Component {
-    componentDidMount() {
-        this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
+    constructor(props) {
+        super(props);
+        this.onUpdateSearchText = this.onUpdateSearchText.bind(this);
+        this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
+            this
+        );
+        this.onPageChange = this.onPageChange.bind(this);
     }
-
-    componentDidUpdate(prevProps) {
-        if (getPageNumber(this.props) !== getPageNumber(prevProps)) {
-            this.props.fetchPublishersIfNeeded(getPageNumber(this.props) || 1);
-        }
-    }
+    debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
     onPageChange(i) {
         this.context.router.history.push({
@@ -37,74 +36,101 @@ class PublishersViewer extends Component {
                 })
             )
         });
+
+        this.updateSearchQuery(
+            queryString.parse(this.props.location.search).q,
+            i
+        );
     }
 
-    mergedPublishers() {
-        const publishers = reduce(
-            this.props.publishers,
-            (r, p) => {
-                const idx = findIndex(
-                    r,
-                    item =>
-                        trim(item.name).toLowerCase() ===
-                        trim(p.name).toLowerCase()
-                );
-                if (idx === -1) {
-                    r.push(p);
-                    return r;
-                } else {
-                    const findItem = r[idx];
-                    if (
-                        !p.aspects ||
-                        !p.aspects["organization-details"] ||
-                        !p.aspects["organization-details"]["description"]
-                    )
-                        return r;
-                    else if (
-                        !findItem.aspects ||
-                        !findItem.aspects["organization-details"] ||
-                        !findItem.aspects["organization-details"]["description"]
-                    ) {
-                        r.splice(idx, 1, p);
-                        return r;
-                    } else {
-                        if (
-                            trim(
-                                p.aspects["organization-details"]["description"]
-                            ).length >
-                            trim(
-                                findItem.aspects["organization-details"][
-                                    "description"
-                                ]
-                            ).length
-                        ) {
-                            r.splice(idx, 1, p);
-                            return r;
-                        } else {
-                            return r;
-                        }
-                    }
-                }
-            },
-            []
+    componentDidMount() {
+        const q = queryString.parse(this.props.location.search).q;
+
+        this.props.fetchPublishersIfNeeded(
+            getPageNumber(this.props) || 1,
+            q && q.trim() > 0 ? q : "*"
         );
-        return publishers;
+    }
+
+    updateQuery(query) {
+        this.context.router.history.push({
+            pathname: "/organisations",
+            search: queryString.stringify(
+                Object.assign(
+                    queryString.parse(this.props.location.search),
+                    query
+                )
+            )
+        });
+    }
+
+    handleSearchFieldEnterKeyPress(event) {
+        // when user hit enter, no need to submit the form
+        if (event.charCode === 13) {
+            event.preventDefault();
+            this.updateSearchQuery(
+                queryString.parse(this.props.location.search).q,
+                1
+            );
+        }
+    }
+
+    updateSearchQuery(text, page) {
+        this.debounceUpdateSearchQuery.flush();
+        if (text && text.trim() === "") text = "*";
+        const pageIndex = page
+            ? page
+            : getPageNumber(this.props)
+                ? getPageNumber(this.props)
+                : 1;
+        this.props.fetchPublishersIfNeeded(pageIndex, text);
+    }
+
+    onUpdateSearchText(e) {
+        this.updateQuery({
+            q: e.target.value,
+            page: 1
+        });
+        this.debounceUpdateSearchQuery(e.target.value, 1);
     }
 
     renderContent() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
+            if (this.props.publishers.length === 0) {
+                return <div> no results</div>;
+            }
             return (
-                <div className="col-sm-8">
-                    {sortBy(this.mergedPublishers(), [
-                        function(o) {
-                            return o.name.toLowerCase();
-                        }
-                    ]).map(p => <PublisherSummary publisher={p} key={p.id} />)}
+                <div>
+                    {this.props.publishers.map(p => (
+                        <PublisherSummary publisher={p} key={p.identifier} />
+                    ))}
                 </div>
             );
         }
+    }
+
+    renderSearchBar() {
+        const q = queryString.parse(this.props.location.search).q;
+        return (
+            <div className="organization-search">
+                <label htmlFor="organization-search" className="sr-only">
+                    Search for organisations
+                </label>
+                <input
+                    className="au-text-input au-text-input--block organization-search"
+                    name="organization-search"
+                    id="organization-search"
+                    type="text"
+                    value={q ? q : " "}
+                    placeholder="Search for organisations"
+                    onChange={this.onUpdateSearchText}
+                    onKeyPress={this.handleSearchFieldEnterKeyPress}
+                />
+                <img className="search-icon" src={search} alt="search" />
+            </div>
+        );
     }
 
     render() {
@@ -113,16 +139,32 @@ class PublishersViewer extends Component {
                 <div className="publishers-viewer">
                     <Breadcrumbs
                         breadcrumbs={[
-                            <li>
+                            <li key="organisations">
                                 <span>Organisations</span>
                             </li>
                         ]}
                     />
                     <h1>Organisations</h1>
                     <div className="row">
-                        {!this.props.isFetching && this.renderContent()}
+                        <div className="col-sm-8">
+                            {!this.props.isFetching && this.renderContent()}
+                        </div>
                         {this.props.isFetching && <ProgressBar />}
+                        <div className="col-sm-4">{this.renderSearchBar()}</div>
                     </div>
+                    {this.props.hitCount > config.resultsPerPage && (
+                        <Pagination
+                            currentPage={
+                                +queryString.parse(this.props.location.search)
+                                    .page || 1
+                            }
+                            maxPage={Math.ceil(
+                                this.props.hitCount / config.resultsPerPage
+                            )}
+                            onPageChange={this.onPageChange}
+                            totalItems={this.props.hitCount}
+                        />
+                    )}
                 </div>
             </ReactDocumentTitle>
         );

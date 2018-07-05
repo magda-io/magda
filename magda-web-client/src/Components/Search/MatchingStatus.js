@@ -3,7 +3,6 @@ import React from "react";
 import "./MatchingStatus.css";
 import { Link } from "react-router-dom";
 import AUpageAlert from "../../pancake/react/page-alerts";
-import { config } from "../../config";
 export default function MatchingStatus(props: {
     datasets: Array<Object>,
     strategy: string
@@ -32,15 +31,8 @@ export default function MatchingStatus(props: {
                         </p>
                         <p>
                             Please try a different search term, check your
-                            spelling or
-                            {config.enableSuggestDatasetPage ? (
-                                <Link to="suggest">suggest a dataset</Link>
-                            ) : (
-                                <a href="mailto:data@digital.gov.au">
-                                    {" "}
-                                    request a new dataset
-                                </a>
-                            )}
+                            spelling or{" "}
+                            <Link to="suggest">suggest a dataset</Link>.
                         </p>
                     </AUpageAlert>
                 </div>
