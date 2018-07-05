@@ -118,10 +118,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         case class GenResult(searchKeyword: String, synonym: String, datasetWithSynonym: DataSet)
 
         val synonyms = List("agile", "nimble", "quick", "spry")
-        val pairs = synonyms.map(s => {
-          val listWithoutItself = synonyms.filterNot(_==s)
-          (s, listWithoutItself)
-        })
 
         val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
         val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
