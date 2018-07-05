@@ -164,15 +164,14 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Gateway",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
-                "@magda/scripts/node_modules/tsconfig-paths/register",
+                "${workspaceRoot}/node_modules/tsconfig-paths/register",
                 "src/index.ts",
                 "--jwtSecret",
                 "squirrel",
@@ -189,7 +188,9 @@
                 "--facebookClientSecret",
                 "secret",
                 "--userId",
-                "00000000-0000-4000-8000-000000000000"
+                "00000000-0000-4000-8000-000000000000",
+                "--enableAuthEndpoint",
+                "true"
             ],
             "env": {
                 "PGUSER": "client"
