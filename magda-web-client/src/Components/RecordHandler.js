@@ -206,6 +206,7 @@ class RecordHandler extends React.Component {
                                 <div className="publisher-basic-info-row">
                                     <span
                                         itemProp="publisher"
+                                        className="publisher"
                                         itemScope
                                         itemType="http://schema.org/Organization"
                                     >
@@ -358,7 +359,9 @@ class RecordHandler extends React.Component {
         return (
             <ReactDocumentTitle title={title + "|" + config.appName}>
                 <div>
-                    <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                    <Medium>
+                        <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                    </Medium>
                     {this.renderByState()}
                 </div>
             </ReactDocumentTitle>

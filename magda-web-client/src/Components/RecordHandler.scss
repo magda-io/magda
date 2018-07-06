@@ -1,29 +1,81 @@
 @import "../variables";
 
-.media-body {
-    h1 {
-        @include AU-fontgrid(lg);
+.dataset-details {
+    h3 {
+        @include AU-fontgrid(lg, heading);
+        margin-bottom: 10px;
+        margin-top: 3rem;
+        font-weight: 300;
+    }
+}
+
+.publisher-basic-info-row {
+    @include AU-fontgrid(sm);
+    .publisher {
+        color: $AU-colordark-background;
+        a {
+            border-bottom: 1px solid rgba($AU-color-foreground-action, 0.5);
+            padding-bottom: 4px;
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+                background-color: $AU-colordark-foreground-action;
+            }
+        }
+    }
+    .updated-date {
+        color: $AU-color-foreground-action;
     }
 
-    .publisher-basic-info-row {
-        display: table;
-        width: 100%;
-        padding-top: 10px;
-        display: inline-block;
-        span.separator {
-            width: 37px;
-            display: inline-block;
-            text-align: center;
+    .separator {
+        opacity: 0.25;
+        color: $AU-color-foreground-action;
+    }
+}
+
+.dataset-details-source {
+    .markdown a {
+        font-weight: 500;
+    }
+    .landing-page {
+        color: $AU-color-foreground-action;
+        word-wrap: break-word;
+        &:hover {
+            color: $AU-color-foreground-focus;
         }
+    }
+}
+
+.dataset-details-overview {
+    margin-top: 20px;
+    line-height: 19px;
+
+    .markdown {
+        opacity: 0.75;
+    }
+}
+
+.quality-rating-box {
+    margin: 20px 0;
+
+    span {
+        color: #535353;
     }
 }
 
 .ask-question-button {
     margin-top: 20px;
+    display: block;
+    width: 100%;
+    padding: 0.8rem 1rem;
 }
 
 .dataset-title {
-    display: inline;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 16px;
 }
 
 .form-margin {
