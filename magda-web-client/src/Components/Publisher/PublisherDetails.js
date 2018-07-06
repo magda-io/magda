@@ -49,7 +49,7 @@ class PublisherDetails extends Component {
                 {this.props.isFetching && <ProgressBar />}
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
-                    <div className="publisher-details__body col-sm-8">
+                    <div className="publisher-details__body">
                         <div className="media">
                             <div className="media-body">
                                 <h1>{publisher.name}</h1>
@@ -64,7 +64,7 @@ class PublisherDetails extends Component {
                         <div>
                             <Link
                                 className="au-cta-link"
-                                to={`/search?organisation=${encodeURIComponent(
+                                to={`/search?publisher=${encodeURIComponent(
                                     publisher.name
                                 )}`}
                             >

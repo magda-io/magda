@@ -25,6 +25,7 @@ gateway:
       memory: 100Mi
   autoscaler:
     enabled: false
+  enableAuthEndpoint: true
 combined-db:
   resources:
     requests:
