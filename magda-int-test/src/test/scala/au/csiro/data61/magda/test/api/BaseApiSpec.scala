@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.test.api
 
 import java.net.URL
+
 import scala.collection.mutable
 import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
@@ -11,21 +12,15 @@ import scala.collection.JavaConversions.mapAsJavaMap
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
 import org.scalatest.BeforeAndAfter
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.FunSpec
+import org.scalatest.{FunSpec, FunSuite}
 import org.scalatest.Matchers
-
-import com.sksamuel.elastic4s.ElasticDsl
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.testkit.SharedElasticSugar
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-
+import com.sksamuel.elastic4s.http.HttpClient
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import akka.actor.ActorSystem
 import akka.actor.Scheduler
 import akka.event.Logging
@@ -35,33 +30,35 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.search.elasticsearch.ClientProvider
-import au.csiro.data61.magda.search.elasticsearch.Indices
+import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import spray.json.JsObject
-import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import java.nio.file.Paths
-import com.sksamuel.elastic4s.embedded.LocalNode
-import java.nio.file.Path
-import java.util.UUID
-import org.elasticsearch.common.settings.Settings
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(31 seconds)
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
   def buildConfig = TestActorSystem.config
-  implicit val config = buildConfig
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
   val logger = Logging(system, getClass)
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
+  val node = getNode
+  implicit val config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+
+  val clientProvider = new DefaultClientProvider
+
+  override def client(): HttpClient = clientProvider.getClient().await
+
   override def beforeAll() {
+
+    blockUntilNotRed()
+
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
       client.execute(
@@ -85,14 +82,28 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(implicit scheduler: Scheduler, logger: LoggingAdapter, ec: ExecutionContext): Future[TcpClient] = Future(client)
+    override def getClient(): Future[HttpClient] = Future(client)
   }
+
   def blockUntilNotRed(): Unit = {
-    blockUntil("Expected cluster to have green status") { () =>
-      val status = client.execute {
+    blockUntil("Expected cluster to have NOT RED status") { () =>
+      client.execute {
         clusterHealth()
-      }.await(90 seconds).getStatus
-      status != ClusterHealthStatus.RED
+      }.await(90 seconds) match {
+        case Right(r) => r.result.status != ClusterHealthStatus.RED
+        case Left(f) => false
+      }
+    }
+  }
+
+  def blockUntilNotYellow(): Unit = {
+    blockUntil("Expected cluster to have green status") { () =>
+      client.execute {
+        clusterHealth()
+      }.await(90 seconds) match {
+        case Right(r) => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
+        case Left(f) => false
+      }
     }
   }
 
@@ -113,7 +124,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
         }
       } catch {
         case e: Throwable ⇒
-          logger.error(e, "")
+          logger.error("", e)
           throw e
       }
     }
@@ -134,8 +145,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
-      case Indices.DataSetsIndex => rawIndexName
-      case _                     => DefaultIndices.getIndex(config, index)
+      case Indices.DataSetsIndex => s"dataset-idx-${rawIndexName}"
+      case Indices.PublishersIndex => s"publisher-idx-${rawIndexName}"
+      case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
+      case _ => DefaultIndices.getIndex(config, index)
     }
   }
 }

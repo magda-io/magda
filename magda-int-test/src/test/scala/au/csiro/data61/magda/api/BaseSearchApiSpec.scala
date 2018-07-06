@@ -12,7 +12,8 @@ import scala.concurrent.duration.DurationInt
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
 
-import com.sksamuel.elastic4s.ElasticDsl
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
 
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
@@ -24,7 +25,6 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
-import com.sksamuel.elastic4s.Indexes
 import scala.collection.mutable
 import au.csiro.data61.magda.model.Registry.RegistryConverters
 
@@ -111,10 +111,18 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]) = {
+
+    blockUntilNotRed()
+
     val rawIndexName = java.util.UUID.randomUUID.toString
     val fakeIndices = FakeIndices(rawIndexName)
 
-    val indexName = fakeIndices.getIndex(config, Indices.DataSetsIndex)
+    val indexNames = List(
+      fakeIndices.getIndex(config, Indices.DataSetsIndex),
+      fakeIndices.getIndex(config, Indices.PublishersIndex),
+      fakeIndices.getIndex(config, Indices.FormatsIndex)
+    )
+
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
     val api = new SearchApi(searchQueryer)(config, logger)
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
@@ -124,22 +132,31 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
             p.copy( acronym = getAcronymFromPublisherName(p.name))
         )
       )
-    );
+    )
 
     val stream = Source.fromIterator[DataSet](() => convertedDataSets.iterator)
 
     indexer.ready.await(INSERTION_WAIT_TIME)
-    blockUntilIndexExists(indexName)
+
+    indexNames.foreach{ idxName =>
+      blockUntilIndexExists(idxName)
+    }
+
     indexer.index(stream).await(INSERTION_WAIT_TIME)
-    refresh(indexName)
 
-    blockUntilExactCount(dataSets.size, indexName, fakeIndices.getType(Indices.DataSetsIndexType))
+    indexNames.foreach{ idxName =>
+      refresh(idxName)
+    }
 
-    (indexName, dataSets, api.routes)
+    blockUntilExactCount(dataSets.size, indexNames(0))
+
+
+    (indexNames(0), dataSets, api.routes)
   }
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
   def cleanUpIndexes() = {
+    blockUntilNotRed()
     cleanUpQueue.iterator().forEachRemaining(
       new Consumer[String] {
         override def accept(indexName: String) = {

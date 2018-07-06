@@ -43,7 +43,7 @@ spec:
             "-Dindexer.readSnapshots={{ .Values.readSnapshots }}",
             "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
-            "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9300",
+            "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200",
 {{- if .Values.elasticsearch.useGcsSnapshots }}
             "-DelasticSearch.snapshotRepo.type=gcs",
             "-DelasticSearch.snapshotRepo.types.gcs.bucket={{ .Values.elasticsearch.gcsSnapshotBucket }}",

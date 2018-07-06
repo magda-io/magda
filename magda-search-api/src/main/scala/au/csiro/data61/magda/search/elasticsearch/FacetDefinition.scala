@@ -6,9 +6,9 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
+import com.sksamuel.elastic4s.searches.aggs.{AggregationDefinition, TermsOrder}
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
@@ -18,7 +18,6 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 import collection.JavaConverters._
 import scalaz.Memo
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.ElasticDsl
 import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.FilterValue._
 import au.csiro.data61.magda.api.Specified
@@ -27,10 +26,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
-import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
-import org.elasticsearch.search.aggregations.bucket.terms.Terms
-import com.sksamuel.elastic4s.searches.aggs.TermsOrder
+import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -70,7 +66,7 @@ trait FacetDefinition {
    * Given an aggregation resolved from ElasticSearch, extract the actual individual FacetOptions. This has to be specified
    * per-facet because some facets use nested aggregations, so we need code to reach into the right sub-aggregation.
    */
-  def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
+  def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregationsToFacetOptions(aggregation)
 
   /**
    * Returns a query with the details relevant to this facet removed - useful for showing what options there *would* be
@@ -133,21 +129,21 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
         topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
   }
 
-  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket => {
-      val topHit = bucket.getAggregations.asMap().asScala.get("topHits")
-
-      new FacetOption(
-        identifier = topHit.flatMap {
-          case hit: InternalTopHits =>
-            val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
-
-            dataSet.publisher.flatMap(_.identifier)
-        },
-        value = bucket.getKeyAsString,
-        hitCount = bucket.getDocCount)
-    })
-    case (_) => throw new RuntimeException("Halp")
+  override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      agg.data.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+        .map{m =>
+          val agg = Aggregations(m)
+          new FacetOption(
+            identifier = if(agg.contains("topHits")) {
+              agg.tophits("topHits").hits.headOption.flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
+            } else {
+              None
+            },
+            value = agg.data("key").toString,
+            hitCount = agg.data("doc_count").toString.toLong)
+          })
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -182,17 +178,20 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .order(TermsOrder("reverse", false))
     }
 
-  override def extractFacetOptions(aggregation: InternalAggregation): Seq[FacetOption] = {
-    val nested = aggregation.getProperty("nested").asInstanceOf[MultiBucketsAggregation]
-
-    nested.getBuckets.asScala.map { bucket =>
-      val innerBucket = bucket.getAggregations.asScala.head.asInstanceOf[InternalReverseNested]
-
-      new FacetOption(
-        identifier = None,
-        value = bucket.getKeyAsString,
-        hitCount = innerBucket.getDocCount)
-    }
+  override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      agg.getAgg("nested").flatMap(_.data.get("buckets"))
+        .toSeq
+        .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+          val agg = Aggregations(m)
+          new FacetOption(
+            identifier = None,
+            value = agg.data("key").toString,
+            hitCount = Aggregations(agg.data("reverse").asInstanceOf[Map[String, Any]])
+                        .data("doc_count").toString.toLong
+          )
+        })
   }
 
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
@@ -216,6 +215,5 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
 
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 
-  override def autocompleteQuery(textQuery: String) = nestedQuery("distributions")
-    .query(matchQuery("distributions.format.english", textQuery))
+  override def autocompleteQuery(textQuery: String) = nestedQuery("distributions").query(matchQuery("distributions.format.english", textQuery))
 }

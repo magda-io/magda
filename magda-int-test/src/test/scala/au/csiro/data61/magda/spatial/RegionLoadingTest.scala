@@ -1,7 +1,10 @@
 package au.csiro.data61.magda.spatial
 
+import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticDsl, IndexDefinition, Indices}
 import java.nio.file.FileSystems
 import java.nio.file.Files
+
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfterAll
@@ -10,17 +13,14 @@ import org.scalatest.Matchers
 import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
 import com.monsanto.labs.mwundo.GeoJson._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
-import com.typesafe.config.ConfigFactory
-import com.vividsolutions.jts.geom.Envelope
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import org.locationtech.jts.geom.Envelope
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKit
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.model.misc.Protocols._
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
-import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import au.csiro.data61.magda.util.MwundoJTSConversions._
@@ -28,15 +28,16 @@ import spray.json._
 import akka.stream.scaladsl.Sink
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import org.locationtech.spatial4j.shape.jts.JtsGeometry
+
 import scala.util.Try
-import com.typesafe.config.Config
-import com.sksamuel.elastic4s.ElasticDsl
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits.RegionHitAs
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
-import com.sksamuel.elastic4s.testkit.SharedElasticSugar
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import com.sksamuel.elastic4s.http.HttpClient
+import com.sksamuel.elastic4s.http.get.GetResponse
 
 class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with MagdaElasticSugar {
   implicit val ec = system.dispatcher
@@ -45,11 +46,18 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(20), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
-  implicit val config = TestActorSystem.config
+  val node = getNode
+  implicit val config = TestActorSystem.config.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+
+  val clientProvider = new DefaultClientProvider
+
+  override def client(): HttpClient = clientProvider.getClient().await
 
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
       case Indices.DataSetsIndex => throw new RuntimeException("Why are we here this is the regions test?")
+      case Indices.PublishersIndex => throw new RuntimeException("Why are we here this is the regions test?")
+      case Indices.FormatsIndex => throw new RuntimeException("Why are we here this is the regions test?")
       case Indices.RegionsIndex  => "regions"
     }
   }
@@ -107,11 +115,10 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   def checkRegionLoading(regionLoader: RegionLoader, regions: Seq[(RegionSource, JsObject)])(implicit config: Config) = {
     IndexDefinition.setupRegions(client, regionLoader, fakeIndices).await(120 seconds)
     val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
-    val typeName = fakeIndices.getType(Indices.RegionsIndexType)
 
     refresh(indexName)
 
-    blockUntilExactCount(regions.size, indexName, typeName)
+    blockUntilExactCount(regions.size, indexName)
 
     regions.foreach { region =>
       val regionId = region._1.name.toLowerCase + "/" + region._2.fields("properties").asJsObject.fields(region._1.idProperty).asInstanceOf[JsString].value
@@ -121,30 +128,34 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
       val result = client.execute(get(regionId).from(fakeIndices.getIndex(config, Indices.RegionsIndex) / fakeIndices.getType(Indices.RegionsIndexType))).await(60 seconds)
 
       withClue("region " + regionId) {
-        result.exists should be(true)
+        result match {
+          case Left(ESGenericException(e)) => throw e
+          case Right(r) =>
+            r.result.exists should be(true)
+            val indexedGeometry = r.result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
+            val indexedGeometryJts = indexedGeometry.toJTSGeo
 
-        val indexedGeometry = result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
-        val indexedGeometryJts = indexedGeometry.toJTSGeo
+            def holeCount(geometry: Geometry): Int = geometry match {
+              case polygon: Polygon       => polygon.coordinates.tail.size
+              case MultiPolygon(polygons) => polygons.map(_.tail.size).reduce(_ + _)
+              case _                      => 0
+            }
 
-        def holeCount(geometry: Geometry): Int = geometry match {
-          case polygon: Polygon       => polygon.coordinates.tail.size
-          case MultiPolygon(polygons) => polygons.map(_.tail.size).reduce(_ + _)
-          case _                      => 0
+            // Hole elimination means that areas can be wildly different even if the outside of the shape is the same.
+            if (holeCount(indexedGeometry) == holeCount(inputGeometry)) {
+              withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
+            }
+
+            val inputRectangle = inputGeometryJts.getEnvelopeInternal
+            val indexedRectangle = indexedGeometryJts.getEnvelopeInternal
+
+            def recToSeq(rect: Envelope) = Seq(rect.getMinX, rect.getMaxY, rect.getMaxX, rect.getMinY)
+
+            recToSeq(inputRectangle).zip(recToSeq(indexedRectangle)).foreach {
+              case (inputDim, indexedDim) => withinFraction(indexedDim, inputDim, inputGeometryJts.getLength, 0.1)
+            }
         }
 
-        // Hole elimination means that areas can be wildly different even if the outside of the shape is the same.
-        if (holeCount(indexedGeometry) == holeCount(inputGeometry)) {
-          withinFraction(indexedGeometryJts.getArea, inputGeometryJts.getArea, inputGeometryJts.getArea, 0.1)
-        }
-
-        val inputRectangle = inputGeometryJts.getEnvelopeInternal
-        val indexedRectangle = indexedGeometryJts.getEnvelopeInternal
-
-        def recToSeq(rect: Envelope) = Seq(rect.getMinX, rect.getMaxY, rect.getMaxX, rect.getMinY)
-
-        recToSeq(inputRectangle).zip(recToSeq(indexedRectangle)).foreach {
-          case (inputDim, indexedDim) => withinFraction(indexedDim, inputDim, inputGeometryJts.getLength, 0.1)
-        }
       }
     }
 
