@@ -51,10 +51,11 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "afsl",
     "pcode",
     "month",
-    "reason"
+    "reason",
+    "year"
 ];
 /** Columns with these terms in them will be overridden as time types */
-const OVERRIDE_TO_TIME_COLUMNS = ["date", "year"];
+const OVERRIDE_TO_TIME_COLUMNS = ["date", "time"];
 /** Columns with these terms in them will be overridden as numeric types */
 const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "amt",
@@ -65,6 +66,26 @@ const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "value",
     "length"
 ];
+
+const noDelimiterParser = new chrono.Parser();
+noDelimiterParser.pattern = function() {
+    return /(\d{2})(\d{2})(\d{4})/gi;
+};
+noDelimiterParser.extract = function(text, ref, match, opt) {
+    return new chrono.ParsedResult({
+        ref: ref,
+        text: match[1] + "/" + match[2] + "/" + match[3],
+        index: match.index,
+        start: {
+            day: match[1],
+            month: match[2],
+            year: match[3]
+        }
+    });
+};
+
+const customChrono = chrono.en_GB;
+customChrono.parsers.push(noDelimiterParser);
 
 const getPapaParse = (() => {
     let Papa = null;
@@ -79,7 +100,7 @@ const getPapaParse = (() => {
 })();
 
 /** Fetches and parses a CSV */
-const fetchData = function(url) {
+const fetchData = function(url, overrideNewLine) {
     return getPapaParse().then(
         Papa =>
             new Promise((resolve, reject) => {
@@ -87,9 +108,21 @@ const fetchData = function(url) {
                     download: true,
                     header: true,
                     skipEmptyLines: true,
+                    newline: overrideNewLine,
                     trimHeader: true,
                     complete: results => {
-                        resolve(results);
+                        if (
+                            results.data.length <= 1 &&
+                            results.errors.length >= 1 &&
+                            overrideNewLine !== "\n"
+                        ) {
+                            // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
+                            resolve(fetchData(url, "\n"));
+                        } else if (results.errors.length >= 1) {
+                            reject(new Error(results.errors[0].message));
+                        } else {
+                            resolve(results);
+                        }
                     },
                     error: err => {
                         let e;
@@ -170,14 +203,15 @@ const defaultChartOption = {
     },
     tooltip: {
         trigger: "item",
-        formatter: (a, b, c, d, e, f, g, h) => {
-            return Object.keys(a.value)
-                .map(
-                    key =>
-                        `${startCase(key.replace(aggrLabelRegex, "$1"))}: ${
-                            a.value[key]
-                        }`
-                )
+        formatter: (params, ticket, callback) => {
+            return Object.keys(params.value)
+                .map(key => {
+                    const value = params.value[key];
+
+                    return `${startCase(
+                        key.replace(aggrLabelRegex, "$1")
+                    )}: ${value}`;
+                })
                 .join("<br/>");
         }
     },
@@ -247,7 +281,6 @@ function preProcessFields(headerRow, distribution) {
             isAggr: false
         }));
     }
-    console.log(newFields);
     newFields = newFields.map(fieldDefAdjustment);
     if (!newFields.length) {
         throw new Error("The data file contains no non-empty header.");
@@ -289,6 +322,11 @@ function groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
     forEach(aggrfields, field => (nest = nest.key(d => d[field])));
     const result = nest.rollup(v => aggrFunc(v)).entries(data);
     return rollupResult2Rows(result, aggrfields, aggrFuncName);
+}
+
+function formatDate(value) {
+    const date = new Date(value);
+    return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
 }
 
 function getFieldDataType(field) {
@@ -367,38 +405,20 @@ class ChartDatasetEncoder {
             this.distribution
         );
 
-        //--- if only one non-numeric column, add new column by count
-        if (this.fields.length === 1 && !this.fields[0].numeric) {
-            const newFieldName = "count";
-            this.fields.push({
-                idx: 1,
-                name: newFieldName,
-                label: "# of Rows",
-                time: false,
-                numeric: true,
-                category: false,
-                isAggr: true,
-                isAggrDone: true
-            });
-            this.data = groupBy(this.data, newFieldName, aggregators.count, [
-                this.fields[0].name
-            ]);
-        } else {
-            //--- if unfortunately no numeric cols, present data by selected col's count
-            // if (!this.getNumericColumns().length) {
-            const newFieldName = "count";
-            this.fields.push({
-                idx: 1,
-                name: newFieldName,
-                label: "# of Rows",
-                time: false,
-                numeric: true,
-                category: false,
-                isAggr: true,
-                isAggrDone: false
-            });
-            //--- we cann't generate coutn data here yet as we don't know user's selection
-        }
+        //--- Present data by selected col's count
+
+        const newFieldName = "count";
+        this.fields.push({
+            idx: 1,
+            name: newFieldName,
+            label: "Count (# of Rows)",
+            time: false,
+            numeric: true,
+            category: false,
+            isAggr: true,
+            isAggrDone: false
+        });
+
         //--- At least one x-axis-able column / dimension should present
         if (
             !this.getTimeColumns().length &&
@@ -538,11 +558,10 @@ class ChartDatasetEncoder {
         };
 
         const unsortedData = inner().map(datum => {
-            const rawValue = datum[this.xAxis.name];
+            let rawValue = datum[this.xAxis.name];
 
             if (getFieldDataType(this.xAxis) === "time") {
-                // Parse a date
-                const parsedDate = chrono.en_GB.parseDate(rawValue);
+                const parsedDate = customChrono.parseDate(rawValue);
                 return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
             } else {
                 return datum;
@@ -692,12 +711,16 @@ class ChartDatasetEncoder {
 
             const axisLabel = {
                 rotate: type === "category" ? 45 : 0,
-                formatter:
-                    type === "category" &&
-                    (value =>
-                        value.length > 25
-                            ? value.substring(0, 23) + "..."
-                            : value)
+                formatter: (() => {
+                    if (type === "category") {
+                        return value =>
+                            value.length > 20
+                                ? value.substring(0, 17) + "..."
+                                : value;
+                    } else if (type === "time") {
+                        return formatDate;
+                    }
+                })()
             };
 
             option.xAxis = {
