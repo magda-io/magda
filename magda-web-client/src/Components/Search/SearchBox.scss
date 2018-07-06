@@ -13,7 +13,7 @@
     box-shadow: none;
     border-radius: 0;
     background-image: none;
-    color: rgba($AU-colordark-foreground-text, 0.87);
+    color: #ffffff;
     @media (min-width: $medium) {
         padding-bottom: 5px;
         padding-left: 0;
@@ -48,6 +48,19 @@
     background-color: rgba($AU-color-foreground-action, 0.8);
     background: $AU-color-background;
     border-radius: 0px;
+
+    input::-webkit-input-placeholder {
+        color: rgba($AU-colordark-foreground-action, 0.8);
+    }
+    input:-moz-placeholder {
+        color: rgba($AU-colordark-foreground-action, 0.8);
+    }
+    input::-moz-placeholder {
+        color: rgba($AU-colordark-foreground-action, 0.8);
+    }
+    input:-ms-input-placeholder {
+        color: rgba($AU-colordark-foreground-action, 0.8);
+    }
 
     input:focus::-webkit-input-placeholder {
         opacity: 0;
