@@ -3,7 +3,6 @@ name := "magda-int-test"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
-resolvers += Resolver.sonatypeRepo("releases")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {

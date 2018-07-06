@@ -24,8 +24,8 @@ libraryDependencies ++= {
        "org.locationtech.jts" % "jts-core" % "1.15.0",
        "org.elasticsearch" % "elasticsearch" % "6.3.0",
 
-       "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.2.9",
-       "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.2.9",
+       "io.github.t83714" %% "elastic4s-core" % "6.2.9",
+       "io.github.t83714" %% "elastic4s-http" % "6.2.9",
        "org.apache.logging.log4j" % "log4j-core" % "2.9.1",
        "org.apache.logging.log4j" % "log4j-api" % "2.9.1",
 
