@@ -10,6 +10,7 @@
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 -   Improved mobile navigation
+-   Improved dataset page paddings and margins
 
 ## 0.0.43
 
