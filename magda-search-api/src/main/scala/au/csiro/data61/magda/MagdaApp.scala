@@ -1,12 +1,16 @@
 
 package au.csiro.data61.magda
 
-import akka.actor.{ Actor, ActorLogging, ActorSystem, DeadLetter, Props }
+import akka.actor.{Actor, ActorLogging, ActorSystem, DeadLetter, Props}
 import akka.event.Logging
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server.{MalformedQueryParamRejection, RejectionHandler}
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.api.SearchApi
-import au.csiro.data61.magda.search.elasticsearch.{ DefaultClientProvider, ElasticSearchQueryer }
+import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticSearchQueryer}
 
 object MagdaApp extends App {
   implicit val config = AppConfig.conf()
@@ -16,6 +20,12 @@ object MagdaApp extends App {
   implicit val clientProvider = new DefaultClientProvider
 
   implicit val logger = Logging(system, getClass)
+
+  implicit def myRejectionHandler = RejectionHandler.newBuilder()
+    .handle { case MalformedQueryParamRejection(parameterName, errorMsg, cause) =>
+      complete(HttpResponse(StatusCodes.BadRequest, entity = s"The query parameter `${parameterName}` was malformed."))
+    }
+    .result()
 
   logger.info("Starting Search API on port {}", config.getString("http.port"))
 
