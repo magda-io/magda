@@ -27,6 +27,8 @@ tags:
     correspondence-api: true
     ingress: true
 
+    feedback-api: false
+
 ingress:
   hostname: letest.search.data.gov.au
   ipName: search-data-gov-au-ingress
