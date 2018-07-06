@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { Medium } from "./Responsive";
+import { Medium, Small } from "./Responsive";
 import Spinner from "../Components/Spinner";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
+import downArrowIcon from "../assets/downArrow.svg";
+import upArrowIcon from "../assets/upArrow.svg";
 import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
@@ -17,10 +19,12 @@ class DataPreviewChart extends Component {
             isLoading: true,
             chartTitle: this.props.distribution.title
                 ? this.props.distribution.title
-                : ""
+                : "",
+            isExpanded: true
         });
         this.chartDatasetEncoder = null;
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
+        this.onToggleButtonClick = this.onToggleButtonClick.bind(this);
     }
 
     getResetState(extraOptions = null) {
@@ -143,6 +147,13 @@ class DataPreviewChart extends Component {
         this.setState({ [key]: value });
     }
 
+    onToggleButtonClick(e) {
+        e.preventDefault();
+        this.setState({
+            isExpanded: !this.state.isExpanded
+        });
+    }
+
     render() {
         if (this.state.error)
             return (
@@ -171,8 +182,8 @@ class DataPreviewChart extends Component {
                         theme="au_dga"
                     />
                 </div>
-                <Medium>
-                    <div className="col-md-4 config-panel-container">
+                <div className="col-md-4 config-panel-container">
+                    {this.state.isExpanded ? (
                         <ChartConfig
                             chartType={this.state.chartType}
                             chartTitle={this.state.chartTitle}
@@ -182,8 +193,27 @@ class DataPreviewChart extends Component {
                             yAxisOptions={this.state.avlYCols}
                             onChange={this.onChartConfigChanged}
                         />
-                    </div>
-                </Medium>
+                    ) : null}
+                    <Small>
+                        {this.state.isExpanded ? (
+                            <button
+                                className="toggle-button"
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Hide shart options</span>
+                                <img src={upArrowIcon} alt="upArrowIcon" />
+                            </button>
+                        ) : (
+                            <button
+                                className="toggle-button"
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Show shart options</span>
+                                <img src={downArrowIcon} alt="downArrow" />
+                            </button>
+                        )}
+                    </Small>
+                </div>
             </div>
         );
     }
