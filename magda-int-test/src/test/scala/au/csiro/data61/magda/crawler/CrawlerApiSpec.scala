@@ -1,8 +1,8 @@
 
 package au.csiro.data61.magda.crawler
 
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import au.csiro.data61.magda.test.util.Generators

@@ -38,7 +38,7 @@ import spray.json.JsObject
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {

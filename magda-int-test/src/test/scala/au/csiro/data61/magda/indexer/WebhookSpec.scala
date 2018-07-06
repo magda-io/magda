@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.indexer
 
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 

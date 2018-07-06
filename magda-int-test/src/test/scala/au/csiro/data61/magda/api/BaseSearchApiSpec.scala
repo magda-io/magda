@@ -12,8 +12,8 @@ import scala.concurrent.duration.DurationInt
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
 
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
 
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source

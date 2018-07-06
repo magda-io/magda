@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.spatial
 
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticDsl, IndexDefinition, Indices}
 import java.nio.file.FileSystems
 import java.nio.file.Files

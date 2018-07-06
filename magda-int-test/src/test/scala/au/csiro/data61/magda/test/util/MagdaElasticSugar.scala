@@ -15,7 +15,7 @@ import java.nio.file.Files
 import java.nio.file.Files.copy
 
 import au.csiro.data61.magda.test.util.testkit.SharedElasticSugar
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.ClientProvider
 

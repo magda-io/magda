@@ -13,8 +13,8 @@ import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.transport.RemoteTransportException
 import spray.json._
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.{HttpClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.http.bulk._
 import com.sksamuel.elastic4s.snapshots._

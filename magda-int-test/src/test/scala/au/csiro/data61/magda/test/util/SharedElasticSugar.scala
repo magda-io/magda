@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.test.util.testkit
 
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.{IndexAndTypes, Indexes}

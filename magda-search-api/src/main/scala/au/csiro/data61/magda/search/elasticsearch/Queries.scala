@@ -3,7 +3,7 @@ package au.csiro.data61.magda.search.elasticsearch
 import java.time.OffsetDateTime
 
 import com.sksamuel.elastic4s.searches.ScoreMode
-import au.csiro.data61.magda.search.elasticsearch.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.queries.NestedQueryDefinition
 import com.typesafe.config.Config
 
