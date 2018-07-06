@@ -104,10 +104,11 @@ cd ..
 ### Merge the changes in the release branch back into master
 
 ```
-git checkout master
-git pull
+git checkout <release-branch>
 git checkout -b merge-<version>
-git pull origin <version branch> -s recursive -X ours
+lerna publish --force-publish --skip-npm --skip-git # Set version to same as master
+# Also make sure any other version (particularly in Chart.yaml) is updated
+git pull origin master
 git push origin merge-<version>
 ```
 
