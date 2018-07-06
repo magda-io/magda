@@ -34,10 +34,10 @@ import au.csiro.data61.magda.search.elasticsearch._
 import org.elasticsearch.index.query.QueryBuilders
 import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
 import com.sksamuel.elastic4s.http.index.IndexResponse
-import au.csiro.data61.magda.search.elasticsearch.Executables.IndexMappings
+import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.snapshots._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
-import au.csiro.data61.magda.search.elasticsearch.Responses.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
+import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.mappings.GetMappingDefinition
 
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
@@ -466,12 +466,15 @@ class ElasticSearchIndexer(
         )
       }.map{
         case Right(results) =>
-          val snapshot = results.result.asInstanceOf[CreateSnapshotResponse].snapshot
+          logger.info("Snapshotted {}",
+            indices.getIndex(config, definition.indicesIndex)
+          )
+          /*val snapshot = results.result.asInstanceOf[CreateSnapshotResponse].snapshot
           logger.info("Snapshotted {} shards of {} for {}",
             snapshot.shards.successful,
             snapshot.shards.total,
             indices.getIndex(config, definition.indicesIndex)
-          )
+          )*/
         case Left(ESGenericException(e)) =>
             logger.error(e, "Failed to snapshot {}", indices.getIndex(config, definition.indicesIndex))
             throw e

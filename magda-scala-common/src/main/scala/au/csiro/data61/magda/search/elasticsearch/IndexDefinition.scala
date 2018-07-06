@@ -26,7 +26,7 @@ import com.sksamuel.elastic4s.analyzers.{
   TokenFilterDefinition,
   WhitespaceTokenizer
 }
-import au.csiro.data61.magda.search.elasticsearch.TokenFilters.{
+import com.sksamuel.elastic4s.analyzers.{
   SynonymTokenFilter,
   SynonymGraphTokenFilter
 }

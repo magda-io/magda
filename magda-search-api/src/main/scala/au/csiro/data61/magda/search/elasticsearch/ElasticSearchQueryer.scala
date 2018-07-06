@@ -8,6 +8,7 @@ import com.sksamuel.elastic4s.searches.aggs.AggregationApi
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
@@ -47,7 +48,7 @@ import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, FilterAggregationResult}
+import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,

@@ -6,7 +6,7 @@ import spray.json._
 
 import collection.JavaConverters._
 import com.sksamuel.elastic4s.{AggReader, Hit, HitReader, Indexable}
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
+import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -40,9 +40,9 @@ object ElasticSearchImplicits extends Protocols {
     case None => Nil
     case Some(agg) =>
       val buckets = if (agg.contains("buckets")){
-        Some(agg.data("buckets"))
+        agg.get("buckets")
       }else{
-        agg.data.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
+        agg.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
       }
 
       buckets.toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]

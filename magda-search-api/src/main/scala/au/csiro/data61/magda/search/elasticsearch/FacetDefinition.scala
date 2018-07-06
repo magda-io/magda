@@ -26,7 +26,7 @@ import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import au.csiro.data61.magda.search.elasticsearch.AggregationResults.{Aggregations, HasAggregations}
+import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
 
 /**
  * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -132,7 +132,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      agg.data.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+      agg.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
         .map{m =>
           val agg = Aggregations(m)
           new FacetOption(
