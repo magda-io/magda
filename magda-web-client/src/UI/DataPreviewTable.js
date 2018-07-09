@@ -90,6 +90,7 @@ export default class DataPreviewTable extends Component<
         let dataForTable = [];
         data.forEach(row => {
             let allFieldsEmpty = true;
+            // get values in a row as an arrary
             const rowValues = Object.values(row);
             rowValues.forEach(column => {
                 if (column.trim().length > 0) {
