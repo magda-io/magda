@@ -171,7 +171,7 @@ class DataPreviewChart extends Component {
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="col-md-8">
+                <div className="col-md-8 chart-panel-container">
                     <h4 className="chart-title">{this.state.chartTitle}</h4>
                     <ReactEcharts
                         className="data-preview-chart-container"
