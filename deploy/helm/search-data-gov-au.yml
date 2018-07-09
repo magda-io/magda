@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.42-RC1"
+        tag: "0.0.43-RC1"
     enableLivenessProbes: true
 tags:
     all: false
@@ -26,6 +26,8 @@ tags:
     web-server: true
     correspondence-api: true
     ingress: true
+
+    feedback-api: false
 
 ingress:
   hostname: letest.search.data.gov.au
