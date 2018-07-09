@@ -147,8 +147,7 @@ class SearchBox extends Component {
             />
         );
 
-        const icon =
-            this.props.isHome || this.props.isMobile ? searchDark : searchLight;
+        const icon = this.props.isHome ? searchDark : searchLight;
         return (
             <div className="searchBox">
                 <label htmlFor="search">
