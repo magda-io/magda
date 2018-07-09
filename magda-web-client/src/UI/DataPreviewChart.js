@@ -200,7 +200,7 @@ class DataPreviewChart extends Component {
                                 className="toggle-button"
                                 onClick={e => this.onToggleButtonClick(e)}
                             >
-                                <span>Hide shart options</span>
+                                <span>Hide chart options</span>
                                 <img src={upArrowIcon} alt="upArrowIcon" />
                             </button>
                         ) : (
@@ -208,7 +208,7 @@ class DataPreviewChart extends Component {
                                 className="toggle-button"
                                 onClick={e => this.onToggleButtonClick(e)}
                             >
-                                <span>Show shart options</span>
+                                <span>Show chart options</span>
                                 <img src={downArrowIcon} alt="downArrow" />
                             </button>
                         )}
