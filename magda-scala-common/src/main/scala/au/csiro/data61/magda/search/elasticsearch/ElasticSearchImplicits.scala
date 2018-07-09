@@ -1,18 +1,12 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.model.misc.{ BoundingBox, DataSet, FacetOption, Region, QueryRegion, Agent }
+import au.csiro.data61.magda.model.misc.{Agent, BoundingBox, DataSet, FacetOption, QueryRegion, Region}
 import au.csiro.data61.magda.model.misc.Protocols
-import org.elasticsearch.search.aggregations.Aggregation
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import spray.json._
+
 import collection.JavaConverters._
-import com.sksamuel.elastic4s.Indexable
-import com.sksamuel.elastic4s.searches.RichSearchHit
-import com.sksamuel.elastic4s.HitReader
-import com.sksamuel.elastic4s.Hit
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket
-import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import java.util.HashMap
+import com.sksamuel.elastic4s.{AggReader, Hit, HitReader, Indexable}
+import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -30,18 +24,33 @@ object ElasticSearchImplicits extends Protocols {
     }
   }
 
+  implicit object DataSetHitAggAs extends AggReader[DataSet] {
+    override def read(json: String): Either[Throwable, DataSet] = {
+      Right(json.parseJson.convertTo[DataSet])
+    }
+  }
+
   implicit object RegionHitAs extends HitReader[Region] {
     override def read(hit: Hit): Either[Throwable, Region] = {
       Right(hit.to[JsValue].asJsObject.convertTo[Region](esRegionFormat))
     }
   }
 
-  def aggregationsToFacetOptions(aggregation: Aggregation): Seq[FacetOption] = aggregation match {
-    case (st: MultiBucketsAggregation) => st.getBuckets.asScala.map(bucket =>
-      new FacetOption(
-        identifier = None,
-        value = bucket.getKeyAsString,
-        hitCount = bucket.getDocCount))
-    case (_) => throw new RuntimeException("Halp")
+  def aggregationsToFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
+    case None => Nil
+    case Some(agg) =>
+      val buckets = if (agg.contains("buckets")){
+        agg.get("buckets")
+      }else{
+        agg.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
+      }
+
+      buckets.toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+        .map(m => new FacetOption(
+          identifier = None,
+          value = m("key").toString,
+          hitCount = m("doc_count").toString.toLong
+        ))
+      )
   }
 }

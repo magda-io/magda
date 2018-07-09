@@ -16,8 +16,8 @@ import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
 import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
 import java.time.ZoneOffset
 
-import com.vividsolutions.jts.geom
-import com.vividsolutions.jts.operation.valid.IsValidOp
+import org.locationtech.jts.geom
+import org.locationtech.jts.operation.valid.IsValidOp
 import java.time.Instant
 
 import akka.http.scaladsl.model.MediaTypes
@@ -32,7 +32,7 @@ import spray.json.JsObject
 import java.net.URL
 import spray.json._
 import au.csiro.data61.magda.model.misc.Protocols._
-import com.vividsolutions.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.GeometryFactory
 import com.monsanto.labs.mwundo.GeoJson._
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import au.csiro.data61.magda.api.Specified

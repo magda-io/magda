@@ -24,6 +24,7 @@
     "ejs": "^2.3.3",
     "express": "^4.15.3",
     "express-session": "^1.11.3",
+    "helmet": "^3.12.0",
     "gravatar": "^1.6.0",
     "http-proxy": "^1.16.2",
     "isomorphic-fetch": "^2.2.1",

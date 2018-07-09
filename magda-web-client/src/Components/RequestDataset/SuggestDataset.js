@@ -3,6 +3,7 @@ import RequestFormLogic from "./RequestFormLogic";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
 import Breadcrumbs from "../../UI/Breadcrumbs";
+import { Medium } from "../../UI/Responsive";
 
 export default class Suggest extends React.Component {
     //this is the page on /suggest url
@@ -58,13 +59,15 @@ export default class Suggest extends React.Component {
         return (
             <ReactDocumentTitle title={"Suggest a Dataset |" + config.appName}>
                 <div>
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li>
-                                <span>Suggest a Dataset</span>
-                            </li>
-                        ]}
-                    />
+                    <Medium>
+                        <Breadcrumbs
+                            breadcrumbs={[
+                                <li>
+                                    <span>Suggest a Dataset</span>
+                                </li>
+                            ]}
+                        />
+                    </Medium>
                     <RequestFormLogic
                         formProps={formProps}
                         alertProps={alertProps}

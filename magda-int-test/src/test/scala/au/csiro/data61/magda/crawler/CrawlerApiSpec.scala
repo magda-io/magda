@@ -1,15 +1,19 @@
 
 package au.csiro.data61.magda.crawler
 
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.indexer.crawler.CrawlerApi;
+import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
+
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import akka.http.scaladsl.model.StatusCodes.{ OK, Accepted }
+import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
+
 import scala.concurrent.duration._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.api.SearchApi
@@ -20,6 +24,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import org.scalacheck.Shrink
 import akka.http.scaladsl.server.Route
 import java.util.UUID
+
 import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
@@ -27,11 +32,14 @@ import au.csiro.data61.magda.indexer.crawler.Crawler
 import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.HttpFetcher
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   implicit val ec = system.dispatcher
+
+  blockUntilNotRed()
 
   it("should correctly store new datasets when reindexed") {
     // When shrinking, shrink the datasets only and put them in a new index.
@@ -58,14 +66,22 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
     forAll(gen) {
       case (source) =>
         val indexId = UUID.randomUUID().toString
+        val indices = new FakeIndices(indexId.toString)
+        val indexNames = List(
+          indices.getIndex(config, Indices.DataSetsIndex),
+          indices.getIndex(config, Indices.PublishersIndex),
+          indices.getIndex(config, Indices.FormatsIndex)
+        )
 
-        doTest(indexId, source, true)
-        doTest(indexId, source, false)
+        doTest(indices, indexNames, source, true)
+        doTest(indices, indexNames, source, false)
 
-        deleteIndex(indexId)
+        indexNames.foreach{ idxName =>
+          deleteIndex(idxName)
+        }
     }
 
-    def doTest(indexId: String, source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {
+    def doTest(indices: Indices, indexNames: List[String], source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {
       val filteredSource = source match {
         case (initialDataSets, afterDataSets) =>
           (if (firstIndex) initialDataSets else afterDataSets)
@@ -86,7 +102,6 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
             }
           }
       }
-      val indices = new FakeIndices(indexId.toString)
       val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
       val crawler = new RegistryCrawler(externalInterface, indexer)
       val crawlerApi = new CrawlerApi(crawler, indexer)
@@ -101,20 +116,26 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       // Combine all the datasets but keep what interface they come from
       val allDataSets = filteredSource
 
-      refresh(indexId)
+      indexNames.foreach{ idxName =>
+        refresh(idxName)
+      }
 
       try {
-        blockUntilExactCount(allDataSets.size, indexId, indices.getType(Indices.DataSetsIndexType))
+        blockUntilExactCount(allDataSets.size, indexNames(0))
       } catch {
         case (e: Throwable) =>
-          val sizeQuery = search(indexId / indices.getType(Indices.DataSetsIndexType)).size(10000)
-          val result = client.execute(sizeQuery).await(60 seconds)
-          logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
-          logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${result.totalHits}" +
-            s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
-          logger.error(s"Returned results: ${result.hits}")
-          logger.error(s"First index: ${source._1.map(_.normalToString)}")
-          logger.error(s"Second index: ${source._2.map(_.normalToString)}")
+          val sizeQuery = search(indexNames(0)).size(10000)
+          val result = client.execute(sizeQuery).await(60 seconds) match {
+            case Right(r) =>
+              logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
+              logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${r.result.totalHits}" +
+              s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
+              logger.error(s"Returned results: ${r.result.hits}")
+              logger.error(s"First index: ${source._1.map(_.normalToString)}")
+              logger.error(s"Second index: ${source._2.map(_.normalToString)}")
+            case Left(ESGenericException(e)) => throw e
+          }
+
           throw e
       }
 

@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { Medium } from "./Responsive";
+import { Small } from "./Responsive";
 import Spinner from "../Components/Spinner";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
+import downArrowIcon from "../assets/downArrow.svg";
+import upArrowIcon from "../assets/upArrow.svg";
 import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
@@ -17,10 +19,12 @@ class DataPreviewChart extends Component {
             isLoading: true,
             chartTitle: this.props.distribution.title
                 ? this.props.distribution.title
-                : ""
+                : "",
+            isExpanded: true
         });
         this.chartDatasetEncoder = null;
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
+        this.onToggleButtonClick = this.onToggleButtonClick.bind(this);
     }
 
     getResetState(extraOptions = null) {
@@ -64,9 +68,7 @@ class DataPreviewChart extends Component {
 
                 if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
-                const chartOption = this.chartDatasetEncoder.getChartOption(
-                    this.state.chartTitle
-                );
+                const chartOption = this.chartDatasetEncoder.getChartOption("");
 
                 this.setState({
                     error: null,
@@ -135,6 +137,13 @@ class DataPreviewChart extends Component {
         this.setState({ [key]: value });
     }
 
+    onToggleButtonClick(e) {
+        e.preventDefault();
+        this.setState({
+            isExpanded: !this.state.isExpanded
+        });
+    }
+
     render() {
         console.log(this.state.chartOption);
 
@@ -156,7 +165,8 @@ class DataPreviewChart extends Component {
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="col-md-8">
+                <div className="col-md-8 chart-panel-container">
+                    <h4 className="chart-title">{this.state.chartTitle}</h4>
                     <ReactEcharts
                         className="data-preview-chart-container"
                         style={{ height: "450px", color: "yellow" }}
@@ -165,8 +175,8 @@ class DataPreviewChart extends Component {
                         theme="au_dga"
                     />
                 </div>
-                <Medium>
-                    <div className="col-md-4 config-panel-container">
+                <div className="col-md-4 config-panel-container">
+                    {this.state.isExpanded ? (
                         <ChartConfig
                             chartType={this.state.chartType}
                             chartTitle={this.state.chartTitle}
@@ -176,8 +186,27 @@ class DataPreviewChart extends Component {
                             yAxisOptions={this.state.avlYCols}
                             onChange={this.onChartConfigChanged}
                         />
-                    </div>
-                </Medium>
+                    ) : null}
+                    <Small>
+                        {this.state.isExpanded ? (
+                            <button
+                                className="toggle-button"
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Hide chart options</span>
+                                <img src={upArrowIcon} alt="upArrowIcon" />
+                            </button>
+                        ) : (
+                            <button
+                                className="toggle-button"
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Show chart options</span>
+                                <img src={downArrowIcon} alt="downArrow" />
+                            </button>
+                        )}
+                    </Small>
+                </div>
             </div>
         );
     }

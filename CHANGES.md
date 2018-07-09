@@ -4,12 +4,23 @@
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.
 -   Changed chart icons on dataset page
+-   Made `elasticsearch` supports synonyms
+-   Upgraded `elasticsearch` to v6.3.0
+-   Enable organisation search
 -   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
+-   Change appearance of mobile search box
 -   Improve filter button icon alignment
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 -   Added more heuristics to charting, made it parse dates and sort the x axis.
+-   Improve chart view on mobile
+-   Fixed `Ask a question about this dataset` button (on dataset page) won't open form on safari browser
+-   Remove input content from Scala service Malformat query parameter error message
+-   Improved mobile navigation
+-   Improved dataset page paddings and margins
+-   Moved express helmet to gateway module
+-   Make chart title wrap
 
 ## 0.0.43
 

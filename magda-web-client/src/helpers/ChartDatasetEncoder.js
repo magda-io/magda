@@ -679,7 +679,8 @@ class ChartDatasetEncoder {
             ...defaultChartOption,
             title: {
                 text: chartTitle,
-                left: "center"
+                left: "center",
+                show: false
             },
             dataset: [
                 {

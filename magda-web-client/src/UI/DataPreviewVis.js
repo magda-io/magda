@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
 import type { ParsedDistribution } from "../helpers/record";
-
 import "./DataPreviewVis.css";
 
 class DataPreviewVis extends Component<{
@@ -49,11 +48,11 @@ class DataPreviewVis extends Component<{
 
         return (
             <nav className="tab-navigation">
-                <ul className="au-link-list  au-link-list--inline tab-list">
+                <ul className="au-link-list au-link-list--inline tab-list">
                     {tabs.map(t => (
                         <li key={t.value}>
                             <button
-                                className={`au-link ${
+                                className={`${t.value.toLowerCase()} au-link ${
                                     t.value.toLowerCase() === activeTab.value
                                         ? "tab-active"
                                         : null
