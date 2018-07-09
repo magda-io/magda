@@ -6,7 +6,6 @@
         padding-right: 20px;
     }
     .config-panel-container {
-        margin-top: 50px;
         padding-left: 0px !important;
     }
 
@@ -19,5 +18,10 @@
         label {
             display: block;
         }
+    }
+    .chart-title {
+        font-weight: bold;
+        padding: 0 4px;
+        margin-bottom: 0;
     }
 }

@@ -6,6 +6,7 @@ import queryString from "query-string";
 import { requestAuthProviders } from "../../actions/userManagementActions";
 import { bindActionCreators } from "redux";
 import Breadcrumbs from "../../UI/Breadcrumbs";
+import { Medium } from "../../UI/Responsive";
 
 class Account extends React.Component {
     constructor(props) {
@@ -25,13 +26,15 @@ class Account extends React.Component {
     render() {
         return (
             <div className="account">
-                <Breadcrumbs
-                    breadcrumbs={[
-                        <li key="account">
-                            <span>Acount</span>
-                        </li>
-                    ]}
-                />
+                <Medium>
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            <li key="account">
+                                <span>Acount</span>
+                            </li>
+                        ]}
+                    />
+                </Medium>
                 {!this.props.user && (
                     <Login
                         signInError={

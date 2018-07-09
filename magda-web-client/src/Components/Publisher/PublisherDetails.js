@@ -9,6 +9,7 @@ import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
+import { Medium } from "../../UI/Responsive";
 
 import "./PublisherDetails.css";
 
@@ -48,7 +49,9 @@ class PublisherDetails extends Component {
             <div className="publisher-details">
                 {this.props.isFetching && <ProgressBar />}
                 <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    <Medium>
+                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    </Medium>
                     <div className="publisher-details__body">
                         <div className="media">
                             <div className="media-body">

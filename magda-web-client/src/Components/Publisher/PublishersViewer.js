@@ -15,6 +15,7 @@ import debounce from "lodash.debounce";
 import Pagination from "../../UI/Pagination";
 import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
+import { Medium } from "../../UI/Responsive";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -137,13 +138,15 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li key="organisations">
-                                <span>Organisations</span>
-                            </li>
-                        ]}
-                    />
+                    <Medium>
+                        <Breadcrumbs
+                            breadcrumbs={[
+                                <li key="organisations">
+                                    <span>Organisations</span>
+                                </li>
+                            ]}
+                        />
+                    </Medium>
                     <h1>Organisations</h1>
                     <div className="row">
                         <div className="col-sm-8">
