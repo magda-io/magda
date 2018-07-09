@@ -172,4 +172,16 @@
     .search-input__highlight {
         border-top: 2px solid rgba($AU-color-foreground-action, 0.7);
     }
+    input::-webkit-input-placeholder {
+        color: rgba($AU-color-foreground-action, 0.6);
+    }
+    input:-moz-placeholder {
+        color: rgba($AU-color-foreground-action, 0.6);
+    }
+    input::-moz-placeholder {
+        color: rgba($AU-color-foreground-action, 0.6);
+    }
+    input:-ms-input-placeholder {
+        color: rgba($AU-color-foreground-action, 0.6);
+    }
 }
