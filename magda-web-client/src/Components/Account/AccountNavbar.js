@@ -22,13 +22,15 @@ class AccountNavbar extends React.Component {
                         </li>,
                         <li key="/signOut">
                             <a href="" onClick={this.signOut.bind(this)}>
-                                Sign Out
+                                <span>Sign Out</span>
                             </a>
                         </li>
                     ]
                 ) : (
                     <li key="/account">
-                        <Link to={`/account`}>Sign in</Link>
+                        <Link to={`/account`}>
+                            <span>Sign In</span>
+                        </Link>
                     </li>
                 )}
             </React.Fragment>

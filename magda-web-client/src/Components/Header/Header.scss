@@ -36,7 +36,6 @@
             line-height: 40px;
             margin-right: 32px;
             &:hover {
-                background: transparent;
                 color: $AU-color-foreground-text;
                 text-decoration: underline;
             }
@@ -105,8 +104,7 @@
             &:before {
                 background-image: AU-svguri(
                     '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                        '<path d="M0 0h24v24H0z" fill="none"/>' +
-                        '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
+                        '<path id="path-1" d="M2,8 L2,6 L22,6 L22,8 L2,8 Z M2,18 L2,16 L22,16 L22,18 L2,18 Z"/>' +
                         "</svg>"
                 );
             }
@@ -114,8 +112,7 @@
             &:hover:before {
                 background-image: AU-svguri(
                     '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                        '<path d="M0 0h24v24H0z" fill="none"/>' +
-                        '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
+                        '<path id="path-1" d="M2,8 L2,6 L22,6 L22,8 L2,8 Z M2,18 L2,16 L22,16 L22,18 L2,18 Z"/>' +
                         "</svg>"
                 );
             }
@@ -145,15 +142,8 @@
         position: absolute;
         width: 100%;
         z-index: 1;
-        li {
-            border-bottom: 1px solid gray;
-            padding-left: 10px;
-        }
-        li:last-child {
-            border-bottom: none;
-        }
         ul {
-            padding-bottom: 0px;
+            padding: 0px;
         }
     }
 
@@ -161,7 +151,34 @@
         background: #fff;
         overflow-y: hidden;
         height: 0;
-        border-bottom: 1px solid rgba(73, 73, 73, 0.15);
+        li {
+            padding: 0;
+            margin: 0;
+            border-bottom: 1px solid #dad9db;
+            a {
+                line-height: 4.5rem;
+                margin: 0;
+                border-left: 10px solid $AU-colordark-background;
+                display: block;
+                padding: 0;
+                padding-left: 16px;
+                color: $AU-colordark-background;
+
+                &,
+                &:hover,
+                &:focus {
+                    text-decoration: none;
+                }
+
+                &.active {
+                    background: #f4f3f5;
+                    font-weight: bold;
+                }
+                span {
+                    border-bottom: 1px solid $AU-color-foreground-action;
+                }
+            }
+        }
         &.isOpen {
             height: auto;
         }
