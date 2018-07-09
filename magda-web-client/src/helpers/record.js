@@ -274,7 +274,7 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
 export function parseDistribution(
     record?: RawDistribution
 ): ParsedDistribution {
-    const identifier = record ? record["id"] : "";
+    const identifier = record ? record["id"] : null;
     const title = record ? record["name"] : "";
 
     const aspects = record
@@ -339,7 +339,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const aspects = dataset
         ? Object.assign({}, defaultDatasetAspects, dataset["aspects"])
         : defaultDatasetAspects;
-    const identifier = dataset ? dataset.id : "";
+    const identifier = dataset ? dataset.id : null;
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"];

@@ -20,7 +20,7 @@
     "eslint-plugin-react": "^7.7.0",
     "glob": "^7.1.2",
     "husky": "^0.14.3",
-    "lerna": "^2.5.1",
+    "lerna": "^2.11.0",
     "lodash": "^4.17.5",
     "prettier": "^1.13.4",
     "pretty-quick": "^1.3.0"
@@ -82,5 +82,8 @@
     "react": {
       "location": "pancake/react/"
     }
+  },
+  "dependencies": {
+    "global": "^4.3.2"
   }
 }
