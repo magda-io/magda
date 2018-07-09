@@ -30,14 +30,6 @@ class FacetRegion extends Component {
         };
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.activeRegion !== prevState._activeRegion) {
-            this.setState({
-                _activeRegion: this.props.activeRegion
-            });
-        }
-    }
-
     onToggleOption(option) {
         this.setState({
             applyButtonDisabled: false,
