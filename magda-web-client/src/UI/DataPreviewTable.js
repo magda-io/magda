@@ -86,7 +86,6 @@ export default class DataPreviewTable extends Component<
     }
 
     removeEmptyRows(data) {
-        let allFieldsEmpty = true;
         let dataForTable = [];
         data.forEach(row => {
             let allFieldsEmpty = true;
