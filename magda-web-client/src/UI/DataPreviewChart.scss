@@ -9,6 +9,7 @@
         @media (min-width: $medium) {
             margin-top: 0px;
         }
+        padding-left: 0px !important;
     }
 
     .chart-config {
@@ -22,6 +23,7 @@
             display: block;
         }
     }
+  
     .toggle-button {
         color: $AU-color-foreground-action;
         font-size: 1rem;
@@ -37,7 +39,14 @@
             top: -2px;
         }
     }
+  
     .toggle-button:focus {
         outline: none;
+    }
+  
+    .chart-title {
+        font-weight: bold;
+        padding: 0 4px;
+        margin-bottom: 0;
     }
 }

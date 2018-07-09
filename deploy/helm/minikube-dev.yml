@@ -10,9 +10,8 @@ global:
   useCloudSql: false
   useCombinedDb: true
 
-web-server:
-  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
 gateway:
+  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"

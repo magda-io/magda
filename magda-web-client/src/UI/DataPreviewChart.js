@@ -68,9 +68,7 @@ class DataPreviewChart extends Component {
 
                 if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
-                const chartOption = this.chartDatasetEncoder.getChartOption(
-                    this.state.chartTitle
-                );
+                const chartOption = this.chartDatasetEncoder.getChartOption("");
 
                 this.setState({
                     error: null,
@@ -174,6 +172,7 @@ class DataPreviewChart extends Component {
                 }}
             >
                 <div className="col-md-8">
+                    <h4 className="chart-title">{this.state.chartTitle}</h4>
                     <ReactEcharts
                         className="data-preview-chart-container"
                         style={{ height: "450px", color: "yellow" }}
