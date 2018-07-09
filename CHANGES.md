@@ -5,12 +5,15 @@
 -   Modified error message text and omitted homepage articles if search error occurs.
 -   Changed chart icons on dataset page
 -   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
+-   Change appearance of mobile search box
 -   Improve filter button icon alignment
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
 -   Improved mobile navigation
 -   Improved dataset page paddings and margins
+-   Moved express helmet to gateway module
+-   Make chart title wrap
 
 ## 0.0.43
 
@@ -29,6 +32,11 @@
 -   Upgraded `rollbar.js` 2.3.9 -> 2.4.1
 -   Added community link to header
 -   Map filter clear button only active when region is selected
+-   Fixed a bug in search filter that makes filters irresponsible
+-   Fixed a bug on not able to get correct distribution and blank dataset title in breadcrumb
+-   Changed chart icons on dataset page
+-   Fixed: Enter a dataset page with `*` query string will see a blank page
+-   Fixed: when checking if fetch is required, dataset id from url params need to be decoded
 -   Enable organisation search
 
 ## 0.0.42
