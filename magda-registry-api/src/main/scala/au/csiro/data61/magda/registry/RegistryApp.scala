@@ -8,6 +8,10 @@ import akka.actor.DeadLetter
 import akka.actor.Props
 import akka.event.Logging
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server.{MalformedQueryParamRejection, RejectionHandler}
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.client.AuthApiClient
@@ -25,6 +29,11 @@ object RegistryApp extends App {
   implicit val system = ActorSystem("registry-api", config)
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
+  implicit def myRejectionHandler = RejectionHandler.newBuilder()
+    .handle { case MalformedQueryParamRejection(parameterName, errorMsg, cause) =>
+      complete(HttpResponse(StatusCodes.BadRequest, entity = s"The query parameter `${parameterName}` was malformed."))
+    }
+    .result()
 
   class Listener extends Actor with ActorLogging {
     def receive = {

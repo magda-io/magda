@@ -2,6 +2,7 @@ import React from "react";
 import { contents } from "../content/register";
 import { config } from "../config";
 import Breadcrumbs from "../UI/Breadcrumbs";
+import { Medium } from "../UI/Responsive";
 import ReactDocumentTitle from "react-document-title";
 import { Redirect } from "react-router-dom";
 import "./StaticPage.css";
@@ -25,7 +26,9 @@ export default function StaticPage(props) {
                 }
             >
                 <div className={`static-page-container container page-${id}`}>
-                    <Breadcrumbs breadcrumbs={breadcrumb} />
+                    <Medium>
+                        <Breadcrumbs breadcrumbs={breadcrumb} />
+                    </Medium>
                     <h1> {content.title && content.title} </h1>
                     <div
                         className="markdown-body"
