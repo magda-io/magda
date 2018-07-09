@@ -64,7 +64,7 @@ class DataPreviewChart extends Component {
 
                 if (!chartType) chartType = defaultChartType;
                 this.chartDatasetEncoder.setChartType(chartType);
-                const chartOption = this.chartDatasetEncoder.getChartOption();
+                const chartOption = this.chartDatasetEncoder.getChartOption("");
 
                 this.setState({
                     error: null,
