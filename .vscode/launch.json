@@ -283,6 +283,29 @@
                 "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
             "cwd": "${workspaceRoot}/magda-gateway",
             "args": ["--output", "foo.tar.gz"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Ckan Connector",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable":
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+            },
+            "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
+                "--config",
+                "${workspaceRoot}/deploy/connector-config/data-gov-au.json",
+                "--userId",
+                "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret",
+                "squirrel"
+            ],
+            "cwd": "${workspaceRoot}/magda-ckan-connector"
         }
     ]
 }
