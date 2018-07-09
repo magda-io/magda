@@ -85,6 +85,24 @@ export default class DataPreviewTable extends Component<
             });
     }
 
+    removeEmptyRows(data) {
+        let allFieldsEmpty = true;
+        let dataForTable = [];
+        data.forEach(row => {
+            let allFieldsEmpty = true;
+            const rowValues = Object.values(row);
+            rowValues.forEach(column => {
+                if (column.trim().length > 0) {
+                    allFieldsEmpty = false;
+                }
+            });
+            if (!allFieldsEmpty) {
+                dataForTable.push(row);
+            }
+        });
+        return dataForTable;
+    }
+
     render() {
         if (this.state.error) {
             return (
@@ -117,16 +135,17 @@ export default class DataPreviewTable extends Component<
             Header: item,
             accessor: item
         }));
+        const rows = this.removeEmptyRows(this.state.parsedResults.data);
         return (
             <div className="clearfix">
                 <div className="vis">
                     <Medium>
                         <ReactTable
-                            minRows={3}
+                            minRows={0}
                             style={{
                                 height: "500px"
                             }} /* No vert scroll for 10 rows */
-                            data={this.state.parsedResults.data}
+                            data={rows}
                             columns={columns}
                         />
                     </Medium>
@@ -136,7 +155,7 @@ export default class DataPreviewTable extends Component<
                             style={{
                                 height: "350px"
                             }} /* No vert scroll for 5 rows */
-                            data={this.state.parsedResults.data}
+                            data={rows}
                             columns={columns}
                         />
                     </Small>
