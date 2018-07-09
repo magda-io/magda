@@ -19,6 +19,21 @@
             "title":
                 "The URL of an image representing the organization, such as its logo.",
             "type": "string"
+        },
+        "telephone": {
+            "title":
+                "The organization contact telephone number",
+            "type": "string"
+        },
+        "email": {
+            "title":
+                "The organization contact email address",
+            "type": "string"
+        },
+        "website": {
+            "title":
+                "The organization website",
+            "type": "string"
         }
     }
 }
