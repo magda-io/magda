@@ -61,6 +61,7 @@ gateway:
     autoscaler:
         minReplicas: 2
         maxReplicas: 4
+    cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
     auth:
         facebookClientId: "173073926555600"
         googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
@@ -98,7 +99,6 @@ search-api:
             cpu: 1000m
             memory: 1000Mi
 web-server:
-    cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
     autoscaler:
         minReplicas: 2
         maxReplicas: 4

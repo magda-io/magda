@@ -10,6 +10,7 @@
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Moved express helmet to gateway module
 -   Make chart title wrap
 
 ## 0.0.43
