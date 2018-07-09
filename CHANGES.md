@@ -13,6 +13,7 @@
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Improve chart view on mobile
 -   Fixed `Ask a question about this dataset` button (on dataset page) won't open form on safari browser
 -   Remove input content from Scala service Malformat query parameter error message
 -   Improved mobile navigation
