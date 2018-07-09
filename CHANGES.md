@@ -19,6 +19,7 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Make suggestion form scrollable on short screen
 
 ## 0.0.43
 
