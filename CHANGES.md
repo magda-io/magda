@@ -9,6 +9,7 @@
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Added more heuristics to charting, made it parse dates and sort the x axis.
 
 ## 0.0.43
 
