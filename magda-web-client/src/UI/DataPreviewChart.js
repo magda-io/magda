@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Medium, Small } from "./Responsive";
+import { Small } from "./Responsive";
 import Spinner from "../Components/Spinner";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
