@@ -19,5 +19,5 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
-makeSnapshots: true
-readSnapshots: true
+makeSnapshots: false
+readSnapshots: false

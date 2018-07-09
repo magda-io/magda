@@ -19,7 +19,7 @@ import com.monsanto.labs.mwundo.GeoJson.MultiPoint
 import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
 import com.monsanto.labs.mwundo.GeoJson.Point
 import com.monsanto.labs.mwundo.GeoJson.Polygon
-import com.vividsolutions.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.GeometryFactory
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
@@ -52,6 +52,9 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
+
+  blockUntilNotRed()
+
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()
@@ -110,6 +113,59 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
     }
 
+    describe("searching for a dataset should return that datasets contains the keyword & it's synonyms") {
+      it("for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`") {
+        case class GenResult(searchKeyword: String, synonym: String, datasetWithSynonym: DataSet)
+
+        val synonyms = List("agile", "nimble", "quick", "spry")
+
+        val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
+        val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
+
+        val synonymTestData = synonyms.map{
+          case(searchKeyword) =>
+            val gen = for {
+              synonym <- Gen.oneOf(synonyms.filter(_!==searchKeyword))
+              dataset <- Generators.dataSetGen(scala.collection.mutable.HashMap.empty)
+              datasetWithSynonym = dataset.copy( description = Some(synonym))
+            } yield GenResult(searchKeyword, synonym, datasetWithSynonym)
+            gen.retryUntil(_ => true).sample.get
+        }
+
+        val synonymDataset = synonymTestData.map(_.datasetWithSynonym)
+
+        val searchKeywordGen = for {
+          genResult <- Gen.oneOf(synonymTestData)
+        } yield genResult
+
+        val allDatasets = randomDatasets ++ synonymDataset
+
+        val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
+        val indices = new FakeIndices(indexName)
+
+        try {
+          blockUntilExactCount(allDatasets.size, indexName)
+
+          forAll(searchKeywordGen) {
+            case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
+              Get(s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}""") ~> routes ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+
+                withClue(s"term $searchKeyword and dataset description ${datasetWithSynonym.description}") {
+                  response.strategy.get shouldBe MatchAll
+                  response.dataSets.size should be > 0
+                  response.dataSets.exists(_.identifier == datasetWithSynonym.identifier) shouldBe true
+                }
+              }
+          }
+        } finally {
+          this.deleteIndex(indexName)
+        }
+
+      }
+    }
+
     describe("searching for a dataset publisher's acronym should return that dataset eventually") {
       it("for pre-defined pairs") {
         case class GenResult(acronym: String, datasetWithPublisher: DataSet)
@@ -146,7 +202,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val indices = new FakeIndices(indexName)
 
         try {
-          blockUntilExactCount(allDatasets.size, indexName, indices.getType(Indices.DataSetsIndexType))
+          blockUntilExactCount(allDatasets.size, indexName)
 
           forAll(randomCaseAcronymGen) {
             case GenResult(randomCaseAcronym, datasetWithPublisher) =>
@@ -203,7 +259,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
       val quoteGen = for {
         (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
-        dataSetsWithDesc = dataSets.filter(_.description.isDefined)
+        dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
         dataSet <- Gen.oneOf(dataSetsWithDesc)
         description = dataSet.description.get
         descWords = description.split(" ")
