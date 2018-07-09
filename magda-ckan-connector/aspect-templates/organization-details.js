@@ -1,4 +1,4 @@
-let telephone = null;
+let phone = null;
 let website = null;
 let email = null;
 
@@ -9,7 +9,7 @@ if(organization && organization.extras && organization.extras.length){
                 email = item["value"];
                 break;
             case "telephone" : 
-                telephone = item["value"];
+                phone = item["value"];
                 break;
             case "website" : 
                 website = item["value"];
@@ -23,7 +23,7 @@ return {
     title: organization.title,
     description: organization.description,
     imageUrl: organization.image_display_url || organization.image_url,
-    telephone,
+    phone,
     email,
     website
 };

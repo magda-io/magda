@@ -20,9 +20,9 @@
                 "The URL of an image representing the organization, such as its logo.",
             "type": "string"
         },
-        "telephone": {
+        "phone": {
             "title":
-                "The organization contact telephone number",
+                "The organization contact phone number",
             "type": "string"
         },
         "email": {
