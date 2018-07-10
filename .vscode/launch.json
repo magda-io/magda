@@ -34,15 +34,17 @@
             "protocol": "inspector",
             "name": "Launch CSW Connector",
             "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+                "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
-            "runtimeArgs": ["-r", "tsconfig-paths/register", "src/index.ts"],
             "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
                 "--config",
-                "${workspaceRoot}/deploy/connector-config/australian-bureau-of-meteorology.json",
+                "${workspaceRoot}/deploy/connector-config/environment.json",
                 "--userId",
                 "00000000-0000-4000-8000-000000000000",
                 "--jwtSecret",
