@@ -80,7 +80,6 @@ class DataPreviewChart extends Component {
                     chartType,
                     chartOption
                 });
-                if (console && console.log) console.log(chartOption);
             }
         } catch (e) {
             console.error(e);
@@ -145,8 +144,6 @@ class DataPreviewChart extends Component {
     }
 
     render() {
-        console.log(this.state.chartOption);
-
         if (this.state.error)
             return (
                 <div className="error">

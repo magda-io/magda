@@ -40,6 +40,7 @@ const LOW_PRIORITY_Y_AXES = ["count", "id"];
 const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "id",
     "code",
+    "lic",
     "identifier",
     "postcode",
     "sex",
@@ -52,7 +53,8 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "pcode",
     "month",
     "reason",
-    "year"
+    "year",
+    "country"
 ];
 /** Columns with these terms in them will be overridden as time types */
 const OVERRIDE_TO_TIME_COLUMNS = ["date", "time"];
@@ -64,8 +66,10 @@ const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "count",
     "tax",
     "value",
-    "length"
+    "length",
+    "total"
 ];
+const EXCLUDE_COLUMNS = ["long", "lat", "lng"];
 
 const noDelimiterParser = new chrono.Parser();
 noDelimiterParser.pattern = function() {
@@ -253,7 +257,7 @@ function fieldDefAdjustment(field) {
     return field;
 }
 
-function preProcessFields(headerRow, distribution) {
+function preProcessFields(headerRow, distribution, chartType) {
     let disFields =
         distribution.visualizationInfo && distribution.visualizationInfo.fields;
     if (!disFields) disFields = [];
@@ -267,8 +271,14 @@ function preProcessFields(headerRow, distribution) {
         isAggr: false
     }));
     //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
-    newFields = filter(disFields, item => item.idx !== -1);
+    newFields = filter(newFields, item => item.idx !== -1);
+    // Filter out empty fields
     newFields = filter(newFields, item => trim(item.name) !== "");
+    // Filter out specifically excluded columns
+    newFields = filter(
+        newFields,
+        item => !testKeywords(item.name, EXCLUDE_COLUMNS)
+    );
     if (!newFields.length) {
         //--- we will not exit but make our own guess
         newFields = map(headerRow, (headerName, idx) => ({
@@ -282,6 +292,15 @@ function preProcessFields(headerRow, distribution) {
         }));
     }
     newFields = newFields.map(fieldDefAdjustment);
+
+    const grouped = chartType !== "scatter";
+    newFields = newFields.map(field => {
+        if (field.numeric && grouped) {
+            field.label += " (Sum of All)";
+        }
+        return field;
+    });
+
     if (!newFields.length) {
         throw new Error("The data file contains no non-empty header.");
     }
@@ -326,7 +345,7 @@ function groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
 
 function formatDate(value) {
     const date = new Date(value);
-    return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
 
 function getFieldDataType(field) {
@@ -402,16 +421,16 @@ class ChartDatasetEncoder {
 
         this.fields = preProcessFields(
             Object.keys(this.data[0]),
-            this.distribution
+            this.distribution,
+            this.chartType
         );
 
         //--- Present data by selected col's count
-
-        const newFieldName = "count";
+        const newFieldName = "Count of Rows";
         this.fields.push({
-            idx: 1,
+            idx: this.fields.length,
             name: newFieldName,
-            label: "Count (# of Rows)",
+            label: newFieldName,
             time: false,
             numeric: true,
             category: false,
@@ -529,6 +548,7 @@ class ChartDatasetEncoder {
         if (indexOf(AVAILABLE_CHART_TYPES, chartType) === -1)
             throw new Error("Unsupported chart type.");
         this.chartType = chartType;
+        this.preProcessData();
     }
 
     getData() {
