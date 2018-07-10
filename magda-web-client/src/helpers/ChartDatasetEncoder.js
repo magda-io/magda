@@ -18,6 +18,7 @@ import type { ParsedDistribution } from "../helpers/record";
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
 
+const UNKNOWN_AXIS_LABEL = "Unknown";
 /** Columns with these names are more likely to be picked as the default column on the x axis */
 const HIGH_PRIORITY_X_AXES = [
     "gender",
@@ -207,10 +208,14 @@ const defaultChartOption = {
     },
     tooltip: {
         trigger: "item",
-        formatter: (params, ticket, callback) => {
+        formatter: params => {
             return Object.keys(params.value)
                 .map(key => {
-                    const value = params.value[key];
+                    const rawValue = params.value[key];
+                    const value =
+                        rawValue.toString().trim().length > 0
+                            ? rawValue
+                            : UNKNOWN_AXIS_LABEL;
 
                     return `${startCase(
                         key.replace(aggrLabelRegex, "$1")
@@ -548,6 +553,8 @@ class ChartDatasetEncoder {
         if (indexOf(AVAILABLE_CHART_TYPES, chartType) === -1)
             throw new Error("Unsupported chart type.");
         this.chartType = chartType;
+
+        // Process again because the axes might change based on the chart type.
         this.preProcessData();
     }
 
@@ -734,10 +741,15 @@ class ChartDatasetEncoder {
                 rotate: type === "category" ? 45 : 0,
                 formatter: (() => {
                     if (type === "category") {
-                        return value =>
-                            value.length > 20
-                                ? value.substring(0, 17) + "..."
-                                : value;
+                        return value => {
+                            if (value.length > 20) {
+                                return value.substring(0, 17) + "...";
+                            } else if (value.trim().length === 0) {
+                                return UNKNOWN_AXIS_LABEL;
+                            } else {
+                                return value;
+                            }
+                        };
                     } else if (type === "time") {
                         return formatDate;
                     }
