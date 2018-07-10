@@ -28,6 +28,7 @@ import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.misc.Location
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.model.misc.Agent
@@ -243,6 +244,48 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
           }
         }
       }
+    }
+  }
+
+  it("for a region in query text should boost results from that region") {
+    // 2 fake datasets. One that relates to Queensland, the other to all of Australia
+    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
+
+    val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))
+
+    val qldDataset = DataSet(
+        identifier="ds-region-in-query-test-1",
+        title=Some("Wildlife density in rural areas"),
+        description=Some("Wildlife density as measured by the state survey"),
+        catalog=Some("region-in-query-test-catalog"),
+        spatial=Some(Location(geoJson=qldGeometry)),
+        quality = 0.5)
+    val nationalDataset = DataSet(
+      identifier="ds-region-in-query-test-2",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.5)
+
+    val datasets = List(nationalDataset, qldDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+Queensland&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        //response.strategy.get shouldBe MatchAll
+        response.dataSets.size should be > 0
+        response.dataSets.head.identifier shouldEqual qldDataset.identifier
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
     }
   }
 
