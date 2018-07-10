@@ -1,5 +1,6 @@
 ## 0.0.44
 
+-   Updated header logo to be correct branding type
 -   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.

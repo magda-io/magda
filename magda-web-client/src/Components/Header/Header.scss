@@ -6,17 +6,16 @@
         height: 90px;
         display: flex;
     }
+    .site-logo {
+        margin-left: 10px;
+    }
     .logo,
     .logo:hover,
     .logo:focus {
         border-bottom: none;
         background: transparent;
         padding: 8px 0;
-        overflow-y: hidden;
-        img {
-            height: 100%;
-            width: auto;
-        }
+        flex-grow: 2;
     }
     .header-nav {
         display: flex;
