@@ -20,6 +20,7 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Fixed a rendering glitch with react modal
 
 ## 0.0.43
 
