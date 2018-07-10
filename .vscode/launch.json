@@ -32,6 +32,30 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Launch Project Open Data Connector 2",
+            "runtimeExecutable":
+                "${workspaceRoot}/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable":
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+            },
+            "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
+                "--config",
+                "${workspaceRoot}/deploy/connector-config/moreton-bay-regional-council-data-portal.json",
+                "--userId",
+                "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret",
+                "squirrel"
+            ],
+            "cwd": "${workspaceRoot}/magda-project-open-data-connector"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch CSW Connector",
             "runtimeExecutable":
                 "${workspaceRoot}/node_modules/.bin/ts-node",
