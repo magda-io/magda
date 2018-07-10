@@ -35,6 +35,7 @@ import knockout from "terriajs-cesium/Source/ThirdParty/knockout";
 
 import createCatalogMemberFromType from "terriajs/lib/Models/createCatalogMemberFromType";
 import MagdaCatalogItem from "./lib/Models/MagdaCatalogItem";
+import ViewerMode from "terriajs/lib/Models/ViewerMode.js";
 
 // Tell the OGR catalog item where to find its conversion service.  If you're not using OgrCatalogItem you can remove this.
 OgrCatalogItem.conversionServiceBaseUrl =
@@ -48,6 +49,7 @@ createCatalogMemberFromType.register("magda-item", MagdaCatalogItem);
 registerAnalytics();
 
 terriaOptions.analytics = new GoogleAnalytics();
+terriaOptions.viewerMode = ViewerMode.CesiumEllipsoid;
 
 // Construct the TerriaJS application, arrange to show errors to the user, and start it up.
 var terria = new Terria(terriaOptions);
