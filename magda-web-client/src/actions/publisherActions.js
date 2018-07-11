@@ -12,10 +12,11 @@ export function requestPublishers(): FacetAction {
     };
 }
 
-export function receivePublishers(json: Object): FacetAction {
+export function receivePublishers(json: Object, keyword: string): FacetAction {
     return {
         type: actionTypes.RECEIVE_PUBLISHERS,
-        json
+        json,
+        keyword
     };
 }
 
@@ -60,7 +61,7 @@ function fetchPublishers(start, query) {
                 throw new Error(response.statusText);
             })
             .then(json => {
-                return dispatch(receivePublishers(json));
+                return dispatch(receivePublishers(json, query));
             })
             .catch(error =>
                 dispatch(

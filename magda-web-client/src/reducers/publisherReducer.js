@@ -8,6 +8,7 @@ const initialData = {
     publishers: [],
     publisher: parsePublisher(),
     hitCount: 0,
+    keyword: "*",
     errorFetchingPublishers: undefined,
     errorFetchingPublisher: undefined
 };
@@ -18,6 +19,7 @@ type PublishersResult = {
     publishers: Array<Publisher>,
     publisher: Publisher,
     hitCount: number,
+    keyword: string,
     errorFetchingPublishers: any,
     errorFetchingPublisher: any
 };
@@ -25,7 +27,8 @@ type PublishersResult = {
 type recordAction = {
     json: Object,
     error: any,
-    type: boolean
+    type: boolean,
+    keyword: string
 };
 
 const publisher = (
@@ -41,7 +44,8 @@ const publisher = (
             return Object.assign({}, state, {
                 isFetchingPublishers: false,
                 publishers: action.json && action.json.organisations,
-                hitCount: action.json && action.json.hitCount
+                hitCount: action.json && action.json.hitCount,
+                keyword: action.keyword
             });
         case "REQUEST_PUBLISHERS_ERROR":
             return Object.assign({}, state, {

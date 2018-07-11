@@ -47,10 +47,9 @@ class PublishersViewer extends Component {
 
     componentDidMount() {
         const q = queryString.parse(this.props.location.search).q;
-
         this.props.fetchPublishersIfNeeded(
             getPageNumber(this.props) || 1,
-            q && q.trim() > 0 ? q : "*"
+            q && q.trim().length > 0 ? q : "*"
         );
     }
 
@@ -107,7 +106,6 @@ class PublishersViewer extends Component {
     }
 
     renderContent() {
-        const q = queryString.parse(this.props.location.search).q;
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
@@ -116,10 +114,11 @@ class PublishersViewer extends Component {
             }
             return (
                 <div>
-                    {q &&
-                        q.length > 0 && (
+                    {this.props.keyword &&
+                        this.props.keyword.trim().length > 0 &&
+                        this.props.keyword.trim() !== "*" && (
                             <div className="result-count">
-                                {`Results matching " ${q}" (${
+                                {`Results matching " ${this.props.keyword}" (${
                                     this.props.hitCount
                                 })`}
                                 <button
@@ -226,12 +225,14 @@ function mapStateToProps(state, ownProps) {
     const hitCount: number = state.publisher.hitCount;
     const error: Object = state.publisher.errorFetchingPublishers;
     const location: Location = ownProps.location;
+    const keyword = state.publisher.keyword;
     return {
         publishers,
         isFetching,
         hitCount,
         location,
-        error
+        error,
+        keyword
     };
 }
 
