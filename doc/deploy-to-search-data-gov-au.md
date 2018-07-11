@@ -65,11 +65,18 @@ This will cause a slightly different build pipeline to run - it will automatical
 kubectl config use-context <prod-cluster-name>
 ```
 
--   [ ] Helm upgrade prod
-        **REMEMBER** If there's been a search index upgrade, set the search index in search api to the previous version until the indexer catches up!!
+-   [ ] Check if there's been any changes to the search index definitions `magda-scala-common/src/main/resources/common.conf` since the last release branch.
 
+-   [ ] Helm upgrade prod
+
+If there were changes to the index versions, you'll need to set the search api to still point at the previous version of the index while the indexer builds the new one:
 ```bash
-helm upgrade magda --timeout 999999999 --wait --recreate-pods -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
+helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda --set search-api.datasetsIndexVersion=<version>,search-api.regionsIndexVersion=<version>
+```
+
+Once the indexer has finished (watch `kubectl logs -f <indexer pod name>`) or if there's no changes to the indices:
+```bash
+helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
 -   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
@@ -97,7 +104,7 @@ cd ..
     -   Do a regression test
     -   Ensure that prod-specific settings (particularly absence of user accounts) are in place correctly
     -   If there's a problem then go back to "Release the RC", bumping the RC version by one.
-        -   Also do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
+    -   Also do a post-mortem so this doesn't happen again. Things going wrong in dev is ok, but they shouldn't break in prod!
 
 -   [ ] Mark the tag as a pre-release in github
 
