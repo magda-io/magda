@@ -20,6 +20,8 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Upgraded TerriaJS to 6.0.4 in preview map
+-   Changed the preview map to not use terrain.
 
 ## 0.0.43
 
