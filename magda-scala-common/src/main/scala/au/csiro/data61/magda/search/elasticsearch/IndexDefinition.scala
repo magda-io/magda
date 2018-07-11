@@ -88,7 +88,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 35,
+    version = 36,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -107,6 +107,15 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("description"),
+              keywordField("imageUrl"),
+              keywordField("phone"),
+              keywordField("email"),
+              magdaTextField("addrStreet", keywordField("keyword")),
+              magdaTextField("addrSuburb", keywordField("keyword")),
+              magdaTextField("addrState", keywordField("keyword")),
+              keywordField("addrPostCode"),
+              keywordField("addrCountry"),
+              keywordField("website"),
               magdaTextField("name",
                 keywordField("keyword"),
                 textField("keyword_lowercase").analyzer("quote").fielddata(true))),
@@ -223,7 +232,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 1,
+      version = 2,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
         createIndex(indices.getIndex(config, Indices.PublishersIndex))
@@ -235,6 +244,15 @@ object IndexDefinition extends DefaultJsonProtocol {
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
               magdaTextField("value"),
               magdaTextField("description"),
+              keywordField("imageUrl"),
+              keywordField("phone"),
+              keywordField("email"),
+              magdaTextField("addrStreet", keywordField("keyword")),
+              magdaTextField("addrSuburb", keywordField("keyword")),
+              magdaTextField("addrState", keywordField("keyword")),
+              keywordField("addrPostCode"),
+              keywordField("addrCountry"),
+              keywordField("website"),
               dateField("indexed")
             ))
           .analysis(
