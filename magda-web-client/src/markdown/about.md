@@ -26,8 +26,8 @@ It is important you fill out your profile completely, including your agency’s 
 
 ## Publishing for the first time?
 
-Many agencies are excited but nervous the first time their share data. You should always consider privacy and cleanliness of data before sharing. Information regarding privacy can be found in our Privacy Policy and in our (Open Data Toolkit)[https://toolkit.data.gov.au/index.php?title=Main_Page]. Our Open Data Toolkit also includes useful information and links to other open data sources, on topics like how to form a policy about sharing data through to creating a basic data set.
+Many agencies are excited but nervous the first time their share data. You should always consider privacy and cleanliness of data before sharing. Information regarding privacy can be found in our Privacy Policy and in our [Open Data Toolkit](https://toolkit.data.gov.au/index.php?title=Main_Page). Our [Open Data Toolkit](https://toolkit.data.gov.au/index.php?title=Main_Page) also includes useful information and links to other open data sources, on topics like how to form a policy about sharing data through to creating a basic data set.
 
 ## More Information
 
-Visit the Open Data Toolkit for more information about how to use data.gov.au and related policies and initiatives.
+Visit the [Open Data Toolkit](https://toolkit.data.gov.au/index.php?title=Main_Page) for more information about how to use data.gov.au and related policies and initiatives.
