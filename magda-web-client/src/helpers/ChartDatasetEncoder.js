@@ -12,47 +12,150 @@ import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import { config } from "../config";
+import chrono from "chrono-node";
 import type { ParsedDistribution } from "../helpers/record";
 
-let Papa = null;
+const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
+const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
 
-const avlChartTypes = ["bar", "pie", "scatter", "line"];
-const fetchData = function(url) {
-    return new Promise((resolve, reject) => {
-        Papa.parse(config.proxyUrl + "_0d/" + url, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            trimHeader: true,
-            complete: results => {
-                resolve(results);
-            },
-            error: err => {
-                let e;
-                if (!err)
-                    e = new Error("Failed to retrieve or parse the file.");
-                else e = err;
-                reject(e);
-            }
-        });
+const UNKNOWN_AXIS_LABEL = "Unknown";
+/** Columns with these names are more likely to be picked as the default column on the x axis */
+const HIGH_PRIORITY_X_AXES = [
+    "gender",
+    "sex",
+    "occupation",
+    "state",
+    "city",
+    "company",
+    "postcode",
+    "category"
+];
+/** Columns with these names will not be picked as the default column on the x axis unless there's nothing else */
+const LOW_PRIORITY_X_AXES = ["name"];
+/** Columns with these names are more likely to be picked as the default column on the y axis */
+const HIGH_PRIORITY_Y_AXES = [];
+/** Columns with these names will not be picked as the default column on the y axis unless there's nothing else */
+const LOW_PRIORITY_Y_AXES = ["count", "id"];
+
+/** Columns with these terms in them will be overridden as category types */
+const OVERRIDE_TO_CATEGORY_COLUMNS = [
+    "id",
+    "code",
+    "lic",
+    "identifier",
+    "postcode",
+    "sex",
+    "suburb",
+    "occupation",
+    "gender",
+    "abn",
+    "acn",
+    "afsl",
+    "pcode",
+    "month",
+    "reason",
+    "year",
+    "country"
+];
+/** Columns with these terms in them will be overridden as time types */
+const OVERRIDE_TO_TIME_COLUMNS = ["date", "time"];
+/** Columns with these terms in them will be overridden as numeric types */
+const OVERRIDE_TO_NUMERIC_COLUMNS = [
+    "amt",
+    "amount",
+    "sum",
+    "count",
+    "tax",
+    "value",
+    "length",
+    "total"
+];
+const EXCLUDE_COLUMNS = ["long", "lat", "lng"];
+
+const noDelimiterParser = new chrono.Parser();
+noDelimiterParser.pattern = function() {
+    return /(\d{2})(\d{2})(\d{4})/gi;
+};
+noDelimiterParser.extract = function(text, ref, match, opt) {
+    return new chrono.ParsedResult({
+        ref: ref,
+        text: match[1] + "/" + match[2] + "/" + match[3],
+        index: match.index,
+        start: {
+            day: match[1],
+            month: match[2],
+            year: match[3]
+        }
     });
 };
 
-const stripNumberRegex = /[^\-\d.+]/g;
+const customChrono = chrono.en_GB;
+customChrono.parsers.push(noDelimiterParser);
+
+const getPapaParse = (() => {
+    let Papa = null;
+
+    return async () => {
+        if (!Papa) {
+            Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
+        }
+
+        return Papa;
+    };
+})();
+
+/** Fetches and parses a CSV */
+const fetchData = function(url, overrideNewLine) {
+    return getPapaParse().then(
+        Papa =>
+            new Promise((resolve, reject) => {
+                Papa.parse(config.proxyUrl + "_0d/" + url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    newline: overrideNewLine,
+                    trimHeader: true,
+                    complete: results => {
+                        if (
+                            results.data.length <= 1 &&
+                            results.errors.length >= 1 &&
+                            overrideNewLine !== "\n"
+                        ) {
+                            // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
+                            resolve(fetchData(url, "\n"));
+                        } else if (results.errors.length >= 1) {
+                            reject(new Error(results.errors[0].message));
+                        } else {
+                            resolve(results);
+                        }
+                    },
+                    error: err => {
+                        let e;
+                        if (!err)
+                            e = new Error(
+                                "Failed to retrieve or parse the file."
+                            );
+                        else e = err;
+                        reject(e);
+                    }
+                });
+            })
+    );
+};
+
 const parseNumber = str => {
     let parsedResult = 0;
     try {
         if (typeof str === "number") return str;
         if (typeof str !== "string") return 0;
         const isFloat = str.indexOf(".") !== -1;
-        str = str.replace(stripNumberRegex, "");
+        str = str.replace(STRIP_NUMBER_REGEX, "");
         if (isFloat) parsedResult = parseFloat(str);
         else parsedResult = parseInt(str, 10);
         if (isNaN(parsedResult)) return 0;
         return parsedResult;
     } catch (e) {
-        console.log("Failed to parse number!");
-        console.log(e);
+        console.error(e);
         return 0;
     }
 };
@@ -105,14 +208,19 @@ const defaultChartOption = {
     },
     tooltip: {
         trigger: "item",
-        formatter: (a, b, c, d, e, f, g, h) => {
-            return Object.keys(a.value)
-                .map(
-                    key =>
-                        `${startCase(key.replace(aggrLabelRegex, "$1"))}: ${
-                            a.value[key]
-                        }`
-                )
+        formatter: params => {
+            return Object.keys(params.value)
+                .map(key => {
+                    const rawValue = params.value[key];
+                    const value =
+                        rawValue.toString().trim().length > 0
+                            ? rawValue
+                            : UNKNOWN_AXIS_LABEL;
+
+                    return `${startCase(
+                        key.replace(aggrLabelRegex, "$1")
+                    )}: ${value}`;
+                })
                 .join("<br/>");
         }
     },
@@ -122,6 +230,162 @@ const defaultChartOption = {
     //http://colorbrewer2.org/#type=sequential&scheme=BuPu&n=3
     color: ["#8856a7", "#9ebcda", "#e0ecf4"]
 };
+
+function testKeywords(str, keywords) {
+    if (!str) {
+        return false;
+    } else if (!keywords || !keywords.length) {
+        return false;
+    } else {
+        const r = new RegExp(`.*(${keywords.join("|")}).*`, "i");
+        return !!r.test(str);
+    }
+}
+
+function fieldDefAdjustment(field) {
+    if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
+        return {
+            ...field,
+            numeric: false,
+            category: true,
+            time: false
+        };
+    } else if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
+        field.numeric = false;
+        field.category = false;
+        field.time = true;
+    } else if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
+        field.numeric = true;
+        field.category = false;
+        field.time = false;
+    }
+    return field;
+}
+
+function preProcessFields(headerRow, distribution, chartType) {
+    let disFields =
+        distribution.visualizationInfo && distribution.visualizationInfo.fields;
+    if (!disFields) disFields = [];
+
+    let newFields = map(disFields, (field, key) => ({
+        ...field,
+        idx: indexOf(headerRow, key),
+        name: key,
+        label: startCase(key),
+        category: !field.time && !field.numeric,
+        isAggr: false
+    }));
+    //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
+    newFields = filter(newFields, item => item.idx !== -1);
+    // Filter out empty fields
+    newFields = filter(newFields, item => trim(item.name) !== "");
+    // Filter out specifically excluded columns
+    newFields = filter(
+        newFields,
+        item => !testKeywords(item.name, EXCLUDE_COLUMNS)
+    );
+    if (!newFields.length) {
+        //--- we will not exit but make our own guess
+        newFields = map(headerRow, (headerName, idx) => ({
+            idx,
+            name: headerName,
+            label: startCase(headerName),
+            category: true,
+            time: false,
+            numeric: false,
+            isAggr: false
+        }));
+    }
+    newFields = newFields.map(fieldDefAdjustment);
+
+    const grouped = chartType !== "scatter";
+    newFields = newFields.map(field => {
+        if (field.numeric && grouped) {
+            field.label += " (Sum of All)";
+        }
+        return field;
+    });
+
+    if (!newFields.length) {
+        throw new Error("The data file contains no non-empty header.");
+    }
+    return newFields;
+}
+
+/**
+ * Simple aggregation function.
+ * @param {Array} data : data rows
+ * @param {String} aggrFuncName
+ * @param {Function} aggrFunc
+ * @param {Array} aggrfields
+ *
+ * Examples:
+ *  with data:
+ *
+ * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
+ *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
+ *   {"name":"jim","amount":45,"date":"12/01/2015"},
+ *   {"name":"stacy","amount":12.00,"date":"01/04/2016"},
+ *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
+ *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
+ * ];
+ *
+ *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
+ *  or:
+ *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
+ *
+ */
+function groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
+    if (!data) {
+        throw new Error("`data` cannot be empty!");
+    }
+    if (!aggrfields.length) {
+        throw new Error("`aggrfields` cannot be empty array!");
+    }
+    let nest = d3.nest();
+    forEach(aggrfields, field => (nest = nest.key(d => d[field])));
+    const result = nest.rollup(v => aggrFunc(v)).entries(data);
+    return rollupResult2Rows(result, aggrfields, aggrFuncName);
+}
+
+function formatDate(value) {
+    const date = new Date(value);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+function getFieldDataType(field) {
+    if (field.time) return "time";
+    if (field.numeric) return "number";
+    return "ordinal";
+}
+
+function getDefaultColumn(
+    availableColumns,
+    highPriorityColumnNames = [],
+    lowPriorityColumnNames = []
+) {
+    if (!availableColumns.length) {
+        return null;
+    }
+
+    const firstAvailableHighPriorityCol = find(availableColumns, field =>
+        testKeywords(field.label, highPriorityColumnNames)
+    );
+
+    if (firstAvailableHighPriorityCol) {
+        return firstAvailableHighPriorityCol;
+    }
+
+    const firstNotLowPriorityCol = availableColumns.find(
+        field => !testKeywords(field.label, lowPriorityColumnNames)
+    );
+
+    if (firstNotLowPriorityCol) {
+        return firstNotLowPriorityCol;
+    }
+
+    return availableColumns[0];
+}
 
 class ChartDatasetEncoder {
     constructor(distribution: ParsedDistribution) {
@@ -155,173 +419,30 @@ class ChartDatasetEncoder {
         return filter(this.fields, field => field.category);
     }
 
-    get1stNumericColumn() {
-        return find(this.fields, field => field.numeric);
-    }
-
-    get1stTimeColumn() {
-        return find(this.fields, field => field.time);
-    }
-
-    get1stCategoryColumn() {
-        return find(this.fields, field => field.category);
-    }
-
-    testKeyword(str, keyword) {
-        let r = new RegExp(`(^|\\W+)${keyword}(\\W+|$)`, "i");
-        if (r.test(str)) return true;
-        return false;
-    }
-
-    testKeywords(str, keywords) {
-        if (!str) return false;
-        if (!keywords || !keywords.length) return false;
-        for (let i = 0; i < keywords.length; i++) {
-            if (this.testKeyword(str, keywords[i])) return true;
-        }
-        return false;
-    }
-
-    fieldDefAdjustment(field) {
-        if (
-            this.testKeywords(field.label, [
-                "id",
-                "code",
-                "identifier",
-                "postcode",
-                "age",
-                "sex",
-                "suburb",
-                "occupation",
-                "gender"
-            ])
-        ) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (
-            this.testKeywords(field.label, [
-                "abn",
-                "acn",
-                "afsl",
-                "pcode",
-                "lic num"
-            ])
-        ) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (this.testKeywords(field.label, ["year", "date"])) {
-            field.numeric = false;
-            field.category = false;
-            field.time = true;
-        } else if (this.testKeywords(field.label, ["month", "day"])) {
-            if (field.numeric) {
-                field.numeric = false;
-                field.category = false;
-                field.time = true;
-            } else {
-                field.numeric = false;
-                field.category = true;
-                field.time = false;
-            }
-        } else if (this.testKeywords(field.label, ["longitude", "latitude"])) {
-            field.numeric = false;
-            field.category = true;
-            field.time = false;
-        } else if (this.testKeywords(field.label, ["amt", "amount", "sum"])) {
-            field.numeric = true;
-            field.category = false;
-            field.time = false;
-        }
-        return field;
-    }
-
-    predictInitDataFieldType(headerName, field) {
-        //--- to do: implment more accurate prediction later
-        //--- do nothing is good enough for now as there will be adjustments later
-        return field;
-    }
-
-    preProcessFields(headerRow) {
-        let disFields =
-            this.distribution.visualizationInfo &&
-            this.distribution.visualizationInfo.fields;
-        if (!disFields) disFields = [];
-
-        let newFields = map(disFields, (field, key) =>
-            this.fieldDefAdjustment({
-                ...field,
-                idx: indexOf(headerRow, key),
-                name: key,
-                label: startCase(key),
-                category: !field.time && !field.numeric,
-                isAggr: false
-            })
-        );
-        //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
-        newFields = filter(newFields, item => item.idx !== -1);
-        if (!newFields.length) {
-            //--- we will not exit but make our own guess
-            newFields = map(headerRow, (headerName, idx) => {
-                return this.predictInitDataFieldType(headerName, {
-                    idx,
-                    name: headerName,
-                    label: startCase(headerName),
-                    category: true,
-                    time: false,
-                    numeric: false,
-                    isAggr: false
-                });
-            });
-        }
-        newFields = filter(newFields, item => trim(item.name) !== "");
-        if (!newFields.length) {
-            throw new Error("The data file contains no non-empty header.");
-        }
-        this.fields = newFields;
-        return newFields;
-    }
-
     preProcessData() {
-        if (!this.data || this.data.length < 1)
+        if (!this.data || this.data.length < 1) {
             throw new Error("The data file loaded is empty.");
-        this.preProcessFields(Object.keys(this.data[0]));
-        //--- if only one non-numeric column, add new column by count
-        if (this.fields.length === 1 && !this.fields[0].numeric) {
-            const newFieldName = "count_" + Math.random();
-            this.fields.push({
-                idx: 1,
-                name: newFieldName,
-                label: "Count",
-                time: false,
-                numeric: true,
-                category: false,
-                isAggr: true,
-                isAggrDone: true
-            });
-            this.data = this.groupBy(
-                this.data,
-                newFieldName,
-                aggregators.count,
-                [this.fields[0].name]
-            );
         }
-        //--- if unfortunately no numeric cols, present data by selected col's count
-        if (!this.getNumericColumns().length) {
-            const newFieldName = "count_" + Math.random();
-            this.fields.push({
-                idx: 1,
-                name: newFieldName,
-                label: "Count",
-                time: false,
-                numeric: true,
-                category: false,
-                isAggr: true,
-                isAggrDone: false
-            });
-            //--- we cann't generate coutn data here yet as we don't know user's selection
-        }
+
+        this.fields = preProcessFields(
+            Object.keys(this.data[0]),
+            this.distribution,
+            this.chartType
+        );
+
+        //--- Present data by selected col's count
+        const newFieldName = "Count of Rows";
+        this.fields.push({
+            idx: this.fields.length,
+            name: newFieldName,
+            label: newFieldName,
+            time: false,
+            numeric: true,
+            category: false,
+            isAggr: true,
+            isAggrDone: false
+        });
+
         //--- At least one x-axis-able column / dimension should present
         if (
             !this.getTimeColumns().length &&
@@ -345,44 +466,9 @@ class ChartDatasetEncoder {
         }
     }
 
-    /**
-     * Simply aggregation function.
-     * @param {Array} data : data rows
-     * @param {String} aggrFuncName
-     * @param {Function} aggrFunc
-     * @param {Array} aggrfields
-     *
-     * Examples:
-     *  with data:
-     *
-     * expenses = [{"name":"jim","amount":34,"date":"11/12/2015"},
-     *   {"name":"carl","amount":120.11,"date":"11/12/2015"},
-     *   {"name":"jim","amount":45,"date":"12/01/2015"},
-     *   {"name":"stacy","amount":12.00,"date":"01/04/2016"},
-     *   {"name":"stacy","amount":34.10,"date":"01/04/2016"},
-     *   {"name":"stacy","amount":44.80,"date":"01/05/2016"}
-     * ];
-     *
-     *  groupBy(expenses,'Count',aggregators.count,["name","date"]);
-     *  or:
-     *  groupBy(expenses,'Sum',aggregators.sum("amount"),["name","date"]);
-     *
-     */
-    groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
-        if (!data) throw new Error("`data` cannot be empty!");
-        if (!aggrfields.length)
-            throw new Error("`aggrfields` cannot be empty array!");
-        let nest = d3.nest();
-        forEach(aggrfields, field => (nest = nest.key(d => d[field])));
-        const result = nest.rollup(v => aggrFunc(v)).entries(data);
-        return rollupResult2Rows(result, aggrfields, aggrFuncName);
-    }
-
     async performDataLoading(url) {
         try {
             this.isDataLoading = true;
-            if (!Papa)
-                Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
             const result = await fetchData(url);
             //--- detect if another loading has started
             if (this.loadingUrl !== url) return;
@@ -423,34 +509,26 @@ class ChartDatasetEncoder {
     }
 
     setDefaultAxis() {
-        const avlYcols = this.getAvailableYCols();
-        //-- avoid set an ID col to Y by default
-        if (avlYcols.length > 1) this.setY(avlYcols[1]);
-        else this.setY(avlYcols[0]);
-
-        const higherPriorityNames = [
-            "gender",
-            "sex",
-            "occupation",
-            "state",
-            "name",
-            "city",
-            "company",
-            "postcode"
-        ];
-        const avlXcols = this.getAvailableXCols();
-        const avlTimeXcols = filter(avlXcols, field => field.time);
-        const avlCatXcols = filter(avlXcols, field => field.category);
-        if (avlCatXcols.length) {
-            //--- CatCol has higher priority
-            const xAxis = find(avlCatXcols, field =>
-                this.testKeywords(field.label, higherPriorityNames)
+        const availableYColumns = this.getAvailableYCols();
+        if (availableYColumns && availableYColumns.length > 0) {
+            this.setY(
+                getDefaultColumn(
+                    availableYColumns,
+                    HIGH_PRIORITY_Y_AXES,
+                    LOW_PRIORITY_Y_AXES
+                )
             );
-            if (xAxis) this.setX(xAxis);
-            else if (avlCatXcols.length > 1) this.setX(avlCatXcols[1]);
-            else this.setX(avlCatXcols[0]);
-        } else {
-            this.setX(avlTimeXcols[0]);
+        }
+
+        const availableXColumns = this.getAvailableXCols();
+        if (availableXColumns && availableXColumns.length > 0) {
+            this.setX(
+                getDefaultColumn(
+                    availableXColumns,
+                    HIGH_PRIORITY_X_AXES,
+                    LOW_PRIORITY_X_AXES
+                )
+            );
         }
     }
 
@@ -472,73 +550,82 @@ class ChartDatasetEncoder {
     }
 
     setChartType(chartType) {
-        if (indexOf(avlChartTypes, chartType) === -1)
+        if (indexOf(AVAILABLE_CHART_TYPES, chartType) === -1)
             throw new Error("Unsupported chart type.");
         this.chartType = chartType;
+
+        // Process again because the axes might change based on the chart type.
+        this.preProcessData();
     }
 
-    getFieldDataType(field) {
-        if (field.numeric) return "number";
-        //if(field.time) return "time"; disable time support for now
-        return "ordinal";
-    }
-
-    getEncodeXYNames() {
-        switch (this.chartType) {
-            case "pie":
-                return { xName: "itemName", yName: "value" };
-            case "funnel":
-                return { xName: "itemName", yName: "value" };
-            default:
-                return { xName: "x", yName: "y" };
-        }
-    }
-
-    encodeDataset() {
-        if (!this.chartType || !this.xAxis || !this.yAxis)
-            throw new Error(
-                "`Chart Type`, preferred `xAxis` or `yAxis` are required."
-            );
-        let data, dimensions, encode;
-        const { xName, yName } = this.getEncodeXYNames();
-        if (this.yAxis.isAggr) {
-            //--- we need aggregate data first
-            if (this.yAxis.isAggrDone) data = this.data;
-            else
-                data = this.groupBy(
+    getData() {
+        const inner = () => {
+            if (this.yAxis.isAggr) {
+                //--- we need to aggregate data first
+                if (this.yAxis.isAggrDone) {
+                    return this.data;
+                } else {
+                    return groupBy(
+                        this.data,
+                        this.yAxis.name,
+                        aggregators.count,
+                        [this.xAxis.name]
+                    );
+                }
+            } else if (this.chartType === "scatter") {
+                return this.data;
+            } else {
+                return groupBy(
                     this.data,
                     this.yAxis.name,
-                    aggregators.count,
+                    aggregators.sum(this.yAxis.name),
                     [this.xAxis.name]
                 );
-            dimensions = [
+            }
+        };
+
+        const unsortedData = inner().map(datum => {
+            let rawValue = datum[this.xAxis.name];
+
+            if (getFieldDataType(this.xAxis) === "time") {
+                const parsedDate = customChrono.parseDate(rawValue);
+                return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
+            } else {
+                return datum;
+            }
+        });
+
+        const sortFunc = (() => {
+            if (getFieldDataType(this.xAxis) === "time") {
+                return datum => {
+                    const xValue = datum[this.xAxis.name];
+                    return xValue.getTime ? xValue.getTime() : xValue;
+                };
+            } else {
+                return datum => datum[this.xAxis.name];
+            }
+        })();
+
+        const data = sortBy(unsortedData, sortFunc);
+
+        return data;
+    }
+
+    getDimensions() {
+        if (this.chartType === "scatter") {
+            return map(this.fields, (field, idx) => {
+                const dimensionDef = {
+                    name: field.name,
+                    type: getFieldDataType(field),
+                    displayName: field.label
+                };
+                return dimensionDef;
+            });
+        } else {
+            return [
                 {
                     name: this.xAxis.name,
-                    type: "ordinal",
-                    displayName: this.xAxis.label
-                },
-                {
-                    name: this.yAxis.name,
-                    type: "int",
-                    displayName: this.yAxis.label
-                }
-            ];
-            encode = {
-                [xName]: 0,
-                [yName]: 1,
-                tooltip: [1]
-            };
-        } else if (this.chartType === "pie") {
-            data = this.groupBy(
-                this.data,
-                this.yAxis.name,
-                aggregators.sum(this.yAxis.name),
-                [this.xAxis.name]
-            );
-            dimensions = [
-                {
-                    name: this.xAxis.name,
-                    type: "ordinal",
+                    type: getFieldDataType(this.xAxis),
                     displayName: this.xAxis.label
                 },
                 {
@@ -547,33 +634,68 @@ class ChartDatasetEncoder {
                     displayName: this.yAxis.label
                 }
             ];
-            encode = {
-                [xName]: 0,
-                [yName]: 1,
-                tooltip: [1]
-            };
-        } else {
-            let xAxisIdx = null;
-            let yAxisIdx = null;
-            let tooltipCols = [];
-            dimensions = map(this.fields, (field, idx) => {
-                if (this.yAxis === field) yAxisIdx = idx;
-                else if (this.xAxis === field) xAxisIdx = idx;
-                else tooltipCols.push(idx);
-                const dimensionDef = {
-                    name: field.name,
-                    type: this.getFieldDataType(field),
-                    displayName: field.label
-                };
-                return dimensionDef;
-            });
-            encode = {
+        }
+    }
+
+    getEncodeXYNames() {
+        switch (this.chartType) {
+            case "pie":
+                return { xName: "itemName", yName: "value" };
+            default:
+                return { xName: "x", yName: "y" };
+        }
+    }
+
+    getEncode() {
+        const { xName, yName } = this.getEncodeXYNames();
+
+        if (this.chartType === "scatter") {
+            const { xAxisIdx, yAxisIdx, tooltipCols } = this.fields.reduce(
+                (prevValue, field, idx) => {
+                    if (this.yAxis === field) {
+                        return {
+                            ...prevValue,
+                            yAxisIdx: idx
+                        };
+                    } else if (this.xAxis === field) {
+                        return {
+                            ...prevValue,
+                            xAxisIdx: idx
+                        };
+                    } else {
+                        return {
+                            ...prevValue,
+                            tooltipCols: prevValue.tooltipCols.concat([idx])
+                        };
+                    }
+                },
+                { tooltipCols: [] }
+            );
+
+            return {
                 [xName]: xAxisIdx,
                 [yName]: yAxisIdx,
                 tooltip: concat([yAxisIdx], tooltipCols)
             };
-            data = this.data;
+        } else {
+            return {
+                [xName]: 0,
+                [yName]: 1,
+                tooltip: [1]
+            };
         }
+    }
+
+    encodeDataset() {
+        if (!this.chartType || !this.xAxis || !this.yAxis)
+            throw new Error(
+                "`Chart Type`, preferred `xAxis` or `yAxis` are required."
+            );
+
+        const data = this.getData();
+        const dimensions = this.getDimensions();
+        const encode = this.getEncode();
+
         return { dimensions, encode, data };
     }
 
@@ -598,20 +720,55 @@ class ChartDatasetEncoder {
                     type: this.chartType,
                     encode
                 }
-            ]
+            ],
+            grid: { bottom: 120, y2: 100 }
         };
+
         if (xName === "x") {
-            option["xAxis"] = {
-                //type : this.xAxis.time ? "time" : "category"
-                //--- disable time series support for now due to various date format issue
-                type: "category",
+            const getType = () => {
+                if (this.xAxis.time) {
+                    return "time";
+                } else if (this.xAxis.numeric) {
+                    return "value";
+                } else {
+                    return "category";
+                }
+            };
+
+            const type = getType();
+
+            const axisLabel = {
+                rotate: type === "category" ? 45 : 0,
+                formatter: (() => {
+                    if (type === "category") {
+                        return value => {
+                            if (value.length > 20) {
+                                return value.substring(0, 17) + "...";
+                            } else if (value.trim().length === 0) {
+                                return UNKNOWN_AXIS_LABEL;
+                            } else {
+                                return value;
+                            }
+                        };
+                    } else if (type === "time") {
+                        return formatDate;
+                    }
+                })()
+            };
+
+            option.xAxis = {
+                ...option.xAxis,
+                type,
+                axisLabel,
                 show: true
             };
-            option["yAxis"] = {
+            option.yAxis = {
+                ...option.yAxis,
                 type: "value",
                 show: true
             };
         }
+
         if (this.chartType === "pie") {
             option.series[0].label = {
                 show: false
@@ -627,9 +784,14 @@ class ChartDatasetEncoder {
                     100
                 );
             }
-        } else if (this.chartType === "line") {
-            option.series[0].areaStyle = {};
         }
+
+        if (this.chartType === "line") {
+            option.series[0].areaStyle = {};
+            option.series[0].symbolSize = data.length < 100 ? 4 : 1;
+            option.series[0].lineStyle = { width: data.length < 100 ? 2 : 1 };
+        }
+
         return option;
     }
 }
@@ -657,18 +819,9 @@ ChartDatasetEncoder.validateDistributionData = function(
         throw new Error(
             "Cannot locate `downloadURL` field of the distribution data"
         );
-    /*
-    if (
-        !distribution.visualizationInfo ||
-        !distribution.visualizationInfo.fields
-    )
-        throw new Error(
-            "Cannot locate `visualization Information` of the distribution data"
-        );
-    */ //--- we will try to work out something even no visualization info
 };
 
 ChartDatasetEncoder.aggregators = aggregators;
-ChartDatasetEncoder.avlChartTypes = avlChartTypes;
+ChartDatasetEncoder.avlChartTypes = AVAILABLE_CHART_TYPES;
 
 export default ChartDatasetEncoder;
