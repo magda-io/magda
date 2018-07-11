@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Improve organisation search page
 
 ## 0.0.43
 
