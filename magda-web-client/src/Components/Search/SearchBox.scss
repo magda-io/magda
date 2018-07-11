@@ -123,7 +123,12 @@
         }
         @media (min-width: $medium) {
             padding: 5px;
-            bottom: 1px;
+            bottom: 0px;
+            right: -3px;
+            border-radius: 4px;
+            &.not-empty {
+                border-bottom: 2px solid $AU-colordark-foreground-focus;
+            }
             img {
                 width: 32px;
                 height: 32px;
