@@ -20,7 +20,7 @@ class FacetBasicBody extends Component {
 
     static getDerivedStateFromProps(props, state) {
         // only set props to state if state is not already set and if props is not empty
-        if (state._activeOptions.length && props.activeOptions.length) {
+        if (!state._activeOptions.length && props.activeOptions.length) {
             return {
                 _activeOptions: props.activeOptions
             };
