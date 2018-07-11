@@ -1,17 +1,54 @@
 @import "../../variables";
 .publishers-viewer {
-    h1 {
-        margin-top: 3rem;
-    }
-    .organization-search {
-        input {
+    .publishers-viewer__header {
+        h1 {
+            margin: 2rem 0;
+        }
+        .organization-search {
+            margin: 2rem 0;
             position: relative;
-            padding-right: 40px;
+            input {
+                position: relative;
+                padding-right: 40px;
+            }
+            input::-webkit-input-placeholder {
+                color: rgba(#000, 0.8);
+            }
+            input:-moz-placeholder {
+                color: rgba(#000, 0.8);
+            }
+            input::-moz-placeholder {
+                color: rgba(#000, 0.8);
+            }
+            input:-ms-input-placeholder {
+                color: rgba(#000, 0.8);
+            }
         }
     }
+
     .search-icon {
         position: absolute;
-        right: 28px;
+        right: 8px;
         top: 12px;
+    }
+
+    .result-count {
+        text-transform: uppercase;
+        color: $AU-color-foreground-action;
+    }
+
+    .clear-btn {
+        border: 0;
+        border-bottom: 1px solid $AU-color-foreground-action;
+        padding-bottom: 4px;
+        text-decoration: none;
+        color: $AU-color-foreground-action;
+        font-size: 1rem;
+        margin-left: 24px;
+        padding: 0;
+        &:hover,
+        &:focus {
+            cursor: pointer;
+        }
     }
 }

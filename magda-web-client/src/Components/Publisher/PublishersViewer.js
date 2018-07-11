@@ -25,6 +25,7 @@ class PublishersViewer extends Component {
             this
         );
         this.onPageChange = this.onPageChange.bind(this);
+        this.clearSearch = this.clearSearch.bind(this);
     }
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
@@ -78,13 +79,23 @@ class PublishersViewer extends Component {
 
     updateSearchQuery(text, page) {
         this.debounceUpdateSearchQuery.flush();
-        if (text && text.trim() === "") text = "*";
+        let searchText = "*";
+        if (text && text.trim().length > 0) {
+            searchText = text;
+        }
         const pageIndex = page
             ? page
             : getPageNumber(this.props)
                 ? getPageNumber(this.props)
                 : 1;
-        this.props.fetchPublishersIfNeeded(pageIndex, text);
+        this.props.fetchPublishersIfNeeded(pageIndex, searchText);
+    }
+
+    clearSearch() {
+        this.updateQuery({
+            q: "",
+            page: 1
+        });
     }
 
     onUpdateSearchText(e) {
@@ -96,6 +107,7 @@ class PublishersViewer extends Component {
     }
 
     renderContent() {
+        const q = queryString.parse(this.props.location.search).q;
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
@@ -104,6 +116,21 @@ class PublishersViewer extends Component {
             }
             return (
                 <div>
+                    {q &&
+                        q.length > 0 && (
+                            <div className="result-count">
+                                {`Results matching " ${q}" (${
+                                    this.props.hitCount
+                                })`}
+                                <button
+                                    className="clear-btn"
+                                    type="button"
+                                    onClick={this.clearSearch}
+                                >
+                                    Clear search
+                                </button>
+                            </div>
+                        )}
                     {this.props.publishers.map(p => (
                         <PublisherSummary publisher={p} key={p.identifier} />
                     ))}
@@ -124,8 +151,8 @@ class PublishersViewer extends Component {
                     name="organization-search"
                     id="organization-search"
                     type="text"
-                    value={q ? q : " "}
-                    placeholder="Search for organisations"
+                    value={q ? q : ""}
+                    placeholder="Search for Organisations"
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
                 />
@@ -138,6 +165,8 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
+                    {this.props.isFetching && <ProgressBar />}
+
                     <Medium>
                         <Breadcrumbs
                             breadcrumbs={[
@@ -147,13 +176,21 @@ class PublishersViewer extends Component {
                             ]}
                         />
                     </Medium>
-                    <h1>Organisations</h1>
+
                     <div className="row">
+                        <div className="publishers-viewer__header">
+                            <div className="col-sm-8">
+                                <h1>Organisations</h1>
+                            </div>
+
+                            <div className="col-sm-4">
+                                {this.renderSearchBar()}
+                            </div>
+                        </div>
+
                         <div className="col-sm-8">
                             {!this.props.isFetching && this.renderContent()}
                         </div>
-                        {this.props.isFetching && <ProgressBar />}
-                        <div className="col-sm-4">{this.renderSearchBar()}</div>
                     </div>
                     {this.props.hitCount > config.resultsPerPage && (
                         <Pagination
