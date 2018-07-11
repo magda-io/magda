@@ -10,12 +10,11 @@
 }
 
 .publisher-basic-info-row {
-    @include AU-fontgrid(sm);
+    line-height: 1.8;
     .publisher {
         color: $AU-colordark-background;
         a {
             border-bottom: 1px solid rgba($AU-color-foreground-action, 0.5);
-            padding-bottom: 4px;
             text-decoration: none;
 
             &:hover,

@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Adjust line spacing for dataset page
 
 ## 0.0.43
 
