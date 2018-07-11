@@ -25,6 +25,7 @@ class FacetBasicBody extends Component {
                 _activeOptions: props.activeOptions
             };
         }
+        return null;
     }
 
     componentDidMount() {

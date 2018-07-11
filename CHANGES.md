@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
 
 ## 0.0.43
 
