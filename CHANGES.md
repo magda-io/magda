@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Added extra contact fields to registry & search organization API
 
 ## 0.0.43
 
