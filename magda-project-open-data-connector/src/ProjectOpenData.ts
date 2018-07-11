@@ -129,7 +129,11 @@ export default class ProjectOpenData implements ConnectorSource {
     }
 
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
-        return dataset.publisher;
+        const publisher = {
+            ...dataset.publisher,
+            contactPoint: dataset.contactPoint
+        };
+        return publisher;
     }
 }
 

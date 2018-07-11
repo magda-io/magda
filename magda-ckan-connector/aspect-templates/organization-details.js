@@ -1,6 +1,6 @@
-let phone = null;
-let website = null;
-let email = null;
+let phone = undefined;
+let website = undefined;
+let email = undefined;
 
 if(organization && organization.extras && organization.extras.length){
     organization.extras.forEach(item=>{
@@ -25,10 +25,10 @@ return {
     imageUrl: organization.image_display_url || organization.image_url,
     phone,
     email,
-    addrStreet : null,
-    addrSuburb : null,
-    addrState : null,
-    addrPostCode : null,
-    addrCountry : null,
+    addrStreet : undefined,
+    addrSuburb : undefined,
+    addrState : undefined,
+    addrPostCode : undefined,
+    addrCountry : undefined,
     website
 };

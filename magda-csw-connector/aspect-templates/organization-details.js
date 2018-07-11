@@ -9,11 +9,11 @@ let addrState = jsonpath.value(organization,"$.contactInfo[*].CI_Contact[*].addr
 let addrPostCode = jsonpath.value(organization,"$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].postalCode[*].CharacterString[0]._");
 let addrCountry =jsonpath.value(organization,"$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._");
 
-const data = {
+return {
     name: name,
     title: name,
-    description: null,
-    imageUrl: null,
+    description: undefined,
+    imageUrl: undefined,
     phone,
     email,
     addrStreet,
@@ -23,9 +23,3 @@ const data = {
     addrCountry,
     website
 };
-
-Object.keys(data).forEach(key=>{
-    if(typeof data[key] === "undefined") data[key] = null;
-});
-
-return data;

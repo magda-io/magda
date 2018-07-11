@@ -1,26 +1,26 @@
 
 const jsonpath = libraries.jsonpath;
 
-let phone = null;
-let website = null;
+let phone = undefined;
+let website = undefined;
 let email = jsonpath.value(organization, "$.contactPoint.hasEmail");
 if(email) {
     email = String(email).trim().replace(/^mailto:/,"").trim();
 }
 if(!email) {
-    email = null;
+    email = undefined;
 }
-let addrStreet = null;
-let addrSuburb = null;
-let addrState = null;
-let addrPostCode = null;
-let addrCountry =null;
+let addrStreet = undefined;
+let addrSuburb = undefined;
+let addrState = undefined;
+let addrPostCode = undefined;
+let addrCountry =undefined;
 
 return {
     name: organization.name,
     title: organization.name,
-    description: null,
-    imageUrl: null,
+    description: undefined,
+    imageUrl: undefined,
     phone,
     email,
     addrStreet,
