@@ -20,6 +20,7 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Add links to about page
 
 ## 0.0.43
 
