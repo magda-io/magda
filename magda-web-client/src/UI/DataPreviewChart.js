@@ -80,10 +80,9 @@ class DataPreviewChart extends Component {
                     chartType,
                     chartOption
                 });
-                if (console && console.log) console.log(chartOption);
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
             throw e; //--- not capture here; only for debug
         }
     }
@@ -94,11 +93,7 @@ class DataPreviewChart extends Component {
                 ReactEcharts = (await import("echarts-for-react")).default;
             await this.initChartData();
         } catch (e) {
-            console.log(
-                this.getResetState({
-                    error: e
-                })
-            );
+            console.error(e);
             this.setState(
                 this.getResetState({
                     error: e
@@ -128,11 +123,7 @@ class DataPreviewChart extends Component {
                 await this.initChartData();
             }
         } catch (e) {
-            console.log(
-                this.getResetState({
-                    error: e
-                })
-            );
+            console.error(e);
             this.setState(
                 this.getResetState({
                     error: e
