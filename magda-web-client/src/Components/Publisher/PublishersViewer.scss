@@ -10,6 +10,9 @@
             input {
                 position: relative;
                 padding-right: 40px;
+                border-radius: 2px;
+                border-width: 2px;
+                border-color: #999;
             }
             input::-webkit-input-placeholder {
                 color: rgba(#000, 0.8);
@@ -44,7 +47,7 @@
         text-decoration: none;
         color: $AU-color-foreground-action;
         font-size: 1rem;
-        margin-left: 24px;
+        margin-left: 16px;
         padding: 0;
         &:hover,
         &:focus {

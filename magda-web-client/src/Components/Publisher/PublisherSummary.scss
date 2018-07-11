@@ -27,8 +27,11 @@
     }
 
     .publisher-meta {
-        @include AU-fontgrid(xs);
         color: $AU-color-foreground-action;
+        margin: 0.8rem 0;
+        a {
+            text-decoration: none;
+        }
     }
 
     .publisher-description {
