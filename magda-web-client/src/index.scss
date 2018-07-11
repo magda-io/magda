@@ -12,8 +12,6 @@ html {
             background: $AU-color-foreground-action;
         }
     }
-    .au-btn,
-    a.au-btn,
     a {
         color: $AU-color-foreground-action;
     }
@@ -143,7 +141,6 @@ a {
         &:hover,
         &:focus {
             text-decoration: underline;
-            background-color: transparent;
             color: $AU-color-foreground-action;
         }
     }

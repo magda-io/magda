@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import AccountNavbar from "../Account/AccountNavbar";
 import { config } from "../../config.js";
 
@@ -22,14 +22,17 @@ const HeaderNav = props => {
                                     rel="noopener noreferrer"
                                     href={nav[1]}
                                 >
-                                    {nav[0]}
+                                    <span>{nav[0]}</span>
                                 </a>
                             </li>
                         ) : (
                             <li key={i}>
-                                <Link key={i} to={`/${encodeURI(nav[1])}`}>
-                                    {nav[0]}
-                                </Link>
+                                <NavLink
+                                    to={`/${encodeURI(nav[1])}`}
+                                    activeClassName="active"
+                                >
+                                    <span>{nav[0]}</span>
+                                </NavLink>
                             </li>
                         )
                 )}

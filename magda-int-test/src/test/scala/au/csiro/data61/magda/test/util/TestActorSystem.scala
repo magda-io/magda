@@ -24,6 +24,11 @@ object TestActorSystem {
       COM_ELB_ID_2016.disabled = true
       STE.disabled = false
     }
+    elasticSearch {
+      connectTimeout = 30000
+      socketTimeout = 600000
+      maxRetryTimeout = 30000
+    }
     auth.userId = "1"
   """).resolve().withFallback(AppConfig.conf())
 

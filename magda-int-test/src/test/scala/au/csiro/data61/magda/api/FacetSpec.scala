@@ -18,8 +18,6 @@ import au.csiro.data61.magda.model.misc.{ DataSet, _ }
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.test.util.ApiGenerators._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.elasticsearch.common.settings.Settings
 import org.scalacheck.Shrink
@@ -40,10 +38,9 @@ import org.scalacheck.Arbitrary._
 import au.csiro.data61.magda.model.Temporal.PeriodOfTime
 import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
 import java.util.HashMap
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.HttpClient
 import org.elasticsearch.cluster.health.ClusterHealthStatus
-import com.sksamuel.elastic4s.embedded.LocalNode
+import au.csiro.data61.magda.test.util.testkit.LocalNode
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
@@ -52,6 +49,8 @@ import scala.reflect.internal.util.Statistics.View
 import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
+
+  blockUntilNotRed()
 
   describe("facets") {
     def checkFacetsNoQuery(indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit) = {

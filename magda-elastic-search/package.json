@@ -13,7 +13,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-elasticsearch",
-      "include": "Dockerfile elasticsearch.yml setup.sh"
+      "include": "Dockerfile elasticsearch.yml setup.sh wn_s.pl"
     }
   },
   "devDependencies": {

@@ -20,6 +20,7 @@ gateway:
   service:
     type: LoadBalancer
   loadBalancerIP: "104.199.180.124"
+  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"
@@ -63,8 +64,8 @@ indexer:
     requests:
       cpu: 100m
       memory: 0
-  readSnapshots: true
-  makeSnapshots: true
+  readSnapshots: false
+  makeSnapshots: false
   elasticsearch:
     useGcsSnapshots: true
     gcsSnapshotBucket: "magda-es-snapshots-dev"
@@ -85,7 +86,6 @@ search-api:
       cpu: 100m
       memory: 0
 web-server:
-  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   resources:
     requests:
       cpu: 100m
