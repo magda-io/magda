@@ -3,7 +3,7 @@
 @mixin text() {
     font-size: 1rem;
     border-bottom: 0;
-    padding: 24px 8px;
+    padding: 24px 16px;
     box-sizing: border-box;
     display: block;
     background-color: transparent;
@@ -15,7 +15,6 @@
     background-image: none;
     color: #ffffff;
     @media (min-width: $medium) {
-        padding-bottom: 5px;
         padding-left: 0;
         margin-bottom: 0;
         display: block;
