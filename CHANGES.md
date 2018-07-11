@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Add links to about page
+-   Default button color fix
 
 ## 0.0.43
 
