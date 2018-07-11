@@ -25,6 +25,7 @@ export default class DapUrlBuilder {
         }
     }
 
+    // Following the DAP API defination to customed the URL builder: https://confluence.csiro.au/display/daphelp/Web+Services+Interface
     public getPackageSearchUrl(): string {
         return this.apiBaseUrl.clone().toString();
     }
