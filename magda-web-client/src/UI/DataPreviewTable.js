@@ -86,21 +86,9 @@ export default class DataPreviewTable extends Component<
     }
 
     removeEmptyRows(data) {
-        let dataForTable = [];
-        data.forEach(row => {
-            let allFieldsEmpty = true;
-            // get values in a row as an arrary
-            const rowValues = Object.values(row);
-            rowValues.forEach(column => {
-                if (column.trim().length > 0) {
-                    allFieldsEmpty = false;
-                }
-            });
-            if (!allFieldsEmpty) {
-                dataForTable.push(row);
-            }
-        });
-        return dataForTable;
+        return data.filter(row =>
+            Object.values(row).some(column => column.trim().length > 0)
+        );
     }
 
     render() {
