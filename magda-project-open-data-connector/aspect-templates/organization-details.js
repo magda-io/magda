@@ -16,7 +16,7 @@ let addrState = undefined;
 let addrPostCode = undefined;
 let addrCountry =undefined;
 
-return {
+const data = {
     name: organization.name,
     title: organization.name,
     description: undefined,
@@ -29,3 +29,9 @@ return {
     addrPostCode,
     addrCountry
 };
+
+Object.keys(data).forEach(key=>{
+    if(!data[key]) delete data[key];
+});
+
+return data;

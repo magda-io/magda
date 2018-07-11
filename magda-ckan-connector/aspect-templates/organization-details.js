@@ -18,7 +18,7 @@ if(organization && organization.extras && organization.extras.length){
     });
 }
 
-return {
+const data = {
     name: organization.name,
     title: organization.title,
     description: organization.description,
@@ -32,3 +32,9 @@ return {
     addrCountry : undefined,
     website
 };
+
+Object.keys(data).forEach(key=>{
+    if(!data[key]) delete data[key];
+});
+
+return data;
