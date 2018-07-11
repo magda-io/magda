@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Small improvement on how search box looks on mobile and desktop
 
 ## 0.0.43
 
