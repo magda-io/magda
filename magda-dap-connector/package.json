@@ -3,15 +3,14 @@
   "description": "MAGDA DAP Connector",
   "version": "0.0.44-0",
   "scripts": {
-    "build": "npm run compile",
-    "compile": "npm run compile-node && npm run compile-browser",
+    "build": "yarn run compile",
+    "compile": "yarn run compile-node && yarn run compile-browser",
     "compile-node": "tsc -p tsconfig-build.json",
     "compile-browser": "webpack --config src/webpack.config.js",
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-kn": "create-docker-context-for-node-component --build",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },
   "author": "",
@@ -32,8 +31,8 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "0.0.44-0",
-    "@magda/typescript-common": "0.0.44-0",
+    "@magda/registry-aspects": "^0.0.44-0",
+    "@magda/typescript-common": "^0.0.44-0",
     "body-parser": "^1.18.1",
     "express": "^4.15.4",
     "moment": "^2.17.1",
