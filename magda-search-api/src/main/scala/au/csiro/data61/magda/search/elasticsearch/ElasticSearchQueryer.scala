@@ -453,6 +453,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .field("publisher.name")
               .field("publisher.acronym")
               .field("publisher.description")
+              .field("publisher.addrStreet")
+              .field("publisher.addrSuburb")
+              .field("publisher.addrState")
           }
           .aggs(cardinalityAgg("totalCount","publisher.identifier"))
           .sortByFieldAsc("publisher.name.keyword")
