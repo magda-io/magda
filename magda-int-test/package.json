@@ -1,11 +1,17 @@
 {
   "name": "@magda/int-test",
-  "version": "0.0.32-0",
+  "version": "0.0.44-0",
   "description": "Integration tests",
   "scripts": {
-    "build": "npm run compile",
+    "build": "yarn run compile",
     "test": "cd .. && sbt intTest/test",
     "compile": "cd .. && sbt intTest/compile"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "magda": {
+    "language": "scala",
+    "categories": {
+      "library": true
+    }
+  }
 }

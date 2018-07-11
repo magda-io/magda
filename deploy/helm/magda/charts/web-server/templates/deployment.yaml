@@ -21,6 +21,22 @@ spec:
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0"
         ]
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:

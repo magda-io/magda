@@ -1,12 +1,4 @@
-@import '../../variables';
+@import "../../variables";
 .no-matching {
-  padding: 10px 15px;
-  background: $magda-grey;
-  font-weight: 600;
-  color: #C0392B;
-  font-size: 1.1em; }
-
-@media (max-width: 768px) {
-  .no-matching {
-    margin: 15px 0; } 
+    margin: 15px 0;
 }

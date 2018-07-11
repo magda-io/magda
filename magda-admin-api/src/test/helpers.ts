@@ -104,10 +104,10 @@ export function mockJobStatus(
     return req.reply(
         statusCode,
         statusCode === 200
-            ? fixtures.getJobs(_(state)
+            ? (fixtures.getJobs(_(state)
                   .mapValues((value: ConnectorState) => value.job)
                   .pickBy(_.identity)
-                  .value() as { [id: string]: JobState }) as any
+                  .value() as { [id: string]: JobState }) as any)
             : "fail"
     );
 }

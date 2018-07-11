@@ -17,7 +17,7 @@ package misc {
   }
 
   object FacetType {
-    val all = Seq(Publisher, Year, Format)
+    val all = Seq(Publisher, Format)
 
     private val idToFacet = all.groupBy(_.id.toLowerCase).mapValues(_.head)
 
@@ -26,10 +26,6 @@ package misc {
 
   case object Publisher extends FacetType {
     override def id = "Publisher"
-  }
-
-  case object Year extends FacetType {
-    override def id = "Year"
   }
 
   case object Format extends FacetType {
@@ -73,19 +69,26 @@ package misc {
       indexed: Option[OffsetDateTime] = None,
       quality: Double) {
 
-    def uniqueId: String = java.net.URLEncoder.encode(catalog.getOrElse("nocatalog") + "/" + identifier, "UTF-8")
+    def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
 
     override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
 
     def normalToString: String = ScalaRunTime._toString(this)
   }
 
+  object DataSet {
+    def registryIdToIdentifier(registryId: String) = java.net.URLEncoder.encode(registryId, "UTF-8")
+  }
+
   case class Agent(
     identifier: Option[String] = None,
     name: Option[String] = None,
+    description: Option[String] = None,
+    acronym: Option[String] = None,
     homePage: Option[String] = None,
     email: Option[String] = None,
-    imageUrl: Option[String] = None)
+    imageUrl: Option[String] = None,
+    datasetCount: Option[Long] = None)
 
   case class Location(
     text: Option[String] = None,
@@ -375,7 +378,7 @@ package misc {
 
     implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat5(Agent.apply)
+    implicit val agentFormat = jsonFormat8(Agent.apply)
     implicit val dataSetFormat = jsonFormat19(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)

@@ -2,15 +2,19 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
 
-import org.apache.lucene.search.join.ScoreMode
-import org.elasticsearch.common.geo.ShapeRelation
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.searches.ScoreMode
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.queries.NestedQueryDefinition
 import com.typesafe.config.Config
 
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.GeoShapeDefinition
+import com.sksamuel.elastic4s.searches.queries.geo.{
+//import au.csiro.data61.magda.search.elasticsearch.QueryDefinitions.{
+  ShapeRelation,
+  PreindexedShape,
+  GeoShapeQueryDefinition
+}
 import au.csiro.data61.magda.api.FilterValue
 import com.sksamuel.elastic4s.searches.queries.QueryDefinition
 import au.csiro.data61.magda.api.Specified
@@ -22,23 +26,25 @@ object Queries {
   def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
-        case SearchStrategy.MatchAll => matchQuery("publisher.name.keyword_lowercase", publisherString)
+        case SearchStrategy.MatchAll =>
+          matchQuery("publisher.name.keyword_lowercase", publisherString)
+
         case SearchStrategy.MatchPart =>
           multiMatchQuery(publisherString)
-            .fields("publisher.name", "publisher.name.english")
-            .minimumShouldMatch("-50%")
-      }, "publisher.name"
-    )
+            .fields("publisher.acronym", "publisher.name")
+            .minimumShouldMatch("1")
+
+      }, "publisher.name")
   }
 
   def exactPublisherQuery(publisher: FilterValue[String]) = publisherQuery(SearchStrategy.MatchAll)(publisher)
   def baseFormatQuery(strategy: SearchStrategy, formatString: String) = nestedQuery("distributions")
     .query(strategy match {
-      case SearchStrategy.MatchAll => matchQuery("distributions.format.keyword_lowercase", formatString)
+      case SearchStrategy.MatchAll => matchQuery("distributions.format.quote", formatString)
       case SearchStrategy.MatchPart =>
         multiMatchQuery(formatString)
-          .fields("distributions.format", "distributions.format.english")
-          .minimumShouldMatch("-50%")
+          .fields("distributions.format", "distributions.format.quote")
+          .minimumShouldMatch("1")
     })
     .scoreMode(ScoreMode.Avg)
   def formatQuery(strategy: SearchStrategy)(formatValue: FilterValue[String]): QueryDefinition = {
@@ -49,10 +55,16 @@ object Queries {
   }
 
   def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
-    def normal(region: Region) = geoShapeQuery("spatial.geoJson", generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId), indices.getType(Indices.RegionsIndexType))
-      .relation(ShapeRelation.INTERSECTS)
-      .indexedShapeIndex(indices.getIndex(config, Indices.RegionsIndex))
-      .indexedShapePath("geometry")
+    def normal(region: Region) = new GeoShapeQueryDefinition(
+      "spatial.geoJson",
+      PreindexedShape(
+        generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId),
+        indices.getIndex(config, Indices.RegionsIndex),
+        indices.getType(Indices.RegionsIndexType),
+        "geometry"
+      ),
+      Some(ShapeRelation.INTERSECTS)
+    )
 
     handleFilterValue(regionValue, normal, "spatial.geoJson")
   }
@@ -65,17 +77,16 @@ object Queries {
         case _ => None
       },
       dateFrom.flatMap(_.map(dateFromQuery)),
-      dateTo.flatMap(_.map(dateToQuery))
-    ).flatten
+      dateTo.flatMap(_.map(dateToQuery))).flatten
   }
 
   def dateFromQuery(dateFrom: OffsetDateTime) = {
-    filter(should(
+    boolQuery().filter(should(
       rangeQuery("temporal.end.date").gte(dateFrom.toString),
       rangeQuery("temporal.start.date").gte(dateFrom.toString)).minimumShouldMatch(1))
   }
   def dateToQuery(dateTo: OffsetDateTime) = {
-    filter(should(
+    boolQuery().filter(should(
       rangeQuery("temporal.end.date").lte(dateTo.toString),
       rangeQuery("temporal.start.date").lte(dateTo.toString)).minimumShouldMatch(1))
   }

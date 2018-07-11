@@ -45,6 +45,13 @@ spec:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+{{- end }}
         env:
         - name: NAMESPACE
           valueFrom:
@@ -68,7 +75,8 @@ spec:
           value: "false"
         - name: "ES_PLUGINS_INSTALL"
           value: {{ .Values.client.pluginsInstall | quote }}
-        {{- template "magda.elasticSearchXpackEnv" . }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
         ports:
         - containerPort: 9300
           name: transport

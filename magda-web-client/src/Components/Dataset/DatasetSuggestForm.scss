@@ -1,0 +1,66 @@
+@import "../../variables";
+
+.ask-dataset-form {
+    padding: 10px;
+    overflow: scroll;
+    position: relative;
+    float: right;
+    width: 800px;
+    background-color: rgb(248, 247, 247);
+}
+
+.modal-header {
+    color: white;
+    background-color: #4b3081;
+    text-align: center;
+}
+
+@media only screen and (max-width: 1200px) {
+    .ask-dataset-form-responsive {
+        max-width: 700px !important;
+    }
+}
+
+.correspondence-dataset-close-button {
+    height: 2em;
+    width: 2em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    height: 20px;
+    width: 20px;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@media only screen and (max-width: $small) {
+    .dataset-correspondence-container {
+        display: inline-block;
+        margin-top: 1rem;
+    }
+    .ask-dataset-form-responsive {
+        width: auto;
+        float: none;
+        overflow-y: auto;
+    }
+    .suggest-modal-heading {
+        font-size: 17px;
+    }
+}
+
+.ReactModalPortal > * {
+    // When the modal is closed, overlay div has no css class
+    opacity: 0;
+}
+
+.ReactModal__Overlay {
+    transition: opacity 200ms ease-in-out;
+    background: rgba(0, 0, 0, 0.15);
+    &--after-open {
+        opacity: 1;
+    }
+    &--before-close {
+        opacity: 0;
+    }
+}

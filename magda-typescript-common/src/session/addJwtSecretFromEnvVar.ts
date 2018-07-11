@@ -4,7 +4,7 @@ import { Arguments } from "yargs";
  * Checks to see whether the passed argv has a jwtSecret object. If not,
  * tries to add one by looking at the JWT_SECRET env var and failing that,
  * the jwtSecret value in package.json config.
- * 
+ *
  * If it can't find one and required is true (or unprovided), this will
  * throw an Error.
  */

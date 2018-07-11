@@ -21,41 +21,45 @@ matrix:
           # 3gb heap, unload classes we don't need, aim for < 50ms gc pauses (largely ignored), use the next-gen collector, try to free 5% of heap every gc, use < 25% of time for GC
           - SBT_OPTS="-Xms3000M -Xmx3000M -XX:+CMSClassUnloadingEnabled -XX:MaxGCPauseMillis=1000 -XX:+UseG1GC -XX:GCTimeRatio=3"
           - CI=true
+          - REACT_APP_SHA1=$TRAVIS_COMMIT
       addons:
         postgresql: "9.6"
       script: travis_retry sbt test
     - language: node_js
-      node_js: "6"
+      node_js: "8"
       cache:
         directories:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
-          - node_modules
-          - magda-authorization-api/node_modules
-          - magda-broken-link-sleuther/node_modules
-          - magda-discussions-api/node_modules
-          - magda-gateway/node_modules
-          - magda-project-open-data-connector/node_modules
-          - magda-sleuther-broken-link/node_modules
-          - magda-sleuther-framework/node_modules
-          - magda-sleuther-linked-data-rating/node_modules
-          - magda-typescript-common/node_modules
-          - magda-web-server/node_modules
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
-      script: npm install -g lerna && npm run node-ci
+      script: 
+        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
+        - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.connector=true -- run test 
+        - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.sleuther=true -- run test
       env:
         global:
           - CI=true
     - language: node_js
-      node_js: "6"
+      node_js: "8"
       cache:
         directories:
-          - magda-web-client/node_modules
-          - magda-preview-map/node_modules
-      script: npm install -g lerna && lerna --concurrency 2 --scope @magda/web-client --scope @magda/preview-map bootstrap && lerna --scope @magda/web-client --scope @magda/preview-map run build  && lerna --scope @magda/preview-map --scope @magda/web-client run test
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
+      script:
+        - yarn global add lerna
+        - yarn run eslint
+        - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
+        - lerna run test --scope @magda/preview-map --scope @magda/web-client
       env:
         global:
           - CI=true

@@ -96,7 +96,8 @@ export default class RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError("Failed to GET records.", e, retriesLeft)
-                )
+                ),
+            e => e.response.statusCode !== 404
         )
             .then(result => result.body)
             .catch(createServiceError);

@@ -36,17 +36,20 @@ const argv = addJwtSecretFromEnvVar(
             default: "http://localhost:6101/v0"
         })
         .option("interactive", {
-            describe: "Run the connector in an interactive mode with a REST API, instead of running a batch connection job.",
+            describe:
+                "Run the connector in an interactive mode with a REST API, instead of running a batch connection job.",
             type: "boolean",
             default: false
         })
         .option("listenPort", {
-            describe: "The port on which to run the REST API when in interactive model.",
+            describe:
+                "The port on which to run the REST API when in interactive model.",
             type: "number",
             default: 6113
         })
         .option("timeout", {
-            describe: "When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.",
+            describe:
+                "When in --interactive mode, the time in seconds to wait without servicing an REST API request before shutting down. If 0, there is no timeout and the process will never shut down.",
             type: "number",
             default: 0
         })
@@ -67,7 +70,7 @@ const argv = addJwtSecretFromEnvVar(
 const source = new ProjectOpenData({
     id: argv.id,
     name: argv.name,
-    url: argv.sourceUrl,
+    url: argv.sourceUrl
 });
 
 const registry = new Registry({
@@ -91,7 +94,7 @@ const transformer = createTransformer(transformerOptions);
 const connector = new JsonConnector({
     source: source,
     transformer: transformer,
-    registry: registry,
+    registry: registry
 });
 
 if (!argv.interactive) {

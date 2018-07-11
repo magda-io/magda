@@ -1,4 +1,4 @@
-var parsedTemporal = dataset.temporal ? dataset.temporal.split('/') : [];
+var parsedTemporal = dataset.temporal ? dataset.temporal.split("/") : [];
 
 return {
     title: dataset.title,

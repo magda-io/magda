@@ -1,0 +1,8 @@
+{
+    "type": "magda-csw-connector",
+    "id": "qspatial",
+    "name": "Queensland Spatial Catalogue - QSpatial ",
+    "sourceUrl": "﻿http://qldspatial.information.qld.gov.au/catalogueadmin/csw",
+    "pageSize": 100,
+    "schedule": "0 14 */3 * *"
+}

@@ -1,25 +1,30 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import "./PublisherSummary.css";
 
-//@flow
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './PublisherSummary.css';
-import type {Publisher} from '../../helpers/record';
-
-function PublisherSummary(props: {publisher: Publisher}) {
-  const details = props.publisher.aspects['organization-details'];
-  return (
-      <div className='publisher-summray white-box media'>
-                <div className='media-left'>
-                    <img className='media-object publisher_image' src={details.imageUrl ? details.imageUrl : 'http://via.placeholder.com/200x150?text=no+logo+available'} alt={props.publisher.name}/>
-                </div>
-                <div className='media-body'>
-                    <Link to={'publishers/' + encodeURIComponent(props.publisher.id)}><h3>{props.publisher.name}</h3></Link>
-                    <div className='publisher-description'>{details.description && details.description.slice(0, 200) + '...'}</div>
-                </div>
-             </div>
-  );
+function PublisherSummary(props) {
+    return (
+        <div className="publisher-summray">
+            <h2 className="publisher-title">
+                <Link
+                    to={
+                        "organisations/" +
+                        encodeURIComponent(props.publisher.identifier)
+                    }
+                >
+                    {props.publisher.name}
+                </Link>
+            </h2>
+            <div className="publisher-meta">
+                {props.publisher.datasetCount
+                    ? `${props.publisher.datasetCount} dataset`
+                    : ""}
+            </div>
+            <div className="publisher-description">
+                {props.publisher.description ? props.publisher.description : ""}
+            </div>
+        </div>
+    );
 }
-
-
 
 export default PublisherSummary;

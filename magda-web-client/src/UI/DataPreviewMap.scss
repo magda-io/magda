@@ -1,0 +1,13 @@
+.data-preview-map {
+    position: relative;
+    line-height: 0;
+}
+
+.data-preview-map-iframe_loading {
+    visibility: hidden;
+    position: absolute;
+}
+
+.data-preview-map-iframe_no-scroll {
+    pointer-events: none;
+}

@@ -1,220 +1,207 @@
-@import 'variables';
-html{
-  font-size: 16px;
-}
-body {
-  margin: 0;
-  padding: 0;
-  font-family: $font-base;
-  color: #333333;
-  font-size: 1rem;
+@import "variables";
+@import "./pancake/sass/pancake.scss";
+html {
 }
 
-h1{
-  margin-top: 0;
-  font-size: $heading1;
-  font-weight: 800;
+.au-body .au-grid {
+    p,
+    input,
+    a,
+    span {
+        &::selection {
+            background: $AU-color-foreground-action;
+        }
+    }
+    .au-btn,
+    a.au-btn,
+    a {
+        color: $AU-color-foreground-action;
+    }
+
+    button.au-btn,
+    a.au-btn {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+    }
+
+    .au-btn.au-btn--primary,
+    a.au-btn.au-btn--primary {
+        background: $AU-colordark-background;
+        color: $AU-colordark-foreground-text;
+        border-color: $AU-color-foreground-action;
+    }
+
+    .au-btn.au-btn--tertiary,
+    a.au-btn.au-btn--tertiary {
+        color: $AU-colordark-foreground-focus;
+        background: transparent;
+        border-color: transparent;
+    }
+
+    .au-btn.au-btn--secondary,
+    a.au-btn.au-btn--secondary {
+        color: $AU-color-foreground-action;
+        background: transparent;
+        color: $AU-color-foreground-action;
+    }
+
+    a,
+    button,
+    input,
+    select,
+    textarea {
+        &:focus {
+            outline-color: $AU-colordark-foreground-focus !important;
+        }
+    }
 }
 
-h2{
-  font-size: $heading2;
-  font-weight: 800;
+//need to add these classes for modals as well
+form > input,
+textarea {
+    &:focus {
+        outline-color: $AU-colordark-foreground-focus !important;
+    }
 }
 
-h3{
-  font-size: $heading3;
-  font-weight: 800;
+.au-btn:hover:not(:disabled),
+a.au-btn:hover:not(:disabled) {
+    text-decoration: none;
 }
 
-h4{
-  margin-top: 0;
-  font-weight: 800;
-}
-
-.navbar-header{
-  background: #fff;
-}
-
-.form-control{
-  border-radius: 2px;
-  box-shadow: none;
-}
-
-.btn-unstyled{
-  background: transparent;
-}
-
-.navbar-brand{
-  padding: 10px 0;
-  height: 80px;
-}
-
-.logo{
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.prototype-warning{
-  background-color: $magda-blue;
-  color: #fff;
-  padding: 5px;
-  text-align: center;
-  a{
-    color: $magda-dark-blue;
-    font-weight: 800;
-  }
-}
-
-
-input[type=text].form-control{
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.15)!important;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding: 10px 15px;
-}
-
-#content{
-  min-height: 400px;
-  margin-top: 30px;
-}
-
-.prototype-warning{
-  background-color: #3498db;
-  color: #fff;
-  padding: 5px;
-  text-align: center;
-  a{
-    color: #2c3e50;
-    font-weight: 800;
-  }
-  .prototype-warning-dismiss{
+.sr-only {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: transparent;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
     border: 0;
-    padding: 6px 10px;
-  }
 }
 
-
-@media (max-width: 768px) {
-  .form-control:focus {
-    border: none;
-  }
-
-  .navbar-brand{
-    padding: 10px 15px;
-  }
-}
-
-
-.white-box{
-  background: #fff;
-  padding: 15px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  margin-bottom: 10px;
-  a{
-    @extend .dont-break-out;
-  }
-}
-
-
-.media-left{
-  img{
-    max-width: 100px;
-  }
-}
-
-.media-body{
-  h3, h1, h2{
-    margin-top: 0;
-  }
-  h1{
-    font-weight: normal;
-
-  }
-}
-
-.license{
-  font-size: 1rem;
-  color: #16A085;
-}
-
-.nav>li>a:focus, .nav>li>a:hover{
-  background: transparent;
-}
-
-a.badge{
-  background: $badge-bg;
-  margin-bottom: 5px;
-  color: #000;
-  font-weight: normal;
-  border-radius: 5px;
-  padding: 7px;
-  margin-right: 5px;
-  &:hover, &:focus{
-    background: $magda-blue;
-  }
-}
-
-.dont-break-out {
-
-  /* These are technically the same, but use both */
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  -ms-word-break: break-all;
-  /* This is the dangerous one in WebKit, as it breaks things wherever */
-  word-break: break-all;
-  /* Instead use this non-standard one: */
-  word-break: break-word;
-
-  /* Adds a hyphen where the word breaks, if supported (No Blink) */
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-}
-
-.btn.active, .btn:active{
-  box-shadow: none;
-}
-
-.updated-date{
-  font-size: 0.85rem;
-  color: $magda-dark-grey;
-  margin-top: 5px;
-}
-
-
-.nav>li>a{
-  &:hover, &:focus{
-    color: $magda-dark-grey;
-  }
-}
-
-
-.field-error{
-  color: red;
-}
-
-.form-error{
-  border: 1px solid red;
-}
-
-
-.success-message{
-  color: #fff;
-  background: $magda-green;
-  border-radius: 5px;
-  padding: 12px;
-  margin-bottom: 10px;
+.au-body.au-body--dark,
+.au-footer.au-footer--dark {
+    border-color: $AU-colordark-foreground-focus !important;
+    background: $AU-colordark-background !important;
+    color: $AU-colordark-foreground-text !important;
+    a,
+    button {
+        color: $AU-colordark-foreground-action !important;
+        &:hover,
+        &:focus {
+            color: $AU-colordark-foreground-focus !important;
+        }
+    }
 }
 
 @keyframes hideMessage {
-  0%   { opacity: 1; }
-  90%   { opacity: 1; }
-  100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.au-btn {
+    font-weight: 400;
+    text-transform: none;
+    &:focus {
+        outline: 3px solid $AU-color-foreground-focus;
+    }
+}
+
+div {
+    box-sizing: border-box;
+}
+
+.breadcrumb {
+    margin-left: 0;
+    padding-left: 0;
+    .breadcrumb-item {
+        display: inline-block;
+        padding-right: 16px;
+    }
+}
+
+a {
+}
+
+.tab-navigation {
+    .au-link-list {
+        display: flex;
+    }
+
+    a {
+        display: inline-block;
+        padding: 1rem 1rem;
+        border-bottom: 5px solid #cfcfcf;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+            color: $AU-color-foreground-action;
+        }
+    }
+    a.mainmenu--active {
+        color: $AU-color-foreground-action;
+        border-color: $AU-color-foreground-action;
+    }
+}
+
+.hidden-sm {
+    @media (max-width: $medium) {
+        display: none !important;
+    }
+}
+
+.au-btn + .au-btn {
+    margin-left: 0;
+}
+
+.list--unstyled {
+    padding-left: 0;
+    list-style: none;
+}
+
+// gold starts here
+
+h1 {
+    @include AU-fontgrid(xl, heading);
+    font-weight: 400;
+}
+
+h2 {
+    @include AU-fontgrid(lg, heading);
+    font-weight: 400;
+}
+
+h3 {
+    @include AU-fontgrid(md, heading);
+    font-weight: 400;
+}
+
+h4 {
+    @include AU-fontgrid(sm, heading);
+    font-weight: 400;
+}
+
+.au-text-input {
+    border: 3px solid $AU-color-foreground-action;
+}
+
+.au-body ::selection {
+    background: $AU-color-foreground-action !important;
+    color: $AU-colordark-foreground-text !important;
+}
+
+.au-link {
+    background: #ffffff;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
 }

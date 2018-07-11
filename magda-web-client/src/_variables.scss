@@ -1,15 +1,20 @@
-$magda-grey: #ecf0f1;
-$magda-grey-light: #f7f7f7;
-$magda-dark-grey: #888;
-$magda-blue: #2980B9;
-$magda-dark-blue: #2C3E50;
-$magda-green: #16A085;
+$AU-color-foreground-action: #4c2a85;
+$AU-color-foreground-focus: #0e0021;
+$AU-color-foreground-text: #0e0021;
+$AU-color-background: #ffffff;
+
+$AU-colordark-foreground-action: #f7f7f7;
+$AU-colordark-foreground-focus: #6b7fd7;
+$AU-colordark-foreground-text: #f7f7f7;
+$AU-colordark-background: #320e3b;
+
+$magda-green: #16a085;
 $magda-red: #c0392b;
 $magda-yellow: #f1c40f;
-$heading1: 1.4rem;
-$heading2: 1rem;
-$heading3: 1rem;
 
-$badge-bg: #DADDDE;
+$banner-text: $AU-color-foreground-text;
 
-$font-base: 'Open Sans', sans-serif;
+$small: 768px;
+$medium: 992px;
+$large: 1200px;
+@import "./pancake/sass/core.scss";

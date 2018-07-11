@@ -4,6 +4,7 @@ import { Maybe } from "tsmonad";
 import Database from "./Database";
 import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -33,6 +34,37 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .then(() => res.end());
     }
 
+    router.all("/private/*", function(req, res, next) {
+        //--- private API requires admin level access
+
+        getUserIdHandling(
+            req,
+            res,
+            options.jwtSecret,
+            async (userId: string) => {
+                try {
+                    const user = (await database.getUser(userId)).valueOrThrow(
+                        new AuthError(
+                            `Cannot locate user record by id: ${userId}`,
+                            401
+                        )
+                    );
+                    if (!user.isAdmin)
+                        throw new AuthError(
+                            "Only admin users are authorised to access this API",
+                            403
+                        );
+                    next();
+                } catch (e) {
+                    console.warn(e);
+                    if (e instanceof AuthError)
+                        res.status(e.statusCode).send(e.message);
+                    else res.status(401).send("Not authorized");
+                }
+            }
+        );
+    });
+
     router.get("/private/users/lookup", function(req, res) {
         const source = req.query.source;
         const sourceId = req.query.sourceId;
@@ -46,18 +78,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
         handlePromise(res, database.getUser(userId));
     });
 
-    router.post("/private/users", function(req, res) {
-        database
-            .createUser(req.body)
-            .then(user => {
-                res.json(user);
-                res.status(201);
-            })
-            .catch(e => {
-                console.error(e);
-                res.status(500);
-            })
-            .then(() => res.end());
+    router.post("/private/users", async function(req, res) {
+        try {
+            const user = await database.createUser(req.body);
+            res.json(user);
+            res.status(201);
+        } catch (e) {
+            console.error(e);
+            res.status(500);
+        }
+        res.end();
     });
 
     router.get("/public/users/whoami", function(req, res) {

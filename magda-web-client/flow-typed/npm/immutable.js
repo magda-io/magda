@@ -1,3 +1,3 @@
-declare module 'immutable' {
-  declare module.exports: any;
+declare module "immutable" {
+    declare module.exports: any;
 }

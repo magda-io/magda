@@ -20,7 +20,7 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
-            "--dbHost", "session-store",
+            "--dbHost", "session-db",
             "--dbPort", "5432",
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
@@ -28,15 +28,35 @@ spec:
 {{- if .Values.auth.googleClientId }}
             "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
+{{- if .Values.enableAuthEndpoint }}
+            "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
+{{- end }}
             "--proxyRoutesPath", "/etc/routes/routes.json",
             "--web", "http://web",
             "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
             "--ckanUrl", "https://data.gov.au",
+            "--cspReportUri", {{ .Values.cspReportUri | quote }}
         ]
         volumeMounts:
           - name: routes
             mountPath: /etc/routes
+        readinessProbe:
+          httpGet:
+            path: /v0/healthz
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: /v0/healthz
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -52,6 +72,8 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: session-secret
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
 {{- if .Values.auth.facebookClientId }}
         - name: FACEBOOK_CLIENT_SECRET
           valueFrom:
@@ -68,14 +90,17 @@ spec:
               key: google-client-secret
               optional: true
 {{- end }}
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: session-store-client
+              key: session-db-client
 {{- end }}
       volumes:
         - name: routes

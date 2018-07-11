@@ -3,14 +3,14 @@ package au.csiro.data61.magda.indexer.search.elasticsearch;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.polygonize.Polygonizer;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.operation.polygonize.Polygonizer;
 
 // from https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
 public class GeoValidator {
@@ -18,7 +18,7 @@ public class GeoValidator {
 	 * Get / create a valid version of the geometry given. If the geometry is a
 	 * polygon or multi polygon, self intersections / inconsistencies are fixed.
 	 * Otherwise the geometry is returned.
-	 * 
+	 *
 	 * @param geom
 	 * @return a geometry
 	 */
@@ -51,7 +51,7 @@ public class GeoValidator {
 
 	/**
 	 * Add all line strings from the polygon given to the polygonizer given
-	 * 
+	 *
 	 * @param polygon
 	 *            polygon from which to extract line strings
 	 * @param polygonizer
@@ -66,7 +66,7 @@ public class GeoValidator {
 
 	/**
 	 * Add the linestring given to the polygonizer
-	 * 
+	 *
 	 * @param linestring
 	 *            line string
 	 * @param polygonizer
@@ -92,7 +92,7 @@ public class GeoValidator {
 
 	/**
 	 * Get a geometry from a collection of polygons.
-	 * 
+	 *
 	 * @param polygons
 	 *            collection
 	 * @param factory

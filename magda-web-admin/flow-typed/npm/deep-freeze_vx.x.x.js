@@ -8,13 +8,13 @@
  *
  * Fill this stub out by replacing all the `any` types.
  *
- * Once filled out, we encourage you to share your work with the 
- * community by sending a pull request to: 
+ * Once filled out, we encourage you to share your work with the
+ * community by sending a pull request to:
  * https://github.com/flowtype/flow-typed
  */
 
-declare module 'deep-freeze' {
-  declare module.exports: any;
+declare module "deep-freeze" {
+    declare module.exports: any;
 }
 
 /**
@@ -22,24 +22,24 @@ declare module 'deep-freeze' {
  * require those files directly. Feel free to delete any files that aren't
  * needed.
  */
-declare module 'deep-freeze/example/deep' {
-  declare module.exports: any;
+declare module "deep-freeze/example/deep" {
+    declare module.exports: any;
 }
 
-declare module 'deep-freeze/test/deep' {
-  declare module.exports: any;
+declare module "deep-freeze/test/deep" {
+    declare module.exports: any;
 }
 
 // Filename aliases
-declare module 'deep-freeze/example/deep.js' {
-  declare module.exports: $Exports<'deep-freeze/example/deep'>;
+declare module "deep-freeze/example/deep.js" {
+    declare module.exports: $Exports<"deep-freeze/example/deep">;
 }
-declare module 'deep-freeze/index' {
-  declare module.exports: $Exports<'deep-freeze'>;
+declare module "deep-freeze/index" {
+    declare module.exports: $Exports<"deep-freeze">;
 }
-declare module 'deep-freeze/index.js' {
-  declare module.exports: $Exports<'deep-freeze'>;
+declare module "deep-freeze/index.js" {
+    declare module.exports: $Exports<"deep-freeze">;
 }
-declare module 'deep-freeze/test/deep.js' {
-  declare module.exports: $Exports<'deep-freeze/test/deep'>;
+declare module "deep-freeze/test/deep.js" {
+    declare module.exports: $Exports<"deep-freeze/test/deep">;
 }

@@ -11,9 +11,9 @@ import connectors from "./connectorsReducer";
 import { combineReducers } from "redux";
 
 const reducer = combineReducers({
-  record,
-  userManagement,
-  connectors
+    record,
+    userManagement,
+    connectors
 });
 
 export default reducer;

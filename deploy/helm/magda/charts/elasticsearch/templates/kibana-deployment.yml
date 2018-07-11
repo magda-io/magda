@@ -13,7 +13,7 @@ spec:
       - env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
-        image: kibana:5.4.0
+        image: docker.elastic.co/kibana/kibana-oss:6.3.0
         name: kibana
         resources:
           requests:

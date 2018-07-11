@@ -1,0 +1,5 @@
+name: magda-web-client
+buildpack: staticfile_buildpack
+memory: 64M
+instances: 1
+path: ./build

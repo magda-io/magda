@@ -4,7 +4,8 @@ import {
     distUrlArb,
     arrayOfSizeArb,
     arbFlatMap,
-    recordArbWithDistArbs
+    recordArbWithDistArbs,
+    stringArb
 } from "@magda/typescript-common/dist/test/arbitraries";
 import urlsFromDataSet from "./urlsFromDataSet";
 import * as _ from "lodash";
@@ -12,7 +13,9 @@ import * as URI from "urijs";
 
 export const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
 
-const defaultRecordArb = recordArbWithDistArbs({ url: distUrlArb() });
+const defaultRecordArb = recordArbWithDistArbs({
+    url: jsc.oneof([distUrlArb(), stringArb])
+});
 
 /**
  * Generates a record along with a map of every distribution URL to whether
@@ -21,38 +24,52 @@ const defaultRecordArb = recordArbWithDistArbs({ url: distUrlArb() });
 export const recordArbWithSuccesses = arbFlatMap(
     defaultRecordArb,
     (record: Record) => {
-        const getKnownProtocolUrls = (record: Record) =>
-            _(urlsFromDataSet(record))
-                .filter(url => KNOWN_PROTOCOLS.indexOf(URI(url).scheme()) >= 0)
-                .uniq()
-                .value();
+        const knownProtocolUrls = getKnownProtocolUrls(record);
 
-        const urls = getKnownProtocolUrls(record);
-
-        const gen: jsc.Arbitrary<CheckResult[]> = arrayOfSizeArb(
-            urls.length,
+        const urlWithSuccessArb: jsc.Arbitrary<CheckResult[]> = arrayOfSizeArb(
+            knownProtocolUrls.length,
             checkResultArb
         );
 
-        return gen.smap(
-            successfulArr => {
-                const successes = urls.reduce(
+        return urlWithSuccessArb.smap(
+            resultArr => {
+                const successLookup = knownProtocolUrls.reduce(
                     (soFar, current, index) => {
-                        soFar[current] = successfulArr[index];
+                        soFar[current] = resultArr[index];
                         return soFar;
                     },
                     {} as { [a: string]: CheckResult }
                 );
 
-                return { record, successes };
+                return { record, successLookup };
             },
-            ({ record, successes }) => {
-                return getKnownProtocolUrls(record).map(url => successes[url]);
+            ({ record, successLookup }) => {
+                return getKnownProtocolUrls(record).map(
+                    url => successLookup[url]
+                );
             }
         );
     },
-    ({ record, successes }) => record
+    ({ record, successLookup }) => record
 );
+
+/**
+ * Gets all the urls for distributions in this dataset record that have known protocols (http etc.).
+ */
+function getKnownProtocolUrls(record: Record) {
+    return _(urlsFromDataSet(record))
+        .filter(url => {
+            let uri;
+            try {
+                uri = URI(url);
+            } catch (e) {
+                return false;
+            }
+            return KNOWN_PROTOCOLS.indexOf(uri.scheme()) >= 0;
+        })
+        .uniq()
+        .value();
+}
 
 export type CheckResult = "success" | "error" | "notfound";
 export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
@@ -62,10 +79,10 @@ export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
 );
 
 /**
-   * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
-   * at least one distribution per dataset and with at least one valid url per
-   * distribution, for testing retries.
-   */
+ * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
+ * at least one distribution per dataset and with at least one valid url per
+ * distribution, for testing retries.
+ */
 export const httpOnlyRecordArb = jsc.suchthat(
     recordArbWithDistArbs(
         jsc.oneof([
@@ -80,26 +97,27 @@ export const httpOnlyRecordArb = jsc.suchthat(
     ),
     record =>
         record.aspects["dataset-distributions"].distributions.length > 1 &&
-        record.aspects[
-            "dataset-distributions"
-        ].distributions.every((dist: any) => {
-            const aspect = dist.aspects["dcat-distribution-strings"];
+        record.aspects["dataset-distributions"].distributions.every(
+            (dist: any) => {
+                const aspect = dist.aspects["dcat-distribution-strings"];
 
-            const definedURLs = [aspect.accessURL, aspect.downloadURL].filter(
-                x => !!x
-            );
+                const definedURLs = [
+                    aspect.accessURL,
+                    aspect.downloadURL
+                ].filter(x => !!x);
 
-            return (
-                definedURLs.length > 0 &&
-                definedURLs.every(x => x.startsWith("http"))
-            );
-        })
+                return (
+                    definedURLs.length > 0 &&
+                    definedURLs.every(x => x.startsWith("http"))
+                );
+            }
+        )
 );
 
 /**
-   * Generates a failing HTTP code at random, excepting 429 because that
-   * triggers different behaviour.
-   */
+ * Generates a failing HTTP code at random, excepting 429 because that
+ * triggers different behaviour.
+ */
 export const failureCodeArb = jsc.suchthat(
     jsc.integer(300, 600),
     int => int !== 429

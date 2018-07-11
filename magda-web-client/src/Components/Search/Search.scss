@@ -1,7 +1,16 @@
-.search{
-	margin: 20px 0;
-	.results-count{
-		text-align: right;
-    font-weight: 800;
-	}
+@import "../../variables";
+
+.search {
+    .sub-heading {
+        color: $AU-color-foreground-action;
+        margin-top: 10px;
+        @include AU-fontgrid(sm);
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+        @media (max-width: $medium) {
+            margin-bottom: 0;
+            padding: 0 8px;
+        }
+    }
 }

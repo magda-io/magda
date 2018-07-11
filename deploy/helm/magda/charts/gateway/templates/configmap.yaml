@@ -26,5 +26,11 @@ data:
     "admin": {
         "to": "http://admin-api/v0",
         "auth": true
+    },
+    "feedback": {
+        "to": "http://feedback-api/v0"
+    },
+    "correspondence": {
+        "to": "http://correspondence-api/v0/public"
     }
   }'

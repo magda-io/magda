@@ -1,46 +1,42 @@
-.pagination__group{
-  display: table;
-  width: 100%;
-  margin-bottom: 30px;
-}
+@import "../variables";
+.pagination {
+    margin: 48px 0 0 0;
 
-.pagination__group li{
-  display: table-cell;
-}
-
-.pagination__next{
-  width: 60%;
-  text-align: right;
-}
-
-.pagination__start{
-  text-align: left;
-}
-
-.pagination__secondary-info{
-  font-size: 13px;
-  color: #aaa;
-}
-
-.pagination__btn{
-  background: transparent;
-  color: #2980b9;
-  font-size: 1.2em;
-  font-weight: bold;
-  padding: 5px 0;
-  line-height: 1.6;
-}
-
-.pagination__btn .fa{
-  font-size: 1.6em;
-  vertical-align: top;
-}
-
-.pagination__next .fa{
-  padding-left: 10px;
-}
-
-.pagination__previous .fa,
-.pagination__start .fa{
-  padding-right: 10px;
+    .pagination-list {
+        list-style: none;
+        display: flex;
+        padding-left: 0;
+        justify-content: center;
+        margin-bottom: 24px;
+        button {
+            height: 30px;
+            min-width: 30px;
+            border-radius: 2px;
+            line-height: 1;
+            padding: 0px;
+            margin: 12px;
+            font-weight: 400;
+            background-color: $AU-color-background;
+            color: $AU-color-foreground-action;
+            cursor: pointer;
+            border: 2px solid $AU-color-foreground-action;
+            &:hover,
+            &:focus {
+                background: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
+            }
+            &.current {
+                background-color: $AU-colordark-background;
+                color: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
+            }
+        }
+    }
+    .pagination-summray {
+        opacity: 0.5;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+        margin-bottom: 8px;
+    }
 }

@@ -1,35 +1,36 @@
 {
-	"title": "JSON schema for JSONPatch files.  This is http://json.schemastore.org/json-patch modified to work with Swagger, which doesn't support `oneOf`.",
-	"$schema": "http://json-schema.org/draft-04/schema#",
+    "title":
+        "JSON schema for JSONPatch files.  This is http://json.schemastore.org/json-patch modified to work with Swagger, which doesn't support `oneOf`.",
+    "$schema": "http://json-schema.org/draft-04/schema#",
 
-	"type": "array",
+    "type": "array",
 
-	"items": {
-		"$ref": "#/definitions/operation"
-	},
+    "items": {
+        "$ref": "#/definitions/operation"
+    },
 
-	"definitions": {
-		"operation": {
-			"type": "object",
-			"required": [ "op", "path" ],
+    "definitions": {
+        "operation": {
+            "type": "object",
+            "required": ["op", "path"],
             "discriminator": "op",
-			"allOf": [ { "$ref": "#/definitions/path" } ],
+            "allOf": [{ "$ref": "#/definitions/path" }],
             "properties": {
                 "op": {
                     "description": "The operation to perform.",
                     "type": "string",
-                    "enum": [ "add", "replace", "test", "move", "copy", "remove" ]
+                    "enum": ["add", "replace", "test", "move", "copy", "remove"]
                 }
             }
-		},
-		"path": {
-			"properties": {
-				"path": {
-					"description": "A JSON Pointer path.",
-					"type": "string"
-				}
-			}
-		},
+        },
+        "path": {
+            "properties": {
+                "path": {
+                    "description": "A JSON Pointer path.",
+                    "type": "string"
+                }
+            }
+        },
         "add": {
             "allOf": [
                 {
@@ -37,7 +38,7 @@
                 }
             ],
             "type": "object",
-            "required": [ "value" ],
+            "required": ["value"],
             "properties": {
                 "value": {
                     "description": "The value to add."
@@ -51,7 +52,7 @@
                 }
             ],
             "type": "object",
-            "required": [ "value" ],
+            "required": ["value"],
             "properties": {
                 "value": {
                     "description": "The new value."
@@ -65,7 +66,7 @@
                 }
             ],
             "type": "object",
-            "required": [ "value" ],
+            "required": ["value"],
             "properties": {
                 "value": {
                     "description": "The value to test for."
@@ -87,10 +88,11 @@
                 }
             ],
             "type": "object",
-            "required": [ "from" ],
+            "required": ["from"],
             "properties": {
                 "from": {
-                    "description": "A JSON Pointer path pointing to the location to move from.",
+                    "description":
+                        "A JSON Pointer path pointing to the location to move from.",
                     "type": "string"
                 }
             }
@@ -102,13 +104,14 @@
                 }
             ],
             "type": "object",
-            "required": [ "from" ],
+            "required": ["from"],
             "properties": {
                 "from": {
-                    "description": "A JSON Pointer path pointing to the location to copy from.",
+                    "description":
+                        "A JSON Pointer path pointing to the location to copy from.",
                     "type": "string"
                 }
             }
         }
-	}
+    }
 }

@@ -23,6 +23,15 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
+    router.get("/healthz", (req, res) => {
+        k8sApi
+            .getJobs()
+            .then(() => {
+                res.status(200).send("OK");
+            })
+            .catch(() => res.status(500).send("Error"));
+    });
+
     router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
     router.get("/connectors", (req, res) => {
@@ -68,7 +77,10 @@ export default function buildApiRouter(options: Options) {
     });
 
     router.get("/connectors/:id", (req, res) => {
-        Promise.all([k8sApi.getConnectorConfigMap(), k8sApi.getJob(prefixId(req.params.id))])
+        Promise.all([
+            k8sApi.getConnectorConfigMap(),
+            k8sApi.getJob(prefixId(req.params.id))
+        ])
             .then(([connectorConfigMap, job]: [any, any]) => {
                 const connectorStatus = {
                     name: job.metadata.name,
@@ -184,15 +196,19 @@ export default function buildApiRouter(options: Options) {
         next();
     }
 
-    router.use("/connectors/:id/interactive", addConnectorID, buildInteractiveConnectorRouter({
-        dockerRepo: options.dockerRepo,
-        authApiUrl: options.authApiUrl,
-        imageTag: options.imageTag,
-        registryApiUrl: options.registryApiUrl,
-        pullPolicy: options.pullPolicy,
-        k8sApi,
-        userId: options.userId
-    }));
+    router.use(
+        "/connectors/:id/interactive",
+        addConnectorID,
+        buildInteractiveConnectorRouter({
+            dockerRepo: options.dockerRepo,
+            authApiUrl: options.authApiUrl,
+            imageTag: options.imageTag,
+            registryApiUrl: options.registryApiUrl,
+            pullPolicy: options.pullPolicy,
+            k8sApi,
+            userId: options.userId
+        })
+    );
 
     return router;
 }

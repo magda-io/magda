@@ -1,23 +1,23 @@
 {
   "name": "@magda/web-admin",
   "description": "The MAGDA in-browser web admin front end.",
-  "version": "0.0.32-0",
+  "version": "0.0.44-0",
   "license": "Apache-2.0",
   "scripts": {
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "build-css": "node-sass src/ -o src/",
-    "watch-css": "npm run build-css && node-sass src/ -o src/ --watch",
+    "watch-css": "yarn run build-css && node-sass src/ -o src/ --watch",
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
-    "dev": "npm run start",
-    "build": "npm run compile",
-    "compile": "npm run build-css && react-scripts build",
+    "dev": "yarn run start",
+    "build": "yarn run compile",
+    "compile": "yarn run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "watch": "react-scripts build --watch"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.32-0",
+    "@magda/scripts": "^0.0.44-0",
     "brace": "^0.10.0",
     "es6-promise": "^4.1.0",
     "es6-shim": "^0.35.3",
@@ -32,7 +32,7 @@
     "lodash.maxby": "^4.6.0",
     "lodash.min": "^4.0.1",
     "lodash.minby": "^4.6.0",
-    "node-sass": "^4.5.0",
+    "node-sass": "^4.8.3",
     "npm-run-all": "^4.0.1",
     "prop-types": "^15.5.10",
     "query-string": "^4.3.4",
@@ -64,5 +64,9 @@
   "dependencies": {
     "react-ace-editor": "0.0.2",
     "react-router-dom": "^4.2.2"
+  },
+  "magda": {
+    "language": "javascript",
+    "categories": {}
   }
 }

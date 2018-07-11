@@ -18,8 +18,6 @@ import au.csiro.data61.magda.model.misc.{ DataSet, _ }
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.test.util.ApiGenerators._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.testkit.ElasticSugar
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.elasticsearch.common.settings.Settings
 import org.scalacheck.Shrink
@@ -40,16 +38,19 @@ import org.scalacheck.Arbitrary._
 import au.csiro.data61.magda.model.Temporal.PeriodOfTime
 import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
 import java.util.HashMap
-import com.sksamuel.elastic4s.TcpClient
-import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.http.HttpClient
 import org.elasticsearch.cluster.health.ClusterHealthStatus
-import com.sksamuel.elastic4s.embedded.LocalNode
+import au.csiro.data61.magda.test.util.testkit.LocalNode
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor
 import au.csiro.data61.magda.test.util.Generators
+import scala.reflect.internal.util.Statistics.View
+import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
+
+  blockUntilNotRed()
 
   describe("facets") {
     def checkFacetsNoQuery(indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit) = {
@@ -84,7 +85,7 @@ class FacetSpec extends BaseSearchApiSpec {
           val (textQuery, objQuery) = query
           val facetSize = Math.max(rawFacetSize, 1)
 
-          Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
             status shouldBe OK
             inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
           }
@@ -113,7 +114,7 @@ class FacetSpec extends BaseSearchApiSpec {
       whenever(!queryWithoutFilter.equals(Query())) {
         val textQueryWithoutFacet = queryToText(queryWithoutFilter)
 
-        Get(s"/v0/datasets?query=${encodeForUrl(textQueryWithoutFacet)}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
+        Get(s"/v0/datasets?${textQueryWithoutFacet}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
           status shouldBe OK
           val innerResult = responseAs[SearchResult]
           val innerDataSets = innerResult.dataSets
@@ -128,19 +129,12 @@ class FacetSpec extends BaseSearchApiSpec {
       def filter(dataSet: DataSet, facetOption: FacetOption) = {
         val facetValue = reducer(dataSet)
 
-        def matches = facetValue.exists(_.equalsIgnoreCase(facetOption.value))
-
-        if (facetOption.value.equals(config.getString("strings.unspecifiedWord"))) {
-          facetValue.isEmpty || facetValue.forall(_.equals("")) || matches
-        } else {
-          matches
-        }
+        facetValue.exists(_.equalsIgnoreCase(facetOption.value))
       }
 
       def groupResult(dataSets: Seq[DataSet]): Map[String, Set[DataSet]] = {
         dataSets.foldRight(Map[String, Set[DataSet]]()) { (currentDataSet, aggregator) ⇒
-          val reducedRaw = reducer(currentDataSet)
-          val reduced = if (reducedRaw.isEmpty) Set(config.getString("strings.unspecifiedWord")) else reducedRaw
+          val reduced = reducer(currentDataSet)
 
           reduced.foldRight(aggregator) { (string, aggregator) ⇒
             aggregator + (string -> (aggregator.get(string) match {
@@ -234,7 +228,7 @@ class FacetSpec extends BaseSearchApiSpec {
             def exactGen(dataSets: List[DataSet]) = for {
               baseQuery <- specificGen(dataSets)
               uuid <- Gen.uuid
-              query = baseQuery.copy(quotes = Set(uuid.toString))
+              query = baseQuery.copy(freeText = Some(baseQuery.freeText + s""""${uuid.toString}""""))
             } yield query
 
             checkFacetsWithQuery(dataSets => textQueryGen(exactGen(dataSets)), mediumIndexGen) { (dataSets, facetSize, query, allDataSets, routes) ⇒
@@ -259,7 +253,7 @@ class FacetSpec extends BaseSearchApiSpec {
         }
       }
 
-      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.map(_.format.getOrElse(config.getString("strings.unspecifiedWord"))).groupBy(identity).mapValues(_.size))
+      def getFormats(dataSets: List[DataSet]) = dataSets.map(_.distributions.flatMap(_.format)).groupBy(identity).mapValues(_.size)
 
       describe("each dataset should be aggregated into a facet unless facet size was too small to accommodate it") {
         it("without query") {
@@ -387,7 +381,7 @@ class FacetSpec extends BaseSearchApiSpec {
                 val publisherLookup = publishers
                   .groupBy(_.name.get.toLowerCase)
 
-                Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
                   status shouldBe OK
 
                   val result = responseAs[SearchResult]
@@ -395,7 +389,7 @@ class FacetSpec extends BaseSearchApiSpec {
                   val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
                   withClue("publishers " + publisherLookup) {
-                    facet.options.filterNot(_.value == "Unspecified").foreach { x =>
+                    facet.options.foreach { x =>
                       val matchedPublishers = publisherLookup(x.value.toLowerCase)
                       matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
                     }
@@ -421,7 +415,7 @@ class FacetSpec extends BaseSearchApiSpec {
             facetSize <- Gen.posNum[Int]
             actualPublishers <- Gen.someOf(dataSets.flatMap(_.publisher))
             uuid <- Gen.uuid
-            query = Query(quotes = Set(uuid.toString), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
+            query = Query(freeText = Some(s""""${uuid.toString}""""), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
             textQuery <- textQueryGen(query)
           } yield (tuple, facetSize, textQuery, actualPublishers)
 
@@ -429,7 +423,7 @@ class FacetSpec extends BaseSearchApiSpec {
             case (tuple, facetSize, textQuery, publishers) ⇒
               val (indexName, dataSets, routes) = tuple
 
-              Get(s"/v0/datasets?query=${encodeForUrl(textQuery._1)}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+              Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
                 status shouldBe OK
 
                 val result = responseAs[SearchResult]
@@ -460,7 +454,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("format") {
-      def reducer(dataSet: DataSet) = dataSet.distributions.map(_.format.map(_.toLowerCase).getOrElse(config.getString("strings.unspecifiedWord"))).toSet
+      def reducer(dataSet: DataSet) = dataSet.distributions.flatMap(_.format.map(_.toLowerCase)).toSet
       def queryToInt(query: Query) = query.formats.size
 
       def filterQueryGen(dataSets: List[DataSet]) = Generators.smallSet(formatQueryGen(dataSets)).flatMap(formats => Query(formats = formats))
@@ -470,163 +464,50 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("year") {
-      describe("should generate non-overlapping facets") {
-        checkFacetsBoth(facetSizeGen = Gen.choose(2, 20)) { (dataSets, facetSize) ⇒
+      it("with no query") {
+        checkFacetsNoQuery() { (dataSets, facetSize) =>
+          checkDataSetResult(dataSets, responseAs[SearchResult])
+        }
+      }
+
+      it("with a query") {
+        val queryGen = for {
+          dateFrom <- dateFromGen
+          dateTo <- dateToGen
+          result <- Gen.oneOf(Query(dateFrom = Some(dateFrom)), Query(dateTo = Some(dateTo)), Query(dateFrom = Some(dateFrom), dateTo = Some(dateTo)))
+        } yield result
+
+        checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
           val result = responseAs[SearchResult]
-          val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-          val options = yearFacet.options
-
-          val allFacetPairings = for {
-            facet1 ← options
-            facet2 ← options.filterNot(_ == facet1)
-          } yield ((facet1.lowerBound.get, facet1.upperBound.get), (facet2.lowerBound.get, facet2.upperBound.get))
-
-          whenever(!allFacetPairings.isEmpty) {
-            allFacetPairings.foreach { pair ⇒
-              val optionValues = options.map(_.value)
-              val dataSetYears = dataSets.map(_.temporal.getOrElse("(no temporal)"))
-              withClue(s"for options $optionValues and dataSet years $dataSetYears") {
-                overlaps(pair) should be(false)
-              }
-            }
+          whenever(result.strategy.get == SearchStrategy.MatchAll) {
+            val filteredDataSets = filterDataSetsForDateRange(dataSets, query.dateFrom, query.dateTo)
+            checkDataSetResult(filteredDataSets, result)
           }
         }
       }
 
-      describe("should be consistent with grouping all the facet results by temporal coverage year") {
-        def getDataSetYears(dataSets: List[DataSet]) = dataSets.map(_.temporal.map(temporal ⇒ temporal.start.flatMap(_.date.map(_.getYear)) + "-" + temporal.end.flatMap(_.date.map(_.getYear))).getOrElse("(no temporal)"))
-
-        it("with no query") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            whenever(!yearFacet.options.isEmpty) {
-              yearFacet.options.foreach { option ⇒
-                val matchingDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
-
-                withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                  matchingDataSets.size shouldEqual option.hitCount
-                }
-              }
+      def checkDataSetResult(dataSets: List[DataSet], result: SearchResult) = {
+        dataSets match {
+          case Nil =>
+            result.temporal.flatMap(_.end) shouldEqual None
+            result.temporal.flatMap(_.start) shouldEqual None
+          case dataSets =>
+            val expectedMax = dataSets.map(dataSet => dataSet.temporal.flatMap(_.end).flatMap(_.date)).flatten match {
+              case Seq() => None
+              case dates => Some(dates.max)
             }
-          }
-        }
-
-        describe("with a query") {
-          it("for matched facet options") {
-            val queryGen = for {
-              dateFrom <- dateFromGen
-              dateTo <- dateToGen
-              result <- Gen.oneOf(Query(dateFrom = Some(dateFrom)), Query(dateTo = Some(dateTo)), Query(dateFrom = Some(dateFrom), dateTo = Some(dateTo)))
-            } yield result
-
-            checkFacetsWithQuery(dataSets => textQueryGen(queryGen)) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-              val outerResult = responseAs[SearchResult]
-              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
-
-              val matched = yearFacet.options.filter(_.matched)
-
-              whenever(!matched.isEmpty && outerResult.strategy.get == MatchAll) {
-                matched.foreach { option ⇒
-                  val facetDataSets = filterDataSetsForYearRange(dataSets, option.lowerBound.get, option.upperBound.get)
-
-                  withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                    facetDataSets.size shouldEqual option.hitCount
-                  }
-                }
-              }
-            }
-          }
-
-          it("for unmatched facet options") {
-            def yearQueryGen(x: List[DataSet]) = {
-              Gen.option(Gen.alphaNumChar).flatMap(char =>
-                Query(freeText = char.map(_.toString), quotes = Set[String](), publishers = Set[FilterValue[String]](), regions = Set[FilterValue[Region]](), formats = Set[FilterValue[String]]()))
+            val expectedMin = dataSets.map(dataSet => dataSet.temporal.flatMap(_.start).flatMap(_.date)).flatten match {
+              case Seq() => None
+              case dates => Some(dates.min)
             }
 
-            checkFacetsWithQuery(dataSets => textQueryGen(yearQueryGen(dataSets))) { (dataSets, facetSize, query, allDataSets, routes) ⇒
-              val outerResult = responseAs[SearchResult]
-              val yearFacet = outerResult.facets.get.find(_.id.equals(Year.id)).get
-
-              searchWithoutFacetFilter(query, Year, routes, outerResult, allDataSets) { (innerResult, innerDataSets) =>
-                val unmatched = yearFacet.options.filter(!_.matched)
-
-                whenever(!unmatched.isEmpty) {
-                  unmatched.foreach { option ⇒
-                    val facetDataSets = filterDataSetsForYearRange(innerDataSets, option.lowerBound.get, option.upperBound.get)
-
-                    withClue(s"For option ${option.value} and years ${getDataSetYears(dataSets)}") {
-                      facetDataSets.size shouldEqual option.hitCount
-                    }
-                  }
-                }
-              }
-            }
-          }
+            result.temporal.flatMap(_.end).flatMap(_.date).map(_.toEpochSecond()) shouldEqual expectedMax.map(_.toEpochSecond)
+            result.temporal.flatMap(_.start).flatMap(_.date).map(_.toEpochSecond()) shouldEqual expectedMin.map(_.toEpochSecond)
         }
       }
-
-      describe("with no query") {
-        it("should generate even facets") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            whenever(!yearFacet.options.isEmpty) {
-              yearFacet.options.foreach { option ⇒
-                val upperBound = option.upperBound.get.toInt
-                val lowerBound = option.lowerBound.get.toInt
-                val size = upperBound - lowerBound + 1
-
-                option.value should equal(
-                  if (lowerBound == upperBound) lowerBound.toString
-                  else s"$lowerBound - " + s"$upperBound")
-                YearFacetDefinition.YEAR_BIN_SIZES should contain(size)
-                if (facetSize > 1) withClue(s"[$lowerBound-$upperBound with size $size]") {
-                  lowerBound % size shouldEqual 0
-                }
-              }
-            }
-          }
-        }
-
-        it("should only have gaps where there are no results") {
-          checkFacetsNoQuery() { (dataSets, facetSize) ⇒
-            val result = responseAs[SearchResult]
-            val yearFacet = result.facets.get.find(_.id.equals(Year.id)).get
-
-            whenever(facetSize > 1 && yearFacet.options.size > 1) {
-              yearFacet.options.reverse.sliding(2).foreach {
-                case Seq(before, after) ⇒
-                  val gap = after.lowerBound.get - before.upperBound.get
-                  if (gap != 1) {
-                    val options = yearFacet.options.map(_.value)
-                    withClue(s"For facets ${options}") {
-                      filterDataSetsForYearRange(dataSets, before.upperBound.get + 1, after.lowerBound.get - 1).size should equal(0)
-                    }
-                  }
-              }
-            }
-          }
-        }
-      }
-
-      def filterDataSetsForYearRange(dataSets: List[DataSet], lowerBound: Int, upperBound: Int) = dataSets
-        .filter { dataSet ⇒
-          val start = dataSet.temporal.flatMap(_.start).flatMap(_.date)
-          val end = dataSet.temporal.flatMap(_.end).flatMap(_.date)
-
-          (start.orElse(end), end.orElse(start)) match {
-            case (Some(dataSetStart), Some(dataSetEnd)) ⇒
-              dataSetStart.getYear <= upperBound && dataSetEnd.getYear >= lowerBound
-            case _ ⇒ false
-          }
-        }
 
       def filterDataSetsForDateRange(dataSets: List[DataSet], lowerBound: Option[FilterValue[OffsetDateTime]], upperBound: Option[FilterValue[OffsetDateTime]]) = dataSets
-        .filter { dataSet ⇒
+        .filter { dataSet =>
           (lowerBound, upperBound) match {
             case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) =>
               dataSet.temporal.map(temporal => temporal.start.isEmpty && temporal.end.isEmpty).getOrElse(true)
@@ -643,14 +524,6 @@ class FacetSpec extends BaseSearchApiSpec {
               !(start.isAfter(upper) || end.isBefore(lower))
           }
         }
-
-      def overlaps(tuple: ((Int, Int), (Int, Int))) = {
-        val ((lowerBound1, upperBound1), (lowerBound2, upperBound2)) = tuple
-        (lowerBound1 <= lowerBound2 && upperBound1 > lowerBound2) || (upperBound1 >= upperBound2 && lowerBound1 < upperBound2)
-      }
-
-      def formatYears(dataSet: DataSet) = s"${dataSet.temporal.flatMap(_.start.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}-${dataSet.temporal.flatMap(_.end.flatMap(_.date.map(_.getYear))).getOrElse("n/a")}"
-
     }
   }
 }

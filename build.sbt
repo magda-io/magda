@@ -18,7 +18,7 @@ lazy val packageJson = {
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
   version := packageJson("version"),
-  scalaVersion := "2.11.8"
+  scalaVersion := "2.11.12"
 )
 
 lazy val root = (project in file("."))
@@ -50,10 +50,6 @@ EclipseKeys.withBundledScalaContainers := false
 
 Revolver.settings
 Revolver.enableDebugging(port = 8000, suspend = false)
-
-sources in EditSource <++= baseDirectory.map(d => (d / "deploy" / "kubernetes" ** "*.yml").get)
-targetDirectory in EditSource <<= baseDirectory(_ / "target" / "kubernetes")
-variables in EditSource += ("version", version.value)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 sbt.Keys.fork in Test := false

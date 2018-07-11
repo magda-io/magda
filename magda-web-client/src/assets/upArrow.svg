@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g fill="none" fill-rule="evenodd">
+        <g id="upArrow" transform="translate(12.000000, 12.000000) scale(1, -1) translate(-12.000000, -12.000000) ">
+            <rect id="Rectangle-path" x="0" y="0" width="24" height="24"></rect>
+            <polyline id="Shape" stroke="#4C2A85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="8 10 12 14 16 10"></polyline>
+        </g>
+  </g>
+</svg>

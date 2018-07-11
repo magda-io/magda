@@ -1,0 +1,208 @@
+{
+    "id": "ds-aodn-33215305-ff16-4564-bd58-b9e36de0f687",
+    "name": "33215305-ff16-4564-bd58-b9e36de0f687",
+    "aspects": {
+        "source": {
+            "id": "aodn",
+            "url":
+                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+            "name": "Australian Oceans Data Network",
+            "type": "csw-dataset"
+        },
+        "dcat-dataset-strings": {
+            "spatial":
+                "POLYGON((114.7 -31.8, 115.5 -31.8, 115.5 -31.5, 114.7 -31.5, 114.7 -31.8))",
+            "description":
+                "This dataset contains the processed Conductivity-Temperature-Depth (CTD) data collected on Maritime Image voyage NA200204, processed by SRFME staff and is archived within the CSIRO Marine and Atmospheric Research Data Centre in Floreat. This dataset is part of the SRFME research program.",
+            "accrualPeriodicity": "notPlanned",
+            "landingPage":
+                "http://www.marlin.csiro.au/geonetwork/srv/en/search?uuid=33215305-ff16-4564-bd58-b9e36de0f687",
+            "contactPoint":
+                "CSIRO Oceans and Atmosphere - Information and Data Centre, http://www.cmar.csiro.au/datacentre/, data-requests-hf@csiro.au",
+            "languages": ["eng"],
+            "temporal": {
+                "end": "2002-07-19",
+                "start": "2002-07-17"
+            },
+            "publisher": "",
+            "keywords": [],
+            "title": "SRFME Biophysical Naturaliste Voyage: CTD Data NA200204",
+            "themes": ["oceans"]
+        },
+        "temporal-coverage": {
+            "intervals": [
+                {
+                    "end": "2002-07-19",
+                    "start": "2002-07-17"
+                }
+            ]
+        },
+        "dataset-distributions": {
+            "distributions": [
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-0",
+                    "name": "mnf:CTD_HEADER_AODN_VIEW",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "title": "mnf:CTD_HEADER_AODN_VIEW",
+                            "format": "OGC:WMS-1.3.0-http-get-map",
+                            "accessURL":
+                                "http://www.cmar.csiro.au/geoserver/wms?&CQL_FILTER=SURVEY_NAME%20%3D%20%27NA%27"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-1",
+                    "name": "Data Link",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        },
+                        "dcat-distribution-strings": {
+                            "title": "Data Link",
+                            "format": "WWW:DOWNLOAD-1.0-http--csiro-oa-app",
+                            "accessURL":
+                                "http://www.cmar.csiro.au/data/trawler/dataset.cfm?survey=NA&data_type=ctd",
+                            "description": "Data available via Data Trawler"
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-2",
+                    "name": "Documentation Link",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "title": "Documentation Link",
+                            "format": "WWW:LINK-1.0-http--link",
+                            "accessURL":
+                                "http://www.cmar.csiro.au/datacentre/srfme/Attributes_SRFME.pdf",
+                            "description":
+                                "Attributes overview: Attributes_SRFME.pdf"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-3",
+                    "name": "Data Link (private)",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "title": "Data Link (private)",
+                            "format": "CSIRO-INTERNAL-LINK",
+                            "accessURL":
+                                "http://www.cmar.csiro.au/datacentre/srfme_dev/data-repository/Biophysical/CTD/index.html",
+                            "description": "SRFME Biophysical CTD datasets"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-4",
+                    "name": "Data Link (private)",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "title": "Data Link (private)",
+                            "format": "CSIRO-INTERNAL-LINK",
+                            "accessURL":
+                                "http://www.cmar.csiro.au/datacentre/srfme/index.html",
+                            "description": "SRFME data repository web site"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-33215305-ff16-4564-bd58-b9e36de0f687-5",
+                    "name": "Point of truth URL of this metadata record",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "title":
+                                "Point of truth URL of this metadata record",
+                            "format": "WWW:LINK-1.0-http--metadata-URL",
+                            "accessURL":
+                                "http://www.marlin.csiro.au/geonetwork/srv/en/search?uuid=33215305-ff16-4564-bd58-b9e36de0f687",
+                            "description":
+                                "Point of truth URL of this metadata record"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        }
+                    }
+                }
+            ]
+        },
+        "dataset-quality-rating": {
+            "source-link-status": {
+                "score": 1,
+                "weighting": 1
+            },
+            "dataset-linked-data-rating": {
+                "score": 0,
+                "weighting": 0.8
+            }
+        }
+    },
+    "sourceTag": "848ddccf-bd56-4305-b2ae-091d654da7ae"
+}

@@ -24,6 +24,12 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
 
   val routes =
     magdaRoute {
+      path("snapshot") {
+        post {
+          indexer.snapshot()
+          complete(Accepted)
+        }
+      } ~
       path("in-progress") {
         get {
           complete(OK, crawler.crawlInProgress().toString)

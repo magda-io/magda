@@ -19,7 +19,9 @@ export default function buildConnectorManifest({
     userId,
     interactive = false
 }: Options) {
-    const jobName = interactive ? `connector-interactive-${id}` : `connector-${id}`;
+    const jobName = interactive
+        ? `connector-interactive-${id}`
+        : `connector-${id}`;
 
     return {
         apiVersion: "batch/v1",
@@ -46,7 +48,15 @@ export default function buildConnectorManifest({
                                 "/etc/config/connector.json",
                                 "--registryUrl",
                                 registryApiUrl,
-                                ...interactive ? ['--interactive', '--listenPort', '80', '--timeout', '1800'] : []
+                                ...(interactive
+                                    ? [
+                                          "--interactive",
+                                          "--listenPort",
+                                          "80",
+                                          "--timeout",
+                                          "1800"
+                                      ]
+                                    : [])
                             ],
                             imagePullPolicy: pullPolicy,
                             resources: {

@@ -1,0 +1,142 @@
+{
+    "id": "ds-aodn-a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+    "name": "a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+    "aspects": {
+        "source": {
+            "id": "aodn",
+            "url":
+                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+            "name": "Australian Oceans Data Network",
+            "type": "csw-dataset"
+        },
+        "dcat-dataset-strings": {
+            "spatial":
+                "POLYGON((147.0 -43.5, 147.50 -43.5, 147.50 -43.0, 147.0 -43.0, 147.0 -43.5))",
+            "description":
+                "Mesozooplankton community composition and structure were examined throughout the D’Entrecasteaux Channel, Huon Estuary and North West Bay,  Tasmania, from November 2004 to October 2005, the data represented by this record was collected on the 13/10/2005.\r\n\r\nThe composition of the mesozooplankton community was typical of inshore, temperate marine habitats, with seasonally higher abundance in summer and autumn and lower numbers in winter and spring. Copepods were the largest contributors to total abundance across all seasons and stations, while cladocerans and appendicularians were proportionally abundant in spring and summer. The faecal pellets of these three main groups, along with those of krill and amphipods, also contributed significantly to material recovered from sediment traps. Meroplanktonic larvae of benthic animals showed short-term peaks in abundance and were often absent from the water column for long periods. Spatially, North West Bay and the Channel had a higher representation of typically marine species, including Calanus australis and Labidocera cervi, while truly estuarine species, such as the copepod Gladioferens pectinatus, were more important in the Huon Estuary.",
+            "accrualPeriodicity": "notPlanned",
+            "landingPage":
+                "http://metadata.imas.utas.edu.au:/geonetwork/srv/en/metadata.show?uuid=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+            "modified": "2015-09-03T15:25:41",
+            "issued": "2007-10-12T14:40:00",
+            "contactPoint":
+                "Institute for Marine and Antarctic Studies (IMAS), University of Tasmania (UTAS), imas.datamanager@utas.edu.au",
+            "languages": ["eng"],
+            "temporal": {
+                "end": "2005-10-13T00:00:00",
+                "start": "2005-10-13T00:00:00"
+            },
+            "publisher":
+                "NASA, http://gcmd.nasa.gov/Resources/valids/keyword_list.html",
+            "keywords": [
+                "Biosphere | Zoology | Zooplankton",
+                "Oceans | Marine Biology | Marine Microbiota",
+                "Biosphere | Aquatic Habitat | Coastal Habitat",
+                "Agriculture | Agricultural Aquatic Sciences | Aquaculture",
+                "Secondary productivity",
+                "Grazing rates",
+                "Copepods"
+            ],
+            "title":
+                "Abundance and distribution of coastal, inshore zooplankton in the Huon Estuary and D'Entrecasteaux Channel, Tasmania: Sampling trip 13/10/2005",
+            "themes": ["biota"]
+        },
+        "temporal-coverage": {
+            "intervals": [
+                {
+                    "end": "2005-10-13T00:00:00",
+                    "start": "2005-10-13T00:00:00"
+                }
+            ]
+        },
+        "dataset-publisher": {
+            "publisher": {
+                "id": "org-aodn-NASA",
+                "name": "NASA",
+                "aspects": {
+                    "source": {
+                        "id": "aodn",
+                        "url":
+                            "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw",
+                        "name": "Australian Oceans Data Network",
+                        "type": "csw-organization"
+                    },
+                    "organization-details": {
+                        "name": "NASA",
+                        "title": "NASA"
+                    }
+                }
+            }
+        },
+        "dataset-distributions": {
+            "distributions": [
+                {
+                    "id": "dist-aodn-a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f-0",
+                    "name": "Point of truth URL of this metadata record",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "dcat-distribution-strings": {
+                            "format": "WWW:LINK-1.0-http--metadata-URL",
+                            "accessURL":
+                                "http://metadata.imas.utas.edu.au:/geonetwork/srv/en/metadata.show?uuid=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+                            "description":
+                                "Point of truth URL of this metadata record"
+                        },
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        },
+                        "dataset-format": {
+                            "format": "HTML",
+                            "confidenceLevel": 33
+                        }
+                    }
+                },
+                {
+                    "id": "dist-aodn-a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f-1",
+                    "name":
+                        "DATA - Huon zooplankton October 2005 [direct download]",
+                    "aspects": {
+                        "source": {
+                            "id": "aodn",
+                            "url":
+                                "http://catalogue.aodn.org.au/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f",
+                            "name": "Australian Oceans Data Network",
+                            "type": "csw-distribution"
+                        },
+                        "csw-distribution": {},
+                        "source-link-status": {
+                            "status": "active",
+                            "httpStatusCode": 200
+                        },
+                        "dcat-distribution-strings": {
+                            "format": "WWW:DOWNLOAD-1.0-http--downloaddata",
+                            "accessURL":
+                                "http://metadata.imas.utas.edu.au:/geonetwork/srv/en/file.disclaimer?uuid=a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f&fname=Huon_Zooplankton_October_2005.xlsx&access=private",
+                            "description":
+                                "DATA - Huon zooplankton October 2005 [direct download]"
+                        }
+                    }
+                }
+            ]
+        },
+        "dataset-quality-rating": {
+            "source-link-status": {
+                "score": 1,
+                "weighting": 1
+            },
+            "dataset-linked-data-rating": {
+                "score": 0,
+                "weighting": 0.8
+            }
+        }
+    },
+    "sourceTag": "848ddccf-bd56-4305-b2ae-091d654da7ae"
+}

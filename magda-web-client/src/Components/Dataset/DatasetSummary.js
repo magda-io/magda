@@ -1,107 +1,87 @@
-//  @flow
-import React, { Component } from 'react';
-import MarkdownViewer from '../../UI/MarkdownViewer';
-import defined from '../../helpers/defined';
-import ToggleList from '../../UI/ToggleList';
-import QualityIndicator from '../../UI/QualityIndicator';
-import renderDistribution from '../../Components/Distribution';
-import './DatasetSummary.css';
-import { Link } from 'react-router-dom';
-
-type Props = {
-  onClickTag: Function,
-  onClickDataset: Function,
-  dataset: Object,
-  isExpanded: boolean
-}
+import React, { Component } from "react";
+import MarkdownViewer from "../../UI/MarkdownViewer";
+import defined from "../../helpers/defined";
+import getDateString from "../../helpers/getDateString";
+import QualityIndicator from "../../UI/QualityIndicator";
+import "./DatasetSummary.css";
+import { Link } from "react-router-dom";
+import uniq from "lodash.uniq";
+import fileIcon from "../../assets/format-passive-dark.svg";
+import Divider from "../../UI/Divider";
 
 export default class DatasetSummary extends Component {
-  state: {
-    tagsExpanded: boolean,
-    isFav: boolean
-  }
-
-  constructor(props: Props) {
-    super(props);
-    const self: any = this;
-
-    self.onClick = this.onClick.bind(this);
-    this.state ={
-      tagsExpanded: false,
-      isFav: false
+    constructor(props) {
+        super(props);
+        this.renderDownloads = this.renderDownloads.bind(this);
     }
-  }
 
-  onClick(tag: string, e: Event){
-    e.stopPropagation();
-    this.props.onClickTag(tag);
-  }
+    renderDownloads(dataset) {
+        const formats = uniq(
+            dataset.distributions
+                .filter(dis => defined(dis.format))
+                .map(dis => dis.format)
+        );
+        return (
+            <div className="dataset-summary-downloads">
+                <img src={fileIcon} alt="File icon" />{" "}
+                {formats.map((f, i) => <span key={i}>{f}</span>)}
+            </div>
+        );
+    }
 
-  renderLinks(){
-    return <div className='dataset-summary__more-info'>
-              <div className='dataset-summary__content clearfix'>
-                <h5 className='dataset-summary__sub-heading'>Contents</h5>
-                <ToggleList list={this.props.dataset.distributions}
-                            renderFunction={item=>renderDistribution(item, this.props.dataset.identifier, false)}
-                            className={''}
-                            defaultLength={3}
-                            getKey={item=>item.downloadURL}/>
-              </div>
-           </div>
-  }
-
-  render(){
-    const dataset = this.props.dataset;
-    const publisher = dataset.publisher && dataset.publisher.name;
-    const source = this.props.dataset.catalog;
-
-     if(dataset.error){
-       return <div className='error dataset-summary'><div className='dataset-summary__body'>{dataset.error}</div></div>
-     }
-    return <div className={`dataset-summary ${this.props.isExpanded ? 'is-expanded': ''}`}>
-                <div className='dataset-summary__header'>
-                  <div className='dataset-summary__header-top clearfix'>
-                    <div className='dataset-summary__title-group'>
-                      <Link className='dataset-summary__title btn'
-                            to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>
+    render() {
+        const dataset = this.props.dataset;
+        const publisher = dataset.publisher && dataset.publisher.name;
+        const publisherIdent =
+            dataset.publisher && dataset.publisher.identifier;
+        const searchText = defined(this.props.searchText)
+            ? this.props.searchText
+            : "";
+        return (
+            <div className="dataset-summary">
+                <h2 className="dataset-summary-title">
+                    <Link
+                        to={`/dataset/${encodeURIComponent(
+                            dataset.identifier
+                        )}?q=${searchText}`}
+                    >
                         {dataset.title}
-                      </Link>
+                    </Link>
+                </h2>
+                {publisher && (
+                    <Link
+                        className="dataset-summary-publisher"
+                        to={`/organisations/${publisherIdent}`}
+                    >
+                        {publisher}
+                    </Link>
+                )}
 
-                      {publisher && <span className='dataset-summary-publisher'>{publisher}</span>}
-                    </div>
-                    <span className='hidden-xs dataset-summary__toggle'>
-                        {this.props.onClickDataset && <button className='dataset-summary__toggle-info-btn' onClick={this.props.onClickDataset} type='button'><span className='sr-only'>Toggle more info</span>{this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}</button>}
-                    </span>
-                  </div>
-                  {this.props.isExpanded && <div className='dataset-summary__middle clearfix'>
-                      <div>
-                        <Link className='btn dataset-summary__btn-view-dataset'
-                                   to={`/dataset/${encodeURIComponent(dataset.identifier)}`}>View dataset</Link>
-                        {dataset.landingPage && <a className='btn dataset-summary__btn-go-to-source' href={dataset.landingPage}>Go to Source</a>}
-                      </div>
-                  </div>}
+                <div className="dataset-summary-description">
+                    <MarkdownViewer
+                        markdown={dataset.description}
+                        truncate={true}
+                    />
                 </div>
-                <div className='dataset-summary__body'>
-
-                  <div className='dataset-summary__dataset-description' onClick={this.props.onClickDataset}>
-                    <MarkdownViewer markdown={dataset.description}/>
-                  </div>
-
-                  {source && <span className='dataset-summary-source'>Source: {source}</span>}
-                  {defined(dataset.quality) && <span className='dataset-summary-quality'> <QualityIndicator quality={dataset.quality}/></span>}
-
+                <div className="dataset-summary-meta">
+                    {defined(dataset.modified) && (
+                        <span className="dataset-summary-updated">
+                            Dataset Updated {getDateString(dataset.modified)}
+                            <Divider />
+                        </span>
+                    )}
+                    {defined(dataset.quality) && (
+                        <div className="dataset-summary-quality">
+                            <QualityIndicator quality={dataset.quality} />
+                            <Divider />
+                        </div>
+                    )}
+                    {defined(
+                        dataset.distributions &&
+                            dataset.distributions.length > 0
+                    ) && this.renderDownloads(dataset)}
                 </div>
-              {this.props.onClickDataset && <div className='dataset-summary__footer'>
-                  {this.props.isExpanded && this.renderLinks()}
-                  <div className='dataset-summary__mobile-footer visible-xs clearfix'>
-                    <button className='dataset-summary__toggle-info-btn mobile'
-                                                       onClick={this.props.onClickDataset}
-                                                       type='button'>
-                        <span className='sr-only'>Toggle more info</span>
-                        {this.props.isExpanded ? <span>Close</span> : <i className='fa fa-ellipsis-h' aria-hidden='true'></i>}
-                    </button>
-                  </div>
-              </div>}
-          </div>
-  }
+            </div>
+        );
+    }
 }

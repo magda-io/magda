@@ -1,58 +1,55 @@
-.notification__error .notification__heading{
-	background: #e74c3c;
-	color: #fff;
-	padding: 10px;
-}
+@import "../variables";
 
+.notification-box {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
 
-.notification__error button{
-  background: #e74c3c;
-	color: #fff;
-}
+    .notification__inner {
+        position: fixed;
+        right: 14px;
+        bottom: 24px;
+        padding: 16px;
+        max-width: 400px;
+        min-width: 290px;
+    }
 
-.notification__error button:hover,
-.notification__error button:focus{
-  color: #fff;
-  background: #e67e22;
-}
+    h3 {
+        word-break: keep-all;
+        word-wrap: normal;
+        margin: 0 32px 0 0;
+        text-align: left;
+    }
 
+    .close-btn {
+        line-height: 0;
+        padding: 0;
+        margin: 0 0 0 8px;
+        height: 24px;
+        float: right;
+        img {
+            height: 20px;
+            width: 20px;
+        }
+    }
 
-.notification{
-  position: fixed;
-  height: 100vh;
-  width: 100vw;
-  left: 0;
-  top: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+    .au-page-alerts--info .close-btn {
+        border-color: $AU-color-info;
+    }
 
-	button{
-		padding: 5px 10px;
-	  margin: 10px;
-	}
-}
+    .au-page-alerts--error .close-btn {
+        border-color: $AU-color-error;
+    }
 
+    .au-page-alerts--warning .close-btn {
+        border-color: $AU-color-warning;
+    }
 
-.notification__inner{
-  background: #fff;
-
-}
-
-.notification__body{
-  padding: 10px;
-}
-
-
-.notification__inner{
-  height: auto;
-  width: 300px;
-  margin: 0 auto;
-  max-height: 500px;
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.notification__heading{
-  text-transform: uppercase;
+    .au-page-alerts--success .close-btn {
+        border-color: $AU-color-success;
+    }
 }

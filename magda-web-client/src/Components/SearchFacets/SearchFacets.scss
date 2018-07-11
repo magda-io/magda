@@ -1,172 +1,168 @@
-@import '../../variables';
-.search-facets{
-    .search-facet{
-      padding: 0;
-      font-size: 0.9rem;
+@import "../../variables";
+.search-facets-desktop {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 32px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    .search-facet {
+        margin-right: 8px;
+        position: relative;
+        width: 45%;
+        @media (min-width: $medium) {
+            width: auto;
+        }
     }
-    .btn-reset{
+    .sub-heading {
+        width: 100%;
+    }
+    .au-btn + .au-btn {
+        margin-left: 0;
+    }
+}
+
+.mobile-facet-background {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9;
+}
+
+.au-btn.filter-toggle-button {
+    position: relative;
+    color: $AU-color-foreground-action;
+    border: 0;
+    box-shadow: inset 0 -1px 0 0 rgba(73, 73, 73, 0.15);
+    width: 100%;
+    text-align: left;
+    font-weight: 500;
+    line-height: 17px;
+    padding: 0 15px;
+    height: 50px;
+    margin: 0;
+    background-color: $AU-color-background;
+    text-transform: uppercase;
+    img {
         position: absolute;
-        top: 0;
-        right: 0;
+        display: block;
+        right: 8px;
+        top: 13px;
+    }
+    &:hover,
+    &:focus {
+        background-color: #f7f8fa;
+        color: $AU-color-foreground-action;
     }
 }
-
-.facet-body{
-    width: 300px;
-    max-width:calc(100vw - 40px);
-    margin-top: 10px;
-    box-shadow: 0 0 5px rgba(0,0,0,.2);
+.search-facets-mobile {
+    .facet-header .au-btn {
+        text-align: left;
+        padding: 5px 8px;
+        margin: 0;
+        height: 45px;
+    }
+}
+.react-autosuggest__suggestions-container::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+}
+.facet-body {
+    margin-top: 8px;
+    box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.23), 0 3px 6px 0 rgba(0, 0, 0, 0.16);
     background: #fff;
-    border: 1px solid #f5f5f5;
-    position: absolute;
+    border-radius: 2px;
     z-index: 1;
-    &.publisher{
-      width: 450px;
+    padding: 0 16px;
+
+    @media (max-width: $medium) {
+        position: fixed;
+        left: 5px;
+        right: 5px;
+        top: 50px;
+        z-index: 10;
+    }
+
+    @media (min-width: $medium+1) {
+        width: 460px;
+        max-width: 100vw;
+        position: absolute;
+        &.facet-publisher,
+        &.facet-temporal {
+            left: 0px;
+        }
+        &.facet-format,
+        &.facet-region {
+            right: -40px;
+        }
+        &.facet-region {
+            left: 0;
+        }
     }
 }
 
-.facet-body__header{
+.facet-body-buttons {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    @media (min-width: $medium) {
+        max-height: calc(180px);
+        overflow-y: auto;
+    }
+}
+
+.facet-option__list {
+    margin: 0;
+}
+
+.btn-facet-option {
     position: relative;
-    border-bottom: 1px solid $magda-grey;
-}
-
-
-.facet-wrapper{
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.facet-wrapper .btn{
-   box-shadow: 0;
-}
-
-.facet-wrapper .btn-reset,
-.facet-wrapper .btn-toggle-expand{
-    color: rgb(102, 181, 252);
-    line-height: 2;
-    font-weight: 600;
-    background: transparent;
-}
-
-
-.btn-facet-option{
-   width: 100%;
-   overflow: hidden;
-   text-align: left;
-   margin: 0 0 1px 0;
-   color: #777;
-   border-radius: 2px;
-   position: relative;
-   line-height: 2.3;
-   background: transparent;
-   padding: 0 0 0 40px;
-}
-
-.btn-facet-option__volume-indicator{
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: #dcdfe1;
-  z-index: -1;
-}
-
-.btn-facet-option:hover,
-.btn-facet-option:focus {
-  font-weight: 600;
-}
-
-.btn-facet-option:hover{
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.btn-facet-option__action{
-  display: none;
-  padding: 2px;
-  width: 30px;
-  background: transparent;
-  text-align: center;
-  position: absolute;
-  padding: 0;
-  left: 0;
-  top: 0;
-}
-
-.btn-facet-option.is-active .btn-facet-option__action{
-  display: block;
-}
-
-.btn-facet-option.is-active:hover .btn-facet-option__action,
-.btn-facet-option.is-active:focus .btn-facet-option__action{
-}
-
-
-.btn-facet-option:hover .btn-facet-option__action,
-.btn-facet-option:focus .btn-facet-option__action{
-  display: block;
-}
-
-.btn-facet-option.is-active{
-    background: $magda-blue;
-    color: #fff;
-}
-
-.btn-facet-option .fa{
-    line-height: 1.5;
-    color: #fff;
-}
-
-.btn-facet-option__name{
-    display: block;
-    width: calc(100% - 70px);
-    float: left;
-    text-overflow: ellipsis;
+    width: 100%;
     overflow: hidden;
+    margin: 0 0 1px 0;
+    text-align: left;
+    height: auto;
+    border: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 5px;
+    padding: 0 8px;
+    cursor: pointer;
+    &.is-active,
+    &:hover {
+        background-color: $AU-color-foreground-action;
+        color: $AU-color-background;
+    }
+    &:focus {
+        outline: none;
+    }
 }
 
-.btn-facet-option__detail {
-  font-size: small;
-  color: #999;
-  padding: 0px 0px 0px 12px;
-}
-
-.btn-facet-option__location {
-  line-height: initial;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.btn-facet-option__location .btn-facet-option__name{
-  width: calc(100% - 50px);
-  float: none;
-  display: inline;
-  padding: 2px 0px 2px 12px;
-}
-
-
-.btn-facet-option__count{
+.btn-facet-option__volume-indicator {
     display: block;
-    width: 40px;
-    float: right;
-    text-align: right;
-    padding: 2px 5px;
-    font-weight: 600;
-    color: #2b2b2b;
+    position: absolute;
+    left: 8px;
+    bottom: 0px;
+    z-index: 10;
 }
 
-.btn-facet-option.is-active .btn-facet-option__count{
-  color: #fff;
+.btn-facet-option__name {
+    font-size: 14px;
+    line-height: 20px;
+    display: block;
+    padding: 8px 0;
+    font-weight: 400;
 }
 
-.btn-facet-option__recomended-badge{
-  color: red;
-  font-size: 10px;
-  vertical-align: baseline;
-  display: inline-block;
-  padding-left: 3px;
-}
-
-.no-data{
-  padding: 10px;
+.facet-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 15px 0;
+    button {
+        padding: 0 16px;
+    }
 }

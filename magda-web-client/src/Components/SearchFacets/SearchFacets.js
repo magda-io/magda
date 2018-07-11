@@ -1,55 +1,136 @@
-import React, { Component } from 'react';
-import {config} from '../../config' ;
-import './SearchFacets.css';
+import React, { Component } from "react";
+import { config } from "../../config";
+import { Small, Medium } from "../../UI/Responsive";
+import downArrowDark from "../../assets/downArrowDark.svg";
+import ClearAllButtom from "./ClearAllButton";
+
+import "./SearchFacets.css";
 
 class SearchFacets extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {openFacet : null};
-    this.toggleFacet = this.toggleFacet.bind(this);
-    this.closeFacet = this.closeFacet.bind(this);
-  }
+    constructor(props) {
+        super(props);
+        this.state = { openFacet: null, showFilterOnMobile: false };
+        this.toggleFacet = this.toggleFacet.bind(this);
+        this.closeFacetWithKeyBoard = this.closeFacetWithKeyBoard.bind(this);
+        this.onToggleFacetOnMobile = this.onToggleFacetOnMobile.bind(this);
+        this.renderMobile = this.renderMobile.bind(this);
+        this.renderDesktop = this.renderDesktop.bind(this);
+    }
 
-  componentWillMount(){
-    const that = this;
-    window.addEventListener('click', that.closeFacet)
-  }
+    componentDidMount() {
+        window.addEventListener("click", this.closeFacetWithKeyBoard);
+    }
 
-  closeFacet(){
-    this.setState({
-      openFacet: null
-    })
-  }
+    closeFacetWithKeyBoard(event) {
+        if (event.keyCode) {
+            if (event.keyCode === 27) {
+                this.setState({
+                    openFacet: null
+                });
+            } else {
+                return false;
+            }
+        } else {
+            this.setState({
+                openFacet: null
+            });
+        }
+    }
 
-  componentWillUnmount(){
-    const that = this;
-    window.removeEventListener('click', that.closeFacet)
-  }
+    componentWillUnmount() {
+        const that = this;
+        window.removeEventListener("click", that.closeFacetWithKeyBoard);
+    }
 
+    toggleFacet(facet) {
+        this.setState({
+            openFacet: this.state.openFacet === facet ? null : facet
+        });
+    }
 
-  toggleFacet(facet){
-    this.setState({
-      openFacet: this.state.openFacet === facet ? null : facet
-    })
-  }
+    closeFacet(facet) {
+        if (this.state.openFacet === facet) {
+            this.setState({
+                openFacet: null
+            });
+        }
+        return false;
+    }
 
-  render() {
-    return (
-      <div className='clearfix search-facets'>
-        {config.facets.map(c=>
-          <div className='col-sm-3 search-facet' key={c.id} onClick={(ev)=>ev.stopPropagation()}>
-            <c.component
-                       updateQuery={this.props.updateQuery}
-                       location={this.props.location}
-                       component={'facet'}
-                       title={c.id}
-                       isOpen={this.state.openFacet === c.id}
-                       toggleFacet={this.toggleFacet.bind(this, c.id)}/>
-          </div>
-        )}
-      </div>
-    );
-  }
+    onToggleFacetOnMobile() {
+        this.setState({
+            showFilterOnMobile: !this.state.showFilterOnMobile
+        });
+    }
+
+    renderDesktop() {
+        return (
+            <div className="search-facets-desktop">
+                {config.facets.map(c => (
+                    <div
+                        className="search-facet"
+                        key={c.id}
+                        onClick={ev => ev.stopPropagation()}
+                    >
+                        <c.component
+                            updateQuery={this.props.updateQuery}
+                            location={this.props.location}
+                            title={c.id}
+                            isOpen={this.state.openFacet === c.id}
+                            toggleFacet={this.toggleFacet.bind(this, c.id)}
+                            closeFacet={this.closeFacet.bind(this, c.id)}
+                        />
+                    </div>
+                ))}
+                <ClearAllButtom key={"clear-all-button"} />
+            </div>
+        );
+    }
+
+    renderMobile() {
+        return (
+            <div className="search-facets-mobile">
+                <button
+                    className="filter-toggle-button au-btn"
+                    onClick={this.onToggleFacetOnMobile}
+                >
+                    Filters <img src={downArrowDark} alt="open filter" />
+                </button>
+                {this.state.showFilterOnMobile &&
+                    config.facets.map(c => (
+                        <div
+                            className="search-facet"
+                            key={c.id}
+                            onClick={ev => ev.stopPropagation()}
+                        >
+                            <c.component
+                                updateQuery={this.props.updateQuery}
+                                location={this.props.location}
+                                title={c.id}
+                                isOpen={this.state.openFacet === c.id}
+                                toggleFacet={this.toggleFacet.bind(this, c.id)}
+                                closeFacet={this.closeFacet.bind(this, c.id)}
+                            />
+                        </div>
+                    ))}
+                {this.state.showFilterOnMobile && (
+                    <ClearAllButtom key={"clear-all-button"} />
+                )}
+                {this.state.openFacet && (
+                    <div className="mobile-facet-background" />
+                )}
+            </div>
+        );
+    }
+
+    render() {
+        return (
+            <div>
+                <Medium>{this.renderDesktop()}</Medium>
+                <Small>{this.renderMobile()}</Small>
+            </div>
+        );
+    }
 }
 
 export default SearchFacets;

@@ -11,95 +11,123 @@ import "draft-js-mention-plugin/lib/plugin.css";
 import "./CrappyChat.css";
 
 class CrappyChat extends React.Component {
-  constructor(props) {
-    super(props);
+    constructor(props) {
+        super(props);
 
-    this.state = {
-      messages: []
-    };
-  }
-
-  componentWillMount() {
-    this.setup(this.props);
-  }
-
-  componentWillReceiveProps(newProps) {
-    this.setup(newProps);
-  }
-
-  setup(props) {
-    const discussion = props.discussionsLookup[props.typeName + '|' + props.typeId];
-
-    if (!discussion) {
-      props.fetchMessages(props.typeName, props.typeId);
+        this.state = {
+            messages: []
+        };
     }
 
-    this.setState({
-      messages: (discussion && discussion.messages) || []
-    });
-  }
-
-  _newChat(message) {
-    this.props.sendNewMessage(this.props.typeName, this.props.typeId, message, this.props.user);
-  }
-
-  registerMessagesDiv(messagesRef) {
-    this.messagesDiv = ReactDOM.findDOMNode(messagesRef);
-
-    this.scrollToBottom();
-  }
-
-  scrollToBottom() {
-    if (this.messagesDiv) {
-      this.messagesDiv.scrollTop = this.messagesDiv.scrollHeight;
+    UNSAFE_componentWillMount() {
+        this.setup(this.props);
     }
-  }
 
-  render() {
-    return (
-      <div className='white-box'>
-        <div
-          ref={this.registerMessagesDiv.bind(this)}
-          className='crappy-chat__messages'>
-          {this.state.messages.length === 0 &&
-            <span>Be the first to comment!</span>
-          }
+    UNSAFE_componentWillReceiveProps(newProps) {
+        this.setup(newProps);
+    }
 
-          {this.state.messages.map((message, index) => {
-            return <Message key={message.id || index} message={message} />;
-          })}
-        </div>
-        <div className="crappy-chat__footer">
-          {this.props.user && <EntryBox onSubmit={this._newChat.bind(this)} />}
+    setup(props) {
+        const discussion =
+            props.discussionsLookup[props.typeName + "|" + props.typeId];
 
-          {!this.props.user &&
-            <div className='sign-in-prompt'><Link to={{pathname: '/account', state: { from: this.props.location }}} >Sign in</Link> to join the discussion!</div>}
-        </div>
-      </div>
-    );
-  }
+        if (!discussion) {
+            props.fetchMessages(props.typeName, props.typeId);
+        }
+
+        this.setState({
+            messages: (discussion && discussion.messages) || []
+        });
+    }
+
+    _newChat(message) {
+        this.props.sendNewMessage(
+            this.props.typeName,
+            this.props.typeId,
+            message,
+            this.props.user
+        );
+    }
+
+    registerMessagesDiv(messagesRef) {
+        this.messagesDiv = ReactDOM.findDOMNode(messagesRef);
+
+        this.scrollToBottom();
+    }
+
+    scrollToBottom() {
+        if (this.messagesDiv) {
+            this.messagesDiv.scrollTop = this.messagesDiv.scrollHeight;
+        }
+    }
+
+    render() {
+        return (
+            <div className="white-box">
+                <div
+                    ref={this.registerMessagesDiv.bind(this)}
+                    className="crappy-chat__messages"
+                >
+                    {this.state.messages.length === 0 && (
+                        <span>Be the first to comment!</span>
+                    )}
+
+                    {this.state.messages.map((message, index) => {
+                        return (
+                            <Message
+                                key={message.id || index}
+                                message={message}
+                            />
+                        );
+                    })}
+                </div>
+                <div className="crappy-chat__footer">
+                    {this.props.user && (
+                        <EntryBox onSubmit={this._newChat.bind(this)} />
+                    )}
+
+                    {!this.props.user && (
+                        <div className="sign-in-prompt">
+                            <Link
+                                to={{
+                                    pathname: "/account",
+                                    state: { from: this.props.location }
+                                }}
+                            >
+                                Sign in
+                            </Link>{" "}
+                            to join the discussion!
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 }
 
 function mapStateToProps(state) {
-  let {
-    discussions: { discussions: discussionsLookup = {} },
-    userManagement: { user }
-  } = state;
+    let {
+        discussions: { discussions: discussionsLookup = {} },
+        userManagement: { user }
+    } = state;
 
-  return {
-    discussionsLookup,
-    user
-  };
+    return {
+        discussionsLookup,
+        user
+    };
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<*>) => {
-  return bindActionCreators(
-    {
-      fetchMessages,
-      sendNewMessage
-    },
-    dispatch
-  );
+const mapDispatchToProps = dispatch => {
+    return bindActionCreators(
+        {
+            fetchMessages,
+            sendNewMessage
+        },
+        dispatch
+    );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CrappyChat);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CrappyChat);

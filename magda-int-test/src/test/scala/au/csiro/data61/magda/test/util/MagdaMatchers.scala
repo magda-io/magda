@@ -4,9 +4,16 @@ import au.csiro.data61.magda.model.misc.DataSet
 import org.tartarus.snowball.ext.PorterStemmer
 import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
+import org.apache.lucene.analysis.en._
 
 object MagdaMatchers extends org.scalatest.Matchers {
-  def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(indexed = None) should equal(ds2.copy(indexed = None))
+  def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(
+    indexed = None,
+    publisher = ds1.publisher.map(_.copy(acronym = None))
+  ) should equal(ds2.copy(
+    indexed = None,
+    publisher = ds2.publisher.map(_.copy(acronym = None))
+  ))
   def dataSetsEqual(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = dsSeq1.zip(dsSeq2).foreach { case (ds1, ds2) => dataSetEqual(ds1, ds2) }
   def dataSetsEqualIgnoreOrder(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = for {
     dataSet <- dsSeq1
@@ -18,6 +25,19 @@ object MagdaMatchers extends org.scalatest.Matchers {
     stemmer.setCurrent(string)
 
     if (stemmer.stem) stemmer.getCurrent else string
+  }
+
+  def lightEnglishStem(string: String): String = {
+    val stemmer = new LightEnglishStemmer
+    return stemmer.stem(string)
+  }
+
+  def stemString(term: String, useLightEnglishStemmer:Boolean = false) = {
+    if(useLightEnglishStemmer) {
+      MagdaMatchers.lightEnglishStem(term)
+    }else{
+      MagdaMatchers.porterStem(term)
+    }
   }
 
   def toEnglishToken(string: String) = porterStem(string.toLowerCase)

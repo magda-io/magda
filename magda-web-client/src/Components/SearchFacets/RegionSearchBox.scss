@@ -1,0 +1,15 @@
+.region-search-box {
+    margin-top: 10px;
+}
+
+.region-search-box__options {
+    border-radius: 1px;
+    min-height: 320px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    margin-top: 10px;
+    button {
+        line-height: 1;
+    }
+}

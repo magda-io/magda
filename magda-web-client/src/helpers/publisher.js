@@ -1,20 +1,23 @@
 // @flow
-import type {Publisher} from '../record';
-import {defaultPublisher} from '../helpers/record';
+import type { Publisher } from "../helpers/record";
+import { defaultPublisher } from "../helpers/record";
 
-export function parsePublisher(publisherRaw?: Publisher) : Publisher{
+export function parsePublisher(publisherRaw?: Publisher): Publisher {
     let error = null;
-    if(publisherRaw && !publisherRaw.id){
-      error = publisherRaw.message || 'an error occurred';
+    if (publisherRaw && !publisherRaw.id) {
+        error = publisherRaw.message || "an error occurred";
     }
-    if(!publisherRaw){
-      return defaultPublisher;
+    if (!publisherRaw) {
+        return defaultPublisher;
     }
     const publisher = {
         name: publisherRaw.name,
         id: publisherRaw.id,
-        'aspects': publisherRaw.aspects['organization-details'] ? publisherRaw.aspects : defaultPublisher.aspects,
+        aspects:
+            publisherRaw.aspects && publisherRaw.aspects["organization-details"]
+                ? publisherRaw.aspects
+                : defaultPublisher.aspects,
         error: error
-    }
-    return publisher
+    };
+    return publisher;
 }

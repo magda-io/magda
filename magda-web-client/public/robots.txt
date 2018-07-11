@@ -1,0 +1,6 @@
+User-agent: *
+Crawl-delay: 100
+Disallow: /api
+Disallow: /auth
+Disallow: /search
+Sitemap: /sitemap

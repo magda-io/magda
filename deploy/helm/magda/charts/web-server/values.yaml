@@ -19,3 +19,4 @@ resources: {}
   #  cpu: 100m
   #  memory: 128Mi
 disableAuthenticationFeatures: false
+service: {}

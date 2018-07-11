@@ -1,15 +1,15 @@
 import { Strategy as FBStrategy } from "passport-facebook";
 import * as express from "express";
 import { Router } from "express";
-import { Passport, Profile } from "passport";
+import { Authenticator, Profile } from "passport";
 
-import ApiClient from '@magda/typescript-common/dist/authorization-api/ApiClient';
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
 export interface FacebookOptions {
     authorizationApi: ApiClient;
-    passport: Passport;
+    passport: Authenticator;
     clientId: string;
     clientSecret: string;
     externalAuthHome: string;
@@ -35,7 +35,7 @@ export default function facebook(options: FacebookOptions) {
                 profileFields: ["displayName", "picture", "email"],
                 callbackURL: undefined
             },
-            function (
+            function(
                 accessToken: string,
                 refreshToken: string,
                 profile: Profile,
@@ -65,7 +65,7 @@ export default function facebook(options: FacebookOptions) {
 
     router.get(
         "/return",
-        function (
+        function(
             req: express.Request,
             res: express.Response,
             next: express.NextFunction
@@ -78,7 +78,11 @@ export default function facebook(options: FacebookOptions) {
             };
             passport.authenticate("facebook", options)(req, res, next);
         },
-        (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        (
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ) => {
             redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
         },
         (
@@ -88,7 +92,12 @@ export default function facebook(options: FacebookOptions) {
             next: express.NextFunction
         ): any => {
             console.error(err);
-            redirectOnError(err, req.query.redirect || externalAuthHome, req, res);
+            redirectOnError(
+                err,
+                req.query.redirect || externalAuthHome,
+                req,
+                res
+            );
         }
     );
 

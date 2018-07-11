@@ -1,0 +1,19 @@
+.news {
+    display: block;
+    margin: 24px 0;
+
+    .pub-date {
+        opacity: 0.5;
+        font-size: 14px;
+        line-height: 16px;
+    }
+    h3 {
+        font-size: 20px;
+        line-height: 29px;
+        margin: 8px 0;
+    }
+    .news-body {
+        font-size: 14px;
+        line-height: 20px;
+    }
+}

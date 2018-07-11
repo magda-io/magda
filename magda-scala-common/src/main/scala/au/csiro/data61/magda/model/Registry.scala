@@ -44,13 +44,29 @@ object Registry {
     userId: Int,
     data: JsObject)
 
+  sealed trait RecordType {
+    val id: String
+    val name: String
+  }
+
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
   case class Record(
     @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject])
+    @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
+
+    @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
+      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+
+  @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
+  case class RecordSummary(
+    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+
+    @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
+
+    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String]) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -98,9 +114,11 @@ object Registry {
 
     val values = findValues
   }
+  case class RegistryCountResponse(
+    count: Long)
 
   case class RegistryRecordsResponse(
-    totalCount: Long,
+    hasMore: Boolean,
     nextPageToken: Option[String],
     records: List[Record])
 
@@ -110,7 +128,9 @@ object Registry {
   case class WebHookAcknowledgement(
     @(ApiModelProperty @field)(value = "True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.", required = true) succeeded: Boolean,
 
-    @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None)
+    @(ApiModelProperty @field)(value = "The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.", required = true) lastEventIdReceived: Option[Long] = None,
+
+    @(ApiModelProperty @field)(value = "Should the webhook be active or inactive?", required = false) active: Option[Boolean] = None)
 
   @ApiModel(description = "The response to an asynchronous web hook acknowledgement.")
   case class WebHookAcknowledgementResponse(
@@ -122,7 +142,7 @@ object Registry {
       def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
-    implicit val recordFormat = jsonFormat3(Record.apply)
+    implicit val recordFormat = jsonFormat4(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
@@ -130,17 +150,43 @@ object Registry {
     implicit val webHookFormat = jsonFormat9(WebHook.apply)
     implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
-    implicit val webHookAcknowledgementFormat = jsonFormat2(WebHookAcknowledgement.apply)
+    implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
+    implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
+    implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
+
+    implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
+      def write(obj: RecordType) = obj match {
+        case x: Record        ⇒ x.toJson
+        case y: RecordSummary ⇒ y.toJson
+        case unknown @ _      => serializationError(s"Marshalling issue with ${unknown}")
+      }
+
+      def read(value: JsValue): RecordType = {
+        value.asJsObject.getFields("aspects") match {
+          case Seq(aspectMap: JsObject) => value.convertTo[Record]
+          case Seq(aspectList: JsArray) => value.convertTo[RecordSummary]
+          case unknown @ _              => deserializationError(s"Unmarshalling issue with ${unknown} ")
+        }
+      }
+    }
   }
 
   trait RegistryConverters extends RegistryProtocols {
+
+    def getAcronymFromPublisherName(publisherName: Option[String]): Option[String] = {
+      publisherName
+        .map("""[^a-zA-Z\s]""".r.replaceAllIn(_, ""))
+        .map("""\s""".r.split(_).map(_.trim.toUpperCase).filter(!List("", "AND", "THE", "OF").contains(_)).map(_.take(1)).mkString)
+    }
 
     private def convertPublisher(publisher: Record): Agent = {
       val organizationDetails = publisher.aspects.getOrElse("organization-details", JsObject())
       Agent(
         identifier = Some(publisher.id),
         name = organizationDetails.extract[String]('title.?),
+        description = organizationDetails.extract[String]('description.?),
+        acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?))
     }
 
@@ -164,8 +210,8 @@ object Registry {
           if (totalWeighting > 0) {
             ratings.map(rating =>
               (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
-          } else 1d
-        case _ => 1d
+          } else 0d
+        case _ => 0d
       }
 
       val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
@@ -200,11 +246,13 @@ object Registry {
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
       val distributionRecord = distribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
+      val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())
 
       val mediaTypeString = dcatStrings.extract[String]('mediaType.?)
       val formatString = dcatStrings.extract[String]('format.?)
       val urlString = dcatStrings.extract[String]('downloadURL.?)
       val descriptionString = dcatStrings.extract[String]('description.?)
+      val betterFormatString = datasetFormatAspect.extract[String]('format.?)
 
       Distribution(
         identifier = Some(distributionRecord.id),
@@ -218,11 +266,24 @@ object Registry {
         downloadURL = urlString,
         byteSize = dcatStrings.extract[Int]('byteSize.?).flatMap(bs => Try(bs.toInt).toOption),
         mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
-        format = formatString)
+        format = betterFormatString match {
+          case Some(format) => Some(format)
+          case None         => formatString
+        })
     }
 
     private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
-      dateString.flatMap(s => DateParser.parseDateDefault(s, false))
+      val YEAR_100 = OffsetDateTime.of(100, 1, 1, 0, 0, 0, 0, defaultOffset)
+      val YEAR_1000 = OffsetDateTime.of(1000, 1, 1, 0, 0, 0, 0, defaultOffset)
+
+      dateString
+        .flatMap(s => DateParser.parseDateDefault(s, false))
+        .map {
+          //FIXME: Remove this hackiness when we get a proper temporal sleuther
+          case date if date.isBefore(YEAR_100)  => date.withYear(date.getYear + 2000)
+          case date if date.isBefore(YEAR_1000) => date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
+          case date                             => date
+        }
     }
   }
 
@@ -235,6 +296,7 @@ object Registry {
     val optionalAspects = List(
       "temporal-coverage",
       "dataset-publisher",
-      "dataset-quality-rating")
+      "dataset-quality-rating",
+      "dataset-format")
   }
 }

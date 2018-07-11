@@ -1,31 +1,32 @@
-'use strict';
+"use strict";
 
 /*global require*/
-var ArcGisFeatureServerCatalogItem = require('terriajs/lib/Models/ArcGisFeatureServerCatalogItem');
-var ArcGisMapServerCatalogItem = require('terriajs/lib/Models/ArcGisMapServerCatalogItem');
-var CatalogItem = require('terriajs/lib/Models/CatalogItem');
-var clone = require('terriajs-cesium/Source/Core/clone');
-var createRegexDeserializer = require('terriajs/lib/Models/createRegexDeserializer');
-var createRegexSerializer = require('terriajs/lib/Models/createRegexSerializer');
-var CsvCatalogItem = require('terriajs/lib/Models/CsvCatalogItem');
-var CzmlCatalogItem = require('terriajs/lib/Models/CzmlCatalogItem');
-var defined = require('terriajs-cesium/Source/Core/defined');
-var defineProperties = require('terriajs-cesium/Source/Core/defineProperties');
-var freezeObject = require('terriajs-cesium/Source/Core/freezeObject');
-var GeoJsonCatalogItem = require('terriajs/lib/Models/GeoJsonCatalogItem');
-var inherit = require('terriajs/lib/Core/inherit');
-var KmlCatalogItem = require('terriajs/lib/Models/KmlCatalogItem');
-var loadJson = require('terriajs-cesium/Source/Core/loadJson');
-var Metadata = require('terriajs/lib/Models/Metadata');
-var TerriaError = require('terriajs/lib/Core/TerriaError');
-var proxyCatalogItemUrl = require('terriajs/lib/Models/proxyCatalogItemUrl');
+var ArcGisFeatureServerCatalogItem = require("terriajs/lib/Models/ArcGisFeatureServerCatalogItem");
+var ArcGisMapServerCatalogItem = require("terriajs/lib/Models/ArcGisMapServerCatalogItem");
+var CatalogItem = require("terriajs/lib/Models/CatalogItem");
+var clone = require("terriajs-cesium/Source/Core/clone");
+var createRegexDeserializer = require("terriajs/lib/Models/createRegexDeserializer");
+var createRegexSerializer = require("terriajs/lib/Models/createRegexSerializer");
+var CsvCatalogItem = require("terriajs/lib/Models/CsvCatalogItem");
+var CzmlCatalogItem = require("terriajs/lib/Models/CzmlCatalogItem");
+var defined = require("terriajs-cesium/Source/Core/defined");
+var defineProperties = require("terriajs-cesium/Source/Core/defineProperties");
+var freezeObject = require("terriajs-cesium/Source/Core/freezeObject");
+var GeoJsonCatalogItem = require("terriajs/lib/Models/GeoJsonCatalogItem");
+var inherit = require("terriajs/lib/Core/inherit");
+var KmlCatalogItem = require("terriajs/lib/Models/KmlCatalogItem");
+var loadJson = require("terriajs-cesium/Source/Core/loadJson");
+var Metadata = require("terriajs/lib/Models/Metadata");
+var TerriaError = require("terriajs/lib/Core/TerriaError");
+var proxyCatalogItemUrl = require("terriajs/lib/Models/proxyCatalogItemUrl");
 // var Rectangle = require('terriajs-cesium/Source/Core/Rectangle');
-var URI = require('urijs');
-var WebMapServiceCatalogGroup = require('terriajs/lib/Models/WebMapServiceCatalogGroup');
-var WebMapServiceCatalogItem = require('terriajs/lib/Models/WebMapServiceCatalogItem');
-var WebFeatureServiceCatalogGroup = require('terriajs/lib/Models/WebFeatureServiceCatalogGroup');
-var WebFeatureServiceCatalogItem = require('terriajs/lib/Models/WebFeatureServiceCatalogItem');
-var when = require('terriajs-cesium/Source/ThirdParty/when');
+var URI = require("urijs");
+var WebMapServiceCatalogGroup = require("terriajs/lib/Models/WebMapServiceCatalogGroup");
+var WebMapServiceCatalogItem = require("terriajs/lib/Models/WebMapServiceCatalogItem");
+var WebFeatureServiceCatalogGroup = require("terriajs/lib/Models/WebFeatureServiceCatalogGroup");
+var WebFeatureServiceCatalogItem = require("terriajs/lib/Models/WebFeatureServiceCatalogItem");
+var when = require("terriajs-cesium/Source/ThirdParty/when");
+var knockout = require("terriajs-cesium/Source/ThirdParty/knockout");
 
 /**
  * A {@link CatalogItem} that queries a MAGDA server for a dataset or distribution, and then accesses
@@ -187,20 +188,20 @@ defineProperties(MagdaCatalogItem.prototype, {
      * @memberOf MagdaCatalogItem.prototype
      * @type {String}
      */
-    type : {
-        get : function() {
-            return 'magda-distribution';
+    type: {
+        get: function() {
+            return "magda-distribution";
         }
     },
 
     /**
      * Gets a human-readable name for this type of data source, 'MAGDA Distribution'.
-        * @memberOf MagdaCatalogItem.prototype
+     * @memberOf MagdaCatalogItem.prototype
      * @type {String}
      */
-    typeName : {
-        get : function() {
-            return 'MAGDA Distribution';
+    typeName: {
+        get: function() {
+            return "MAGDA Distribution";
         }
     },
 
@@ -209,12 +210,14 @@ defineProperties(MagdaCatalogItem.prototype, {
      * @memberOf MagdaCatalogItem.prototype
      * @type {Metadata}
      */
-    metadata : {
-        get : function() {
+    metadata: {
+        get: function() {
             var result = new Metadata();
             result.isLoading = false;
-            result.dataSourceErrorMessage = 'This data source does not have any details available.';
-            result.serviceErrorMessage = 'This service does not have any details available.';
+            result.dataSourceErrorMessage =
+                "This data source does not have any details available.";
+            result.serviceErrorMessage =
+                "This service does not have any details available.";
             return result;
         }
     },
@@ -227,8 +230,8 @@ defineProperties(MagdaCatalogItem.prototype, {
      * @memberOf MagdaCatalogItem.prototype
      * @type {Object}
      */
-    updaters : {
-        get : function() {
+    updaters: {
+        get: function() {
             return MagdaCatalogItem.defaultUpdaters;
         }
     },
@@ -241,8 +244,8 @@ defineProperties(MagdaCatalogItem.prototype, {
      * @memberOf MagdaCatalogItem.prototype
      * @type {Object}
      */
-    serializers : {
-        get : function() {
+    serializers: {
+        get: function() {
             return MagdaCatalogItem.defaultSerializers;
         }
     }
@@ -255,14 +258,30 @@ defineProperties(MagdaCatalogItem.prototype, {
  */
 MagdaCatalogItem.defaultUpdaters = clone(CatalogItem.defaultUpdaters);
 
-MagdaCatalogItem.defaultUpdaters.wmsDistributionFormat = createRegexDeserializer('wmsDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.wfsDistributionFormat = createRegexDeserializer('wfsDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.kmlDistributionFormat = createRegexDeserializer('kmlDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.csvDistributionFormat = createRegexDeserializer('csvDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.esriMapServerDistributionFormat = createRegexDeserializer('esriMapServerDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.esriFeatureServerDistributionFormat = createRegexDeserializer('esriFeatureServerDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.geoJsonDistributionFormat = createRegexDeserializer('geoJsonDistributionFormat');
-MagdaCatalogItem.defaultUpdaters.czmlDistributionFormat = createRegexDeserializer('czmlDistributionFormat');
+MagdaCatalogItem.defaultUpdaters.wmsDistributionFormat = createRegexDeserializer(
+    "wmsDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.wfsDistributionFormat = createRegexDeserializer(
+    "wfsDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.kmlDistributionFormat = createRegexDeserializer(
+    "kmlDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.csvDistributionFormat = createRegexDeserializer(
+    "csvDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.esriMapServerDistributionFormat = createRegexDeserializer(
+    "esriMapServerDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.esriFeatureServerDistributionFormat = createRegexDeserializer(
+    "esriFeatureServerDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.geoJsonDistributionFormat = createRegexDeserializer(
+    "geoJsonDistributionFormat"
+);
+MagdaCatalogItem.defaultUpdaters.czmlDistributionFormat = createRegexDeserializer(
+    "czmlDistributionFormat"
+);
 
 freezeObject(MagdaCatalogItem.defaultUpdaters);
 
@@ -273,14 +292,30 @@ freezeObject(MagdaCatalogItem.defaultUpdaters);
  */
 MagdaCatalogItem.defaultSerializers = clone(CatalogItem.defaultSerializers);
 
-MagdaCatalogItem.defaultSerializers.wmsDistributionFormat = createRegexSerializer('wmsDistributionFormat');
-MagdaCatalogItem.defaultSerializers.wfsDistributionFormat = createRegexSerializer('wfsDistributionFormat');
-MagdaCatalogItem.defaultSerializers.kmlDistributionFormat = createRegexSerializer('kmlDistributionFormat');
-MagdaCatalogItem.defaultSerializers.csvDistributionFormat = createRegexSerializer('csvDistributionFormat');
-MagdaCatalogItem.defaultSerializers.esriMapServerDistributionFormat = createRegexSerializer('esriMapServerDistributionFormat');
-MagdaCatalogItem.defaultSerializers.esriFeatureServerDistributionFormat = createRegexSerializer('esriFeatureServerDistributionFormat');
-MagdaCatalogItem.defaultSerializers.geoJsonDistributionFormat = createRegexSerializer('geoJsonDistributionFormat');
-MagdaCatalogItem.defaultSerializers.czmlDistributionFormat = createRegexSerializer('czmlDistributionFormat');
+MagdaCatalogItem.defaultSerializers.wmsDistributionFormat = createRegexSerializer(
+    "wmsDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.wfsDistributionFormat = createRegexSerializer(
+    "wfsDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.kmlDistributionFormat = createRegexSerializer(
+    "kmlDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.csvDistributionFormat = createRegexSerializer(
+    "csvDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.esriMapServerDistributionFormat = createRegexSerializer(
+    "esriMapServerDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.esriFeatureServerDistributionFormat = createRegexSerializer(
+    "esriFeatureServerDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.geoJsonDistributionFormat = createRegexSerializer(
+    "geoJsonDistributionFormat"
+);
+MagdaCatalogItem.defaultSerializers.czmlDistributionFormat = createRegexSerializer(
+    "czmlDistributionFormat"
+);
 
 freezeObject(MagdaCatalogItem.defaultSerializers);
 
@@ -327,8 +362,16 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
         // Format Regex, Catalog Item, (optional) URL regex
         [options.wmsDistributionFormat, WebMapServiceCatalogItem],
         [options.wfsDistributionFormat, WebFeatureServiceCatalogItem],
-        [options.esriMapServerDistributionFormat, ArcGisMapServerCatalogItem, /MapServer/],
-        [options.esriFeatureServerDistributionFormat, ArcGisFeatureServerCatalogItem, /FeatureServer/],
+        [
+            options.esriMapServerDistributionFormat,
+            ArcGisMapServerCatalogItem,
+            /MapServer/
+        ],
+        [
+            options.esriFeatureServerDistributionFormat,
+            ArcGisFeatureServerCatalogItem,
+            /FeatureServer/
+        ],
         [options.kmlDistributionFormat, KmlCatalogItem],
         [options.geoJsonDistributionFormat, GeoJsonCatalogItem],
         [options.czmlDistributionFormat, CzmlCatalogItem],
@@ -337,18 +380,25 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
         return defined(format[0]);
     });
 
-    var dcatJson = distribution.aspects['dcat-distribution-strings'];
+    var dcatJson = distribution.aspects["dcat-distribution-strings"];
+    var datasetFormat = distribution.aspects["dataset-format"];
+    let formatString = dcatJson.format;
+    if (datasetFormat && datasetFormat.format)
+        formatString = datasetFormat.format;
 
     var baseUrl = dcatJson.downloadURL;
     if (!defined(baseUrl)) {
-        return when(undefined);
+        if (dcatJson.accessURL) baseUrl = dcatJson.accessURL;
+        else return when(undefined);
     }
 
     var matchingFormats = formats.filter(function(format) {
         // Matching formats must match the format regex,
         // and also the URL regex if it exists.
-        return dcatJson.format.match(format[0]) &&
-               (!defined(format[2]) || baseUrl.match(format[2]));
+        return (
+            formatString.match(format[0]) &&
+            (!defined(format[2]) || baseUrl.match(format[2]))
+        );
     });
     if (matchingFormats.length === 0) {
         return when(undefined);
@@ -366,11 +416,13 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
 
     var newItem;
     if (isWms || isWfs) {
-        uri.search('');
+        uri.search("");
         url = uri.toString();
         var layerName = params.LAYERS || params.layers || params.typeName;
         if (defined(layerName)) {
-            newItem = isWms ? new WebMapServiceCatalogItem(options.terria) : new WebFeatureServiceCatalogItem(options.terria);
+            newItem = isWms
+                ? new WebMapServiceCatalogItem(options.terria)
+                : new WebFeatureServiceCatalogItem(options.terria);
             newItem.layers = layerName;
             newItem.url = url;
         } else {
@@ -405,7 +457,7 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
         newItem.name = dcatJson.title;
 
         newItem.info.push({
-            name: 'Distribution Description',
+            name: "Distribution Description",
             content: dcatJson.description
         });
 
@@ -416,13 +468,32 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
             newItem.dataCustodian = options.dataCustodian;
         }
 
-        if (typeof(options.itemProperties) === 'object') {
+        if (typeof options.itemProperties === "object") {
             newItem.updateFromJson(options.itemProperties);
         }
 
         if (defined(parent)) {
-            newItem.id = parent.uniqueId + '/' + distribution.id;
+            newItem.id = parent.uniqueId + "/" + distribution.id;
         }
+
+        if (defined(options.zoomOnEnable)) {
+            newItem.zoomOnEnable = options.zoomOnEnable;
+        }
+
+        knockout.getObservable(newItem, "isLoading").subscribe(function(value) {
+            try {
+                if (value === true) return;
+                if (window.parent !== window) {
+                    window.parent.postMessage("loading complete", "*");
+                }
+
+                if (window.opener) {
+                    window.opener.postMessage("loading complete", "*");
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        });
 
         return newItem;
     });
@@ -435,26 +506,27 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
  * @type {Object}
  */
 MagdaCatalogItem.shortHumanReadableTypeNames = {
-    wms: 'WMS',
-    'wms-getCapabilities': 'WMS',
-    wfs: 'WFS',
-    'wfs-getCapabilities': 'WFS',
-    'esri-mapServer': 'MapServer',
-    'esri-featureServer': 'FeatureServer',
-    kml: 'KML',
-    geojson: 'GeoJSON',
-    czml: 'CZML',
-    csv: 'CSV'
+    wms: "WMS",
+    "wms-getCapabilities": "WMS",
+    wfs: "WFS",
+    "wfs-getCapabilities": "WFS",
+    "esri-mapServer": "MapServer",
+    "esri-featureServer": "FeatureServer",
+    kml: "KML",
+    geojson: "GeoJSON",
+    czml: "CZML",
+    csv: "CSV"
 };
 
 MagdaCatalogItem.prototype._load = function() {
-    var baseUri = new URI(this.url).segment('api/v0/registry');
+    var baseUri = new URI(this.url).segment("api/v0/registry");
 
     if (!defined(this.distributionId) && !defined(this.datasetId)) {
         throw new TerriaError({
             sender: this,
-            title: 'distributionId or datasetId must be specified',
-            message: 'MagdaCatalogItem requires that either distributionId or datasetId be specified.'
+            title: "distributionId or datasetId must be specified",
+            message:
+                "MagdaCatalogItem requires that either distributionId or datasetId be specified."
         });
     }
 
@@ -462,63 +534,111 @@ MagdaCatalogItem.prototype._load = function() {
 
     // Construct an array of "previewable" distributions
 
-    return when().then(function() {
-        if (defined(that.distributionId)) {
-            var distributionUri = baseUri.clone().segment(`records/${that.distributionId}`).addQuery({aspect: 'dcat-distribution-strings'});
-            var distributionUrl = proxyCatalogItemUrl(that, distributionUri.toString(), '1d');
-            return loadJson(distributionUrl).then(function(distributionJson) {
-                if (defined(distributionJson.id)) {
-                    // Success
-                    return [distributionJson];
-                } else {
-                    return [];
+    return when()
+        .then(function() {
+            if (defined(that.distributionId)) {
+                var distributionUri = baseUri
+                    .clone()
+                    .segment(
+                        `records/${encodeURIComponent(that.distributionId)}`
+                    )
+                    .addQuery({
+                        aspect: "dcat-distribution-strings",
+                        optionalAspect: "dataset-format"
+                    });
+                var distributionUrl = proxyCatalogItemUrl(
+                    that,
+                    distributionUri.toString(),
+                    "1d"
+                );
+                return loadJson(distributionUrl).then(function(
+                    distributionJson
+                ) {
+                    if (defined(distributionJson.id)) {
+                        // Success
+                        return [distributionJson];
+                    } else {
+                        return [];
+                    }
+                });
+            } else if (defined(that.datasetId)) {
+                var datasetUri = baseUri
+                    .clone()
+                    .segment(`records/${encodeURIComponent(that.datasetId)}`)
+                    .addQuery({
+                        aspect: "dataset-distributions",
+                        optionalAspect: "dataset-format",
+                        dereference: true
+                    });
+                var datasetUrl = proxyCatalogItemUrl(
+                    that,
+                    datasetUri.toString(),
+                    "1d"
+                );
+                return loadJson(datasetUrl).then(function(datasetJson) {
+                    return datasetJson
+                        .aspects["dataset-distributions"].distributions;
+                });
+            } else {
+                throw new TerriaError({
+                    sender: that,
+                    title: "Error retrieving MAGDA record",
+                    message: "No distribution or dataset ID provided"
+                });
+            }
+        })
+        .then(async function(distributionsToConsider) {
+            for (var i = 0; i < distributionsToConsider.length; ++i) {
+                var catalogItem = await MagdaCatalogItem.createCatalogItemFromDistribution(
+                    {
+                        terria: that.terria,
+                        distribution: distributionsToConsider[i],
+                        magdaBaseUrl: that.url,
+                        wmsDistributionFormat: that.allowWms
+                            ? that.wmsDistributionFormat
+                            : undefined,
+                        kmlDistributionFormat: that.allowKml
+                            ? that.kmlDistributionFormat
+                            : undefined,
+                        wfsDistributionFormat: that.allowWfs
+                            ? that.wfsDistributionFormat
+                            : undefined,
+                        csvDistributionFormat: that.allowCsv
+                            ? that.csvDistributionFormat
+                            : undefined,
+                        esriMapServerDistributionFormat: that.allowEsriMapServer
+                            ? that.esriMapServerDistributionFormat
+                            : undefined,
+                        geoJsonDistributionFormat: that.allowGeoJson
+                            ? that.geoJsonDistributionFormat
+                            : undefined,
+                        czmlDistributionFormat: that.allowCzml
+                            ? that.czmlDistributionFormat
+                            : undefined,
+                        dataCustodian: that.dataCustodian,
+                        itemProperties: that.itemProperties,
+                        allowWfsGroups: true,
+                        allowWmsGroups: true,
+                        zoomOnEnable: that.zoomOnEnable
+                    }
+                );
+
+                if (defined(catalogItem)) {
+                    catalogItem.name = that.name;
+                    return catalogItem;
                 }
-            });
-        } else if (defined(that.datasetId)) {
-            var datasetUri = baseUri.clone().segment(`records/${that.datasetId}`).addQuery({aspect: 'dataset-distributions', dereference: true});
-            var datasetUrl = proxyCatalogItemUrl(that, datasetUri.toString(), '1d');
-            return loadJson(datasetUrl).then(function(datasetJson) {
-                return datasetJson.aspects['dataset-distributions'].distributions;
-            });
-        } else {
+            }
+
             throw new TerriaError({
                 sender: that,
-                title: 'Error retrieving MAGDA record',
-                message: 'No distribution or dataset ID provided'
+                title: "No compatible distributions found",
+                message: defined(that.distributionId)
+                    ? "The MAGDA dataset does not have a distribution with the ID " +
+                      that.distributionId +
+                      " or it does not have a supported format."
+                    : "The MAGDA dataset does not have any distributions with a supported format."
             });
-        }
-    }).then(async function (distributionsToConsider) {
-        for (var i = 0; i < distributionsToConsider.length; ++i) {
-            var catalogItem = await MagdaCatalogItem.createCatalogItemFromDistribution({
-                terria: that.terria,
-                distribution: distributionsToConsider[i],
-                magdaBaseUrl: that.url,
-                wmsDistributionFormat: that.allowWms ? that.wmsDistributionFormat : undefined,
-                kmlDistributionFormat: that.allowKml ? that.kmlDistributionFormat : undefined,
-                csvDistributionFormat: that.allowCsv ? that.csvDistributionFormat : undefined,
-                esriMapServerDistributionFormat: that.allowEsriMapServer ? that.esriMapServerDistributionFormat : undefined,
-                geoJsonDistributionFormat: that.allowGeoJson ? that.geoJsonDistributionFormat : undefined,
-                czmlDistributionFormat: that.allowCzml ? that.czmlDistributionFormat : undefined,
-                dataCustodian: that.dataCustodian,
-                itemProperties: that.itemProperties,
-                allowWmsGroups: true
-            });
-
-            if (defined(catalogItem)) {
-                catalogItem.name = that.name;
-                return catalogItem;
-            }
-        }
-
-        throw new TerriaError({
-            sender: that,
-            title: 'No compatible distributions found',
-            message: defined(that.distributionId)
-                        ? 'The MAGDA dataset does not have a distribution with the ID ' + that.distributionId + ' or it does not have a supported format.'
-                        : 'The MAGDA dataset does not have any distributions with a supported format.'
         });
-    });
-
 };
 
 module.exports = MagdaCatalogItem;

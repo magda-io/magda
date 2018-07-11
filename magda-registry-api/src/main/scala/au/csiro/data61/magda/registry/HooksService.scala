@@ -127,7 +127,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def ack = post {
     path(Segment / "ack") { (id: String) =>
-      entity(as[WebHookAcknowledgement]) { acknowledgement =>
+      entity(as[WebHookAcknowledgement]) { acknowledgement =>        
         val result = DB localTx { session =>
           HookPersistence.acknowledgeRaisedHook(session, id, acknowledgement) match {
             case Success(result)    => complete(result)

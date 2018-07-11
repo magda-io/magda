@@ -3,21 +3,18 @@ package au.csiro.data61.magda.search.elasticsearch
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
 import org.elasticsearch.search.aggregations.Aggregation
+import com.sksamuel.elastic4s.searches.aggs.AggregationApi
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
-import org.elasticsearch.search.sort.SortOrder
-
+import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.searches.RichSearchResponse
+import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
 import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryDefinition
-import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
+import com.sksamuel.elastic4s.searches.queries.{InnerHitDefinition, QueryDefinition, QueryStringQueryDefinition, SimpleStringQueryDefinition}
 import com.typesafe.config.Config
-
 import spray.json._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
@@ -25,8 +22,8 @@ import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
-import au.csiro.data61.magda.api.model.RegionSearchResult
-import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -37,16 +34,21 @@ import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
+
 import scala.collection.JavaConversions._
 import org.elasticsearch.search.aggregations.InternalAggregation
-import com.sksamuel.elastic4s.searches.queries.SimpleStringQueryDefinition
 import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
-import org.apache.lucene.search.join.ScoreMode
-import com.sksamuel.elastic4s.searches.queries.BoolQueryDefinition
-import org.elasticsearch.index.query.MultiMatchQueryBuilder
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
-import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregator
-import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
+import com.sksamuel.elastic4s.searches.ScoreMode
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.Instant
+
+import com.sksamuel.elastic4s.searches.collapse.CollapseDefinition
+import au.csiro.data61.magda.model.Temporal
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
+import com.sksamuel.elastic4s.http.HttpClient
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
+import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
@@ -56,19 +58,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val clientProvider: ClientProvider) extends SearchQueryer {
   private val logger = system.log
 
-  val clientFuture: Future[TcpClient] = clientProvider.getClient(system.scheduler, logger, ec).recover {
+  val clientFuture: Future[HttpClient] = clientProvider.getClient.recover {
     case t: Throwable =>
       logger.error(t, "Could not connect to elasticsearch - this is a fatal error, so I'm dying now.")
       System.exit(1)
       throw t
   }
 
-  val ESCAPE_REGEX = "([\\+\\-=!\\(\\)\\{\\}\\[\\]\\^\"~\\?:/\\\\]|&&|\\|\\|)".r
-  val REMOVE_REGEX = "(?i)((^|\\s)(AND|OR)(\\s|$)|[<>])".r
-  val ESCAPE_AGG_NAME_REGEX = "[\\[\\]\\.]".r
-
-  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 2f), ("description"), "publisher.name", ("keywords", 1.5f), "themes")
-  val NON_LANGUAGE_FIELDS = Seq("identifier", "catalog", "accrualPeriodicity", "contactPoint.name")
+  val DATASETS_LANGUAGE_FIELDS = Seq(("title", 50f), ("description", 2f), "publisher.name", ("keywords", 10f), "themes")
+  val NON_LANGUAGE_FIELDS = Seq("_id", "catalog", "accrualPeriodicity", "contactPoint.name", "publisher.acronym")
 
   override def search(inputQuery: Query, start: Long, limit: Int, requestedFacetSize: Int) = {
     val inputRegionsList = inputQuery.regions.toList
@@ -76,14 +74,23 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
+      val query = buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize).explain(true)
 
-      Future.sequence(Seq(fullRegionsFuture, client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize)).flatMap(response =>
-        if (response.totalHits > 0)
-          Future.successful((response, MatchAll))
-        else
-          client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchPart, requestedFacetSize)).map((_, MatchPart)))))
+      Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap{
+        case Right(results) =>
+          if ( results.result.totalHits > 0)
+            Future.successful((results.result, MatchAll))
+          else
+            client.execute(buildQueryWithAggregations(inputQuery, start, limit, MatchPart, requestedFacetSize)).map{
+              case Right(results) => (results.result, MatchPart)
+              case Left(IllegalArgumentException(e)) => throw e
+              case Left(ESGenericException(e)) => throw e
+            }
+        case Left(IllegalArgumentException(e)) => throw e
+        case Left(ESGenericException(e)) => throw e
+      }))
     } map {
-      case Seq(fullRegions: List[Option[Region]], (response: RichSearchResponse, strategy: SearchStrategy)) =>
+      case Seq(fullRegions: List[Option[Region]], (response: SearchResponse, strategy: SearchStrategy)) =>
         val newQueryRegions =
           inputRegionsList
             .zip(fullRegions)
@@ -119,14 +126,34 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /**
    * Turns an ES response into a magda SearchResult.
    */
-  def buildSearchResult(query: Query, response: RichSearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
+  def buildSearchResult(query: Query, response: SearchResponse, strategy: SearchStrategy, facetSize: Int): SearchResult = {
     val aggs = response.aggregations
+
+    def getDateAggResult(agg: Option[Map[String, Any]]) : Option[Temporal.ApiDate] = agg match {
+        case None => None
+        case Some(aggData) =>
+        val minDateEpoch = aggData.get ("value").filter(_ != null).map (_.toString.toDouble.toLong)
+        if (minDateEpoch.isEmpty ||
+          aggData.get ("value_as_string").isEmpty ||
+          minDateEpoch.exists (_ == Long.MinValue) ||
+          minDateEpoch.exists (_ == Long.MaxValue) ||
+          minDateEpoch.exists (_ == NullFieldValue)
+        ) {
+          None
+        } else {
+          Some (ApiDate (Some (OffsetDateTime.parse (agg.get ("value_as_string").toString) ), "") )
+        }
+    }
 
     new SearchResult(
       strategy = Some(strategy),
       query = query,
-      hitCount = response.getHits.totalHits().toInt,
+      hitCount = response.totalHits,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
+      temporal = Some(PeriodOfTime(
+        start = getDateAggResult(aggs.data.get("minDate").asInstanceOf[Option[Map[String, Any]]]), //        end = ApiDate.parse(aggs.getAs[InternalAggregation]("maxDate").getProperty("value").toString, None, false))
+        end = getDateAggResult(aggs.data.get("maxDate").asInstanceOf[Option[Map[String, Any]]])
+      )),
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
@@ -134,12 +161,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           id = facetType.id,
           options = {
             // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions =
-              (Option(aggs.getAs[InternalAggregation](facetType.id + "-filter")) match {
-                case Some(filterAgg) => definition.extractFacetOptions(filterAgg.getProperty(facetType.id).asInstanceOf[InternalAggregation])
-                case None            => Nil
+            val filteredOptions = (aggs.contains(facetType.id + "-filter") match {
+                case true  =>
+                  definition.extractFacetOptions(
+                    aggs.filter(facetType.id + "-filter")
+                      .getAgg(facetType.id))
+                case false => Nil
               }).filter(definition.isFilterOptionRelevant(query))
-                .map(_.copy(matched = true))
+               .map(_.copy(matched = true))
 
             // filteredExact aggregations are those that exactly match a filter (e.g. "Ballarat Council" exactly) but are also filtered by
             // the rest of the query - we use this to filter the exact options below and make sure we don't show 0 results for a filtered
@@ -148,10 +177,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .map {
                 case (name, query) => (
                   name,
-                  aggs.getAs[InternalAggregation](facetType.id + "-exact-" + name + "-filter"))
+                  aggs.filter(facetType.id + "-exact-" + name + "-filter"))
               }
               .map {
-                case (name, agg: InternalFilter) => name -> agg
+                case (name, agg: FilterAggregationResult) => name -> agg
               }
               .toMap
 
@@ -162,22 +191,22 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 .map {
                   case (name, query) =>
                     val value = facetType.id + "-exact-" + name
-                    val aggProp = List(value).asJava
                     (
                       name,
-                      aggs.getAs[InternalAggregation](facetType.id + "-global").getProperty(aggProp))
+                      aggs.global(facetType.id + "-global").filter(value))
                 }
                 .flatMap {
-                  case (name, agg: InternalFilter) =>
-                    if (agg.getDocCount > 0 && filteredExact.get(name).map(_.getDocCount).getOrElse(0l) == 0l) {
+                  case (name, agg) =>
+                    if (agg.docCount > 0 && filteredExact.get(name).map(_.docCount).getOrElse(0l) == 0l) {
                       Some(
                         FacetOption(
-                          identifier = agg.getAggregations.asMap().asScala.get("topHits").flatMap {
-                            case hit: InternalTopHits =>
-                              val dataSet = hit.getHits.getAt(0).getSourceAsString().parseJson.convertTo[DataSet]
-
-                              dataSet.publisher.flatMap(_.identifier)
-                          },
+                          identifier = if(!agg.contains("topHits")) None
+                            else {
+                              agg.tophits("topHits")
+                                .hits
+                                .headOption
+                                .flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
+                            },
                           value = name.getOrElse(config.getString("strings.unspecifiedWord")),
                           hitCount = 0,
                           matched = true))
@@ -187,10 +216,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
             val alternativeOptions =
               definition.extractFacetOptions(
-                aggs.getAs[InternalAggregation](facetType.id + "-global")
-                  .getProperty("filter").asInstanceOf[InternalAggregation]
-                  .getProperty(facetType.id).asInstanceOf[InternalAggregation])
-
+                aggs.getAgg(facetType.id + "-global")
+                  .flatMap(_.getAgg("filter").flatMap(_.getAgg(facetType.id)))
+              )
             definition.truncateFacets(query, filteredOptions, exactOptions, alternativeOptions, facetSize)
           })
       }.toSeq))
@@ -205,7 +233,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(query: Query, start: Long, limit: Int, strategy: SearchStrategy) = {
-    ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+    ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
       .query(buildEsQuery(query, strategy))
@@ -224,11 +252,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(searchDef: SearchDefinition, query: Query, strategy: SearchStrategy, facetSize: Int) = {
-    val aggregations: List[AggregationDefinition] =
+    val facetAggregations: List[AggregationDefinition] =
       FacetType.all.flatMap(facetType =>
         aggsForFacetType(query, facetType, strategy, idealFacetSize(facetType, query, facetSize))).toList
 
-    searchDef.aggregations(aggregations)
+    val minDateAgg = minAggregation("minDate").field("temporal.start.date")
+    val maxDateAgg = maxAggregation("maxDate").field("temporal.end.date")
+
+    searchDef.aggregations(facetAggregations ++ List(minDateAgg, maxDateAgg))
   }
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
@@ -278,7 +309,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def alternativesAggregation(query: Query, facetDef: FacetDefinition, strategy: SearchStrategy, facetSize: Int) =
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy))
+      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
       .subAggregations(facetDef.aggregationDefinition(facetSize))
 
   /**
@@ -293,60 +324,35 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
-  private def queryToQueryDef(query: Query, strategy: SearchStrategy): QueryDefinition = {
+  private def queryToQueryDef(query: Query, strategy: SearchStrategy, isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
       case MatchAll  => "and"
       case MatchPart => "or"
     }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      query.freeText.map { rawQuery =>
-        val innerQuery = strategy match {
-          case MatchAll => cleanStringForEs(rawQuery)
-          case MatchPart =>
-            val cleanedQuery = cleanStringForEs(rawQuery)
-            query.quotes match {
-              case Seq()  => cleanedQuery
-              case quotes => (Seq(cleanedQuery) ++ quotes).mkString(" ")
-            }
-        }
+      query.freeText flatMap { inputText =>
+        val text = if (inputText.trim.length == 0) "*" else inputText
+        val queryString = new SimpleStringQueryDefinition(text).defaultOperator(operator).quoteFieldSuffix(".quote")
 
-        val queryDef = multiMatchQuery(innerQuery)
-          .matchType(MultiMatchQueryBuilder.Type.CROSS_FIELDS)
-          .operator(operator)
-
-        // For some reason to make english analysis work properly you need to specifically hit the english fields.
-        val fields = DATASETS_LANGUAGE_FIELDS
-
-        def foldFields(fields: Seq[Any]) = fields.foldRight(queryDef) {
+        def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) = fields.foldRight(query) {
           case ((fieldName: String, boost: Float), queryDef) => queryDef.field(fieldName, boost)
-          case (field: String, queryDef)                     => queryDef.field(field, 1)
+          case (field: String, queryDef)                     => queryDef.field(field, 0)
         }
 
         // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
         // other analysis does. So we do this silliness
         val distributionsEnglishQueries = nestedQuery("distributions")
           .query(
-            queryDef
-              // If this was AND then a single distribution would have to match the entire query, this way you can
-              // have multiple dists partially match
-              .fields("distributions.title", "distributions.description", "distributions.title.english", "distributions.description.english")
-              .operator("or"))
+            // If this was AND then a single distribution would have to match the entire query, this way you can
+            // have multiple dists partially match
+            queryString.field("distributions.title").field("distributions.description").field("distributions.format.keyword_lowercase")
+              .defaultOperator("or"))
           .scoreMode(ScoreMode.Max)
 
-        val queryString = new SimpleStringQueryDefinition(innerQuery).defaultOperator(operator)
-        val queries = Seq(foldFields(DATASETS_LANGUAGE_FIELDS ++ NON_LANGUAGE_FIELDS).field("*.english", 1.2f), distributionsEnglishQueries, queryString)
+        val queries = Seq(foldFields(queryString, NON_LANGUAGE_FIELDS++DATASETS_LANGUAGE_FIELDS), distributionsEnglishQueries)
 
-        dismax(queries).tieBreaker(0.3)
-      },
-      setToOption(query.quotes) { seq =>
-        val quotes = seq.map(cleanStringForEs)
-
-        // Theoretically we should be able to just put the quotes inside the simplequerystring above but it doesn't work
-        // in some cases for some reason, so we do this instead.
-        strategyToCombiner(strategy)(quotes.map { quote =>
-          ElasticDsl.matchPhraseQuery("_all", quote)
-        })
+        Some(dismax(queries).tieBreaker(0.2))
       },
       setToOption(query.publishers)(seq => should(seq.map(publisherQuery(strategy))).boost(2)),
       setToOption(query.formats)(seq => should(seq.map(formatQuery(strategy))).boost(2)),
@@ -356,99 +362,142 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
-  def cleanStringForEs(string: String): String = {
-    val cleaned = REMOVE_REGEX.replaceAllIn(ESCAPE_REGEX.replaceAllIn(string, charMatch => s"\\\\\\${charMatch.matched}"), " ")
-
-    if (cleaned.replace("\\", "").equals(string.replace("\\", ""))) {
-      cleaned
-    } else {
-      cleanStringForEs(cleaned)
-    }
-  }
-
-  override def searchFacets(facetType: FacetType, facetQuery: String, generalQuery: Query, start: Long, limit: Int): Future[FacetSearchResult] = {
+  override def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
-      client.execute(ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(indices.typeForFacet(facetType)))
-        .query(new SimpleStringQueryDefinition(cleanStringForEs(facetQuery))
-          .defaultOperator("or")
-          .analyzeWildcard(true)
-          .field("_all")
-          .field("value.english"))
-        .start(start.toInt)
+      client.execute(ElasticDsl.search(indices.indexForFacet(facetType))
+        .query(dismax(Seq(matchPhrasePrefixQuery("value", facetQuery.getOrElse("")), matchPhrasePrefixQuery("acronym", facetQuery.getOrElse("")))).tieBreaker(0))
         .limit(limit))
-        .flatMap { response =>
-          response.totalHits match {
-            case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
-            case _ =>
-              val hits: Seq[(String, Option[String])] = response.hits
-                .map { hit =>
+        .flatMap {
+          case Left(ESGenericException(e)) => throw e
+          case Right(results) =>
+            results.result.totalHits match {
+              case 0 => Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
+              case _ =>
+
+                val hits: Seq[(String, Option[String])] = results.result.hits.hits.map{ hit =>
                   val map = hit.sourceAsMap
                   (
-                    map("value")toString,
-                    map.get("identifier").map(_.toString))
+                    map("value").toString,
+                    map.get("identifier").map(_.toString)
+                  )
                 }
 
-              // Create a dataset filter aggregation for each hit in the initial query
-              val filters = hits.map {
-                case (name, identifier) =>
-                  aggregation.filter(name).filter(facetDef.exactMatchQuery(Specified(name)))
-              }
-
-              // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
-              // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
-              client.execute {
-                buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
-              } map { aggQueryResult =>
-                val aggregations = aggQueryResult.aggregations.map.mapValues {
-                  case (bucket: InternalFilter) =>
-                    new FacetOption(
-                      identifier = None,
-                      value = bucket.getName,
-                      hitCount = bucket.getDocCount)
+                // Create a dataset filter aggregation for each hit in the initial query
+                val filters = hits.map {
+                  case (name, identifier) =>
+                    filterAggregation(name).query(facetDef.exactMatchQuery(Specified(name)))
                 }
 
-                FacetSearchResult(
-                  hitCount = response.totalHits,
-                  options = hits.map { case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier) })
-              }
-          }
+                // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
+                // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
+                client.execute {
+                  buildQuery(facetDef.removeFromQuery(generalQuery), 0, 0, MatchAll).aggs(filters)
+                } map {
+                  case Left(ESGenericException(e)) => throw e
+                  case Right(results) =>
+                    val aggregations = results.result.aggregations.data.map {
+                      case (name:String, value:Map[String,Any]) =>
+                        (name, new FacetOption(
+                          identifier = None,
+                          value = name,
+                          hitCount = value.get("doc_count").map(_.toString.toLong).getOrElse(0l)))
+                    }
+
+                    val options = (hits.map {
+                      case (hitName, identifier) => aggregations(hitName).copy(identifier = identifier)
+                    }).sortBy(-_.hitCount).drop(start).take(limit)
+
+                    FacetSearchResult(
+                      hitCount = results.result.totalHits,
+                      options =  options)
+                }
+            }
         }
     }
   }
 
-  override def searchRegions(query: String, start: Long, limit: Int): Future[RegionSearchResult] = {
+  override def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client.execute(
-        ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-          query { matchPhrasePrefixQuery("regionName", query) }
+        ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+          query { boolQuery().should(matchPhrasePrefixQuery("regionShortName", query.getOrElse("*")).boost(2), matchPhrasePrefixQuery("regionName", query.getOrElse("*"))) }
           start start.toInt
           limit limit
           sortBy (
             fieldSort("order") order SortOrder.ASC,
             scoreSort order SortOrder.DESC)
-            sourceExclude "geometry").flatMap { response =>
-          response.totalHits match {
+            sourceExclude "geometry"
+      ).flatMap {
+        case Left(ESGenericException(e)) => throw e
+        case Right(results) =>
+          results.result.totalHits match {
             case 0 => Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
-            case _ => Future(RegionSearchResult(query, response.totalHits, response.to[Region].toList))
+            case _ => Future(RegionSearchResult(query, results.result.totalHits, results.result.to[Region].toList))
           }
         }
     }
   }
 
-  def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: TcpClient): Future[Option[Region]] = {
+  override def searchOrganisations(queryString: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult] = {
+
+    clientFuture.flatMap{ client =>
+      client.execute(
+        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex))
+          .start(start)
+          .limit(limit)
+          .query {
+            simpleStringQuery(queryString.getOrElse("*"))
+              .field("publisher.name")
+              .field("publisher.acronym")
+              .field("publisher.description")
+          }
+          .aggs(cardinalityAgg("totalCount","publisher.identifier"))
+          .sortByFieldAsc("publisher.name.keyword")
+          .collapse(new CollapseDefinition(
+          "publisher.identifier",
+          Some(new InnerHitDefinition("datasetCount", Some(1)))
+        ))
+      ).flatMap{
+        case Right(r) =>
+          val orgs = r.result.hits.hits.flatMap(h=>{
+            val d = h.to[DataSet]
+            val innerHit = h.innerHits.get("datasetCount")
+            d.publisher.map(o=> o.copy(datasetCount = innerHit.map(h=>{
+              h.total
+            })))
+          }).toList
+
+          val totalCount = r.result.aggregations.cardinality("totalCount").value
+          Future(OrganisationsSearchResult(queryString, totalCount.toLong, orgs))
+        case Left(ESGenericException(e)) => throw e
+      }.recover{
+        case RootCause(illegalArgument: IllegalArgumentException) =>
+          logger.error(illegalArgument, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Bad argument: " + illegalArgument.getMessage))
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          OrganisationsSearchResult(queryString, 0, List(), Some("Error: " + e.getMessage))
+      }
+    }
+
+  }
+
+  def resolveFullRegion(queryRegionFV: FilterValue[Region])(implicit client: HttpClient): Future[Option[Region]] = {
     queryRegionFV match {
       case Specified(region) =>
-        client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-          query { idsQuery((region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry")
-          .flatMap { response =>
-            response.totalHits match {
+        client.execute(ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+          query { idsQuery((region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase) } start 0 limit 1 sourceExclude "geometry"
+        ).flatMap {
+          case Left(ESGenericException(e)) => throw e
+          case Right(results) =>
+            results.result.totalHits match {
               case 0 => Future(None)
-              case _ => Future(response.to[Region].headOption)
+              case _ => Future(results.result.to[Region].headOption)
             }
-          }
+        }
       case Unspecified() => Future(None)
     }
 

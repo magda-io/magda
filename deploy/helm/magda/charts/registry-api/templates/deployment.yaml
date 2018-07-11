@@ -20,14 +20,17 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: POSTGRES_USER
+          value: client
+{{- else }}
         - name: POSTGRES_USER
           value: client
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: registry-datastore-client
+              key: registry-db-client
 {{- end }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
@@ -35,12 +38,21 @@ spec:
             "/app/bin/magda-registry-api",
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .Values.global.externalUrl }}/api/v0/registry",
-            "-Ddb.default.url=jdbc:postgresql://registry-datastore/postgres",
+            "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
             "-Dakka.loglevel={{ .Values.logLevel | default .Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .Values.global.logLevel | lower }}",
-            "-Dauthorization.skip=false"
+            "-Dauthorization.skip={{ .Values.skipAuthorization | default false }}"
         ]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: "/v0/ping"
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 10 }}
+{{- end }}
         ports:
         - containerPort: 80
         resources:

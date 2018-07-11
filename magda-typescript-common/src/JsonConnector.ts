@@ -1,15 +1,18 @@
-import { AspectDefinition, Record } from './generated/registry/api';
-import AspectCreationFailure from './AspectCreationFailure';
-import AsyncPage, { forEachAsync, asyncPageToArray } from './AsyncPage';
-import ConnectorRecordId from './ConnectorRecordId';
-import ConnectionResult from './ConnectionResult';
-import RecordCreationFailure from './RecordCreationFailure';
-import JsonTransformer from './JsonTransformer';
-import Registry from './registry/AuthorizedRegistryClient';
-import * as express from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as process from 'process';
+import { AspectDefinition, Record } from "./generated/registry/api";
+import AspectCreationFailure from "./AspectCreationFailure";
+import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
+import ConnectorRecordId from "./ConnectorRecordId";
+import ConnectionResult from "./ConnectionResult";
+import RecordCreationFailure from "./RecordCreationFailure";
+import JsonTransformer from "./JsonTransformer";
+import Registry from "./registry/AuthorizedRegistryClient";
+import unionToThrowable from "./util/unionToThrowable";
+
+import * as express from "express";
+import * as fs from "fs";
+import * as path from "path";
+import * as process from "process";
+import * as uuid from "uuid";
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -19,17 +22,20 @@ export default class JsonConnector {
     public readonly transformer: JsonTransformer;
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
+    public readonly sourceTag?: string;
 
     constructor({
         source,
         transformer,
         registry,
-        maxConcurrency = 1
+        maxConcurrency = 1,
+        sourceTag = uuid.v4()
     }: JsonConnectorOptions) {
         this.source = source;
         this.transformer = transformer;
         this.registry = registry;
         this.maxConcurrency = maxConcurrency;
+        this.sourceTag = sourceTag;
     }
 
     async createAspectDefinitions(): Promise<ConnectionResult> {
@@ -37,29 +43,56 @@ export default class JsonConnector {
 
         const allAspectDefinitions = this.transformer.getRequiredAspectDefinitions();
 
-        const aspectBuilderPage = AsyncPage.single<AspectDefinition[]>(allAspectDefinitions);
-        await forEachAsync(aspectBuilderPage, this.maxConcurrency, async aspectDefinition => {
-            const aspectDefinitionOrError = await this.registry.putAspectDefinition(aspectDefinition);
-            if (aspectDefinitionOrError instanceof Error) {
-                result.aspectDefinitionFailures.push(new AspectCreationFailure(aspectDefinition.id, aspectDefinitionOrError));
-            } else {
-                ++result.aspectDefinitionsConnected;
+        const aspectBuilderPage = AsyncPage.single<AspectDefinition[]>(
+            allAspectDefinitions
+        );
+        await forEachAsync(
+            aspectBuilderPage,
+            this.maxConcurrency,
+            async aspectDefinition => {
+                const aspectDefinitionOrError = await this.registry.putAspectDefinition(
+                    aspectDefinition
+                );
+                if (aspectDefinitionOrError instanceof Error) {
+                    result.aspectDefinitionFailures.push(
+                        new AspectCreationFailure(
+                            aspectDefinition.id,
+                            aspectDefinitionOrError
+                        )
+                    );
+                } else {
+                    ++result.aspectDefinitionsConnected;
+                }
             }
-        });
+        );
 
         return result;
     }
 
-    async createOrganization(organizationJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.transformer.organizationJsonToRecord(organizationJson));
+    async createOrganization(
+        organizationJson: object
+    ): Promise<Record | Error> {
+        return this.putRecord(
+            this.transformer.organizationJsonToRecord(organizationJson)
+        );
     }
 
     async createDataset(datasetJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.transformer.datasetJsonToRecord(datasetJson));
+        return this.putRecord(
+            this.transformer.datasetJsonToRecord(datasetJson)
+        );
     }
 
-    async createDistribution(distributionJson: object, datasetJson: object): Promise<Record | Error> {
-        return this.registry.putRecord(this.transformer.distributionJsonToRecord(distributionJson, datasetJson));
+    async createDistribution(
+        distributionJson: object,
+        datasetJson: object
+    ): Promise<Record | Error> {
+        return this.putRecord(
+            this.transformer.distributionJsonToRecord(
+                distributionJson,
+                datasetJson
+            )
+        );
     }
 
     async createOrganizations(): Promise<ConnectionResult> {
@@ -67,17 +100,29 @@ export default class JsonConnector {
 
         if (this.source.hasFirstClassOrganizations) {
             const organizations = this.source.getJsonFirstClassOrganizations();
-            await forEachAsync(organizations, this.maxConcurrency, async organization => {
-                const recordOrError = await this.createOrganization(organization);
-                if (recordOrError instanceof Error) {
-                    result.organizationFailures.push(new RecordCreationFailure(
-                        this.transformer.getIdFromJsonOrganization(organization, this.source.id),
-                        undefined,
-                        recordOrError));
-                } else {
-                    ++result.organizationsConnected;
+            await forEachAsync(
+                organizations,
+                this.maxConcurrency,
+                async organization => {
+                    const recordOrError = await this.createOrganization(
+                        organization
+                    );
+                    if (recordOrError instanceof Error) {
+                        result.organizationFailures.push(
+                            new RecordCreationFailure(
+                                this.transformer.getIdFromJsonOrganization(
+                                    organization,
+                                    this.source.id
+                                ),
+                                undefined,
+                                recordOrError
+                            )
+                        );
+                    } else {
+                        ++result.organizationsConnected;
+                    }
                 }
-            });
+            );
         }
 
         return result;
@@ -94,44 +139,79 @@ export default class JsonConnector {
             if (distributions) {
                 const distributionIds: ConnectorRecordId[] = [];
                 await forEachAsync(distributions, 1, async distribution => {
-                    const recordOrError = await this.createDistribution(distribution, dataset);
+                    const recordOrError = await this.createDistribution(
+                        distribution,
+                        dataset
+                    );
                     if (recordOrError instanceof Error) {
-                        result.distributionFailures.push(new RecordCreationFailure(
-                            this.transformer.getIdFromJsonDistribution(distribution, dataset, this.source.id),
-                            this.transformer.getIdFromJsonDataset(dataset, this.source.id),
-                            recordOrError));
+                        result.distributionFailures.push(
+                            new RecordCreationFailure(
+                                this.transformer.getIdFromJsonDistribution(
+                                    distribution,
+                                    dataset,
+                                    this.source.id
+                                ),
+                                this.transformer.getIdFromJsonDataset(
+                                    dataset,
+                                    this.source.id
+                                ),
+                                recordOrError
+                            )
+                        );
                     } else {
                         ++result.distributionsConnected;
-                        distributionIds.push(this.transformer.getIdFromJsonDistribution(distribution, dataset, this.source.id));
+                        distributionIds.push(
+                            this.transformer.getIdFromJsonDistribution(
+                                distribution,
+                                dataset,
+                                this.source.id
+                            )
+                        );
                     }
                 });
 
-                record.aspects['dataset-distributions'] = {
+                record.aspects["dataset-distributions"] = {
                     distributions: distributionIds.map(id => id.toString())
                 };
             }
 
             if (this.source.hasFirstClassOrganizations) {
-                const publisher = this.source.getJsonDatasetPublisherId(dataset);
+                const publisher = this.source.getJsonDatasetPublisherId(
+                    dataset
+                );
                 if (publisher) {
-                    record.aspects['dataset-publisher'] = {
-                        publisher: new ConnectorRecordId(publisher, "Organization", this.source.id).toString()
+                    record.aspects["dataset-publisher"] = {
+                        publisher: new ConnectorRecordId(
+                            publisher,
+                            "Organization",
+                            this.source.id
+                        ).toString()
                     };
                 }
             } else {
-                const publisher = await this.source.getJsonDatasetPublisher(dataset);
+                const publisher = await this.source.getJsonDatasetPublisher(
+                    dataset
+                );
                 if (publisher) {
-                    const publisherId = this.transformer.getIdFromJsonOrganization(publisher, this.source.id);
+                    const publisherId = this.transformer.getIdFromJsonOrganization(
+                        publisher,
+                        this.source.id
+                    );
 
                     if (publisherId) {
-                        const recordOrError = await this.createOrganization(publisher);
+                        const recordOrError = await this.createOrganization(
+                            publisher
+                        );
                         if (recordOrError instanceof Error) {
-                            result.organizationFailures.push(new RecordCreationFailure(
-                                publisherId,
-                                undefined,
-                                recordOrError));
+                            result.organizationFailures.push(
+                                new RecordCreationFailure(
+                                    publisherId,
+                                    undefined,
+                                    recordOrError
+                                )
+                            );
                         } else {
-                            record.aspects['dataset-publisher'] = {
+                            record.aspects["dataset-publisher"] = {
                                 publisher: publisherId.toString()
                             };
                             ++result.organizationsConnected;
@@ -140,18 +220,41 @@ export default class JsonConnector {
                 }
             }
 
-            const recordOrError = await this.registry.putRecord(record);
+            const recordOrError = await this.putRecord(record);
             if (recordOrError instanceof Error) {
-                result.datasetFailures.push(new RecordCreationFailure(
-                    this.transformer.getIdFromJsonDataset(dataset, this.source.id),
-                    undefined,
-                    recordOrError));
+                result.datasetFailures.push(
+                    new RecordCreationFailure(
+                        this.transformer.getIdFromJsonDataset(
+                            dataset,
+                            this.source.id
+                        ),
+                        undefined,
+                        recordOrError
+                    )
+                );
             } else {
                 ++result.datasetsConnected;
             }
         });
 
         return result;
+    }
+
+    async trimRecords(): Promise<ConnectionResult> {
+        return this.registry
+            .deleteBySource(this.sourceTag, this.source.id)
+            .then(unionToThrowable)
+            .then(deletionResult => {
+                const result = new ConnectionResult();
+
+                if (deletionResult !== "Processing") {
+                    result.recordsTrimmed = deletionResult.count;
+                } else {
+                    result.trimStillProcessing = true;
+                }
+
+                return result;
+            });
     }
 
     /**
@@ -165,13 +268,26 @@ export default class JsonConnector {
         const aspectResult = await this.createAspectDefinitions();
         const organizationResult = await this.createOrganizations();
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
-        return ConnectionResult.combine(aspectResult, organizationResult, datasetAndDistributionResult);
+        const recordsTrimmedResult = await this.trimRecords();
+
+        return ConnectionResult.combine(
+            aspectResult,
+            organizationResult,
+            datasetAndDistributionResult,
+            recordsTrimmedResult
+        );
     }
 
     runInteractive(options: JsonConnectorRunInteractiveOptions) {
-        const transformerForBrowserPath = path.resolve(process.cwd(), 'dist', 'createTransformerForBrowser.js');
+        const transformerForBrowserPath = path.resolve(
+            process.cwd(),
+            "dist",
+            "createTransformerForBrowser.js"
+        );
         if (!fs.existsSync(transformerForBrowserPath)) {
-            throw new Error('Cannot run this connector in interactive mode because dist/createTransformerForBrowser.js does not exist.');
+            throw new Error(
+                "Cannot run this connector in interactive mode because dist/createTransformerForBrowser.js does not exist."
+            );
         }
 
         var app = express();
@@ -181,58 +297,71 @@ export default class JsonConnector {
             this.shutdownOnIdle(app, options.timeoutSeconds);
         }
 
-        app.get('/v0/status', (req, res) => {
-            res.send('OK');
+        app.get("/v0/status", (req, res) => {
+            res.send("OK");
         });
 
-        app.get('/v0/config', (req, res) => {
+        app.get("/v0/config", (req, res) => {
             res.send(options.transformerOptions);
         });
 
-        app.get('/v0/datasets/:id', (req, res) => {
+        app.get("/v0/datasets/:id", (req, res) => {
             this.source.getJsonDataset(req.params.id).then(function(dataset) {
                 res.send(dataset);
             });
         });
 
-        app.get('/v0/datasets/:id/distributions', (req, res) => {
+        app.get("/v0/datasets/:id/distributions", (req, res) => {
             this.source.getJsonDataset(req.params.id).then(dataset => {
-                return asyncPageToArray(this.source.getJsonDistributions(dataset)).then(distributions => {
+                return asyncPageToArray(
+                    this.source.getJsonDistributions(dataset)
+                ).then(distributions => {
                     res.send(distributions);
-                })
+                });
             });
         });
 
-        app.get('/v0/datasets/:id/publisher', (req, res) => {
+        app.get("/v0/datasets/:id/publisher", (req, res) => {
             this.source.getJsonDataset(req.params.id).then(dataset => {
-                return this.source.getJsonDatasetPublisher(dataset).then(publisher => {
-                    res.send(publisher);
-                })
+                return this.source
+                    .getJsonDatasetPublisher(dataset)
+                    .then(publisher => {
+                        res.send(publisher);
+                    });
             });
         });
 
-        app.get('/v0/search/datasets', (req, res) => {
-            asyncPageToArray(this.source.searchDatasetsByTitle(req.query.title, 10)).then(datasets => {
+        app.get("/v0/search/datasets", (req, res) => {
+            asyncPageToArray(
+                this.source.searchDatasetsByTitle(req.query.title, 10)
+            ).then(datasets => {
                 res.send(datasets);
             });
         });
 
         if (this.source.hasFirstClassOrganizations) {
-            app.get('/v0/organizations/:id', (req, res) => {
-                this.source.getJsonFirstClassOrganization(req.params.id).then(function(organization) {
-                    res.send(organization);
-                });
+            app.get("/v0/organizations/:id", (req, res) => {
+                this.source
+                    .getJsonFirstClassOrganization(req.params.id)
+                    .then(function(organization) {
+                        res.send(organization);
+                    });
             });
 
-            app.get('/v0/search/organizations', (req, res) => {
-                asyncPageToArray(this.source.searchFirstClassOrganizationsByTitle(req.query.title, 5)).then(organizations => {
+            app.get("/v0/search/organizations", (req, res) => {
+                asyncPageToArray(
+                    this.source.searchFirstClassOrganizationsByTitle(
+                        req.query.title,
+                        5
+                    )
+                ).then(organizations => {
                     res.send(organizations);
                 });
             });
-            }
+        }
 
-        app.get('/v0/test-harness.js', function(req, res) {
-          res.sendFile(transformerForBrowserPath);
+        app.get("/v0/test-harness.js", function(req, res) {
+            res.sendFile(transformerForBrowserPath);
         });
 
         app.listen(options.listenPort);
@@ -248,20 +377,27 @@ export default class JsonConnector {
                 clearTimeout(timeoutId);
             }
 
-            timeoutId = setTimeout(function () {
-                console.log('Shutting down due to idle timeout.');
+            timeoutId = setTimeout(function() {
+                console.log("Shutting down due to idle timeout.");
 
                 // TODO: Should just shut down the HTTP server instead of the whole process.
                 process.exit(0);
             }, timeoutSeconds * 1000);
         }
 
-        express.use(function (req, res, next) {
+        express.use(function(req, res, next) {
             resetTimeout();
             next();
         });
 
         resetTimeout();
+    }
+
+    private async putRecord(record: Record): Promise<Record | Error> {
+        return this.registry.putRecord({
+            ...record,
+            sourceTag: this.sourceTag
+        });
     }
 }
 
@@ -342,7 +478,10 @@ export interface ConnectorSource {
      * @param {number} maxResults The maximum number of results to return.
      * @returns {AsyncPage<any[]>} A page of matching organizations, or undefined if first-class organizations are not available.
      */
-    searchFirstClassOrganizationsByTitle(title: string, maxResults: number): AsyncPage<any[]>;
+    searchFirstClassOrganizationsByTitle(
+        title: string,
+        maxResults: number
+    ): AsyncPage<any[]>;
 
     /**
      * Gets the ID of the publisher of this dataset.  This method will return undefined if {@link hasFirstClassOrganizations}
@@ -367,6 +506,7 @@ export interface JsonConnectorOptions {
     transformer: JsonTransformer;
     registry: Registry;
     maxConcurrency?: number;
+    sourceTag?: string;
 }
 
 export interface JsonConnectorRunInteractiveOptions {

@@ -1,21 +1,10 @@
-@import '../variables';
+@import "../variables";
 .overview-box {
-  .markdown *{
-    display: none;
-    &:first-child, &:nth-child(2){
-      display: block;
-    }
-  }
-  &.is-expanded{
-    .markdown *{
-      display: block;
-    }
-  }
 }
-.overview-toggle{
+.overview-toggle {
     margin: 10px auto 0 auto;
     display: block;
-    background-color: $magda-grey;
+    background-color: $AU-color-foreground-action;
     border-radius: 50%;
     padding: 5px 8px;
 }

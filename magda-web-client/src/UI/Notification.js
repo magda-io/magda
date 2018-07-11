@@ -1,21 +1,44 @@
-import React from 'react';
-import './Notification.css';
+import React from "react";
+import "./Notification.css";
+import close from "../assets/close.svg";
+import AUpageAlert from "../pancake/react/page-alerts";
 
 function Notification(props) {
-  return (
-    <div className={`notification notification__${props.type}`}>
-              <div className='notification__inner'>
-                <div className='notification__heading'>{props.content.title}</div>
-                <div className='notification__body'>{props.content.detail}</div>
-                <button className='btn notification__dismiss-btn'
-                        onClick={props.onDismiss}>
-                        Dismiss
+    let type = props.type;
+    if (!type) type = "info";
+
+    let content = props.conent;
+    if (!content) content = {};
+
+    if (content instanceof Error) {
+        type = "error";
+        content = {
+            title: "Error:",
+            detail: content.message
+        };
+    }
+
+    let { title, detail } = props.content;
+    if (!title) title = "";
+    if (!detail) detail = "";
+    if (!detail && title) detail = title;
+
+    return (
+        <div className="notification-box">
+            <AUpageAlert as={type} className="notification__inner">
+                <button
+                    onClick={props.onDismiss}
+                    className="au-btn close-btn au-btn--secondary"
+                >
+                    <img alt="close" src={close} />
                 </button>
-              </div>
-           </div>
-  );
+                {title ? <h3>{title}</h3> : null}
+                <p>{detail}</p>
+            </AUpageAlert>
+        </div>
+    );
 }
 
-Notification.defaultProps = {content: {title: '', detail: ''}, type: ''};
+Notification.defaultProps = { content: { title: "", detail: "" }, type: "" };
 
 export default Notification;

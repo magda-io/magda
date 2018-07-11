@@ -1,3 +1,3 @@
-declare module 'openlayers' {
-  declare module.exports: any;
+declare module "openlayers" {
+    declare module.exports: any;
 }

@@ -1,62 +1,47 @@
-import React, { Component } from 'react';
-import DatasetSummary from '../../Components/Dataset/DatasetSummary';
-import './SearchResults.css';
+import React, { Component } from "react";
+import DatasetSummary from "../../Components/Dataset/DatasetSummary";
+import "./SearchResults.css";
+import SearchPageSuggest from "./SearchPageSuggest";
+import { enableSuggestDatasetPage } from "../../config";
 
 class SearchResults extends Component {
-  constructor(props) {
-    super(props);
-    this.onToggleExpandDataset=this.onToggleExpandDataset.bind(this);
-    this.state = {
-      openDataset: null
-    };
-  }
-
-  onToggleExpandDataset(result, event){
-    event.stopPropagation();
-    let datasetIdentifier = result.identifier;
-    if (this.state.openDataset === datasetIdentifier) {
-      datasetIdentifier = null;
-    }
-    this.setState({
-      openDataset: datasetIdentifier
-    });
-    //this.props.onToggleDataset(datasetIdentifider);
-  }
-
-  getSummaryText(){
-    if(this.props.searchResults.length){
-      if(this.props.strategy === 'match-part'){
+    render() {
         return (
-          <div className='search-recomendations__count'>
-            The following {this.props.totalNumberOfResults} datasets match some but not all of your search criteria
-          </div>);
-      }
+            <div className="search-results">
+                <ul className="list--unstyled">
+                    {this.props.searchResults.map(
+                        (result, i) =>
+                            //show the request dataset form only after the first result
+                            enableSuggestDatasetPage && i === 0 ? (
+                                <React.Fragment key={i}>
+                                    <li className="search-results__result">
+                                        <DatasetSummary
+                                            dataset={result}
+                                            searchText={this.props.searchText}
+                                        />
+                                    </li>
+                                    <li
+                                        key={i - 5}
+                                        className="search-results__result correspondence-dropdown-search"
+                                    >
+                                        <SearchPageSuggest />
+                                    </li>
+                                </React.Fragment>
+                            ) : (
+                                <li key={i} className="search-results__result">
+                                    <DatasetSummary
+                                        dataset={result}
+                                        searchText={this.props.searchText}
+                                    />
+                                </li>
+                            )
+                    )}
+                </ul>
+            </div>
+        );
     }
-    return null;
-  }
-
-  render() {
-    return (
-      <div className='search-results'>
-        {this.getSummaryText()}
-        <ul className='list-unstyled'>
-        {
-          this.props.searchResults.map((result, i)=>
-            <li key={result.identifier} className='search-results__result'>
-              <DatasetSummary dataset={result}
-                              onClickDataset={this.onToggleExpandDataset.bind(this, result)}
-                              isExpanded={this.state.openDataset === result.identifier}
-                              onClickTag={this.props.onClickTag}/>
-            </li>
-          )
-        }
-        </ul>
-      </div>
-
-    );
-  }
 }
 
-SearchResults.defaultProps={searchResults: []};
+SearchResults.defaultProps = { searchResults: [] };
 
 export default SearchResults;

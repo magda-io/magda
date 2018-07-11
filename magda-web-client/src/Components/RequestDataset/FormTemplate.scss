@@ -1,0 +1,60 @@
+$form-width: 700px;
+
+.correspondence-form {
+    max-width: $form-width;
+}
+
+.correspondence-message-input {
+    width: 100%;
+    width: -moz-available;
+    width: -webkit-stretch;
+    width: stretch;
+    display: block;
+    margin-bottom: 30px;
+    margin-top: 20px;
+}
+
+@media screen and (max-width: 600px) {
+    .correspondence-message-input {
+        height: 150px !important;
+    }
+}
+@media screen and (max-width: 600px) {
+    .correspondence-name-input,
+    .correspondence-email-input {
+        width: 250px !important;
+    }
+}
+
+.correspondence-name-input,
+.correspondence-email-input {
+    display: block;
+    width: 300px;
+    margin-bottom: 30px;
+    margin-top: 10px;
+}
+
+.correspondence-submit-button {
+    float: right;
+    margin: 5px;
+}
+
+.correspondence-clear-button {
+    float: right;
+    margin: 5px;
+}
+.correspondence-small-title {
+    font-weight: 500;
+}
+
+.correspondence-field-error {
+    color: red;
+    display: block;
+    font-size: 14px;
+    margin-top: -20px;
+    margin-bottom: 10px;
+}
+
+.field-label {
+    font-weight: 500;
+}

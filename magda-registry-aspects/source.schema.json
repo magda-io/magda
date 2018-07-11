@@ -3,6 +3,10 @@
     "title": "Aspect for capturing the source of a record",
     "type": "object",
     "properties": {
+        "id": {
+            "title": "The id of the source.",
+            "type": "string"
+        },
         "type": {
             "title": "The type of the source.",
             "type": "string"
@@ -16,7 +20,8 @@
             "type": "string"
         },
         "problems": {
-            "title": "Problems encountered while creating this record from the source.",
+            "title":
+                "Problems encountered while creating this record from the source.",
             "type": "array",
             "items": {
                 "title": "A problem report.",

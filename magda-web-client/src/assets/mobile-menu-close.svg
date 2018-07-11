@@ -1,0 +1,17 @@
+<svg width="18" height="18" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Group</title>
+<desc>Created using Figma</desc>
+<g id="Canvas" transform="translate(-369 -2783)">
+<g id="Group">
+<g id="Line 3">
+<use xlink:href="#path0_stroke" transform="matrix(0.707107 0.707107 -0.707107 0.707107 372 2784)" fill="#494949"/>
+</g>
+<g id="Line 3 Copy">
+<use xlink:href="#path0_stroke" transform="matrix(0.707107 -0.707107 0.707107 0.707107 370 2797)" fill="#494949"/>
+</g>
+</g>
+</g>
+<defs>
+<path id="path0_stroke" d="M 18.6667 2.33333C 19.219 2.33333 19.6667 1.88562 19.6667 1.33333C 19.6667 0.781049 19.219 0.333333 18.6667 0.333333L 18.6667 2.33333ZM 0 0.333333C -0.552285 0.333333 -1 0.781049 -1 1.33333C -1 1.88562 -0.552285 2.33333 0 2.33333L 0 0.333333ZM 18.6667 0.333333L 0 0.333333L 0 2.33333L 18.6667 2.33333L 18.6667 0.333333Z"/>
+</defs>
+</svg>

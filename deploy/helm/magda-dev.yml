@@ -1,11 +1,27 @@
 global:
-  externalUrl: http://magda-dev.terria.io
+  useCombinedDb: true
+  useCloudSql: false
+  externalUrl: https://dev.magda.io
   rollingUpdate:
     maxUnavailable: 1
-  image:
-    tag: "0.0.32-0"
+
+tags:
+  all: true
+  ingress: true
+  sleuther-broken-link: true
+  sleuther-linked-data-rating: true
+  sleuther-visualization: true
+  sleuther-format: true
+
+ingress:
+  hostname: dev.magda.io
+  ingressClass: nginx
 gateway:
+  service:
+    type: LoadBalancer
   loadBalancerIP: "104.199.180.124"
+  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
+  enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
@@ -13,17 +29,13 @@ gateway:
     requests:
       cpu: 50m
       memory: 100Mi
-    limits:
-      cpu: 200m
-      memory: 250Mi
 combined-db:
   resources:
     requests:
       cpu: 400m
-      memory: 1000Mi
-    limits:
-      cpu: 1000m
       memory: 1500Mi
+    limits:
+      cpu: 1500m
   waleBackup:
     method: WAL
     gsPrefix: "gs://magda-postgres-backups-asia/dev"
@@ -31,6 +43,8 @@ combined-db:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: TerriaJS-5e042b649f8a.json
+  data:
+    storage: 250Gi
 elasticsearch:
   data:
     heapSize: 500m
@@ -39,94 +53,89 @@ elasticsearch:
       requests:
         cpu: 400m
         memory: 1000Mi
-      limits:
-        cpu: 1000m
-        memory: 1500Mi
+  backup:
+    googleApplicationCreds:
+      secretName: storage-account-credentials
+      fileName: db-service-account-private-key.json
+feedback-api:
+  gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
+  readSnapshots: false
+  makeSnapshots: false
+  elasticsearch:
+    useGcsSnapshots: true
+    gcsSnapshotBucket: "magda-es-snapshots-dev"
+    gcsSnapshotClient: "default"
 preview-map:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 registry-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 250m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
 search-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 1000Mi
 web-server:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 sleuther-linked-data-rating:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 sleuther-broken-link:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
     limits:
-      cpu: 200m
-      memory: 150Mi
+      cpu: 500m
 sleuther-visualization:
   resources:
     requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      cpu: 500m
+sleuther-format:
+  resources:
+    requests:
       cpu: 0
       memory: 0
     limits:
-      cpu: 200m
-      memory: 300Mi
+      cpu: 500m
 admin-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 authorization-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
 discussions-api:
   resources:
     requests:
-      cpu: 0
+      cpu: 100m
       memory: 0
-    limits:
-      cpu: 200m
-      memory: 150Mi
+correspondence-api:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 0
+  defaultRecipient: "magda-test@googlegroups.com"
+  smtpHostname: "smtp.mailgun.org"
+  smtpPort: 2525

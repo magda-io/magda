@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect containing a literary summary of a text based document",
+    "type": "object",
+    "properties": {
+        "status": {
+            "title": "Whether this source can possibly have a summary or not",
+            "enum": ["isValid", "isNotValid"]
+        },
+        "summary": {
+            "title": "the content of the summary",
+            "type": "string"
+        }
+    }
+}

@@ -17,6 +17,7 @@ import akka.stream.scaladsl.SourceQueueWithComplete
 import akka.stream.DelayOverflowStrategy
 import akka.stream.Attributes
 import com.typesafe.config.Config
+import akka.actor.ActorContext
 
 object WebHookActor {
   case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
@@ -27,8 +28,8 @@ object WebHookActor {
 
   def props(registryApiBaseUrl: String)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl))
 
-  private def createWebHookActor(system: ActorSystem, registryApiBaseUrl: String, hook: WebHook)(implicit config: Config): ActorRef = {
-    system.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
+  private def createWebHookActor(context: ActorContext, registryApiBaseUrl: String, hook: WebHook)(implicit config: Config): ActorRef = {
+    context.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
   }
 
   private case class GotAllWebHooks(webHooks: List[WebHook], startup: Boolean)
@@ -69,7 +70,7 @@ object WebHookActor {
               case Some(actorRef) => actorRef
               case None => {
                 log.info("Creating new web hook actor for {}.", id)
-                val actorRef = WebHookActor.createWebHookActor(context.system, registryApiBaseUrl, hook)
+                val actorRef = WebHookActor.createWebHookActor(context, registryApiBaseUrl, hook)
                 this.webHookActors += (id -> actorRef)
                 actorRef
               }
@@ -80,7 +81,9 @@ object WebHookActor {
     setup
 
     def receive = {
-      case InvalidateWebhookCache => setup
+      case InvalidateWebhookCache => 
+        log.info("Invalidated webhook cache")
+        setup
       case Process(ignoreWaitingForResponse, aspectIds, webHookId) => {
         val actors = webHookId match {
           case None                 => webHookActors.values
@@ -163,9 +166,13 @@ object WebHookActor {
                     if (previousLastEvent != lastEvent) {
                       self ! Process()
                     }
+                  case WebHookProcessor.HttpError(status) =>
+                    // encountered an error while communicating with the hook recipient - deactivate the hook until its manually fixed
+                    log.info("WebHook {} Processing {}-{}: HTTP FAILURE {}, DEACTIVATING", this.id, previousLastEvent, lastEvent, status.reason())
+                    context.parent ! InvalidateWebhookCache
                 }.recover {
                   case e =>
-                    // TODO: What should we actually do here? Retry forever? Backoff? Notify someone? :|
+                    // Error communicating with the hook recipient - log the failure and wait until the next Process() call to resume.
                     log.error(e, "WebHook {} Processing {}-{}: FAILED", this.id, previousLastEvent, lastEvent)
                 }
               }

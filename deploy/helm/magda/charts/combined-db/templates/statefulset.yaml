@@ -1,11 +1,14 @@
 {{- if .Values.global.useCombinedDb }}
-apiVersion: apps/v1beta1
+apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
   name: combined-db
 spec:
   serviceName: combined-db
   replicas: 1
+  selector:
+    matchLabels:
+      service: combined-db
   template:
     metadata:
       labels:
@@ -16,10 +19,12 @@ spec:
       - name: combined-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
+        image: {{ template "postgres" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         ports:
         - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
+        {{- template "magda.postgresLifecycle" . }}
         env:
         - name: PGDATA
           value: /var/pv/data
@@ -27,9 +32,9 @@ spec:
         volumeMounts:
         - name: combined-db
           mountPath: /var/pv
-        {{- template "magda.waleGoogleStorageCredentials.volumeMount" . }}
+        {{- template "magda.waleVolumes.volumeMount" . }}
       volumes:
-      {{- template "magda.waleGoogleStorageCredentials.volume" . }}
+      {{- template "magda.waleVolumes.volume" . }}
   volumeClaimTemplates:
   - metadata:
       name: combined-db

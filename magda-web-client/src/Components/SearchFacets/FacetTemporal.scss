@@ -1,22 +1,8 @@
-.btn-facet-date-option.is-active{
-  background: transparent;
-  color: #333;
-  font-weight: bold;
+.facet-temporal-month-picker {
+    display: flex;
+
+    .facet-temporal-range-icon {
+        margin-top: 15px;
+        width: 20px;
+    }
 }
-
-.btn-facet-date-option.is-active .btn-facet-option__volume-indicator{
-  background: rgba(52, 151, 219, 0.25);
-}
-
-.btn-facet-date-option.is-active .btn-facet-option__count{
-  color: #2b2b2b;
-}
-
-
-
-
-.facet-temporal .slider{
-  width: 30px;
-  float: left;
-}
-

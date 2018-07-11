@@ -1,0 +1,23 @@
+@import "../variables";
+.description-box {
+    span {
+        font-size: 1rem;
+    }
+    .toggle-button {
+        color: $AU-color-foreground-action;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        padding-left: 0px;
+        margin-top: 24px;
+
+        img {
+            position: absolute;
+            top: -2px;
+        }
+    }
+    .toggle-button:focus {
+        outline: none;
+    }
+}

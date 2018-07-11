@@ -1,9 +1,4 @@
 dependencies:
-  - name: admin-api
-    version: 0.1.0
-    tags:
-      - all
-      - admin-api
   - name: authorization-api
     version: 0.1.0
     tags:
@@ -14,22 +9,11 @@ dependencies:
     tags:
       - all
       - authorization-db
-      - combined-db
   - name: combined-db
     version: 0.1.0
     tags:
       - all
       - combined-db
-  - name: discussions-api
-    version: 0.1.0
-    tags:
-      - all
-      - discussions-api
-  - name: discussions-db
-    version: 0.1.0
-    tags:
-      - all
-      - discussions-db
   - name: elasticsearch
     version: 0.1.0
     tags:
@@ -55,40 +39,70 @@ dependencies:
     tags:
       - all
       - registry-api
-  - name: registry-datastore
+  - name: registry-db
     version: 0.1.0
     tags:
       - all
-      - registry-datastore
-      - combined-db
+      - registry-db
   - name: search-api
     version: 0.1.0
     tags:
       - all
       - search-api
-  - name: session-store
+  - name: session-db
     version: 0.1.0
     tags:
       - all
-      - session-store
-      - combined-db
-  - name: sleuther-broken-link
-    version: 0.1.0
-    tags:
-      - all
-      - sleuther-broken-link
-  - name: sleuther-visualization
-    version: 0.1.0
-    tags:
-      - all
-      - sleuther-visualization
-  - name: sleuther-linked-data-rating
-    version: 0.1.0
-    tags:
-      - all
-      - sleuther-linked-data-rating
+      - session-db
   - name: web-server
     version: 0.1.0
     tags:
       - all
       - web-server
+  - name: correspondence-api
+    version: 0.1.0
+    tags:
+      - all
+      - correspondence-api
+
+# Deprecated or not currently used services
+  - name: admin-api
+    version: 0.1.0
+    tags:
+      - admin-api
+  - name: discussions-api
+    version: 0.1.0
+    tags:
+      - discussions-api
+  - name: discussions-db
+    version: 0.1.0
+    tags:
+      - discussions-db
+  - name: feedback-api
+    version: 0.1.0
+    tags:
+      - feedback-api
+
+# Sleuthers
+  - name: sleuther-format
+    version: 0.1.0
+    tags:
+      - sleuther-format
+  - name: sleuther-broken-link
+    version: 0.1.0
+    tags:
+      - sleuther-broken-link
+  - name: sleuther-visualization
+    version: 0.1.0
+    tags:
+      - sleuther-visualization
+  - name: sleuther-linked-data-rating
+    version: 0.1.0
+    tags:
+      - sleuther-linked-data-rating
+
+  - name: ingress
+    version: 0.1.0
+    tags:
+      - ingress
+

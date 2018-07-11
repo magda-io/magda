@@ -1,5 +1,6 @@
 global:
   useCombinedDb: true
+  useCloudSql: false
   externalUrl: "http://localhost:6100"
   rollingUpdate:
     maxUnavailable: 0
@@ -19,14 +20,17 @@ tags:
   discussions-api: false
   discussions-db: false
   elasticsearch: false
+  feedback: false
   gateway: false
   indexer: false
   preview-map: false
   registry-api: false
-  registry-datastore: false
+  registry-db: false
   search-api: false
-  session-store: false
+  session-db: false
   sleuther-broken-link: false
   sleuther-linked-data-rating: false
   sleuther-visualization: false
+  sleuther-format: false
   web-server: false
+  ingress: false

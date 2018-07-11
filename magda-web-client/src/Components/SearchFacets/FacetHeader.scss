@@ -1,15 +1,52 @@
-@import '../../variables';
-.facet-header__title{
-  width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  border-radius: 15px;
-  text-align: left;
-  background: #fff;
-  &.not-empty{
-    background: $magda-grey;
-  }
-  .caret{
-    margin-left: 3px;
-  }
+@import "../../variables";
+
+.facet-header {
+    display: flex;
+    &.not-empty {
+        button {
+            &,
+            &:hover,
+            &:focus {
+                background: $AU-colordark-background !important;
+                color: $AU-colordark-foreground-text !important;
+            }
+        }
+    }
+
+    .btn-remove {
+        padding: 4px;
+        display: flex;
+    }
+
+    @media (max-width: $medium) {
+        .btn-facet {
+            width: 100%;
+        }
+    }
+    button {
+        border: 1px solid rgba(73, 73, 73, 0.05);
+        border-radius: 2px;
+        background-color: $AU-colordark-background;
+        font-size: 14px;
+        text-align: center;
+        padding: 0 16px 0 10px;
+        text-transform: capitalize;
+        pointer: cursor;
+        line-height: 1;
+        .facet-icon {
+            padding: 6px 6px 4px 0;
+            height: 24px;
+            width: 24px;
+        }
+        span {
+            font-size: 14px;
+            vertical-align: top;
+            line-height: 35px;
+        }
+    }
+}
+
+.facet-body__header {
+    margin-bottom: 10px;
+    margin-top: 10px;
 }

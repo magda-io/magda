@@ -1,21 +1,27 @@
 {
   "name": "@magda/registry-api",
-  "version": "0.0.32-0",
+  "version": "0.0.44-0",
   "description": "The registry API.",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "npm run compile",
+    "build": "yarn run compile",
     "test": "cd .. && sbt registryApi/test",
     "compile": "cd .. && sbt registryApi/compile",
-    "docker-build-local": "cd .. && sbt registryApi/dockerBuildAndPush",
-    "docker-build-prod": "cd .. && sbt \"-DdockerHub=true\" registryApi/dockerBuildAndPush",
+    "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" registryApi/dockerBuildAndPush",
+    "docker-build-prod": "cd .. && sbt registryApi/dockerBuildAndPush",
+    "retag-and-push": "retag-and-push",
     "start": "cd .. && sbt registryApi/run",
     "dev": "cd .. && sbt ~registryApi/relaunch"
   },
   "config": {
     "interface": "0.0.0.0",
     "port": 6101,
-    "databaseUrl": "jdbc:postgresql://localhost:5432/postgres",
     "skipAuthorization": true
+  },
+  "magda": {
+    "language": "scala",
+    "categories": {
+      "api": true
+    }
   }
 }

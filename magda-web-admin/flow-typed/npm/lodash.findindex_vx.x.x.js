@@ -8,13 +8,13 @@
  *
  * Fill this stub out by replacing all the `any` types.
  *
- * Once filled out, we encourage you to share your work with the 
- * community by sending a pull request to: 
+ * Once filled out, we encourage you to share your work with the
+ * community by sending a pull request to:
  * https://github.com/flowtype/flow-typed
  */
 
-declare module 'lodash.findindex' {
-  declare module.exports: any;
+declare module "lodash.findindex" {
+    declare module.exports: any;
 }
 
 /**
@@ -23,11 +23,10 @@ declare module 'lodash.findindex' {
  * needed.
  */
 
-
 // Filename aliases
-declare module 'lodash.findindex/index' {
-  declare module.exports: $Exports<'lodash.findindex'>;
+declare module "lodash.findindex/index" {
+    declare module.exports: $Exports<"lodash.findindex">;
 }
-declare module 'lodash.findindex/index.js' {
-  declare module.exports: $Exports<'lodash.findindex'>;
+declare module "lodash.findindex/index.js" {
+    declare module.exports: $Exports<"lodash.findindex">;
 }

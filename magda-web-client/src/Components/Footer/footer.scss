@@ -1,0 +1,68 @@
+@import "../../variables";
+
+.footer {
+    padding: 2rem 0;
+
+    &,
+    &.au-body {
+        margin-top: 34px; //Match bottom-margin of search result pagination
+    }
+
+    .nav-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .footer-end {
+        @media (min-width: $medium) {
+            margin-top: -5px;
+        }
+    }
+
+    .copyright {
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 22px;
+
+        .copyright-text {
+            display: none;
+
+            @media (min-width: $small) {
+                display: inline;
+            }
+        }
+
+        .logo-link {
+            flex-shrink: 0;
+        }
+
+        .logo {
+            width: auto;
+            z-index: 0;
+        }
+
+        .data61-logo {
+            height: 36px;
+            margin-left: 10px;
+            margin-top: 8px;
+        }
+
+        .dta-logo {
+            height: 29px;
+            padding-top: 7px;
+            padding-left: 9px;
+        }
+
+        a {
+            /* ./index.scss defines a border-bottom, this overrides that */
+            border-bottom-style: none;
+        }
+
+        a:hover {
+            /* ./index.scss defines a background-color, this overrides that */
+            background-color: transparent;
+        }
+    }
+}

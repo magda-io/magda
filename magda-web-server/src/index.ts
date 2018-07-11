@@ -2,6 +2,8 @@ import * as express from "express";
 import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
+import * as morgan from "morgan";
+import * as request from "request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -39,6 +41,11 @@ const argv = yargs
         type: "string",
         default: "/"
     })
+    .option("devProxy", {
+        describe:
+            "The URL of the MAGDA API Gateway to proxy to. Useful in development when you want to serve everything from one port for CORS reasons",
+        type: "string"
+    })
     .option("apiBaseUrl", {
         describe:
             "The base URL of the MAGDA API Gateway.  If not specified, the URL is built from the baseUrl.",
@@ -72,20 +79,18 @@ const argv = yargs
 
 var app = express();
 
-const magda = path.join(
-    __dirname,
-    "..",
-    "node_modules",
-    "@magda"
-);
+app.use(morgan("combined"));
 
-const clientRoot = path.join(magda, "web-client");
+const clientRoot = path.resolve(
+    require.resolve("@magda/web-client/package.json"),
+    ".."
+);
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const adminRoot = path.join(magda, "web-admin");
-const adminBuild = path.join(adminRoot, "build");
-console.log("Admin: " + adminBuild);
+// const adminRoot = require.resolve("@magda/web-admin");
+// const adminBuild = path.join(adminRoot, "build");
+// console.log("Admin: " + adminBuild);
 
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
@@ -96,6 +101,7 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -137,13 +143,28 @@ app.get("/server-config.js", function(req, res) {
                     .segment("..")
                     .segment("preview-map")
                     .toString()
+        ),
+        feedbackApiBaseUrl: addTrailingSlash(
+            argv.feedbackApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("feedback")
+                    .segment("user")
+                    .toString()
+        ),
+        correspondenceApiBaseUrl: addTrailingSlash(
+            argv.correspondenceApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("correspondence")
+                    .toString()
         )
     };
-    res.type("json");
+    res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
-app.use("/admin", express.static(adminBuild));
+// app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
@@ -155,7 +176,9 @@ const topLevelRoutes = [
     "sign-in-redirect",
     "dataset",
     "projects",
-    "publishers"
+    "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
+    "organisations",
+    "suggest"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -167,12 +190,36 @@ topLevelRoutes.forEach(topLevelRoute => {
     });
 });
 
-app.get("/admin", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
+app.get("/page/*", function(req, res) {
+    res.sendFile(path.join(clientBuild, "index.html"));
 });
-app.get("/admin/*", function(req, res) {
-    res.sendFile(path.join(adminBuild, "index.html"));
-});
+
+// app.get("/admin", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
+// app.get("/admin/*", function(req, res) {
+//     res.sendFile(path.join(adminBuild, "index.html"));
+// });
+
+if (argv.devProxy) {
+    app.get("/api/*", function(req, res) {
+        console.log(argv.devProxy + req.params[0]);
+        req.pipe(
+            request({
+                url: argv.devProxy + req.params[0],
+                qs: req.query,
+                method: req.method
+            })
+        )
+            .on("error", err => {
+                const msg = "Error on connecting to the webservice.";
+                console.error(msg, err);
+                res.status(500).send(msg);
+            })
+            .pipe(res);
+    });
+}
+
 app.use(
     "/sitemap",
     buildSitemapRouter({

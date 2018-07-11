@@ -1,19 +1,15 @@
-@import '../../variables';
-.search-tabs{
-  padding-left: 15px;
+@import "../../variables";
+.search-tabs {
+    padding-left: 15px;
 }
 
-.search-tabs li{
-  display: inline-block;
-  float: left;
+.search-tabs li {
+    display: inline-block;
+    float: left;
 }
 
-.search-tabs li a{
-  color: #333;
-}
-
-.search-tabs li.active a{
-  font-weight: 600;
-	color: $magda-blue;
-  border-bottom: solid 3px $magda-blue;
+.search-tabs li.active a {
+    font-weight: 400;
+    color: $AU-color-foreground-action;
+    border-bottom: solid 3px $AU-color-foreground-action;
 }

@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: authorization-api
 spec:
+  replicas: {{ .Values.replicas | default 1 }}
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
@@ -22,6 +23,15 @@ spec:
             "--dbHost", "authorization-db",
             "--dbPort", "5432"
         ]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: /v0/public/users/{{ .Values.global.defaultAdminUserId }}
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -32,7 +42,10 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD

@@ -4,9 +4,9 @@ import * as passport from "passport";
 const session = require("express-session");
 
 export interface AuthenticatorOptions {
-    sessionSecret: string,
-    dbHost: string,
-    dbPort: number
+    sessionSecret: string;
+    dbHost: string;
+    dbPort: number;
 }
 
 export default class Authenticator {
@@ -16,11 +16,11 @@ export default class Authenticator {
     private passportSessionMiddleware: express.RequestHandler;
 
     constructor(options: AuthenticatorOptions) {
-        passport.serializeUser(function (user: any, cb) {
+        passport.serializeUser(function(user: any, cb) {
             cb(null, user);
         });
 
-        passport.deserializeUser(function (user: any, cb) {
+        passport.deserializeUser(function(user: any, cb) {
             cb(null, user);
         });
 

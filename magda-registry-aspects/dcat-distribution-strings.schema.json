@@ -1,7 +1,8 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "title": "DCAT Distribution properties as strings",
-    "description": "The [DCAT Distribution](https://www.w3.org/TR/vocab-dcat/#class-distribution) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
+    "description":
+        "The [DCAT Distribution](https://www.w3.org/TR/vocab-dcat/#class-distribution) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
     "type": "object",
     "properties": {
         "title": {
@@ -13,29 +14,35 @@
             "type": "string"
         },
         "issued": {
-            "title": "Date of formal issuance (e.g., publication) of the distribution.",
+            "title":
+                "Date of formal issuance (e.g., publication) of the distribution.",
             "type": "string",
             "format": "date-time"
         },
         "modified": {
-            "title": "Most recent date on which the distribution was changed, updated or modified.",
+            "title":
+                "Most recent date on which the distribution was changed, updated or modified.",
             "type": "string",
             "format": "date-time"
         },
         "license": {
-            "title": "The license under which the distribution is made available.",
+            "title":
+                "The license under which the distribution is made available.",
             "type": "string"
         },
         "rights": {
-            "title": "Information about rights held in and over the distribution.",
+            "title":
+                "Information about rights held in and over the distribution.",
             "type": "string"
         },
         "accessURL": {
-            "title": "A landing page, feed, SPARQL endpoint or other type of resource that gives access to the distribution of the dataset.",
+            "title":
+                "A landing page, feed, SPARQL endpoint or other type of resource that gives access to the distribution of the dataset.",
             "type": "string"
         },
         "downloadURL": {
-            "title": "A file that contains the distribution of the dataset in a given format.",
+            "title":
+                "A file that contains the distribution of the dataset in a given format.",
             "type": "string"
         },
         "byteSize": {

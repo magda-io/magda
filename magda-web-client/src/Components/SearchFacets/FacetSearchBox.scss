@@ -1,42 +1,6 @@
-.facet-search-box{
-  position: relative;
-  width: calc(100% - 56px);
-}
-
-.facet-search-box input.form-control{
-  padding-left: 30px;
-  border-radius: 0;
-  box-shadow: none !important;
-}
-
-.facet-search-box form{
-    position: relative;
-    margin-bottom: 8px;
-}
-
-
-.facet-search-box .search-icon{
+.facet-search-box .search-icon {
     position: absolute;
-    right: 10px;
-    top: 10px;
-}
-
-.facet-search-box .form-control{
-    padding-left: 25px;
-}
-
-
-.facet-search-box__options{
-  position: absolute;
-  background: #dcdfe1;
-  z-index: 99999;
-  right: -56px;
-  left: 0;
-  border-radius: 1px;
-  min-height: 220px;
-  max-height: 300px;
-  overflow-y: auto;
-  /*border: 1px solid rgba(189, 195, 199, 0.15);*/
-  padding: 3px;
-  box-shadow: 0px 2px 1px 0px rgba(189, 195, 199, 0.3);
+    right: 24px;
+    top: 20px;
+    z-index: 10;
 }

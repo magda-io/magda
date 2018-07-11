@@ -3,54 +3,59 @@ const moment = libraries.moment;
 // from moment.js, from-string.js
 var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
 var isoTimes = [
-    ['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/],
-    ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/],
-    ['HH:mm:ss', /\d\d:\d\d:\d\d/],
-    ['HH:mm', /\d\d:\d\d/],
-    ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/],
-    ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/],
-    ['HHmmss', /\d\d\d\d\d\d/],
-    ['HHmm', /\d\d\d\d/],
-    ['HH', /\d\d/]
+    ["HH:mm:ss.SSSS", /\d\d:\d\d:\d\d\.\d+/],
+    ["HH:mm:ss,SSSS", /\d\d:\d\d:\d\d,\d+/],
+    ["HH:mm:ss", /\d\d:\d\d:\d\d/],
+    ["HH:mm", /\d\d:\d\d/],
+    ["HHmmss.SSSS", /\d\d\d\d\d\d\.\d+/],
+    ["HHmmss,SSSS", /\d\d\d\d\d\d,\d+/],
+    ["HHmmss", /\d\d\d\d\d\d/],
+    ["HHmm", /\d\d\d\d/],
+    ["HH", /\d\d/]
 ];
 
 for (var i = 0; i < isoTimes.length; ++i) {
     // A time must follow whitespace or 'T' and occur at the end of the string.
-    isoTimes[i][1] = new RegExp('[\\sT]' + isoTimes[i][1].source + '(' + tzRegex.source + ')?$');
+    isoTimes[i][1] = new RegExp(
+        "[\\sT]" + isoTimes[i][1].source + "(" + tzRegex.source + ")?$"
+    );
 }
 
 const customDateFormats = [
-    'DD-MM-YYYY',
-    'DD-MMM-YYYY',
-    'DD-MMMM-YYYY',
-    'D-MMM-YYYY',
-    'D-MMMM-YYYY',
-    'MM-DD-YYYY',
-    'MMM-DD-YYYY',
-    'MMMM-DD-YYYY',
-    'MMM-DD-YY',
-    'MMMM-DD-YY',
-    'MMMM-YYYY',
-    'MMM-YYYY',
-    'MMMM-YY',
-    'MMM-YY',
-    'YYYY',
-    'YY',
+    "DD-MM-YYYY",
+    "DD-MMM-YYYY",
+    "DD-MMMM-YYYY",
+    "D-MMM-YYYY",
+    "D-MMMM-YYYY",
+    "MM-DD-YYYY",
+    "MMM-DD-YYYY",
+    "MMMM-DD-YYYY",
+    "MMM-DD-YY",
+    "MMMM-DD-YY",
+    "MMMM-YYYY",
+    "MMM-YYYY",
+    "MMMM-YY",
+    "MMM-YY",
+    "YYYY",
+    "YY"
 ];
 
 const customDateFormatRegexs = customDateFormats.map(format => {
     return {
         format: format,
-        regex: new RegExp('^' + format
-            .replace(/-/g, '[-\\/\\s]')
-            .replace(/M{4}/g, '[A-Za-z]+')
-            .replace(/M{3}/g, '[A-Za-z]{3}')
-            .replace(/[DMY]/g, '\\d'))
+        regex: new RegExp(
+            "^" +
+                format
+                    .replace(/-/g, "[-\\/\\s]")
+                    .replace(/M{4}/g, "[A-Za-z]+")
+                    .replace(/M{3}/g, "[A-Za-z]{3}")
+                    .replace(/[DMY]/g, "\\d")
+        )
     };
 });
 
-const dateComponentSeparators = ['-', '/', ' '];
-const dateTimeSeparators = ['T', ' '];
+const dateComponentSeparators = ["-", "/", " "];
+const dateTimeSeparators = ["T", " "];
 const formatScratch = [];
 
 function parseDateTimeString(s) {
@@ -65,7 +70,9 @@ function parseDateTimeString(s) {
     }
 
     // Next try some custom date formats
-    const matchingDateFormats = customDateFormatRegexs.filter(format => format.regex.test(s));
+    const matchingDateFormats = customDateFormatRegexs.filter(format =>
+        format.regex.test(s)
+    );
     const matchingTimeFormats = isoTimes.filter(format => format[1].test(s));
     const includeTimeZone = tzRegex.test(s);
 
@@ -74,15 +81,27 @@ function parseDateTimeString(s) {
 
     matchingDateFormats.forEach(dateFormat => {
         dateComponentSeparators.forEach(dateComponentSeparator => {
-            const dateFormatWithSeparator = dateFormat.format.replace(/-/g, dateComponentSeparator);
+            const dateFormatWithSeparator = dateFormat.format.replace(
+                /-/g,
+                dateComponentSeparator
+            );
             formats.push(dateFormatWithSeparator);
 
             dateTimeSeparators.forEach(dateTimeSeparator => {
                 matchingTimeFormats.forEach(timeFormat => {
-                    formats.push(dateFormatWithSeparator + dateTimeSeparator + timeFormat[0]);
+                    formats.push(
+                        dateFormatWithSeparator +
+                            dateTimeSeparator +
+                            timeFormat[0]
+                    );
 
                     if (includeTimeZone) {
-                        formats.push(dateFormatWithSeparator + dateTimeSeparator + timeFormat[0] + 'Z');
+                        formats.push(
+                            dateFormatWithSeparator +
+                                dateTimeSeparator +
+                                timeFormat[0] +
+                                "Z"
+                        );
                     }
                 });
             });
@@ -101,21 +120,21 @@ function getPrecisionFromMoment(m) {
     if (/S/.test(format)) {
         return oneMillisecond;
     } else if (/s/.test(format)) {
-        return moment.duration(1, 'seconds');
+        return moment.duration(1, "seconds");
     } else if (/m/.test(format)) {
-        return moment.duration(1, 'minutes');
+        return moment.duration(1, "minutes");
     } else if (/[hH]/.test(format)) {
-        return moment.duration(1, 'hours');
+        return moment.duration(1, "hours");
     } else if (/[DdE]/.test(format)) {
-        return moment.duration(1, 'days');
+        return moment.duration(1, "days");
     } else if (/[WwG]/.test(format)) {
-        return moment.duration(1, 'weeks');
+        return moment.duration(1, "weeks");
     } else if (/M/.test(format)) {
-        return moment.duration(1, 'months');
+        return moment.duration(1, "months");
     } else if (/Q/.test(format)) {
-        return moment.duration(1, 'quarters');
+        return moment.duration(1, "quarters");
     } else if (/[YgG]/.test(format)) {
-        return moment.duration(1, 'years');
+        return moment.duration(1, "years");
     } else {
         return moment.duration(0);
     }
@@ -123,7 +142,10 @@ function getPrecisionFromMoment(m) {
 
 function roundUp(date) {
     const precision = getPrecisionFromMoment(date);
-    return moment.utc(date).add(precision).subtract(oneMillisecond);
+    return moment
+        .utc(date)
+        .add(precision)
+        .subtract(oneMillisecond);
 }
 
 const nowRegExp = /^(Current|Now|Ongoing)$/i;
@@ -148,10 +170,13 @@ function parse(start, end, modified) {
     const startDate = parseTemporalCoverageField(start, modified, false);
     const endDate = parseTemporalCoverageField(end, modified, true);
 
-    let result = startDate && endDate ? {
-        start: startDate,
-        end: endDate
-    } : undefined;
+    let result =
+        startDate && endDate
+            ? {
+                  start: startDate,
+                  end: endDate
+              }
+            : undefined;
 
     if (start && end && !startDate && !endDate) {
         // Unparsable text in both start and end - this might mean that there's split values in both (e.g. start=1999-2000, end=2010-2011).

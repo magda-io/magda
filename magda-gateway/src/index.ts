@@ -4,6 +4,7 @@ import * as express from "express";
 import * as path from "path";
 import * as yargs from "yargs";
 import * as ejs from "ejs";
+import * as helmet from "helmet";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
@@ -98,6 +99,24 @@ const argv = addJwtSecretFromEnvVar(
         .options("ckanUrl", {
             describe: "The URL of a CKAN server to use for authentication.",
             type: "string"
+        })
+        .options("enableAuthEndpoint", {
+            describe: "Whether enable the AuthEndpoint",
+            type: "boolean",
+            default: false
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("cspReportUri", {
+            describe:
+                "The URI to send Content Security Policy violation reports to.",
+            type: "string"
         }).argv
 );
 
@@ -109,6 +128,53 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+app.disable("x-powered-by");
+app.use(
+    helmet({
+        hsts: {
+            maxAge: 31536000,
+            includeSubdomains: true,
+            preload: true
+        }
+    })
+);
+
+const cspDirectives = {
+    scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // for VWO until... we get rid of that? :(
+        "data:", // ditto
+        "browser-update.org",
+        "dev.visualwebsiteoptimizer.com",
+        "platform.twitter.com",
+        "www.googletagmanager.com",
+        "www.google-analytics.com",
+        "rum-static.pingdom.net",
+        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js",
+        "https://tagmanager.google.com/debug",
+        "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
+        "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
+    ],
+    objectSrc: ["'none'"],
+    sandbox: [
+        "allow-scripts",
+        "allow-same-origin",
+        "allow-popups",
+        "allow-forms",
+        "allow-popups-to-escape-sandbox"
+    ]
+} as helmet.IHelmetContentSecurityPolicyDirectives;
+
+if (argv.cspReportUri) {
+    cspDirectives.reportUri = argv.cspReportUri;
+}
+
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: cspDirectives,
+        browserSniff: false
+    })
+);
 
 const configuredCors = cors({
     origin: true,
@@ -124,20 +190,28 @@ app.set("view engine", "ejs");
 app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 app.use(require("morgan")("combined"));
 
-app.use(
-    "/auth",
-    createAuthRouter({
-        authenticator: authenticator,
-        jwtSecret: argv.jwtSecret,
-        facebookClientId: argv.facebookClientId,
-        facebookClientSecret: argv.facebookClientSecret,
-        googleClientId: argv.googleClientId,
-        googleClientSecret: argv.googleClientSecret,
-        ckanUrl: argv.ckanUrl,
-        authorizationApi: argv.authorizationApi,
-        externalUrl: argv.externalUrl
-    })
-);
+app.get("/v0/healthz", function(req, res) {
+    res.status(200).send("OK");
+});
+
+if (argv.enableAuthEndpoint) {
+    app.use(
+        "/auth",
+        createAuthRouter({
+            authenticator: authenticator,
+            jwtSecret: argv.jwtSecret,
+            facebookClientId: argv.facebookClientId,
+            facebookClientSecret: argv.facebookClientSecret,
+            googleClientId: argv.googleClientId,
+            googleClientSecret: argv.googleClientSecret,
+            ckanUrl: argv.ckanUrl,
+            authorizationApi: argv.authorizationApi,
+            externalUrl: argv.externalUrl,
+            userId: argv.userId
+        })
+    );
+}
+
 app.use(
     "/api/v0",
     createApiRouter({

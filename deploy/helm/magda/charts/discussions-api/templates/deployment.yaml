@@ -23,6 +23,15 @@ spec:
             "--dbPort", "5432",
             "--authorizationApi", "http://authorization-api/v0"
         ]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: /v0/healthz
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -33,12 +42,15 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if not .Values.global.noDbAuth }}
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
         - name: PGUSER
           value: client
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: auth-db-client
+              key: discussions-db-client
 {{- end }}

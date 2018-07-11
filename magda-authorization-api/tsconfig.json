@@ -4,7 +4,7 @@
         "baseUrl": ".",
         "paths": {
             "@magda/typescript-common/dist/*": [
-                "./node_modules/@magda/typescript-common/src/*"
+                "../node_modules/@magda/typescript-common/src/*"
             ]
         }
     }

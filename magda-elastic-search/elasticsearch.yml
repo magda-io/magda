@@ -19,8 +19,10 @@ path:
 bootstrap:
   memory_lock: true
 
+action:
+  auto_create_index: ".security*,.monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*"
+
 http:
-  enabled: ${HTTP_ENABLE}
   compression: true
   cors:
     enabled: ${HTTP_CORS_ENABLE}
@@ -30,9 +32,3 @@ discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
     minimum_master_nodes: ${NUMBER_OF_MASTERS}
-
-xpack:
-  security:
-    enabled: ${XPACK_ENABLED}
-    authc.accept_default_password: ${ACCEPT_DEFAULT_PASSWORD}
-  ml.enabled: false

@@ -1,4 +1,4 @@
-import { BadRequest } from './generated/registry/api';
+import { BadRequest } from "./generated/registry/api";
 
 export class ServiceError extends Error {
     public e: any;
@@ -11,10 +11,16 @@ export class ServiceError extends Error {
 
 export class BadRequestError extends ServiceError {
     constructor(statusCode: number, errorResponse: BadRequest, e: any) {
-        super(`Status code: ${statusCode}, body:\n${JSON.stringify(errorResponse, null, '  ')}`, e);
+        super(
+            `Status code: ${statusCode}, body:\n${JSON.stringify(
+                errorResponse,
+                null,
+                "  "
+            )}`,
+            e
+        );
     }
 }
-
 
 /**
  * Creates a {@link ServiceError} from the result of a failed call to an API generated
@@ -34,8 +40,11 @@ export default function createServiceError(e: any): Error {
     } else if (e && e.toString() !== {}.toString()) {
         return new ServiceError(e.toString(), e);
     } else if (e) {
-        return new ServiceError(`${JSON.stringify(e, null, '  ')}`, e);
+        return new ServiceError(`${JSON.stringify(e, null, "  ")}`, e);
     } else {
-        return new ServiceError('An undefined service error occurred.', undefined);
+        return new ServiceError(
+            "An undefined service error occurred.",
+            undefined
+        );
     }
 }

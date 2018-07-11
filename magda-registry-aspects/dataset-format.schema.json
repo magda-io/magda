@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title":
+        "Aspect containing the format of a distribution, and the probability that it's correct",
+    "type": "object",
+    "properties": {
+        "format": {
+            "title": "The determined format for this distribution",
+            "type": "string"
+        },
+        "confidenceLevel": {
+            "title":
+                "The level of confidence (percentage probability) that this is the correct format",
+            "type": "number"
+        }
+    }
+}

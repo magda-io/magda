@@ -1,21 +1,22 @@
 {
   "name": "@magda/sleuther-broken-link",
   "description": "MAGDA Broken Link Sleuther",
-  "version": "0.0.32-0",
+  "version": "0.0.44-0",
   "scripts": {
-    "build": "npm run compile",
+    "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "test": "mocha --compilers ts:@magda/scripts/node_modules/ts-node/register --require @magda/scripts/node_modules/tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "retag-and-push": "retag-and-push"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.32-0",
+    "@magda/scripts": "^0.0.44-0",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
@@ -35,9 +36,9 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.32-0",
-    "@magda/sleuther-framework": "^0.0.32-0",
-    "@magda/typescript-common": "^0.0.32-0",
+    "@magda/registry-aspects": "^0.0.44-0",
+    "@magda/sleuther-framework": "^0.0.44-0",
+    "@magda/typescript-common": "^0.0.44-0",
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
     "lru-cache": "4.0.2",
@@ -52,5 +53,11 @@
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "sleuther": true
+    }
   }
 }

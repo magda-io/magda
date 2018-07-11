@@ -1,0 +1,23 @@
+@import "../variables";
+.banner {
+    text-align: center;
+    padding: 8px 0;
+    position: relative;
+    @include AU-fontgrid(xs);
+    padding-right: 40px;
+    a {
+        display: inline-block;
+    }
+    .close-btn {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        position: absolute;
+        top: 5px;
+        right: 0;
+    }
+    img {
+        height: 24px;
+        width: 24px;
+    }
+}

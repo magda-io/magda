@@ -1,7 +1,7 @@
-image:
+image: {}
   #repository: data61/
   #tag: latest
-  pullPolicy: Always
+  # pullPolicy: Always
 elasticsearch:
   shards: 1
   replicas: 0
@@ -19,3 +19,5 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
+makeSnapshots: false
+readSnapshots: false

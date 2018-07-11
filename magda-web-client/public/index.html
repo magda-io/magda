@@ -1,67 +1,73 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="google-site-verification" content="nV420NeaH-ckqtpFS1CwE8eFRaJHRD1gT6t4NX9-W0A" />
+    <meta name="theme-color" content="#320e3b"/>
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap"/>
+    <script>
+    var _rollbarConfig = {
+    accessToken: "cf418960a0ae4c00a1eeec43ae7500c8",
+    enabled: "%NODE_ENV%" === "production",
+    captureUncaught: true,
+    captureUnhandledRejections: true,
+    verbose: true, // This will now log to console.log, as well as Rollbar
+    hostBlackList: [
+        "127.0.0.1",
+        "localhost",
+        "192.168.99.1",
+        "192.168.99.100",
+        "minikube.data.gov.au"
+    ], // exclude local dev
+    payload: {
+        environment: "production",
+        client: {
+            javascript: {
+                source_map_enabled: true, //this is now true by default
+                code_version: "%REACT_APP_SHA1%",
+                // Optionally have Rollbar guess which frames the error was thrown from
+                // when the browser does not provide line and column numbers.
+                guess_uncaught_frames: true
+            }
+        }
+    }
+};
+</script>
+
+    <!--[if lte IE 9]>
+    <script type="text/javascript">
+        "use strict";
+        // IE9 Console Bug Fix
+        window.console = window.console || {};
+        window.console.log = window.console.log || function () {
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.10/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.10/es5-sham.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.3/es6-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.3/es6-sham.min.js"></script>
+    <![endif]-->
+
+    <script src="/assets/third-party.js"></script>
+    <script src="//assets.zendesk.com/embeddable_framework/main.js" data-ze-csp="true" async defer></script>
+    <script src="/assets/homepage/homepage-config.js"></script>
     <script src="/server-config.js"></script>
     <title>Search</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script>
-        window.twttr = (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0],
-          t = window.twttr || {};
-        if (d.getElementById(id)) return t;
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "https://platform.twitter.com/widgets.js";
-        fjs.parentNode.insertBefore(js, fjs);
+</head>
+<body class="au-body">
+<noscript>
+    <!-- Google Tag Manager (noscript) -->
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPSGPGD"
+                      height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    <!-- End Google Tag Manager (noscript) -->
+    For full functionality of this site it is necessary to enable JavaScript.
+    Here are the <a href="https://www.enable-javascript.com/" target="_blank">
+    instructions how to enable JavaScript in your web browser</a>.
 
-        t._e = [];
-        t.ready = function(f) {
-          t._e.push(f);
-        };
-
-        return t;
-      }(document, "script", "twitter-wjs"));
-          </script>
-
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-92539508-1', 'auto');
-
-    </script>
-    <!-- Start Visual Website Optimizer Asynchronous Code -->
-    <script type='text/javascript'>
-    var _vwo_code=(function(){
-    var account_id=329812,
-    settings_tolerance=2000,
-    library_tolerance=2500,
-    use_existing_jquery=false,
-    /* DO NOT EDIT BELOW THIS LINE */
-    f=false,d=document;return{use_existing_jquery:function(){return use_existing_jquery;},library_tolerance:function(){return library_tolerance;},finish:function(){if(!f){f=true;var a=d.getElementById('_vis_opt_path_hides');if(a)a.parentNode.removeChild(a);}},finished:function(){return f;},load:function(a){var b=d.createElement('script');b.src=a;b.type='text/javascript';b.innerText;b.onerror=function(){_vwo_code.finish();};d.getElementsByTagName('head')[0].appendChild(b);},init:function(){settings_timer=setTimeout('_vwo_code.finish()',settings_tolerance);var a=d.createElement('style'),b='body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}',h=d.getElementsByTagName('head')[0];a.setAttribute('id','_vis_opt_path_hides');a.setAttribute('type','text/css');if(a.styleSheet)a.styleSheet.cssText=b;else a.appendChild(d.createTextNode(b));h.appendChild(a);this.load('//dev.visualwebsiteoptimizer.com/j.php?a='+account_id+'&u='+encodeURIComponent(d.URL)+'&r='+Math.random());return settings_timer;}};}());_vwo_settings_timer=_vwo_code.init();
-    </script>
-    <!-- End Visual Website Optimizer Asynchronous Code -->
-    <script>
-      var $buoop = {vs:{i:10,f:-4,o:-4,s:7,c:-4},api:4};
-      function $buo_f(){
-       var e = document.createElement("script");
-       e.src = "//browser-update.org/update.min.js";
-       document.body.appendChild(e);
-      };
-      try {document.addEventListener("DOMContentLoaded", $buo_f,false)}
-      catch(e){window.attachEvent("onload", $buo_f)}
-    </script>
-    <script src="https://use.fontawesome.com/5fe8eda96e.js"></script>
-  </body>
+</noscript>
+<div id="root"></div>
+</body>
 </html>

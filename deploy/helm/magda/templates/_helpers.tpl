@@ -19,32 +19,66 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag }}"
 {{- end -}}
 
-{{- define "magda.postgres-env" }}
-        {{- if .Values.limits }}
-        - name: MEMORY_LIMIT
-          value: {{ .Values.limits.memory }}
+{{- define "postgres" -}}
+"{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag }}"
+{{- end -}}
+
+{{- define "magda.postgres-client-env" -}}
+        - name: CLIENT_USERNAME
+          value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
+        - name: CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+{{- end -}}
+
+{{- define "magda.postgres-migrator-env" }}
+        - name: PGUSER
+          value: postgres
+        {{- if .Values.global.noDbAuth }}
+        - name: PGPASSWORD
+          value: password
+        {{- else if .Values.global.useCloudSql }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+        {{- else if not .Values.global.noDbAuth }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: {{ .Chart.Name }}
         {{- end }}
         - name: CLIENT_USERNAME
           value: client
         {{- if .Values.global.noDbAuth }}
         - name: CLIENT_PASSWORD
           value: password
-        {{- end }}
-        {{- if not .Values.global.noDbAuth }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}
+        {{- else }}
         - name: CLIENT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-passwords
               key: {{ .Chart.Name }}-client
         {{- end }}
+{{- end -}}
+
+{{- define "magda.postgres-env" -}}
+        {{- template "magda.postgres-migrator-env" . }}
+        {{- if .Values.limits }}
+        - name: MEMORY_LIMIT
+          value: {{ .Values.limits.memory }}
+        {{- end }}
         {{- if .Values.waleBackup }}
         - name: BACKUP
-          value: {{ .Values.waleBackup.method | quote }}
+          value: {{ .Values.waleBackup.method | default "NONE" | quote }}
+        - name: BACKUP_RO
+          value: {{ .Values.waleBackup.readOnly | default "FALSE" | upper | quote }}
+        - name: BACKUP_RECOVERY_MODE
+          value: {{ .Values.waleBackup.recoveryMode | quote }}
         - name: WALE_S3_PREFIX
           value: {{ .Values.waleBackup.s3Prefix }}
         - name: AWS_ACCESS_KEY_ID
@@ -81,44 +115,59 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           value: {{ .Values.waleBackup.swiftAuthVersion }}
         - name: SWIFT_ENDPOINT_TYPE
           value: {{ .Values.waleBackup.swiftEndpointType }}
+        {{- if .Values.waleBackup.hostPath }}
+        - name: WALE_FILE_PREFIX
+          value: "file://localhost/var/backup"
+        {{- end }}
         - name: BACKUP_EXECUTION_TIME
           value: {{ .Values.waleBackup.executionTime }}
         {{- end }}
 {{- end }}
 
-{{- define "magda.waleGoogleStorageCredentials.volumeMount" }}
+{{- define "magda.waleVolumes.volumeMount" }}
 {{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           mountPath: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}"
           readOnly: true
 {{- end }}
+{{- if .Values.waleBackup.hostPath }}
+        - name: wale-backup-directory
+          mountPath: /var/backup
+{{- end }}
 {{- end }}
 {{- end }}
 
-{{- define "magda.waleGoogleStorageCredentials.volume" }}
+{{- define "magda.waleVolumes.volume" }}
 {{- if and .Values.waleBackup }}
 {{- if .Values.waleBackup.googleApplicationCreds }}
         - name: wale-google-account-credentials
           secret:
             secretName: {{ .Values.waleBackup.googleApplicationCreds.secretName }}
 {{- end }}
+{{- if .Values.waleBackup.hostPath }}
+        - name: wale-backup-directory
+          hostPath:
+            path: {{ .Values.waleBackup.hostPath }}
+            type: DirectoryOrCreate
+{{- end }}
 {{- end }}
 {{- end }}
 
+{{- define "magda.postgresLivenessProbe" }}
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          exec:
+            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432" ]
+          initialDelaySeconds: 3600
+          periodSeconds: 10
+          timeoutSeconds: 1
+{{- end }}
+{{- end }}
 
-{{- define "magda.elasticSearchXpackEnv" }}
-{{- if .Values.global.noDbAuth }}
-        - name: XPACK_ENABLED
-          value: "false"
-{{- end }}
-{{- if not .Values.global.noDbAuth }}
-        - name: XPACK_ENABLED
-          value: "false"
-        - name: ELASTIC_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: elasticsearch
-{{- end }}
+{{- define "magda.postgresLifecycle" }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", 'pkill backup-push && gosu postgres psql -c "SELECT pg_stop_backup()"']
 {{- end }}

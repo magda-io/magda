@@ -3,7 +3,8 @@ import {
     Record,
     WebHook,
     Operation,
-    WebHookAcknowledgementResponse
+    WebHookAcknowledgementResponse,
+    MultipleDeleteResult
 } from "../generated/registry/api";
 import RegistryClient, { RegistryOptions } from "./RegistryClient";
 import retry from "../retry";
@@ -153,12 +154,13 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     resumeHook(
         webhookId: string,
         succeeded: boolean = false,
-        lastEventIdReceived: string = null
+        lastEventIdReceived: string = null,
+        active?: boolean
     ): Promise<WebHookAcknowledgementResponse | Error> {
         const operation = () =>
             this.webHooksApi.ack(
                 encodeURIComponent(webhookId),
-                { succeeded, lastEventIdReceived },
+                { succeeded, lastEventIdReceived, active },
                 this.jwt
             );
 
@@ -261,5 +263,35 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         )
             .then(result => result.body)
             .catch(createServiceError);
+    }
+
+    deleteBySource(
+        sourceTagToPreserve: string,
+        sourceId: string
+    ): Promise<MultipleDeleteResult | "Processing" | Error> {
+        const operation = () =>
+            this.recordsApi
+                .trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt)
+                .then(result => {
+                    if (result.response.statusCode === 202) {
+                        return "Processing" as "Processing";
+                    } else {
+                        return result.body as MultipleDeleteResult;
+                    }
+                });
+
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to DELETE with sourceTagToPreserve ${sourceTagToPreserve} and sourceId ${sourceId}`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        ).catch(createServiceError);
     }
 }

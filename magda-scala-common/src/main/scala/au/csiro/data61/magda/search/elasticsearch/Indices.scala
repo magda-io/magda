@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import scala.collection.JavaConversions._
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.IndexesAndTypes
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigObject
@@ -21,13 +21,16 @@ trait Indices {
   def typeForFacet(facetType: FacetType) = facetType match {
     case Format    => Indices.FormatsIndexType
     case Publisher => Indices.PublisherIndexType
-    case Year      => throw new RuntimeException("No type for year")
+  }
+
+  def indexForFacet(facetType: FacetType)(implicit config: Config) = facetType match {
+    case Format    => getIndex(config, Indices.FormatsIndex)
+    case Publisher => getIndex(config, Indices.PublishersIndex)
   }
 
 }
 
 object DefaultIndices extends Indices {}
-
 
 object Indices {
   sealed trait Index {
@@ -38,6 +41,12 @@ object Indices {
   }
   case object RegionsIndex extends Index {
     override def name = "regions"
+  }
+  case object PublishersIndex extends Index {
+    override def name = "publishers"
+  }
+  case object FormatsIndex extends Index {
+    override def name = "formats"
   }
 
   sealed trait IndexType {
@@ -51,9 +60,9 @@ object Indices {
     override def name() = "regions"
   }
   case object FormatsIndexType extends IndexType {
-    override def name() = Format.id
+    override def name() = "formats"
   }
   case object PublisherIndexType extends IndexType {
-    override def name() = Publisher.id
+    override def name() = "publishers"
   }
 }

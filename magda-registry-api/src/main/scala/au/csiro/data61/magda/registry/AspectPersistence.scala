@@ -52,22 +52,34 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         case Some(aspect) => Success(aspect)
         case None => Failure(new RuntimeException("No aspect exists with that ID."))
       }
+
+      patchedAspect <- Try {
+        val aspectJson = aspect.toJson
+        val patchedJson = aspectPatch(aspectJson)
+        patchedJson.convertTo[AspectDefinition]
+      }
+
+      testAspectPatch <- Try {
+        // Diff the old aspect and the new one
+        val oldAspectJson = aspect.toJson
+        val newAspectJson = patchedAspect.toJson
+
+        JsonDiff.diff(oldAspectJson, newAspectJson, false)
+      }
+
+      _ <- if (id == patchedAspect.id) Success(patchedAspect) else Failure(new RuntimeException("The patch must not change the aspect's ID."))
+
       eventId <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testAspectPatch.ops.length > 0) {
           val event = PatchAspectDefinitionEvent(id, aspectPatch).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, data) values (${PatchAspectDefinitionEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
       }
-      patchedAspect <- Try {
-        val aspectJson = aspect.toJson
-        val patchedJson = aspectPatch(aspectJson)
-        patchedJson.convertTo[AspectDefinition]
-      }
-      _ <- if (id == patchedAspect.id) Success(patchedAspect) else Failure(new RuntimeException("The patch must not change the aspect's ID."))
+
       _ <- Try {
-        if (aspectPatch.ops.length > 0) {
+        if (testAspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.jsonSchema match {
             case Some(jsonSchema) => jsonSchema.compactPrint
             case None => null

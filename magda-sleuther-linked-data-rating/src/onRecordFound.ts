@@ -28,14 +28,30 @@ export default async function onRecordFound(
             : []
     )
         .flatMap((distribution: Record) => distribution.aspects)
-        .flatMap((aspect: any) => aspect["dcat-distribution-strings"])
+        .map((aspect: any) => ({
+            distStrings: aspect["dcat-distribution-strings"],
+            sourceLink: aspect["source-link-status"],
+            datasetFormat: aspect["dataset-format"]
+        }))
         .value();
 
     const processed = distributions.map(distribution => {
-        const isLicenseOpen = isOpenLicense(distribution.license);
+        if (
+            distribution.sourceLink &&
+            distribution.sourceLink.status == "broken"
+        ) {
+            return 0;
+        }
+
+        const isLicenseOpen = isOpenLicense(distribution.distStrings.license);
 
         if (isLicenseOpen) {
-            return Math.max(starsForFormat(distribution.format), 1);
+            const format = _.get(
+                distribution,
+                "datasetFormat.format",
+                distribution.distStrings.format
+            );
+            return Math.max(starsForFormat(format), 1);
         } else {
             return 0;
         }
@@ -49,17 +65,13 @@ export default async function onRecordFound(
         })
         .then(result => unionToThrowable(result));
 
-    const op = {
-        op: "add",
-        path: "/" + linkedDataAspectDef.id,
-        value: {
-            score: best / 5,
-            weighting: 0.8
-        }
-    };
-
     const qualityPromise = registry
-        .patchRecordAspect(record.id, datasetQualityAspectDef.id, [op])
+        .putRecordAspect(record.id, datasetQualityAspectDef.id, {
+            [linkedDataAspectDef.id]: {
+                score: best / 5,
+                weighting: 1
+            }
+        })
         .then(result => unionToThrowable(result));
 
     return Promise.all([starsAspectPromise, qualityPromise]).then(() => {});

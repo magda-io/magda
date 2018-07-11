@@ -1,3 +1,3 @@
-declare module 'lodash.find' {
-  declare module.exports: any;
+declare module "lodash.find" {
+    declare module.exports: any;
 }

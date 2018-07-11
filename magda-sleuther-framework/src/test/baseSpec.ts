@@ -8,7 +8,7 @@ import { Server } from "http";
  * This performs functions common to all the sleuther framework tests, like muting error logging
  * (because we'll be deliberately causing errors in tests), finding free ports to listen on for
  * testing the API, and setting up an express app to test against.
- * 
+ *
  * @param caption The caption to put in the "describe" block that goes around this test
  * @param fn A function in which to execute tests - this passes a number of arguments as no-arg functions
  *           that will return the latest value - these values change during test setup so they can't be

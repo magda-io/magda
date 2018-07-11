@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
   name: es-data
@@ -8,6 +8,10 @@ metadata:
 spec:
   serviceName: "es-data"
   replicas: {{- if .Values.production }} 2 {{- else }} 1 {{- end }}
+  selector:
+    matchLabels:
+      component: elasticsearch
+      role: data
   template:
     metadata:
       labels:
@@ -39,6 +43,14 @@ spec:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+{{- end }}
         resources:
 {{ toYaml .Values.data.resources | indent 10 }}
         env:
@@ -64,13 +76,16 @@ spec:
           value: "-Xms{{ .Values.data.heapSize }} -Xmx{{ .Values.data.heapSize }}"
         - name: ES_PLUGINS_INSTALL
           value: {{ .Values.data.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}/{{ .Values.backup.googleApplicationCreds.fileName }}"
+{{- end }}
 {{- if not .Values.production }}
         - name: REPO
           value: /snapshots
-        - name: NETWORK_HOST
-          value: 0.0.0.0
 {{- end }}
-        {{- template "magda.elasticSearchXpackEnv" . }}
         ports:
 {{- if not .Values.production }}
         - containerPort: 9200
@@ -83,6 +98,17 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /data
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: google-account-credentials
+          mountPath: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}"
+          readOnly: true
+{{- end }}
+{{- if .Values.backup.googleApplicationCreds }}
+      volumes:
+        - name: google-account-credentials
+          secret:
+            secretName: {{ .Values.backup.googleApplicationCreds.secretName }}
+{{- end }}
   volumeClaimTemplates:
   - metadata:
       name: storage

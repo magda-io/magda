@@ -1,23 +1,26 @@
 # MAGDA Local Ports
 
-It is not necessary to allocate ports to microservices when running on a Kubernetes cluster; everything can run on the standard port for its protocol.  When running microservices directly on a development machine, though, we need to make sure each service has a port to bind to on localhost and that everyone agrees what it is.  Here are the allocated local ports:
+It is not necessary to allocate ports to microservices when running on a Kubernetes cluster; everything can run on the standard port for its protocol. When running microservices directly on a development machine, though, we need to make sure each service has a port to bind to on localhost and that everyone agrees what it is. Here are the allocated local ports:
 
-| Component | Port |
-| --------- | ---- |
-| `magda-combined-db` | 5432 |
-| `magda-elastic-search` | 9300 |
-| `magda-gateway` | 6100 |
-| `magda-registry-api` | 6101 |
-| `magda-search-api` | 6102 |
-| `magda-indexer` | 6103 |
-| `magda-authorization-api` | 6104 |
-| `magda-discussions-api` | 6105 |
-| `magda-preview-map` | 6106 |
-| `magda-web-server` | 6107 |
-| `magda-web-client` | 6108 |
+| Component                           | Port |
+| ----------------------------------- | ---- |
+| `magda-postgres`                    | 5432 |
+| `magda-elastic-search`              | 9300 |
+| `magda-gateway`                     | 6100 |
+| `magda-registry-api`                | 6101 |
+| `magda-search-api`                  | 6102 |
+| `magda-indexer`                     | 6103 |
+| `magda-authorization-api`           | 6104 |
+| `magda-discussions-api`             | 6105 |
+| `magda-preview-map`                 | 6106 |
+| `magda-web-server`                  | 6107 |
+| `magda-web-client`                  | 6108 |
 | `magda-sleuther-linked-data-rating` | 6109 |
-| `magda-preview-map` | 6110 |
-| `magda-sleuther-broken-link` | 6111 |
-| `magda-admin-api` | 6112 |
-| `magda-ckan-connector` | 6113 |
-| `magda-web-admin` | 6114 |
+| `magda-preview-map`                 | 6110 |
+| `magda-sleuther-broken-link`        | 6111 |
+| `magda-admin-api`                   | 6112 |
+| `magda-ckan-connector`              | 6113 |
+| `magda-web-admin`                   | 6114 |
+| `magda-sleuther-format`             | 6115 |
+| `magda-feedback`                    | 6116 |
+| `magda-correspondence-api`          | 6117 |

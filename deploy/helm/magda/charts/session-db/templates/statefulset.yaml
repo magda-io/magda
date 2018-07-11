@@ -1,0 +1,45 @@
+{{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: session-db
+spec:
+  serviceName: session-db
+  replicas: 1
+  selector:
+    matchLabels:
+      service: session-db
+  template:
+    metadata:
+      labels:
+        service: session-db
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: session-db
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "postgres" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        {{- template "magda.postgres-env" . }}
+        volumeMounts:
+        - mountPath: /var/pv
+          name: session-data
+  volumeClaimTemplates:
+  - metadata:
+      name: session-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: "{{ .Values.data.storage }}"
+{{- end }}

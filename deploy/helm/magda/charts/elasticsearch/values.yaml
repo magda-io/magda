@@ -1,12 +1,10 @@
 production: false
-image:
-  #repository: data61/
-  #tag: latest
-  pullPolicy: Always
+image: {}
 client:
   resources: {}
   pluginsInstall: "" # e.g. "repository-gcs"
   heapSize: "256m"
+  replicas: 1
 data:
   resources: {}
   storage: 200Gi
@@ -14,6 +12,8 @@ data:
   heapSize: "512m"
 master:
   pluginsInstall: "" # e.g. "repository-gcs"
+backup:
+  googleApplicationCreds: {}
   #storageClass: "ssd"
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

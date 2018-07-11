@@ -1,3 +1,4 @@
+.DS_Store
 *.class
 *.log
 .classpath
@@ -30,4 +31,7 @@ snapshots
 .cache-tests
 node_modules/
 dist/
+
+pancake
 package-lock.json
+*/package-lock.json

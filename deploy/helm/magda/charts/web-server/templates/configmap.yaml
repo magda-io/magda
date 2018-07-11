@@ -6,5 +6,5 @@ data:
   # When the config map is mounted as a volume, these will be created as files.
   web.json: '{
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
-    "baseUrl": "/"
+    "baseUrl": {{ .Values.baseUrl | default "/" | quote }}
   }'

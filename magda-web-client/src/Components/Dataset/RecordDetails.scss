@@ -1,34 +1,27 @@
-@import '../../variables';
-.record-details__sidebar{
-    margin-top: 47px;
-    &>div{
-        margin-bottom: 10px;
+@import "../../variables";
+.record-details__sidebar {
+    margin-bottom: 10px;
+}
+
+.dataset-discussion {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+
+.tags {
+    .badge {
+        display: block;
     }
 }
 
-.dataset-discussion{
-  padding-top: 20px;
-  padding-bottom: 20px;
+.temporal-aspect-viewer {
+    th {
+        font-weight: 400;
+    }
 }
 
-
-.section-heading{
-  font-weight: 400;
-  color: $magda-dark-grey;
+.tab-content {
+    margin-bottom: 24px;
 }
 
-.publisher{
-  color: #888;
-  font-weight: bold;
-}
-
-.preview-toggle{
-  float: right;
-  background: transparent;
-  border: none;
-  padding: 0;
-  color: $magda-blue;
-  &:hover{
-    background: transparent;
-  }
-}

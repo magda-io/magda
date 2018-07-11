@@ -13,13 +13,13 @@
             "isPromoted": true,
             "isOpen": true
         },
-    {
-      "type": "socrata",
-      "name": "ACT Government broken?",
-      "groupBy": "category",
-      "filterQuery": ["limitTo=MAPS"],
-      "url": "http://www.data.act.gov.au"
-    },
+        {
+            "type": "socrata",
+            "name": "ACT Government broken?",
+            "groupBy": "category",
+            "filterQuery": ["limitTo=MAPS"],
+            "url": "http://www.data.act.gov.au"
+        },
         {
             "name": "National Data Sets",
             "type": "group",

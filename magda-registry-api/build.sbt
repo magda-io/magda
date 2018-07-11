@@ -39,5 +39,5 @@ EclipseKeys.withSource := true
 
 setupDocker(stage)
 
-unmanagedResourceDirectories in Test += baseDirectory.value.getParentFile / "magda-registry-datastore"
-includeFilter in (Test, unmanagedResources) := new SimpleFileFilter(file => file.getParentFile() == baseDirectory.value.getParentFile / "magda-registry-datastore" / "sql") && "*.sql"
+unmanagedResourceDirectories in Test += baseDirectory.value.getParentFile / "magda-migrator-registry-db"
+includeFilter in (Test, unmanagedResources) := new SimpleFileFilter(file => file.getParentFile() == baseDirectory.value.getParentFile / "magda-migrator-registry-db" / "sql") && "*.sql"

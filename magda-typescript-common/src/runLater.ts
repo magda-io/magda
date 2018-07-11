@@ -1,4 +1,7 @@
-export default function runLater<TResult>(milliseconds: number = 0, functionToRunLater: () => Promise<TResult> | TResult): Promise<TResult> {
+export default function runLater<TResult>(
+    milliseconds: number = 0,
+    functionToRunLater: () => Promise<TResult> | TResult
+): Promise<TResult> {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             try {
