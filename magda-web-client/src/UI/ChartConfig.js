@@ -32,7 +32,10 @@ export default class ChartConfig extends Component {
                     name="input"
                     label={label}
                     id={label}
-                    value={findIndex(options, item => item === this.props[id])}
+                    value={findIndex(
+                        options,
+                        item => item.idx === this.props[id].idx
+                    )}
                     onChange={e => {
                         const idx = e.target.value;
                         this.onChange(id, options[idx]);
