@@ -12,8 +12,6 @@ html {
             background: $AU-color-foreground-action;
         }
     }
-    .au-btn,
-    a.au-btn,
     a {
         color: $AU-color-foreground-action;
     }
@@ -200,8 +198,4 @@ h4 {
 
 .au-link {
     background: #ffffff;
-}
-
-.ReactModal__Body--open div.au-grid {
-    filter: blur(1.5px);
 }

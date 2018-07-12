@@ -13,6 +13,7 @@
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Added more heuristics to charting, made it parse dates and sort the x axis.
 -   Improve chart view on mobile
 -   Fixed `Ask a question about this dataset` button (on dataset page) won't open form on safari browser
 -   Remove input content from Scala service Malformat query parameter error message
@@ -22,6 +23,11 @@
 -   Make chart title wrap
 -   Upgraded TerriaJS to 6.0.4 in preview map
 -   Changed the preview map to not use terrain.
+-   Fixed a rendering glitch with react modal
+-   Trim empty rows off before table rendering to prevent empty rows after sorting by column
+-   Make suggestion form scrollable on short screen
+-   Default button color fix
+-   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
 
 ## 0.0.43
 
