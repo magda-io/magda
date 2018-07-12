@@ -6,11 +6,20 @@ import ChartConfig from "./ChartConfig";
 import downArrowIcon from "../assets/downArrow.svg";
 import upArrowIcon from "../assets/upArrow.svg";
 import AUpageAlert from "../pancake/react/page-alerts";
+import memoize from "memoize-one";
 import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
 
 const defaultChartType = "bar";
+
+// we only do the auto redirect in the first time,
+// subsequent tab switching does not trigger redirect
+const switchTabOnFirstGo = memoize(
+    props => props.onChangeTab("table"),
+    (prev, next) =>
+        prev.distribution.identifier === next.distribution.identifier
+);
 
 class DataPreviewChart extends Component {
     constructor(props) {
@@ -101,7 +110,7 @@ class DataPreviewChart extends Component {
                 })
             );
             // if there is error, automatically switch to table view
-            this.props.onChangeTab("table");
+            switchTabOnFirstGo(this.props);
         }
     }
 
