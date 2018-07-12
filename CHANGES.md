@@ -21,6 +21,7 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
