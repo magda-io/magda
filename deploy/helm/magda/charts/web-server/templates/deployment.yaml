@@ -18,7 +18,7 @@ spec:
             "node", "/usr/src/app/component/dist/index.js",
             "--config", "/etc/config/config.json",
             "--listenPort", "80",
-            "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
+            "--baseExternalUrl", {{ .Values.externalUrl | default .Values.global.externalUrl | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0"
         ]
         readinessProbe:

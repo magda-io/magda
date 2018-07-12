@@ -26,3 +26,51 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
+routes: 
+  search:
+    to: http://search-api/v0
+  registry:
+    to: http://registry-api/v0
+    auth: true
+  auth:
+    to: http://authorization-api/v0/public
+    methods:
+    - GET
+    auth: true
+  discussions:
+    to: http://discussions-api/v0
+    auth: true
+  admin:
+    to: http://admin-api/v0
+    auth: true
+  feedback:
+    to: http://feedback-api/v0
+  correspondence:
+    to: http://correspondence-api/v0/public
+helmet: {}
+csp:
+  browserSniff: false
+  directives:
+    scriptSrc:
+    - "''self''"
+    - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
+    - "''data:''" # Also for VWO
+    - browser-update.org
+    - dev.visualwebsiteoptimizer.com
+    - platform.twitter.com
+    - www.googletagmanager.com
+    - www.google-analytics.com
+    - rum-static.pingdom.net
+    - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
+    - https://tagmanager.google.com/debug
+    - http://assets.zendesk.com/embeddable_framework/main.js
+    - https://assets.zendesk.com/embeddable_framework/main.js
+    objectSrc:
+    - "''none''"
+    sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
+    - allow-scripts
+    - allow-same-origin
+    - allow-popups
+    - allow-forms
+    - allow-popups-to-escape-sandbox
+cors: {}
