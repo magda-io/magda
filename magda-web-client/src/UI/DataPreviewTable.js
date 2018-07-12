@@ -4,6 +4,7 @@ import "./ReactTable.css";
 import { config } from "../config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "../Components/Spinner";
+import AUpageAlert from "../pancake/react/page-alerts";
 
 function loadPapa() {
     return import(/* webpackChunkName: "papa" */ "papaparse")
@@ -94,10 +95,13 @@ export default class DataPreviewTable extends Component<
     render() {
         if (this.state.error) {
             return (
-                <div className="error">
-                    <h3>{this.state.error.name}</h3>
-                    {this.state.error.message}
-                </div>
+                <AUpageAlert as="error" className="notification__inner">
+                    <h3>Oops</h3>
+                    <p>
+                        Either there's something wrong with the file or there's
+                        an internet connection problem
+                    </p>
+                </AUpageAlert>
             );
         }
         if (this.state.loading) {
