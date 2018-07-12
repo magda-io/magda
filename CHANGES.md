@@ -29,6 +29,7 @@
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Replace banner svg icon
 
 ## 0.0.43
 
