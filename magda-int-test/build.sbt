@@ -26,5 +26,11 @@ libraryDependencies ++= {
   )
 }
 
+testOptions += Tests.Setup( cl =>
+    cl.loadClass("org.slf4j.LoggerFactory").
+        getMethod("getLogger",cl.loadClass("java.lang.String")).
+        invoke(null,"ROOT")
+)
+
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
