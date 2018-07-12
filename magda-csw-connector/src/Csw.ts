@@ -8,7 +8,6 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import * as xmldom from "xmldom";
 import * as xml2js from "xml2js";
 import * as jsonpath from "jsonpath";
-import { groupBy } from "lodash";
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -189,24 +188,84 @@ export default class Csw implements ConnectorSource {
     }
 
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
-        // Find all parties that are publishers, owners, or custodians.
-        const responsibleParties = jsonpath.query(
-            dataset.json,
-            "$..CI_ResponsibleParty[*]"
-        );
-        const byRole = groupBy(responsibleParties, party =>
-            jsonpath.value(
-                party,
-                '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-            )
-        );
-        const datasetOrgs =
-            byRole.publisher || byRole.owner || byRole.custodian;
+        const responsibleParties = jsonpath
+            .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
+            .map(node => {
+                return {
+                    ...node,
+                    role: jsonpath.value(
+                        node.value,
+                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
+                    ),
+                    orgName: jsonpath.value(
+                        node.value,
+                        "$..organisationName[*].CharacterString[0]._"
+                    )
+                };
+            });
+
+        /**
+         * Filter ResponsibleParty by roles is not a good idea as there are too many possible roles.
+         * Besides, the urls to list of role types returns 404
+         * Different type of people may ends up being the contact point of this dataset (publisher).
+         * So they could be on:
+         * - contact path
+         * - pointOfContact path
+         * - identificationInfo path (list of entities that are related to this data) with role `pointOfContact`
+         *
+         * The last scenario indicates the dataset doesn't have proper `publisher` info.
+         * All `pointOfContact` in this section are likely to be authors or any party related to the data.
+         * But they may not be the actual publisher.
+         *
+         * We should only use information from this section if we don't have a better choice.
+         */
+        let datasetOrgs = responsibleParties.filter(node => {
+            return (
+                node.path.findIndex(
+                    pathItem =>
+                        String(pathItem)
+                            .toLowerCase()
+                            .indexOf("pointofcontact") != -1
+                ) != -1 ||
+                String(
+                    jsonpath.value(
+                        node.value,
+                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
+                    )
+                ).toLowerCase() === "pointofcontact"
+            );
+        });
+
         if (!datasetOrgs || datasetOrgs.length === 0) {
             return undefined;
         }
 
-        return Promise.resolve(datasetOrgs[0]);
+        let orgData = datasetOrgs[0]["value"];
+
+        if (datasetOrgs.length == 1) {
+            return Promise.resolve(orgData);
+        }
+
+        /**
+         * More than one pointOfContact found
+         * Try to avoid identificationInfo section
+         */
+        const altOrgs = datasetOrgs.filter(node => {
+            return (
+                node.path.findIndex(
+                    pathItem =>
+                        String(pathItem)
+                            .toLowerCase()
+                            .indexOf("identificationinfo") != -1
+                ) == -1
+            );
+        });
+
+        if (altOrgs.length != 0) {
+            orgData = altOrgs[0]["value"];
+        }
+
+        return Promise.resolve(orgData);
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
