@@ -30,6 +30,7 @@
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
 -   Replace banner svg icon
+-   Improved styling of suggest dataset form
 
 ## 0.0.43
 
