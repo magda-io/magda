@@ -68,10 +68,11 @@ export default class DatasetSuggestForm extends React.Component {
                 bottom: "auto",
                 marginRight: "-35%",
                 transform: "translate(-50%, -50%)",
-                "background-color": "#4b3081",
+                backgroundColor: "#4b3081",
                 zIndex: "11",
                 border: "1px solid rgb(204, 204, 204)",
-                padding: "0px"
+                padding: "0px",
+                maxHeight: "95vh"
             }
         };
         const formProps = {

@@ -52,7 +52,6 @@ function fetchPublishers(start, query) {
         dispatch(requestPublishers());
         const url = `${config.searchApiUrl +
             "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
-        console.log(url);
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
@@ -98,7 +97,6 @@ function fetchPublisher(id) {
         const url = `${
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
-        console.log(url);
 
         return fetch(url)
             .then(response => {
