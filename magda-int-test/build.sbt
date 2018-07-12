@@ -32,5 +32,7 @@ testOptions += Tests.Setup( cl =>
         invoke(null,"ROOT")
 )
 
+parallelExecution in ThisBuild := false
+
 EclipseKeys.withJavadoc := true
 EclipseKeys.withSource := true
