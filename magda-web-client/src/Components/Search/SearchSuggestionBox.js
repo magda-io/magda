@@ -72,10 +72,11 @@ class SearchSuggestionBox extends Component {
             if (!items || typeof items !== "object" || !items.length) return [];
             return items;
         } catch (e) {
-            console.log(
+            console.error(
                 `Failed to retrieve search save data '${key}' from local storage: ${
                     e.message
-                }`
+                }`,
+                e
             );
             return [];
         }
@@ -95,10 +96,11 @@ class SearchSuggestionBox extends Component {
             window.localStorage.setItem(key, JSON.stringify(items));
             return items;
         } catch (e) {
-            console.log(
+            console.error(
                 `Failed to save search save data '${key}' to local storage: ${
                     e.message
-                }`
+                }`,
+                e
             );
             return [];
         }
@@ -112,10 +114,11 @@ class SearchSuggestionBox extends Component {
             window.localStorage.setItem(key, JSON.stringify(items));
             return items;
         } catch (e) {
-            console.log(
+            console.error(
                 `Failed to save search save data '${key}' to local storage: ${
                     e.message
-                }`
+                }`,
+                e
             );
             return [];
         }

@@ -141,7 +141,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingStart();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;
@@ -153,7 +153,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingEnd();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;
