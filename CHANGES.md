@@ -25,6 +25,7 @@
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improve UI for chart loading error
 
 ## 0.0.43
 
