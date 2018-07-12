@@ -23,6 +23,7 @@
 -   Make chart title wrap
 -   Upgraded TerriaJS to 6.0.4 in preview map
 -   Changed the preview map to not use terrain.
+-   Made CORS, CSP, Node-Helmet and proxied routes configurable through helm.
 -   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
