@@ -170,7 +170,7 @@ class DataPreviewMap extends Component {
 
         return (
             <div>
-                <h3>Map Preview</h3>
+                <h3 className="section-heading">Map Preview</h3>
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={selectedDistribution}

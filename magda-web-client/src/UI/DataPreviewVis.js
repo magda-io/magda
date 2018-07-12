@@ -23,16 +23,21 @@ class DataPreviewVis extends Component<{
     }
 
     renderChart() {
-        return <DataPreviewChart distribution={this.props.distribution} />;
+        return (
+            <DataPreviewChart
+                distribution={this.props.distribution}
+                onChangeTab={this.onChangeTab}
+            />
+        );
     }
 
     renderTable() {
         return <DataPreviewTable distribution={this.props.distribution} />;
     }
 
-    onChangeTab(e) {
+    onChangeTab(tab) {
         this.setState({
-            visType: e.target.value
+            visType: tab
         });
     }
 
@@ -58,7 +63,10 @@ class DataPreviewVis extends Component<{
                                         : null
                                 }`}
                                 value={t.value.toLowerCase()}
-                                onClick={this.onChangeTab}
+                                onClick={this.onChangeTab.bind(
+                                    this,
+                                    t.value.toLowerCase()
+                                )}
                             >
                                 {t.label}
                             </button>
@@ -90,7 +98,7 @@ class DataPreviewVis extends Component<{
         if (!bodyRenderResult) return null;
         return (
             <div className="data-preview-vis">
-                <h3>Data Preview</h3>
+                <h3 className="section-heading">Data Preview</h3>
                 {bodyRenderResult}
             </div>
         );

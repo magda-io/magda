@@ -21,11 +21,15 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
 -   Improve organisation search page
+-   Adjust line spacing for dataset page
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improve distribution link alignment
+-   Improve UI for chart loading error
 
 ## 0.0.43
 

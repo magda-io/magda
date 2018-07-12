@@ -26,12 +26,14 @@ function Notification(props) {
     return (
         <div className="notification-box">
             <AUpageAlert as={type} className="notification__inner">
-                <button
-                    onClick={props.onDismiss}
-                    className="au-btn close-btn au-btn--secondary"
-                >
-                    <img alt="close" src={close} />
-                </button>
+                {props.onDismiss && (
+                    <button
+                        onClick={props.onDismiss}
+                        className="au-btn close-btn au-btn--secondary"
+                    >
+                        <img alt="close" src={close} />
+                    </button>
+                )}
                 {title ? <h3>{title}</h3> : null}
                 <p>{detail}</p>
             </AUpageAlert>
