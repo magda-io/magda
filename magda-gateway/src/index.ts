@@ -200,7 +200,7 @@ app.use(
     createApiRouter({
         authenticator: authenticator,
         jwtSecret: argv.jwtSecret,
-        routes: _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutes)
+        routes: _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson)
     })
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
