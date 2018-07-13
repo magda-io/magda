@@ -3,6 +3,11 @@
     display: inline;
     margin-left: 5px;
     margin-top: 1px;
+
+    span {
+        line-height: 1.2;
+        font-size: 0.9rem;
+    }
 }
 
 .tooltip .tooltiptext {

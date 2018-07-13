@@ -73,6 +73,10 @@
     .dataset-summary-updated,
     .dataset-summary-quality {
         float: left;
-        line-height: 1.5em;
+        line-height: 1.5rem;
+    }
+
+    .dataset-summary-quality .tooltip {
+        line-height: 2;
     }
 }
