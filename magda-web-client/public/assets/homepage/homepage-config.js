@@ -25,10 +25,10 @@ window.magda_client_homepage_config = {
         url: "/search?q=Queensland%20road%20data"
     },
     stories: [
-        "story4.md",
+        "story1.md",
         "story2.md",
         "story3.md",
-        "story1.md",
+        "story4.md",
         "story5.md",
         "story6.md"
     ]

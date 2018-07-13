@@ -49,7 +49,7 @@ class StoryBox extends Component {
                           <img
                               className="story-title-image"
                               src={`${baseUrl}${content.titleImage}`}
-                              alt="title"
+                              alt={content.titleImageAlt || content.title}
                           />,
                           content.titleUrl
                       )

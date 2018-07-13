@@ -1,5 +1,6 @@
 ## 0.0.44
 
+-   Updated homepage content cards
 -   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.
@@ -34,6 +35,8 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Replace banner svg icon
+-   Improved styling of suggest dataset form
 
 ## 0.0.43
 
