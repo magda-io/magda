@@ -79,8 +79,8 @@ class PublishersViewer extends Component {
     }
 
     updateSearchQuery(text, page) {
-        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         this.debounceUpdateSearchQuery.flush();
+        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         let searchText = "*";
         if (text && text.trim().length > 0) {
             searchText = text;
@@ -110,12 +110,11 @@ class PublishersViewer extends Component {
         this.debounceUpdateSearchQuery(e.target.value, 1);
     }
 
-    onClickSearch(e) {
-        this.updateQuery({
-            q: e.target.value,
-            page: 1
-        });
-        this.debounceUpdateSearchQuery(e.target.value, 1);
+    onClickSearch() {
+        this.debounceUpdateSearchQuery(
+            queryString.parse(this.props.location.search).q,
+            1
+        );
         this.debounceUpdateSearchQuery.flush();
     }
 
@@ -167,7 +166,7 @@ class PublishersViewer extends Component {
                     value={q ? q : ""}
                     placeholder="Search for Organisations"
                     onChange={this.onUpdateSearchText}
-                    onKeyPress={this.onUpdateSearchText}
+                    onKeyPress={this.handleSearchFieldEnterKeyPress}
                     ref={el => (this.searchInputFieldRef = el)}
                 />
                 <button

@@ -2,6 +2,7 @@
 import React from "react";
 import { config } from "../config";
 import ReactDocumentTitle from "react-document-title";
+import AUpageAlert from "../pancake/react/page-alerts";
 
 export default class ErrorHandler extends React.Component {
     props: {
@@ -14,10 +15,12 @@ export default class ErrorHandler extends React.Component {
     render() {
         return (
             <ReactDocumentTitle title={"Error | " + config.appName}>
-                <div className="container">
-                    <h1>{this.props.error.title}</h1>
-                    {this.props.error.detail}
-                </div>
+                <AUpageAlert as="error" className="notification__inner">
+                    {this.props.error.title ? (
+                        <h3>{this.props.error.title}</h3>
+                    ) : null}
+                    <p>{this.props.error.detail}</p>
+                </AUpageAlert>
             </ReactDocumentTitle>
         );
     }

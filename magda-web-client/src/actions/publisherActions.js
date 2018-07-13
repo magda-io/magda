@@ -51,7 +51,8 @@ function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
         const url = `${config.searchApiUrl +
-            "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
+            "organisations"}?query=${query}&start=${(start - 1) *
+            config.resultsPerPage}&limit=${config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
