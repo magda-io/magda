@@ -8,6 +8,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import * as xmldom from "xmldom";
 import * as xml2js from "xml2js";
 import * as jsonpath from "jsonpath";
+import { groupBy } from "lodash";
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -263,6 +264,24 @@ export default class Csw implements ConnectorSource {
 
         if (altOrgs.length != 0) {
             orgData = altOrgs[0]["value"];
+        } else {
+            /**
+             * This means there ISN'T a proper pointOfContact section.
+             * This probably should be considered as a mistake
+             * and only very small amount of data like this can be found during my tests.
+             * We should now try pick one fron a list relevant entities.
+             */
+            const byRole = groupBy(datasetOrgs, node => node.role);
+            if (byRole["pointOfContact"]) {
+                const firstPointOfContactNode: any = byRole.pointOfContact[0];
+                orgData = firstPointOfContactNode.value;
+            }
+            /**
+             * Otherwise, don't touch orgData --- use the first one from the initial shorter list would be the best
+             * Main contributor usually will be listed as the first.
+             * We can be more accurate if we drill down into all possible roles.
+             * But it probably won't be necessary as dataset reaches here should be lower than 1%~2% based on my tests.
+             */
         }
 
         return Promise.resolve(orgData);
