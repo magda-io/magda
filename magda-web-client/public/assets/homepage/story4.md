@@ -1,11 +1,13 @@
 ---
-title: "Intellectual property in Australia: a visualisation"
+title: "Communities of practice"
 titleImage: story4.png
-titleUrl: "https://ipnova.ipaustralia.gov.au/#/"
+titleUrl: "https://community.digital.gov.au/c/open-data"
 ---
 
-IP NOVA is a visual immersive search engine that helps users discover registered patents, trade marks, and plant breeders rights from the Intellectual Property Australia database. It is a free, open web app that makes intellectual property analysis intuitive and accessible.
+<p>This community is for people who work with public data in the Australian Public Service or who carry out publicly funded research.</p>
 
-<br/>
+<p>It’s also for people who develop, innovate or carry out research using Australia’s public datasets.</p>
 
-It delivers visualisation and business intelligence that enables end users to quickly gather information regarding a specific keyword such as location, industry or field of work, and perform customisable analysis from both a macro and micro perspective.
+<p>Our communities of practice bring together our government colleagues to collaborate, showcase work, solve problems and explore best practice.</p>
+
+<a href="https://community.digital.gov.au/c/open-data" title="Join the open data community">Join the open data community</a>
