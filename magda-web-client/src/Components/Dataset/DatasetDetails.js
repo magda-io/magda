@@ -33,7 +33,7 @@ class DatasetDetails extends Component {
                 <div className="row">
                     <div className="col-sm-12">
                         <div className="dataset-details-files-apis">
-                            <h3 className="clearfix">
+                            <h3 className="clearfix section-heading">
                                 <span className="section-heading">
                                     Files and APIs
                                 </span>
@@ -66,9 +66,9 @@ class DatasetDetails extends Component {
                             className="dataset-details-temporal-coverage"
                             style={{ display: "none" }}
                         >
-                            <h2 className="section-heading">
+                            <h3 className="section-heading">
                                 Temporal coverage
-                            </h2>
+                            </h3>
                             <TemporalAspectViewer
                                 data={dataset.temporalCoverage}
                             />
