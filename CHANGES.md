@@ -33,6 +33,7 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Improve tooltip look
 
 ## 0.0.43
 

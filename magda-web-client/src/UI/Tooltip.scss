@@ -6,6 +6,8 @@
 }
 
 .tooltip .tooltiptext {
+    line-height: 1.2;
+    font-size: 0.9rem;
     visibility: hidden;
     width: 140px;
     background-color: #222;
@@ -14,7 +16,7 @@
     padding: 7px;
     position: absolute;
     z-index: 1;
-    bottom: 150%;
+    bottom: 110%;
     left: 50%;
     margin-left: -77px;
     border-radius: 4px;
