@@ -260,7 +260,6 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           combinedDataSetAndTermGen.map((indexName, _, routes))
       }
 
-      // We don't want to shrink this kind of tuple at all ever.
       implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[Seq[String]]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
         case (dataSet, string) =>
           val seq = MagdaMatchers.tokenize(string)
@@ -271,8 +270,6 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           } yield combinations
 
           val shrunk = x.map(_.mkString(" "))
-
-          logger.error("Shrinking " + string + " to " + shrunk)
 
           shrunk.map((dataSet, _)).toStream
       }

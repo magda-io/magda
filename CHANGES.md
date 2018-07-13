@@ -26,8 +26,11 @@
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
 -   Improve organisation search page
+-   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
 -   Adjust line spacing for dataset page
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Replace banner svg icon
+-   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
 
