@@ -27,6 +27,7 @@
 -   Default button color fix
 -   Adjust line spacing for dataset page
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
 
