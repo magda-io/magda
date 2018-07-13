@@ -26,6 +26,8 @@ class PublishersViewer extends Component {
         );
         this.onPageChange = this.onPageChange.bind(this);
         this.clearSearch = this.clearSearch.bind(this);
+        this.onClickSearch = this.onClickSearch.bind(this);
+        this.searchInputFieldRef = null;
     }
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
@@ -77,6 +79,7 @@ class PublishersViewer extends Component {
     }
 
     updateSearchQuery(text, page) {
+        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         this.debounceUpdateSearchQuery.flush();
         let searchText = "*";
         if (text && text.trim().length > 0) {
@@ -95,6 +98,8 @@ class PublishersViewer extends Component {
             q: "",
             page: 1
         });
+        this.debounceUpdateSearchQuery("", 1);
+        this.debounceUpdateSearchQuery.flush();
     }
 
     onUpdateSearchText(e) {
@@ -103,6 +108,15 @@ class PublishersViewer extends Component {
             page: 1
         });
         this.debounceUpdateSearchQuery(e.target.value, 1);
+    }
+
+    onClickSearch(e) {
+        this.updateQuery({
+            q: e.target.value,
+            page: 1
+        });
+        this.debounceUpdateSearchQuery(e.target.value, 1);
+        this.debounceUpdateSearchQuery.flush();
     }
 
     renderContent() {
@@ -118,11 +132,11 @@ class PublishersViewer extends Component {
                         this.props.keyword.trim().length > 0 &&
                         this.props.keyword.trim() !== "*" && (
                             <div className="result-count">
-                                {`Results matching " ${this.props.keyword}" (${
+                                {`Results matching "${this.props.keyword}" (${
                                     this.props.hitCount
                                 })`}
                                 <button
-                                    className="clear-btn"
+                                    className="clear-btn au-btn au-btn--tertiary"
                                     type="button"
                                     onClick={this.clearSearch}
                                 >
@@ -153,9 +167,15 @@ class PublishersViewer extends Component {
                     value={q ? q : ""}
                     placeholder="Search for Organisations"
                     onChange={this.onUpdateSearchText}
-                    onKeyPress={this.handleSearchFieldEnterKeyPress}
+                    onKeyPress={this.onUpdateSearchText}
+                    ref={el => (this.searchInputFieldRef = el)}
                 />
-                <img className="search-icon" src={search} alt="search" />
+                <button
+                    className="search-icon au-btn"
+                    onClick={this.onClickSearch}
+                >
+                    <img src={search} alt="search" />
+                </button>
             </div>
         );
     }

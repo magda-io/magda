@@ -1,5 +1,6 @@
 @import "../../variables";
 .publishers-viewer {
+    margin-top: 24px;
     .publishers-viewer__header {
         h1 {
             margin: 2rem 0;
@@ -29,10 +30,14 @@
         }
     }
 
-    .search-icon {
+    .search-icon.au-btn {
         position: absolute;
-        right: 8px;
-        top: 12px;
+        right: 4px;
+        top: 4px;
+        border: 0;
+        background-color: transparent !important;
+        padding: 0.5rem;
+        line-height: 0;
     }
 
     .result-count {
@@ -41,15 +46,16 @@
         color: $AU-color-foreground-action;
     }
 
-    .clear-btn {
+    .clear-btn.au-btn.au-btn--tertiary {
         border: 0;
+        border-radius: 0;
         border-bottom: 1px solid $AU-color-foreground-action;
         padding-bottom: 4px;
         text-decoration: none;
         color: $AU-color-foreground-action;
-        font-size: 1rem;
-        margin-left: 16px;
         padding: 0;
+        line-height: 1;
+        margin-left: 16px;
         &:hover,
         &:focus {
             cursor: pointer;

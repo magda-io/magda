@@ -22,7 +22,7 @@ function PublisherSummary(props) {
                     )}`}
                 >
                     {props.publisher.datasetCount
-                        ? `[${props.publisher.datasetCount}] ${
+                        ? `${props.publisher.datasetCount} ${
                               props.publisher.datasetCount > 1
                                   ? "datasets"
                                   : "dataset"
