@@ -555,6 +555,12 @@
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.1.4.tgz#5ca073b330d90b4066d6ce18f60d57f2084ce8ca"
 
+"@types/compression@^0.0.36":
+  version "0.0.36"
+  resolved "https://registry.yarnpkg.com/@types/compression/-/compression-0.0.36.tgz#7646602ffbfc43ea48a8bf0b2f1d5e5f9d75c0d0"
+  dependencies:
+    "@types/express" "*"
+
 "@types/config@0.0.32":
   version "0.0.32"
   resolved "https://registry.yarnpkg.com/@types/config/-/config-0.0.32.tgz#c106055802d78e234e28374adc4dad460d098558"
@@ -3729,7 +3735,7 @@ compressible@~2.0.13:
   dependencies:
     mime-db ">= 1.34.0 < 2"
 
-compression@^1.5.2, compression@^1.6.0:
+compression@^1.5.2, compression@^1.6.0, compression@^1.7.2:
   version "1.7.2"
   resolved "http://registry.npmjs.org/compression/-/compression-1.7.2.tgz#aaffbcd6aaf854b44ebb280353d5ad1651f59a69"
   dependencies:

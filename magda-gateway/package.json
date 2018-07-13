@@ -40,7 +40,8 @@
     "pg": "^6.4.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
-    "yargs": "^8.0.2"
+    "yargs": "^8.0.2",
+    "compression": "^1.7.2"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.44-0",
@@ -56,6 +57,7 @@
     "@types/pg": "^6.1.41",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",
+    "@types/compression": "^0.0.36",
     "typescript": "~2.5.0"
   },
   "config": {

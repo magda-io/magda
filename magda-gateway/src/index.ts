@@ -5,6 +5,7 @@ import * as yargs from "yargs";
 import * as ejs from "ejs";
 import * as helmet from "helmet";
 import * as _ from "lodash";
+import * as compression from "compression";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
@@ -153,6 +154,9 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+
+// GZIP responses where appropriate
+app.use(compression());
 
 // Set sensible secure headers
 app.disable("x-powered-by");

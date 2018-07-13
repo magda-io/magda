@@ -1,13 +1,12 @@
 import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
-import ProjectOpenDataTransformer from "./ProjectOpenDataTransformer";
+import DapTransformer from "./DapTransformer";
+import DapUrlBuilder from "./DapUrlBuilder";
 import * as moment from "moment";
 import * as URI from "urijs";
-import * as jsonpath from "jsonpath";
-import * as lodash from "lodash";
 
 export interface CreateTransformerOptions {
-    id: string;
     name: string;
+    id: string;
     sourceUrl: string;
     datasetAspectBuilders: AspectBuilder[];
     distributionAspectBuilders: AspectBuilder[];
@@ -15,14 +14,14 @@ export interface CreateTransformerOptions {
 }
 
 export default function createTransformer({
-    id,
     name,
+    id,
     sourceUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
     organizationAspectBuilders
 }: CreateTransformerOptions) {
-    return new ProjectOpenDataTransformer({
+    return new DapTransformer({
         sourceId: id,
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
@@ -30,12 +29,10 @@ export default function createTransformer({
         libraries: {
             moment: moment,
             URI: URI,
-            jsonpath,
-            lodash,
-            projectOpenData: Object.freeze({
+            dap: new DapUrlBuilder({
                 id: id,
                 name: name,
-                url: sourceUrl
+                baseUrl: sourceUrl
             })
         }
     });
