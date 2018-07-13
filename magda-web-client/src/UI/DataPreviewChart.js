@@ -5,11 +5,21 @@ import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
 import downArrowIcon from "../assets/downArrow.svg";
 import upArrowIcon from "../assets/upArrow.svg";
+import AUpageAlert from "../pancake/react/page-alerts";
+import memoize from "memoize-one";
 import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
 
 const defaultChartType = "bar";
+
+// we only do the auto redirect in the first time,
+// subsequent tab switching does not trigger redirect
+const switchTabOnFirstGo = memoize(
+    props => props.onChangeTab("table"),
+    (prev, next) =>
+        prev.distribution.identifier === next.distribution.identifier
+);
 
 class DataPreviewChart extends Component {
     constructor(props) {
@@ -25,6 +35,7 @@ class DataPreviewChart extends Component {
         this.chartDatasetEncoder = null;
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
         this.onToggleButtonClick = this.onToggleButtonClick.bind(this);
+        this.onDismissError = this.onDismissError.bind(this);
     }
 
     getResetState(extraOptions = null) {
@@ -93,12 +104,13 @@ class DataPreviewChart extends Component {
                 ReactEcharts = (await import("echarts-for-react")).default;
             await this.initChartData();
         } catch (e) {
-            console.error(e);
             this.setState(
                 this.getResetState({
                     error: e
                 })
             );
+            // if there is error, automatically switch to table view
+            switchTabOnFirstGo(this.props);
         }
     }
 
@@ -123,7 +135,8 @@ class DataPreviewChart extends Component {
                 await this.initChartData();
             }
         } catch (e) {
-            console.error(e);
+            // we do not automatically switch to table view here because chart has already successfully rendered.
+            // for subsequent error cause the chart to not render, we will just display an error message
             this.setState(
                 this.getResetState({
                     error: e
@@ -143,13 +156,24 @@ class DataPreviewChart extends Component {
         });
     }
 
+    onDismissError() {
+        // switch to table tab on dismiss error
+        this.props.onChangeTab("table");
+    }
+
     render() {
         if (this.state.error)
             return (
-                <div className="error">
-                    <h3>{this.state.error.name}</h3>
-                    {this.state.error.message}
-                </div>
+                <AUpageAlert as="error" className="notification__inner">
+                    <h3>Oops</h3>
+                    <p>Chart preview not available, please try table preview</p>
+                    <button
+                        onClick={this.onDismissError}
+                        className="switch-tab-btn"
+                    >
+                        Switch to table preview
+                    </button>
+                </AUpageAlert>
             );
         if (this.state.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
