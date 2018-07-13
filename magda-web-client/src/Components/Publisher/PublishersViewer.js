@@ -128,8 +128,9 @@ class PublishersViewer extends Component {
                     <AUpageAlert as="info">
                         <h3>No results</h3>
                         <p>
-                            The term you searched for does not have matching
-                            result, try search a different term
+                            The term you searched for:{" "}
+                            <strong>{this.props.keyword}</strong> does not have
+                            matching result, try search a different term
                         </p>
                     </AUpageAlert>
                 );
