@@ -249,7 +249,7 @@ export default class Csw implements ConnectorSource {
 
         /**
          * More than one pointOfContact found
-         * Try to avoid identificationInfo section
+         * Try to avoid identificationInfo section as it contains mixture of all relevent parties
          */
         const altOrgs = datasetOrgs.filter(node => {
             return (
@@ -275,6 +275,24 @@ export default class Csw implements ConnectorSource {
             if (byRole["pointOfContact"]) {
                 const firstPointOfContactNode: any = byRole.pointOfContact[0];
                 orgData = firstPointOfContactNode.value;
+            } else {
+                /**
+                 * Some dataset was set a non `pointOfContact` role
+                 * But it's on `pointOfContact` path
+                 */
+                const pocNodes = datasetOrgs.filter(node => {
+                    return (
+                        node.path.findIndex(
+                            pathItem =>
+                                String(pathItem)
+                                    .toLowerCase()
+                                    .indexOf("pointofcontact") != -1
+                        ) != -1
+                    );
+                });
+                if (pocNodes.length) {
+                    orgData = pocNodes[0]["value"];
+                }
             }
             /**
              * Otherwise, don't touch orgData --- use the first one from the initial shorter list would be the best
