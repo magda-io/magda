@@ -24,17 +24,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Project Open Data Connector",
-            "program":
-                "${workspaceRoot}/magda-project-open-data-connector/bin/index.js",
-            "cwd": "${workspaceRoot}/magda-project-open-data-connector"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
-            "name": "Launch Project Open Data Connector 2",
-            "runtimeExecutable":
-                "${workspaceRoot}/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
                     "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
@@ -57,8 +47,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CSW Connector",
-            "runtimeExecutable":
-                "${workspaceRoot}/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
                     "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
