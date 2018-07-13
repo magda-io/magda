@@ -54,7 +54,7 @@ csp:
     scriptSrc:
     - "''self''"
     - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
-    - "''data:''" # Also for VWO
+    - "data:" # Also for VWO
     - browser-update.org
     - dev.visualwebsiteoptimizer.com
     - platform.twitter.com
