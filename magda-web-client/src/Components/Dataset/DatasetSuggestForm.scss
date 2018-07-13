@@ -1,34 +1,35 @@
 @import "../../variables";
 
 .ask-dataset-form {
-    padding: 10px;
+    padding: 1rem 1.5rem;
     overflow: scroll;
     position: relative;
-    float: right;
-    width: 800px;
+    width: 700px;
     background-color: rgb(248, 247, 247);
 }
 
 .modal-header {
-    color: white;
-    background-color: #4b3081;
-    text-align: center;
-}
-
-@media only screen and (max-width: 1200px) {
-    .ask-dataset-form-responsive {
-        max-width: 700px !important;
+    color: $AU-colordark-foreground-action;
+    padding: 1rem 1.5rem;
+    h3 {
+        margin: 0;
     }
 }
 
 .correspondence-dataset-close-button {
-    height: 2em;
-    width: 2em;
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 1rem;
+    right: 1.5rem;
     height: 20px;
     width: 20px;
+    background-color: transparent;
+    border: 0;
+    background-image: AU-svguri(
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF">' +
+            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
+            '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
+    );
+    background-repeat: no-repeat;
     &:hover {
         cursor: pointer;
     }
@@ -45,7 +46,10 @@
         overflow-y: auto;
     }
     .suggest-modal-heading {
-        font-size: 17px;
+        font-size: 1rem;
+        padding-right: 30px;
+        text-align: left;
+        padding-left: 8px;
     }
 }
 

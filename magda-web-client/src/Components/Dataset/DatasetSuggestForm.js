@@ -1,6 +1,5 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import close from "../../assets/close-round.svg";
 import "./DatasetSuggestForm.css";
 import AUbutton from "../../pancake/react/buttons";
 import Modal from "react-modal";
@@ -68,10 +67,11 @@ export default class DatasetSuggestForm extends React.Component {
                 bottom: "auto",
                 marginRight: "-35%",
                 transform: "translate(-50%, -50%)",
-                "background-color": "#4b3081",
+                backgroundColor: "#4b3081",
                 zIndex: "11",
                 border: "1px solid rgb(204, 204, 204)",
-                padding: "0px"
+                padding: "0px",
+                maxHeight: "95vh"
             }
         };
         const formProps = {
@@ -116,12 +116,13 @@ export default class DatasetSuggestForm extends React.Component {
                             <h3 className="suggest-modal-heading">
                                 {"Ask a question about this dataset"}
                             </h3>
-                            <img
-                                src={close}
-                                className="correspondence-dataset-close-button"
-                                alt="close"
+                            <button
                                 onClick={this.toggleShowForm}
-                            />
+                                className="correspondence-dataset-close-button"
+                                type="button"
+                            >
+                                <span className="sr-only">Close form</span>
+                            </button>
                         </div>
                         <div className="ask-dataset-form ask-dataset-form-responsive">
                             {/*

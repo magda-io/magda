@@ -141,7 +141,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingStart();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;
@@ -153,7 +153,7 @@ class DataPreviewMap extends Component {
                 try {
                     this.props.onLoadingEnd();
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }
             return;
@@ -170,7 +170,7 @@ class DataPreviewMap extends Component {
 
         return (
             <div>
-                <h3>Map Preview</h3>
+                <h3 className="section-heading">Map Preview</h3>
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={selectedDistribution}
