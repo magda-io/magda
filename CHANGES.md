@@ -21,6 +21,7 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Default button color fix
+-   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
 
 ## 0.0.43
 
