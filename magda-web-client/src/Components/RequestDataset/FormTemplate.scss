@@ -1,3 +1,4 @@
+@import "../../variables";
 $form-width: 700px;
 
 .correspondence-form {
@@ -14,24 +15,28 @@ $form-width: 700px;
     margin-top: 20px;
 }
 
-@media screen and (max-width: 600px) {
-    .correspondence-message-input {
-        height: 150px !important;
-    }
-}
-@media screen and (max-width: 600px) {
-    .correspondence-name-input,
-    .correspondence-email-input {
-        width: 250px !important;
-    }
-}
-
 .correspondence-name-input,
 .correspondence-email-input {
     display: block;
     width: 300px;
     margin-bottom: 30px;
     margin-top: 10px;
+}
+
+@media screen and (max-width: $small) {
+    .correspondence-message-input {
+        height: 60px !important;
+        margin-bottom: 8px;
+        margin-top: 4px;
+    }
+}
+@media screen and (max-width: $small) {
+    .correspondence-name-input,
+    .correspondence-email-input {
+        width: 250px !important;
+        margin-bottom: 8px;
+        margin-top: 4px;
+    }
 }
 
 .correspondence-submit-button {
