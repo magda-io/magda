@@ -15,7 +15,7 @@ export default class ErrorHandler extends React.Component {
     render() {
         return (
             <ReactDocumentTitle title={"Error | " + config.appName}>
-                <AUpageAlert as="error" className="notification__inner">
+                <AUpageAlert as="error">
                     {this.props.error.title ? (
                         <h3>{this.props.error.title}</h3>
                     ) : null}

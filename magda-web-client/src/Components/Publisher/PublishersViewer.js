@@ -16,6 +16,7 @@ import Pagination from "../../UI/Pagination";
 import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
+import AUpageAlert from "../../pancake/react/page-alerts";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -123,7 +124,15 @@ class PublishersViewer extends Component {
             return <ErrorHandler error={this.props.error} />;
         } else {
             if (this.props.publishers.length === 0) {
-                return <div> no results</div>;
+                return (
+                    <AUpageAlert as="info">
+                        <h3>No results</h3>
+                        <p>
+                            The term you searched for does not have matching
+                            result, try search a different term
+                        </p>
+                    </AUpageAlert>
+                );
             }
             return (
                 <div>
@@ -210,19 +219,22 @@ class PublishersViewer extends Component {
                             {!this.props.isFetching && this.renderContent()}
                         </div>
                     </div>
-                    {this.props.hitCount > config.resultsPerPage && (
-                        <Pagination
-                            currentPage={
-                                +queryString.parse(this.props.location.search)
-                                    .page || 1
-                            }
-                            maxPage={Math.ceil(
-                                this.props.hitCount / config.resultsPerPage
-                            )}
-                            onPageChange={this.onPageChange}
-                            totalItems={this.props.hitCount}
-                        />
-                    )}
+                    {!this.props.isFetching &&
+                        !this.props.error &&
+                        this.props.hitCount > config.resultsPerPage && (
+                            <Pagination
+                                currentPage={
+                                    +queryString.parse(
+                                        this.props.location.search
+                                    ).page || 1
+                                }
+                                maxPage={Math.ceil(
+                                    this.props.hitCount / config.resultsPerPage
+                                )}
+                                onPageChange={this.onPageChange}
+                                totalItems={this.props.hitCount}
+                            />
+                        )}
                 </div>
             </ReactDocumentTitle>
         );
