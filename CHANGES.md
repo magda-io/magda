@@ -33,6 +33,7 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Added auto gzip compress to gateway
 
 ## 0.0.43
 
