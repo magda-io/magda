@@ -30,6 +30,7 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Make dataset ask a question form only scrollable on short screens
 
 ## 0.0.43
 
