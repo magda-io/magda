@@ -12,8 +12,9 @@
     }
     .distribution-row-link {
         color: $AU-color-foreground-text;
-
+        margin-bottom: 4px;
         @include AU-fontgrid(md);
+        display: flex;
         a {
             text-decoration: none;
         }
@@ -21,7 +22,6 @@
             background-color: $AU-color-background;
             color: $AU-color-foreground-text;
         }
-        margin-bottom: 8px;
     }
 
     .distribution-row-link-license {
