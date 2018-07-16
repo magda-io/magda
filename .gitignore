@@ -1,0 +1,42 @@
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+.DS_Store
+*.class
+*.log
+.classpath
+.metadata
+
+# sbt specific
+.cache
+.cache-main
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.settings
+bin
+.project
+
+# IntelliJ specific
+.idea
+
+regions
+snapshots
+.cache-tests
+node_modules/
+dist/
+
+pancake
+package-lock.json
+*/package-lock.json
