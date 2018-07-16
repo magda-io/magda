@@ -13,6 +13,7 @@
 -   adjust dataset page layout to accomodate new mobile design
 -   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
 -   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Added more heuristics to charting, made it parse dates and sort the x axis.
 -   Improve chart view on mobile
 -   Fixed `Ask a question about this dataset` button (on dataset page) won't open form on safari browser
 -   Remove input content from Scala service Malformat query parameter error message
@@ -21,7 +22,20 @@
 -   Moved express helmet to gateway module
 -   Make chart title wrap
 -   Add links to about page
+-   Fixed a rendering glitch with react modal
+-   Trim empty rows off before table rendering to prevent empty rows after sorting by column
+-   Make suggestion form scrollable on short screen
 -   Default button color fix
+-   Added extra contact fields to registry & search organization API
+-   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
+-   Adjust line spacing for dataset page
+-   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improved CSW connector to avoid incorrect organisation information being picked
+-   Replace banner svg icon
+-   Improved styling of suggest dataset form
+-   Improve distribution link alignment
+-   Improve UI for chart loading error
+-   Added auto gzip compress to gateway
 
 ## 0.0.43
 

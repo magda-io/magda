@@ -1,21 +1,40 @@
 @import "../variables";
 
 .dataset-details {
-    h3 {
+    h3.section-heading {
         @include AU-fontgrid(lg, heading);
         margin-bottom: 10px;
         margin-top: 3rem;
         font-weight: 300;
     }
+
+    .au-page-alerts {
+        h3,
+        p {
+            margin: 3px;
+        }
+        .switch-tab-btn {
+            border: 0;
+            border-bottom: 1px solid $magda-red;
+            padding-bottom: 4px;
+            text-decoration: none;
+            color: $magda-red;
+            font-size: 1rem;
+            padding: 0;
+            &:hover,
+            &:focus {
+                cursor: pointer;
+            }
+        }
+    }
 }
 
 .publisher-basic-info-row {
-    @include AU-fontgrid(sm);
+    line-height: 1.8;
     .publisher {
         color: $AU-colordark-background;
         a {
             border-bottom: 1px solid rgba($AU-color-foreground-action, 0.5);
-            padding-bottom: 4px;
             text-decoration: none;
 
             &:hover,

@@ -59,7 +59,7 @@ object Generators {
   } yield (before + middle.toString + after)
 
   // See StandardAnalyzer.ENGLISH_STOP_WORDS_SET
-  // Why not just link this in directly? There's some horrible thing going on with how lucene is 
+  // Why not just link this in directly? There's some horrible thing going on with how lucene is
   // compiled that turns all the strings to some weird type that can't be understood.
   val luceneStopWords = Seq("a", "an", "and", "are", "as", "at", "be", "but", "by",
     "for", "if", "in", "into", "is", "it",
@@ -108,14 +108,26 @@ object Generators {
   def agentGen(nameGen: Gen[String]) = for {
     identifier <- Gen.uuid.map(_.toString).map(Some.apply)
     name <- nameGen.map(Some.apply)
-    homePage <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    website <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     email <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    phone <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    addrStreet <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    addrSuburb <- someBiasedOption(arbitrary[String].map(_.take(20).trim))
+    addrState <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
+    addrPostCode <- someBiasedOption(arbitrary[String].map(_.take(6).trim))
+    addrCountry <- someBiasedOption(arbitrary[String].map(_.take(10).trim))
     imageUrl <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
   } yield new Agent(
     identifier = identifier,
     name = name,
-    homePage = homePage,
+    website = website,
     email = email,
+    phone = phone,
+    addrStreet = addrStreet,
+    addrSuburb = addrSuburb,
+    addrState = addrState,
+    addrPostCode = addrPostCode,
+    addrCountry = addrCountry,
     imageUrl = imageUrl)
 
   val durationGen = for {
