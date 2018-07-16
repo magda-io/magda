@@ -21,43 +21,35 @@
             "type": "string"
         },
         "phone": {
-            "title":
-                "The organization contact phone number",
+            "title": "The organization contact phone number",
             "type": "string"
         },
         "email": {
-            "title":
-                "The organization contact email address",
+            "title": "The organization contact email address",
             "type": "string"
         },
         "addrStreet": {
-            "title":
-                "The organization address: street",
-            "type" :"string"
+            "title": "The organization address: street",
+            "type": "string"
         },
         "addrSuburb": {
-            "title":
-                "The organization address: suburb",
-            "type" :"string"
+            "title": "The organization address: suburb",
+            "type": "string"
         },
         "addrState": {
-            "title":
-                "The organization address: state",
-            "type" :"string"
+            "title": "The organization address: state",
+            "type": "string"
         },
         "addrPostCode": {
-            "title":
-                "The organization address: post code",
-            "type" :"string"
+            "title": "The organization address: post code",
+            "type": "string"
         },
         "addrCountry": {
-            "title":
-                "The organization address: Country",
-            "type" :"string"
+            "title": "The organization address: Country",
+            "type": "string"
         },
         "website": {
-            "title":
-                "The organization website",
+            "title": "The organization website",
             "type": "string"
         }
     }

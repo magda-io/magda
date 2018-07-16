@@ -1,10 +1,10 @@
-import "isomorphic-fetch";
 import * as cors from "cors";
 import * as express from "express";
 import * as path from "path";
 import * as yargs from "yargs";
 import * as ejs from "ejs";
 import * as helmet from "helmet";
+import * as _ from "lodash";
 import * as compression from "compression";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
@@ -13,11 +13,14 @@ import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
+import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
     var __express: any;
 }
+
+const coerceJson = (path?: string) => path && require(path);
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -43,10 +46,37 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 5432
         })
-        .option("proxyRoutesPath", {
-            describe: "Path of the json that defines routes to proxy",
+        .option("proxyRoutesJson", {
+            describe:
+                "Path of the json that defines routes to proxy. These will be merged with the defaults specified in defaultConfig.ts.",
             type: "string",
-            default: "../local-routes.json"
+            coerce: coerceJson
+        })
+        .option("helmetJson", {
+            describe:
+                "Path of the json that defines node-helmet options, as per " +
+                "https://helmetjs.github.io/docs/. Node that this _doesn't_ " +
+                "include csp options as these are a separate module. These will " +
+                "be merged with the defaults specified in defaultConfig.ts.",
+
+            type: "string",
+            coerce: coerceJson
+        })
+        .option("cspJson", {
+            describe:
+                "Path of the json that defines node-helmet options, as per " +
+                "https://helmetjs.github.io/docs/. These will " +
+                "be merged with the defaults specified in defaultConfig.ts.",
+            type: "string",
+            coerce: coerceJson
+        })
+        .option("corsJson", {
+            describe:
+                "Path of the json that defines CORS options, as per " +
+                "https://www.npmjs.com/package/cors. These will " +
+                "be merged with the defaults specified in defaultConfig.ts.",
+            type: "string",
+            coerce: coerceJson
         })
         .option("authorizationApi", {
             describe: "The base URL of the authorization API.",
@@ -113,11 +143,6 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
-        })
-        .option("cspReportUri", {
-            describe:
-                "The URI to send Content Security Policy violation reports to.",
-            type: "string"
         }).argv
 );
 
@@ -129,60 +154,20 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+
+// GZIP responses where appropriate
 app.use(compression());
+
+// Set sensible secure headers
 app.disable("x-powered-by");
+app.use(helmet(_.merge({}, defaultConfig.helmet, argv.helmetJson)));
+console.log(_.merge({}, defaultConfig.csp, argv.cspJson));
 app.use(
-    helmet({
-        hsts: {
-            maxAge: 31536000,
-            includeSubdomains: true,
-            preload: true
-        }
-    })
+    helmet.contentSecurityPolicy(_.merge({}, defaultConfig.csp, argv.cspJson))
 );
 
-const cspDirectives = {
-    scriptSrc: [
-        "'self'",
-        "'unsafe-inline'", // for VWO until... we get rid of that? :(
-        "data:", // ditto
-        "browser-update.org",
-        "dev.visualwebsiteoptimizer.com",
-        "platform.twitter.com",
-        "www.googletagmanager.com",
-        "www.google-analytics.com",
-        "rum-static.pingdom.net",
-        "https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js",
-        "https://tagmanager.google.com/debug",
-        "http://assets.zendesk.com/embeddable_framework/main.js", // zendesk
-        "https://assets.zendesk.com/embeddable_framework/main.js" // zendesk
-    ],
-    objectSrc: ["'none'"],
-    sandbox: [
-        "allow-scripts",
-        "allow-same-origin",
-        "allow-popups",
-        "allow-forms",
-        "allow-popups-to-escape-sandbox"
-    ]
-} as helmet.IHelmetContentSecurityPolicyDirectives;
-
-if (argv.cspReportUri) {
-    cspDirectives.reportUri = argv.cspReportUri;
-}
-
-app.use(
-    helmet.contentSecurityPolicy({
-        directives: cspDirectives,
-        browserSniff: false
-    })
-);
-
-const configuredCors = cors({
-    origin: true,
-    credentials: true
-});
-
+// Set up CORS headers for all requests
+const configuredCors = cors(_.merge({}, defaultConfig.cors, argv.corsJson));
 app.options("*", configuredCors);
 app.use(configuredCors);
 
@@ -219,7 +204,7 @@ app.use(
     createApiRouter({
         authenticator: authenticator,
         jwtSecret: argv.jwtSecret,
-        routes: require(argv.proxyRoutesPath)
+        routes: _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson)
     })
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));

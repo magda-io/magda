@@ -21,6 +21,9 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Upgraded TerriaJS to 6.0.4 in preview map
+-   Changed the preview map to not use terrain.
+-   Made CORS, CSP, Node-Helmet and proxied routes configurable through helm.
 -   Add links to about page
 -   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column

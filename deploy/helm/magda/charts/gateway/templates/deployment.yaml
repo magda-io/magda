@@ -31,16 +31,18 @@ spec:
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
-            "--proxyRoutesPath", "/etc/routes/routes.json",
+            "--proxyRoutesJson", "/etc/config/routes.json",
+            "--helmetJson", "/etc/config/helmet.json",
+            "--cspJson", "/etc/config/csp.json",
+            "--corsJson", "/etc/config/cors.json",
             "--web", "http://web",
             "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
-            "--ckanUrl", "https://data.gov.au",
-            "--cspReportUri", {{ .Values.cspReportUri | quote }}
+            "--ckanUrl", "https://data.gov.au"
         ]
         volumeMounts:
-          - name: routes
-            mountPath: /etc/routes
+          - name: config
+            mountPath: /etc/config
         readinessProbe:
           httpGet:
             path: /v0/healthz
@@ -103,6 +105,6 @@ spec:
               key: session-db-client
 {{- end }}
       volumes:
-        - name: routes
+        - name: config
           configMap:
-            name: gateway-routes
+            name: gateway-config
