@@ -39,6 +39,7 @@
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
 -   Added auto gzip compress to gateway
+-   Made CSW connector retrieve country field from alternative JSON path
 
 ## 0.0.43
 
