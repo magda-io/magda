@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";
 import Divider from "../../UI/Divider";
+import ga from "../../analytics/googleAnalytics";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -37,6 +38,7 @@ export default class DatasetSummary extends Component {
         const searchText = defined(this.props.searchText)
             ? this.props.searchText
             : "";
+        const searchResultNumber = this.props.searchResultNumber;
         return (
             <div className="dataset-summary">
                 <h2 className="dataset-summary-title">
@@ -44,6 +46,18 @@ export default class DatasetSummary extends Component {
                         to={`/dataset/${encodeURIComponent(
                             dataset.identifier
                         )}?q=${searchText}`}
+                        onClick={() => {
+                            if (searchResultNumber) {
+                                ga("send", {
+                                    hitType: "event",
+                                    eventCategory: "Search and Result Clicked",
+                                    eventAction: this.props.searchText,
+                                    eventLabel: (
+                                        searchResultNumber + 1
+                                    ).toString()
+                                });
+                            }
+                        }}
                     >
                         {dataset.title}
                     </Link>
