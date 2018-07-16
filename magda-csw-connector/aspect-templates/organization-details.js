@@ -28,10 +28,16 @@ const addrPostCode = jsonpath.value(
     organization,
     "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].postalCode[*].CharacterString[0]._"
 );
-const addrCountry = jsonpath.value(
+let addrCountry = jsonpath.value(
     organization,
-    "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._"
+    "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].CharacterString[0]._"
 );
+if (!addrCountry) {
+    addrCountry = jsonpath.value(
+        organization,
+        "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._"
+    );
+}
 
 const data = {
     name: name,
