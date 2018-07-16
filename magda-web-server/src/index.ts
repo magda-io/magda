@@ -224,7 +224,10 @@ app.use(
     "/sitemap",
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
-        registry: new Registry({ baseUrl: argv.registryApiBaseUrlInternal })
+        registry: new Registry({
+            baseUrl: argv.registryApiBaseUrlInternal,
+            maxRetries: 0
+        })
     })
 );
 
