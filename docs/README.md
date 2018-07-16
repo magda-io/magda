@@ -32,7 +32,7 @@ Want to see what we're up to in the future? Check out **our [roadmap](https://gi
 
 ## Contributors
 
-{% for contributor in site.github.contributors %}<a href="{{contributor.url}}" alt="{{contributor.login}}" title="{{contributor.login}}">
+{% for contributor in site.github.contributors %}<a target="_blank" rel="nofollower noreferrer" href="{{contributor.html_url}}" alt="{{contributor.login}}" title="{{contributor.login}}">
 <img src="{{contributor.avatar_url}}" style="width:50px;height:50px;display:inline;">
 </a>{% endfor %}
 
