@@ -187,7 +187,16 @@ object Registry {
         name = organizationDetails.extract[String]('title.?),
         description = organizationDetails.extract[String]('description.?),
         acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
-        imageUrl = organizationDetails.extract[String]('imageUrl.?))
+        imageUrl = organizationDetails.extract[String]('imageUrl.?),
+        phone = organizationDetails.extract[String]('phone.?),
+        email = organizationDetails.extract[String]('email.?),
+        addrStreet = organizationDetails.extract[String]('addrStreet.?),
+        addrSuburb = organizationDetails.extract[String]('addrSuburb.?),
+        addrState = organizationDetails.extract[String]('addrState.?),
+        addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
+        addrCountry = organizationDetails.extract[String]('addrCountry.?),
+        website = organizationDetails.extract[String]('website.?)
+      )
     }
 
     def convertRegistryDataSet(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {

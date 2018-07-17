@@ -19,6 +19,38 @@
             "title":
                 "The URL of an image representing the organization, such as its logo.",
             "type": "string"
+        },
+        "phone": {
+            "title": "The organization contact phone number",
+            "type": "string"
+        },
+        "email": {
+            "title": "The organization contact email address",
+            "type": "string"
+        },
+        "addrStreet": {
+            "title": "The organization address: street",
+            "type": "string"
+        },
+        "addrSuburb": {
+            "title": "The organization address: suburb",
+            "type": "string"
+        },
+        "addrState": {
+            "title": "The organization address: state",
+            "type": "string"
+        },
+        "addrPostCode": {
+            "title": "The organization address: post code",
+            "type": "string"
+        },
+        "addrCountry": {
+            "title": "The organization address: Country",
+            "type": "string"
+        },
+        "website": {
+            "title": "The organization website",
+            "type": "string"
         }
     }
 }

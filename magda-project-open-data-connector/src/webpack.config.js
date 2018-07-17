@@ -40,5 +40,7 @@ module.exports = {
             )
         }
     },
-    plugins: [new webpack.IgnorePlugin(/fs/, /jsonpath/)]
+    node: {
+        fs: "empty"
+    }
 };

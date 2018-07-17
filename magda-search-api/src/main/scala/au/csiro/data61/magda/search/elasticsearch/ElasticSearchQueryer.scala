@@ -74,7 +74,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
-      val query = buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize).explain(true)
+      val query = buildQueryWithAggregations(inputQuery, start, limit, MatchAll, requestedFacetSize)
 
       Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap{
         case Right(results) =>
@@ -453,6 +453,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .field("publisher.name")
               .field("publisher.acronym")
               .field("publisher.description")
+              .field("publisher.addrStreet")
+              .field("publisher.addrSuburb")
+              .field("publisher.addrState")
           }
           .aggs(cardinalityAgg("totalCount","publisher.identifier"))
           .sortByFieldAsc("publisher.name.keyword")
