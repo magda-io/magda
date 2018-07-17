@@ -43,6 +43,7 @@
 -   Improve UI for chart loading error
 -   Make dataset ask a question form only scrollable on short screens
 -   Added auto gzip compress to gateway
+-   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
 
 ## 0.0.43
