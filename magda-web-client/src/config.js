@@ -39,7 +39,7 @@ const proxyUrl = previewMapUrl + "proxy/";
 
 export const config = {
     homePageConfig: homePageConfig,
-    appName: "data.gov.au",
+    appName: "data.gov.au - beta",
     about:
         "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl: serverConfig.baseUrl || fallbackApiHost,
