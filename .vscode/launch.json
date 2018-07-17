@@ -24,8 +24,22 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Project Open Data Connector",
-            "program":
-                "${workspaceRoot}/magda-project-open-data-connector/bin/index.js",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable":
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+            },
+            "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
+                "--config",
+                "${workspaceRoot}/deploy/connector-config/moreton-bay-regional-council-data-portal.json",
+                "--userId",
+                "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret",
+                "squirrel"
+            ],
             "cwd": "${workspaceRoot}/magda-project-open-data-connector"
         },
         {
@@ -33,16 +47,17 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch CSW Connector",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
-            "runtimeArgs": ["-r", "tsconfig-paths/register", "src/index.ts"],
             "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
                 "--config",
-                "${workspaceRoot}/deploy/connector-config/australian-bureau-of-meteorology.json",
+                "${workspaceRoot}/deploy/connector-config/environment.json",
                 "--userId",
                 "00000000-0000-4000-8000-000000000000",
                 "--jwtSecret",
@@ -283,6 +298,29 @@
                 "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
             "cwd": "${workspaceRoot}/magda-gateway",
             "args": ["--output", "foo.tar.gz"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Ckan Connector",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable":
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+            },
+            "args": [
+                "-r",
+                "tsconfig-paths/register",
+                "src/index.ts",
+                "--config",
+                "${workspaceRoot}/deploy/connector-config/data-gov-au.json",
+                "--userId",
+                "00000000-0000-4000-8000-000000000000",
+                "--jwtSecret",
+                "squirrel"
+            ],
+            "cwd": "${workspaceRoot}/magda-ckan-connector"
         }
     ]
 }

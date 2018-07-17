@@ -515,6 +515,15 @@ class ElasticSearchIndexer(
           "acronym" -> publisher.acronym.toJson,
           "value" -> publisherName.toJson,
           "description" -> publisher.description.toJson,
+          "imageUrl" -> publisher.imageUrl.toJson,
+          "phone" -> publisher.phone.toJson,
+          "email" -> publisher.email.toJson,
+          "addrStreet" -> publisher.addrStreet.toJson,
+          "addrSuburb" -> publisher.addrSuburb.toJson,
+          "addrState" -> publisher.addrState.toJson,
+          "addrPostCode" -> publisher.addrPostCode.toJson,
+          "addrCountry" -> publisher.addrCountry.toJson,
+          "website" -> publisher.website.toJson,
           "indexed" -> OffsetDateTime.now.toString.toJson).toJson)
     ))
 

@@ -4,7 +4,6 @@ import Cookies from "js-cookie";
 import React from "react";
 import { connect } from "react-redux";
 import "./Banner.css";
-import close from "../assets/close-light.svg";
 import { closeTopBanner } from "../actions/topBanner";
 
 class Banner extends React.Component {
@@ -57,9 +56,7 @@ class Banner extends React.Component {
                             this.setState({ isOpen: false });
                             this.props.closeTopBanner();
                         }}
-                    >
-                        <img alt="close banner" src={close} />
-                    </button>
+                    />
                 </div>
             );
         }
