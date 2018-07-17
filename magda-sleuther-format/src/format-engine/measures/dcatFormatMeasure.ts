@@ -54,10 +54,13 @@ function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
  */
 function reduceMimeType(formats: Array<string>): Array<string> {
     return formats.map(
-        format =>
-            format.lastIndexOf("/") < 0
-                ? format
-                : format.substr(format.lastIndexOf("/"))
+        format => {
+            const idx = format.lastIndexOf("/");
+            if(idx == -1 || idx >= format.length-1){
+                return format;
+            }
+            return format.substr(idx+1);
+        }  
     );
 }
 
