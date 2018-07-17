@@ -26,7 +26,6 @@ const argv = yargs
         describe:
             "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
         type: "string",
-        default: "http://localhost:6100/",
         required: true
     })
     .option("registryApiBaseUrlInternal", {
@@ -101,7 +100,6 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
-        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)

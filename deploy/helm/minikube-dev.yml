@@ -11,11 +11,11 @@ global:
   useCombinedDb: true
 
 gateway:
-  cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+
 registry-api:
   skipAuthorization: true
   # Uncomment this if you want to test postgres backups locally - download a private key from

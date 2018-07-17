@@ -1,5 +1,6 @@
 ## 0.0.44
 
+-   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
 -   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.
@@ -21,16 +22,25 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Upgraded TerriaJS to 6.0.4 in preview map
+-   Changed the preview map to not use terrain.
+-   Made CORS, CSP, Node-Helmet and proxied routes configurable through helm.
+-   Add links to about page
 -   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
+-   Added extra contact fields to registry & search organization API
+-   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
 -   Adjust line spacing for dataset page
 -   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improved CSW connector to avoid incorrect organisation information being picked
+-   Replace banner svg icon
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
 -   Make dataset ask a question form only scrollable on short screens
+-   Added auto gzip compress to gateway
 
 ## 0.0.43
 

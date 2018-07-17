@@ -14,7 +14,6 @@ class DatasetDetails extends Component {
     };
     render() {
         const dataset = this.props.dataset;
-        const datasetId = this.props.match.params.datasetId;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
         const source = `This dataset was originally found on [${
@@ -43,7 +42,7 @@ class DatasetDetails extends Component {
                                     <DistributionRow
                                         key={s.identifier}
                                         distribution={s}
-                                        datasetId={datasetId}
+                                        dataset={dataset}
                                         searchText={searchText}
                                     />
                                 ))}

@@ -85,9 +85,15 @@ package misc {
     name: Option[String] = None,
     description: Option[String] = None,
     acronym: Option[String] = None,
-    homePage: Option[String] = None,
     email: Option[String] = None,
     imageUrl: Option[String] = None,
+    phone: Option[String] = None,
+    addrStreet: Option[String] = None,
+    addrSuburb: Option[String] = None,
+    addrState: Option[String] = None,
+    addrPostCode: Option[String] = None,
+    addrCountry: Option[String] = None,
+    website: Option[String] = None,
     datasetCount: Option[Long] = None)
 
   case class Location(
@@ -378,7 +384,7 @@ package misc {
 
     implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat8(Agent.apply)
+    implicit val agentFormat = jsonFormat14(Agent.apply)
     implicit val dataSetFormat = jsonFormat19(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
