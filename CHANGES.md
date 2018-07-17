@@ -10,6 +10,10 @@
 
 ## 0.0.44
 
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+
+## 0.0.44
+
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
 -   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
