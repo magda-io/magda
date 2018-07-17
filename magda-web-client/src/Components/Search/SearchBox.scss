@@ -3,7 +3,7 @@
 @mixin text() {
     font-size: 1rem;
     border-bottom: 0;
-    padding: 24px 16px;
+    padding: 24px 60px 24px 16px;
     box-sizing: border-box;
     display: block;
     background-color: transparent;
@@ -100,7 +100,7 @@
 
     .search-btn {
         position: absolute;
-        right: 0;
+        right: 8px;
         padding: 8px;
         bottom: 12px;
         border: 2px solid transparent;
