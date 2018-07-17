@@ -16,9 +16,19 @@ function PublisherSummary(props) {
                 </Link>
             </h2>
             <div className="publisher-meta">
-                {props.publisher.datasetCount
-                    ? `${props.publisher.datasetCount} dataset`
-                    : ""}
+                <Link
+                    to={`/search?publisher=${encodeURIComponent(
+                        props.publisher.name
+                    )}`}
+                >
+                    {props.publisher.datasetCount
+                        ? `${props.publisher.datasetCount} ${
+                              props.publisher.datasetCount > 1
+                                  ? "datasets"
+                                  : "dataset"
+                          }`
+                        : ""}
+                </Link>
             </div>
             <div className="publisher-description">
                 {props.publisher.description ? props.publisher.description : ""}

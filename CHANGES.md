@@ -31,6 +31,7 @@
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
 -   Small improvement on how search box looks on mobile and desktop
+-   Improve organisation search page
 -   Added extra contact fields to registry & search organization API
 -   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
 -   Adjust line spacing for dataset page
@@ -40,7 +41,9 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Make dataset ask a question form only scrollable on short screens
 -   Added auto gzip compress to gateway
+-   Fixed Sitemap times out if input is invalid
 
 ## 0.0.43
 
