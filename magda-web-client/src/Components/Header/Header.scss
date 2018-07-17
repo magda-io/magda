@@ -1,10 +1,12 @@
 @import "../../variables";
 
 .au-header {
+    padding: 16px 0;
     padding: 1rem 0;
 }
 
 .header {
+    border-bottom: 8px solid #341039;
     border-bottom: 0.5rem solid #341039;
 }
 
@@ -13,6 +15,7 @@
 }
 
 #menu-toggle {
+    padding: 8px 0;
     padding: 0.5rem 0;
     text-align: left;
 
@@ -41,7 +44,7 @@
             );
         }
     }
-    @media screen and (min-width: 1010px) {
+    @media screen and (min-width: $medium) {
         display: none;
     }
 }
@@ -76,13 +79,15 @@
 
 .navigation {
     a {
+        font-size: 16px;
         font-size: 1rem;
         line-height: 1.5;
+        padding: 8px 0;
         padding: 0.5rem 0;
         display: block;
         text-decoration: none;
 
-        @media screen and (min-width: 1010px) {
+        @media screen and (min-width: $medium) {
             padding: 16px 16px;
             padding: 1rem 1rem;
             border-bottom: 8px solid #f5f5f5;
@@ -93,7 +98,7 @@
         display: block;
         padding: 0;
 
-        @media screen and (min-width: 1010px) {
+        @media screen and (min-width: $medium) {
             float: left;
             margin-bottom: -8px;
             margin-bottom: -0.5rem;
@@ -104,7 +109,7 @@
             margin: 0;
             border-top: 1px solid #7f7f7f;
 
-            @media screen and (min-width: 1010px) {
+            @media screen and (min-width: $medium) {
                 display: inline-block;
                 border-top: 0;
             }
@@ -117,15 +122,18 @@
     width: 100%;
     background: #fff;
     z-index: 200;
+    border-bottom: 8px solid #341039;
     border-bottom: 0.5rem solid #341039;
 
-    @media screen and (min-width: 1010px) {
+    @media screen and (min-width: $medium) {
         position: static;
         border-bottom: 0;
     }
 
     &.au-accordion--closed {
-        display: none;
+        @media screen and (max-width: $medium) {
+            display: none;
+        }
     }
 }
 
