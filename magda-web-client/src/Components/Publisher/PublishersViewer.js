@@ -16,6 +16,7 @@ import Pagination from "../../UI/Pagination";
 import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
+import AUpageAlert from "../../pancake/react/page-alerts";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -25,6 +26,9 @@ class PublishersViewer extends Component {
             this
         );
         this.onPageChange = this.onPageChange.bind(this);
+        this.clearSearch = this.clearSearch.bind(this);
+        this.onClickSearch = this.onClickSearch.bind(this);
+        this.searchInputFieldRef = null;
     }
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
@@ -46,10 +50,9 @@ class PublishersViewer extends Component {
 
     componentDidMount() {
         const q = queryString.parse(this.props.location.search).q;
-
         this.props.fetchPublishersIfNeeded(
             getPageNumber(this.props) || 1,
-            q && q.trim() > 0 ? q : "*"
+            q && q.trim().length > 0 ? q : "*"
         );
     }
 
@@ -78,13 +81,26 @@ class PublishersViewer extends Component {
 
     updateSearchQuery(text, page) {
         this.debounceUpdateSearchQuery.flush();
-        if (text && text.trim() === "") text = "*";
+        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
+        let searchText = "*";
+        if (text && text.trim().length > 0) {
+            searchText = text;
+        }
         const pageIndex = page
             ? page
             : getPageNumber(this.props)
                 ? getPageNumber(this.props)
                 : 1;
-        this.props.fetchPublishersIfNeeded(pageIndex, text);
+        this.props.fetchPublishersIfNeeded(pageIndex, searchText);
+    }
+
+    clearSearch() {
+        this.updateQuery({
+            q: "",
+            page: 1
+        });
+        this.debounceUpdateSearchQuery("", 1);
+        this.debounceUpdateSearchQuery.flush();
     }
 
     onUpdateSearchText(e) {
@@ -95,15 +111,44 @@ class PublishersViewer extends Component {
         this.debounceUpdateSearchQuery(e.target.value, 1);
     }
 
+    onClickSearch() {
+        this.debounceUpdateSearchQuery(
+            queryString.parse(this.props.location.search).q,
+            1
+        );
+        this.debounceUpdateSearchQuery.flush();
+    }
+
     renderContent() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
             if (this.props.publishers.length === 0) {
-                return <div> no results</div>;
+                return (
+                    <AUpageAlert as="error">
+                        Sorry, we couldn't find any organisations that match
+                        your search.
+                    </AUpageAlert>
+                );
             }
             return (
                 <div>
+                    {this.props.keyword &&
+                        this.props.keyword.trim().length > 0 &&
+                        this.props.keyword.trim() !== "*" && (
+                            <div className="result-count">
+                                {`Results matching "${this.props.keyword}" (${
+                                    this.props.hitCount
+                                })`}
+                                <button
+                                    className="clear-btn au-btn au-btn--tertiary"
+                                    type="button"
+                                    onClick={this.clearSearch}
+                                >
+                                    Clear search
+                                </button>
+                            </div>
+                        )}
                     {this.props.publishers.map(p => (
                         <PublisherSummary publisher={p} key={p.identifier} />
                     ))}
@@ -124,12 +169,18 @@ class PublishersViewer extends Component {
                     name="organization-search"
                     id="organization-search"
                     type="text"
-                    value={q ? q : " "}
-                    placeholder="Search for organisations"
+                    value={q ? q : ""}
+                    placeholder="Search for Organisations"
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
+                    ref={el => (this.searchInputFieldRef = el)}
                 />
-                <img className="search-icon" src={search} alt="search" />
+                <button
+                    className="search-icon au-btn"
+                    onClick={this.onClickSearch}
+                >
+                    <img src={search} alt="search" />
+                </button>
             </div>
         );
     }
@@ -138,6 +189,8 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
+                    {this.props.isFetching && <ProgressBar />}
+
                     <Medium>
                         <Breadcrumbs
                             breadcrumbs={[
@@ -147,27 +200,38 @@ class PublishersViewer extends Component {
                             ]}
                         />
                     </Medium>
-                    <h1>Organisations</h1>
+
                     <div className="row">
+                        <div className="publishers-viewer__header">
+                            <div className="col-sm-8">
+                                <h1>Organisations</h1>
+                            </div>
+
+                            <div className="col-sm-4">
+                                {this.renderSearchBar()}
+                            </div>
+                        </div>
+
                         <div className="col-sm-8">
                             {!this.props.isFetching && this.renderContent()}
                         </div>
-                        {this.props.isFetching && <ProgressBar />}
-                        <div className="col-sm-4">{this.renderSearchBar()}</div>
                     </div>
-                    {this.props.hitCount > config.resultsPerPage && (
-                        <Pagination
-                            currentPage={
-                                +queryString.parse(this.props.location.search)
-                                    .page || 1
-                            }
-                            maxPage={Math.ceil(
-                                this.props.hitCount / config.resultsPerPage
-                            )}
-                            onPageChange={this.onPageChange}
-                            totalItems={this.props.hitCount}
-                        />
-                    )}
+                    {!this.props.isFetching &&
+                        !this.props.error &&
+                        this.props.hitCount > config.resultsPerPage && (
+                            <Pagination
+                                currentPage={
+                                    +queryString.parse(
+                                        this.props.location.search
+                                    ).page || 1
+                                }
+                                maxPage={Math.ceil(
+                                    this.props.hitCount / config.resultsPerPage
+                                )}
+                                onPageChange={this.onPageChange}
+                                totalItems={this.props.hitCount}
+                            />
+                        )}
                 </div>
             </ReactDocumentTitle>
         );
@@ -189,12 +253,14 @@ function mapStateToProps(state, ownProps) {
     const hitCount: number = state.publisher.hitCount;
     const error: Object = state.publisher.errorFetchingPublishers;
     const location: Location = ownProps.location;
+    const keyword = state.publisher.keyword;
     return {
         publishers,
         isFetching,
         hitCount,
         location,
-        error
+        error,
+        keyword
     };
 }
 

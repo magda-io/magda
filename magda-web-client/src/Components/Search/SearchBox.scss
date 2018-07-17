@@ -3,7 +3,7 @@
 @mixin text() {
     font-size: 1rem;
     border-bottom: 0;
-    padding: 24px 8px;
+    padding: 24px 60px 24px 16px;
     box-sizing: border-box;
     display: block;
     background-color: transparent;
@@ -15,7 +15,6 @@
     background-image: none;
     color: #ffffff;
     @media (min-width: $medium) {
-        padding-bottom: 5px;
         padding-left: 0;
         margin-bottom: 0;
         display: block;
@@ -101,7 +100,7 @@
 
     .search-btn {
         position: absolute;
-        right: 0;
+        right: 8px;
         padding: 8px;
         bottom: 12px;
         border: 2px solid transparent;
@@ -123,7 +122,12 @@
         }
         @media (min-width: $medium) {
             padding: 5px;
-            bottom: 1px;
+            bottom: 0px;
+            right: -3px;
+            border-radius: 4px;
+            &.not-empty {
+                border-bottom: 2px solid $AU-colordark-foreground-focus;
+            }
             img {
                 width: 32px;
                 height: 32px;

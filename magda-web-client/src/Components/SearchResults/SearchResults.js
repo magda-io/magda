@@ -18,6 +18,7 @@ class SearchResults extends Component {
                                         <DatasetSummary
                                             dataset={result}
                                             searchText={this.props.searchText}
+                                            searchResultNumber={i}
                                         />
                                     </li>
                                     <li
@@ -32,6 +33,7 @@ class SearchResults extends Component {
                                     <DatasetSummary
                                         dataset={result}
                                         searchText={this.props.searchText}
+                                        searchResultNumber={i}
                                     />
                                 </li>
                             )

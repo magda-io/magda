@@ -81,6 +81,27 @@ class RecordHandler extends React.Component {
             }
             return null;
         }
+        if (
+            props.dataset &&
+            props.dataset.identifier !== this.props.dataset.identifier
+        ) {
+            if (this.props.dataset.source !== "") {
+                ga("send", {
+                    hitType: "event",
+                    eventCategory: "Dataset view by Source",
+                    eventAction: this.props.dataset.source,
+                    eventLabel: this.props.dataset.title
+                });
+            }
+            if (this.props.dataset.publisher.name !== "") {
+                ga("send", {
+                    hitType: "event",
+                    eventCategory: "Dataset view by Publisher",
+                    eventAction: this.props.dataset.publisher.name,
+                    eventLabel: this.props.dataset.title
+                });
+            }
+        }
         return null;
     }
 
@@ -156,10 +177,31 @@ class RecordHandler extends React.Component {
                                     this.props.distribution.downloadURL
                                 );
                                 if (resource_url) {
+                                    // legacy support
                                     ga("send", {
                                         hitType: "event",
                                         eventCategory: "Resource",
                                         eventAction: "Download",
+                                        eventLabel: resource_url
+                                    });
+                                    // new events
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Dataset",
+                                        eventAction: this.props.dataset.title,
+                                        eventLabel: resource_url
+                                    });
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Source",
+                                        eventAction: this.props.dataset.source,
+                                        eventLabel: resource_url
+                                    });
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Publisher",
+                                        eventAction: this.props.dataset
+                                            .publisher.name,
                                         eventLabel: resource_url
                                     });
                                 }

@@ -166,7 +166,11 @@ class SearchBox extends Component {
                     </span>
                     <button
                         onClick={this.onClickSearch}
-                        className="search-btn"
+                        className={`search-btn ${
+                            this.getSearchBoxValue().length > 0
+                                ? "not-empty"
+                                : "empty"
+                        }`}
                         type="button"
                     >
                         <img src={icon} alt="search button" />
