@@ -12,10 +12,11 @@ export function requestPublishers(): FacetAction {
     };
 }
 
-export function receivePublishers(json: Object): FacetAction {
+export function receivePublishers(json: Object, keyword: string): FacetAction {
     return {
         type: actionTypes.RECEIVE_PUBLISHERS,
-        json
+        json,
+        keyword
     };
 }
 
@@ -50,7 +51,8 @@ function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
         const url = `${config.searchApiUrl +
-            "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
+            "organisations"}?query=${query}&start=${(start - 1) *
+            config.resultsPerPage}&limit=${config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
                 if (response.status === 200) {
@@ -59,7 +61,7 @@ function fetchPublishers(start, query) {
                 throw new Error(response.statusText);
             })
             .then(json => {
-                return dispatch(receivePublishers(json));
+                return dispatch(receivePublishers(json, query));
             })
             .catch(error =>
                 dispatch(
