@@ -30,6 +30,7 @@
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
+-   Small improvement on how search box looks on mobile and desktop
 -   Improve organisation search page
 -   Added extra contact fields to registry & search organization API
 -   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
