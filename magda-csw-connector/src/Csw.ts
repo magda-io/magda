@@ -359,8 +359,22 @@ export default class Csw implements ConnectorSource {
                         reject(error);
                         return;
                     }
-                    console.log("Received@" + startIndex);
-                    resolve(this.xmlParser.parseFromString(body));
+                    try {
+                        const data = this.xmlParser.parseFromString(body);
+                        if (
+                            data.documentElement.getElementsByTagNameNS(
+                                "*",
+                                "SearchResults"
+                            ).length < 1
+                        )
+                            throw new Error(
+                                "Invalid Server Response or Empty result returned!"
+                            );
+                        console.log("Received@" + startIndex);
+                        resolve(data);
+                    } catch (e) {
+                        reject(e);
+                    }
                 });
             });
 
