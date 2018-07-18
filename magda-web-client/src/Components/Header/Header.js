@@ -57,6 +57,8 @@ class Header extends Component {
                                         </div>
                                     </div>
                                 </Link>
+                            </div>
+                            <div className="col-md-6 col-xs-12">
                                 <button
                                     id="menu-toggle"
                                     className={`menu-toggle au-btn au-btn--block au-btn--tertiary icon au-accordion--${
@@ -70,20 +72,16 @@ class Header extends Component {
                                         ? "Close menu"
                                         : "Open menu"}
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    className={`au-accordion__body au-accordion--${
-                        this.state.isMobileMenuOpen ? "open" : "closed"
-                    } menu`}
-                    aria-hidden={!this.state.isMobileMenuOpen}
-                >
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-md-12">
-                                <HeaderNav />
+                                <div
+                                    className={`au-accordion__body au-accordion--${
+                                        this.state.isMobileMenuOpen
+                                            ? "open"
+                                            : "closed"
+                                    } menu`}
+                                    aria-hidden={!this.state.isMobileMenuOpen}
+                                >
+                                    <HeaderNav />
+                                </div>
                             </div>
                         </div>
                     </div>

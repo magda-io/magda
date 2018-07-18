@@ -3,6 +3,24 @@
 .au-header {
     padding: 16px 0;
     padding: 1rem 0;
+
+    @media screen and (max-width: $medium) {
+        .au-header__brand {
+            .au-header__brand-image,
+            .au-header__text {
+                float: left;
+                display: inline-block;
+                margin: 0;
+            }
+            .au-header__text {
+                margin-left: 8px;
+                margin-left: 0.5rem;
+                padding-left: 8px;
+                padding-left: 0.5rem;
+                border-left: 1px solid;
+            }
+        }
+    }
 }
 
 .header {
@@ -90,13 +108,12 @@
         @media screen and (min-width: $medium) {
             padding: 16px 16px;
             padding: 1rem 1rem;
-            border-bottom: 8px solid #f5f5f5;
-            border-bottom: 0.5rem solid #f5f5f5;
         }
     }
     .au-link-list {
         display: block;
         padding: 0;
+        line-height: 5rem;
 
         @media screen and (min-width: $medium) {
             float: left;
@@ -107,27 +124,25 @@
         > li {
             display: block;
             margin: 0;
-            border-top: 1px solid #7f7f7f;
 
             @media screen and (min-width: $medium) {
                 display: inline-block;
                 border-top: 0;
+            }
+
+            a:hover,
+            a:focus {
+                background-color: #341039;
+                color: #fff;
             }
         }
     }
 }
 
 .menu.au-accordion__body {
-    position: absolute;
-    width: 100%;
-    background: #fff;
-    z-index: 200;
-    border-bottom: 8px solid #341039;
-    border-bottom: 0.5rem solid #341039;
-
     @media screen and (min-width: $medium) {
-        position: static;
         border-bottom: 0;
+        float: right;
     }
 
     &.au-accordion--closed {
