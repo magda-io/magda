@@ -5,6 +5,7 @@ import onRecordFound from "../onRecordFound";
 import * as sampleAodnDataset from "./sampleDataFiles/sampleAodnDataset.json";
 import * as sampleLauncestonDataset from "./sampleDataFiles/sampleLauncestonDataset.json";
 import * as sampleDataset3 from "./sampleDataFiles/ds-aodn-a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f.json";
+import * as sampleDAPDataset from "./sampleDataFiles/sampleDAPDataset.json";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
@@ -115,6 +116,36 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             expect(resultAspects).to.be.an("array");
             expect(resultAspects[1]).to.include({
                 format: "HTML"
+            });
+        });
+    });
+
+    describe("Should process sample DAP dataset correctly", function() {
+        const sampleDatasetData: any = sampleDAPDataset;
+        const resultAspects: any = [];
+
+        before(function() {
+            const registry = sinon.createStubInstance(Registry);
+            registry.putRecordAspect.callsFake(
+                (disId: any, aType: any, aspect: any) => {
+                    resultAspects.push(aspect);
+                    return new Promise((resolve, reject) => resolve());
+                }
+            );
+            return onRecordFound(sampleDatasetData, registry);
+        });
+
+        it("Should process `application/pdf` (1st distribution) as `PDF`", () => {
+            expect(resultAspects).to.be.an("array");
+            expect(resultAspects[0]).to.include({
+                format: "PDF"
+            });
+        });
+
+        it("Should process 1image/svg+xml` (28th distribution) as `SVG`", () => {
+            expect(resultAspects).to.be.an("array");
+            expect(resultAspects[27]).to.include({
+                format: "SVG"
             });
         });
     });

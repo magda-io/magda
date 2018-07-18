@@ -53,15 +53,20 @@ function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
  * replace ['application/exe'] with ['exe'] or ['pdf'] with ['pdf']
  */
 function reduceMimeType(formats: Array<string>): Array<string> {
-    return formats.map(
-        format => {
-            const idx = format.lastIndexOf("/");
-            if(idx == -1 || idx >= format.length-1){
-                return format;
-            }
-            return format.substr(idx+1);
-        }  
-    );
+    return formats.map(format => {
+        const idx = format.lastIndexOf("/");
+        if (idx == -1 || idx >= format.length - 1) {
+            return format;
+        }
+        const mimePart = format.substr(idx + 1);
+        const plusIdx = mimePart.indexOf("+");
+        if (plusIdx < 1) {
+            return mimePart;
+        } else {
+            //--- we need a better format for things like image/SVG+XML
+            return mimePart.substring(0, plusIdx);
+        }
+    });
 }
 
 /**
