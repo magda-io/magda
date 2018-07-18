@@ -130,7 +130,9 @@ export default function buildSitemapRouter({
     function catchError<T>(res: express.Response, promise: Promise<T>) {
         return promise.catch(e => {
             console.error(e);
-            res.status(500).end();
+            res.status(500)
+                .set("Content-Type", "text/plain")
+                .send("Internal Server Error");
         });
     }
 
