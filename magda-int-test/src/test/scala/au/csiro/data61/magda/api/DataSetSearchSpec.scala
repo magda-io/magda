@@ -52,6 +52,16 @@ import au.csiro.data61.magda.test.util.ApiGenerators
 import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
+import scala.concurrent.duration.DurationInt
+import au.csiro.data61.magda.search.elasticsearch._
+import au.csiro.data61.magda.spatial.{RegionLoader,RegionSource}
+import akka.stream.scaladsl.Source
+import spray.json.JsObject
+
+
+
+
+
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
   blockUntilNotRed()
@@ -252,6 +262,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
     //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
+    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
+
     val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))
 
     val qldDataset = DataSet(
@@ -260,13 +272,13 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         description=Some("Wildlife density as measured by the state survey"),
         catalog=Some("region-in-query-test-catalog"),
         spatial=Some(Location(geoJson=qldGeometry)),
-        quality = 0.5)
+        quality = 0.6)
     val nationalDataset = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
-      quality = 0.5)
+      quality = 0.6)
 
     val datasets = List(nationalDataset, qldDataset)
 
@@ -279,9 +291,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       Get(s"""/v0/datasets?query=wildlife+density+in+Queensland&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
-        //response.strategy.get shouldBe MatchAll
-        response.dataSets.size should be > 0
+        response.dataSets.size shouldEqual 2
         response.dataSets.head.identifier shouldEqual qldDataset.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
       }
 
     } finally {

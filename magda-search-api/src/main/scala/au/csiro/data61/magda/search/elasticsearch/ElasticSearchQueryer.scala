@@ -50,6 +50,8 @@ import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 
+import com.sksamuel.elastic4s.searches.queries.funcscorer.ScoreFunctionDefinition
+
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val config: Config,
     implicit val system: ActorSystem,
@@ -320,7 +322,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     case x              => Some(fn(x))
   }
   private def buildEsQuery(query: Query, strategy: SearchStrategy): QueryDefinition = {
-    functionScoreQuery().query(queryToQueryDef(query, strategy)).scorers(fieldFactorScore("quality").missing(0))
+    val qldGeomScorer = setToOption(query.regionsInFreeText)(seq => should(seq.map(region => regionIdQuery(region, indices))).boost(2))
+    val scorer: Option[ScoreFunctionDefinition] = qldGeomScorer.map(weightScore(100.0).filter(_))
+    functionScoreQuery().query(queryToQueryDef(query, strategy)).functions(fieldFactorScore("quality").missing(0), scorer.toSeq: _*)
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
