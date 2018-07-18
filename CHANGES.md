@@ -45,6 +45,8 @@
 -   Added auto gzip compress to gateway
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
+-   Fixed Australian Institute of Marine Science Crawling URL
+-   CSW connector will exit with code 1 if error happens
 
 ## 0.0.43
 
