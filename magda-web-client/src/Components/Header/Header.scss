@@ -1,47 +1,156 @@
 @import "../../variables";
 
-.top-header-container {
-    background: rgba(#ffffff, 0.5);
-    .desktop-nav {
-        height: 90px;
-        display: flex;
-    }
-    .site-logo {
-        margin-left: 10px;
-    }
-    .logo,
-    .logo:hover,
-    .logo:focus {
-        border-bottom: none;
-        background: transparent;
-        padding: 8px 0;
-        flex-grow: 2;
-    }
-    .header-nav {
-        display: flex;
-        flex-direction: column;
-        @media (min-width: $medium) {
-            flex-grow: 2;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        a {
-            margin-left: 0;
-            display: inline-block;
-            border-bottom: 0;
-            color: $AU-color-foreground-action;
-            font-size: 16px;
-            line-height: 40px;
-            margin-right: 32px;
-            &:hover {
-                color: $AU-color-foreground-text;
-                text-decoration: underline;
+.au-header {
+    padding: 16px 0;
+    padding: 1rem 0;
+
+    @media screen and (max-width: $medium) {
+        .au-header__brand {
+            .au-header__brand-image,
+            .au-header__text {
+                float: left;
+                display: inline-block;
+                margin: 0;
+            }
+            .au-header__text {
+                margin-left: 8px;
+                margin-left: 0.5rem;
+                padding-left: 8px;
+                padding-left: 0.5rem;
+                border-left: 1px solid;
             }
         }
     }
 }
 
+.header {
+    border-bottom: 8px solid #341039;
+    border-bottom: 0.5rem solid #341039;
+}
+
+.header-nav {
+    line-height: 79px;
+}
+
+#menu-toggle {
+    padding: 8px 0;
+    padding: 0.5rem 0;
+    text-align: left;
+
+    &:before {
+        background-image: AU-svguri(
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                '<path d="M0 0h24v24H0z" fill="none"/>' +
+                '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
+                "</svg>"
+        );
+    }
+    &.au-accordion--open {
+        &:before {
+            background-image: AU-svguri(
+                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                    '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
+                    '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
+            );
+        }
+
+        &:hover:before {
+            background-image: AU-svguri(
+                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                    '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
+                    '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
+            );
+        }
+    }
+    @media screen and (min-width: $medium) {
+        display: none;
+    }
+}
+
+.header__badge {
+    padding: 2px 8px;
+    padding: 2px 0.5rem;
+    margin-left: 8px;
+    margin-left: 0.5rem;
+    border: solid 2px;
+    border-radius: 2em;
+    font-size: 12px;
+    font-size: 0.75rem;
+    font-weight: normal;
+    vertical-align: super;
+}
+
+.icon {
+    &:before {
+        width: 1.25em;
+        height: 1.25em;
+        display: inline-block;
+        vertical-align: middle;
+        position: relative;
+        content: " ";
+        background-repeat: no-repeat;
+        margin-top: -2px;
+
+        @include AU-space(margin-right, 0.5unit);
+    }
+}
+
+.navigation {
+    a {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        padding: 8px 0;
+        padding: 0.5rem 0;
+        display: block;
+        text-decoration: none;
+
+        @media screen and (min-width: $medium) {
+            padding: 16px 16px;
+            padding: 1rem 1rem;
+        }
+    }
+    .au-link-list {
+        display: block;
+        padding: 0;
+        line-height: 5rem;
+
+        @media screen and (min-width: $medium) {
+            float: left;
+            margin-bottom: -8px;
+            margin-bottom: -0.5rem;
+        }
+
+        > li {
+            display: block;
+            margin: 0;
+
+            @media screen and (min-width: $medium) {
+                display: inline-block;
+                border-top: 0;
+            }
+
+            a:hover,
+            a:focus {
+                background-color: #341039;
+                color: #fff;
+            }
+        }
+    }
+}
+
+.menu.au-accordion__body {
+    @media screen and (min-width: $medium) {
+        border-bottom: 0;
+        float: right;
+    }
+
+    &.au-accordion--closed {
+        @media screen and (max-width: $medium) {
+            display: none;
+        }
+    }
+}
 .mobile-header {
     background-color: $AU-color-background;
     box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
