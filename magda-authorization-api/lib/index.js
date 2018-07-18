@@ -5,6 +5,7 @@ const api_1 = require("./src/api");
 const nodeConfig = require("config");
 // Create a new Express application.
 var app = express();
+app.disable("x-powered-by");
 app.use(require("body-parser").json());
 app.use("/v0", api_1.default);
 app.listen(nodeConfig.get("listenPort"));

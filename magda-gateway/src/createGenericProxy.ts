@@ -7,6 +7,7 @@ export default function createGenericProxy(target: string): express.Router {
 
     webRouter.get("*", (req: express.Request, res: express.Response) => {
         proxy.web(req, res, { target });
+        res.removeHeader("X-Powered-By");
     });
 
     return webRouter;

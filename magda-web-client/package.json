@@ -9,7 +9,7 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "build-css": "pancake && node-sass src/ -o src/",
     "watch-css": "yarn run build-css && node-sass src/ -o src/ --watch",
-    "start-js": "react-app-rewired start",
+    "start-js": "react-app-rewired $NODE_DEBUG_OPTION start",
     "start": "npm-run-all -p watch-css start-js",
     "dev": "yarn run start",
     "surge-build": "react-app-rewired build",

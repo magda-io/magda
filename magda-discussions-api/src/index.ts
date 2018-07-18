@@ -39,6 +39,7 @@ const argv = addJwtSecretFromEnvVar(
 );
 
 const app = express();
+app.disable("x-powered-by");
 app.use(require("body-parser").json());
 
 app.use(

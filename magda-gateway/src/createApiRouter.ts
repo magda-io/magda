@@ -36,6 +36,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
                 buildJwt(jwtSecret, req.user.id)
             );
         }
+        res.removeHeader("X-Powered-By");
     });
 
     function proxyRoute(

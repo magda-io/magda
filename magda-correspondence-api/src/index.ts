@@ -64,6 +64,7 @@ const argv = yargs
     }).argv;
 
 const app = express();
+app.disable("x-powered-by");
 app.use(require("body-parser").json());
 app.use(
     "/v0",
