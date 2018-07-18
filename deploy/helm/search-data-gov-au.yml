@@ -30,7 +30,7 @@ tags:
     feedback-api: false
 
 ingress:
-  hostname: letest.search.data.gov.au
+  hostname: search.data.gov.au
   ipName: search-data-gov-au-ingress
   ingressClass: gce
   enableTls: true
