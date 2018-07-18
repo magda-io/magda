@@ -189,8 +189,6 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle title={"Organisations | " + config.appName}>
                 <div className="publishers-viewer">
-                    {this.props.isFetching && <ProgressBar />}
-
                     <Medium>
                         <Breadcrumbs
                             breadcrumbs={[
@@ -213,7 +211,11 @@ class PublishersViewer extends Component {
                         </div>
 
                         <div className="col-sm-8">
-                            {!this.props.isFetching && this.renderContent()}
+                            {this.props.isFetching ? (
+                                <ProgressBar />
+                            ) : (
+                                this.renderContent()
+                            )}
                         </div>
                     </div>
                     {!this.props.isFetching &&
