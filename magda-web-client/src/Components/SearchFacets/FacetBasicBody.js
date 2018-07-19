@@ -12,7 +12,6 @@ class FacetBasicBody extends Component {
         this.onApplyFilter = this.onApplyFilter.bind(this);
         this.onToggleOption = this.onToggleOption.bind(this);
         this.searchBoxValueChange = this.searchBoxValueChange.bind(this);
-        this.hasUnappliedChanges = false;
         this.state = {
             _activeOptions: [],
             showOptions: true
