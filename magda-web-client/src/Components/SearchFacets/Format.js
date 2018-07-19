@@ -11,9 +11,9 @@ class Format extends Component {
         this.onSearchFormatFacet = this.onSearchFormatFacet.bind(this);
         this.onToggleFormatOption = this.onToggleFormatOption.bind(this);
         // we use an integer event to notify children of the reset event
-        this.state = {
-            resetFilterEvent: 0
-        };
+        //-- we should find a better way to do this. At least, its value should be set synchronously
+        //-- Can't use state as you don't know when it's in place
+        this.resetFilterEvent = 0;
     }
 
     onToggleFormatOption(formats) {
@@ -35,9 +35,7 @@ class Format extends Component {
         // update redux
         this.props.dispatch(resetFormat());
         // let children know that the filter is being reset
-        this.setState({
-            resetFilterEvent: this.state.resetFilterEvent + 1
-        });
+        this.resetFilterEvent++;
     }
 
     onSearchFormatFacet(facetQuery) {
@@ -62,7 +60,7 @@ class Format extends Component {
                 toggleFacet={this.props.toggleFacet}
                 isOpen={this.props.isOpen}
                 closeFacet={this.props.closeFacet}
-                resetFilterEvent={this.state.resetFilterEvent}
+                resetFilterEvent={this.resetFilterEvent}
             />
         );
     }
