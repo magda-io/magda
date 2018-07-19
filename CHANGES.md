@@ -1,3 +1,5 @@
+## 0.0.45
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
