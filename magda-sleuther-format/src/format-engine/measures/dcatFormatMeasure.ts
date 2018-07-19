@@ -94,6 +94,14 @@ export default function getMeasureResult(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
+    if (
+        !relatedDistribution ||
+        !relatedDistribution.aspects ||
+        !relatedDistribution.aspects["dcat-distribution-strings"]
+    ) {
+        return null;
+    }
+
     const { format } = relatedDistribution.aspects["dcat-distribution-strings"];
 
     if (format === null || format === "") {
