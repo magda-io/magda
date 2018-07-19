@@ -113,6 +113,7 @@ class FacetBasicBody extends Component {
     }
 
     render() {
+        if (!this.props.isOpen) return null;
         let options = this.props.options;
         // the option that has the max hit value, use to calculate volumne indicator
         let maxOptionOptionList = maxBy(this.props.options, o => +o.hitCount);
