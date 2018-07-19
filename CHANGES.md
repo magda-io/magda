@@ -45,6 +45,7 @@
 -   Added auto gzip compress to gateway
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
+-   Fixed Search Panel `Clear` button doesn't work
 
 ## 0.0.43
 
