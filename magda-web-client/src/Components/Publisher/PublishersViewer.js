@@ -210,7 +210,7 @@ class PublishersViewer extends Component {
                             </div>
                         </div>
 
-                        <div className="col-sm-8">
+                        <div className="col-sm-8 org-result-page-body">
                             {this.props.isFetching ? (
                                 <ProgressBar />
                             ) : (
