@@ -1,5 +1,10 @@
 ## 0.0.45
 
+-   Fixed Australian Institute of Marine Science Crawling URL
+-   CSW connector will exit with code 1 if error happens
+-   Fixed an issue of format enhancer processing MIME
+-   Fixed an issue that format enhancer may exit when dcat-string not available
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
@@ -47,8 +52,6 @@
 -   Added auto gzip compress to gateway
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
--   Fixed Australian Institute of Marine Science Crawling URL
--   CSW connector will exit with code 1 if error happens
 
 ## 0.0.43
 
