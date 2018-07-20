@@ -1,3 +1,53 @@
+## 0.0.44
+
+-   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
+-   Removed `button` element for distribution download link on dataset page.
+-   Updated documentation for setting up `Docker Edge` for Kubernetes.
+-   Modified error message text and omitted homepage articles if search error occurs.
+-   Changed chart icons on dataset page
+-   Made `elasticsearch` supports synonyms
+-   Upgraded `elasticsearch` to v6.3.0
+-   Enable organisation search
+-   Disabled scroll to zoom on dataset preview map until map is clicked on and added terria zoom controls to preview map
+-   Change appearance of mobile search box
+-   Improve filter button icon alignment
+-   adjust dataset page layout to accomodate new mobile design
+-   Disable /auth route in production & change gateway health checking endpoint to /v0/healthz
+-   Stopped indexer skipping datasets that have no distributions. These datasets can now be discovered via search.
+-   Added more heuristics to charting, made it parse dates and sort the x axis.
+-   Improve chart view on mobile
+-   Fixed `Ask a question about this dataset` button (on dataset page) won't open form on safari browser
+-   Remove input content from Scala service Malformat query parameter error message
+-   Improved mobile navigation
+-   Improved dataset page paddings and margins
+-   Moved express helmet to gateway module
+-   Make chart title wrap
+-   Upgraded TerriaJS to 6.0.4 in preview map
+-   Changed the preview map to not use terrain.
+-   Made CORS, CSP, Node-Helmet and proxied routes configurable through helm.
+-   Add links to about page
+-   Fixed a rendering glitch with react modal
+-   Trim empty rows off before table rendering to prevent empty rows after sorting by column
+-   Make suggestion form scrollable on short screen
+-   Default button color fix
+-   Small improvement on how search box looks on mobile and desktop
+-   Improve organisation search page
+-   Added extra contact fields to registry & search organization API
+-   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
+-   Adjust line spacing for dataset page
+-   Fix the bug that which does not allow add another option to publisher or format filters once you have performed a search using the filter.
+-   Improved CSW connector to avoid incorrect organisation information being picked
+-   Replace banner svg icon
+-   Improved styling of suggest dataset form
+-   Improve distribution link alignment
+-   Improve UI for chart loading error
+-   Make dataset ask a question form only scrollable on short screens
+-   Added auto gzip compress to gateway
+-   Made CSW connector retrieve country field from alternative JSON path
+-   Fixed Sitemap times out if input is invalid
+-   Fixed Search Panel `Clear` button doesn't work
+-   Updated URL of City of Launceston connector.
+
 ## 0.0.43
 
 -   Fix design system react import for SASS overrides
