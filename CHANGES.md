@@ -46,6 +46,7 @@
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
 -   Fixed Organisation content position moved (flicking) during data loading
+-   Fixed Organisation page router history issue
 -   Fixed Search Panel `Clear` button doesn't work
 
 ## 0.0.43
