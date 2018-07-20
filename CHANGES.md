@@ -46,7 +46,7 @@
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
 -   Fixed Search Panel `Clear` button doesn't work
--   Fixed bug where UI would request wrong id for source-link-status
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL 
 -   Updated URL of City of Launceston connector.
 
 ## 0.0.43
