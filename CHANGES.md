@@ -47,6 +47,7 @@
 -   Fixed Sitemap times out if input is invalid
 -   Fixed Search Panel `Clear` button doesn't work
 -   Fixed bug where UI would request wrong id for source-link-status
+-   Updated URL of City of Launceston connector.
 
 ## 0.0.43
 
