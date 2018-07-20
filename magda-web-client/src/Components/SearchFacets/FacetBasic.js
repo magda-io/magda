@@ -16,20 +16,20 @@ class FacetBasic extends Component {
                     hasQuery={this.props.hasQuery}
                     onClick={this.props.toggleFacet}
                 />
-                {this.props.isOpen && (
-                    <FacetBasicBody
-                        options={this.props.options}
-                        activeOptions={this.props.activeOptions}
-                        facetSearchResults={this.props.facetSearchResults}
-                        onToggleOption={this.props.onToggleOption}
-                        onResetFacet={this.props.onResetFacet}
-                        searchFacet={this.props.searchFacet}
-                        toggleFacet={this.props.toggleFacet}
-                        title={this.props.title}
-                        resetFilterEvent={this.props.resetFilterEvent}
-                        closeFacet={this.props.closeFacet}
-                    />
-                )}
+
+                <FacetBasicBody
+                    isOpen={this.props.isOpen}
+                    options={this.props.options}
+                    activeOptions={this.props.activeOptions}
+                    facetSearchResults={this.props.facetSearchResults}
+                    onToggleOption={this.props.onToggleOption}
+                    onResetFacet={this.props.onResetFacet}
+                    searchFacet={this.props.searchFacet}
+                    toggleFacet={this.props.toggleFacet}
+                    title={this.props.title}
+                    resetFilterEvent={this.props.resetFilterEvent}
+                    closeFacet={this.props.closeFacet}
+                />
             </div>
         );
     }
