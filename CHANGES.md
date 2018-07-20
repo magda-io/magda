@@ -72,6 +72,7 @@
 -   Fixed: Enter a dataset page with `*` query string will see a blank page
 -   Fixed: when checking if fetch is required, dataset id from url params need to be decoded
 -   Enable organisation search
+-   hide the filters from mobile search for now and replace it with new designs when available
 
 ## 0.0.42
 
