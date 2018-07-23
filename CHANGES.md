@@ -51,7 +51,7 @@
 -   Fixed Organisation page router history issue
 -   Fixed Search Panel `Clear` button doesn't work
 -   Fixed bug where dataset ids where "undefined" in distribution URLs.
--   Corrected incorrect source-link-status aspect name in UI dataset request URL 
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
 
 ## 0.0.43
@@ -77,6 +77,7 @@
 -   Fixed: Enter a dataset page with `*` query string will see a blank page
 -   Fixed: when checking if fetch is required, dataset id from url params need to be decoded
 -   Enable organisation search
+-   Change non-homepage search placeholder text color to WCAG AAA compliant
 
 ## 0.0.42
 
