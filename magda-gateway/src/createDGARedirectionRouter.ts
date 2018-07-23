@@ -19,6 +19,14 @@ export default function buildDGARedirectionRouter({
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
+    router.all("/dataset/edit(/*)?", function (req, res){
+        res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all("/dataset/new(/*)?", function (req, res){
+        res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
     router.all("/data/*", function (req, res){
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).toString());
     });

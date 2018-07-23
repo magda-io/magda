@@ -53,6 +53,36 @@ describe("DGARedirectionRouter router", () => {
         });
     });
 
+    describe("Redirect DGA /dataset/edit", () => {
+        it(`should redirect GET /dataset/edit to https://${dgaRedirectionDomain}/dataset/edit`, () => {
+            return supertest(app)
+                .get("/dataset/edit")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/edit`,307));
+        });
+
+        it(`should redirect GET /dataset/edit/abc to https://${dgaRedirectionDomain}/dataset/edit/abc`, () => {
+            return supertest(app)
+                .get("/dataset/edit/abc")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/edit/abc`,307));
+        });
+
+    });
+
+    describe("Redirect DGA /dataset/new", () => {
+        it(`should redirect GET /dataset/new to https://${dgaRedirectionDomain}/dataset/new`, () => {
+            return supertest(app)
+                .get("/dataset/new")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/new`,307));
+        });
+
+        it(`should redirect GET /dataset/new/abc to https://${dgaRedirectionDomain}/dataset/new/abc`, () => {
+            return supertest(app)
+                .get("/dataset/new/abc")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/new/abc`,307));
+        });
+        
+    });
+
     function checkRedirectionDetails(
         location: string | RegExp,
         statusCode: number = 308
