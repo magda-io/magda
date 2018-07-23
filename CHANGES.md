@@ -1,5 +1,7 @@
 ## 0.0.45
 
+-   prevent old content being loaded when navigating through page history
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback

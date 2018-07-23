@@ -26,6 +26,7 @@ import DistributionIcon from "../assets/distribution_icon.svg";
 import "./RecordHandler.css";
 import TagsBox from "../UI/TagsBox";
 import QualityIndicator from "../UI/QualityIndicator";
+import AUpageAlert from "../pancake/react/page-alerts";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -106,7 +107,6 @@ class RecordHandler extends React.Component {
     }
 
     renderByState() {
-        const publisherName = this.props.dataset.publisher.name;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
         const publisherId = this.props.dataset.publisher
@@ -114,21 +114,28 @@ class RecordHandler extends React.Component {
             : null;
 
         if (this.props.match.params.distributionId) {
+            // on distribution detail page
+            const baseUrlDistribution = `/dataset/${encodeURI(
+                this.props.match.params.datasetId
+            )}/distribution/${encodeURI(
+                this.props.match.params.distributionId
+            )}`;
+            // load progress bar if fetching
             if (this.props.distributionIsFetching) {
                 return <ProgressBar />;
-            } else {
-                if (this.props.distributionFetchError) {
-                    return (
-                        <ErrorHandler
-                            error={this.props.distributionFetchError}
-                        />
-                    );
-                }
-                const baseUrlDistribution = `/dataset/${encodeURI(
-                    this.props.match.params.datasetId
-                )}/distribution/${encodeURI(
-                    this.props.match.params.distributionId
-                )}`;
+            }
+            // load error message if error occurs
+            else if (this.props.distributionFetchError) {
+                return (
+                    <ErrorHandler error={this.props.distributionFetchError} />
+                );
+            }
+            // load detail if distribution id in url matches the current distribution
+            // this is to prevent flashing old content
+            else if (
+                publisherId ===
+                decodeURIComponent(this.props.match.params.publisherId)
+            ) {
                 return (
                     <div className="">
                         <span className="distribution-title">
@@ -142,7 +149,7 @@ class RecordHandler extends React.Component {
                         <div className="distribution-meta">
                             <div className="publisher">
                                 <Link to={`/organisations/${publisherId}`}>
-                                    {publisherName}
+                                    {this.props.dataset.publisher.name}
                                 </Link>
                             </div>
                             <Separator />
@@ -243,32 +250,46 @@ class RecordHandler extends React.Component {
                     </div>
                 );
             }
+            // if all fails, we display an info message saying an error occured
+            else {
+                return (
+                    <AUpageAlert as="info" className="notification__inner">
+                        Oops, an error occured
+                    </AUpageAlert>
+                );
+            }
         } else if (this.props.match.params.datasetId) {
+            // on dataset detail page
+            const baseUrlDataset = `/dataset/${encodeURI(
+                this.props.match.params.datasetId
+            )}`;
+            // load progress bar if loading
             if (this.props.datasetIsFetching) {
                 return <ProgressBar />;
-            } else {
-                if (this.props.datasetFetchError) {
-                    if (this.props.datasetFetchError.detail === "Not Found") {
-                        return (
-                            <Redirect
-                                to={`/search?notfound=true&q="${encodeURI(
-                                    this.props.match.params.datasetId
-                                )}"`}
-                            />
-                        );
-                    } else {
-                        return (
-                            <ErrorHandler
-                                error={this.props.datasetFetchError}
-                            />
-                        );
-                    }
+            }
+            // handle if error occurs
+            else if (this.props.datasetFetchError) {
+                if (this.props.datasetFetchError.detail === "Not Found") {
+                    return (
+                        <Redirect
+                            to={`/search?notfound=true&q="${encodeURI(
+                                this.props.match.params.datasetId
+                            )}"`}
+                        />
+                    );
+                } else {
+                    return (
+                        <ErrorHandler error={this.props.datasetFetchError} />
+                    );
                 }
+            }
 
-                const baseUrlDataset = `/dataset/${encodeURI(
-                    this.props.match.params.datasetId
-                )}`;
-
+            // load detail if dataset id in url matches the current dataset
+            // this is to prevent flashing old content
+            else if (
+                this.props.dataset.identifier ===
+                decodeURIComponent(this.props.match.params.datasetId)
+            ) {
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
                         <div className="row">
@@ -286,7 +307,7 @@ class RecordHandler extends React.Component {
                                         <Link
                                             to={`/organisations/${publisherId}`}
                                         >
-                                            {publisherName}
+                                            {this.props.dataset.publisher.name}
                                         </Link>
                                     </span>
                                     <span className="separator hidden-sm">
@@ -382,6 +403,14 @@ class RecordHandler extends React.Component {
                             </Switch>
                         </div>
                     </div>
+                );
+            }
+            // if all fails, we display an info message saying an error occured
+            else {
+                return (
+                    <AUpageAlert as="info" className="notification__inner">
+                        Dataset cannot be found
+                    </AUpageAlert>
                 );
             }
         }
