@@ -13,6 +13,7 @@ import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
+import createDGARedirectionRouter from "./createDGARedirectionRouter";
 import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -136,6 +137,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
+        .option("dgaRedirectionDomain", {
+            describe:
+                "The new domain where the DGA ckan system is located. If not specified, default value `ckan.data.gov.au` will be used.",
+            type: "string",
+            default: "ckan.data.gov.au"
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -208,6 +215,12 @@ app.use(
     })
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
+
+app.use(
+    createDGARedirectionRouter({
+        dgaRedirectionDomain: argv.dgaRedirectionDomain
+    })
+);
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
