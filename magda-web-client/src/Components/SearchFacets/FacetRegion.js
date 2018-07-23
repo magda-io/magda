@@ -30,6 +30,18 @@ class FacetRegion extends Component {
         };
     }
 
+    static getDerivedStateFromProps(props, state) {
+        // only set props to state if state is not already set and if props is not empty
+        if (!state._activeRegion.regionId && props.activeRegion.regionId) {
+            return {
+                ...state,
+                applyButtonDisabled: false,
+                _activeRegion: props.activeRegion
+            };
+        }
+        return null;
+    }
+
     onToggleOption(option) {
         this.setState({
             applyButtonDisabled: false,
@@ -54,8 +66,17 @@ class FacetRegion extends Component {
             _activeRegion: region
         });
     }
-    componentWillUnmount() {
-        if (this.state._activeRegion.regionId !== undefined) {
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.resetFilterEvent !== this.props.resetFilterEvent) {
+            this.props.closeFacet();
+            this.setState({
+                _activeRegion: {
+                    regionId: undefined,
+                    regionType: undefined
+                }
+            });
+        } else if (!this.props.isOpen && prevProps.isOpen) {
             this.onApplyFilter();
         }
     }
@@ -158,6 +179,7 @@ class FacetRegion extends Component {
     }
 
     render() {
+        if (!this.props.isOpen) return null;
         return <div className="facet-wrapper">{this.renderBox()}</div>;
     }
 }

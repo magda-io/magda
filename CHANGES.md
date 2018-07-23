@@ -47,6 +47,12 @@
 -   Added auto gzip compress to gateway
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
+-   Fixed Organisation content position moved (flicking) during data loading
+-   Fixed Organisation page router history issue
+-   Fixed Search Panel `Clear` button doesn't work
+-   Fixed bug where dataset ids where "undefined" in distribution URLs.
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL 
+-   Updated URL of City of Launceston connector.
 
 ## 0.0.43
 
