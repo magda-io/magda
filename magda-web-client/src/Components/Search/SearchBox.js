@@ -31,7 +31,7 @@ class SearchBox extends Component {
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
         this.state = {
-            searchText: undefined,
+            searchText: null,
             width: 0,
             height: 0,
             isFocus: false
@@ -43,9 +43,6 @@ class SearchBox extends Component {
 
     componentDidMount() {
         this.props.fetchRegionMapping();
-        this.setState({
-            searchText: this.props.location.search.q
-        });
     }
 
     onSearchTextChange(event) {
