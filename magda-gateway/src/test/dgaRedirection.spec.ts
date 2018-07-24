@@ -97,6 +97,28 @@ describe("DGARedirectionRouter router", () => {
         test404(`https://${dgaRedirectionDomain}/groupxxx`, true);
     });
 
+    describe("Redirect DGA /organization & /organization?q=xxx", () => {
+        it("should redirect /organization to /organisations", () => {
+            return supertest(app)
+                .get("/organization")
+                .expect(checkRedirectionDetails("/organisations"));
+        });
+
+        it("should redirect /organization?q=xxx&sort=xx&page=xx to /organisations?q=xxx", () => {
+            return supertest(app)
+                .get("/organization?q=xxx&sort=xx&page=xx")
+                .expect(308)
+                .expect((res: supertest.Response) => {
+                    const uri = URI(res.header["location"]);
+                    expect(uri.segment(0)).to.equal("organisations");
+                    const query = uri.search(true);
+                    expect(query.q).to.equal("xxx");
+                    expect(query.sort).be.an("undefined");
+                    expect(query.page).be.an("undefined");
+                })
+        });
+    });
+
     function checkRedirectionDetails(location: string | RegExp) {
         return (res: supertest.Response) => {
             if (_.isRegExp(location)) {
