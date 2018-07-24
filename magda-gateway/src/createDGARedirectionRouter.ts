@@ -19,11 +19,23 @@ export default function buildDGARedirectionRouter({
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
-    router.all("/dataset/edit(/*)?", function (req, res){
+    /**
+     * Needs to cover: 
+     * /dataset/edit
+     * /dataset/edit* e.g. /dataset/edit?q=22 but not /dataset/newxx
+     * /dataset/edit/*
+     */
+    router.all(/^\/dataset\/(edit|edit\?.*|edit\/.*)$/, function (req, res){
         res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
-    router.all("/dataset/new(/*)?", function (req, res){
+    /**
+     * Needs to cover: 
+     * /dataset/new
+     * /dataset/new* e.g. /dataset/new?q=22 but not /dataset/newxx
+     * /dataset/new/*
+     */
+    router.all(/^\/dataset\/(new|new\?.*|new\/.*)$/, function (req, res){
         res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 

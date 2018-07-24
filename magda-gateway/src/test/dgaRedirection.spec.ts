@@ -66,6 +66,18 @@ describe("DGARedirectionRouter router", () => {
                 .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/edit/abc`,307));
         });
 
+        it(`should redirect GET /dataset/edit?x=1332 to https://${dgaRedirectionDomain}/dataset/edit?x=1332`, () => {
+            return supertest(app)
+                .get("/dataset/edit?x=1332")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/edit?x=1332`,307));
+        });
+
+        it(`should response 404 for /dataset/editxxaa`, () => {
+            return supertest(app)
+                .get("/dataset/editxxaa")
+                .expect(404);
+        });
+
     });
 
     describe("Redirect DGA /dataset/new", () => {
@@ -79,6 +91,18 @@ describe("DGARedirectionRouter router", () => {
             return supertest(app)
                 .get("/dataset/new/abc")
                 .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/new/abc`,307));
+        });
+
+        it(`should redirect GET /dataset/new?x=1332 to https://${dgaRedirectionDomain}/dataset/new?x=1332`, () => {
+            return supertest(app)
+                .get("/dataset/new?x=1332")
+                .expect(checkRedirectionDetails(`https://${dgaRedirectionDomain}/dataset/new?x=1332`,307));
+        });
+
+        it(`should response 404 for /dataset/newxxaa`, () => {
+            return supertest(app)
+                .get("/dataset/newxxaa")
+                .expect(404);
         });
         
     });
