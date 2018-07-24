@@ -7,6 +7,7 @@
 -   Fixed a date filter bug that freeze UI on slow internet
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
+-   Added more details in organisations/publishers page to reflect design.
 
 ## 0.0.44
 
