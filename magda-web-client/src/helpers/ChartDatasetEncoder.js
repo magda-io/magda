@@ -652,12 +652,12 @@ class ChartDatasetEncoder {
         if (this.chartType === "scatter") {
             const { xAxisIdx, yAxisIdx, tooltipCols } = this.fields.reduce(
                 (prevValue, field, idx) => {
-                    if (this.yAxis === field) {
+                    if (this.yAxis.name === field.name) {
                         return {
                             ...prevValue,
                             yAxisIdx: idx
                         };
-                    } else if (this.xAxis === field) {
+                    } else if (this.xAxis.name === field.name) {
                         return {
                             ...prevValue,
                             xAxisIdx: idx
@@ -742,10 +742,10 @@ class ChartDatasetEncoder {
                 formatter: (() => {
                     if (type === "category") {
                         return value => {
-                            if (value.length > 20) {
-                                return value.substring(0, 17) + "...";
-                            } else if (value.trim().length === 0) {
+                            if (!value || value.trim().length === 0) {
                                 return UNKNOWN_AXIS_LABEL;
+                            } else if (value.length > 20) {
+                                return value.substring(0, 17) + "...";
                             } else {
                                 return value;
                             }
