@@ -39,6 +39,25 @@ export default function buildDGARedirectionRouter({
         res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
+    router.all("/fanstatic/*", function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all("/geoserver/*", function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.get(/^\/(group|group\?.*|group\/.*)$/, function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    /**
+     * match /organization & /organization?q=xxx&sort
+     */
+    router.all(/^\/(organization|organization\?.*)$/, function (req, res){
+        res.redirect(308, URI(req.originalUrl).segment(0,"organisations").removeSearch(["page","sort"]).toString());
+    });
+
     router.all("/data/*", function (req, res){
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).toString());
     });
