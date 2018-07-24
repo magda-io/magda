@@ -156,5 +156,6 @@ export const config = {
         south: -45,
         east: 155,
         north: -5
-    }
+    },
+    showFallback: false
 };

@@ -43,9 +43,11 @@ class AppContainer extends React.Component {
                                 }
                             ]}
                         />
-                        <Medium>
-                            <Banner />
-                        </Medium>
+                        {config.showFallback && (
+                            <Medium>
+                                <Banner />
+                            </Medium>
+                        )}
 
                         <Switch>
                             <Route exact path="/" component={HomePage} />
