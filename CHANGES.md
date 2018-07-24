@@ -49,8 +49,9 @@
 -   Fixed Organisation page router history issue
 -   Fixed Search Panel `Clear` button doesn't work
 -   Fixed bug where dataset ids where "undefined" in distribution URLs.
--   Corrected incorrect source-link-status aspect name in UI dataset request URL 
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
+-   Keep search text in synch.
 
 ## 0.0.43
 

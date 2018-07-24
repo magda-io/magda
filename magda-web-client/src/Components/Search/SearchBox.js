@@ -48,6 +48,20 @@ class SearchBox extends Component {
         });
     }
 
+    componentDidUpdate(prevProps) {
+        // figure out where the component update is from
+        // if it's not from home page or search page, but is leading to search page, then we need to update search text and initiate search
+        if (
+            prevProps.location.pathname &&
+            prevProps.location.pathname !== ("/search" || "/") &&
+            this.props.location.pathname === "/search"
+        ) {
+            this.setState({
+                searchText: this.props.location.search.q
+            });
+        }
+    }
+
     onSearchTextChange(event) {
         const text = event.target.value;
         this.setState({
@@ -73,7 +87,7 @@ class SearchBox extends Component {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery.flush(this.getSearchBoxValue());
+            this.debounceUpdateSearchQuery.flush();
         }
     }
 
@@ -81,7 +95,6 @@ class SearchBox extends Component {
      * If the search button is clicked, we do the search immediately
      */
     onClickSearch() {
-        this.debounceUpdateSearchQuery(this.getSearchBoxValue());
         this.debounceUpdateSearchQuery.flush();
     }
 
