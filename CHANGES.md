@@ -52,6 +52,7 @@
 -   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
 -   Add config for fallback banner
+-   Keep search text in synch.
 
 ## 0.0.43
 
