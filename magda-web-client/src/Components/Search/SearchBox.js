@@ -48,20 +48,6 @@ class SearchBox extends Component {
         });
     }
 
-    componentDidUpdate(prevProps) {
-        // figure out where the component update is from
-        // if it's not from home page or search page, but is leading to search page, then we need to update search text and initiate search
-        if (
-            prevProps.location.pathname &&
-            prevProps.location.pathname !== ("/search" || "/") &&
-            this.props.location.pathname === "/search"
-        ) {
-            this.setState({
-                searchText: this.props.location.search.q
-            });
-        }
-    }
-
     onSearchTextChange(event) {
         const text = event.target.value;
         this.setState({
@@ -80,6 +66,9 @@ class SearchBox extends Component {
         this.updateQuery({
             q: text,
             page: undefined
+        });
+        this.setState({
+            searchText: null
         });
     }
 
