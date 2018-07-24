@@ -119,6 +119,40 @@ describe("DGARedirectionRouter router", () => {
         });
     });
 
+    describe("Redirect DGA /user", () => {
+        testCkanDomainChangeOnly([
+            `https://${dgaRedirectionDomain}/user`,
+            `https://${dgaRedirectionDomain}/user/xxx`,
+            `https://${dgaRedirectionDomain}/user?x=1332`
+        ],307, true);
+
+        test404(`https://${dgaRedirectionDomain}/userxxx`, true);
+    });
+
+    describe("Redirect DGA /storage/*", () => {
+        testCkanDomainChangeOnly(
+            `https://${dgaRedirectionDomain}/storage/f/xxx.txt`,
+            308,
+            true
+        );
+    });
+
+    describe("Redirect DGA /uploads/*", () => {
+        testCkanDomainChangeOnly(
+            `https://${dgaRedirectionDomain}/uploads/group/xxx.jpg`,
+            308,
+            true
+        );
+    });
+
+    describe("Redirect DGA /vendor/leaflet/*", () => {
+        testCkanDomainChangeOnly(
+            `https://${dgaRedirectionDomain}/vendor/leaflet/0.7.3/xxx.png`,
+            308,
+            true
+        );
+    });
+
     function checkRedirectionDetails(location: string | RegExp) {
         return (res: supertest.Response) => {
             if (_.isRegExp(location)) {

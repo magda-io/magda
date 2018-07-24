@@ -47,19 +47,35 @@ export default function buildDGARedirectionRouter({
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
-    router.get(/^\/(group|group\?.*|group\/.*)$/, function (req, res){
+    router.all(/^\/(group|group\?.*|group\/.*)$/, function (req, res){
         res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
     /**
      * match /organization & /organization?q=xxx&sort
      */
-    router.all(/^\/(organization|organization\?.*)$/, function (req, res){
+    router.get(/^\/(organization|organization\?.*)$/, function (req, res){
         res.redirect(308, URI(req.originalUrl).segment(0,"organisations").removeSearch(["page","sort"]).toString());
     });
 
-    router.all("/data/*", function (req, res){
-        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).toString());
+    router.all(/^\/(showcase|showcase\?.*|showcase\/.*)$/, function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all("/storage/*", function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all("/uploads/*", function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all(/^\/(user|user\?.*|user\/.*)$/, function (req, res){
+        res.redirect(307, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
+    });
+
+    router.all("/vendor/leaflet/*", function (req, res){
+        res.redirect(308, URI(req.originalUrl).domain(dgaRedirectionDomain).protocol("https").toString());
     });
 
     return router;
