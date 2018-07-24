@@ -2,27 +2,39 @@ import {} from "mocha";
 import * as sinon from "sinon";
 import * as express from "express";
 import { expect } from "chai";
-//import * as nock from "nock";
+import * as nock from "nock";
 import * as _ from "lodash";
 import * as supertest from "supertest";
 import * as URI from "urijs";
 import createDGARedirectionRouter from "../createDGARedirectionRouter";
+import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 describe("DGARedirectionRouter router", () => {
     const dgaRedirectionDomain = "ckan.data.gov.au";
 
     let app: express.Application;
+    const registryUrl = "http://registry.example.com";
+    const registry = new Registry({
+        baseUrl: registryUrl,
+        maxRetries: 0
+    });
+    let registryScope: nock.Scope;
 
     beforeEach(() => {
-        const router = createDGARedirectionRouter({ dgaRedirectionDomain });
+        const router = createDGARedirectionRouter({
+            dgaRedirectionDomain,
+            registry
+        });
         app = express();
         app.use(router);
+        registryScope = nock(registryUrl);
     });
 
     afterEach(() => {
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
+        nock.cleanAll();
     });
 
     describe("Redirect DGA /about", () => {
@@ -40,7 +52,10 @@ describe("DGARedirectionRouter router", () => {
             true
         );
 
-        test404(`https://${dgaRedirectionDomain}/api/v0/registry/records/ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4`, true);
+        test404(
+            `https://${dgaRedirectionDomain}/api/v0/registry/records/ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4`,
+            true
+        );
     });
 
     describe("Redirect DGA /dataset/edit", () => {
@@ -115,16 +130,20 @@ describe("DGARedirectionRouter router", () => {
                     expect(query.q).to.equal("xxx");
                     expect(query.sort).be.an("undefined");
                     expect(query.page).be.an("undefined");
-                })
+                });
         });
     });
 
     describe("Redirect DGA /user", () => {
-        testCkanDomainChangeOnly([
-            `https://${dgaRedirectionDomain}/user`,
-            `https://${dgaRedirectionDomain}/user/xxx`,
-            `https://${dgaRedirectionDomain}/user?x=1332`
-        ],307, true);
+        testCkanDomainChangeOnly(
+            [
+                `https://${dgaRedirectionDomain}/user`,
+                `https://${dgaRedirectionDomain}/user/xxx`,
+                `https://${dgaRedirectionDomain}/user?x=1332`
+            ],
+            307,
+            true
+        );
 
         test404(`https://${dgaRedirectionDomain}/userxxx`, true);
     });
@@ -152,6 +171,74 @@ describe("DGARedirectionRouter router", () => {
             true
         );
     });
+
+    describe("Redirect /dataset/*", () => {
+        //--/records?aspectQuery=ckan-dataset.name:pg_skafsd0_f___00120141210_11a
+
+        it("should redirect /dataset/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/pg_skafsd0_f___00120141210_11a")
+                .expect(checkRedirectionDetails("/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"));
+        });
+
+        it("should redirect /dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8 to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
+                .expect(checkRedirectionDetails("/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"));
+        });
+
+        it("should redirect /dataset/unknown-name to /page/ckan-dataset-not-found?token=unknown-name", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/unknown-name")
+                .expect(checkRedirectionDetails("/page/ckan-dataset-not-found?token=unknown-name"));
+        });
+
+    });
+
+    function setupRegistryApiForCkanDatasetQuery() {
+        const errorResponse = `{
+            hasMore: false,
+            records: [ ]
+        }`;
+
+        const okResponse = `{
+            "hasMore": false,
+            "records": [
+              {
+                "id": "ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8",
+                "name": "Status of key Australian fish stocks reports 2014",
+                "aspects": {},
+                "sourceTag": "7b5a3341-9f8c-49c3-ad98-5015833420fe"
+              }
+            ]
+          }`;
+
+        registryScope
+            .get("/records")
+            .query(true)
+            .reply(200, function(uri: string) {
+                const uriObj = URI(uri);
+                const query = uriObj.search(true);
+                if (!query || !query.aspectQuery) return errorResponse;
+                const [path, value] = query.aspectQuery.split(":");
+                if (
+                    path === "ckan-dataset.name" &&
+                    value === "pg_skafsd0_f___00120141210_11"
+                ) {
+                    return okResponse;
+                } else if (
+                    path === "ckan-dataset.id" &&
+                    value === "8beb4387-ec03-46f9-8048-3ad76c0416c8"
+                ) {
+                    return okResponse;
+                } else {
+                    return errorResponse;
+                }
+            });
+    }
 
     function checkRedirectionDetails(location: string | RegExp) {
         return (res: supertest.Response) => {

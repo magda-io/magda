@@ -8,6 +8,7 @@ import * as _ from "lodash";
 import * as compression from "compression";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
@@ -143,6 +144,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "ckan.data.gov.au"
         })
+        .option("registryApiBaseUrlInternal", {
+            describe: "The url of the registry api for use within the cluster",
+            type: "string",
+            default: "http://localhost:6101/v0",
+            required: true
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -218,7 +225,11 @@ app.use("/preview-map", createGenericProxy(argv.previewMap));
 
 app.use(
     createDGARedirectionRouter({
-        dgaRedirectionDomain: argv.dgaRedirectionDomain
+        dgaRedirectionDomain: argv.dgaRedirectionDomain,
+        registry: new Registry({
+            baseUrl: argv.registryApiBaseUrlInternal,
+            maxRetries: 0
+        })
     })
 );
 
