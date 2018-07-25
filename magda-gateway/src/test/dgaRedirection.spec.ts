@@ -164,29 +164,42 @@ describe("DGARedirectionRouter router", () => {
     });
 
     describe("Redirect /dataset/*", () => {
-        //--/records?aspectQuery=ckan-dataset.name:pg_skafsd0_f___00120141210_11a
-
+        
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/pg_skafsd0_f___00120141210_11a")
-                .expect(checkRedirectionDetails("/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"));
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
         });
 
         it("should redirect /dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8 to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
-                .expect(checkRedirectionDetails("/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"));
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
         });
 
-        it("should redirect /dataset/unknown-name to /page/ckan-dataset-not-found?token=unknown-name", () => {
+        it("should redirect /dataset/unknown-name to /error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/unknown-name")
-                .expect(checkRedirectionDetails("/page/ckan-dataset-not-found?token=unknown-name"));
+                .expect(307)
+                .expect(
+                    checkRedirectionDetails(
+                        "/error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name"
+                    )
+                );
         });
-
     });
 
     function setupRegistryApiForCkanDatasetQuery() {
@@ -195,7 +208,7 @@ describe("DGARedirectionRouter router", () => {
             records: [ ]
         }`;
 
-        const okResponse = `{
+        const okCkanDatasetResponse = `{
             "hasMore": false,
             "records": [
               {
@@ -203,6 +216,59 @@ describe("DGARedirectionRouter router", () => {
                 "name": "Status of key Australian fish stocks reports 2014",
                 "aspects": {},
                 "sourceTag": "7b5a3341-9f8c-49c3-ad98-5015833420fe"
+              }
+            ]
+          }`;
+
+        const okCkanResource = `{
+            "hasMore": false,
+            "records": [
+              {
+                "id": "dist-dga-af618603-e529-4998-b977-e8751f291e6e",
+                "name": "wwLink to Australian Fish and Fisheries web site managed by Fisheries Research and Development Corporation",
+                "aspects": {
+                  "ckan-resource": {
+                    "mimetype": "audio/basic",
+                    "format": "HTML",
+                    "name": "wwLink to Australian Fish and Fisheries web site managed by Fisheries Research and Development Corporation",
+                    "package_id": "8beb4387-ec03-46f9-8048-3ad76c0416c8",
+                    "datastore_active": false,
+                    "size": null,
+                    "state": "active",
+                    "url": "http://www.fish.gov.au",
+                    "description": "KeyDocument 01 \r\n Website with details about Australian Fisheries, and fish stocks",
+                    "resource_type": null,
+                    "url_type": null,
+                    "last_modified": "2014-12-10T00:00:00",
+                    "hash": "",
+                    "id": "af618603-e529-4998-b977-e8751f291e6e",
+                    "cache_url": null,
+                    "wms_layer": "",
+                    "position": 0,
+                    "mimetype_inner": null,
+                    "cache_last_updated": null,
+                    "revision_id": "af1d049b-8074-4b92-ac5c-1431a8942f14",
+                    "created": "2018-07-19T23:56:15.464718"
+                  }
+                },
+                "sourceTag": "45262f84-5043-443a-a028-377108bda3b5"
+              }
+            ]
+          }`;
+
+        const okCkanOrganizationQueryResponse = `{
+            "hasMore": true,
+            "nextPageToken": "88922",
+            "records": [
+              {
+                "id": "ds-dga-9eb34d32-5548-46ae-8668-851217428731",
+                "name": "Census (1981 Edition) - Boundaries",
+                "aspects": {
+                  "dataset-publisher": {
+                    "publisher": "org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                  }
+                },
+                "sourceTag": "45262f84-5043-443a-a028-377108bda3b5"
               }
             ]
           }`;
@@ -219,12 +285,33 @@ describe("DGARedirectionRouter router", () => {
                     path === "ckan-dataset.name" &&
                     value === "pg_skafsd0_f___00120141210_11"
                 ) {
-                    return okResponse;
+                    return okCkanDatasetResponse;
                 } else if (
                     path === "ckan-dataset.id" &&
                     value === "8beb4387-ec03-46f9-8048-3ad76c0416c8"
                 ) {
-                    return okResponse;
+                    return okCkanDatasetResponse;
+                } else if (
+                    path === "ckan-dataset.organization.id" &&
+                    value === "760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                ) {
+                    return okCkanOrganizationQueryResponse;
+                } else if (
+                    path === "ckan-dataset.organization.name" &&
+                    value === "australianbureauofstatistics-geography"
+                ) {
+                    return okCkanOrganizationQueryResponse;
+                } else if (
+                    path === "ckan-resource.id" &&
+                    value === "af618603-e529-4998-b977-e8751f291e6e"
+                ) {
+                    return okCkanResource;
+                } else if (
+                    path === "ckan-resource.name" &&
+                    value ===
+                        "wwLink to Australian Fish and Fisheries web site managed by Fisheries Research and Development Corporation"
+                ) {
+                    return okCkanResource;
                 } else {
                     return errorResponse;
                 }

@@ -1,6 +1,7 @@
 import * as express from "express";
 import { RecordsApi } from "@magda/typescript-common/dist/generated/registry/api";
 import * as URI from "urijs";
+import * as _ from "lodash";
 
 export type DGARedirectionRouterOptions = {
     dgaRedirectionDomain: string;
@@ -157,14 +158,28 @@ export default function buildDGARedirectionRouter({
         ckanIdOrName: string,
         aspectName: string,
         retrieveAspectContent: boolean = true,
+        retrieveAspects: string[] = null,
         limit: number = 1
     ) {
         const query = `${aspectName}.${
             uuidRegEx.test(ckanIdOrName) ? "id" : "name"
         }=${ckanIdOrName}`;
 
+        let aspectList: string[] = [];
+        
+        if(retrieveAspects && retrieveAspects.length) {
+            aspectList = retrieveAspects;
+        }else{
+            //--- this param only take effect when `retrieveAspects` is missing
+            if(retrieveAspectContent){
+                aspectList.push(aspectName);
+            }
+        }
+
+        aspectList = _.uniq(aspectList);
+
         return recordsApi.getAll(
-            retrieveAspectContent ? [aspectName] : undefined,
+            retrieveAspects.length ? retrieveAspects : undefined,
             undefined,
             undefined,
             undefined,
@@ -223,8 +238,28 @@ export default function buildDGARedirectionRouter({
         }
     }
 
-    function getCkanOrganisationMagdaId(ckanIdOrName: string) {
-        return getCkanRecordMagdaId(ckanIdOrName, "organization-details");
+    /**
+     * Unfortunately, aspect `organization-details` has no `id` field.
+     * That means we can't query it as the ckan url may contain ckan-organization id.
+     * Luckily, aspect `ckan-dataset`.`organization` has that id. 
+     * We will query against `ckan-dataset.organization` and then pull `dataset-publisher` aspect of that dataset.
+     * Thanks to registry API's flexible `records` aspectQuery interface. We actually can shorten the whole story into one query:
+     * /records?aspectQuery=ckan-dataset.organization.id:5a9f3a8e-2673-4c6e-be5b-e8f7287993c5&aspect=dataset-publisher&limt=1
+     */
+    async function getCkanOrganisationMagdaId(ckanIdOrName: string) {
+        const resData = await queryCkanAspect(ckanIdOrName, "ckan-dataset.organization", true, ["dataset-publisher"]);
+        if (
+            !resData ||
+            !resData.body ||
+            !resData.body.length ||
+            !resData.body[0]["aspects"] ||
+            !resData.body[0]["aspects"]["dataset-publisher"] ||
+            !resData.body[0]["aspects"]["dataset-publisher"]["publisher"]
+        ) {
+            return null;
+        } else {
+            return resData.body[0]["aspects"]["dataset-publisher"]["publisher"];
+        }
     }
 
     router.get(/^\/dataset\/(?!ds-)[^\/]+$/, async function(req, res) {
