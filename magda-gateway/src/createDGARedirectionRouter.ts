@@ -203,8 +203,10 @@ export default function buildDGARedirectionRouter({
      * We can, however, get ckan `package_id` (this is the ckan dataset Id) from `ckan-resource` aspect for a distribution.
      * And then use `package_id` to query registry API for madga dataset id again.
      */
-    async function getCkanDatasetMagdaIdByCkanDistributionId(ckanIdOrName: string){
-        const resData =  await queryCkanAspect(ckanIdOrName, "ckan-resource");
+    async function getCkanDatasetMagdaIdByCkanDistributionId(
+        ckanIdOrName: string
+    ) {
+        const resData = await queryCkanAspect(ckanIdOrName, "ckan-resource");
         if (
             !resData ||
             !resData.body ||
@@ -215,7 +217,8 @@ export default function buildDGARedirectionRouter({
         ) {
             return null;
         } else {
-            const ckanDatsetID = resData.body[0]["aspects"]["ckan-resource"]["package_id"];
+            const ckanDatsetID =
+                resData.body[0]["aspects"]["ckan-resource"]["package_id"];
             return await getCkanDatasetMagdaId(ckanDatsetID);
         }
     }
@@ -258,7 +261,9 @@ export default function buildDGARedirectionRouter({
             let datasetMagdaId = await getCkanDatasetMagdaId(dsIdOrName);
             if (!datasetMagdaId) {
                 const disIdOrName = originUri.segmentCoded(3).trim();
-                datasetMagdaId = await getCkanDatasetMagdaIdByCkanDistributionId(disIdOrName);
+                datasetMagdaId = await getCkanDatasetMagdaIdByCkanDistributionId(
+                    disIdOrName
+                );
                 if (!datasetMagdaId) {
                     const redirectUri = new URI(notFoundPageBaseUrl).search({
                         errorCode: 404,
@@ -271,7 +276,30 @@ export default function buildDGARedirectionRouter({
             }
 
             res.redirect(308, `/dataset/${datasetMagdaId}/details`);
+        } catch (e) {
+            console.log(e);
+            res.sendStatus(500);
+        }
+    });
 
+    router.get("/organization/:ckanIdOrName", async function(req, res) {
+        try {
+            const ckanIdOrName = req.params.ckanIdOrName;
+            if (!ckanIdOrName)
+                throw new Error(`Invalid ckanIdOrName ${ckanIdOrName}`);
+
+            const magdaId = await getCkanOrganisationMagdaId(ckanIdOrName);
+
+            if (!magdaId) {
+                const redirectUri = new URI(notFoundPageBaseUrl).search({
+                    errorCode: 404,
+                    recordType: "ckan-organization-details",
+                    recordId: ckanIdOrName
+                });
+                res.redirect(307, redirectUri.toString());
+            } else {
+                res.redirect(308, `/organisations/${magdaId}`);
+            }
         } catch (e) {
             console.log(e);
             res.sendStatus(500);
