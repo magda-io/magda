@@ -138,7 +138,7 @@ class DistributionRow extends Component {
             distributionLink = distribution.accessURL;
         } else {
             distributionLink = `/dataset/${encodeURIComponent(
-                dataset.id
+                dataset.identifier
             )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
                 this.props.searchText
             }`;

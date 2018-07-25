@@ -2,7 +2,9 @@
 @import "./pancake/sass/pancake.scss";
 html {
 }
-
+body {
+    overflow-y: scroll;
+}
 .au-body .au-grid {
     p,
     input,
