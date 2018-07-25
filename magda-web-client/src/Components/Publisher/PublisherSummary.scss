@@ -25,11 +25,15 @@
         }
     }
 
-    .publisher-meta {
-        color: $AU-color-foreground-action;
-        margin: 0.8rem 0;
-        a {
-            text-decoration: none;
+    .publisher-meta a {
+        opacity: 0.75;
+        @include AU-fontgrid(xs);
+        margin-bottom: 5px;
+        display: inline-block;
+        text-decoration: none;
+        &:hover,
+        &:focus {
+            text-decoration: underline;
         }
     }
 
