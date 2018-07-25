@@ -7,23 +7,18 @@ import * as _ from "lodash";
 import * as supertest from "supertest";
 import * as URI from "urijs";
 import createDGARedirectionRouter from "../createDGARedirectionRouter";
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 describe("DGARedirectionRouter router", () => {
     const dgaRedirectionDomain = "ckan.data.gov.au";
 
     let app: express.Application;
     const registryUrl = "http://registry.example.com";
-    const registry = new Registry({
-        baseUrl: registryUrl,
-        maxRetries: 0
-    });
     let registryScope: nock.Scope;
 
     beforeEach(() => {
         const router = createDGARedirectionRouter({
             dgaRedirectionDomain,
-            registry
+            registryApiBaseUrlInternal: registryUrl
         });
         app = express();
         app.use(router);
@@ -68,8 +63,6 @@ describe("DGARedirectionRouter router", () => {
             307,
             true
         );
-
-        test404(`https://${dgaRedirectionDomain}/dataset/editxxx`, true);
     });
 
     describe("Redirect DGA /dataset/new", () => {
@@ -82,8 +75,6 @@ describe("DGARedirectionRouter router", () => {
             307,
             true
         );
-
-        test404(`https://${dgaRedirectionDomain}/dataset/newxxx`, true);
     });
 
     describe("Redirect DGA /fanstatic/*", () => {

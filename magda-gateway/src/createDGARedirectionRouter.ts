@@ -1,17 +1,18 @@
 import * as express from "express";
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import { RecordsApi } from "@magda/typescript-common/dist/generated/registry/api";
 import * as URI from "urijs";
 
 export type DGARedirectionRouterOptions = {
     dgaRedirectionDomain: string;
-    registry: Registry;
+    registryApiBaseUrlInternal: string;
 };
 
 export default function buildDGARedirectionRouter({
     dgaRedirectionDomain,
-    registry
+    registryApiBaseUrlInternal
 }: DGARedirectionRouterOptions): express.Router {
     const router = express.Router();
+    const recordsApi = new RecordsApi(registryApiBaseUrlInternal);
 
     router.get("/about", function(req, res) {
         res.redirect(308, "/page/about");
@@ -152,14 +153,129 @@ export default function buildDGARedirectionRouter({
         );
     });
 
-    router.get(/^\/dataset\/(?!ds-)[^\/]+$/, function(req, res) {
-        res.redirect(
-            307,
-            URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
-                .protocol("https")
-                .toString()
+    function queryCkanAspect(
+        ckanIdOrName: string,
+        aspectName: string,
+        retrieveAspectContent: boolean = true,
+        limit: number = 1
+    ) {
+        const query = `${aspectName}.${
+            uuidRegEx.test(ckanIdOrName) ? "id" : "name"
+        }=${ckanIdOrName}`;
+
+        return recordsApi.getAll(
+            retrieveAspectContent ? [aspectName] : undefined,
+            undefined,
+            undefined,
+            undefined,
+            limit,
+            undefined,
+            [query]
         );
+    }
+
+    const uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/gi;
+    const notFoundPageBaseUrl = "/error";
+
+    async function getCkanRecordMagdaId(
+        ckanIdOrName: string,
+        aspectName: string
+    ) {
+        const resData = await queryCkanAspect(ckanIdOrName, aspectName, false);
+        if (
+            !resData ||
+            !resData.body ||
+            !resData.body.length ||
+            !resData.body[0]["id"]
+        ) {
+            return null;
+        } else {
+            return resData.body[0]["id"];
+        }
+    }
+
+    function getCkanDatasetMagdaId(ckanIdOrName: string) {
+        return getCkanRecordMagdaId(ckanIdOrName, "ckan-dataset");
+    }
+
+    /**
+     * Currently, there is no API can retrieve dataset id by distribution ID directly.
+     * We can, however, get ckan `package_id` (this is the ckan dataset Id) from `ckan-resource` aspect for a distribution.
+     * And then use `package_id` to query registry API for madga dataset id again.
+     */
+    async function getCkanDatasetMagdaIdByCkanDistributionId(ckanIdOrName: string){
+        const resData =  await queryCkanAspect(ckanIdOrName, "ckan-resource");
+        if (
+            !resData ||
+            !resData.body ||
+            !resData.body.length ||
+            !resData.body[0]["aspects"] ||
+            !resData.body[0]["aspects"]["ckan-resource"] ||
+            !resData.body[0]["aspects"]["ckan-resource"]["package_id"]
+        ) {
+            return null;
+        } else {
+            const ckanDatsetID = resData.body[0]["aspects"]["ckan-resource"]["package_id"];
+            return await getCkanDatasetMagdaId(ckanDatsetID);
+        }
+    }
+
+    function getCkanOrganisationMagdaId(ckanIdOrName: string) {
+        return getCkanRecordMagdaId(ckanIdOrName, "organization-details");
+    }
+
+    router.get(/^\/dataset\/(?!ds-)[^\/]+$/, async function(req, res) {
+        try {
+            const originUri = new URI(req.originalUrl);
+            const dsIdOrName = originUri.segmentCoded(1).trim();
+
+            const magdaId = await getCkanDatasetMagdaId(dsIdOrName);
+
+            if (!magdaId) {
+                const redirectUri = new URI(notFoundPageBaseUrl).search({
+                    errorCode: 404,
+                    recordType: "ckan-dataset",
+                    recordId: dsIdOrName
+                });
+                res.redirect(307, redirectUri.toString());
+            } else {
+                res.redirect(308, `/dataset/${magdaId}/details`);
+            }
+        } catch (e) {
+            console.log(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.get(/^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]+$/, async function(
+        req,
+        res
+    ) {
+        try {
+            const originUri = new URI(req.originalUrl);
+            const dsIdOrName = originUri.segmentCoded(1).trim();
+
+            let datasetMagdaId = await getCkanDatasetMagdaId(dsIdOrName);
+            if (!datasetMagdaId) {
+                const disIdOrName = originUri.segmentCoded(3).trim();
+                datasetMagdaId = await getCkanDatasetMagdaIdByCkanDistributionId(disIdOrName);
+                if (!datasetMagdaId) {
+                    const redirectUri = new URI(notFoundPageBaseUrl).search({
+                        errorCode: 404,
+                        recordType: "ckan-resource",
+                        recordId: disIdOrName
+                    });
+                    res.redirect(307, redirectUri.toString());
+                    return;
+                }
+            }
+
+            res.redirect(308, `/dataset/${datasetMagdaId}/details`);
+
+        } catch (e) {
+            console.log(e);
+            res.sendStatus(500);
+        }
     });
 
     return router;

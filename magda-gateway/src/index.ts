@@ -8,7 +8,6 @@ import * as _ from "lodash";
 import * as compression from "compression";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
@@ -226,10 +225,7 @@ app.use("/preview-map", createGenericProxy(argv.previewMap));
 app.use(
     createDGARedirectionRouter({
         dgaRedirectionDomain: argv.dgaRedirectionDomain,
-        registry: new Registry({
-            baseUrl: argv.registryApiBaseUrlInternal,
-            maxRetries: 0
-        })
+        registryApiBaseUrlInternal: argv.registryApiBaseUrlInternal
     })
 );
 
