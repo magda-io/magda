@@ -158,7 +158,7 @@ export default function buildDGARedirectionRouter({
         ckanIdOrName: string,
         aspectName: string,
         retrieveAspectContent: boolean = true,
-        retrieveAspects: string[] = null,
+        retrieveAspects: string[] = [],
         limit: number = 1
     ) {
         const query = `${aspectName}.${
