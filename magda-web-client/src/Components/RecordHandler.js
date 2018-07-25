@@ -41,47 +41,76 @@ class RecordHandler extends React.Component {
         this.setState({ addMargin });
     };
 
-    static getDerivedStateFromProps(props, state) {
+    componentDidMount() {
+        // check if we are on distribution page:
+        if (this.props.match.params.distributionId) {
+            this.fetchDistribution(this.props);
+            // we also need to fetch dataset here, if we donot already have the correct dataset
+            this.fetchDataset(this.props);
+        }
+        // if we are on dataset page, check if dataset has already been fetched and if it's the correct one
+        else if (this.props.match.params.datasetId) {
+            this.fetchDataset(this.props);
+        }
+
+        this.updateGAEvent(this.props);
+    }
+
+    componentDidUpdate() {
+        const props = this.props;
         // fetch if
         // 1. on dataset page, no dataset has been fetched or the cached dataset is not the one we are looking for
         // 2. on distribution page and no distribution has been fetched or the cached distribution is not the one we are looking for
 
         // check if we are on distribution page:
         if (props.match.params.distributionId) {
-            // now check if we have distribution already fetched and if it's the correct one
-            if (
-                !props.distribution ||
-                !props.distribution.identifier ||
-                decodeURIComponent(props.match.params.distributionId) !==
-                    props.distribution.identifier
-            ) {
-                if (
-                    !props.distributionIsFetching &&
-                    !props.distributionFetchError
-                ) {
-                    props.fetchDistribution(
-                        decodeURIComponent(props.match.params.distributionId)
-                    );
-                }
-            }
-            return null;
+            this.fetchDistribution(props);
+            // we also need to fetch dataset here, if we donot already have the correct dataset
+            this.fetchDataset(props);
         }
         // if we are on dataset page, check if dataset has already been fetched and if it's the correct one
         else if (props.match.params.datasetId) {
-            if (
-                !props.dataset ||
-                !props.dataset.identifier ||
-                decodeURIComponent(props.match.params.datasetId) !==
-                    props.dataset.identifier
-            ) {
-                if (!props.datasetIsFetching && !props.datasetFetchError) {
-                    props.fetchDataset(
-                        decodeURIComponent(props.match.params.datasetId)
-                    );
-                }
-            }
-            return null;
+            this.fetchDataset(props);
         }
+
+        this.updateGAEvent(props);
+    }
+
+    fetchDistribution(props) {
+        // now check if we have distribution already fetched and if it's the correct one
+        if (
+            !props.distribution ||
+            !props.distribution.identifier ||
+            decodeURIComponent(props.match.params.distributionId) !==
+                props.distribution.identifier
+        ) {
+            if (
+                !props.distributionIsFetching &&
+                !props.distributionFetchError
+            ) {
+                props.fetchDistribution(
+                    decodeURIComponent(props.match.params.distributionId)
+                );
+            }
+        }
+    }
+
+    fetchDataset(props) {
+        if (
+            !props.dataset ||
+            !props.dataset.identifier ||
+            decodeURIComponent(props.match.params.datasetId) !==
+                props.dataset.identifier
+        ) {
+            if (!props.datasetIsFetching && !props.datasetFetchError) {
+                props.fetchDataset(
+                    decodeURIComponent(props.match.params.datasetId)
+                );
+            }
+        }
+    }
+
+    updateGAEvent(props) {
         if (
             props.dataset &&
             props.dataset.identifier !== this.props.dataset.identifier
@@ -103,7 +132,6 @@ class RecordHandler extends React.Component {
                 });
             }
         }
-        return null;
     }
 
     renderByState() {
@@ -133,11 +161,14 @@ class RecordHandler extends React.Component {
             // load detail if distribution id in url matches the current distribution
             // this is to prevent flashing old content
             else if (
-                publisherId ===
-                decodeURIComponent(this.props.match.params.publisherId)
+                this.props.distribution.identifier ===
+                decodeURIComponent(this.props.match.params.distributionId)
             ) {
                 return (
-                    <div className="">
+                    <div className="distribution">
+                        <Medium>
+                            <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                        </Medium>
                         <span className="distribution-title">
                             <img
                                 className="distribution-icon"
@@ -252,11 +283,7 @@ class RecordHandler extends React.Component {
             }
             // if all fails, we display an info message saying an error occured
             else {
-                return (
-                    <AUpageAlert as="info" className="notification__inner">
-                        Oops, an error occured
-                    </AUpageAlert>
-                );
+                return null;
             }
         } else if (this.props.match.params.datasetId) {
             // on dataset detail page
@@ -292,6 +319,9 @@ class RecordHandler extends React.Component {
             ) {
                 return (
                     <div itemScope itemType="http://schema.org/Dataset">
+                        <Medium>
+                            <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
+                        </Medium>
                         <div className="row">
                             <div className="col-sm-8">
                                 <h1 className="dataset-title" itemProp="name">
@@ -407,11 +437,7 @@ class RecordHandler extends React.Component {
             }
             // if all fails, we display an info message saying an error occured
             else {
-                return (
-                    <AUpageAlert as="info" className="notification__inner">
-                        Dataset cannot be found
-                    </AUpageAlert>
-                );
+                return null;
             }
         }
         return <RouteNotFound />;
@@ -466,12 +492,7 @@ class RecordHandler extends React.Component {
             : this.props.dataset.title;
         return (
             <ReactDocumentTitle title={title + "|" + config.appName}>
-                <div>
-                    <Medium>
-                        <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
-                    </Medium>
-                    {this.renderByState()}
-                </div>
+                <div>{this.renderByState()}</div>
             </ReactDocumentTitle>
         );
     }
