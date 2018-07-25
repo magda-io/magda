@@ -49,6 +49,7 @@ export function fetchSearchResults(query: string, queryObject: Object): Store {
     return (dispatch: Dispatch) => {
         let url: string = config.searchApiUrl + `datasets?${query}`;
         dispatch(requestResults(queryObject, query));
+        console.log(url);
         return fetch(url)
             .then((response: Object) => {
                 if (response.status === 200) {

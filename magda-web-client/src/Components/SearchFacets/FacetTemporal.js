@@ -14,24 +14,44 @@ class FacetTemporal extends Component {
         this.selectEndYear = this.selectEndYear.bind(this);
         this.selectStartMonth = this.selectStartMonth.bind(this);
         this.selectEndMonth = this.selectEndMonth.bind(this);
+        this.resetTemporalFacet = this.resetTemporalFacet.bind(this);
+        this.state = {
+            startYear: undefined,
+            startMonth: undefined,
+            endYear: undefined,
+            endMonth: undefined
+        };
+    }
 
-        if (this.props.temporalRange) {
-            const dateFrom = defined(this.props.activeDates[0])
-                ? new Date(this.props.activeDates[0])
-                : new Date(this.props.temporalRange[0]);
-            const dateTo = defined(this.props.activeDates[1])
-                ? new Date(this.props.activeDates[1])
-                : new Date(this.props.temporalRange[1]);
-            this.state = {
-                startYear: dateFrom.getUTCFullYear(),
-                startMonth: dateFrom.getUTCMonth(),
-                endYear: dateTo.getUTCFullYear(),
-                endMonth: dateTo.getUTCMonth()
-            };
+    static getDerivedStateFromProps(props, state) {
+        if (props.temporalRange) {
+            const dateFrom = defined(props.activeDates[0])
+                ? new Date(props.activeDates[0])
+                : new Date(props.temporalRange[0]);
+            const dateTo = defined(props.activeDates[1])
+                ? new Date(props.activeDates[1])
+                : new Date(props.temporalRange[1]);
+            // only copy props to state if state has not been set
+            // basically beofre any manual UI change.
+            // Once user starts changing UI, it reflects that changed state
+            if (
+                !state.startYear &&
+                !state.endYear &&
+                !state.startMonth &&
+                !state.endMonth
+            ) {
+                return {
+                    startYear: dateFrom.getUTCFullYear(),
+                    startMonth: dateFrom.getUTCMonth(),
+                    endYear: dateTo.getUTCFullYear(),
+                    endMonth: dateTo.getUTCMonth()
+                };
+            }
+            return null;
         } else {
-            this.state = {
-                startYear: defined(this.props.activeDates[0])
-                    ? new Date(this.props.activeDates[0])
+            return {
+                startYear: defined(props.activeDates[0])
+                    ? new Date(props.activeDates[0])
                     : undefined,
                 startMonth: undefined,
                 endYear: undefined,
@@ -57,11 +77,18 @@ class FacetTemporal extends Component {
     canApply() {
         const dateFrom = new Date(this.props.temporalRange[0]);
         const dateTo = new Date(this.props.temporalRange[1]);
+        // we need to check those values are not
+        // null
+        // undefined
+        // NaN
+        // month can be 0, while year cannot be 0
         return (
-            defined(this.state.startYear) &&
+            this.state.startYear &&
+            this.state.endYear &&
             defined(this.state.startMonth) &&
+            !isNaN(this.state.startMonth) &&
             defined(this.state.endMonth) &&
-            defined(this.state.endYear) &&
+            !isNaN(this.state.endMonth) &&
             (this.state.startYear !== dateFrom.getUTCFullYear() ||
                 this.state.startMonth !== dateFrom.getUTCMonth() ||
                 this.state.endYear !== dateTo.getUTCFullYear() ||

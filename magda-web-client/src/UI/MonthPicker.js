@@ -27,9 +27,8 @@ class MonthPicker extends Component {
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.setState({
-            yearValue: this.props.year,
             // whether the current year is default or by user selection
             // if it's by default, we want to show it slightly opaque
             // to invite user to edit
@@ -37,12 +36,17 @@ class MonthPicker extends Component {
         });
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.year !== this.props.year) {
-            this.setState({
-                yearValue: this.props.year
-            });
+    static getDerivedStateFromProps(props, state) {
+        // only updates when neccessary
+        if (
+            state.yearValue !== props.year &&
+            !(isNaN(props.year) && isNaN(state.yearValue))
+        ) {
+            return {
+                yearValue: props.year
+            };
         }
+        return null;
     }
 
     changeYear(value) {
@@ -52,7 +56,7 @@ class MonthPicker extends Component {
                     this.props.yearUpper
                 }`
             });
-            this.props.onInvalidInput(true);
+            //this.props.onInvalidInput(true);
         } else {
             this.props.selectYear(value);
         }
@@ -67,11 +71,12 @@ class MonthPicker extends Component {
         if (event.target.value.length >= 5) {
             return false;
         } else {
+            const yearValue = +event.target.value;
             this.setState({
-                yearValue: event.target.value
+                yearValue: yearValue
             });
-            const value = +event.target.value;
-            this.debounceValidateYearField(value);
+
+            this.debounceValidateYearField(yearValue);
         }
     }
 
@@ -81,7 +86,7 @@ class MonthPicker extends Component {
             prompt: ""
         });
         // since input now is empty, we notify the parent
-        this.props.onInvalidInput(true);
+        // this.props.onInvalidInput(true);
     }
 
     onBlur(event) {
@@ -179,6 +184,9 @@ class MonthPicker extends Component {
 
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
+        const yearValue = isNaN(this.state.yearValue)
+            ? ""
+            : this.state.yearValue;
         return (
             <table className="month-picker">
                 <tbody>
@@ -191,7 +199,7 @@ class MonthPicker extends Component {
                                     onChange={this.onChange}
                                     onFocus={this.onFocus}
                                     onBlur={this.onBlur}
-                                    value={this.state.yearValue}
+                                    value={yearValue}
                                     className={`au-text-input au-text-input--block ${
                                         this.state.isDefault ? "is-default" : ""
                                     }`}
