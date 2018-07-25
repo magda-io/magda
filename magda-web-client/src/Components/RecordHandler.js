@@ -26,7 +26,6 @@ import DistributionIcon from "../assets/distribution_icon.svg";
 import "./RecordHandler.css";
 import TagsBox from "../UI/TagsBox";
 import QualityIndicator from "../UI/QualityIndicator";
-import AUpageAlert from "../pancake/react/page-alerts";
 
 class RecordHandler extends React.Component {
     constructor(props) {
