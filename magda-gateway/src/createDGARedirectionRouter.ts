@@ -154,31 +154,31 @@ export default function buildDGARedirectionRouter({
         );
     });
 
-    function queryCkanAspect(
+    async function queryCkanAspect(
         ckanIdOrName: string,
         aspectName: string,
         retrieveAspectContent: boolean = true,
         retrieveAspects: string[] = [],
         limit: number = 1
-    ) {
+    ): Promise<any[]> {
         const query = `${aspectName}.${
             uuidRegEx.test(ckanIdOrName) ? "id" : "name"
-        }=${ckanIdOrName}`;
+        }:${ckanIdOrName}`;
 
         let aspectList: string[] = [];
-        
-        if(retrieveAspects && retrieveAspects.length) {
+
+        if (retrieveAspects && retrieveAspects.length) {
             aspectList = retrieveAspects;
-        }else{
+        } else {
             //--- this param only take effect when `retrieveAspects` is missing
-            if(retrieveAspectContent){
+            if (retrieveAspectContent) {
                 aspectList.push(aspectName);
             }
         }
 
         aspectList = _.uniq(aspectList);
 
-        return recordsApi.getAll(
+        const resData: any = await recordsApi.getAll(
             retrieveAspects.length ? retrieveAspects : undefined,
             undefined,
             undefined,
@@ -187,6 +187,15 @@ export default function buildDGARedirectionRouter({
             undefined,
             [query]
         );
+
+        if (
+            !resData ||
+            !resData.body ||
+            !resData.body.records ||
+            !resData.body.records.length
+        )
+            return null;
+        return resData.body.records;
     }
 
     const uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/gi;
@@ -196,16 +205,11 @@ export default function buildDGARedirectionRouter({
         ckanIdOrName: string,
         aspectName: string
     ) {
-        const resData = await queryCkanAspect(ckanIdOrName, aspectName, false);
-        if (
-            !resData ||
-            !resData.body ||
-            !resData.body.length ||
-            !resData.body[0]["id"]
-        ) {
+        const records = await queryCkanAspect(ckanIdOrName, aspectName, false);
+        if (!records || !records.length || !records[0]["id"]) {
             return null;
         } else {
-            return resData.body[0]["id"];
+            return records[0]["id"];
         }
     }
 
@@ -221,19 +225,18 @@ export default function buildDGARedirectionRouter({
     async function getCkanDatasetMagdaIdByCkanDistributionId(
         ckanIdOrName: string
     ) {
-        const resData = await queryCkanAspect(ckanIdOrName, "ckan-resource");
+        const records = await queryCkanAspect(ckanIdOrName, "ckan-resource");
         if (
-            !resData ||
-            !resData.body ||
-            !resData.body.length ||
-            !resData.body[0]["aspects"] ||
-            !resData.body[0]["aspects"]["ckan-resource"] ||
-            !resData.body[0]["aspects"]["ckan-resource"]["package_id"]
+            !records ||
+            !records.length ||
+            !records[0]["aspects"] ||
+            !records[0]["aspects"]["ckan-resource"] ||
+            !records[0]["aspects"]["ckan-resource"]["package_id"]
         ) {
             return null;
         } else {
             const ckanDatsetID =
-                resData.body[0]["aspects"]["ckan-resource"]["package_id"];
+                records[0]["aspects"]["ckan-resource"]["package_id"];
             return await getCkanDatasetMagdaId(ckanDatsetID);
         }
     }
@@ -241,24 +244,28 @@ export default function buildDGARedirectionRouter({
     /**
      * Unfortunately, aspect `organization-details` has no `id` field.
      * That means we can't query it as the ckan url may contain ckan-organization id.
-     * Luckily, aspect `ckan-dataset`.`organization` has that id. 
+     * Luckily, aspect `ckan-dataset`.`organization` has that id.
      * We will query against `ckan-dataset.organization` and then pull `dataset-publisher` aspect of that dataset.
      * Thanks to registry API's flexible `records` aspectQuery interface. We actually can shorten the whole story into one query:
      * /records?aspectQuery=ckan-dataset.organization.id:5a9f3a8e-2673-4c6e-be5b-e8f7287993c5&aspect=dataset-publisher&limt=1
      */
     async function getCkanOrganisationMagdaId(ckanIdOrName: string) {
-        const resData = await queryCkanAspect(ckanIdOrName, "ckan-dataset.organization", true, ["dataset-publisher"]);
+        const records = await queryCkanAspect(
+            ckanIdOrName,
+            "ckan-dataset.organization",
+            true,
+            ["dataset-publisher"]
+        );
         if (
-            !resData ||
-            !resData.body ||
-            !resData.body.length ||
-            !resData.body[0]["aspects"] ||
-            !resData.body[0]["aspects"]["dataset-publisher"] ||
-            !resData.body[0]["aspects"]["dataset-publisher"]["publisher"]
+            !records ||
+            !records.length ||
+            !records[0]["aspects"] ||
+            !records[0]["aspects"]["dataset-publisher"] ||
+            !records[0]["aspects"]["dataset-publisher"]["publisher"]
         ) {
             return null;
         } else {
-            return resData.body[0]["aspects"]["dataset-publisher"]["publisher"];
+            return records[0]["aspects"]["dataset-publisher"]["publisher"];
         }
     }
 

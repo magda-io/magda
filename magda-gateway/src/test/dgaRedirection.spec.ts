@@ -164,7 +164,7 @@ describe("DGARedirectionRouter router", () => {
     });
 
     describe("Redirect /dataset/*", () => {
-        
+
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
@@ -283,7 +283,7 @@ describe("DGARedirectionRouter router", () => {
                 const [path, value] = query.aspectQuery.split(":");
                 if (
                     path === "ckan-dataset.name" &&
-                    value === "pg_skafsd0_f___00120141210_11"
+                    value === "pg_skafsd0_f___00120141210_11a"
                 ) {
                     return okCkanDatasetResponse;
                 } else if (
