@@ -25,12 +25,6 @@ class FacetTemporal extends Component {
 
     static getDerivedStateFromProps(props, state) {
         if (props.temporalRange) {
-            const dateFrom = defined(props.activeDates[0])
-                ? new Date(props.activeDates[0])
-                : new Date(props.temporalRange[0]);
-            const dateTo = defined(props.activeDates[1])
-                ? new Date(props.activeDates[1])
-                : new Date(props.temporalRange[1]);
             // only copy props to state if state has not been set
             // basically beofre any manual UI change.
             // Once user starts changing UI, it reflects that changed state
@@ -40,6 +34,12 @@ class FacetTemporal extends Component {
                 !state.startMonth &&
                 !state.endMonth
             ) {
+                const dateFrom = defined(props.activeDates[0])
+                    ? new Date(props.activeDates[0])
+                    : new Date(props.temporalRange[0]);
+                const dateTo = defined(props.activeDates[1])
+                    ? new Date(props.activeDates[1])
+                    : new Date(props.temporalRange[1]);
                 return {
                     startYear: dateFrom.getUTCFullYear(),
                     startMonth: dateFrom.getUTCMonth(),
