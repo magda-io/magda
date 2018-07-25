@@ -1,6 +1,7 @@
 ## 0.0.45
 
 -   Display a 'clear search' link after error message
+-   Fixed a date filter bug that freeze UI on slow internet
 
 ## 0.0.44
 
@@ -53,7 +54,7 @@
 -   Fixed Organisation page router history issue
 -   Fixed Search Panel `Clear` button doesn't work
 -   Fixed bug where dataset ids where "undefined" in distribution URLs.
--   Corrected incorrect source-link-status aspect name in UI dataset request URL 
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
 
 ## 0.0.43
