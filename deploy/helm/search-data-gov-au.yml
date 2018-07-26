@@ -58,6 +58,7 @@ elasticsearch:
 gateway:
     type: LoadBalancer
     loadBalancerIP: "35.189.8.102"
+    dgaRedirectionDomain: "ckan.data.gov.au"
     autoscaler:
         minReplicas: 2
         maxReplicas: 4

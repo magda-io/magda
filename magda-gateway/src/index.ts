@@ -143,12 +143,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "ckan.data.gov.au"
         })
-        .option("registryApiBaseUrlInternal", {
-            describe: "The url of the registry api for use within the cluster",
-            type: "string",
-            default: "http://localhost:6101/v0",
-            required: true
-        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -212,12 +206,14 @@ if (argv.enableAuthEndpoint) {
     );
 }
 
+const routes = _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson);
+
 app.use(
     "/api/v0",
     createApiRouter({
         authenticator: authenticator,
         jwtSecret: argv.jwtSecret,
-        routes: _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson)
+        routes
     })
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
@@ -225,7 +221,7 @@ app.use("/preview-map", createGenericProxy(argv.previewMap));
 app.use(
     createDGARedirectionRouter({
         dgaRedirectionDomain: argv.dgaRedirectionDomain,
-        registryApiBaseUrlInternal: argv.registryApiBaseUrlInternal
+        registryApiBaseUrlInternal: routes.registry.to
     })
 );
 

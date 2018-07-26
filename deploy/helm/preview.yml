@@ -26,6 +26,7 @@ gateway:
   autoscaler:
     enabled: false
   enableAuthEndpoint: true
+  dgaRedirectionDomain: "ckan.data.gov.au"
 combined-db:
   resources:
     requests:
