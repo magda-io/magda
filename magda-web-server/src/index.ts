@@ -176,7 +176,8 @@ const topLevelRoutes = [
     "projects",
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
-    "suggest"
+    "suggest",
+    "error"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
