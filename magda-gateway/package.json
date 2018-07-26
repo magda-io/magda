@@ -67,6 +67,7 @@
     "@types/supertest": "^2.0.2",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",
+    "request": "^2.79.0",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",

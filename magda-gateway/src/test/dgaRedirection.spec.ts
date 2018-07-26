@@ -239,18 +239,45 @@ describe("DGARedirectionRouter router", () => {
                     )
                 );
         });
+    });
 
-        /*it("should redirect /dataset/unknown-name to /error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name", () => {
+    describe("Redirect /organization/:ckanIdOrName", () => {
+
+        it("should redirect /organization/australianbureauofstatistics-geography to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
-                .get("/dataset/unknown-name")
+                .get("/organization/australianbureauofstatistics-geography")
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                    )
+                );
+        });
+
+        it("should redirect /organization/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/organization/760c24b1-3c3d-4ccb-8196-41530fcdebd5")
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                    )
+                );
+        });
+
+        it("should redirect /organization/unknown-name-or-id to /error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/organization/unknown-name-or-id")
                 .expect(307)
                 .expect(
                     checkRedirectionDetails(
-                        "/error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name"
+                        "/error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id"
                     )
                 );
-        });*/
+        });
     });
 
     function setupRegistryApiForCkanDatasetQuery() {
