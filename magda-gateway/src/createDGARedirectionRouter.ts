@@ -1,7 +1,7 @@
 import * as express from "express";
-import { RecordsApi } from "@magda/typescript-common/dist/generated/registry/api";
 import * as URI from "urijs";
 import * as _ from "lodash";
+import * as request from "request";
 
 export type DGARedirectionRouterOptions = {
     dgaRedirectionDomain: string;
@@ -13,7 +13,6 @@ export default function buildDGARedirectionRouter({
     registryApiBaseUrlInternal
 }: DGARedirectionRouterOptions): express.Router {
     const router = express.Router();
-    const recordsApi = new RecordsApi(registryApiBaseUrlInternal);
 
     router.get("/about", function(req, res) {
         res.redirect(308, "/page/about");
@@ -154,6 +153,79 @@ export default function buildDGARedirectionRouter({
         );
     });
 
+    class GenericError extends Error {
+        constructor(message = "Unknown Error", errorData: any = null) {
+            super(message);
+            this.errorData = errorData;
+        }
+        errorData: any = null;
+    }
+
+    function queryRegistryRecordApi(
+        aspectQuery: string[],
+        aspect: string[],
+        limit: number = 1
+    ) {
+        const queryParameters: any = {
+            limit
+        };
+        if (aspectQuery && aspectQuery.length) {
+            queryParameters["aspectQuery"] = aspectQuery;
+        }
+        if (aspect && aspect.length) {
+            queryParameters["aspect"] = aspect;
+        }
+
+        const requestOptions = {
+            uri: `${registryApiBaseUrlInternal}/records`,
+            method: "GET",
+            qs: queryParameters,
+            qsStringifyOptions: {
+                arrayFormat: "repeat"
+            },
+            json: false,
+            encoding: "utf-8"
+        };
+
+        return new Promise((resolve, reject) => {
+            try {
+                request(requestOptions, (error, response, body) => {
+                    try{
+                        if (error) {
+                            if (_.isError(error)) {
+                                reject(error);
+                            } else {
+                                reject(
+                                    new GenericError(
+                                        "Failed to send request to Registry API.",
+                                        error
+                                    )
+                                );
+                            }
+                        } else {
+                            if (
+                                response.statusCode >= 200 &&
+                                response.statusCode <= 299
+                            ) {
+                                try{
+                                    resolve(JSON.parse(body));
+                                }catch(e){
+                                    reject(new GenericError("Failed to parse response.",response));
+                                }
+                            } else {
+                                reject(new GenericError("Registry API failed to process response.",response));
+                            }
+                        }
+                    }catch(e){
+                        reject(e);
+                    }
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
     async function queryCkanAspect(
         ckanIdOrName: string,
         aspectName: string,
@@ -178,27 +250,22 @@ export default function buildDGARedirectionRouter({
 
         aspectList = _.uniq(aspectList);
 
-        const resData: any = await recordsApi.getAll(
-            retrieveAspects.length ? retrieveAspects : undefined,
-            undefined,
-            undefined,
-            undefined,
-            limit,
-            undefined,
-            [query]
+        const resData: any = await queryRegistryRecordApi(
+            [query],
+            retrieveAspects,
+            limit
         );
 
         if (
             !resData ||
-            !resData.body ||
-            !resData.body.records ||
-            !resData.body.records.length
+            !resData.records ||
+            !resData.records.length
         )
             return null;
-        return resData.body.records;
+        return resData.records;
     }
 
-    const uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/gi;
+    const uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const notFoundPageBaseUrl = "/error";
 
     async function getCkanRecordMagdaId(
@@ -213,8 +280,8 @@ export default function buildDGARedirectionRouter({
         }
     }
 
-    function getCkanDatasetMagdaId(ckanIdOrName: string) {
-        return getCkanRecordMagdaId(ckanIdOrName, "ckan-dataset");
+    async function getCkanDatasetMagdaId(ckanIdOrName: string) {
+        return await getCkanRecordMagdaId(ckanIdOrName, "ckan-dataset");
     }
 
     /**

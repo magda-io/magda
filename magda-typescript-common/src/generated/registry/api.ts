@@ -1487,9 +1487,6 @@ export class RecordsApi {
         let requestOptions: request.Options = {
             method: "GET",
             qs: queryParameters,
-            qsStringifyOptions: {
-                arrayFormat: "repeat"
-            },
             headers: headerParams,
             uri: localVarPath,
             useQuerystring: this._useQuerystring,

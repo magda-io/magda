@@ -202,10 +202,61 @@ describe("DGARedirectionRouter router", () => {
         });
     });
 
+    describe("Redirect /dataset/*/resource/*", () => {
+
+        it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e")
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/wrong-ckan-id/resource/af618603-e529-4998-b977-e8751f291e6e to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/missing-ckan-id/resource/af618603-e529-4998-b977-e8751f291e6e")
+                .expect(308)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/wrong-ckan-id/resource/wrong-ckan-resource-id to /error?errorCode=404&recordType=ckan-resource&recordId=wrong-ckan-resource-id", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/wrong-ckan-id/resource/wrong-ckan-resource-id")
+                .expect(307)
+                .expect(
+                    checkRedirectionDetails(
+                        "/error?errorCode=404&recordType=ckan-resource&recordId=wrong-ckan-resource-id"
+                    )
+                );
+        });
+
+        /*it("should redirect /dataset/unknown-name to /error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/unknown-name")
+                .expect(307)
+                .expect(
+                    checkRedirectionDetails(
+                        "/error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name"
+                    )
+                );
+        });*/
+    });
+
     function setupRegistryApiForCkanDatasetQuery() {
         const errorResponse = `{
-            hasMore: false,
-            records: [ ]
+            "hasMore": false,
+            "records": [ ]
         }`;
 
         const okCkanDatasetResponse = `{
@@ -236,7 +287,7 @@ describe("DGARedirectionRouter router", () => {
                     "size": null,
                     "state": "active",
                     "url": "http://www.fish.gov.au",
-                    "description": "KeyDocument 01 \r\n Website with details about Australian Fisheries, and fish stocks",
+                    "description": "KeyDocument 01 \\r\\n Website with details about Australian Fisheries, and fish stocks",
                     "resource_type": null,
                     "url_type": null,
                     "last_modified": "2014-12-10T00:00:00",
@@ -274,6 +325,7 @@ describe("DGARedirectionRouter router", () => {
           }`;
 
         registryScope
+            .persist()
             .get("/records")
             .query(true)
             .reply(200, function(uri: string) {
