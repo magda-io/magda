@@ -1,7 +1,7 @@
 ---
-title: About Open Data
+title: What you need to know about using data
 titleImage: story2.png
-titleUrl: "https://blog.data.gov.au/"
+titleUrl: "http://www.w3.org/TR/dwbp/#dataAccess"
 ---
 
-<p>What is open data, who can use and how does it benefit us.</p>
+Learn about how and why you should use APIs
