@@ -101,11 +101,6 @@ class MonthPicker extends Component {
             );
         }
         return null;
-        // return (
-        //     <span className="month-picker-prompt">
-        //         Please enter a year from s1000 to 2019
-        //     </span>
-        // );
     }
 
     checkYearValid(year) {
