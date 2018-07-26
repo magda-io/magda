@@ -1,5 +1,6 @@
 ## 0.0.45
 
+-   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 
 ## 0.0.44
