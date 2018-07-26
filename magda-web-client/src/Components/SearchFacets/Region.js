@@ -4,6 +4,7 @@ import { fetchRegionSearchResults } from "../../actions/facetRegionSearchActions
 import defined from "../../helpers/defined";
 import RegionWrapper from "./RegionWrapper";
 import React, { Component } from "react";
+import queryString from "query-string";
 
 class Region extends Component {
     constructor(props) {
@@ -37,6 +38,16 @@ class Region extends Component {
         this.props.dispatch(resetRegion());
         // let children know that the filter is being reset
         this.resetFilterEvent++;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location.search !== prevProps.location.search) {
+            const query = queryString.parse(this.props.location.search);
+            if (!query.regionId) {
+                this.props.dispatch(resetRegion());
+                this.resetFilterEvent++;
+            }
+        }
     }
 
     onSearchRegionFacet(facetKeyword) {

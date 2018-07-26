@@ -74,7 +74,8 @@ class FacetRegion extends Component {
                 _activeRegion: {
                     regionId: undefined,
                     regionType: undefined
-                }
+                },
+                applyButtonDisabled: true
             });
         } else if (!this.props.isOpen && prevProps.isOpen) {
             this.onApplyFilter();

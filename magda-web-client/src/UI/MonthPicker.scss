@@ -15,8 +15,7 @@
     }
 
     .month-picker-prompt {
-        border: 1px solid rgba(73, 73, 73, 0.05);
-        background-color: $AU-colordark-background;
+        background-color: $magda-red;
         color: $AU-colordark-foreground-text;
         font-size: 12px;
         line-height: 14px;
@@ -25,6 +24,9 @@
         position: absolute;
         padding: 4px 4px;
         z-index: 2;
+        top: -20px;
+        right: 0;
+        border-radius: 3px;
     }
 
     .btn-month {
@@ -59,5 +61,5 @@
 .year-input-container {
     display: inline-block;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
