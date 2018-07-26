@@ -57,6 +57,7 @@ class FacetTemporal extends Component {
                 };
             }
         }
+        return null;
     }
 
     /**

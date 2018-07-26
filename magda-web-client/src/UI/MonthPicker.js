@@ -22,7 +22,7 @@ class MonthPicker extends Component {
         this.resetField = this.resetField.bind(this);
         this.state = {
             prompt: "",
-            yearValue: "",
+            yearValue: undefined,
             isDefault: false
         };
     }
@@ -34,19 +34,6 @@ class MonthPicker extends Component {
             // to invite user to edit
             isDefault: this.props.showingDefault
         });
-    }
-
-    static getDerivedStateFromProps(props, state) {
-        // only updates when neccessary
-        if (
-            state.yearValue !== props.year &&
-            !(isNaN(props.year) && isNaN(state.yearValue))
-        ) {
-            return {
-                yearValue: props.year
-            };
-        }
-        return null;
     }
 
     changeYear(value) {
@@ -85,8 +72,6 @@ class MonthPicker extends Component {
             yearValue: "",
             prompt: ""
         });
-        // since input now is empty, we notify the parent
-        // this.props.onInvalidInput(true);
     }
 
     onBlur(event) {
@@ -116,6 +101,11 @@ class MonthPicker extends Component {
             );
         }
         return null;
+        // return (
+        //     <span className="month-picker-prompt">
+        //         Please enter a year from s1000 to 2019
+        //     </span>
+        // );
     }
 
     checkYearValid(year) {
@@ -182,11 +172,14 @@ class MonthPicker extends Component {
         }
     };
 
+    getYearValue() {
+        const propYear = isNaN(this.props.year) ? "" : this.props.year;
+        return this.state.yearValue ? this.state.yearValue : propYear;
+    }
+
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
-        const yearValue = isNaN(this.state.yearValue)
-            ? ""
-            : this.state.yearValue;
+        const yearValue = this.getYearValue();
         return (
             <table className="month-picker">
                 <tbody>
@@ -216,7 +209,7 @@ class MonthPicker extends Component {
                                     <button
                                         disabled={
                                             !this.checkMonthValid(
-                                                +this.state.yearValue,
+                                                yearValue,
                                                 monthIndex(i, j)
                                             )
                                         }
@@ -228,7 +221,7 @@ class MonthPicker extends Component {
                                             this.props.month ===
                                                 monthIndex(i, j) &&
                                             this.checkMonthValid(
-                                                +this.state.yearValue,
+                                                yearValue,
                                                 monthIndex(i, j)
                                             )
                                                 ? "is-active"
