@@ -186,7 +186,7 @@ class DataPreviewChart extends Component {
                     this.chartWidthDiv = chartWidthDiv;
                 }}
             >
-                <div className="col-md-8 chart-panel-container">
+                <div className="col-sm-8 chart-panel-container">
                     <h4 className="chart-title">{this.state.chartTitle}</h4>
                     <ReactEcharts
                         className="data-preview-chart-container"
@@ -196,7 +196,7 @@ class DataPreviewChart extends Component {
                         theme="au_dga"
                     />
                 </div>
-                <div className="col-md-4 config-panel-container">
+                <div className="col-sm-4 config-panel-container">
                     {this.state.isExpanded ? (
                         <ChartConfig
                             chartType={this.state.chartType}
