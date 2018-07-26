@@ -1,5 +1,7 @@
 ## 0.0.45
 
+-   Redirect CKAN/DGA Urls
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
