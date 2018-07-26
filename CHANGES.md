@@ -4,6 +4,7 @@
 -   Display a 'clear search' link after error message
 -   Fixed a date filter bug that freeze UI on slow internet
 -   Fixed the error 'Can't call setState (or forceUpdate) on an unmounted component' for Data Preview
+-   Fixed `Clear All` button not clear filter panel UI state
 
 ## 0.0.44
 

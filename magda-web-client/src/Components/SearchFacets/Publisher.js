@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { fetchPublisherSearchResults } from "../../actions/facetPublisherSearchActions";
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
+import queryString from "query-string";
 
 class Publisher extends Component {
     constructor(props) {
@@ -39,6 +40,16 @@ class Publisher extends Component {
         this.props.dispatch(resetPublisher());
         // let children know that the filter is being reset
         this.resetFilterEvent++;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location.search !== prevProps.location.search) {
+            const query = queryString.parse(this.props.location.search);
+            if (!query.organisation) {
+                this.props.dispatch(resetPublisher());
+                this.resetFilterEvent++;
+            }
+        }
     }
 
     onSearchPublisherFacet(facetQuery) {
