@@ -1,7 +1,9 @@
 ## 0.0.45
 
+-   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Fixed inconsistent breakpoints
+-   Fixed a date filter bug that freeze UI on slow internet
 
 ## 0.0.44
 
