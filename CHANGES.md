@@ -3,6 +3,7 @@
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed `Clear All` button not clear filter panel UI state
 
 ## 0.0.44
 
