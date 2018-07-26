@@ -43,7 +43,7 @@ class Region extends Component {
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
             const query = queryString.parse(this.props.location.search);
-            if (!query.format) {
+            if (!query.regionId) {
                 this.props.dispatch(resetRegion());
                 this.resetFilterEvent++;
             }
