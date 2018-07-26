@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
 import help from "../assets/help.svg";
+import defined from "../helpers/defined";
 import ReactTooltip from "react-tooltip";
 
 const MONTH_NAMES = [
@@ -45,7 +46,7 @@ class MonthPicker extends Component {
             });
             //this.props.onInvalidInput(true);
         } else {
-            this.props.selectYear(value);
+            this.props.selectYear(+value);
         }
     }
 
@@ -58,7 +59,7 @@ class MonthPicker extends Component {
         if (event.target.value.length >= 5) {
             return false;
         } else {
-            const yearValue = +event.target.value;
+            const yearValue = event.target.value;
             this.setState({
                 yearValue: yearValue
             });
@@ -69,7 +70,6 @@ class MonthPicker extends Component {
 
     onFocus() {
         this.setState({
-            yearValue: "",
             prompt: ""
         });
     }
@@ -174,7 +174,7 @@ class MonthPicker extends Component {
 
     getYearValue() {
         const propYear = isNaN(this.props.year) ? "" : this.props.year;
-        return this.state.yearValue ? this.state.yearValue : propYear;
+        return defined(this.state.yearValue) ? this.state.yearValue : propYear;
     }
 
     render() {
