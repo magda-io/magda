@@ -3,6 +3,7 @@
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed the error 'Can't call setState (or forceUpdate) on an unmounted component' for Data Preview
 
 ## 0.0.44
 
