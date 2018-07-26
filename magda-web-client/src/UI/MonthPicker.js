@@ -110,7 +110,7 @@ class MonthPicker extends Component {
 
     checkYearValid(year) {
         if (
-            isNaN(year) ||
+            !year ||
             year < this.props.yearLower ||
             year > this.props.yearUpper
         ) {
