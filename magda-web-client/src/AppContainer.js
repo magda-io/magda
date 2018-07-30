@@ -43,7 +43,7 @@ class AppContainer extends React.Component {
                                 }
                             ]}
                         />
-                        {config.showFallback && (
+                        {config.showFallbackBanner && (
                             <Medium>
                                 <Banner />
                             </Medium>

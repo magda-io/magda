@@ -157,5 +157,5 @@ export const config = {
         east: 155,
         north: -5
     },
-    showFallback: false
+    showFallbackBanner: serverConfig.showFallbackBanner || false
 };
