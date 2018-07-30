@@ -36,6 +36,7 @@ class DataPreviewChart extends Component {
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
         this.onToggleButtonClick = this.onToggleButtonClick.bind(this);
         this.onDismissError = this.onDismissError.bind(this);
+        this.isCancelled = false;
     }
 
     getResetState(extraOptions = null) {
@@ -81,16 +82,18 @@ class DataPreviewChart extends Component {
                 this.chartDatasetEncoder.setChartType(chartType);
                 const chartOption = this.chartDatasetEncoder.getChartOption("");
 
-                this.setState({
-                    error: null,
-                    isLoading: false,
-                    avlXCols: this.chartDatasetEncoder.getAvailableXCols(),
-                    avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
-                    xAxis: this.chartDatasetEncoder.xAxis,
-                    yAxis: this.chartDatasetEncoder.yAxis,
-                    chartType,
-                    chartOption
-                });
+                if (!this.isCancelled) {
+                    this.setState({
+                        error: null,
+                        isLoading: false,
+                        avlXCols: this.chartDatasetEncoder.getAvailableXCols(),
+                        avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
+                        xAxis: this.chartDatasetEncoder.xAxis,
+                        yAxis: this.chartDatasetEncoder.yAxis,
+                        chartType,
+                        chartOption
+                    });
+                }
             }
         } catch (e) {
             console.error(e);
@@ -104,13 +107,15 @@ class DataPreviewChart extends Component {
                 ReactEcharts = (await import("echarts-for-react")).default;
             await this.initChartData();
         } catch (e) {
-            this.setState(
-                this.getResetState({
-                    error: e
-                })
-            );
-            // if there is error, automatically switch to table view
-            switchTabOnFirstGo(this.props);
+            if (!this.isCancelled) {
+                this.setState(
+                    this.getResetState({
+                        error: e
+                    })
+                );
+                // if there is error, automatically switch to table view
+                switchTabOnFirstGo(this.props);
+            }
         }
     }
 
@@ -125,7 +130,8 @@ class DataPreviewChart extends Component {
                     prevState.chartTitle !== this.state.chartTitle ||
                     prevState.chartType !== this.state.chartType ||
                     prevState.xAxis !== this.state.xAxis ||
-                    prevState.yAxis !== this.state.yAxis)
+                    prevState.yAxis !== this.state.yAxis) &&
+                !this.isCancelled
             ) {
                 this.setState(
                     this.getResetState({
@@ -137,12 +143,18 @@ class DataPreviewChart extends Component {
         } catch (e) {
             // we do not automatically switch to table view here because chart has already successfully rendered.
             // for subsequent error cause the chart to not render, we will just display an error message
-            this.setState(
-                this.getResetState({
-                    error: e
-                })
-            );
+            if (!this.isCancelled) {
+                this.setState(
+                    this.getResetState({
+                        error: e
+                    })
+                );
+            }
         }
+    }
+
+    componentWillUnmount() {
+        this.isCancelled = true;
     }
 
     onChartConfigChanged(key, value) {
