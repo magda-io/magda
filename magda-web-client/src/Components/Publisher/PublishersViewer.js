@@ -132,8 +132,15 @@ class PublishersViewer extends Component {
             if (this.props.publishers.length === 0) {
                 return (
                     <AUpageAlert as="error">
-                        Sorry, we couldn't find any organisations that match
+                        Sorry, we couldn&#39;t find any organisations that match
                         your search.
+                        <button
+                            className="clear-btn au-btn au-btn--tertiary"
+                            type="button"
+                            onClick={this.clearSearch}
+                        >
+                            Clear search
+                        </button>
                     </AUpageAlert>
                 );
             }
