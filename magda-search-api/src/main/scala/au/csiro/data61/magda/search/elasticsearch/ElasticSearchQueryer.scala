@@ -320,7 +320,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     case x              => Some(fn(x))
   }
   private def buildEsQuery(query: Query, strategy: SearchStrategy): QueryDefinition = {
-    functionScoreQuery().query(queryToQueryDef(query, strategy)).scorers(fieldFactorScore("quality"))
+    functionScoreQuery().query(queryToQueryDef(query, strategy)).scorers(fieldFactorScore("quality").missing(0))
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
