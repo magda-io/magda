@@ -1,7 +1,11 @@
 ## 0.0.45
 
+-   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Unify result count style
+-   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed `Clear All` button not clear filter panel UI state
+-   Change non-homepage search placeholder text color to WCAG AAA compliant
 
 ## 0.0.44
 

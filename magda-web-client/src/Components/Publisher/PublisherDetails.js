@@ -10,6 +10,7 @@ import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
+import AUpageAlert from "../../pancake/react/page-alerts";
 
 import "./PublisherDetails.css";
 
@@ -38,16 +39,15 @@ class PublisherDetails extends Component {
                 : "This publisher has no description";
 
         const breadcrumbs = [
-            <li>
+            <li key="organisations">
                 <Link to="/organisations">Organisations</Link>
             </li>,
-            <li>
+            <li key={publisher.name}>
                 <span>{publisher.name}</span>
             </li>
         ];
         return (
             <div className="publisher-details">
-                {this.props.isFetching && <ProgressBar />}
                 <div>
                     <Medium>
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -83,14 +83,26 @@ class PublisherDetails extends Component {
     render() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
+        } else if (this.props.isFetching) {
+            return <ProgressBar />;
+        } else if (
+            decodeURIComponent(this.props.match.params.publisherId) ===
+            this.props.publisher.id
+        ) {
+            return (
+                <ReactDocumentTitle
+                    title={this.props.publisher.name + " | " + config.appName}
+                >
+                    {this.renderContent()}
+                </ReactDocumentTitle>
+            );
+        } else {
+            return (
+                <AUpageAlert as="info" className="notification__inner">
+                    Organisation cannot be found
+                </AUpageAlert>
+            );
         }
-        return (
-            <ReactDocumentTitle
-                title={this.props.publisher.name + " | " + config.appName}
-            >
-                {this.renderContent()}
-            </ReactDocumentTitle>
-        );
     }
 }
 
