@@ -1,3 +1,10 @@
+## 0.0.45
+
+-   prevent old content being loaded when navigating through page history
+-   Display a 'clear search' link after error message
+-   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed `Clear All` button not clear filter panel UI state
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
