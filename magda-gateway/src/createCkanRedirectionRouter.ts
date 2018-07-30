@@ -3,15 +3,15 @@ import * as URI from "urijs";
 import * as _ from "lodash";
 import * as request from "request";
 
-export type DGARedirectionRouterOptions = {
-    dgaRedirectionDomain: string;
+export type CkanRedirectionRouterOptions = {
+    ckanRedirectionDomain: string;
     registryApiBaseUrlInternal: string;
 };
 
-export default function buildDGARedirectionRouter({
-    dgaRedirectionDomain,
+export default function buildCkanRedirectionRouter({
+    ckanRedirectionDomain,
     registryApiBaseUrlInternal
-}: DGARedirectionRouterOptions): express.Router {
+}: CkanRedirectionRouterOptions): express.Router {
     const router = express.Router();
 
     router.get("/about", function(req, res) {
@@ -22,7 +22,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -38,7 +38,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             307,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -54,7 +54,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             307,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -64,7 +64,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -74,7 +74,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -84,7 +84,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -107,7 +107,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -117,7 +117,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -127,7 +127,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -137,7 +137,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             307,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -147,7 +147,7 @@ export default function buildDGARedirectionRouter({
         res.redirect(
             308,
             URI(req.originalUrl)
-                .domain(dgaRedirectionDomain)
+                .domain(ckanRedirectionDomain)
                 .protocol("https")
                 .toString()
         );
@@ -190,7 +190,7 @@ export default function buildDGARedirectionRouter({
         return new Promise((resolve, reject) => {
             try {
                 request(requestOptions, (error, response, body) => {
-                    try{
+                    try {
                         if (error) {
                             if (_.isError(error)) {
                                 reject(error);
@@ -207,16 +207,26 @@ export default function buildDGARedirectionRouter({
                                 response.statusCode >= 200 &&
                                 response.statusCode <= 299
                             ) {
-                                try{
+                                try {
                                     resolve(JSON.parse(body));
-                                }catch(e){
-                                    reject(new GenericError("Failed to parse response.",response));
+                                } catch (e) {
+                                    reject(
+                                        new GenericError(
+                                            "Failed to parse response.",
+                                            response
+                                        )
+                                    );
                                 }
                             } else {
-                                reject(new GenericError("Registry API failed to process response.",response));
+                                reject(
+                                    new GenericError(
+                                        "Registry API failed to process response.",
+                                        response
+                                    )
+                                );
                             }
                         }
-                    }catch(e){
+                    } catch (e) {
                         reject(e);
                     }
                 });
@@ -256,11 +266,7 @@ export default function buildDGARedirectionRouter({
             limit
         );
 
-        if (
-            !resData ||
-            !resData.records ||
-            !resData.records.length
-        )
+        if (!resData || !resData.records || !resData.records.length)
             return null;
         return resData.records;
     }
@@ -287,7 +293,7 @@ export default function buildDGARedirectionRouter({
     /**
      * Currently, there is no API can retrieve dataset id by distribution ID directly.
      * We can, however, get ckan `package_id` (this is the ckan dataset Id) from `ckan-resource` aspect for a distribution.
-     * And then use `package_id` to query registry API for madga dataset id again.
+     * And then use `package_id` to query registry API for magda dataset id again.
      */
     async function getCkanDatasetMagdaIdByCkanDistributionId(
         ckanIdOrName: string

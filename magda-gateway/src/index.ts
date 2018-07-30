@@ -13,7 +13,7 @@ import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
-import createDGARedirectionRouter from "./createDGARedirectionRouter";
+import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -137,9 +137,9 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
-        .option("dgaRedirectionDomain", {
+        .option("ckanRedirectionDomain", {
             describe:
-                "The new domain where the DGA ckan system is located. If not specified, default value `ckan.data.gov.au` will be used.",
+                "The target domain for redirecting ckan Urls. If not specified, default value `ckan.data.gov.au` will be used.",
             type: "string",
             default: "ckan.data.gov.au"
         })
@@ -219,8 +219,8 @@ app.use(
 app.use("/preview-map", createGenericProxy(argv.previewMap));
 
 app.use(
-    createDGARedirectionRouter({
-        dgaRedirectionDomain: argv.dgaRedirectionDomain,
+    createCkanRedirectionRouter({
+        ckanRedirectionDomain: argv.ckanRedirectionDomain,
         registryApiBaseUrlInternal: routes.registry.to
     })
 );
