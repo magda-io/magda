@@ -5,6 +5,7 @@
 -   Unify styles of tagline for search results
 -   Unify result count style
 -   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed the error 'Can't call setState (or forceUpdate) on an unmounted component' for Data Preview
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
 
