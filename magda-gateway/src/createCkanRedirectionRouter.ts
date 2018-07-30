@@ -31,10 +31,10 @@ export default function buildCkanRedirectionRouter({
     /**
      * Needs to cover:
      * /dataset/edit
-     * /dataset/edit* e.g. /dataset/edit?q=22 but not /dataset/newxx
+     * /dataset/edit* e.g. /dataset/edit?q=22 but not /dataset/editxx
      * /dataset/edit/*
      */
-    router.all(/^\/dataset\/(edit|edit\?.*|edit\/.*)$/, function(req, res) {
+    router.all(/^\/dataset\/edit(|\?.*|\/.*)$/, function(req, res) {
         res.redirect(
             307,
             URI(req.originalUrl)
@@ -50,7 +50,7 @@ export default function buildCkanRedirectionRouter({
      * /dataset/new* e.g. /dataset/new?q=22 but not /dataset/newxx
      * /dataset/new/*
      */
-    router.all(/^\/dataset\/(new|new\?.*|new\/.*)$/, function(req, res) {
+    router.all(/^\/dataset\/new(|\?.*|\/.*)$/, function(req, res) {
         res.redirect(
             307,
             URI(req.originalUrl)
@@ -70,7 +70,7 @@ export default function buildCkanRedirectionRouter({
         );
     });
 
-    router.all("/geoserver/*", function(req, res) {
+    router.all(/^\/geoserver(|\?.*|\/.*)$/, function(req, res) {
         res.redirect(
             308,
             URI(req.originalUrl)
@@ -80,7 +80,7 @@ export default function buildCkanRedirectionRouter({
         );
     });
 
-    router.all(/^\/(group|group\?.*|group\/.*)$/, function(req, res) {
+    router.all(/^\/group(|\?.*|\/.*)$/, function(req, res) {
         res.redirect(
             308,
             URI(req.originalUrl)

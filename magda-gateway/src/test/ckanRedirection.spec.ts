@@ -87,7 +87,11 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect ckan /geoserver/*", () => {
         testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/geoserver/web/`,
+            [
+                `https://${ckanRedirectionDomain}/geoserver`,
+                `https://${ckanRedirectionDomain}/geoserver/web/`,
+                `https://${ckanRedirectionDomain}/geoserver?x=1332`
+            ],
             308,
             true
         );
