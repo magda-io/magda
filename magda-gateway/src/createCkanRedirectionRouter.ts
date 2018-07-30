@@ -2,11 +2,69 @@ import * as express from "express";
 import * as URI from "urijs";
 import * as _ from "lodash";
 import * as request from "request";
+import * as escapeStringRegexp from "escape-string-regexp";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
     registryApiBaseUrlInternal: string;
 };
+
+export type genericUrlRedirectConfig =
+    | {
+          path: string;
+          requireExtraSeqment?: boolean;
+          statusCode?: number;
+          method?: string;
+      }
+    | string;
+
+export const genericUrlRedirectConfigs: genericUrlRedirectConfig[] = [
+    {
+        path: "/api/3",
+        requireExtraSeqment: true
+    },
+    "/dataset/edit",
+    "/dataset/new",
+    {
+        path: "/fanstatic",
+        requireExtraSeqment: true
+    },
+    "/geoserver",
+    "/group",
+    "/showcase",
+    {
+        path: "/storage",
+        requireExtraSeqment: true
+    },
+    {
+        path: "/uploads",
+        requireExtraSeqment: true
+    },
+    {
+        path: "/vendor/leaflet",
+        requireExtraSeqment: true
+    },
+    "/user",
+    "/stats",
+    "/datarequest"
+];
+
+export function covertGenericUrlRedirectConfigToFullArgList(
+    config: genericUrlRedirectConfig
+) {
+    let fullConfig;
+    if (typeof config === "string") {
+        fullConfig = { path: config };
+    } else {
+        fullConfig = { ...config };
+    }
+    const { path, requireExtraSeqment, statusCode, method } = fullConfig;
+    const args: any[] = [path];
+    args.push(requireExtraSeqment ? requireExtraSeqment : false);
+    args.push(statusCode ? statusCode : 307);
+    args.push(method ? method : "all");
+    return args;
+}
 
 export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
@@ -14,141 +72,67 @@ export default function buildCkanRedirectionRouter({
 }: CkanRedirectionRouterOptions): express.Router {
     const router = express.Router();
 
+    /**
+     * Redirect a path to ckan system
+     *
+     * @param path
+     * @param requireExtraSeqment
+     * Assume path = "/a/b/c":
+     * If requireExtraSeqment == false, redirect anything like /a/b/c* to ckan (with domain only change).
+     * Here, * stands for zero or more chars string that starts with a single `/` or `?`
+     * If requireExtraSeqment == true, redirect anything like /a/b/c/* to ckan (with domain only change).
+     * Here, * stands for one or more any chars string
+     * @param statusCode
+     * @param method `all` stands for all method. `get` stands for http GET only
+     */
+    function redirectToCkanGeneric(
+        path: string,
+        requireExtraSeqment: boolean = false,
+        statusCode: number = 307,
+        method: string = "all"
+    ) {
+        let genericRegExOrStringPattern: string | RegExp;
+        if (!requireExtraSeqment) {
+            genericRegExOrStringPattern = new RegExp(
+                `^${escapeStringRegexp(path)}(|\\?.*|\\/.*)$`
+            );
+        } else {
+            genericRegExOrStringPattern = `${path}/*`;
+        }
+        const rounterRef: any = router;
+        const routerMethod = rounterRef[method] as Function;
+        routerMethod.call(router, genericRegExOrStringPattern, function(
+            req: any,
+            res: any
+        ) {
+            res.redirect(
+                statusCode,
+                URI(req.originalUrl)
+                    .domain(ckanRedirectionDomain)
+                    .protocol("https")
+                    .toString()
+            );
+        });
+    }
+
     router.get("/about", function(req, res) {
         res.redirect(308, "/page/about");
     });
 
-    router.all("/api/3/*", function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    /**
-     * Needs to cover:
-     * /dataset/edit
-     * /dataset/edit* e.g. /dataset/edit?q=22 but not /dataset/editxx
-     * /dataset/edit/*
-     */
-    router.all(/^\/dataset\/edit(|\?.*|\/.*)$/, function(req, res) {
-        res.redirect(
-            307,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    /**
-     * Needs to cover:
-     * /dataset/new
-     * /dataset/new* e.g. /dataset/new?q=22 but not /dataset/newxx
-     * /dataset/new/*
-     */
-    router.all(/^\/dataset\/new(|\?.*|\/.*)$/, function(req, res) {
-        res.redirect(
-            307,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all("/fanstatic/*", function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all(/^\/geoserver(|\?.*|\/.*)$/, function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all(/^\/group(|\?.*|\/.*)$/, function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
+    genericUrlRedirectConfigs.forEach(config => {
+        const args = covertGenericUrlRedirectConfigToFullArgList(config);
+        redirectToCkanGeneric.apply(null, args);
     });
 
     /**
      * match /organization & /organization?q=xxx&sort
      */
-    router.get(/^\/(organization|organization\?.*)$/, function(req, res) {
+    router.get(/^\/organization(|\?.*)$/, function(req, res) {
         res.redirect(
             308,
             URI(req.originalUrl)
                 .segment(0, "organisations")
                 .removeSearch(["page", "sort"])
-                .toString()
-        );
-    });
-
-    router.all(/^\/(showcase|showcase\?.*|showcase\/.*)$/, function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all("/storage/*", function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all("/uploads/*", function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all(/^\/(user|user\?.*|user\/.*)$/, function(req, res) {
-        res.redirect(
-            307,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
-                .toString()
-        );
-    });
-
-    router.all("/vendor/leaflet/*", function(req, res) {
-        res.redirect(
-            308,
-            URI(req.originalUrl)
-                .domain(ckanRedirectionDomain)
-                .protocol("https")
                 .toString()
         );
     });

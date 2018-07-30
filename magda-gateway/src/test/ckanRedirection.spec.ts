@@ -6,7 +6,11 @@ import * as nock from "nock";
 import * as _ from "lodash";
 import * as supertest from "supertest";
 import * as URI from "urijs";
-import createCkanRedirectionRouter from "../createCkanRedirectionRouter";
+import createCkanRedirectionRouter, {
+    genericUrlRedirectConfig,
+    covertGenericUrlRedirectConfigToFullArgList,
+    genericUrlRedirectConfigs
+} from "../createCkanRedirectionRouter";
 
 describe("ckanRedirectionRouter router", () => {
     const ckanRedirectionDomain = "ckan.data.gov.au";
@@ -32,79 +36,16 @@ describe("ckanRedirectionRouter router", () => {
         nock.cleanAll();
     });
 
+    genericUrlRedirectConfigs.forEach(config =>
+        testGenericCkanRedirection(config)
+    );
+
     describe("Redirect ckan /about", () => {
         it("should redirect /about to /page/about", () => {
             return supertest(app)
                 .get("/about")
                 .expect(checkRedirectionDetails("/page/about"));
         });
-    });
-
-    describe("Redirect ckan /api/3/*", () => {
-        testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/api/3/action/package_search?sort=extras_harvest_portal+asc`,
-            308,
-            true
-        );
-
-        test404(
-            `https://${ckanRedirectionDomain}/api/v0/registry/records/ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4`,
-            true
-        );
-    });
-
-    describe("Redirect ckan /dataset/edit", () => {
-        testCkanDomainChangeOnly(
-            [
-                `https://${ckanRedirectionDomain}/dataset/edit`,
-                `https://${ckanRedirectionDomain}/dataset/edit/xxx`,
-                `https://${ckanRedirectionDomain}/dataset/edit?x=1332`
-            ],
-            307,
-            true
-        );
-    });
-
-    describe("Redirect ckan /dataset/new", () => {
-        testCkanDomainChangeOnly(
-            [
-                `https://${ckanRedirectionDomain}/dataset/new`,
-                `https://${ckanRedirectionDomain}/dataset/new/xxx`,
-                `https://${ckanRedirectionDomain}/dataset/new?x=1332`
-            ],
-            307,
-            true
-        );
-    });
-
-    describe("Redirect ckan /fanstatic/*", () => {
-        testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/fanstatic/ckanext-pdfview/:version:2017-02-15T10:30:47/css/pdf.css`,
-            308,
-            true
-        );
-    });
-
-    describe("Redirect ckan /geoserver/*", () => {
-        testCkanDomainChangeOnly(
-            [
-                `https://${ckanRedirectionDomain}/geoserver`,
-                `https://${ckanRedirectionDomain}/geoserver/web/`,
-                `https://${ckanRedirectionDomain}/geoserver?x=1332`
-            ],
-            308,
-            true
-        );
-    });
-
-    describe("Redirect ckan /group", () => {
-        testCkanDomainChangeOnly([
-            `https://${ckanRedirectionDomain}/group`,
-            `https://${ckanRedirectionDomain}/group/xxx`,
-            `https://${ckanRedirectionDomain}/group?x=1332`
-        ]);
-
-        test404(`https://${ckanRedirectionDomain}/groupxxx`, true);
     });
 
     describe("Redirect ckan /organization & /organization?q=xxx", () => {
@@ -127,44 +68,6 @@ describe("ckanRedirectionRouter router", () => {
                     expect(query.page).be.an("undefined");
                 });
         });
-    });
-
-    describe("Redirect ckan /user", () => {
-        testCkanDomainChangeOnly(
-            [
-                `https://${ckanRedirectionDomain}/user`,
-                `https://${ckanRedirectionDomain}/user/xxx`,
-                `https://${ckanRedirectionDomain}/user?x=1332`
-            ],
-            307,
-            true
-        );
-
-        test404(`https://${ckanRedirectionDomain}/userxxx`, true);
-    });
-
-    describe("Redirect ckan /storage/*", () => {
-        testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/storage/f/xxx.txt`,
-            308,
-            true
-        );
-    });
-
-    describe("Redirect ckan /uploads/*", () => {
-        testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/uploads/group/xxx.jpg`,
-            308,
-            true
-        );
-    });
-
-    describe("Redirect ckan /vendor/leaflet/*", () => {
-        testCkanDomainChangeOnly(
-            `https://${ckanRedirectionDomain}/vendor/leaflet/0.7.3/xxx.png`,
-            308,
-            true
-        );
     });
 
     describe("Redirect /dataset/*", () => {
@@ -469,5 +372,30 @@ describe("ckanRedirectionRouter router", () => {
         allowAllMethod: boolean = false
     ) {
         testCkanDomainChangeOnly(targetUrlOrUrls, 404, allowAllMethod);
+    }
+
+    function testGenericCkanRedirection(config: genericUrlRedirectConfig) {
+        const [
+            path,
+            requireExtraSeqment,
+            statusCode,
+            method
+        ] = covertGenericUrlRedirectConfigToFullArgList(config);
+        const allowAllMethod = method === "all";
+        const testUrlList = [
+            `https://${ckanRedirectionDomain}${path}/xxx`,
+            `https://${ckanRedirectionDomain}${path}/xxx?q=xxx`
+        ];
+        if (!requireExtraSeqment) {
+            testUrlList.push(`https://${ckanRedirectionDomain}${path}`);
+            testUrlList.push(`https://${ckanRedirectionDomain}${path}?q=xxx`);
+        }
+        describe(`Redirect CKan URL ${path}`, () => {
+            testCkanDomainChangeOnly(testUrlList, statusCode, allowAllMethod);
+            test404(
+                `https://${ckanRedirectionDomain}/${path}xxx`,
+                allowAllMethod
+            );
+        });
     }
 });
