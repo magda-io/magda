@@ -2,10 +2,12 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import govtLogo from "../../assets/au-govt-logo.svg";
+import govtLogoMobile from "../../assets/au-govt-logo-mobile.svg";
 import dgaLogo from "../../assets/dga-logo.svg";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
+import { Small, Medium } from "../../UI/Responsive";
 
 class Header extends Component {
     constructor(props) {
@@ -38,12 +40,22 @@ class Header extends Component {
                             <div className="col-md-6 col-xs-12">
                                 <Link to="/" className="au-header__brand">
                                     <div>
-                                        <img
-                                            src={govtLogo}
-                                            height={70}
-                                            alt="Coat of Arms"
-                                            className="au-header__brand-image"
-                                        />
+                                        <Small>
+                                            <img
+                                                src={govtLogoMobile}
+                                                height={70}
+                                                alt="Coat of Arms"
+                                                className="au-header__brand-image"
+                                            />
+                                        </Small>
+                                        <Medium>
+                                            <img
+                                                src={govtLogo}
+                                                height={70}
+                                                alt="Coat of Arms"
+                                                className="au-header__brand-image"
+                                            />
+                                        </Medium>
                                         <div className="au-header__text">
                                             <img
                                                 src={dgaLogo}
@@ -58,7 +70,13 @@ class Header extends Component {
                                     </div>
                                 </Link>
                             </div>
-                            <div className="col-md-6 col-xs-12">
+                            <div
+                                className={
+                                    this.state.isMobileMenuOpen
+                                        ? ""
+                                        : "col-md-6 col-xs-12"
+                                }
+                            >
                                 <button
                                     id="menu-toggle"
                                     className={`menu-toggle au-btn au-btn--block au-btn--tertiary icon au-accordion--${
@@ -80,7 +98,14 @@ class Header extends Component {
                                     } menu`}
                                     aria-hidden={!this.state.isMobileMenuOpen}
                                 >
-                                    <HeaderNav />
+                                    <Small>
+                                        <div className="mobile-nav">
+                                            <HeaderNav isMobile={true} />
+                                        </div>
+                                    </Small>
+                                    <Medium>
+                                        <HeaderNav />
+                                    </Medium>
                                 </div>
                             </div>
                         </div>

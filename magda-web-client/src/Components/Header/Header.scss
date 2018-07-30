@@ -1,17 +1,23 @@
 @import "../../variables";
 
 .au-header {
-    padding: 16px 0;
-    padding: 1rem 0;
+    padding: 16px 0 8px 0;
+    padding: 1rem 0 0.5rem 0;
+    @media screen and (min-width: $medium) {
+        opacity: 0.9;
+    }
+    .au-header__brand {
+        .au-header__brand-image,
+        .au-header__text {
+            display: inline-block;
+            margin: 0;
+        }
 
-    @media screen and (max-width: $medium) {
-        .au-header__brand {
-            .au-header__brand-image,
-            .au-header__text {
-                float: left;
-                display: inline-block;
-                margin: 0;
-            }
+        @media screen and (max-width: $medium) {
+            text-align: center;
+            width: 100%;
+        }
+        @media screen and (min-width: $small) {
             .au-header__text {
                 margin-left: 8px;
                 margin-left: 0.5rem;
@@ -56,7 +62,7 @@
 
         &:hover:before {
             background-image: AU-svguri(
-                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
                     '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
                     '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
             );
@@ -151,144 +157,40 @@
         }
     }
 }
-.mobile-header {
-    background-color: $AU-color-background;
-    box-shadow: inset 0px -1px 0px rgba(73, 73, 73, 0.15);
 
-    .mobile-header-inner {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+.mobile-nav {
+    background: white;
+    position: absolute;
+    right: 0;
+    width: 100%;
+    z-index: 1;
+    overflow: hidden;
+    li {
+        padding: 0;
+        margin: 0;
+        border-bottom: 1px solid #dad9db;
+        a {
+            line-height: 4.5rem;
+            margin: 0;
+            border-left: 10px solid $AU-colordark-background;
+            display: block;
+            padding: 0;
+            padding-left: 16px;
+            color: $AU-colordark-background;
 
-        .mobile-logo-link {
-            border: none;
-        }
-
-        .mobile-logo {
-            margin: 10px;
-        }
-
-        .mobile-title {
-            font-size: 18px;
-            font-weight: 500;
-            line-height: 22px;
-            text-transform: uppercase;
-            a {
-                border-bottom: 0;
-            }
-        }
-
-        .icon:before,
-        .icon--right:after {
-            width: 1.25em;
-            height: 1.25em;
-            display: inline-block;
-            vertical-align: middle;
-            position: relative;
-            content: " ";
-            background-repeat: no-repeat;
-            margin-top: -2px;
-
-            .lt-ie9 & {
-                display: none;
-            }
-        }
-
-        .icon:before {
-            @include AU-space(margin-right, 0.5unit);
-        }
-
-        .mobile-toggle {
-            background: transparent;
-            border: 0;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
+            &,
             &:hover,
             &:focus {
-                outline: none;
+                text-decoration: none;
             }
 
-            &:before {
-                background-image: AU-svguri(
-                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                        '<path id="path-1" d="M2,8 L2,6 L22,6 L22,8 L2,8 Z M2,18 L2,16 L22,16 L22,18 L2,18 Z"/>' +
-                        "</svg>"
-                );
+            &.active {
+                background: #f4f3f5;
+                font-weight: bold;
             }
-
-            &:hover:before {
-                background-image: AU-svguri(
-                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                        '<path id="path-1" d="M2,8 L2,6 L22,6 L22,8 L2,8 Z M2,18 L2,16 L22,16 L22,18 L2,18 Z"/>' +
-                        "</svg>"
-                );
+            span {
+                border-bottom: 1px solid $AU-color-foreground-action;
             }
-
-            &.au-accordion--open {
-                &:before {
-                    background-image: AU-svguri(
-                        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
-                            '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
-                    );
-                }
-
-                &:hover:before {
-                    background-image: AU-svguri(
-                        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
-                            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
-                            '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
-                    );
-                }
-            }
-        }
-    }
-
-    .mobile-nav-wrapper {
-        overflow: hidden;
-        position: absolute;
-        width: 100%;
-        z-index: 1;
-        ul {
-            padding: 0px;
-        }
-    }
-
-    .mobile-nav {
-        background: #fff;
-        overflow-y: hidden;
-        height: 0;
-        li {
-            padding: 0;
-            margin: 0;
-            border-bottom: 1px solid #dad9db;
-            a {
-                line-height: 4.5rem;
-                margin: 0;
-                border-left: 10px solid $AU-colordark-background;
-                display: block;
-                padding: 0;
-                padding-left: 16px;
-                color: $AU-colordark-background;
-
-                &,
-                &:hover,
-                &:focus {
-                    text-decoration: none;
-                }
-
-                &.active {
-                    background: #f4f3f5;
-                    font-weight: bold;
-                }
-                span {
-                    border-bottom: 1px solid $AU-color-foreground-action;
-                }
-            }
-        }
-        &.isOpen {
-            height: auto;
         }
     }
 }
