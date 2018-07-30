@@ -4,6 +4,7 @@
 -   Display a 'clear search' link after error message
 -   Fixed a date filter bug that freeze UI on slow internet
 -   Fixed `Clear All` button not clear filter panel UI state
+-   Change non-homepage search placeholder text color to WCAG AAA compliant
 
 ## 0.0.44
 
