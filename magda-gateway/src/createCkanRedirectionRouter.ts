@@ -116,7 +116,7 @@ export default function buildCkanRedirectionRouter({
     }
 
     router.get("/about", function(req, res) {
-        res.redirect(308, "/page/about");
+        res.redirect(303, "/page/about");
     });
 
     genericUrlRedirectConfigs.forEach(config => {
@@ -129,7 +129,7 @@ export default function buildCkanRedirectionRouter({
      */
     router.get(/^\/organization(|\?.*)$/, function(req, res) {
         res.redirect(
-            308,
+            303,
             URI(req.originalUrl)
                 .segment(0, "organisations")
                 .removeSearch(["page", "sort"])
@@ -339,9 +339,9 @@ export default function buildCkanRedirectionRouter({
                     recordType: "ckan-dataset",
                     recordId: dsIdOrName
                 });
-                res.redirect(307, redirectUri.toString());
+                res.redirect(303, redirectUri.toString());
             } else {
-                res.redirect(308, `/dataset/${magdaId}/details`);
+                res.redirect(303, `/dataset/${magdaId}/details`);
             }
         } catch (e) {
             console.log(e);
@@ -369,12 +369,12 @@ export default function buildCkanRedirectionRouter({
                         recordType: "ckan-resource",
                         recordId: disIdOrName
                     });
-                    res.redirect(307, redirectUri.toString());
+                    res.redirect(303, redirectUri.toString());
                     return;
                 }
             }
 
-            res.redirect(308, `/dataset/${datasetMagdaId}/details`);
+            res.redirect(303, `/dataset/${datasetMagdaId}/details`);
         } catch (e) {
             console.log(e);
             res.sendStatus(500);
@@ -395,9 +395,9 @@ export default function buildCkanRedirectionRouter({
                     recordType: "ckan-organization-details",
                     recordId: ckanIdOrName
                 });
-                res.redirect(307, redirectUri.toString());
+                res.redirect(303, redirectUri.toString());
             } else {
-                res.redirect(308, `/organisations/${magdaId}`);
+                res.redirect(303, `/organisations/${magdaId}`);
             }
         } catch (e) {
             console.log(e);
