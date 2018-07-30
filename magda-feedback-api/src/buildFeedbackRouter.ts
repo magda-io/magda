@@ -19,6 +19,27 @@ export default function buildFeedbackRouter(
     app.use(bodyParser.json({ type: "application/json" }));
     app.use(bodyParser.json({ type: "application/csp-report" }));
 
+    /**
+     * @apiGroup Feedback
+     * @api {post} /v0/csp Report CSP Violation
+     * @apiDescription TODO
+     *
+     * @apiParam (Request body) {string} csp-report TODO
+     *
+     * @apiSuccess {string} result SUCCESS
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "result": "SUCCESS"
+     *    }
+     *
+     * @apiError {string} result FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "result": "FAILED"
+     *    }
+     */
     app.post("/v0/csp", function(req, res, next) {
         var parameters = req.body;
 
@@ -30,6 +51,31 @@ export default function buildFeedbackRouter(
         report(body, res, params);
     });
 
+    /**
+     * @apiGroup Feedback
+     * @api {post} /v0/user Post User Feedback
+     * @apiDescription TODO
+     *
+     * @apiParam (Request body) {string} [title] TODO
+     * @apiParam (Request body) {string} [name] TODO
+     * @apiParam (Request body) {string} [email] TODO
+     * @apiParam (Request body) {string} [comment] TODO
+     * @apiParam (Request body) {string} [shareLink] TODO
+     *
+     * @apiSuccess {string} result SUCCESS
+     *
+     * @apiSuccessExample {object} 200
+     *    {
+     *         "result": "SUCCESS"
+     *    }
+     *
+     * @apiError {string} result FAILED
+     *
+     * @apiErrorExample {object} 400
+     *    {
+     *         "result": "FAILED"
+     *    }
+     */
     app.post("/v0/user", function(req, res, next) {
         var parameters = req.body;
 
@@ -121,9 +167,9 @@ function report(
             function(error, response, body) {
                 res.set("Content-Type", "application/json");
                 if (response.statusCode < 200 || response.statusCode >= 300) {
-                    res
-                        .status(response.statusCode)
-                        .send(JSON.stringify({ result: "FAILED" }));
+                    res.status(response.statusCode).send(
+                        JSON.stringify({ result: "FAILED" })
+                    );
                 } else {
                     res.status(200).send(JSON.stringify({ result: "SUCCESS" }));
                 }

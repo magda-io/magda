@@ -1,5 +1,6 @@
 ## 0.0.45
 
+-   added mechanism to produce api documentation
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Unify styles of tagline for search results
