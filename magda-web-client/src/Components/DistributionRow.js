@@ -138,7 +138,7 @@ class DistributionRow extends Component {
             distributionLink = distribution.accessURL;
         } else {
             distributionLink = `/dataset/${encodeURIComponent(
-                dataset.id
+                dataset.identifier
             )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
                 this.props.searchText
             }`;
@@ -168,7 +168,7 @@ class DistributionRow extends Component {
                             </div>
                         </Medium>
 
-                        <div className="col-md-11">
+                        <div className="col-sm-11">
                             <div className="distribution-row-link">
                                 {!distribution.downloadURL &&
                                 distribution.accessURL ? (
@@ -216,7 +216,7 @@ class DistributionRow extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="col-md-3 button-area">
+                <div className="col-sm-3 button-area">
                     {distribution.downloadURL && (
                         <a
                             className="download-button au-btn au-btn--secondary"

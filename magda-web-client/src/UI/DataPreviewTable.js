@@ -16,16 +16,7 @@ function loadPapa() {
         });
 }
 
-export default class DataPreviewTable extends Component<
-    {
-        distribution: ParsedDistribution
-    },
-    {
-        error: Error,
-        loading: Boolean,
-        parsedResults: any
-    }
-> {
+export default class DataPreviewTable extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -33,6 +24,7 @@ export default class DataPreviewTable extends Component<
             loading: true,
             parsedResults: null
         };
+        this.isCancelled = false;
     }
 
     componentDidMount() {
@@ -46,6 +38,10 @@ export default class DataPreviewTable extends Component<
             this.fetchData(this.props.distribution.downloadURL);
         }
         // this.updateDimensions();
+    }
+
+    componentWillUnmount() {
+        this.isCancelled = true;
     }
 
     fetchData(url) {
@@ -71,18 +67,22 @@ export default class DataPreviewTable extends Component<
                 });
             })
             .then(results => {
-                this.setState({
-                    error: null,
-                    loading: false,
-                    parsedResults: results
-                });
+                if (!this.isCancelled) {
+                    this.setState({
+                        error: null,
+                        loading: false,
+                        parsedResults: results
+                    });
+                }
             })
             .catch(err => {
-                this.setState({
-                    error: err,
-                    loading: false,
-                    parsedResults: null
-                });
+                if (!this.isCancelled) {
+                    this.setState({
+                        error: err,
+                        loading: false,
+                        parsedResults: null
+                    });
+                }
             });
     }
 

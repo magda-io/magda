@@ -10,6 +10,8 @@
 -   [ ] Can you search for something specific?
 -   [ ] Can you use the search filters?
 -   [ ] Does the data quality tooltip link to the data quality page?
+-   [ ] Do synonyms work? E.g. if you search "dirt" do you get results for "soil"?
+-   [ ] Do acronyms work? E.g. if you search "DFAT" do you get results for the Department of Foreign Affairs and Trade?
 
 ### Dataset page
 
@@ -20,7 +22,8 @@
 -   [ ] Do resources with only access URLs work? (such as on https://dev.magda.io/dataset/ds-ga-a05f7892-feb5-7506-e044-00144fdd4fa6/details?q=lithgow)
 -   [ ] Does a resource link to a distribution page?
 -   [ ] Does the map preview work?
--   [ ] Does the chart preview work?
+-   [ ] Does the chart preview load?
+-   [ ] Do all the four kinds of charts work?
 -   [ ] Does the table preview work?
 -   [ ] Does "Open in NationalMap" work?
 -   [ ] Does the description expand?
@@ -37,4 +40,6 @@
 ### Organisations
 
 -   [ ] Does the organisations list work?
--   [ ] Does the publisher page have a description and link to datasets?
+-   [ ] Does the organisation page have a description and link to datasets?
+-   [ ] Can you search for an organisation?
+-   [ ] Does the "See all datasets from <org>" link on the organisation page work?
