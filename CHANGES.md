@@ -1,3 +1,7 @@
+## 0.0.45
+
+-   Add config for fallback banner
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
@@ -51,7 +55,6 @@
 -   Fixed bug where dataset ids where "undefined" in distribution URLs.
 -   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
--   Add config for fallback banner
 -   Keep search text in synch.
 
 ## 0.0.43
