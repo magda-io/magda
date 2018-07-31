@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.45-0",
+  "version": "0.0.45-RC1",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -14,7 +14,7 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.45-0",
+    "@magda/typescript-common": "^0.0.45-RC1",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -44,7 +44,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.45-0",
+    "@magda/scripts": "^0.0.45-RC1",
     "@types/compression": "^0.0.36",
     "@types/cors": "^2.8.1",
     "@types/ejs": "^2.3.33",
