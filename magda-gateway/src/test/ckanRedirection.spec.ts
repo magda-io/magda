@@ -24,6 +24,15 @@ describe("ckanRedirectionRouter router", () => {
     const registryUrl = "http://registry.example.com";
     let registryScope: nock.Scope;
 
+    before(() => {
+        registryScope = nock(registryUrl);
+        setupRegistryApiForCkanDatasetQuery();
+    });
+
+    after(() => {
+        nock.cleanAll();
+    });
+
     beforeEach(() => {
         const router = createCkanRedirectionRouter({
             ckanRedirectionDomain,
@@ -31,19 +40,37 @@ describe("ckanRedirectionRouter router", () => {
         });
         app = express();
         app.use(router);
-        registryScope = nock(registryUrl);
     });
 
     afterEach(() => {
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
-        nock.cleanAll();
     });
 
-    genericUrlRedirectConfigs.forEach(config =>
-        testGenericCkanRedirection(config)
-    );
+    /**
+     * /dataset/edit or /dataset/new 404 test conflict with router /dataset/*
+     * i.e. any extra content after the uri (e.g. /dataset/editxxx) will cause request
+     * captured by router /dataset/*
+     */
+    const routerSkip404Test = ["/dataset/edit", "/dataset/new"];
+
+    genericUrlRedirectConfigs
+        .map(config => {
+            const path = typeof config === "string" ? config : config.path;
+            if (routerSkip404Test.indexOf(path) !== -1) {
+                if (typeof config === "string") {
+                    return {
+                        path,
+                        skip404: true
+                    };
+                } else {
+                    return { ...config, skip404: true };
+                }
+            }
+            return config;
+        })
+        .forEach(config => testGenericCkanRedirection(config));
 
     describe("Redirect ckan /about", () => {
         it("should redirect /about to /page/about", () => {
@@ -79,7 +106,6 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect /dataset/*", () => {
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/pg_skafsd0_f___00120141210_11a")
                 .expect(303)
@@ -91,7 +117,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/view/xxxx to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/pg_skafsd0_f___00120141210_11a/view/xxxx")
                 .expect(303)
@@ -103,7 +128,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/groups/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/groups/pg_skafsd0_f___00120141210_11a")
                 .expect(303)
@@ -115,7 +139,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/activity/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/activity/pg_skafsd0_f___00120141210_11a")
                 .expect(303)
@@ -127,7 +150,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/showcases/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/showcases/pg_skafsd0_f___00120141210_11a")
                 .expect(303)
@@ -139,7 +161,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8 to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
                 .expect(303)
@@ -151,7 +172,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/unknown-name to /error?errorCode=404&recordType=ckan-dataset&recordId=unknown-name", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/unknown-name")
                 .expect(303)
@@ -165,7 +185,6 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect /dataset/*/resource/*", () => {
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e"
@@ -179,7 +198,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/view/link to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/view/link"
@@ -193,7 +211,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/missing-ckan-id/resource/af618603-e529-4998-b977-e8751f291e6e to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/dataset/missing-ckan-id/resource/af618603-e529-4998-b977-e8751f291e6e"
@@ -207,7 +224,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /dataset/wrong-ckan-id/resource/wrong-ckan-resource-id to /error?errorCode=404&recordType=ckan-resource&recordId=wrong-ckan-resource-id", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/dataset/wrong-ckan-id/resource/wrong-ckan-resource-id")
                 .expect(303)
@@ -221,7 +237,6 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect /organization/:ckanIdOrName", () => {
         it("should redirect /organization/australianbureauofstatistics-geography to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/australianbureauofstatistics-geography")
                 .expect(303)
@@ -233,7 +248,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/760c24b1-3c3d-4ccb-8196-41530fcdebd5")
                 .expect(303)
@@ -245,7 +259,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/unknown-name-or-id to /error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/unknown-name-or-id")
                 .expect(303)
@@ -259,7 +272,6 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect /organization/datarequest/:ckanIdOrName", () => {
         it("should redirect /organization/datarequest/australianbureauofstatistics-geography to /search?organisation=Australian%20Bureau%20of%20Agriculture%20and%20Resource%20Economics%20and%20Sciences", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/organization/datarequest/australianbureauofstatistics-geography"
@@ -273,7 +285,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/datarequest/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /search?organisation=Australian%20Bureau%20of%20Agriculture%20and%20Resource%20Economics%20and%20Sciences", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/organization/datarequest/760c24b1-3c3d-4ccb-8196-41530fcdebd5"
@@ -287,7 +298,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/datarequest/unknown-name-or-id to /error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/datarequest/unknown-name-or-id")
                 .expect(303)
@@ -301,7 +311,6 @@ describe("ckanRedirectionRouter router", () => {
 
     describe("Redirect /organization/about/:ckanIdOrName", () => {
         it("should redirect /organization/about/australianbureauofstatistics-geography to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get(
                     "/organization/about/australianbureauofstatistics-geography"
@@ -315,7 +324,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/about/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/about/760c24b1-3c3d-4ccb-8196-41530fcdebd5")
                 .expect(303)
@@ -327,7 +335,6 @@ describe("ckanRedirectionRouter router", () => {
         });
 
         it("should redirect /organization/about/unknown-name-or-id to /error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id", () => {
-            setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/about/unknown-name-or-id")
                 .expect(303)
@@ -499,10 +506,12 @@ describe("ckanRedirectionRouter router", () => {
         }
         describe(`Redirect CKan URL ${path}`, () => {
             testCkanDomainChangeOnly(testUrlList, statusCode, allowAllMethod);
-            test404(
-                `https://${ckanRedirectionDomain}/${path}xxx`,
-                allowAllMethod
-            );
+            if (typeof config === "object" && !config.skip404) {
+                test404(
+                    `https://${ckanRedirectionDomain}${path}xxx`,
+                    allowAllMethod
+                );
+            }
         });
     }
 });

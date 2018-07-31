@@ -15,6 +15,7 @@ export type genericUrlRedirectConfig =
           requireExtraSeqment?: boolean;
           statusCode?: number;
           method?: string;
+          skip404?: boolean; //--- only for test cases
       }
     | string;
 
