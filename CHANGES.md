@@ -1,3 +1,5 @@
+## 0.0.46
+
 ## 0.0.45
 
 -   Add config for fallback banner
