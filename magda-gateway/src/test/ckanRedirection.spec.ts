@@ -222,16 +222,14 @@ describe("ckanRedirectionRouter router", () => {
     describe("Redirect /organization/:ckanIdOrName", () => {
         it("should redirect /organization/australianbureauofstatistics-geography to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
             setupRegistryApiForCkanDatasetQuery();
-            return (
-                supertest(app)
-                    .get("/organization/australianbureauofstatistics-geography")
-                    //.expect(303)
-                    .expect(
-                        checkRedirectionDetails(
-                            "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
-                        )
+            return supertest(app)
+                .get("/organization/australianbureauofstatistics-geography")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
                     )
-            );
+                );
         });
 
         it("should redirect /organization/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
@@ -292,6 +290,46 @@ describe("ckanRedirectionRouter router", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
                 .get("/organization/datarequest/unknown-name-or-id")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id"
+                    )
+                );
+        });
+    });
+
+    describe("Redirect /organization/about/:ckanIdOrName", () => {
+        it("should redirect /organization/about/australianbureauofstatistics-geography to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get(
+                    "/organization/about/australianbureauofstatistics-geography"
+                )
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                    )
+                );
+        });
+
+        it("should redirect /organization/about/760c24b1-3c3d-4ccb-8196-41530fcdebd5 to /organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/organization/about/760c24b1-3c3d-4ccb-8196-41530fcdebd5")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/organisations/org-dga-760c24b1-3c3d-4ccb-8196-41530fcdebd5"
+                    )
+                );
+        });
+
+        it("should redirect /organization/about/unknown-name-or-id to /error?errorCode=404&recordType=ckan-organization-details&recordId=unknown-name-or-id", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/organization/about/unknown-name-or-id")
                 .expect(303)
                 .expect(
                     checkRedirectionDetails(
