@@ -2,7 +2,7 @@ import * as express from "express";
 import * as URI from "urijs";
 import * as _ from "lodash";
 import * as request from "request";
-import * as escapeStringRegexp from "escape-string-regexp";
+import { escapeRegExp } from "lodash";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
@@ -94,7 +94,7 @@ export default function buildCkanRedirectionRouter({
         let genericRegExOrStringPattern: string | RegExp;
         if (!requireExtraSeqment) {
             genericRegExOrStringPattern = new RegExp(
-                `^${escapeStringRegexp(path)}(|\\?.*|\\/.*)$`
+                `^${escapeRegExp(path)}(|\\?.*|\\/.*)$`
             );
         } else {
             genericRegExOrStringPattern = `${path}/*`;
