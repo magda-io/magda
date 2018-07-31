@@ -13,7 +13,9 @@ class Tooltip extends React.Component {
 
     constructor(props) {
         super(props);
-        this.rootElementRef = React.createRef();
+
+        this.rootRef = React.createRef();
+        this.tooltipTextElementRef = React.createRef();
     }
 
     componentDidMount() {
@@ -25,17 +27,25 @@ class Tooltip extends React.Component {
     }
 
     adjustOffset() {
-        const element = this.rootElementRef.current;
-        const style = element.currentStyle || window.getComputedStyle(element);
-        const offsetWidth =
-            (element.offsetWidth +
-                parseFloat(style.marginLeft) +
-                parseFloat(style.marginRight)) /
+        const tooltipTextElement = this.tooltipTextElementRef.current;
+        const rootElement = this.rootRef.current;
+        const launcherElement = rootElement.firstChild;
+
+        const launcherElementStyle =
+            launcherElement.currentStyle ||
+            window.getComputedStyle(launcherElement);
+
+        const offset =
+            (tooltipTextElement.offsetWidth +
+                parseFloat(launcherElementStyle.marginLeft) +
+                parseFloat(launcherElementStyle.marginRight) -
+                parseFloat(launcherElementStyle.paddingRight) -
+                parseFloat(launcherElementStyle.paddingLeft)) /
             2;
 
-        if (this.state.offset !== offsetWidth) {
+        if (this.state.offset !== offset) {
             this.setState({
-                offset: offsetWidth
+                offset
             });
         }
     }
@@ -43,14 +53,15 @@ class Tooltip extends React.Component {
     render() {
         return (
             <div
+                ref={this.rootRef}
                 className={`tooltip ${
                     this.props.className ? this.props.className : ""
                 }`}
             >
-                {this.props.launcher && this.props.launcher()}
+                {this.props.launcher && <this.props.launcher />}
                 <span
                     className="tooltiptext"
-                    ref={this.rootElementRef}
+                    ref={this.tooltipTextElementRef}
                     style={{ marginLeft: "-" + this.state.offset + "px" }}
                 >
                     {this.props.children}
