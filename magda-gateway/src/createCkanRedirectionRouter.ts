@@ -260,7 +260,6 @@ export default function buildCkanRedirectionRouter({
     }
 
     const uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const notFoundPageBaseUrl = "/error";
 
     async function getCkanRecordMagdaId(
         ckanIdOrName: string,
@@ -375,14 +374,11 @@ export default function buildCkanRedirectionRouter({
                         disIdOrName
                     );
                     if (!datasetMagdaId) {
-                        const redirectUri = new URI(notFoundPageBaseUrl).search(
-                            {
-                                errorCode: 404,
-                                recordType: "ckan-resource",
-                                recordId: disIdOrName
-                            }
-                        );
-                        res.redirect(303, redirectUri.toString());
+                        showError(res, {
+                            errorCode: 404,
+                            recordType: "ckan-resource",
+                            recordId: disIdOrName
+                        });
                         return;
                     }
                 }
@@ -390,7 +386,7 @@ export default function buildCkanRedirectionRouter({
                 res.redirect(303, `/dataset/${datasetMagdaId}/details`);
             } catch (e) {
                 console.log(e);
-                res.sendStatus(500);
+                showError(res, 500);
             }
         }
     );
@@ -416,18 +412,17 @@ export default function buildCkanRedirectionRouter({
             const magdaId = await getCkanDatasetMagdaId(dsIdOrName);
 
             if (!magdaId) {
-                const redirectUri = new URI(notFoundPageBaseUrl).search({
+                showError(res, {
                     errorCode: 404,
                     recordType: "ckan-dataset",
                     recordId: dsIdOrName
                 });
-                res.redirect(303, redirectUri.toString());
             } else {
                 res.redirect(303, `/dataset/${magdaId}/details`);
             }
         } catch (e) {
             console.log(e);
-            res.sendStatus(500);
+            showError(res, 500);
         }
     });
 
@@ -451,7 +446,7 @@ export default function buildCkanRedirectionRouter({
             }
         } catch (e) {
             console.log(e);
-            res.sendStatus(500);
+            showError(res, 500);
         }
     });
 
@@ -467,12 +462,11 @@ export default function buildCkanRedirectionRouter({
         );
 
         if (!orgFullName || !orgFullName.trim()) {
-            const redirectUri = new URI(notFoundPageBaseUrl).search({
+            showError(res, {
                 errorCode: 404,
                 recordType: "ckan-organization-details",
                 recordId: ckanIdOrName
             });
-            res.redirect(303, redirectUri.toString());
         } else {
             let uri: any = new URI("/search");
             //--- make sure %20 is used instead of +
@@ -493,15 +487,31 @@ export default function buildCkanRedirectionRouter({
         const magdaId = await getCkanOrganisationMagdaId(ckanIdOrName);
 
         if (!magdaId) {
-            const redirectUri = new URI(notFoundPageBaseUrl).search({
+            showError(res, {
                 errorCode: 404,
                 recordType: "ckan-organization-details",
                 recordId: ckanIdOrName
             });
-            res.redirect(303, redirectUri.toString());
         } else {
             res.redirect(303, `/organisations/${magdaId}`);
         }
+    }
+
+    function showError(
+        res: express.Response,
+        errorDataOrErrorCode: object | number
+    ) {
+        let redirectUri: any = new URI("/error");
+        let errorData;
+        if (typeof errorDataOrErrorCode === "number") {
+            errorData = { errorCode: errorDataOrErrorCode };
+        } else if (typeof errorDataOrErrorCode === "object") {
+            errorData = errorDataOrErrorCode;
+        }
+        if (errorData && Object.keys(errorData).length) {
+            redirectUri = redirectUri.escapeQuerySpace(false).search(errorData);
+        }
+        res.redirect(303, redirectUri.toString());
     }
 
     return router;
