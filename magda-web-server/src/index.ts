@@ -230,6 +230,22 @@ app.use(
     })
 );
 
+// Proxy any other URL to 404 error page
+const maxErrorDataUrlLength = 1500;
+app.use("/", function(req, res) {
+    let redirectUri: any = new URI("/error");
+    const url =
+        req.originalUrl.length > maxErrorDataUrlLength
+            ? req.originalUrl.substring(0, maxErrorDataUrlLength)
+            : req.originalUrl;
+    const errorData = {
+        errorCode: 404,
+        url: url
+    };
+    redirectUri = redirectUri.escapeQuerySpace(false).search(errorData);
+    res.redirect(303, redirectUri.toString());
+});
+
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
