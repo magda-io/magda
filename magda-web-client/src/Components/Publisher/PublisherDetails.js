@@ -11,7 +11,10 @@ import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
-
+import {
+    fetchSearchResultsIfNeeded,
+    resetDatasetSearch
+} from "../../actions/datasetSearchActions";
 import "./PublisherDetails.css";
 
 class PublisherDetails extends Component {
@@ -27,6 +30,14 @@ class PublisherDetails extends Component {
             this.props.fetchPublisherIfNeeded(
                 this.props.match.params.publisherId
             );
+        } else if (
+            this.props.publisher.name &&
+            this.props.publisher.name !== this.props.searchPublisherName
+        ) {
+            this.props.resetDatasetSearch();
+            this.props.fetchSearchResultsIfNeeded({
+                publisher: this.props.publisher.name
+            });
         }
     }
 
@@ -46,6 +57,9 @@ class PublisherDetails extends Component {
                 <span>{publisher.name}</span>
             </li>
         ];
+
+        const hitCount = this.props.hitCount ? this.props.hitCount + " " : "";
+
         return (
             <div className="publisher-details">
                 <div>
@@ -60,9 +74,37 @@ class PublisherDetails extends Component {
                         </div>
 
                         <div className="publisher-details-overview">
-                            <h3 className="section-heading">Overview</h3>
                             <OverviewBox content={description} />
                         </div>
+
+                        {(details.email ||
+                            details.website ||
+                            details.phone) && (
+                            <div className="publisher-details-contacts">
+                                <h3 className="section-heading">
+                                    Contact details
+                                </h3>
+                                {details.email && (
+                                    <div className="publisher-details-contacts-item">
+                                        Email:&nbsp;
+                                        <a href={emailLink(details.email)}>
+                                            {details.email}
+                                        </a>
+                                    </div>
+                                )}
+                                {details.website && (
+                                    <div className="publisher-details-contacts-item">
+                                        Website: {details.website}
+                                    </div>
+                                )}
+                                {details.phone && (
+                                    <div className="publisher-details-contacts-item">
+                                        Phone: {details.phone}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <br />
                         <div>
                             <Link
@@ -71,7 +113,8 @@ class PublisherDetails extends Component {
                                     publisher.name
                                 )}`}
                             >
-                                View all datasets from {publisher.name}
+                                View all {hitCount}
+                                datasets from {publisher.name}
                             </Link>
                         </div>
                     </div>
@@ -109,7 +152,9 @@ class PublisherDetails extends Component {
 function mapDispatchToProps(dispatch) {
     return bindActionCreators(
         {
-            fetchPublisherIfNeeded: fetchPublisherIfNeeded
+            fetchPublisherIfNeeded: fetchPublisherIfNeeded,
+            fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
+            resetDatasetSearch: resetDatasetSearch
         },
         dispatch
     );
@@ -120,12 +165,26 @@ function mapStateToProps(state: Object, ownProps: Object) {
     const isFetching: boolean = state.publisher.isFetchingPublisher;
     const error: object = state.publisher.errorFetchingPublisher;
     const location: Location = ownProps.location;
+    const datasetSearch: Object = state.datasetSearch;
+    const searchPublisherName =
+        datasetSearch.queryObject && datasetSearch.queryObject.publisher;
+    const hitCount = datasetSearch.hitCount;
     return {
         publisher,
         isFetching,
         location,
+        searchPublisherName,
+        hitCount,
         error
     };
+}
+
+function emailLink(address: string) {
+    if (address.match(/^[a-z]+:/)) {
+        return address;
+    } else {
+        return "mailto:" + address;
+    }
 }
 
 export default connect(

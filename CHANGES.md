@@ -1,13 +1,17 @@
 ## 0.0.45
 
 -   added mechanism to produce api documentation
+-   Add config for fallback banner
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
+-   Fixed inconsistent breakpoints
 -   Unify styles of tagline for search results
 -   Unify result count style
 -   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed the error 'Can't call setState (or forceUpdate) on an unmounted component' for Data Preview
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
+-   Added more details in organisations/publishers page to reflect design.
 
 ## 0.0.44
 
@@ -62,6 +66,7 @@
 -   Fixed bug where dataset ids where "undefined" in distribution URLs.
 -   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
+-   Keep search text in synch.
 
 ## 0.0.43
 
