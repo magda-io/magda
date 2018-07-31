@@ -326,10 +326,61 @@ export default function buildCkanRedirectionRouter({
         }
     }
 
-    router.get(/^\/dataset\/(?!ds-)[^\/]+$/, async function(req, res) {
+    /**
+     * This route must be placed before the router for /dataset/* below
+     * as we now want to capture anything like /dataset/xxxx/view/xxxx
+     */
+    router.get(
+        /^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]{1}.*$/,
+        async function(req, res) {
+            try {
+                const originUri = new URI(req.originalUrl);
+                const dsIdOrName = originUri.segmentCoded(1).trim();
+
+                let datasetMagdaId = await getCkanDatasetMagdaId(dsIdOrName);
+                if (!datasetMagdaId) {
+                    const disIdOrName = originUri.segmentCoded(3).trim();
+                    datasetMagdaId = await getCkanDatasetMagdaIdByCkanDistributionId(
+                        disIdOrName
+                    );
+                    if (!datasetMagdaId) {
+                        const redirectUri = new URI(notFoundPageBaseUrl).search(
+                            {
+                                errorCode: 404,
+                                recordType: "ckan-resource",
+                                recordId: disIdOrName
+                            }
+                        );
+                        res.redirect(303, redirectUri.toString());
+                        return;
+                    }
+                }
+
+                res.redirect(303, `/dataset/${datasetMagdaId}/details`);
+            } catch (e) {
+                console.log(e);
+                res.sendStatus(500);
+            }
+        }
+    );
+
+    /**
+     * The second segment of the url could be actions related to a dataset.e.g.:
+     *  /dataset/groups/xxx-xx-xxx-xx
+     * We need to handle this differently: use segment 2 as ckan ID instead of 1
+     */
+    const remappedDatasetSubActions = ["groups", "activity", "showcases"];
+
+    router.get(/^\/dataset\/(?!ds-)[^\/]{1}.*$/, async function(req, res) {
         try {
             const originUri = new URI(req.originalUrl);
-            const dsIdOrName = originUri.segmentCoded(1).trim();
+            const segment1 = originUri.segmentCoded(1).trim();
+            let dsIdOrName;
+            if (remappedDatasetSubActions.indexOf(segment1) !== -1) {
+                dsIdOrName = originUri.segmentCoded(2).trim();
+            } else {
+                dsIdOrName = segment1;
+            }
 
             const magdaId = await getCkanDatasetMagdaId(dsIdOrName);
 
@@ -343,38 +394,6 @@ export default function buildCkanRedirectionRouter({
             } else {
                 res.redirect(303, `/dataset/${magdaId}/details`);
             }
-        } catch (e) {
-            console.log(e);
-            res.sendStatus(500);
-        }
-    });
-
-    router.get(/^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]+$/, async function(
-        req,
-        res
-    ) {
-        try {
-            const originUri = new URI(req.originalUrl);
-            const dsIdOrName = originUri.segmentCoded(1).trim();
-
-            let datasetMagdaId = await getCkanDatasetMagdaId(dsIdOrName);
-            if (!datasetMagdaId) {
-                const disIdOrName = originUri.segmentCoded(3).trim();
-                datasetMagdaId = await getCkanDatasetMagdaIdByCkanDistributionId(
-                    disIdOrName
-                );
-                if (!datasetMagdaId) {
-                    const redirectUri = new URI(notFoundPageBaseUrl).search({
-                        errorCode: 404,
-                        recordType: "ckan-resource",
-                        recordId: disIdOrName
-                    });
-                    res.redirect(303, redirectUri.toString());
-                    return;
-                }
-            }
-
-            res.redirect(303, `/dataset/${datasetMagdaId}/details`);
         } catch (e) {
             console.log(e);
             res.sendStatus(500);

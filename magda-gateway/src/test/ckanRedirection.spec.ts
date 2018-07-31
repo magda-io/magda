@@ -85,6 +85,54 @@ describe("ckanRedirectionRouter router", () => {
                 );
         });
 
+        it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/view/xxxx to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/pg_skafsd0_f___00120141210_11a/view/xxxx")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/groups/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/groups/pg_skafsd0_f___00120141210_11a")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/activity/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/activity/pg_skafsd0_f___00120141210_11a")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/showcases/pg_skafsd0_f___00120141210_11a to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get("/dataset/showcases/pg_skafsd0_f___00120141210_11a")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
         it("should redirect /dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8 to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
             setupRegistryApiForCkanDatasetQuery();
             return supertest(app)
@@ -116,6 +164,20 @@ describe("ckanRedirectionRouter router", () => {
             return supertest(app)
                 .get(
                     "/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e"
+                )
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/view/link to /dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details", () => {
+            setupRegistryApiForCkanDatasetQuery();
+            return supertest(app)
+                .get(
+                    "/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/view/link"
                 )
                 .expect(303)
                 .expect(
