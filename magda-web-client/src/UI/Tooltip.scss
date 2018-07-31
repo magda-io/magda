@@ -1,8 +1,6 @@
 .tooltip {
-    position: absolute;
-    display: inline;
-    margin-left: 5px;
-    margin-top: 1px;
+    position: relative;
+    display: inline-block;
 }
 
 .tooltip .tooltiptext {
@@ -18,7 +16,6 @@
     z-index: 1;
     bottom: 110%;
     left: 50%;
-    margin-left: -82px;
     border-radius: 4px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     padding: 12px;
@@ -26,11 +23,6 @@
     a {
         color: #fff;
     }
-}
-
-.tooltip img {
-    margin: 0;
-    display: inline-block;
 }
 
 .tooltip .tooltiptext::after {

@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { config } from "../../config";
 import { Medium } from "../../UI/Responsive";
+import Tooltip from "../../UI/Tooltip";
 // import downArrowDark from "../../assets/downArrowDark.svg";
-import ClearAllButtom from "./ClearAllButton";
+import ClearAllButton from "./ClearAllButton";
 
 import "./SearchFacets.css";
 
@@ -63,26 +64,36 @@ class SearchFacets extends Component {
         });
     }
 
+    renderFilterButton = filter => {
+        return (
+            <Tooltip
+                launcher={() => (
+                    <div
+                        className="search-facet"
+                        key={filter.id}
+                        onClick={ev => ev.stopPropagation()}
+                    >
+                        <filter.component
+                            updateQuery={this.props.updateQuery}
+                            location={this.props.location}
+                            title={filter.id}
+                            isOpen={this.state.openFacet === filter.id}
+                            toggleFacet={this.toggleFacet.bind(this, filter.id)}
+                            closeFacet={this.closeFacet.bind(this, filter.id)}
+                        />
+                    </div>
+                )}
+            >
+                blah
+            </Tooltip>
+        );
+    };
+
     renderDesktop() {
         return (
             <div className="search-facets-desktop">
-                {config.facets.map(c => (
-                    <div
-                        className="search-facet"
-                        key={c.id}
-                        onClick={ev => ev.stopPropagation()}
-                    >
-                        <c.component
-                            updateQuery={this.props.updateQuery}
-                            location={this.props.location}
-                            title={c.id}
-                            isOpen={this.state.openFacet === c.id}
-                            toggleFacet={this.toggleFacet.bind(this, c.id)}
-                            closeFacet={this.closeFacet.bind(this, c.id)}
-                        />
-                    </div>
-                ))}
-                <ClearAllButtom key={"clear-all-button"} />
+                {config.facets.map(this.renderFilterButton)}
+                <ClearAllButton key={"clear-all-button"} />
             </div>
         );
     }

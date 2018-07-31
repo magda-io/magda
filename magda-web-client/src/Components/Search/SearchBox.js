@@ -14,6 +14,7 @@ import PropTypes from "prop-types";
 import queryString from "query-string";
 import SearchSuggestionBox from "./SearchSuggestionBox";
 import { Small, Medium } from "../../UI/Responsive";
+import stripFiltersFromQuery from "./stripFiltersFromQuery";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -48,32 +49,38 @@ class SearchBox extends Component {
         });
     }
 
-    onSearchTextChange(event) {
+    onSearchTextChange(event, keepFilters) {
         const text = event.target.value;
         this.setState({
             searchText: text
         });
-        this.debounceUpdateSearchQuery(text);
+        this.debounceUpdateSearchQuery(text, keepFilters);
     }
 
     /**
-     * update only the search text, remove all facets
+     * update only the search text
      */
-    updateSearchText(text) {
+    updateSearchText(text, keepFilters) {
         if (text === "") text = "*";
         // dismiss keyboard on mobile when new search initiates
         if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
-        this.updateQuery({
+
+        const query = {
             q: text,
             page: undefined
-        });
+        };
+
+        this.updateQuery(keepFilters ? query : stripFiltersFromQuery(query));
     }
 
-    handleSearchFieldEnterKeyPress(event) {
+    handleSearchFieldEnterKeyPress(event, keepFilters) {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery.flush(this.getSearchBoxValue());
+            this.debounceUpdateSearchQuery.flush(
+                this.getSearchBoxValue(),
+                keepFilters
+            );
         }
     }
 
@@ -118,16 +125,18 @@ class SearchBox extends Component {
         this.updateSearchText("");
     }
 
-    render() {
-        const input = (
+    inputBox(keepFilters) {
+        return (
             <input
                 type="text"
                 name="search"
                 id="search"
                 placeholder="Search for open data"
                 value={this.getSearchBoxValue()}
-                onChange={this.onSearchTextChange}
-                onKeyPress={this.handleSearchFieldEnterKeyPress}
+                onChange={e => this.onSearchTextChange(e, keepFilters)}
+                onKeyPress={e =>
+                    this.handleSearchFieldEnterKeyPress(e, keepFilters)
+                }
                 autoComplete="off"
                 ref={el => (this.searchInputFieldRef = el)}
                 onFocus={() => this.setState({ isFocus: true })}
@@ -138,7 +147,9 @@ class SearchBox extends Component {
                 }
             />
         );
+    }
 
+    render() {
         const suggestionBox = (
             <SearchSuggestionBox
                 searchText={this.getSearchBoxValue()}
@@ -156,11 +167,11 @@ class SearchBox extends Component {
                     </span>
                     <Medium>
                         <div style={{ position: "relative" }}>
-                            {input}
+                            {this.inputBox(true)}
                             {suggestionBox}
                         </div>
                     </Medium>
-                    <Small>{input}</Small>
+                    <Small>{this.inputBox(false)}</Small>
                     <span className="search-input__highlight">
                         {this.getSearchBoxValue()}
                     </span>
