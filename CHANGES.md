@@ -1,3 +1,6 @@
+## 0.0.46
+-   Make pagination on mobile responsive.
+
 ## 0.0.44
 
 -   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
@@ -52,7 +55,6 @@
 -   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
 -   Keep search text in synch.
--   Make pagination on mobile responsive.
 
 ## 0.0.43
 
