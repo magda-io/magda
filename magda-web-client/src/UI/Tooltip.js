@@ -34,9 +34,14 @@ class Tooltip extends React.Component {
 
     handleClickOutside = event => {
         if (!this.rootRef.current.contains(event.target)) {
-            this.setState({ clickedOutside: true });
+            this.dismiss();
         }
     };
+
+    dismiss() {
+        this.props.onDismiss && this.props.onDismiss();
+        this.setState({ clickedOutside: true });
+    }
 
     /**
      * Adjust the offset margin of the tooltiptext so it's at the centre of the launcher.

@@ -1,16 +1,25 @@
-export function retrieveLocalData(key): searchDataType {
+const noLocalStorage = (() => {
     try {
-        if (!("localStorage" in window) || !window.localStorage) return [];
+        return !("localStorage" in window || !window.localStorage);
     } catch (e) {
         /// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
-        return [];
+        return false;
+    }
+})();
+/**
+ * Retrieves a value from local storage. Will return defaultValue if localStorage isn't available. The value in localStorage will be JSON.parse'd.
+ *
+ * @param {string} key The key to look for.
+ * @param {*} defaultValue Returned if localStorage isn't available on window
+ */
+export function retrieveLocalData(key, defaultValue) {
+    if (noLocalStorage) {
+        return defaultValue;
     }
     if (!key || typeof key !== "string")
         throw new Error("Invalid key parameter!");
     try {
-        const items = JSON.parse(window.localStorage.getItem(key));
-        if (!items || typeof items !== "object" || !items.length) return [];
-        return items;
+        return JSON.parse(window.localStorage.getItem(key));
     } catch (e) {
         console.error(
             `Failed to retrieve search save data '${key}' from local storage: ${
@@ -18,38 +27,69 @@ export function retrieveLocalData(key): searchDataType {
             }`,
             e
         );
-        return [];
+        return defaultValue;
     }
 }
 
-export function insertItemIntoLocalData(
+/**
+ * Sets a value in local storage if possible. Returns the value.
+ *
+ * @param {string} key The key to look for
+ * @param {*} value The value to set - will be JSON.stringified.
+ * @param {*} defaultValue Returned if localStorage isn't available on window
+ */
+export function setLocalData(key, value, defaultValue) {
+    if (noLocalStorage) {
+        return defaultValue;
+    }
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+        return value;
+    } catch (e) {
+        console.error(
+            `Failed to save search save data '${key}' to local storage: ${
+                e.message
+            }`,
+            e
+        );
+        return defaultValue;
+    }
+}
+
+/**
+ * Prepends a value to an array in local storage. Creates the list if array is present. Returns the resulting array.
+ *
+ * @param {string} key The key to look for
+ * @param {*} value The value to set - will be JSON.stringified.
+ * @param {*} limit The limit of the array - if this is exceeded by the new value, the last value in the array.
+ * @param {*} defaultValue Returned if localStorage isn't available on window
+ */
+export function prependToLocalStorageArray(
     key,
-    searchData: searchDataType,
-    limit = maxSavedItemNumber
+    value,
+    limit = Number.MAX_SAFE_INTEGER,
+    defaultValue = []
 ) {
-    if (!window.localStorage) return [];
-    let items = retrieveLocalData(key);
-    items = items.filter(item => item.data.q !== searchData.data.q);
-    items.unshift(searchData);
-    if (limit && limit >= 1) items = items.slice(0, limit);
-    try {
-        window.localStorage.setItem(key, JSON.stringify(items));
-        return items;
-    } catch (e) {
-        console.error(
-            `Failed to save search save data '${key}' to local storage: ${
-                e.message
-            }`,
-            e
-        );
-        return [];
+    let items = retrieveLocalData(key, defaultValue);
+    items = items.filter(item => item.data.q !== value.data.q);
+    items.unshift(value);
+    if (limit && limit >= 1) {
+        items = items.slice(0, limit);
     }
+    setLocalData(key, items, defaultValue);
 }
 
-export function deleteItemFromLocalData(key, idx) {
-    if (!window.localStorage) return [];
+/**
+ * Deletes an item from an array in local storage at the specified index. Returns the resulting array.
+ *
+ * @param {string} key The key to look for
+ * @param {number} index  The index of the item to delete.
+ * @param {*} defaultValue Returned if localStorage isn't available on window
+ */
+export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
+    if (!noLocalStorage) return defaultValue;
     let items = retrieveLocalData(key);
-    items.splice(idx, 1);
+    items.splice(index, 1);
     try {
         window.localStorage.setItem(key, JSON.stringify(items));
         return items;
@@ -60,6 +100,6 @@ export function deleteItemFromLocalData(key, idx) {
             }`,
             e
         );
-        return [];
+        return defaultValue;
     }
 }

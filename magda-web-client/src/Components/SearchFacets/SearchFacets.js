@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { config } from "../../config";
 import { Medium } from "../../UI/Responsive";
 import Tooltip from "../../UI/Tooltip";
-// import downArrowDark from "../../assets/downArrowDark.svg";
 import ClearAllButton from "./ClearAllButton";
+import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
 
 import "./SearchFacets.css";
 
@@ -14,7 +14,6 @@ class SearchFacets extends Component {
         this.toggleFacet = this.toggleFacet.bind(this);
         this.closeFacetWithKeyBoard = this.closeFacetWithKeyBoard.bind(this);
         this.onToggleFacetOnMobile = this.onToggleFacetOnMobile.bind(this);
-        // this.renderMobile = this.renderMobile.bind(this);
         this.renderDesktop = this.renderDesktop.bind(this);
     }
 
@@ -82,9 +81,19 @@ class SearchFacets extends Component {
             </div>
         );
 
-        if (filter.showExplanation) {
+        if (
+            filter.showExplanation &&
+            this.props.location.state &&
+            this.props.location.state.showFilterExplanation &&
+            !retrieveLocalData("hideFilterTooltips", true)
+        ) {
             return (
-                <Tooltip startOpen={true} launcher={() => filterComponent}>
+                <Tooltip
+                    key={filter.id + "tooltip"}
+                    startOpen={true}
+                    launcher={() => filterComponent}
+                    onDismiss={() => setLocalData("hideFilterTooltips", true)}
+                >
                     blah
                 </Tooltip>
             );

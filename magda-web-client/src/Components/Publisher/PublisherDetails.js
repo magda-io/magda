@@ -73,7 +73,7 @@ class PublisherDetails extends Component {
                                         publisher.name
                                     )}`,
                                     state: {
-                                        fromOrganisationPage: true
+                                        showFilterExplanation: true
                                     }
                                 }}
                             >

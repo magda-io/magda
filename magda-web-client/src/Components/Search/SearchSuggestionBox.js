@@ -8,8 +8,8 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import { Small, Medium } from "../../UI/Responsive";
 import {
     retrieveLocalData,
-    insertItemIntoLocalData,
-    deleteItemFromLocalData
+    prependToLocalStorageArray,
+    deleteFromLocalStorageArray
 } from "../../storage/localStorage";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
@@ -36,12 +36,21 @@ const maxDefaultListItemNumber = 5;
  */
 const maxSavedItemNumber = 5;
 
+function getRecentSearches() {
+    const items = retrieveLocalData("recentSearches", []);
+    if (!items || typeof items !== "object" || !items.length) {
+        return [];
+    } else {
+        return items;
+    }
+}
+
 class SearchSuggestionBox extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isMouseOver: false,
-            recentSearches: retrieveLocalData("recentSearches"),
+            recentSearches: getRecentSearches(),
             selectedItemIdx: null
         };
         this.cacheImgs();
@@ -127,9 +136,11 @@ class SearchSuggestionBox extends Component {
             return;
         const currentSearchData = this.createSearchDataFromProps(prevProps);
         if (isEqual(currentSearchData, searchData)) return;
-        const recentSearches = insertItemIntoLocalData(
+        const recentSearches = prependToLocalStorageArray(
             "recentSearches",
-            searchData
+            searchData,
+            maxSavedItemNumber,
+            []
         );
         this.setState({ recentSearches });
     }
@@ -158,7 +169,11 @@ class SearchSuggestionBox extends Component {
 
     onDeleteItemClick(e, idx) {
         e.preventDefault();
-        const recentSearches = deleteItemFromLocalData("recentSearches", idx);
+        const recentSearches = deleteFromLocalStorageArray(
+            "recentSearches",
+            idx,
+            []
+        );
         this.setState({ recentSearches });
     }
 
