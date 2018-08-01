@@ -427,7 +427,7 @@ export default function buildCkanRedirectionRouter({
         }
     });
 
-    const orgSubActions = ["about", "datarequest"];
+    const orgSubActions = ["about", "datarequest", "activity"];
     router.get(/^\/organization\/[^/]{1}.*$/, async function(req, res) {
         try {
             const originUri = new URI(req.originalUrl);
