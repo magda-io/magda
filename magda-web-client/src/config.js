@@ -76,7 +76,7 @@ export const config = {
     },
     appTitle: "Australian open data search",
     facets: [
-        { id: "publisher", component: Publisher },
+        { id: "publisher", component: Publisher, showExplanation: true },
         { id: "region", component: Region },
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }

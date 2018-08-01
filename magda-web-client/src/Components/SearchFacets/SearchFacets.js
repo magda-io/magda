@@ -65,28 +65,32 @@ class SearchFacets extends Component {
     }
 
     renderFilterButton = filter => {
-        return (
-            <Tooltip
-                launcher={() => (
-                    <div
-                        className="search-facet"
-                        key={filter.id}
-                        onClick={ev => ev.stopPropagation()}
-                    >
-                        <filter.component
-                            updateQuery={this.props.updateQuery}
-                            location={this.props.location}
-                            title={filter.id}
-                            isOpen={this.state.openFacet === filter.id}
-                            toggleFacet={this.toggleFacet.bind(this, filter.id)}
-                            closeFacet={this.closeFacet.bind(this, filter.id)}
-                        />
-                    </div>
-                )}
+        const filterComponent = (
+            <div
+                className="search-facet"
+                key={filter.id}
+                onClick={ev => ev.stopPropagation()}
             >
-                blah
-            </Tooltip>
+                <filter.component
+                    updateQuery={this.props.updateQuery}
+                    location={this.props.location}
+                    title={filter.id}
+                    isOpen={this.state.openFacet === filter.id}
+                    toggleFacet={this.toggleFacet.bind(this, filter.id)}
+                    closeFacet={this.closeFacet.bind(this, filter.id)}
+                />
+            </div>
         );
+
+        if (filter.showExplanation) {
+            return (
+                <Tooltip startOpen={true} launcher={() => filterComponent}>
+                    blah
+                </Tooltip>
+            );
+        } else {
+            return filterComponent;
+        }
     };
 
     renderDesktop() {

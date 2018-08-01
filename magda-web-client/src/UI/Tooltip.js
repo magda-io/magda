@@ -8,7 +8,8 @@ import React from "react";
  */
 class Tooltip extends React.Component {
     state = {
-        offset: 0
+        offset: 0,
+        clickedOutside: false
     };
 
     constructor(props) {
@@ -19,6 +20,7 @@ class Tooltip extends React.Component {
     }
 
     componentDidMount() {
+        document.addEventListener("mousedown", this.handleClickOutside);
         this.adjustOffset();
     }
 
@@ -26,9 +28,24 @@ class Tooltip extends React.Component {
         this.adjustOffset();
     }
 
+    componentWillUnmount() {
+        document.removeEventListener("mousedown", this.handleClickOutside);
+    }
+
+    handleClickOutside = event => {
+        if (!this.rootRef.current.contains(event.target)) {
+            this.setState({ clickedOutside: true });
+        }
+    };
+
+    /**
+     * Adjust the offset margin of the tooltiptext so it's at the centre of the launcher.
+     */
     adjustOffset() {
         const tooltipTextElement = this.tooltipTextElementRef.current;
         const rootElement = this.rootRef.current;
+
+        // Why .firstChild? Because we can't attach a ref to a render prop unless whatever's passed in passes the ref through to its first dom element
         const launcherElement = rootElement.firstChild;
 
         const launcherElementStyle =
@@ -51,13 +68,18 @@ class Tooltip extends React.Component {
     }
 
     render() {
+        const className = this.props.className ? this.props.className : "";
+        const openClass =
+            this.props.startOpen && !this.state.clickedOutside
+                ? "tooltip-open"
+                : "";
+
         return (
             <div
                 ref={this.rootRef}
-                className={`tooltip ${
-                    this.props.className ? this.props.className : ""
-                }`}
+                className={`tooltip ${className} ${openClass}`}
             >
+                {/* Caution: if this is ever not the first element be sure to fix adjustOffset */}
                 {this.props.launcher && <this.props.launcher />}
                 <span
                     className="tooltiptext"
