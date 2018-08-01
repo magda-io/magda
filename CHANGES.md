@@ -1,5 +1,7 @@
 ## 0.0.46
 
+-   Fixed a facet overflow issue on desktop
+
 ## 0.0.45
 
 -   Add config for fallback banner

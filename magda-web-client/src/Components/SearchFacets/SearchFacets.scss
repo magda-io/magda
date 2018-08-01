@@ -5,10 +5,15 @@
     margin-bottom: 32px;
     flex-direction: row;
     flex-wrap: wrap;
+
+    .facet-group {
+        display: flex;
+    }
     .search-facet {
         margin-right: 8px;
         position: relative;
         width: 45%;
+        margin-bottom: 8px;
         @media (min-width: $medium) {
             width: auto;
         }
