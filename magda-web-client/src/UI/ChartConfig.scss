@@ -1,6 +1,9 @@
 @import "../_variables.scss";
 .chart-config {
     .chart-config_icon-select {
+        .button-group {
+            display: flex;
+        }
         button {
             background: transparent;
             border: 0;
@@ -10,7 +13,7 @@
             padding: 4px;
             border: 2px solid $AU-color-foreground-action;
             border-radius: 2px;
-            padding: 0.8rem;
+            padding: 0.6rem;
             &.isActive {
                 background: $AU-color-foreground-action;
                 img {

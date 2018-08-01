@@ -47,19 +47,17 @@
     background-color: rgba($AU-color-foreground-action, 0.8);
     background: $AU-color-background;
     border-radius: 0px;
-    @media (max-width: $medium) {
-        input::-webkit-input-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input:-moz-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input::-moz-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input:-ms-input-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
+    input::-webkit-input-placeholder {
+        color: #dad2da;
+    }
+    input:-moz-placeholder {
+        color: #dad2da;
+    }
+    input::-moz-placeholder {
+        color: #dad2da;
+    }
+    input:-ms-input-placeholder {
+        color: #dad2da;
     }
 
     input:focus::-webkit-input-placeholder {

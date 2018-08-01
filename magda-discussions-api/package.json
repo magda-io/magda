@@ -1,7 +1,7 @@
 {
   "name": "@magda/discussions-api",
   "description": "MAGDA Discussions API",
-  "version": "0.0.44-RC1",
+  "version": "0.0.46-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -14,7 +14,7 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.44-RC1",
+    "@magda/typescript-common": "^0.0.46-0",
     "body-parser": "^1.13.2",
     "express": "^4.13.1",
     "isomorphic-fetch": "^2.2.1",
@@ -25,7 +25,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.44-RC1",
+    "@magda/scripts": "^0.0.46-0",
     "@types/express": "^4.0.35",
     "@types/lodash": "^4.14.64",
     "@types/node": "^8.0.14",

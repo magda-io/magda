@@ -69,7 +69,7 @@ export default class TemporalWrapper extends React.Component {
                             hasQuery={this.props.hasQuery}
                             activeDates={this.props.activeDates}
                             onToggleOption={this.props.onToggleOption}
-                            onResetFacet={this.props.onResetFacet}
+                            onResetFacet={this.resetTemporalFacet}
                             toggleFacet={this.props.toggleFacet}
                             isOpen={this.props.isOpen}
                             temporalRange={this.props.temporalRange}
