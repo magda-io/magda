@@ -1,10 +1,10 @@
 # How to keep API documented
 
-For this project, we are using a tool called apidocjs to
-document the API. With this package, API documentation is maintained
-with the API implementation in source code. This tool and additional
-scripts are then used to generate api HTML documentation and also
-swagger/openapi specification files.
+For this project, a tool called apidocjs is being used for API documentation.
+With this package, API documentation is maintained along with implementation
+in source code.
+This tool and additional scripts are then used to generate api HTML
+documentation and also swagger/openapi specification files.
 
 Please document apis like the following:
 
