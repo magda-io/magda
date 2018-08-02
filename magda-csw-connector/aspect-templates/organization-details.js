@@ -39,9 +39,19 @@ if (!addrCountry) {
     );
 }
 
+function cleanOrgTitle(title) {
+    if (!title) {
+        return title;
+    }
+    if (typeof title !== "string") {
+        title = String(title);
+    }
+    return title.replace(/^\W*/, "");
+}
+
 const data = {
     name: name,
-    title: name,
+    title: cleanOrgTitle(name),
     description: undefined,
     imageUrl: undefined,
     phone,

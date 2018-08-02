@@ -18,9 +18,19 @@ if (organization && organization.extras && organization.extras.length) {
     });
 }
 
+function cleanOrgTitle(title) {
+    if (!title) {
+        return title;
+    }
+    if (typeof title !== "string") {
+        title = String(title);
+    }
+    return title.replace(/^\W*/, "");
+}
+
 const data = {
     name: organization.name,
-    title: organization.title,
+    title: cleanOrgTitle(organization.title),
     description: organization.description,
     imageUrl: organization.image_display_url || organization.image_url,
     phone,

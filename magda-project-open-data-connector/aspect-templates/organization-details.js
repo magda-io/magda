@@ -18,9 +18,19 @@ let addrState = undefined;
 let addrPostCode = undefined;
 let addrCountry = undefined;
 
+function cleanOrgTitle(title) {
+    if (!title) {
+        return title;
+    }
+    if (typeof title !== "string") {
+        title = String(title);
+    }
+    return title.replace(/^\W*/, "");
+}
+
 const data = {
     name: organization.name,
-    title: organization.name,
+    title: cleanOrgTitle(organization.name),
     description: undefined,
     imageUrl: undefined,
     phone,
