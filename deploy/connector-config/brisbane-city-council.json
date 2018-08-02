@@ -4,5 +4,5 @@
     "name": "Brisbane City Council",
     "sourceUrl": "https://www.data.brisbane.qld.gov.au/data/",
     "pageSize": 100,
-    "schedule": "0 2 */3 * *"
+    "schedule": "10 * * * *"
 }
