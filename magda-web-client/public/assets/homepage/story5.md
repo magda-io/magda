@@ -1,7 +1,7 @@
 ---
-title: Open Data Toolkit
+title: Explore the NationalMap
 titleImage: story5.png
-titleUrl: "https://toolkit.data.gov.au/index.php?title=Main_Page"
+titleUrl: "http://nationalmap.gov.au/"
 ---
 
-The Open Data Toolkit is an online resource to help get you started. Whether you're publishing for the first time or discovering metadata, the toolkit can point you in the right direction.
+<p>The NationalMap is a visualisation tool for Australia’s public data. The purpose is simple: to make geospatial data easy to use and explore.</p>
