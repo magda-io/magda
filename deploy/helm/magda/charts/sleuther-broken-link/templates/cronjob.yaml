@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: CronJob
+metadata:
+  name: sleuther-broken-link-recrawl
+spec:
+  concurrencyPolicy: Allow
+  schedule: "0 0 14,28 * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: sleuther-broken-link-recrawl
+          labels:
+            cron: sleuther-broken-link-recrawl
+        spec:
+          containers:
+          - image: "dtzar/helm-kubectl"
+            imagePullPolicy: IfNotPresent
+            name: sleuther-broken-link-recrawl
+            command: 
+              - apk add --update curl
+              - curl -X POST http://sleuther-broken-link/v0/recrawl
+          restartPolicy: OnFailure
