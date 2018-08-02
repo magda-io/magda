@@ -4,6 +4,7 @@ import { Medium } from "../../UI/Responsive";
 import Tooltip from "../../UI/Tooltip";
 import ClearAllButton from "./ClearAllButton";
 import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
+import FilterExplanation from "./FilterExplanation";
 
 import "./SearchFacets.css";
 
@@ -82,10 +83,10 @@ class SearchFacets extends Component {
         );
 
         if (
-            filter.showExplanation &&
-            this.props.location.state &&
-            this.props.location.state.showFilterExplanation &&
-            !retrieveLocalData("hideFilterTooltips", true)
+            filter.showExplanation //&&
+            // this.props.location.state &&
+            // this.props.location.state.showFilterExplanation &&
+            // !retrieveLocalData("hideFilterTooltips", true)
         ) {
             return (
                 <Tooltip
@@ -93,8 +94,14 @@ class SearchFacets extends Component {
                     startOpen={true}
                     launcher={() => filterComponent}
                     onDismiss={() => setLocalData("hideFilterTooltips", true)}
+                    orientation="below"
                 >
-                    blah
+                    {dismiss => (
+                        <FilterExplanation
+                            dismiss={dismiss}
+                            filterType={filter.name}
+                        />
+                    )}
                 </Tooltip>
             );
         } else {

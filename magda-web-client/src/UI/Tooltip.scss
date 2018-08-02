@@ -3,18 +3,16 @@
     display: inline-block;
 }
 
-.tooltip .tooltiptext {
+.tooltiptext {
     line-height: 1.2;
     font-size: 0.9rem;
     visibility: hidden;
-    width: 140px;
-    background-color: #222;
+    background-color: #4b2b85;
     color: #fff;
     text-align: center;
     padding: 7px;
     position: absolute;
     z-index: 1;
-    bottom: 110%;
     left: 50%;
     border-radius: 4px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -26,20 +24,44 @@
         transition: none !important;
     }
 
-    a {
+    &.tooltiptext a {
         color: #fff;
     }
 }
 
-.tooltip .tooltiptext::after {
+.tooltiptext::after {
     content: "";
     position: absolute;
-    top: 100%;
     left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -10px;
+    border-width: 10px;
     border-style: solid;
-    border-color: #222 transparent transparent transparent;
+}
+
+.tooltiptext.tooltiptext-below {
+    top: calc(100% + 10px);
+
+    &::after {
+        bottom: 100%;
+        border-color: transparent transparent #4b2b85 transparent;
+    }
+}
+
+.tooltiptext.tooltiptext-above {
+    bottom: calc(100% + 10px);
+
+    &::after {
+        top: 100%;
+        border-color: #4b2b85 transparent transparent transparent;
+    }
+}
+
+.tooltip.tooltip-dismissed,
+.tooltip.tooltip-dismissed:hover {
+    & .tooltiptext {
+        visibility: hidden;
+        transition: none !important;
+    }
 }
 
 .tooltip:hover .tooltiptext,

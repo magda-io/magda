@@ -18,9 +18,14 @@ export default function DataQualityTooltip(props) {
                     alt="Help Link"
                 />
             )}
+            innerElementClassName="data-quality-tooltip-inner"
         >
-            Calculated using the{" "}
-            <Link to="/page/dataset-quality">Open data scale</Link>
+            {() => (
+                <React.Fragment>
+                    Calculated using the{" "}
+                    <Link to="/page/dataset-quality">Open data scale</Link>
+                </React.Fragment>
+            )}
         </Tooltip>
     );
 }

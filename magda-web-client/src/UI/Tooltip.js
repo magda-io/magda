@@ -9,7 +9,7 @@ import React from "react";
 class Tooltip extends React.Component {
     state = {
         offset: 0,
-        clickedOutside: false
+        dismissed: false
     };
 
     constructor(props) {
@@ -38,10 +38,10 @@ class Tooltip extends React.Component {
         }
     };
 
-    dismiss() {
+    dismiss = () => {
         this.props.onDismiss && this.props.onDismiss();
-        this.setState({ clickedOutside: true });
-    }
+        this.setState({ dismissed: true });
+    };
 
     /**
      * Adjust the offset margin of the tooltiptext so it's at the centre of the launcher.
@@ -75,23 +75,28 @@ class Tooltip extends React.Component {
     render() {
         const className = this.props.className ? this.props.className : "";
         const openClass =
-            this.props.startOpen && !this.state.clickedOutside
-                ? "tooltip-open"
-                : "";
+            this.props.startOpen && !this.state.dismissed ? "tooltip-open" : "";
+        const orientationClassName =
+            this.props.orientation === "below"
+                ? "tooltiptext-below"
+                : "tooltiptext-above";
 
         return (
             <div
                 ref={this.rootRef}
-                className={`tooltip ${className} ${openClass}`}
+                className={`tooltip ${className} ${openClass} ${
+                    this.props.dismissed ? "tooltip-dismissed" : ""
+                }`}
             >
                 {/* Caution: if this is ever not the first element be sure to fix adjustOffset */}
                 {this.props.launcher && <this.props.launcher />}
                 <span
-                    className="tooltiptext"
+                    className={`tooltiptext ${orientationClassName} ${this.props
+                        .innerElementClassName || ""}`}
                     ref={this.tooltipTextElementRef}
                     style={{ marginLeft: "-" + this.state.offset + "px" }}
                 >
-                    {this.props.children}
+                    {this.props.children(this.dismiss)}
                 </span>
             </div>
         );
