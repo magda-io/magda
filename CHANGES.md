@@ -1,5 +1,7 @@
 ## 0.0.46
+
 -   Make pagination on mobile responsive.
+-   Remove all starting non word chars from organisation title
 
 ## 0.0.45
 
