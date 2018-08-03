@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: sleuther-broken-link-recrawl
