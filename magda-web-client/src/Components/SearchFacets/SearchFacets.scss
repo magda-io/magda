@@ -94,9 +94,11 @@
         width: 460px;
         max-width: 100vw;
         position: absolute;
-        &.facet-publisher,
-        &.facet-temporal {
+        &.facet-publisher {
             left: 0px;
+        }
+        &.facet-temporal {
+            left: -16px;
         }
 
         &.facet-region {
