@@ -21,6 +21,7 @@ spec:
             imagePullPolicy: IfNotPresent
             name: sleuther-broken-link-recrawl
             command: 
-              - apk add --update curl
-              - curl -X POST http://sleuther-broken-link/v0/recrawl
+              - "/bin/sh"
+              - "-c"
+              - "apk add --update curl && curl -i -X POST http://sleuther-broken-link/recrawl"
           restartPolicy: OnFailure
