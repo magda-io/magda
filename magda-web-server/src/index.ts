@@ -74,6 +74,12 @@ const argv = yargs
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
+    })
+    .option("showFallbackBanner", {
+        describe:
+            "Show a banner that allows people to go back to an older system.",
+        type: "boolean",
+        default: false
     }).argv;
 
 var app = express();
@@ -156,7 +162,8 @@ app.get("/server-config.js", function(req, res) {
                     .segment("v0")
                     .segment("correspondence")
                     .toString()
-        )
+        ),
+        showFallbackBanner: argv.showFallbackBanner
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");

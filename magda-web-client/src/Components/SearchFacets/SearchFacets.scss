@@ -5,10 +5,15 @@
     margin-bottom: 32px;
     flex-direction: row;
     flex-wrap: wrap;
+
+    .facet-group {
+        display: flex;
+    }
     .search-facet {
         margin-right: 8px;
         position: relative;
         width: 45%;
+        margin-bottom: 8px;
         @media (min-width: $medium) {
             width: auto;
         }
@@ -89,16 +94,21 @@
         width: 460px;
         max-width: 100vw;
         position: absolute;
-        &.facet-publisher,
-        &.facet-temporal {
+        &.facet-publisher {
             left: 0px;
         }
-        &.facet-format,
+        &.facet-temporal {
+            left: -16px;
+        }
+
         &.facet-region {
             right: -40px;
         }
         &.facet-region {
             left: 0;
+        }
+        &.facet-format {
+            left: -150px;
         }
     }
 }
