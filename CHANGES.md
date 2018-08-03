@@ -1,5 +1,7 @@
 ## 0.0.46
+
 -   Make pagination on mobile responsive.
+-   Fixed inconsistent case with format
 
 ## 0.0.45
 
