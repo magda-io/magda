@@ -6,7 +6,7 @@ spec:
   concurrencyPolicy: Allow
   schedule: "0 0 14,28 * *"
   failedJobsHistoryLimit: 1
-  successfulJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
   startingDeadlineSeconds: 120
   jobTemplate:
     spec:
