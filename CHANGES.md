@@ -1,4 +1,5 @@
 ## 0.0.46
+-   Make pagination on mobile responsive.
 
 -   Fixed a facet overflow issue on desktop
 
