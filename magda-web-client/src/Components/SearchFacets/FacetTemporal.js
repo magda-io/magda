@@ -75,8 +75,6 @@ class FacetTemporal extends Component {
     }
 
     canApply() {
-        const dateFrom = new Date(this.props.temporalRange[0]);
-        const dateTo = new Date(this.props.temporalRange[1]);
         // we need to check those values are not
         // null
         // undefined
