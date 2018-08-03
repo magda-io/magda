@@ -154,6 +154,10 @@
     display: block;
     padding: 8px 0;
     font-weight: 400;
+
+    .facet-format & {
+        text-transform: uppercase;
+    }
 }
 
 .facet-footer {
