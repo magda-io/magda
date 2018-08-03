@@ -98,7 +98,7 @@ class SearchFacets extends Component {
         return (
             <div className="search-facets-desktop">
                 {facetGroup.map((group, i) => {
-                    if (i == facetGroup.length - 1) {
+                    if (i === facetGroup.length - 1) {
                         return (
                             <div key={i} className="facet-group">
                                 {group.map(facet => this.renderFacet(facet))}
