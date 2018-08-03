@@ -98,12 +98,15 @@
         &.facet-temporal {
             left: 0px;
         }
-        &.facet-format,
+
         &.facet-region {
             right: -40px;
         }
         &.facet-region {
             left: 0;
+        }
+        &.facet-format {
+            left: -150px;
         }
     }
 }

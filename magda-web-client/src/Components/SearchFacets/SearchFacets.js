@@ -97,12 +97,21 @@ class SearchFacets extends Component {
         const facetGroup = partitionWithCache(config.facets, 2);
         return (
             <div className="search-facets-desktop">
-                {facetGroup.map((group, i) => (
-                    <div key={i} className="facet-group">
-                        {group.map(facet => this.renderFacet(facet))}
-                    </div>
-                ))}
-                <ClearAllButtom key={"clear-all-button"} />
+                {facetGroup.map((group, i) => {
+                    if (i == facetGroup.length - 1) {
+                        return (
+                            <div key={i} className="facet-group">
+                                {group.map(facet => this.renderFacet(facet))}
+                                <ClearAllButtom key={"clear-all-button"} />
+                            </div>
+                        );
+                    }
+                    return (
+                        <div key={i} className="facet-group">
+                            {group.map(facet => this.renderFacet(facet))}
+                        </div>
+                    );
+                })}
             </div>
         );
     }
