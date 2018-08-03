@@ -1,6 +1,8 @@
 ## 0.0.46
 -   Make pagination on mobile responsive.
 
+-   Fixed a facet overflow issue on desktop
+
 ## 0.0.45
 
 -   Add config for fallback banner
