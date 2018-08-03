@@ -1,5 +1,7 @@
 ## 0.0.46
+
 -   Make pagination on mobile responsive.
+-   Added cronjob for broken-link-sleuther
 
 ## 0.0.45
 
