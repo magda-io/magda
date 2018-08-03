@@ -1,3 +1,7 @@
+## 0.0.46
+
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+
 ## 0.0.45
 
 -   prevent old content being loaded when navigating through page history
@@ -7,10 +11,6 @@
 -   Fixed a date filter bug that freeze UI on slow internet
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
-
-## 0.0.44
-
--   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
 
 ## 0.0.44
 
