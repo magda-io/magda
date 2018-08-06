@@ -12,6 +12,7 @@ The following people have contributed to Magda:
     -   [Ana Belgun](https://github.com/AnaBelgun)
     -   [Mel Hotchkiss](https://github.com/melaniehotchkiss)
     -   [Jacky Jiang](https://github.com/t83714)
+    -   [Nahid Akbar](https://github.com/nahidakbar)
 -   [Department of the Prime Minister and Cabinet](https://www.dpmc.gov.au/)
     -   [Toby Bellwood](https://github.com/tobybellwood)
 -   [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF)
