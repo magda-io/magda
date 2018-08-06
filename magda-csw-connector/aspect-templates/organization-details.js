@@ -1,3 +1,5 @@
+const cleanOrgTitle = libraries.cleanOrgTitle;
+
 const name = transformer.getNameFromJsonOrganization(organization);
 const jsonpath = libraries.jsonpath;
 const phone = jsonpath.value(
@@ -37,16 +39,6 @@ if (!addrCountry) {
         organization,
         "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._"
     );
-}
-
-function cleanOrgTitle(title) {
-    if (!title) {
-        return title;
-    }
-    if (typeof title !== "string") {
-        title = String(title);
-    }
-    return title.replace(/^\W*/, "");
 }
 
 const data = {

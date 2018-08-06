@@ -1,3 +1,5 @@
+const cleanOrgTitle = libraries.cleanOrgTitle;
+
 let phone = undefined;
 let website = undefined;
 let email = undefined;
@@ -16,16 +18,6 @@ if (organization && organization.extras && organization.extras.length) {
                 break;
         }
     });
-}
-
-function cleanOrgTitle(title) {
-    if (!title) {
-        return title;
-    }
-    if (typeof title !== "string") {
-        title = String(title);
-    }
-    return title.replace(/^\W*/, "");
 }
 
 const data = {
