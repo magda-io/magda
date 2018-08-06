@@ -26,7 +26,7 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
-routes: 
+routes:
   search:
     to: http://search-api/v0
   registry:
@@ -45,6 +45,8 @@ routes:
     auth: true
   feedback:
     to: http://feedback-api/v0
+  contents:
+    to: http://contents-api/v0
   correspondence:
     to: http://correspondence-api/v0/public
 helmet: {}

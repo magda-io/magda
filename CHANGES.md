@@ -1,5 +1,6 @@
 ## 0.0.46
 
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Make pagination on mobile responsive.
 -   Fixed inconsistent case with format
 -   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
