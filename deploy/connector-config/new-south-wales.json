@@ -4,5 +4,5 @@
     "name": "New South Wales Government",
     "sourceUrl": "https://data.nsw.gov.au/data/",
     "pageSize": 100,
-    "schedule": "30 8 */3 * *"
+    "schedule": "20 * * * *"
 }

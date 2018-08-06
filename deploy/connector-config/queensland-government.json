@@ -4,5 +4,5 @@
     "name": "Queensland Government",
     "sourceUrl": "https://data.qld.gov.au/",
     "pageSize": 100,
-    "schedule": "30 9 */3 * *"
+    "schedule": "30 * * * *"
 }
