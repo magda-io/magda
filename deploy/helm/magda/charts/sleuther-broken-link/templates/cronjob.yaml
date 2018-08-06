@@ -17,11 +17,11 @@ spec:
             cron: sleuther-broken-link-recrawl
         spec:
           containers:
-          - image: "dtzar/helm-kubectl"
+          - image: "alpine"
             imagePullPolicy: IfNotPresent
             name: sleuther-broken-link-recrawl
             command: 
               - "/bin/sh"
               - "-c"
-              - "apk add --update curl && curl -i -X POST http://sleuther-broken-link/recrawl"
+              - "apk add --no-cache ca-certificates curl && curl -i -X POST http://sleuther-broken-link/recrawl"
           restartPolicy: OnFailure
