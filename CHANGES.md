@@ -2,6 +2,9 @@
 
 -   Make pagination on mobile responsive.
 -   Fixed inconsistent case with format
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+-   Make pagination on mobile responsive.
+-   Fixed a facet overflow issue on desktop
 
 ## 0.0.45
 
