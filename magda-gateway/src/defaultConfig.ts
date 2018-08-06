@@ -28,6 +28,9 @@ export default {
         },
         feedback: {
             to: "http://localhost:6116/v0"
+        },
+        contents: {
+            to: "http://localhost:6119/v0"
         }
     },
     csp: {
