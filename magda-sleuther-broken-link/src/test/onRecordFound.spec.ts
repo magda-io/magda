@@ -139,7 +139,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      */
     it("Should correctly record link statuses", function() {
         return jsc.assert(
-            jsc.forall(recordArbWithSuccesses, ({ record, successLookup }) => {
+            jsc.forall(recordArbWithSuccesses, function({
+                record,
+                successLookup,
+                disallowHead
+            }) {
                 beforeEachProperty();
 
                 // Tell the FTP server to return success/failure for the various FTP
@@ -170,17 +174,33 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         url: string;
                         success: CheckResult;
                     }) => {
-                        const scope = nock(url).head(
+                        const scope = nock(url);
+
+                        const intercept = scope.head(
                             url.endsWith("/") ? "/" : ""
                         );
 
                         if (success !== "error") {
-                            return scope.reply(
-                                success === "success" ? 200 : 404
-                            );
+                            if (!disallowHead) {
+                                intercept.reply(
+                                    success === "success" ? 200 : 404
+                                );
+                                if (success !== "success") {
+                                    scope
+                                        .get(url.endsWith("/") ? "/" : "")
+                                        .reply(404);
+                                }
+                            } else {
+                                intercept.reply(405);
+                                scope
+                                    .get(url.endsWith("/") ? "/" : "")
+                                    .reply(success === "success" ? 200 : 404);
+                            }
                         } else {
-                            return scope.replyWithError("fail");
+                            intercept.replyWithError("fail");
                         }
+
+                        return scope;
                     }
                 );
 
@@ -432,6 +452,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                                     url.endsWith("/") ? "/" : ""
                                                 )
                                                 .reply(failureCode);
+                                            scope
+                                                .get(
+                                                    url.endsWith("/") ? "/" : ""
+                                                )
+                                                .reply(failureCode);
                                         });
                                         if (
                                             i < allResults.length - 1 ||
@@ -577,6 +602,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             failures.forEach(failureCode => {
                                 scope
                                     .head(uri.path())
+                                    .delay(delayMs)
+                                    .reply(failureCode);
+                                scope
+                                    .get(uri.path())
                                     .delay(delayMs)
                                     .reply(failureCode);
                             });
