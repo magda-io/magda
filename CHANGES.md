@@ -1,5 +1,6 @@
 ## 0.0.46
 
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Make pagination on mobile responsive.
 -   Added cronjob for broken-link-sleuther
 -   Remove all starting non word chars from organisation title

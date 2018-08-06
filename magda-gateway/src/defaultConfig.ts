@@ -31,6 +31,9 @@ export default {
         },
         apidocs: {
             to: "http://localhost:6118"
+        },
+        contents: {
+            to: "http://localhost:6119/v0"
         }
     },
     csp: {

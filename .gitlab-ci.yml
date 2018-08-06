@@ -549,7 +549,7 @@ Deploy Released Tags As Staging:
     - TAG=$(jq -r ".version" lerna.json)
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
 
-Stop Staging: 
+Stop Staging:
   <<: *stopPreview
   stage: deploy-staging
   only:
