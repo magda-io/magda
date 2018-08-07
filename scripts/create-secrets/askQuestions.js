@@ -23,6 +23,14 @@ const questions = [
     },
     {
         type: "list",
+        name: "local-cluster-type",
+        message:
+            "Which local k8s cluster environment you are going to connect to?",
+        choices: ["minikube", "docker"],
+        when: onlyWhenQuestion("deploy-to-google-cloud", false)
+    },
+    {
+        type: "list",
         name: "use-cloudsql-instance-credentials",
         message: "Do you use google cloud SQL service as your database?",
         choices: [
