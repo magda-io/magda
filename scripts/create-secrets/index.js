@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-//import App from "./app";
-
 const askQuestions = require("./askQuestions");
 const clear = require("clear");
 const chalk = require("chalk");
@@ -11,6 +9,7 @@ const pkg = require("../package.json");
 const config = new Configstore("magda-create-secrets", {});
 
 const program = require("commander");
+const inquirer = require("inquirer");
 
 program
     .version(pkg.version)

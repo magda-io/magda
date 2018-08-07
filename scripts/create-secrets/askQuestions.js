@@ -1,6 +1,5 @@
 const inquirer = require("inquirer");
 const trim = require("lodash/trim");
-//import fse from "fs-extra";
 const fse = require("fs-extra");
 const fs = require("fs");
 const path = require("path");
@@ -174,6 +173,30 @@ const questions = [
         message: "Please provide facebook-client-secret for oAuth SSO:",
         validate: input =>
             trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        name: "get-namespace-from-env",
+        message:
+            "Do you want to use environment variable ($CI_COMMIT_REF_SLUG) to determine which k8s namespace the secrets should be create into or input manually now?",
+        choices: [
+            {
+                name: "YES (Determin k8s namespace by $CI_JOB_TOKEN at runtime",
+                value: true
+            },
+            {
+                name: "NO (input manually now)",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "cluster-namespace",
+        message:
+            "What's the namespace you want to create secrets into (input `default` if you want to use the `default` namespace)?",
+        validate: input =>
+            trim(input).length ? true : "Cluster namespace cannot be empty!"
     }
 ];
 
@@ -253,6 +276,26 @@ function askQuestions(config) {
         .then(function(answers) {
             config.clear();
             config.set(answers);
+        })
+        .then(function() {
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "deploy-now",
+                    message:
+                        "Do you want to connect to kubernetes cluster to create secrets now?",
+                    choices: [
+                        {
+                            name: "YES (Create Secrets in Cluster now)",
+                            value: true
+                        },
+                        {
+                            name: "NO (Exit but all settings have been saved)",
+                            value: false
+                        }
+                    ]
+                }
+            ]);
         });
 }
 
