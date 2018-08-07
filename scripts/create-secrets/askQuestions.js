@@ -157,7 +157,7 @@ const questions = [
         type: "input",
         name: "regcred-password",
         message: "Please provide password for Gitlab docker registry:",
-        when: onlyWhenQuestion("use-regcred-password-from-env", true),
+        when: onlyWhenQuestion("use-regcred-password-from-env", false),
         validate: input =>
             trim(input).length ? true : "password cannot be empty!"
     },
@@ -222,7 +222,7 @@ function pathFilterByExt(ext) {
 function getJsonFileContent(filePath) {
     filePath = trim(filePath);
     return {
-        path: filePath,
+        value: filePath,
         data: fse.readJsonSync(filePath, {
             encoding: "utf-8"
         })
@@ -230,7 +230,19 @@ function getJsonFileContent(filePath) {
 }
 
 function prefileQuestions(questions, config) {
-    return questions;
+    return questions.map(question => {
+        let configValue = config.get(question.name);
+        const type = typeof configValue;
+        if (type === "undefined") return question;
+        if (type === "object") {
+            if (typeof configValue.value === "undefined") return question;
+            else configValue = configValue.value;
+        }
+
+        return Object.assign({}, question, {
+            default: configValue
+        });
+    });
 }
 
 const inquirerFuzzyPath = require("./inquirer-fuzzy-path");
