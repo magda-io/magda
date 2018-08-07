@@ -9,7 +9,8 @@
     "generate-connector-jobs": "generate-connector-jobs.js",
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
     "create-pod-and-forward": "create-pod-and-forward.js",
-    "retag-and-push": "retag-and-push.js"
+    "retag-and-push": "retag-and-push.js",
+    "create-secrets": "create-secrets/index.js"
   },
   "devDependencies": {
     "fs-extra": "^2.1.2",
@@ -22,7 +23,12 @@
     "ts-node": "^3.0.4",
     "tsconfig-paths": "^2.2.0",
     "typescript": "~2.5.0",
-    "yargs": "^8.0.1"
+    "yargs": "^8.0.1",
+    "chalk": "^2.4.1",
+    "clear": "^0.1.0",
+    "commander": "^2.17.0",
+    "configstore": "^4.0.0",
+    "inquirer": "^6.0.0"
   },
   "magda": {
     "language": "javascript",
