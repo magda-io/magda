@@ -141,6 +141,11 @@
       "target": "http://localhost:6107/"
     }
   },
+  "browserslist": [
+    "last 2 versions",
+    "ie 11",
+    "chrome 44"
+  ],
   "pancake": {
     "auto-save": true,
     "plugins": true,
