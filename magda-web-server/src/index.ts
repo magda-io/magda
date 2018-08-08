@@ -225,8 +225,19 @@ if (argv.devProxy) {
     });
 }
 
+const robotsTxt = `User-agent: *
+Crawl-delay: 100
+Disallow: /auth
+Disallow: /search
+
+Sitemap: ${argv.baseExternalUrl}sitemap.xml
+`;
+
+app.use("/robots.txt", (_, res) => {
+    res.status(200).send(robotsTxt);
+});
+
 app.use(
-    "/sitemap",
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
