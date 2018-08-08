@@ -1,6 +1,7 @@
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
+-   Added cronjob for broken-link-sleuther
 -   Remove all starting non word chars from organisation title
 -   Make pagination on mobile responsive.
 -   Fixed inconsistent case with format
