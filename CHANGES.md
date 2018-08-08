@@ -6,16 +6,11 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
-
-## 0.0.45
-
-
 -   added mechanism to produce api documentation
 
 ## 0.0.45
 
 -   Add config for fallback banner
--   added mechanism to produce api documentation
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
 -   Fixed inconsistent breakpoints
