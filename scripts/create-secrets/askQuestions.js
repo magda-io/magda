@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const moment = require("moment");
 const chalk = require("chalk");
+const Pwgen = require("pwgen");
 
 const questions = [
     {
@@ -215,6 +216,49 @@ const questions = [
         when: onlyWhenQuestion("use-oauth-secrets-facebook", true),
         validate: input =>
             trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        name: "manual-db-passwords",
+        message:
+            "Do you want to manually input the password used for databases?",
+        choices: [
+            {
+                name: "NO (A random password will be generated for you now)",
+                value: false
+            },
+            {
+                name: "YES",
+                value: true
+            }
+        ],
+        filter: function(input) {
+            const r = {
+                answer: input
+            };
+            if (input === false) {
+                const pwgen = new Pwgen();
+                pwgen.includeCapitalLetter = true;
+                pwgen.includeNumber = true;
+                pwgen.maxLength = 16;
+                r["password"] = pwgen.generate();
+                console.log(
+                    chalk.yellow(
+                        "The generated password is: " +
+                            chalk.green.underline(r["password"])
+                    )
+                );
+            }
+            return r;
+        }
+    },
+    {
+        type: "input",
+        name: "db-passwords",
+        message: "Please provide the password used for databases:",
+        when: onlyWhenQuestion("manual-db-passwords", true),
+        validate: input =>
+            trim(input).length ? true : "password cannot be empty!"
     },
     {
         type: "list",

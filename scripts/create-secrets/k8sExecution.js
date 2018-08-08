@@ -89,7 +89,7 @@ function k8sExecution(config) {
         (function() {
             const data = {};
             dbPasswordNames.forEach(key => {
-                data[key] = pwgen.generate();
+                data[key] = configData["db-passwords"];
             });
             createSecret(namespace, "db-passwords", data);
         })();
@@ -167,17 +167,26 @@ function overrideSettingWithEnvVars(configData) {
     });
     if (
         configData["use-regcred-password-from-env"] === true &&
-        env[settingNameToEnvVarName("CI_JOB_TOKEN")]
+        env["CI_JOB_TOKEN"] &&
+        !env[settingNameToEnvVarName("regcred-password")]
     ) {
-        configData["regcred-password"] =
-            env[settingNameToEnvVarName("CI_JOB_TOKEN")];
+        configData["regcred-password"] = env["CI_JOB_TOKEN"];
     }
     if (
         configData["get-namespace-from-env"] === true &&
-        env[settingNameToEnvVarName("CI_COMMIT_REF_SLUG")]
+        env["CI_COMMIT_REF_SLUG"] &&
+        !env[settingNameToEnvVarName("cluster-namespace")]
     ) {
-        configData["cluster-namespace"] =
-            env[settingNameToEnvVarName("CI_COMMIT_REF_SLUG")];
+        configData["cluster-namespace"] = env["CI_COMMIT_REF_SLUG"];
+    }
+    if (
+        typeof configData["manual-db-passwords"] === "object" &&
+        configData["manual-db-passwords"]["answer"] === false &&
+        configData["manual-db-passwords"]["password"] &&
+        !env[settingNameToEnvVarName("db-passwords")]
+    ) {
+        configData["db-passwords"] =
+            configData["manual-db-passwords"]["password"];
     }
     return configData;
 }
