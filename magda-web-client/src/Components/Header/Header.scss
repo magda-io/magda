@@ -158,7 +158,7 @@
             a {
                 line-height: 4.5rem;
                 margin: 0;
-                border-left: 10px solid $AU-colordark-background;
+                border-left: 10px solid transparent;
                 display: block;
                 padding: 0;
                 padding-left: 16px;
@@ -173,6 +173,7 @@
                 &.active {
                     background: #f4f3f5;
                     font-weight: bold;
+                    border-color: $AU-colordark-background;
                 }
                 span {
                     border-bottom: 1px solid $AU-color-foreground-action;
