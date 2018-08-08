@@ -391,6 +391,29 @@ function askStartSecretsCreationWithoutQuestions(config) {
         ])
         .then(answers => answers["deploy-now"]);
 }
+
+function askIfCreateNamespace(namespace) {
+    return inquirer
+        .prompt([
+            {
+                type: "list",
+                name: "if-create-namespace",
+                message: `Do you want to create namespace \`${namespace}\` now?`,
+                choices: [
+                    {
+                        name: "YES",
+                        value: true
+                    },
+                    {
+                        name: "NO",
+                        value: false
+                    }
+                ]
+            }
+        ])
+        .then(answers => answers["if-create-namespace"]);
+}
+
 function askQuestions(config) {
     return new Promise(function(resolve, reject) {
         const creationTime = config.get("creation-time");
@@ -427,5 +450,7 @@ function settingNameToEnvVarName(settingName) {
 module.exports = {
     askQuestions,
     getEnvVarInfo,
+    settingNameToEnvVarName,
+    askIfCreateNamespace,
     settingNameToEnvVarName
 };

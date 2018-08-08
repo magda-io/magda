@@ -52,8 +52,24 @@ if (programOptions.print) {
     console.log(chalk.green(`${appName} tool version: ${pkg.version}`));
     askQuestions(config).then(function(shouldCreateSecrets) {
         if (shouldCreateSecrets) {
-            k8sExecution(config);
+            k8sExecution(config).then(
+                function() {
+                    console.log(
+                        chalk.green(
+                            "All required secrets have been successfully created!"
+                        )
+                    );
+                    process.exit();
+                },
+                function(error) {
+                    console.log(
+                        chalk.red(`Failed to create required secrets: ${error}`)
+                    );
+                    process.exit();
+                }
+            );
+        } else {
+            process.exit();
         }
-        process.exit();
     });
 }

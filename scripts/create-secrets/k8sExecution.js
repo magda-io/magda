@@ -1,16 +1,135 @@
 const childProcess = require("child_process");
 const process = require("process");
 const chalk = require("chalk");
-const { getEnvVarInfo } = require("./askQuestions");
+const {
+    getEnvVarInfo,
+    askIfCreateNamespace,
+    settingNameToEnvVarName
+} = require("./askQuestions");
+const Base64 = require("js-base64").Base64;
+const Pwgen = require("pwgen");
+
+const dbPasswordNames = [
+    "authorization-db",
+    "authorization-db-client",
+    "combined-db",
+    "combined-db-client",
+    "discussions-db",
+    "discussions-db-client",
+    "registry-db",
+    "registry-db-client",
+    "session-db",
+    "session-db-client"
+];
+
+let env = process.env;
 
 function k8sExecution(config) {
-    const env = getEnvByClusterType(config);
+    env = getEnvByClusterType(config);
     let configData = Object.assign({}, config.all);
     const ifAllowEnvVarOverride = configData["allow-env-override-settings"];
     if (ifAllowEnvVarOverride) {
-        configData = overrideSettingWithEnvVars(configData, env);
+        configData = overrideSettingWithEnvVars(configData);
     }
-    validKubectl(env);
+    validKubectl();
+    let p = Promise.resolve().then(function() {
+        configData["cluster-namespace"] = trim(configData["cluster-namespace"]);
+        if (!configData["cluster-namespace"])
+            throw new Error(
+                "Cluster namespace cannot be empty! \n " +
+                    "If you've set cluster namespace, make sure it's not overrided by env variable."
+            );
+    });
+    if (!checkNamespace(configData["cluster-namespace"])) {
+        p = p.then(askIfCreateNamespace).then(function(ifCreate) {
+            if (!ifCreate) {
+                console.log(
+                    chalk.yellow(
+                        `You need to create namespace \`${
+                            configData["cluster-namespace"]
+                        }\` before try again.`
+                    )
+                );
+                process.exit();
+            } else {
+                createNamespace();
+            }
+        });
+    }
+    return p.then(function() {
+        const pwgen = new Pwgen();
+
+        pwgen.includeCapitalLetter = true;
+        pwgen.includeNumber = true;
+        pwgen.maxLength = 16;
+
+        const namespace = configData["cluster-namespace"];
+        if (configData["use-cloudsql-instance-credentials"] === true) {
+            createFileContentSecret(
+                namespace,
+                "cloudsql-instance-credentials",
+                "credentials.json",
+                configData["cloudsql-instance-credentials"]
+            );
+        }
+        if (configData["use-storage-account-credentials"] === true) {
+            createFileContentSecret(
+                namespace,
+                "storage-account-credentials",
+                "db-service-account-private-key.json",
+                configData["use-storage-account-credentials"]
+            );
+        }
+        if (configData["use-smtp-secret"] === true) {
+            createSecret(namespace, "smtp-secret", {
+                username: configData["smtp-secret-username"],
+                password: configData["smtp-secret-password"]
+            });
+        }
+        (function() {
+            const data = {};
+            dbPasswordNames.forEach(key => {
+                data[key] = pwgen.generate();
+            });
+            createSecret(namespace, "db-passwords", data);
+        })();
+        if (configData["use-regcred"] === true) {
+            /**
+             * always use `regcred-password`
+             * `use-regcred-password-from-env` has been taken care seperately
+             */
+            createDockerRegistrySecret(
+                namespace,
+                "regcred",
+                configData["regcred-password"],
+                "registry.gitlab.com",
+                "gitlab-ci-token",
+                configData["regcred-email"]
+            );
+        }
+        if (
+            configData["use-oauth-secrets-google"] === true ||
+            configData["use-oauth-secrets-facebook"] === true
+        ) {
+            const data = {};
+            if (configData["use-oauth-secrets-google"]) {
+                data["google-client-secret"] =
+                    configData["oauth-secrets-google"];
+            }
+            if (configData["use-oauth-secrets-facebook"]) {
+                data["facebook-client-secret"] =
+                    configData["oauth-secrets-facebook"];
+            }
+            createSecret(namespace, "oauth-secrets", data);
+        }
+
+        (function() {
+            const data = {};
+            data["jwt-secret"] = pwgen.generate();
+            data["session-secret"] = pwgen.generate();
+            createSecret(namespace, "auth-secrets", data);
+        })();
+    });
 }
 
 function getEnvByClusterType(config) {
@@ -40,16 +159,30 @@ function getEnvByClusterType(config) {
     return env;
 }
 
-function overrideSettingWithEnvVars(configData, env) {
+function overrideSettingWithEnvVars(configData) {
     getEnvVarInfo().forEach(item => {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
         configData[item.settingName] = envVal;
     });
+    if (
+        configData["use-regcred-password-from-env"] === true &&
+        env[settingNameToEnvVarName("CI_JOB_TOKEN")]
+    ) {
+        configData["regcred-password"] =
+            env[settingNameToEnvVarName("CI_JOB_TOKEN")];
+    }
+    if (
+        configData["get-namespace-from-env"] === true &&
+        env[settingNameToEnvVarName("CI_COMMIT_REF_SLUG")]
+    ) {
+        configData["cluster-namespace"] =
+            env[settingNameToEnvVarName("CI_COMMIT_REF_SLUG")];
+    }
     return configData;
 }
 
-function validKubectl(env) {
+function validKubectl() {
     try {
         childProcess.execSync("kubectl", {
             stdio: "ignore",
@@ -64,6 +197,102 @@ function validKubectl(env) {
         );
         process.exit();
     }
+}
+
+function checkNamespace(namespace) {
+    try {
+        childProcess.execSync(`kubectl get namespace ${namespace}`, {
+            stdio: "ignore",
+            env: env
+        });
+        return true;
+    } catch (e) {
+        console.log(
+            chalk.red(
+                `Failed to get k8s namespace ${namespace} or namespace has not been created yet: ${e}`
+            )
+        );
+        return false;
+    }
+}
+
+function createNamespace(namespace) {
+    childProcess.execSync(`kubectl create namespace ${namespace}`, {
+        stdio: "inherit",
+        env: env
+    });
+}
+
+function getTplObj(name, namespace) {
+    return {
+        apiVersion: "v1",
+        kind: "Secret",
+        type: "Opaque",
+        metadata: {
+            name,
+            namespace,
+            annotations: {},
+            creationTimestamp: null
+        }
+    };
+}
+
+function createFileContentSecret(namespace, secretName, fileName, content) {
+    createSecret(namespace, secretName, {
+        [fileName]: content
+    });
+}
+
+function createDockerRegistrySecret(
+    namespace,
+    secretName,
+    password,
+    dockerServer,
+    username,
+    email
+) {
+    const dockerConfig = {
+        auths: {
+            [dockerServer]: {
+                username: username,
+                password: password,
+                email: email,
+                auth: Base64.encode(`${username}:${password}`)
+            }
+        }
+    };
+
+    const data = {};
+    data[".dockerconfigjson"] = JSON.stringify(dockerConfig);
+    createSecret(
+        namespace,
+        secretName,
+        data,
+        true,
+        "kubernetes.io/dockerconfigjson"
+    );
+}
+
+function createSecret(namespace, secretName, data, encodeAllDataFields, type) {
+    console.log(
+        chalk.yellow(
+            `Creating secret \`${secretName}\` in namespace \`${namespace}\`...`
+        )
+    );
+    const configObj = getTplObj(secretName, namespace);
+    configObj.data = data;
+    if (type) configObj.type = type;
+    if (encodeAllDataFields !== false) {
+        Object.keys(configObj.data).forEach(key => {
+            configObj.data[key] = Base64.encode(configObj.data[key]);
+        });
+    }
+    const configContent = JSON.stringify(configObj);
+    childProcess.execSync(`kubectl apply --namespace ${namespace} -f -`, {
+        input: configContent,
+        stdio: "inherit",
+        env: env
+    });
 }
 
 module.exports = k8sExecution;
