@@ -1,4 +1,5 @@
 const jsonpath = libraries.jsonpath;
+const cleanOrgTitle = libraries.cleanOrgTitle;
 
 let phone = undefined;
 let website = undefined;
@@ -20,7 +21,7 @@ let addrCountry = undefined;
 
 const data = {
     name: organization.name,
-    title: organization.name,
+    title: cleanOrgTitle(organization.name),
     description: undefined,
     imageUrl: undefined,
     phone,
