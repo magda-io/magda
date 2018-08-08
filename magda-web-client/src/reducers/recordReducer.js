@@ -19,7 +19,7 @@ const initialData = {
 type RecordResult = {
     datasetIsFetching: boolean,
     distributionIsFetching: boolean,
-    datasetFetchError: ?number,
+    datasetFetchError: ?Object,
     distributionFetchError: ?number,
     dataset: ?ParsedDataset,
     distribution: ?ParsedDistribution

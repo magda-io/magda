@@ -3,6 +3,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
+import defined from "../helpers/defined";
 import type { RecordAction, RawDataset } from "../helpers/record";
 import type { FetchError } from "../types";
 
@@ -79,10 +80,19 @@ export function fetchDatasetFromRegistry(id: string): Function {
         }
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText does not get set in Chrome, therefore we set it manually here
+                    if (
+                        response.status === 404 &&
+                        defined(statusText) &&
+                        statusText.trim().length === 0
+                    ) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then((json: Object) => {
                 if (json.records) {
@@ -116,10 +126,19 @@ export function fetchDistributionFromRegistry(id: string): Object {
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText does not get set in Chrome, therefore we set it manually here
+                    if (
+                        response.status === 404 &&
+                        defined(statusText) &&
+                        statusText.trim().length === 0
+                    ) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then((json: Object) => {
                 return dispatch(receiveDistribution(json));

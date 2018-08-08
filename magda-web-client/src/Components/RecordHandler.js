@@ -298,7 +298,7 @@ class RecordHandler extends React.Component {
                 if (this.props.datasetFetchError.detail === "Not Found") {
                     return (
                         <Redirect
-                            to={`/search?notfound=true&q="${encodeURI(
+                            to={`/search?&q="${encodeURI(
                                 this.props.match.params.datasetId
                             )}"`}
                         />
