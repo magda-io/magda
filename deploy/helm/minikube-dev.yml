@@ -11,6 +11,7 @@ global:
   useCombinedDb: true
 
 gateway:
+  ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"
