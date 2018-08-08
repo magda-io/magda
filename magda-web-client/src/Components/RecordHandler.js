@@ -7,7 +7,8 @@ import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
-    fetchDistributionFromRegistry
+    fetchDistributionFromRegistry,
+    resetFetchRecord
 } from "../actions/recordActions";
 import { config } from "../config";
 import defined from "../helpers/defined";
@@ -73,6 +74,11 @@ class RecordHandler extends React.Component {
         }
 
         this.updateGAEvent(props);
+    }
+
+    componentWillUnmount() {
+        // reset error state to prevent redirect loop rising from the "Not Found" error
+        this.props.resetFetchRecord();
     }
 
     fetchDistribution(props) {
@@ -298,7 +304,7 @@ class RecordHandler extends React.Component {
                 if (this.props.datasetFetchError.detail === "Not Found") {
                     return (
                         <Redirect
-                            to={`/search?&q="${encodeURI(
+                            to={`/search?notfound=true&q="${encodeURI(
                                 this.props.match.params.datasetId
                             )}"`}
                         />
@@ -520,7 +526,8 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             fetchDataset: fetchDatasetFromRegistry,
-            fetchDistribution: fetchDistributionFromRegistry
+            fetchDistribution: fetchDistributionFromRegistry,
+            resetFetchRecord: resetFetchRecord
         },
         dispatch
     );

@@ -49,6 +49,12 @@ export function requestDistributionError(error: FetchError): RecordAction {
     };
 }
 
+export function resetFetchRecord() {
+    return {
+        type: actionTypes.RESET_FETCH_RECORD
+    };
+}
+
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
@@ -82,12 +88,8 @@ export function fetchDatasetFromRegistry(id: string): Function {
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;
-                    // response.statusText does not get set in Chrome, therefore we set it manually here
-                    if (
-                        response.status === 404 &&
-                        defined(statusText) &&
-                        statusText.trim().length === 0
-                    ) {
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
                         statusText = "Not Found";
                     }
                     throw Error(statusText);
@@ -128,12 +130,8 @@ export function fetchDistributionFromRegistry(id: string): Object {
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;
-                    // response.statusText does not get set in Chrome, therefore we set it manually here
-                    if (
-                        response.status === 404 &&
-                        defined(statusText) &&
-                        statusText.trim().length === 0
-                    ) {
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
                         statusText = "Not Found";
                     }
                     throw Error(statusText);

@@ -56,6 +56,8 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
                 distributionIsFetching: false,
                 distributionFetchError: action.error
             });
+        case "RESET_FETCH_RECORD":
+            return initialData;
         default:
             return state;
     }
