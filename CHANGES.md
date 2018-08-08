@@ -1,6 +1,8 @@
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
+-   Remove all starting non word chars from organisation title
+-   Make pagination on mobile responsive.
 -   Fixed inconsistent case with format
 -   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
 -   Make pagination on mobile responsive.
