@@ -6,6 +6,7 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 
 ## 0.0.45
 

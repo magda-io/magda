@@ -17,7 +17,7 @@ function PublisherSummary(props) {
             </h2>
             <div className="publisher-meta">
                 <Link
-                    to={`/search?publisher=${encodeURIComponent(
+                    to={`/search?organisation=${encodeURIComponent(
                         props.publisher.name
                     )}`}
                 >
