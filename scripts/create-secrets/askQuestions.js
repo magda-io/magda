@@ -376,8 +376,8 @@ function askQuestions(config) {
                     askClosingQuestions.bind(null, config)
                 );
             }
-        });
-    }).then(answer => resolve(answer));
+        }).then(answer => resolve(answer));
+    });
 }
 
 function getEnvVarInfo() {
