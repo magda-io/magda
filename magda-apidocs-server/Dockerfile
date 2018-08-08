@@ -1,3 +1,3 @@
 FROM nginx:alpine
-COPY default.conf /etc/nginx/conf.d/default.conf
-COPY build /usr/share/nginx/html/
+COPY component/default.conf /etc/nginx/conf.d/default.conf
+COPY component/build /usr/share/nginx/html/
