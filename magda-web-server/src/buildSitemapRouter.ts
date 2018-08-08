@@ -33,7 +33,7 @@ export default function buildSitemapRouter({
                                 URI.joinPaths(
                                     baseExternalUrl,
                                     "sitemap/dataset/afterToken",
-                                    token.toString()
+                                    token.toString() + ".xml"
                                 ).href()
                             )
                             .href();
@@ -46,7 +46,7 @@ export default function buildSitemapRouter({
                                 .path(
                                     URI.joinPaths(
                                         baseExternalUrl,
-                                        "sitemap/main"
+                                        "sitemap/main.xml"
                                     ).href()
                                 )
                                 .href()
