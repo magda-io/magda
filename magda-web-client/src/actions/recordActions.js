@@ -3,7 +3,6 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import defined from "../helpers/defined";
 import type { RecordAction, RawDataset } from "../helpers/record";
 import type { FetchError } from "../types";
 
