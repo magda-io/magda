@@ -171,16 +171,48 @@ const questions = [
             trim(input).length ? true : "password cannot be empty!"
     },
     {
+        type: "list",
+        name: "use-oauth-secrets-google",
+        message: "Do you want to create google-client-secret for oAuth SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
         type: "input",
         name: "oauth-secrets-google",
-        message: "Please provide google-client-secret for oAuth SSO:",
+        message: "Please provide google api access key for oAuth SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-google", true),
         validate: input =>
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
+        type: "list",
+        name: "use-oauth-secrets-facebook",
+        message: "Do you want to create facebook-client-secret for oAuth SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
         type: "input",
         name: "oauth-secrets-facebook",
-        message: "Please provide facebook-client-secret for oAuth SSO:",
+        message: "Please provide facebook api access key for oAuth SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-facebook", true),
         validate: input =>
             trim(input).length ? true : "secret cannot be empty!"
     },
