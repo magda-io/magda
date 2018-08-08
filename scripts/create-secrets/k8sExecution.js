@@ -1,8 +1,14 @@
 const childProcess = require("child_process");
 const process = require("process");
+const { getEnvVarInfo } = require("./askQuestions");
 
 function k8sExecution(config) {
     const env = getEnvByClusterType(config);
+    let configData = Object.assign({}, config.all);
+    const ifAllowEnvVarOverride = configData["allow-env-override-settings"];
+    if (ifAllowEnvVarOverride) {
+        configData = overrideSettingWithEnvVars(configData, env);
+    }
     console.log(process.env);
 }
 
@@ -31,6 +37,15 @@ function getEnvByClusterType(config) {
 
     const env = Object.assign({}, process.env, dockerEnv);
     return env;
+}
+
+function overrideSettingWithEnvVars(configData, env) {
+    getEnvVarInfo().forEach(item => {
+        const envVal = env[item.name];
+        if (typeof envVal === "undefined") return;
+        configData[item.settingName] = envVal;
+    });
+    return configData;
 }
 
 module.exports = k8sExecution;

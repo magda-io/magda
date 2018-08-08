@@ -383,6 +383,7 @@ function askQuestions(config) {
 function getEnvVarInfo() {
     return questions.map(item => ({
         name: settingNameToEnvVarName(item.name),
+        settingName: item.name,
         description: item.message
     }));
 }
