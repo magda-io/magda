@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web
+  name: apidocs-server
 spec:
   ports:
   - name: http
@@ -9,7 +9,7 @@ spec:
     targetPort: 80
 {{- if .Values.global.exposeNodePorts }}
     nodePort: 30118
+  type: NodePort
 {{- end }}
-  type: {{- if .Values.global.exposeNodePorts}} "NodePort" {{- else }} {{ .Values.service.type | default "ClusterIP" }} {{- end }}
   selector:
-    service: web
+    service: apidocs-server

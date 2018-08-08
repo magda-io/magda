@@ -19,12 +19,12 @@
   "config": {
     "docker": {
       "include": "default.conf build"
-    },
-    "magda": {
-      "language": "javascript",
-      "categories": {
-        "ui": true
-      }
+    }
+  },
+  "magda": {
+    "language": "javascript",
+    "categories": {
+      "ui": true
     }
   }
 }
