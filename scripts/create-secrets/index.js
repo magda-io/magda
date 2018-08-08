@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-const askQuestions = require("./askQuestions");
+const { askQuestions, getEnvVarInfo } = require("./askQuestions");
+const k8sExecution = require("./k8sExecution");
 const clear = require("clear");
 const chalk = require("chalk");
 const Configstore = require("configstore");
@@ -9,11 +10,10 @@ const pkg = require("../package.json");
 const config = new Configstore("magda-create-secrets", {});
 
 const program = require("commander");
-const inquirer = require("inquirer");
 
 program
     .version(pkg.version)
-    .usage("create-secrets [options]")
+    .usage("[options]")
     .description(`A tool for magda k8s secrets setup. Version: ${pkg.version}`)
     .option(
         "-E, --execute [configFilePath]",
@@ -22,8 +22,19 @@ program
             `either \`$XDG_CONFIG_HOME/configstore/${appName}.json\` or \`~/.config/configstore/${appName}.json\``
     )
     .option("-P, --print", "Print previously saved local config data to stdout")
-    .option("-D, --delete", "Delete previously saved local config data")
-    .parse(process.argv);
+    .option("-D, --delete", "Delete previously saved local config data");
+
+program.on("--help", function() {
+    const envInfo = getEnvVarInfo();
+    console.log("  Available Setting ENV Variables:");
+    console.log("");
+    envInfo.forEach(item => {
+        console.log(`    ${item.name} : ${item.description}`);
+    });
+    console.log("");
+});
+
+program.parse(process.argv);
 
 const programOptions = program.opts();
 
@@ -39,9 +50,10 @@ if (programOptions.print) {
     clear();
     console.log("\n");
     console.log(chalk.green(`${appName} tool version: ${pkg.version}`));
-    askQuestions(config).then(function() {
+    askQuestions(config).then(function(shouldCreateSecrets) {
+        if (shouldCreateSecrets) {
+            k8sExecution(config);
+        }
         process.exit();
     });
-    //const app = new App();
-    //app.run();
 }

@@ -1,8 +1,9 @@
 const childProcess = require("child_process");
 const process = require("process");
 
-export function k8sExecution(config) {
+function k8sExecution(config) {
     const env = getEnvByClusterType(config);
+    console.log(process.env);
 }
 
 function getEnvByClusterType(config) {
@@ -31,3 +32,5 @@ function getEnvByClusterType(config) {
     const env = Object.assign({}, process.env, dockerEnv);
     return env;
 }
+
+module.exports = k8sExecution;

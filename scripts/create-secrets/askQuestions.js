@@ -3,6 +3,8 @@ const trim = require("lodash/trim");
 const fse = require("fs-extra");
 const fs = require("fs");
 const path = require("path");
+const moment = require("moment");
+const chalk = require("chalk");
 
 const questions = [
     {
@@ -189,7 +191,8 @@ const questions = [
             "Do you want to use environment variable ($CI_COMMIT_REF_SLUG) to determine which k8s namespace the secrets should be create into or input manually now?",
         choices: [
             {
-                name: "YES (Determin k8s namespace by $CI_JOB_TOKEN at runtime",
+                name:
+                    "YES (Determin k8s namespace by $CI_JOB_TOKEN at runtime)",
                 value: true
             },
             {
@@ -205,6 +208,22 @@ const questions = [
             "What's the namespace you want to create secrets into (input `default` if you want to use the `default` namespace)?",
         validate: input =>
             trim(input).length ? true : "Cluster namespace cannot be empty!"
+    },
+    {
+        type: "list",
+        name: "allow-env-override-settings",
+        message:
+            "Do you want to allow environment variables (see --help for full list) to override current settings at runtime?",
+        choices: [
+            {
+                name: "YES (Any environment variable can overide my settings)",
+                value: true
+            },
+            {
+                name: "NO (No settings will be override)",
+                value: false
+            }
+        ]
     }
 ];
 
@@ -278,33 +297,102 @@ function prefileQuestions(questions, config) {
 
 const inquirerFuzzyPath = require("./inquirer-fuzzy-path");
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
-function askQuestions(config) {
+function askSettingQuestions(config) {
     return inquirer
         .prompt(prefileQuestions(questions, config))
         .then(function(answers) {
             config.clear();
             config.set(answers);
-        })
-        .then(function() {
-            return inquirer.prompt([
-                {
-                    type: "list",
-                    name: "deploy-now",
-                    message:
-                        "Do you want to connect to kubernetes cluster to create secrets now?",
-                    choices: [
-                        {
-                            name: "YES (Create Secrets in Cluster now)",
-                            value: true
-                        },
-                        {
-                            name: "NO (Exit but all settings have been saved)",
-                            value: false
-                        }
-                    ]
-                }
-            ]);
+            config.set("creation-time", new Date().toISOString());
         });
 }
+function askClosingQuestions(config) {
+    return inquirer
+        .prompt([
+            {
+                type: "list",
+                name: "deploy-now",
+                message:
+                    "Do you want to connect to kubernetes cluster to create secrets now?",
+                choices: [
+                    {
+                        name: "YES (Create Secrets in Cluster now)",
+                        value: true
+                    },
+                    {
+                        name: "NO (Exit but all settings have been saved)",
+                        value: false
+                    }
+                ]
+            }
+        ])
+        .then(answers => answers["deploy-now"]);
+}
+function askStartSecretsCreationWithoutQuestions(config) {
+    const creationTime = new Date(config.get("creation-time"));
+    console.log(
+        chalk.yellow(
+            `Found previous saved config (${moment(creationTime).format(
+                "MMMM Do YYYY, h:mm:ss a"
+            )}).`
+        )
+    );
+    return inquirer
+        .prompt([
+            {
+                type: "list",
+                name: "deploy-now",
+                message:
+                    "Do you want to connect to kubernetes cluster to create secrets without going through any questions?",
+                choices: [
+                    {
+                        name:
+                            "YES (Create Secrets in Cluster using existing config now)",
+                        value: true
+                    },
+                    {
+                        name: "NO (Going through all questions)",
+                        value: false
+                    }
+                ]
+            }
+        ])
+        .then(answers => answers["deploy-now"]);
+}
+function askQuestions(config) {
+    return new Promise(function(resolve, reject) {
+        const creationTime = config.get("creation-time");
+        let p;
+        if (typeof creationTime !== "undefined") {
+            p = askStartSecretsCreationWithoutQuestions(config);
+        } else {
+            p = Promise.resolve(false);
+        }
+        p.then(ifGoCreatioin => {
+            if (ifGoCreatioin) {
+                return true;
+            } else {
+                return askSettingQuestions(config).then(
+                    askClosingQuestions.bind(null, config)
+                );
+            }
+        });
+    }).then(answer => resolve(answer));
+}
 
-module.exports = askQuestions;
+function getEnvVarInfo() {
+    return questions.map(item => ({
+        name: settingNameToEnvVarName(item.name),
+        description: item.message
+    }));
+}
+
+function settingNameToEnvVarName(settingName) {
+    return settingName.replace(/\-/g, "_").toUpperCase();
+}
+
+module.exports = {
+    askQuestions,
+    getEnvVarInfo,
+    settingNameToEnvVarName
+};
