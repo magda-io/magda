@@ -1,4 +1,5 @@
 import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import cleanOrgTitle from "@magda/typescript-common/dist/util/cleanOrgTitle";
 import CkanTransformer from "./CkanTransformer";
 import CkanUrlBuilder from "./CkanUrlBuilder";
 import * as moment from "moment";
@@ -27,6 +28,7 @@ export default function createTransformer({
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
         libraries: {
+            cleanOrgTitle: cleanOrgTitle,
             moment: moment,
             URI: URI,
             ckan: new CkanUrlBuilder({

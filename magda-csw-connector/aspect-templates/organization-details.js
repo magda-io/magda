@@ -1,3 +1,5 @@
+const cleanOrgTitle = libraries.cleanOrgTitle;
+
 const name = transformer.getNameFromJsonOrganization(organization);
 const jsonpath = libraries.jsonpath;
 const phone = jsonpath.value(
@@ -41,7 +43,7 @@ if (!addrCountry) {
 
 const data = {
     name: name,
-    title: name,
+    title: cleanOrgTitle(name),
     description: undefined,
     imageUrl: undefined,
     phone,
