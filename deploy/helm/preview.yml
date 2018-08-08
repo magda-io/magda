@@ -86,6 +86,11 @@ web-server:
     requests:
       cpu: 100m
       memory: 0
+apidocs-server:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 0
 sleuther-linked-data-rating:
   resources:
     requests:

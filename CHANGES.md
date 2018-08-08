@@ -1,3 +1,13 @@
+## 0.0.46
+
+-   Make pagination on mobile responsive.
+-   Fixed inconsistent case with format
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+-   Make pagination on mobile responsive.
+-   Fixed a facet overflow issue on desktop
+-   Allow user apply default date in filter
+-   added mechanism to produce api documentation
+
 ## 0.0.45
 
 -   added mechanism to produce api documentation
@@ -67,6 +77,8 @@
 -   Corrected incorrect source-link-status aspect name in UI dataset request URL
 -   Updated URL of City of Launceston connector.
 -   Keep search text in synch.
+-   Make pagination on mobile responsive.
+-   Made CKAN harvesters execute on an hourly basis.
 
 ## 0.0.43
 

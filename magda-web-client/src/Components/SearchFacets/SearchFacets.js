@@ -3,8 +3,17 @@ import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
 import downArrowDark from "../../assets/downArrowDark.svg";
 import ClearAllButtom from "./ClearAllButton";
+import memoize from "memoize-one";
 
 import "./SearchFacets.css";
+
+// partition an array by size n
+const partitionArray = (array, size) =>
+    array
+        .map((e, i) => (i % size === 0 ? array.slice(i, i + size) : null))
+        .filter(e => e);
+
+const partitionWithCache = memoize(partitionArray);
 
 class SearchFacets extends Component {
     constructor(props) {
@@ -15,6 +24,7 @@ class SearchFacets extends Component {
         this.onToggleFacetOnMobile = this.onToggleFacetOnMobile.bind(this);
         this.renderMobile = this.renderMobile.bind(this);
         this.renderDesktop = this.renderDesktop.bind(this);
+        this.renderFacet = this.renderFacet.bind(this);
     }
 
     componentDidMount() {
@@ -63,26 +73,45 @@ class SearchFacets extends Component {
         });
     }
 
+    renderFacet(facet) {
+        return (
+            <div
+                className="search-facet"
+                key={facet.id}
+                onClick={ev => ev.stopPropagation()}
+            >
+                <facet.component
+                    updateQuery={this.props.updateQuery}
+                    location={this.props.location}
+                    title={facet.id}
+                    isOpen={this.state.openFacet === facet.id}
+                    toggleFacet={this.toggleFacet.bind(this, facet.id)}
+                    closeFacet={this.closeFacet.bind(this, facet.id)}
+                />
+            </div>
+        );
+    }
+
     renderDesktop() {
+        // if we group facets in two, it would help some of the layout issues on smaller screen
+        const facetGroup = partitionWithCache(config.facets, 2);
         return (
             <div className="search-facets-desktop">
-                {config.facets.map(c => (
-                    <div
-                        className="search-facet"
-                        key={c.id}
-                        onClick={ev => ev.stopPropagation()}
-                    >
-                        <c.component
-                            updateQuery={this.props.updateQuery}
-                            location={this.props.location}
-                            title={c.id}
-                            isOpen={this.state.openFacet === c.id}
-                            toggleFacet={this.toggleFacet.bind(this, c.id)}
-                            closeFacet={this.closeFacet.bind(this, c.id)}
-                        />
-                    </div>
-                ))}
-                <ClearAllButtom key={"clear-all-button"} />
+                {facetGroup.map((group, i) => {
+                    if (i === facetGroup.length - 1) {
+                        return (
+                            <div key={i} className="facet-group">
+                                {group.map(facet => this.renderFacet(facet))}
+                                <ClearAllButtom key={"clear-all-button"} />
+                            </div>
+                        );
+                    }
+                    return (
+                        <div key={i} className="facet-group">
+                            {group.map(facet => this.renderFacet(facet))}
+                        </div>
+                    );
+                })}
             </div>
         );
     }
@@ -97,22 +126,7 @@ class SearchFacets extends Component {
                     Filters <img src={downArrowDark} alt="open filter" />
                 </button>
                 {this.state.showFilterOnMobile &&
-                    config.facets.map(c => (
-                        <div
-                            className="search-facet"
-                            key={c.id}
-                            onClick={ev => ev.stopPropagation()}
-                        >
-                            <c.component
-                                updateQuery={this.props.updateQuery}
-                                location={this.props.location}
-                                title={c.id}
-                                isOpen={this.state.openFacet === c.id}
-                                toggleFacet={this.toggleFacet.bind(this, c.id)}
-                                closeFacet={this.closeFacet.bind(this, c.id)}
-                            />
-                        </div>
-                    ))}
+                    config.facets.map(c => this.renderFacet(c))}
                 {this.state.showFilterOnMobile && (
                     <ClearAllButtom key={"clear-all-button"} />
                 )}
