@@ -109,7 +109,7 @@ class PublisherDetails extends Component {
                         <div>
                             <Link
                                 className="au-cta-link"
-                                to={`/search?publisher=${encodeURIComponent(
+                                to={`/search?organisation=${encodeURIComponent(
                                     publisher.name
                                 )}`}
                             >
