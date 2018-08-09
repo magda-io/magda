@@ -57,7 +57,7 @@ function k8sExecution(config) {
                     );
                     process.exit();
                 } else {
-                    createNamespace();
+                    createNamespace(configData["cluster-namespace"]);
                 }
             });
     }
@@ -298,7 +298,6 @@ function createSecret(namespace, secretName, data, encodeAllDataFields, type) {
     const configContent = JSON.stringify(configObj);
     childProcess.execSync(`kubectl apply --namespace ${namespace} -f -`, {
         input: configContent,
-        stdio: "inherit",
         env: env
     });
 }
