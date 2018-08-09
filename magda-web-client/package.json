@@ -15,7 +15,7 @@
     "surge-build": "react-app-rewired build",
     "build": "yarn run compile",
     "build-staging": "env REACT_APP_IS_STAGING=1 yarn run compile",
-    "compile": "yarn run build-css && react-app-rewired compile-apidoc",
+    "compile": "yarn run build-css && react-app-rewired build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-app-rewired eject",
     "watch": "react-app-rewired build --watch",
