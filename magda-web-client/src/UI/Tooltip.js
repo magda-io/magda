@@ -20,7 +20,9 @@ class Tooltip extends React.Component {
     }
 
     componentDidMount() {
-        document.addEventListener("mousedown", this.handleClickOutside);
+        if (this.props.clickToDismiss) {
+            document.addEventListener("mousedown", this.handleClickOutside);
+        }
         this.adjustOffset();
     }
 
@@ -29,7 +31,9 @@ class Tooltip extends React.Component {
     }
 
     componentWillUnmount() {
-        document.removeEventListener("mousedown", this.handleClickOutside);
+        if (this.props.clickToDismiss) {
+            document.removeEventListener("mousedown", this.handleClickOutside);
+        }
     }
 
     handleClickOutside = event => {
@@ -85,7 +89,7 @@ class Tooltip extends React.Component {
             <div
                 ref={this.rootRef}
                 className={`tooltip ${className} ${openClass} ${
-                    this.props.dismissed ? "tooltip-dismissed" : ""
+                    this.state.dismissed ? "tooltip-dismissed" : ""
                 }`}
             >
                 {/* Caution: if this is ever not the first element be sure to fix adjustOffset */}

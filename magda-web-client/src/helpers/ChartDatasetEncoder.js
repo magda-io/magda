@@ -7,7 +7,6 @@ import forEach from "lodash/forEach";
 import isArray from "lodash/isArray";
 import sumBy from "lodash/sumBy";
 import concat from "lodash/concat";
-import trim from "lodash/trim";
 import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
@@ -200,11 +199,16 @@ const rollupResult2Rows = function(
 
 const aggrLabelRegex = /^(count|sum)(_0\.+\d+)$/i;
 
+function unknownIfBlank(input) {
+    return !input || input.trim() === "" ? UNKNOWN_AXIS_LABEL : input;
+}
+
 const defaultChartOption = {
     legend: {
         type: "scroll",
         y: "bottom",
-        orient: "horizontal"
+        orient: "horizontal",
+        formatter: unknownIfBlank
     },
     tooltip: {
         trigger: "item",
@@ -218,7 +222,7 @@ const defaultChartOption = {
                             : UNKNOWN_AXIS_LABEL;
 
                     return `${startCase(
-                        key.replace(aggrLabelRegex, "$1")
+                        unknownIfBlank(key.replace(aggrLabelRegex, "$1"))
                     )}: ${value}`;
                 })
                 .join("<br/>");
@@ -277,8 +281,6 @@ function preProcessFields(headerRow, distribution, chartType) {
     }));
     //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
     newFields = filter(newFields, item => item.idx !== -1);
-    // Filter out empty fields
-    newFields = filter(newFields, item => trim(item.name) !== "");
     // Filter out specifically excluded columns
     newFields = filter(
         newFields,
@@ -306,9 +308,24 @@ function preProcessFields(headerRow, distribution, chartType) {
         return field;
     });
 
+    newFields = newFields.map(field => {
+        if (!field.label || field.label.trim() === "") {
+            field.label = field.name;
+        }
+        return field;
+    });
+
+    newFields = newFields.map(field => {
+        if (!field.label || field.label.trim() === "") {
+            field.label = UNKNOWN_AXIS_LABEL;
+        }
+        return field;
+    });
+
     if (!newFields.length) {
         throw new Error("The data file contains no non-empty header.");
     }
+
     return newFields;
 }
 
@@ -652,12 +669,12 @@ class ChartDatasetEncoder {
         if (this.chartType === "scatter") {
             const { xAxisIdx, yAxisIdx, tooltipCols } = this.fields.reduce(
                 (prevValue, field, idx) => {
-                    if (this.yAxis === field) {
+                    if (this.yAxis.name === field.name) {
                         return {
                             ...prevValue,
                             yAxisIdx: idx
                         };
-                    } else if (this.xAxis === field) {
+                    } else if (this.xAxis.name === field.name) {
                         return {
                             ...prevValue,
                             xAxisIdx: idx
@@ -742,10 +759,10 @@ class ChartDatasetEncoder {
                 formatter: (() => {
                     if (type === "category") {
                         return value => {
-                            if (value.length > 20) {
-                                return value.substring(0, 17) + "...";
-                            } else if (value.trim().length === 0) {
+                            if (!value || value.trim().length === 0) {
                                 return UNKNOWN_AXIS_LABEL;
+                            } else if (value.length > 20) {
+                                return value.substring(0, 17) + "...";
                             } else {
                                 return value;
                             }

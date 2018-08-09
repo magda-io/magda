@@ -1,12 +1,22 @@
 import React, { Component } from "react";
 import { config } from "../../config";
-import { Medium } from "../../UI/Responsive";
+import { Small, Medium } from "../../UI/Responsive";
 import Tooltip from "../../UI/Tooltip";
+import downArrowDark from "../../assets/downArrowDark.svg";
 import ClearAllButton from "./ClearAllButton";
 import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
 import FilterExplanation from "./FilterExplanation";
+import memoize from "memoize-one";
 
 import "./SearchFacets.css";
+
+// partition an array by size n
+const partitionArray = (array, size) =>
+    array
+        .map((e, i) => (i % size === 0 ? array.slice(i, i + size) : null))
+        .filter(e => e);
+
+const partitionWithCache = memoize(partitionArray);
 
 class SearchFacets extends Component {
     constructor(props) {
@@ -83,9 +93,9 @@ class SearchFacets extends Component {
         );
 
         if (
-            filter.showExplanation //&&
-            // this.props.location.state &&
-            // this.props.location.state.showFilterExplanation &&
+            filter.showExplanation &&
+            this.props.location.state &&
+            this.props.location.state.showFilterExplanation // &&
             // !retrieveLocalData("hideFilterTooltips", true)
         ) {
             return (
@@ -110,10 +120,25 @@ class SearchFacets extends Component {
     };
 
     renderDesktop() {
+        // if we group facets in two, it would help some of the layout issues on smaller screen
+        const facetGroup = partitionWithCache(config.facets, 2);
         return (
             <div className="search-facets-desktop">
-                {config.facets.map(this.renderFilterButton)}
-                <ClearAllButton key={"clear-all-button"} />
+                {facetGroup.map((group, i) => {
+                    if (i === facetGroup.length - 1) {
+                        return (
+                            <div key={i} className="facet-group">
+                                {group.map(this.renderFilterButton)}
+                                <ClearAllButton key={"clear-all-button"} />
+                            </div>
+                        );
+                    }
+                    return (
+                        <div key={i} className="facet-group">
+                            {group.map(this.renderFilterButton)}
+                        </div>
+                    );
+                })}
             </div>
         );
     }

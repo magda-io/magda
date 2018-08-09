@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.45-0",
+  "version": "0.0.46-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -11,10 +11,11 @@
     "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "retag-and-push": "retag-and-push"
+    "retag-and-push": "retag-and-push",
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.45-0",
+    "@magda/typescript-common": "^0.0.46-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -44,20 +45,32 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.45-0",
+    "@magda/scripts": "^0.0.46-0",
+    "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cors": "^2.8.1",
     "@types/ejs": "^2.3.33",
     "@types/express": "^4.0.37",
     "@types/http-proxy": "^1.16.0",
     "@types/lodash": "^4.14.74",
+    "@types/mocha": "^2.2.41",
+    "@types/nock": "^8.2.1",
     "@types/node": "^8.0.14",
     "@types/passport": "^0.4.5",
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.31",
     "@types/pg": "^6.1.41",
+    "@types/request": "2.47.0",
+    "@types/sinon": "^2.3.3",
+    "@types/supertest": "^2.0.2",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2",
+    "nock": "^9.0.14",
+    "request": "^2.79.0",
+    "sinon": "^2.4.1",
+    "supertest": "^3.0.0",
     "typescript": "~2.5.0"
   },
   "config": {

@@ -57,6 +57,13 @@ const app = buildFeedbackRouter({
     userAgent: argv.userAgent
 });
 
+/**
+ * @apiGroup Feedback
+ * @api {get} /v0/healthz Health Check
+ * @apiDescription TODO
+ * @apiSuccessExample {string} 200
+ *    OK
+ */
 app.get("/v0/healthz", function(req, res, next) {
     res.status(200).send("OK");
 });
