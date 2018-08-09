@@ -20,4 +20,4 @@ resources: {}
   #  memory: 128Mi
 disableAuthenticationFeatures: false
 service: {}
-showFallbackBanner: true
+fallbackUrl: "https://data.gov.au"
