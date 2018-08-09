@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const moment = require("moment");
 const chalk = require("chalk");
-const Pwgen = require("pwgen");
+const pwgen = require("./pwgen");
 
 const questions = [
     {
@@ -237,11 +237,7 @@ const questions = [
                 answer: input
             };
             if (input === false) {
-                const pwgen = new Pwgen();
-                pwgen.includeCapitalLetter = true;
-                pwgen.includeNumber = true;
-                pwgen.maxLength = 16;
-                r["password"] = pwgen.generate();
+                r["password"] = pwgen();
                 console.log(
                     chalk.yellow(
                         "The generated password is: " +

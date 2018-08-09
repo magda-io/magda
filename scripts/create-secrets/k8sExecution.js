@@ -7,7 +7,7 @@ const {
     settingNameToEnvVarName
 } = require("./askQuestions");
 const Base64 = require("js-base64").Base64;
-const Pwgen = require("pwgen");
+const pwgen = require("./pwgen");
 
 const dbPasswordNames = [
     "authorization-db",
@@ -57,12 +57,6 @@ function k8sExecution(config) {
         });
     }
     return p.then(function() {
-        const pwgen = new Pwgen();
-
-        pwgen.includeCapitalLetter = true;
-        pwgen.includeNumber = true;
-        pwgen.maxLength = 16;
-
         const namespace = configData["cluster-namespace"];
         if (configData["use-cloudsql-instance-credentials"] === true) {
             createFileContentSecret(
@@ -125,8 +119,8 @@ function k8sExecution(config) {
 
         (function() {
             const data = {};
-            data["jwt-secret"] = pwgen.generate();
-            data["session-secret"] = pwgen.generate();
+            data["jwt-secret"] = pwgen();
+            data["session-secret"] = pwgen();
             createSecret(namespace, "auth-secrets", data);
         })();
     });
