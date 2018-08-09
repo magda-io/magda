@@ -144,7 +144,7 @@
   "browserslist": [
     "last 2 versions",
     "ie 11",
-    "chrome 44"
+    "chrome 41"
   ],
   "pancake": {
     "auto-save": true,
