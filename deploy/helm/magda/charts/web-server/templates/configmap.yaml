@@ -7,5 +7,5 @@ data:
   web.json: '{
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
     "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
-    "fallbackUrl": {{ .Values.fallbackUrl }}
+    "fallbackUrl": {{ .Values.fallbackUrl | quote }}
   }'
