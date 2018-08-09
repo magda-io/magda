@@ -3,21 +3,30 @@ import { Link } from "react-router-dom";
 import "./PublisherSummary.css";
 
 function PublisherSummary(props) {
-    const linkTo = {
-        pathname:
-            "organisations/" + encodeURIComponent(props.publisher.identifier),
-        state: {
-            showFilterExplanation: true
-        }
-    };
-
     return (
         <div className="publisher-summray">
             <h2 className="publisher-title">
-                <Link to={linkTo}>{props.publisher.name}</Link>
+                <Link
+                    to={
+                        "organisations/" +
+                        encodeURIComponent(props.publisher.identifier)
+                    }
+                >
+                    {props.publisher.name}
+                </Link>
             </h2>
             <div className="publisher-meta">
-                <Link to={linkTo}>
+                <Link
+                    to={{
+                        pathname: "/search",
+                        search: `organisation=${encodeURIComponent(
+                            props.publisher.name
+                        )}`,
+                        state: {
+                            showFilterExplanation: true
+                        }
+                    }}
+                >
                     {props.publisher.datasetCount
                         ? `${props.publisher.datasetCount} ${
                               props.publisher.datasetCount > 1

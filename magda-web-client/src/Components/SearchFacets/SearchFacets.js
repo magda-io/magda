@@ -95,8 +95,8 @@ class SearchFacets extends Component {
         if (
             filter.showExplanation &&
             this.props.location.state &&
-            this.props.location.state.showFilterExplanation // &&
-            // !retrieveLocalData("hideFilterTooltips", true)
+            this.props.location.state.showFilterExplanation &&
+            !retrieveLocalData("hideFilterTooltips", true)
         ) {
             return (
                 <Tooltip
