@@ -242,17 +242,21 @@ const questions = [
             return r;
         },
         transformer: function(value, answers) {
-            return chalk.yellow(
-                "Generated password: " +
-                    chalk.green.underline(value["password"])
-            );
+            if (value.answer === true) {
+                return chalk.yellow("Chose to manually input password");
+            } else {
+                return chalk.yellow(
+                    "Generated password: " +
+                        chalk.green.underline(value["password"])
+                );
+            }
         }
     },
     {
         type: "input",
         name: "db-passwords",
         message: "Please provide the password used for databases:",
-        when: onlyWhenQuestion("manual-db-passwords", true),
+        when: answers => answers["manual-db-passwords"]["answer"] === true,
         validate: input =>
             trim(input).length ? true : "password cannot be empty!"
     },
