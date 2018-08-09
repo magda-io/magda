@@ -1,6 +1,7 @@
 const childProcess = require("child_process");
 const process = require("process");
 const chalk = require("chalk");
+const trim = require("lodash/trim");
 const {
     getEnvVarInfo,
     askIfCreateNamespace,
@@ -41,20 +42,24 @@ function k8sExecution(config) {
             );
     });
     if (!checkNamespace(configData["cluster-namespace"])) {
-        p = p.then(askIfCreateNamespace).then(function(ifCreate) {
-            if (!ifCreate) {
-                console.log(
-                    chalk.yellow(
-                        `You need to create namespace \`${
-                            configData["cluster-namespace"]
-                        }\` before try again.`
-                    )
-                );
-                process.exit();
-            } else {
-                createNamespace();
-            }
-        });
+        p = p
+            .then(
+                askIfCreateNamespace.bind(null, configData["cluster-namespace"])
+            )
+            .then(function(ifCreate) {
+                if (!ifCreate) {
+                    console.log(
+                        chalk.yellow(
+                            `You need to create namespace \`${
+                                configData["cluster-namespace"]
+                            }\` before try again.`
+                        )
+                    );
+                    process.exit();
+                } else {
+                    createNamespace();
+                }
+            });
     }
     return p.then(function() {
         const namespace = configData["cluster-namespace"];

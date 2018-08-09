@@ -218,7 +218,7 @@ const questions = [
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
-        type: "list",
+        type: "transformer-list",
         name: "manual-db-passwords",
         message:
             "Do you want to manually input the password used for databases?",
@@ -238,14 +238,14 @@ const questions = [
             };
             if (input === false) {
                 r["password"] = pwgen();
-                console.log(
-                    chalk.yellow(
-                        "The generated password is: " +
-                            chalk.green.underline(r["password"])
-                    )
-                );
             }
             return r;
+        },
+        transformer: function(value, answers) {
+            return chalk.yellow(
+                "Generated password: " +
+                    chalk.green.underline(value["password"])
+            );
         }
     },
     {
@@ -367,8 +367,10 @@ function prefileQuestions(questions, config) {
     });
 }
 
-const inquirerFuzzyPath = require("./inquirer-fuzzy-path");
+const inquirerFuzzyPath = require("./prompts/inquirer-fuzzy-path");
+const inquirerListWithTransformer = require("./prompts/list-with-transformer");
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
+inquirer.registerPrompt("transformer-list", inquirerListWithTransformer);
 function askSettingQuestions(config) {
     return inquirer
         .prompt(prefileQuestions(questions, config))
