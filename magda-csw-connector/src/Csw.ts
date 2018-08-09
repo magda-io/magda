@@ -242,7 +242,7 @@ export default class Csw implements ConnectorSource {
                 return Promise.resolve(undefined);
             } else {
                 /**
-                 * it's possible to reach here 
+                 * it's possible to reach here
                  * i.e. the dataset has no any point of contact info
                  * No need to look at further
                  * Just pick the first one

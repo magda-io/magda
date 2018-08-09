@@ -17,13 +17,9 @@ export default function buildSitemapRouter({
     const app = express();
     const baseExternalUri = new URI(baseExternalUrl);
 
-    // Make sure every request is setting XML as the content type.
-    app.use((req, res, next) => {
+    app.get("/sitemap.xml", (req, res) => {
         res.header("Content-Type", "application/xml");
-        next();
-    });
 
-    app.get("/", (req, res) => {
         catchError(
             res,
             registry
@@ -37,7 +33,7 @@ export default function buildSitemapRouter({
                                 URI.joinPaths(
                                     baseExternalUrl,
                                     "sitemap/dataset/afterToken",
-                                    token.toString()
+                                    token.toString() + ".xml"
                                 ).href()
                             )
                             .href();
@@ -50,7 +46,7 @@ export default function buildSitemapRouter({
                                 .path(
                                     URI.joinPaths(
                                         baseExternalUrl,
-                                        "sitemap/main"
+                                        "sitemap/main.xml"
                                     ).href()
                                 )
                                 .href()
@@ -62,7 +58,9 @@ export default function buildSitemapRouter({
         );
     });
 
-    app.get("/main", (req, res) => {
+    app.get("/sitemap/main.xml", (req, res) => {
+        res.header("Content-Type", "application/xml");
+
         // For now we just put the homepage in here, seeing as everything except the datasets should be reachable
         // from either the home page or the datasets pages.
         const sitemap = sm.createSitemap({
@@ -84,7 +82,9 @@ export default function buildSitemapRouter({
         });
     });
 
-    app.get("/dataset/afterToken/:afterToken", (req, res) => {
+    app.get("/sitemap/dataset/afterToken/:afterToken.xml", (req, res) => {
+        res.header("Content-Type", "application/xml");
+
         const afterToken: string = req.params.afterToken;
 
         catchError(

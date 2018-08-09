@@ -20,6 +20,7 @@ gateway:
   service:
     type: LoadBalancer
   loadBalancerIP: "104.199.180.124"
+  ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"

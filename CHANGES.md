@@ -13,6 +13,7 @@
 
 ## 0.0.45
 
+-   Redirect CKAN/DGA Urls
 -   Add config for fallback banner
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
@@ -24,6 +25,8 @@
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
 -   Added more details in organisations/publishers page to reflect design.
+-   Adjusted sitemap and robots.txt to help google navigate around better
+-   Made the javascript work with chrome 44 (googlebot)
 
 ## 0.0.44
 
