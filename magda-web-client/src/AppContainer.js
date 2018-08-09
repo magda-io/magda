@@ -43,9 +43,9 @@ class AppContainer extends React.Component {
                                 }
                             ]}
                         />
-                        {config.showFallbackBanner && (
+                        {config.fallbackUrl && (
                             <Medium>
-                                <Banner />
+                                <Banner fallbackUrl={config.fallbackUrl} />
                             </Medium>
                         )}
 

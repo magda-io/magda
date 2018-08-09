@@ -28,6 +28,9 @@ export default {
         },
         feedback: {
             to: "http://localhost:6116/v0"
+        },
+        apidocs: {
+            to: "http://localhost:6118"
         }
     },
     csp: {
