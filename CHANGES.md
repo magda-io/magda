@@ -1,3 +1,16 @@
+## 0.0.46
+
+-   Make pagination on mobile responsive.
+-   Added cronjob for broken-link-sleuther
+-   Remove all starting non word chars from organisation title
+-   Make pagination on mobile responsive.
+-   Fixed inconsistent case with format
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+-   Make pagination on mobile responsive.
+-   Fixed a facet overflow issue on desktop
+-   Allow user apply default date in filter
+-   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+
 ## 0.0.45
 
 -   Redirect CKAN/DGA Urls
