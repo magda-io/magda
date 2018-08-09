@@ -102,6 +102,7 @@ class SearchFacets extends Component {
                 <Tooltip
                     key={filter.id + "tooltip"}
                     startOpen={true}
+                    requireClickToDismiss={true}
                     launcher={() => filterComponent}
                     onDismiss={() => setLocalData("hideFilterTooltips", true)}
                     orientation="below"

@@ -20,7 +20,7 @@ class Tooltip extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.clickToDismiss) {
+        if (this.props.requireClickToDismiss) {
             document.addEventListener("mousedown", this.handleClickOutside);
         }
         this.adjustOffset();
@@ -31,7 +31,7 @@ class Tooltip extends React.Component {
     }
 
     componentWillUnmount() {
-        if (this.props.clickToDismiss) {
+        if (this.props.requireClickToDismiss) {
             document.removeEventListener("mousedown", this.handleClickOutside);
         }
     }
