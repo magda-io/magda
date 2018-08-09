@@ -13,14 +13,13 @@
     "start": "npm-run-all -p watch-css start-js",
     "dev": "yarn run start",
     "surge-build": "react-app-rewired build",
-    "build": "yarn run compile && yarn run compile",
+    "build": "yarn run compile",
     "build-staging": "env REACT_APP_IS_STAGING=1 yarn run compile",
     "compile": "yarn run build-css && react-app-rewired compile-apidoc",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-app-rewired eject",
     "watch": "react-app-rewired build --watch",
-    "prepare": "pancake",
-    "compile-apidoc": "generate-api-documentation --config $PWD/apidoc.json --output $PWD/build/apidoc"
+    "prepare": "pancake"
   },
   "devDependencies": {
     "@gov.au/accordion": "^3.0.5",
