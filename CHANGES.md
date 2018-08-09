@@ -13,7 +13,8 @@
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
 -   Added more details in organisations/publishers page to reflect design.
 -   Adjusted sitemap and robots.txt to help google navigate around better
--   Made the javascript work with chrome 44 (googlebot)
+-   Made the javascript work with chrome 41 (googlebot)
+-   Made the fallback banner site url configurable
 
 ## 0.0.44
 
