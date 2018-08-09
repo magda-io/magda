@@ -13,6 +13,7 @@ global:
   noDbAuth: false
 tags:
   all: true
+  apidocs-server: false
   admin-api: false
   authorization-api: false
   authorization-db: false

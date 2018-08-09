@@ -13,6 +13,11 @@ tags:
   sleuther-visualization: true
   sleuther-format: true
 
+apidocs-server:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 0
 ingress:
   hostname: dev.magda.io
   ingressClass: nginx
