@@ -15,9 +15,10 @@ class DistributionDetails extends Component {
 
     renderLinkText(distribution) {
         const downloadText = distribution.downloadURL ? (
-            <span key={distribution.identifier}>
+            <div key={distribution.identifier}>
                 This data file or API can be downloaded from: <br />
                 <a
+                    className="url"
                     onClick={distribution => {
                         // google analytics download tracking
                         const resource_url = encodeURIComponent(
@@ -41,15 +42,17 @@ class DistributionDetails extends Component {
                     distribution.linkStatusAvailable,
                     distribution.linkActive
                 )}
-            </span>
+            </div>
         ) : (
             ""
         );
         const accessText = distribution.accessURL ? (
-            <span>
+            <div>
                 This dataset can be accessed from: <br />{" "}
-                <a href={distribution.accessURL}>{distribution.accessURL}</a>
-            </span>
+                <a className="url" href={distribution.accessURL}>
+                    {distribution.accessURL}
+                </a>
+            </div>
         ) : (
             ""
         );
