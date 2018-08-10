@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const { askQuestions, getEnvVarInfo } = require("./askQuestions");
 const k8sExecution = require("./k8sExecution");
+const preloadConfig = require("./preloadConfig");
 const clear = require("clear");
 const chalk = require("chalk");
 const Configstore = require("configstore");
@@ -17,9 +18,11 @@ program
     .description(`A tool for magda k8s secrets setup. Version: ${pkg.version}`)
     .option(
         "-E, --execute [configFilePath]",
-        "Create k8s secrets in cluster using config file without asking any user input." +
-            "If configFilePath is not specify, program will attempt to load config file from " +
-            `either \`$XDG_CONFIG_HOME/configstore/${appName}.json\` or \`~/.config/configstore/${appName}.json\``
+        "Create k8s secrets in cluster using `${appName}` config file/data without asking any user input. \n" +
+            "   If you want to supply config data via STDIN, you can set `configFilePath` parameter to `-`. \n" +
+            `   e.g. \`echo $CONFIG_CONTENT | ${appName} -E -\` or \`cat config.json | ${appName} --execute=-\`\n` +
+            "   If configFilePath is not specify, program will attempt to load config file from: \n" +
+            `   either \`$XDG_CONFIG_HOME/configstore/${appName}.json\` \n   or \`~/.config/configstore/${appName}.json\``
     )
     .option("-P, --print", "Print previously saved local config data to stdout")
     .option("-D, --delete", "Delete previously saved local config data");
@@ -51,7 +54,31 @@ if (programOptions.print) {
     console.log(
         chalk.green(`${appName} tool version: ${pkg.version} Execute Mode`)
     );
-    console.log("Execute mode is still in development...");
+    let configDataBak = {};
+    let hasError = false;
+    preloadConfig
+        .then(function(data) {
+            if (programOptions.execute !== true) {
+                //--- we only need to receovey user's local config
+                //--- when the config is fed by STDIN or external file
+                configDataBak = config.all;
+            }
+            config.all = data;
+            return k8sExecution(config, true);
+        })
+        .catch(function(error) {
+            hasError = true;
+            console.log(chalk.red(`Failed to create secrets: ${error}`));
+        })
+        .finally(function() {
+            if (programOptions.execute !== true) {
+                //--- recover origin config data
+                config.all = configDataBak;
+            }
+            if (hasError) {
+                process.exit(1);
+            }
+        });
 } else {
     clear();
     console.log("\n");

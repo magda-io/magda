@@ -1,6 +1,5 @@
 const inquirer = require("inquirer");
 const trim = require("lodash/trim");
-const fse = require("fs-extra");
 const fs = require("fs");
 const path = require("path");
 const moment = require("moment");

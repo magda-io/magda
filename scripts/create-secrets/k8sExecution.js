@@ -24,8 +24,15 @@ const dbPasswordNames = [
 ];
 
 let env = process.env;
+function k8sExecution(config, shouldNotAsk = false) {
+    try {
+        return doK8sExecution(config, shouldNotAsk);
+    } catch (e) {
+        return Promise.reject(e);
+    }
+}
 
-function k8sExecution(config) {
+function doK8sExecution(config, shouldNotAsk = false) {
     env = getEnvByClusterType(config);
     let configData = Object.assign({}, config.all);
     const ifAllowEnvVarOverride = configData["allow-env-override-settings"];
@@ -35,13 +42,21 @@ function k8sExecution(config) {
     validKubectl();
     let p = Promise.resolve().then(function() {
         configData["cluster-namespace"] = trim(configData["cluster-namespace"]);
-        if (!configData["cluster-namespace"])
+        if (!configData["cluster-namespace"]) {
             throw new Error(
                 "Cluster namespace cannot be empty! \n " +
                     "If you've set cluster namespace, make sure it's not overrided by env variable."
             );
+        }
     });
     if (!checkNamespace(configData["cluster-namespace"])) {
+        if (shouldNotAsk) {
+            throw new Error(
+                `Namespace ${
+                    configData["cluster-namespace"]
+                } doesn't exist. Please create and try again.`
+            );
+        }
         p = p
             .then(
                 askIfCreateNamespace.bind(null, configData["cluster-namespace"])
