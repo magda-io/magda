@@ -11,6 +11,7 @@
 -   Allow user apply default date in filter
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Hyperlink organisation url on organisation page
 
 ## 0.0.45
 
