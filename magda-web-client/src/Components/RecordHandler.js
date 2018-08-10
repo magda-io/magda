@@ -182,16 +182,18 @@ class RecordHandler extends React.Component {
                                     {this.props.dataset.publisher.name}
                                 </Link>
                             </div>
-                            <Separator />
+
                             {defined(this.props.distribution.updatedDate) && (
                                 <div className="updated-date">
+                                    <Separator />
                                     Updated{" "}
                                     {this.props.distribution.updatedDate}
                                 </div>
                             )}
-                            <Separator />
+
                             {defined(this.props.dataset.issuedDate) && (
                                 <div className="created-date">
+                                    <Separator />
                                     Created {this.props.dataset.issuedDate}
                                 </div>
                             )}
@@ -199,8 +201,8 @@ class RecordHandler extends React.Component {
                         <div className="distribution-format">
                             {this.props.distribution.format}
                         </div>
-                        <Separator />
                         <div className="distribution-license">
+                            <Separator />
                             {this.props.distribution.license}
                         </div>
                         <br />

@@ -11,6 +11,7 @@
 -   Allow user apply default date in filter
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Remove extra slash when additional info is missing on dataset page and distribution page
 
 ## 0.0.45
 
