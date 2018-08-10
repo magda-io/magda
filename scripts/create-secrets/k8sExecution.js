@@ -212,13 +212,10 @@ function validKubectl() {
             env: env
         });
     } catch (e) {
-        console.log(chalk.red(`Failed to execute \`kubectl\` utility: ${e}`));
-        console.log(
-            chalk.red(
+        throw new Error(
+            `Failed to execute \`kubectl\` utility: ${e}\n` +
                 "Make sure you have install & config `kubectl` properly before try again."
-            )
         );
-        process.exit();
     }
 }
 

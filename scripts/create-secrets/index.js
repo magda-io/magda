@@ -98,7 +98,7 @@ if (programOptions.print) {
                     console.log(
                         chalk.red(`Failed to create required secrets: ${error}`)
                     );
-                    process.exit();
+                    process.exit(1);
                 }
             );
         } else {
