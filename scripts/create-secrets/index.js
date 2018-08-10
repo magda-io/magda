@@ -56,7 +56,7 @@ if (programOptions.print) {
     );
     let configDataBak = {};
     let hasError = false;
-    preloadConfig
+    preloadConfig(config, programOptions.execute)
         .then(function(data) {
             if (programOptions.execute !== true) {
                 //--- we only need to receovey user's local config
@@ -68,9 +68,11 @@ if (programOptions.print) {
         })
         .catch(function(error) {
             hasError = true;
+            console.log(error);
             console.log(chalk.red(`Failed to create secrets: ${error}`));
         })
-        .finally(function() {
+        .then(function() {
+            //--- cann't use finally
             if (programOptions.execute !== true) {
                 //--- recover origin config data
                 config.all = configDataBak;

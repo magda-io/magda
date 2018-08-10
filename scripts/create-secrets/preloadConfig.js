@@ -1,4 +1,5 @@
 const fs = require("fs");
+const chalk = require("chalk");
 
 function preloadConfig(configStore, executeOption) {
     return Promise.resolve().then(function() {
@@ -30,7 +31,7 @@ function preloadConfig(configStore, executeOption) {
 
 function readConfigFromStdin(configStore) {
     console.log(chalk.yellow(`Loading config data from STDIN ...`));
-    const configContent = "";
+    let configContent = "";
     return new Promise(function(resolve, reject) {
         process.stdin.setEncoding("utf8");
 
@@ -68,7 +69,6 @@ function readConfigFromStdin(configStore) {
 
 function readConfigFromFile(configStore, executeOption) {
     console.log(chalk.yellow(`Loading config data from ${executeOption}...`));
-    const configContent = "";
     return new Promise(function(resolve, reject) {
         try {
             const filePath = trim(executeOption);
