@@ -297,11 +297,6 @@ function createDockerRegistrySecret(
 }
 
 function createSecret(namespace, secretName, data, encodeAllDataFields, type) {
-    console.log(
-        chalk.yellow(
-            `Creating secret \`${secretName}\` in namespace \`${namespace}\`...`
-        )
-    );
     const configObj = getTplObj(secretName, namespace);
     configObj.data = data;
     if (type) configObj.type = type;
@@ -315,6 +310,11 @@ function createSecret(namespace, secretName, data, encodeAllDataFields, type) {
         input: configContent,
         env: env
     });
+    console.log(
+        chalk.green(
+            `Successfully created secret \`${secretName}\` in namespace \`${namespace}\`.`
+        )
+    );
 }
 
 module.exports = k8sExecution;

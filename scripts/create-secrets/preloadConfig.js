@@ -10,7 +10,7 @@ function preloadConfig(configStore, executeOption) {
                 )
             );
             // --- trigger config file read
-            configStore.all;
+            const configData = configStore.all;
             if (!configStore.size) {
                 throw new Error(`Error: loaded config object is empty!`);
             }
@@ -21,6 +21,7 @@ function preloadConfig(configStore, executeOption) {
                     }\`.`
                 )
             );
+            return configData;
         } else if (executeOption === "-") {
             return readConfigFromStdin(configStore);
         } else {
