@@ -80,7 +80,6 @@
 -   Added auto gzip compress to gateway
 -   Made CSW connector retrieve country field from alternative JSON path
 -   Fixed Sitemap times out if input is invalid
--   Improve tooltip look
 -   Fixed Organisation content position moved (flicking) during data loading
 -   Fixed Organisation page router history issue
 -   Fixed Search Panel `Clear` button doesn't work
@@ -114,7 +113,6 @@
 -   Fixed: Enter a dataset page with `*` query string will see a blank page
 -   Fixed: when checking if fetch is required, dataset id from url params need to be decoded
 -   Enable organisation search
--   hide the filters from mobile search for now and replace it with new designs when available
 
 ## 0.0.42
 
