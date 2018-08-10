@@ -12,6 +12,8 @@
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Updated header logo to be correct branding type
+-   Uses the Header component from Design System
 
 ## 0.0.45
 
@@ -30,8 +32,6 @@
 -   Adjusted sitemap and robots.txt to help google navigate around better
 -   Made the javascript work with chrome 41 (googlebot)
 -   Made the fallback banner site url configurable
--   Updated header logo to be correct branding type
--   Uses the Header component from Design System
 
 ## 0.0.44
 

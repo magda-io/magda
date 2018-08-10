@@ -7,6 +7,9 @@
         opacity: 0.9;
     }
     .au-header__brand {
+        .au-header__text {
+            border-left: 1px solid;
+        }
         .au-header__brand-image,
         .au-header__text {
             display: inline-block;
@@ -16,6 +19,12 @@
         @media screen and (max-width: $medium) {
             text-align: center;
             width: 100%;
+            .au-header__text {
+                margin-left: 4px;
+                margin-left: 0.25rem;
+                padding-left: 4px;
+                padding-left: 0.25rem;
+            }
         }
         @media screen and (min-width: $small) {
             .au-header__text {
@@ -23,7 +32,6 @@
                 margin-left: 0.5rem;
                 padding-left: 8px;
                 padding-left: 0.5rem;
-                border-left: 1px solid;
             }
         }
     }

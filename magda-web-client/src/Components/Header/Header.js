@@ -43,7 +43,7 @@ class Header extends Component {
                                         <Small>
                                             <img
                                                 src={govtLogoMobile}
-                                                height={70}
+                                                height={65}
                                                 alt="Coat of Arms"
                                                 className="au-header__brand-image"
                                             />
