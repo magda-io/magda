@@ -488,7 +488,7 @@ function prefileQuestions(questions, config) {
                 return question;
             }
             return Object.assign({}, question, {
-                when: partial(question.when, config)
+                when: partial(question.when, config.all)
             });
         });
 }
@@ -511,6 +511,7 @@ function askSettingQuestions(config) {
                 configData["cloudsql-instance-credentials"]["data"] &&
                 answers["reselect-cloudsql-instance-credentials"] === false
             ) {
+                answers["cloudsql-instance-credentials"] = {};
                 answers["cloudsql-instance-credentials"]["value"] =
                     configData["cloudsql-instance-credentials"]["value"];
                 answers["cloudsql-instance-credentials"]["data"] =
@@ -523,6 +524,7 @@ function askSettingQuestions(config) {
                 configData["storage-account-credentials"]["data"] &&
                 answers["reselect-storage-account-credentials"] === false
             ) {
+                answers["storage-account-credentials"] = {};
                 answers["storage-account-credentials"]["value"] =
                     configData["storage-account-credentials"]["value"];
                 answers["storage-account-credentials"]["data"] =
