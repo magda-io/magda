@@ -66,6 +66,8 @@ const publisher = (
                 isFetchingPublisher: false,
                 errorFetchingPublisher: action.error
             });
+        case "RESET_FETCH_PUBLISHER":
+            return initialData;
         default:
             return state;
     }

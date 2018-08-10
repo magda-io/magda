@@ -9,6 +9,7 @@ import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
 import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
+import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
@@ -58,6 +59,7 @@ const renderBody = () => {
                 />
             ))}
             <Route exact path="/404" component={RouteNotFound} />
+            <Route exact path="/error" component={ErrorPage} />
             <Route path="/*" component={RouteNotFound} />
         </Switch>
     );
