@@ -76,7 +76,7 @@ function k8sExecution(config) {
                 namespace,
                 "storage-account-credentials",
                 "db-service-account-private-key.json",
-                configData["use-storage-account-credentials"]
+                configData["storage-account-credentials"]
             );
         }
         if (configData["use-smtp-secret"] === true) {
@@ -246,6 +246,9 @@ function getTplObj(name, namespace) {
 }
 
 function createFileContentSecret(namespace, secretName, fileName, content) {
+    if (typeof content !== "string") {
+        content = JSON.stringify(content);
+    }
     createSecret(namespace, secretName, {
         [fileName]: content
     });
