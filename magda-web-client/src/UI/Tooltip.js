@@ -7,32 +7,47 @@ import React from "react";
  * @returns { div }
  */
 class Tooltip extends React.Component {
-    state = {
-        offset: 0,
-        dismissed: false
-    };
-
     constructor(props) {
         super(props);
 
         this.rootRef = React.createRef();
         this.tooltipTextElementRef = React.createRef();
+        this.state = {
+            offset: 0,
+            dismissed: false,
+            tooltipWidth: 0
+        };
     }
 
     componentDidMount() {
         if (this.props.requireClickToDismiss) {
             document.addEventListener("mousedown", this.handleClickOutside);
         }
+        this.updateTooltipWidthState();
         this.adjustOffset();
     }
 
     componentDidUpdate() {
+        this.updateTooltipWidthState();
         this.adjustOffset();
     }
 
     componentWillUnmount() {
         if (this.props.requireClickToDismiss) {
             document.removeEventListener("mousedown", this.handleClickOutside);
+        }
+    }
+
+    updateTooltipWidthState() {
+        const tooltipWidth = this.tooltipTextElementRef.current.offsetWidth;
+        // set tooltip width if it not set or not very different, prevent resetting due to browser difference
+        if (
+            !this.state.tooltipWidth ||
+            Math.abs(tooltipWidth - this.state.tooltipWidth) > 5
+        ) {
+            this.setState({
+                tooltipWidth: this.tooltipTextElementRef.current.offsetWidth
+            });
         }
     }
 
@@ -61,8 +76,9 @@ class Tooltip extends React.Component {
             launcherElement.currentStyle ||
             window.getComputedStyle(launcherElement);
 
+        const tooltipWidth = this.state.tooltipWidth;
         const offset =
-            (tooltipTextElement.offsetWidth +
+            (tooltipWidth +
                 parseFloat(launcherElementStyle.marginLeft) +
                 parseFloat(launcherElementStyle.marginRight) -
                 parseFloat(launcherElementStyle.paddingRight) -
@@ -71,7 +87,7 @@ class Tooltip extends React.Component {
 
         if (this.state.offset !== offset) {
             this.setState({
-                offset
+                offset: offset
             });
         }
     }
