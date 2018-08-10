@@ -35,6 +35,17 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
         });
     }
     onSubmit(line) {
+        if (typeof this.opt.validate === "function") {
+            var validationResult = this.opt.validate(
+                this.currentChoices.getChoice(this.selected)
+            );
+            if (validationResult !== true) {
+                this.render(
+                    validationResult || "Enter something, tab to autocomplete!"
+                );
+                return;
+            }
+        }
         super.onSubmit(stripAnsi(line));
     }
 }

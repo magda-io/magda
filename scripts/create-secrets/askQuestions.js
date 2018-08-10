@@ -6,6 +6,8 @@ const path = require("path");
 const moment = require("moment");
 const chalk = require("chalk");
 const pwgen = require("./pwgen");
+const partial = require("lodash/partial");
+const stripJsonComments = require("strip-json-comments");
 
 const questions = [
     {
@@ -49,6 +51,37 @@ const questions = [
         when: onlyAvailableForGoogleCloud
     },
     {
+        type: "list",
+        name: "reselect-cloudsql-instance-credentials",
+        message:
+            "Has located saved Google SQL cloud credentials JSON file. Do you want to re-select?",
+        choices: [
+            {
+                name: "NO",
+                value: false
+            },
+            {
+                name: "YES",
+                value: true
+            }
+        ],
+        //--- config needs to prefill later before run questionnaire
+        //--- answers will be provided by inquirer lib at runtime
+        when: function(config, answers) {
+            if (answers["use-cloudsql-instance-credentials"] === false) {
+                return false;
+            }
+            if (
+                config["cloudsql-instance-credentials"] &&
+                config["cloudsql-instance-credentials"]["value"] &&
+                config["cloudsql-instance-credentials"]["data"]
+            ) {
+                return true;
+            }
+            return false;
+        }
+    },
+    {
         type: "fuzzypath",
         name: "cloudsql-instance-credentials",
         pathFilter: pathFilterByExt("json"),
@@ -56,7 +89,24 @@ const questions = [
         rootPath: path.resolve(),
         message:
             "Please provide the path to the credentials JSON file for your Google SQL cloud service access:",
-        when: onlyWhenQuestion("use-cloudsql-instance-credentials", true),
+        //--- config needs to prefill later before run questionnaire
+        //--- answers will be provided by inquirer lib at runtime
+        when: function(config, answers) {
+            if (answers["use-cloudsql-instance-credentials"] === false) {
+                return false;
+            }
+            if (
+                !config["cloudsql-instance-credentials"] ||
+                !config["cloudsql-instance-credentials"]["value"] ||
+                !config["cloudsql-instance-credentials"]["data"]
+            ) {
+                return true;
+            }
+            if (answers["reselect-cloudsql-instance-credentials"] === false) {
+                return false;
+            }
+            return true;
+        },
         validate: validJsonFileExist,
         filter: getJsonFileContent
     },
@@ -77,6 +127,37 @@ const questions = [
         when: onlyAvailableForGoogleCloud
     },
     {
+        type: "list",
+        name: "reselect-storage-account-credentials",
+        message:
+            "Has located saved Google storage private key JSON file. Do you want to re-select?",
+        choices: [
+            {
+                name: "NO",
+                value: false
+            },
+            {
+                name: "YES",
+                value: true
+            }
+        ],
+        //--- config needs to prefill later before run questionnaire
+        //--- answers will be provided by inquirer lib at runtime
+        when: function(config, answers) {
+            if (answers["use-storage-account-credentials"] === false) {
+                return false;
+            }
+            if (
+                config["storage-account-credentials"] &&
+                config["storage-account-credentials"]["value"] &&
+                config["storage-account-credentials"]["data"]
+            ) {
+                return true;
+            }
+            return false;
+        }
+    },
+    {
         type: "fuzzypath",
         name: "storage-account-credentials",
         pathFilter: pathFilterByExt("json"),
@@ -84,7 +165,24 @@ const questions = [
         rootPath: path.resolve(),
         message:
             "Please provide the path to the private key JSON file for your Google storage service access:",
-        when: onlyWhenQuestion("use-storage-account-credentials", true),
+        //--- config needs to prefill later before run questionnaire
+        //--- answers will be provided by inquirer lib at runtime
+        when: function(config, answers) {
+            if (answers["use-storage-account-credentials"] === false) {
+                return false;
+            }
+            if (
+                !config["storage-account-credentials"] ||
+                !config["storage-account-credentials"]["value"] ||
+                !config["storage-account-credentials"]["data"]
+            ) {
+                return true;
+            }
+            if (answers["reselect-storage-account-credentials"] === false) {
+                return false;
+            }
+            return true;
+        },
         validate: validJsonFileExist,
         filter: getJsonFileContent
     },
@@ -282,6 +380,7 @@ const questions = [
         name: "cluster-namespace",
         message:
             "What's the namespace you want to create secrets into (input `default` if you want to use the `default` namespace)?",
+        when: onlyWhenQuestion("get-namespace-from-env", false),
         validate: input =>
             trim(input).length ? true : "Cluster namespace cannot be empty!"
     },
@@ -313,21 +412,23 @@ function onlyWhenQuestion(name, value) {
     };
 }
 
-function validJsonFileExist(input) {
+function validJsonFileExist(choice) {
     try {
-        if (!fs.existsSync(trim(input)))
+        const filePath = trim(choice.value);
+        if (!fs.existsSync(filePath)) {
             return "The file doe not exist or cannot read. Please re-select.";
+        }
         const content = fs.readFileSync(filePath, {
             encoding: "utf-8"
         });
         try {
-            const data = JSON.parse(content);
+            const data = JSON.parse(stripJsonComments(content));
             return true;
         } catch (e) {
-            return `The file content is not in valid JSON format: ${e.getMessage()}`;
+            return `The file content is not in valid JSON format: ${e}`;
         }
     } catch (e) {
-        return e.getMessage();
+        return String(e);
     }
 }
 
@@ -346,29 +447,50 @@ function pathFilterByExt(ext) {
 }
 
 function getJsonFileContent(filePath) {
-    filePath = trim(filePath);
-    return {
-        value: filePath,
-        data: fse.readJsonSync(filePath, {
+    try {
+        filePath = trim(filePath);
+        const content = fs.readFileSync(filePath, {
             encoding: "utf-8"
-        })
-    };
+        });
+        return {
+            value: filePath,
+            data: JSON.parse(stripJsonComments(content))
+        };
+    } catch (e) {
+        console.log(chalk.red(`Failed to process data: ${e}`));
+        process.exit(1);
+    }
 }
 
 function prefileQuestions(questions, config) {
-    return questions.map(question => {
-        let configValue = config.get(question.name);
-        const type = typeof configValue;
-        if (type === "undefined") return question;
-        if (type === "object") {
-            if (typeof configValue.value === "undefined") return question;
-            else configValue = configValue.value;
-        }
+    const questionNamesRequireBindWhen = [
+        "reselect-cloudsql-instance-credentials",
+        "cloudsql-instance-credentials",
+        "reselect-storage-account-credentials",
+        "storage-account-credentials"
+    ];
+    return questions
+        .map(question => {
+            let configValue = config.get(question.name);
+            const type = typeof configValue;
+            if (type === "undefined") return question;
+            if (type === "object") {
+                if (typeof configValue.value === "undefined") return question;
+                else configValue = configValue.value;
+            }
 
-        return Object.assign({}, question, {
-            default: configValue
+            return Object.assign({}, question, {
+                default: configValue
+            });
+        })
+        .map(question => {
+            if (questionNamesRequireBindWhen.indexOf(question["name"]) === -1) {
+                return question;
+            }
+            return Object.assign({}, question, {
+                when: partial(question.when, config)
+            });
         });
-    });
 }
 
 const inquirerFuzzyPath = require("./prompts/inquirer-fuzzy-path");
@@ -379,6 +501,33 @@ function askSettingQuestions(config) {
     return inquirer
         .prompt(prefileQuestions(questions, config))
         .then(function(answers) {
+            const configData = config.all;
+            //--- if user didn't re-select credentials files,
+            //--- we needs to save to answers before clear the config
+            if (
+                answers["use-cloudsql-instance-credentials"] === true &&
+                configData["cloudsql-instance-credentials"] &&
+                configData["cloudsql-instance-credentials"]["value"] &&
+                configData["cloudsql-instance-credentials"]["data"] &&
+                answers["reselect-cloudsql-instance-credentials"] === false
+            ) {
+                answers["cloudsql-instance-credentials"]["value"] =
+                    configData["cloudsql-instance-credentials"]["value"];
+                answers["cloudsql-instance-credentials"]["data"] =
+                    configData["cloudsql-instance-credentials"]["data"];
+            }
+            if (
+                answers["use-storage-account-credentials"] === true &&
+                configData["storage-account-credentials"] &&
+                configData["storage-account-credentials"]["value"] &&
+                configData["storage-account-credentials"]["data"] &&
+                answers["reselect-storage-account-credentials"] === false
+            ) {
+                answers["storage-account-credentials"]["value"] =
+                    configData["storage-account-credentials"]["value"];
+                answers["storage-account-credentials"]["data"] =
+                    configData["storage-account-credentials"]["data"];
+            }
             config.clear();
             config.set(answers);
             config.set("creation-time", new Date().toISOString());
@@ -424,13 +573,13 @@ function askStartSecretsCreationWithoutQuestions(config) {
                     "Do you want to connect to kubernetes cluster to create secrets without going through any questions?",
                 choices: [
                     {
+                        name: "NO (Going through all questions)",
+                        value: false
+                    },
+                    {
                         name:
                             "YES (Create Secrets in Cluster using existing config now)",
                         value: true
-                    },
-                    {
-                        name: "NO (Going through all questions)",
-                        value: false
                     }
                 ]
             }

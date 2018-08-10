@@ -46,6 +46,12 @@ if (programOptions.print) {
     config.clear();
     console.log(chalk.green("All local saved config data has been deleted!"));
     process.exit();
+} else if (programOptions.execute) {
+    console.log("\n");
+    console.log(
+        chalk.green(`${appName} tool version: ${pkg.version} Execute Mode`)
+    );
+    console.log("Execute mode is still in development...");
 } else {
     clear();
     console.log("\n");

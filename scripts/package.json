@@ -29,6 +29,7 @@
     "nodemon": "^1.11.0",
     "pwgen": "^0.1.6",
     "strip-ansi": "^4.0.0",
+    "strip-json-comments": "^2.0.1",
     "tmp": "0.0.31",
     "toposort": "^1.0.6",
     "ts-node": "^3.0.4",
