@@ -19,7 +19,7 @@ export function retrieveLocalData(key, defaultValue) {
     if (!key || typeof key !== "string")
         throw new Error("Invalid key parameter!");
     try {
-        return JSON.parse(window.localStorage.getItem(key));
+        return JSON.parse(window.localStorage.getItem(key)) || defaultValue;
     } catch (e) {
         console.error(
             `Failed to retrieve search save data '${key}' from local storage: ${
