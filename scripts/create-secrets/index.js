@@ -67,7 +67,6 @@ if (programOptions.print) {
         })
         .catch(function(error) {
             hasError = true;
-            console.log(error);
             console.log(chalk.red(`Failed to create secrets: ${error}`));
         })
         .then(function() {

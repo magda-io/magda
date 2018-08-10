@@ -67,7 +67,10 @@ const questions = [
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
-            if (answers["use-cloudsql-instance-credentials"] === false) {
+            if (
+                answers["deploy-to-google-cloud"] === false ||
+                answers["use-cloudsql-instance-credentials"] === false
+            ) {
                 return false;
             }
             if (
@@ -91,7 +94,10 @@ const questions = [
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
-            if (answers["use-cloudsql-instance-credentials"] === false) {
+            if (
+                answers["deploy-to-google-cloud"] === false ||
+                answers["use-cloudsql-instance-credentials"] === false
+            ) {
                 return false;
             }
             if (
@@ -143,7 +149,10 @@ const questions = [
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
-            if (answers["use-storage-account-credentials"] === false) {
+            if (
+                answers["deploy-to-google-cloud"] === false ||
+                answers["use-storage-account-credentials"] === false
+            ) {
                 return false;
             }
             if (
@@ -167,7 +176,10 @@ const questions = [
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
-            if (answers["use-storage-account-credentials"] === false) {
+            if (
+                answers["deploy-to-google-cloud"] === false ||
+                answers["use-storage-account-credentials"] === false
+            ) {
                 return false;
             }
             if (
@@ -365,7 +377,7 @@ const questions = [
         choices: [
             {
                 name:
-                    "YES (Determin k8s namespace by $CI_JOB_TOKEN at runtime)",
+                    "YES (Determin k8s namespace by $CI_COMMIT_REF_SLUG at runtime)",
                 value: true
             },
             {
