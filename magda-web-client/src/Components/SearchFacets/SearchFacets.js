@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { config } from "../../config";
-import { Small, Medium } from "../../UI/Responsive";
+import { Medium } from "../../UI/Responsive";
 import Tooltip from "../../UI/Tooltip";
-import downArrowDark from "../../assets/downArrowDark.svg";
 import ClearAllButton from "./ClearAllButton";
 import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
 import FilterExplanation from "./FilterExplanation";
