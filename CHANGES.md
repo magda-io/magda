@@ -9,6 +9,7 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 
