@@ -11,6 +11,10 @@
 -   Allow user apply default date in filter
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
 
 ## 0.0.45
 
