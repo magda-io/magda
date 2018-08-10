@@ -1,5 +1,6 @@
 const fs = require("fs");
 const chalk = require("chalk");
+const trim = require("lodash/trim");
 
 function preloadConfig(configStore, executeOption) {
     return Promise.resolve().then(function() {
