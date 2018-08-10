@@ -1,14 +1,22 @@
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
+-   Added cronjob for broken-link-sleuther
+-   Remove all starting non word chars from organisation title
+-   Make pagination on mobile responsive.
 -   Fixed inconsistent case with format
 -   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Mobile menu style change
+-   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
+-   Added mechanism to produce api documentation
+-   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 
 ## 0.0.45
 
+-   Redirect CKAN/DGA Urls
 -   Add config for fallback banner
 -   prevent old content being loaded when navigating through page history
 -   Display a 'clear search' link after error message
@@ -20,6 +28,9 @@
 -   Fixed `Clear All` button not clear filter panel UI state
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
 -   Added more details in organisations/publishers page to reflect design.
+-   Adjusted sitemap and robots.txt to help google navigate around better
+-   Made the javascript work with chrome 41 (googlebot)
+-   Made the fallback banner site url configurable
 
 ## 0.0.44
 

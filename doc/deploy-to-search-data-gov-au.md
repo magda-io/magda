@@ -70,14 +70,38 @@ kubectl config use-context <prod-cluster-name>
 -   [ ] Helm upgrade prod
 
 If there were changes to the index versions, you'll need to set the search api to still point at the previous version of the index while the indexer builds the new one:
+
 ```bash
 helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda --set search-api.datasetsIndexVersion=<version>,search-api.regionsIndexVersion=<version>
 ```
 
-Once the indexer has finished (watch `kubectl logs -f <indexer pod name>`) or if there's no changes to the indices:
+Once the indexer has finished (watch `kubectl logs -f <indexer pod name>`) **or if there's no changes to the indices**:
+
 ```bash
 helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
+
+-   [ ] Upgrade es-data nodes
+
+There are two es-data nodes that don't automatically upgrade. Delete es-data-0
+
+```
+kubectl delete pods es-data-0
+```
+
+Then wait for the new one to come up and tail the logs
+
+```
+kubectl logs -f es-data-0
+```
+
+When it's started up (i.e. when it finishes whinging about dangling indexes), delete the other one
+
+```
+kubectl delete es-data-1
+```
+
+After es-data-1 is started back up, do a search and make sure it's still working.
 
 -   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
 

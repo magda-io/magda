@@ -1,4 +1,5 @@
 import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import cleanOrgTitle from "@magda/typescript-common/dist/util/cleanOrgTitle";
 import ProjectOpenDataTransformer from "./ProjectOpenDataTransformer";
 import * as moment from "moment";
 import * as URI from "urijs";
@@ -29,6 +30,7 @@ export default function createTransformer({
         organizationAspectBuilders: organizationAspectBuilders,
         libraries: {
             moment: moment,
+            cleanOrgTitle: cleanOrgTitle,
             URI: URI,
             jsonpath,
             lodash,

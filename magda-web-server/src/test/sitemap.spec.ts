@@ -37,7 +37,7 @@ describe("sitemap router", () => {
         }
     });
 
-    describe("/", () => {
+    describe("/sitemap.xml", () => {
         it("should reflect page tokens from registry", () => {
             const tokens = [0, 100, 200];
 
@@ -46,7 +46,7 @@ describe("sitemap router", () => {
                 .reply(200, tokens);
 
             return supertest(router)
-                .get("/")
+                .get("/sitemap.xml")
                 .expect(200)
                 .expect(checkRequestMetadata)
                 .then(res => parsePromise(res.text))
@@ -59,11 +59,12 @@ describe("sitemap router", () => {
                         token =>
                             baseExternalUrl +
                             "/sitemap/dataset/afterToken/" +
-                            token
+                            token +
+                            ".xml"
                     );
 
                     expect(urls).to.eql(
-                        [baseExternalUrl + "/sitemap/main"].concat(expected)
+                        [baseExternalUrl + "/sitemap/main.xml"].concat(expected)
                     );
                 });
         });
@@ -76,15 +77,15 @@ describe("sitemap router", () => {
                 .reply(500);
 
             return supertest(router)
-                .get("/")
+                .get("/sitemap.xml")
                 .expect(500);
         });
     });
 
-    describe("/main", () => {
+    describe("/sitemap/main.xml", () => {
         it("should return the home page", () => {
             return supertest(router)
-                .get("/main")
+                .get("/sitemap/main.xml")
                 .expect(200)
                 .expect(checkRequestMetadata)
                 .then(res => parsePromise(res.text))
@@ -96,7 +97,7 @@ describe("sitemap router", () => {
         });
     });
 
-    describe("/dataset/afterToken/:afterToken", () => {
+    describe("/sitemap/dataset/afterToken/:afterToken", () => {
         const token = "1234";
 
         it("should return the datasets pages for the corresponding datasets page with that token", () => {
@@ -113,7 +114,7 @@ describe("sitemap router", () => {
                 });
 
             return supertest(router)
-                .get(`/dataset/afterToken/${token}`)
+                .get(`/sitemap/dataset/afterToken/${token}.xml`)
                 .expect(200)
                 .expect(checkRequestMetadata)
                 .then(res => parsePromise(res.text))
@@ -143,7 +144,7 @@ describe("sitemap router", () => {
                 .reply(500);
 
             return supertest(router)
-                .get(`/dataset/afterToken/${token}`)
+                .get(`/sitemap/dataset/afterToken/${token}.xml`)
                 .expect(500);
         });
     });

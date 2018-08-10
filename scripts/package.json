@@ -10,9 +10,11 @@
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
     "create-pod-and-forward": "create-pod-and-forward.js",
     "retag-and-push": "retag-and-push.js",
+    "generate-api-documentation": "generate-api-documentation.js",
     "create-secrets": "create-secrets/index.js"
   },
   "devDependencies": {
+    "apidoc": "^0.17.6",
     "ansi-styles": "^3.2.1",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",

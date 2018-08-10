@@ -11,6 +11,7 @@ global:
   useCombinedDb: true
 
 gateway:
+  ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"
@@ -48,3 +49,5 @@ correspondence-api:
   smtpPort: 2525
   defaultRecipient: "alex.gilleran+magda@csiro.it"
   smtpHostname: "smtp.mailgun.org"
+web-server:
+  fallbackUrl: "https://data.gov.au"

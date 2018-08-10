@@ -75,11 +75,10 @@ const argv = yargs
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("showFallbackBanner", {
+    .option("fallbackUrl", {
         describe:
-            "Show a banner that allows people to go back to an older system.",
-        type: "boolean",
-        default: false
+            "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -163,7 +162,7 @@ app.get("/server-config.js", function(req, res) {
                     .segment("correspondence")
                     .toString()
         ),
-        showFallbackBanner: argv.showFallbackBanner
+        fallbackUrl: argv.fallbackUrl
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
@@ -183,7 +182,8 @@ const topLevelRoutes = [
     "projects",
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
-    "suggest"
+    "suggest",
+    "error"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -225,8 +225,19 @@ if (argv.devProxy) {
     });
 }
 
+const robotsTxt = `User-agent: *
+Crawl-delay: 100
+Disallow: /auth
+Disallow: /search
+
+Sitemap: ${argv.baseExternalUrl}sitemap.xml
+`;
+
+app.use("/robots.txt", (_, res) => {
+    res.status(200).send(robotsTxt);
+});
+
 app.use(
-    "/sitemap",
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
@@ -235,6 +246,22 @@ app.use(
         })
     })
 );
+
+// Proxy any other URL to 404 error page
+const maxErrorDataUrlLength = 1500;
+app.use("/", function(req, res) {
+    let redirectUri: any = new URI("/error");
+    const url =
+        req.originalUrl.length > maxErrorDataUrlLength
+            ? req.originalUrl.substring(0, maxErrorDataUrlLength)
+            : req.originalUrl;
+    const errorData = {
+        errorCode: 404,
+        url: url
+    };
+    redirectUri = redirectUri.escapeQuerySpace(false).search(errorData);
+    res.redirect(303, redirectUri.toString());
+});
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
