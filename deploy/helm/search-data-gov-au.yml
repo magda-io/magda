@@ -4,7 +4,7 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.44-RC1"
+        tag: "0.0.44"
     enableLivenessProbes: true
 tags:
     all: false
