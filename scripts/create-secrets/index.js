@@ -47,7 +47,7 @@ if (programOptions.print) {
     });
 } else if (programOptions.delete) {
     config.clear();
-    console.log(chalk.green("All local saved config data has been deleted!"));
+    console.log(chalk.green("All local saved config data has been removed!"));
     process.exit();
 } else if (programOptions.execute) {
     console.log(
