@@ -7,7 +7,7 @@ NOTE: Work in progress... this probably won't work 100% for you. But it's a star
 Please run `create-secrets` tool:
 
 ```bash
-`yarn bin`/create-secrets
+yarn run create-secrets
 ```
 
 and follow the instructions.

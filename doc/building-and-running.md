@@ -83,7 +83,7 @@ kubectl create configmap connector-config --from-file deploy/connector-config
 Please run `create-secrets` tool:
 
 ```bash
-`yarn bin`/create-secrets
+yarn run create-secrets
 ```
 
 and follow the instructions.
