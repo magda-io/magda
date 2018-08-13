@@ -162,5 +162,5 @@ export const config = {
         east: 155,
         north: -5
     },
-    showFallbackBanner: serverConfig.showFallbackBanner || false
+    fallbackUrl: serverConfig.fallbackUrl
 };

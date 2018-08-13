@@ -115,6 +115,7 @@ web-server:
             cpu: 100m
             memory: 100Mi
     disableAuthenticationFeatures: true
+    fallbackUrl: "https://data.gov.au"
 sleuther-broken-link:
     resources:
         requests:

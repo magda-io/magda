@@ -95,6 +95,7 @@ search-api:
       cpu: 100m
       memory: 0
 web-server:
+  fallbackUrl: "https://data.gov.au"
   resources:
     requests:
       cpu: 100m

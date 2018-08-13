@@ -9,12 +9,15 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Mobile menu style change
+-   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 -   Added a tooltip to organisation filter if it's clicked to from the org page the first time
 -   Hid filters on mobile
 -   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
 -   Added a more generic purple tooltip component
+-   Make source link wrap and add line break
 
 ## 0.0.45
 
@@ -31,7 +34,8 @@
 -   Change non-homepage search placeholder text color to WCAG AAA compliant
 -   Added more details in organisations/publishers page to reflect design.
 -   Adjusted sitemap and robots.txt to help google navigate around better
--   Made the javascript work with chrome 44 (googlebot)
+-   Made the javascript work with chrome 41 (googlebot)
+-   Made the fallback banner site url configurable
 
 ## 0.0.44
 
