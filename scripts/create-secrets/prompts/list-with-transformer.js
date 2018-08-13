@@ -3,7 +3,14 @@ const chalk = require("chalk");
 const figures = require("figures");
 const cliCursor = require("cli-cursor");
 
-class listWithTransformer extends List {
+/**
+ * A customized UI input (selection list).
+ * It's built on top of built-in `List` UI input with the following enhancement:
+ * - Support `transformer`. Therefore, I can display the answer in a different way.
+ * e.g. when you've selected `Yes. auto generate password`, I can display `the generated password`
+ * instead of default `Yes. auto generate password`
+ */
+class ListWithTransformer extends List {
     render(value) {
         // Render question
         var message = this.getQuestion();
@@ -91,4 +98,4 @@ function listRender(choices, pointer) {
     return output.replace(/\n$/, "");
 }
 
-module.exports = listWithTransformer;
+module.exports = ListWithTransformer;

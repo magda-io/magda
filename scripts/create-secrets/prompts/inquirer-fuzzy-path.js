@@ -9,7 +9,16 @@ const style = require("ansi-styles");
 const fuzzy = require("fuzzy");
 
 const readdir_ = util.promisify(fs.readdir);
+const maxScanDepth = 2;
 
+/**
+ * A customized UI input (A file picker).
+ * It's modified from: https://github.com/adelsz/inquirer-fuzzy-path
+ * Differences & improvements are:
+ * - Support validator
+ * - Fixed: cannot handle `ENOENT` correctly
+ * - Limit the file searching to 2 level deep to improve the performance
+ */
 class InquirerFuzzyPath extends InquirerAutocomplete {
     constructor(question, rl, answers) {
         const rootPath = question.rootPath || ".";
@@ -51,8 +60,6 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
         super.onSubmit(stripAnsi(line));
     }
 }
-
-const maxScanDepth = 2;
 
 function getPaths(rootPath, pattern, pathFilter) {
     const fuzzOptions = {
