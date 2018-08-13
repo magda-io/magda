@@ -201,7 +201,7 @@ const questions = [
         type: "list",
         name: "use-smtp-secret",
         message:
-            "Do you need to access STMP service for sending data request email?",
+            "Do you need to access SMTP service for sending data request email?",
         choices: [
             {
                 name: "YES",
@@ -413,13 +413,13 @@ const questions = [
     }
 ];
 
-function onlyAvailableForGoogleCloud(anwsers) {
-    return anwsers["deploy-to-google-cloud"];
+function onlyAvailableForGoogleCloud(answers) {
+    return answers["deploy-to-google-cloud"];
 }
 
 function onlyWhenQuestion(name, value) {
-    return anwsers => {
-        return anwsers[name] === value;
+    return answers => {
+        return answers[name] === value;
     };
 }
 

@@ -70,7 +70,7 @@ if (programOptions.print) {
             console.log(chalk.red(`Failed to create secrets: ${error}`));
         })
         .then(function() {
-            //--- cann't use finally
+            //--- can't use finally
             if (programOptions.execute !== true) {
                 //--- recover origin config data
                 config.all = configDataBak;

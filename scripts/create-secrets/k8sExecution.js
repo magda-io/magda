@@ -23,7 +23,6 @@ const dbPasswordNames = [
     "session-db-client"
 ];
 
-let env = process.env;
 function k8sExecution(config, shouldNotAsk = false) {
     try {
         return doK8sExecution(config, shouldNotAsk);
@@ -33,14 +32,14 @@ function k8sExecution(config, shouldNotAsk = false) {
 }
 
 function doK8sExecution(config, shouldNotAsk = false) {
-    env = getEnvByClusterType(config);
+    const env = getEnvByClusterType(config);
     let configData = Object.assign({}, config.all);
-    const ifAllowEnvVarOverride = configData["allow-env-override-settings"];
-    if (ifAllowEnvVarOverride) {
-        configData = overrideSettingWithEnvVars(configData);
+    const allowEnvVarOverride = configData["allow-env-override-settings"];
+    if (allowEnvVarOverride) {
+        configData = overrideSettingWithEnvVars(env, configData);
     }
-    validKubectl();
-    let p = Promise.resolve().then(function() {
+    let promise = Promise.resolve().then(function() {
+        checkIfKubectlValid(env);
         configData["cluster-namespace"] = trim(configData["cluster-namespace"]);
         if (!configData["cluster-namespace"]) {
             throw new Error(
@@ -49,70 +48,79 @@ function doK8sExecution(config, shouldNotAsk = false) {
             );
         }
     });
-    if (!checkNamespace(configData["cluster-namespace"])) {
+
+    if (!checkNamespace(env, configData["cluster-namespace"])) {
         if (shouldNotAsk) {
-            throw new Error(
-                `Namespace ${
-                    configData["cluster-namespace"]
-                } doesn't exist. Please create and try again.`
-            );
+            promise = promise.then(function() {
+                // --- leave error to be handled at end of then chain
+                throw new Error(
+                    `Namespace ${
+                        configData["cluster-namespace"]
+                    } doesn't exist. Please create and try again.`
+                );
+            });
         }
-        p = p
+        promise = promise
             .then(
                 askIfCreateNamespace.bind(null, configData["cluster-namespace"])
             )
-            .then(function(ifCreate) {
-                if (!ifCreate) {
-                    console.log(
-                        chalk.yellow(
-                            `You need to create namespace \`${
-                                configData["cluster-namespace"]
-                            }\` before try again.`
-                        )
+            .then(function(shouldCreateNamespace) {
+                if (!shouldCreateNamespace) {
+                    throw new Error(
+                        `You need to create namespace \`${
+                            configData["cluster-namespace"]
+                        }\` before try again.`
                     );
-                    process.exit();
                 } else {
-                    createNamespace(configData["cluster-namespace"]);
+                    createNamespace(env, configData["cluster-namespace"]);
                 }
             });
     }
-    return p.then(function() {
+    return promise.then(function() {
         const namespace = configData["cluster-namespace"];
+
         if (configData["use-cloudsql-instance-credentials"] === true) {
             createFileContentSecret(
+                env,
                 namespace,
                 "cloudsql-instance-credentials",
                 "credentials.json",
                 configData["cloudsql-instance-credentials"]
             );
         }
+
         if (configData["use-storage-account-credentials"] === true) {
             createFileContentSecret(
+                env,
                 namespace,
                 "storage-account-credentials",
                 "db-service-account-private-key.json",
                 configData["storage-account-credentials"]
             );
         }
+
         if (configData["use-smtp-secret"] === true) {
-            createSecret(namespace, "smtp-secret", {
+            createSecret(env, namespace, "smtp-secret", {
                 username: configData["smtp-secret-username"],
                 password: configData["smtp-secret-password"]
             });
         }
+
         (function() {
             const data = {};
             dbPasswordNames.forEach(key => {
                 data[key] = configData["db-passwords"];
             });
-            createSecret(namespace, "db-passwords", data);
+            createSecret(env, namespace, "db-passwords", data);
         })();
+
         if (configData["use-regcred"] === true) {
             /**
              * always use `regcred-password`
              * `use-regcred-password-from-env` has been taken care seperately
              */
             createDockerRegistrySecret(
+                env,
                 namespace,
                 "regcred",
                 configData["regcred-password"],
@@ -121,39 +129,45 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 configData["regcred-email"]
             );
         }
+
         if (
             configData["use-oauth-secrets-google"] === true ||
             configData["use-oauth-secrets-facebook"] === true
         ) {
             const data = {};
+
             if (configData["use-oauth-secrets-google"]) {
                 data["google-client-secret"] =
                     configData["oauth-secrets-google"];
             }
+
             if (configData["use-oauth-secrets-facebook"]) {
                 data["facebook-client-secret"] =
                     configData["oauth-secrets-facebook"];
             }
-            createSecret(namespace, "oauth-secrets", data);
+
+            createSecret(env, namespace, "oauth-secrets", data);
         }
 
         (function() {
             const data = {};
             data["jwt-secret"] = pwgen();
             data["session-secret"] = pwgen();
-            createSecret(namespace, "auth-secrets", data);
+            createSecret(env, namespace, "auth-secrets", data);
         })();
     });
 }
 
 function getEnvByClusterType(config) {
     const localClusterType = config.get("local-cluster-type");
+
     if (
         typeof localClusterType === "undefined" ||
         localClusterType !== "minikube"
     ) {
         return Object.assign({}, process.env);
     }
+
     const dockerEnvProcess = childProcess.execSync(
         "minikube docker-env --shell bash",
         { encoding: "utf8" }
@@ -173,12 +187,13 @@ function getEnvByClusterType(config) {
     return env;
 }
 
-function overrideSettingWithEnvVars(configData) {
+function overrideSettingWithEnvVars(env, configData) {
     getEnvVarInfo().forEach(item => {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
         configData[item.settingName] = envVal;
     });
+
     if (
         configData["use-regcred-password-from-env"] === true &&
         env["CI_JOB_TOKEN"] &&
@@ -186,6 +201,7 @@ function overrideSettingWithEnvVars(configData) {
     ) {
         configData["regcred-password"] = env["CI_JOB_TOKEN"];
     }
+
     if (
         configData["get-namespace-from-env"] === true &&
         env["CI_COMMIT_REF_SLUG"] &&
@@ -193,6 +209,7 @@ function overrideSettingWithEnvVars(configData) {
     ) {
         configData["cluster-namespace"] = env["CI_COMMIT_REF_SLUG"];
     }
+
     if (
         typeof configData["manual-db-passwords"] === "object" &&
         configData["manual-db-passwords"]["answer"] === false &&
@@ -202,10 +219,11 @@ function overrideSettingWithEnvVars(configData) {
         configData["db-passwords"] =
             configData["manual-db-passwords"]["password"];
     }
+
     return configData;
 }
 
-function validKubectl() {
+function checkIfKubectlValid(env) {
     try {
         childProcess.execSync("kubectl", {
             stdio: "ignore",
@@ -219,7 +237,7 @@ function validKubectl() {
     }
 }
 
-function checkNamespace(namespace) {
+function checkNamespace(env, namespace) {
     try {
         childProcess.execSync(`kubectl get namespace ${namespace}`, {
             stdio: "ignore",
@@ -236,14 +254,14 @@ function checkNamespace(namespace) {
     }
 }
 
-function createNamespace(namespace) {
+function createNamespace(env, namespace) {
     childProcess.execSync(`kubectl create namespace ${namespace}`, {
         stdio: "inherit",
         env: env
     });
 }
 
-function getTplObj(name, namespace) {
+function buildTemplateObject(name, namespace) {
     return {
         apiVersion: "v1",
         kind: "Secret",
@@ -257,16 +275,24 @@ function getTplObj(name, namespace) {
     };
 }
 
-function createFileContentSecret(namespace, secretName, fileName, content) {
+function createFileContentSecret(
+    env,
+    namespace,
+    secretName,
+    fileName,
+    content
+) {
     if (typeof content !== "string") {
         content = JSON.stringify(content);
     }
-    createSecret(namespace, secretName, {
+
+    createSecret(env, namespace, secretName, {
         [fileName]: content
     });
 }
 
 function createDockerRegistrySecret(
+    env,
     namespace,
     secretName,
     password,
@@ -288,6 +314,7 @@ function createDockerRegistrySecret(
     const data = {};
     data[".dockerconfigjson"] = JSON.stringify(dockerConfig);
     createSecret(
+        env,
         namespace,
         secretName,
         data,
@@ -296,20 +323,32 @@ function createDockerRegistrySecret(
     );
 }
 
-function createSecret(namespace, secretName, data, encodeAllDataFields, type) {
-    const configObj = getTplObj(secretName, namespace);
+function createSecret(
+    env,
+    namespace,
+    secretName,
+    data,
+    encodeAllDataFields,
+    type
+) {
+    const configObj = buildTemplateObject(secretName, namespace);
     configObj.data = data;
+
     if (type) configObj.type = type;
+
     if (encodeAllDataFields !== false) {
         Object.keys(configObj.data).forEach(key => {
             configObj.data[key] = Base64.encode(configObj.data[key]);
         });
     }
+
     const configContent = JSON.stringify(configObj);
+
     childProcess.execSync(`kubectl apply --namespace ${namespace} -f -`, {
         input: configContent,
         env: env
     });
+
     console.log(
         chalk.green(
             `Successfully created secret \`${secretName}\` in namespace \`${namespace}\`.`

@@ -21,7 +21,6 @@ and follow the instructions.
 -   **indexer.elasticsearch.useGcsSnapshots**: Do you want to have elasticsearch snapshot to GCS? If so you'll need to create a GCS bucket for it, and set that in gcsSnapshotBucket. You'll also need to make sure your GKE cluster has access to GCS when you create it.
 -   **gateway.loadBalancerIP**: What's the external IP you want to use?
 -   **gateway.auth.x**: Put the ids of your google/facebook apps for OAuth if you have them.
--   **feedback-api.gitHubIssuesUrl**: Put the API URL of your (private) GitHub repo where feedback issues will be created, e.g. `https://api.github.com/repos/TerriaJS/Magda-Feedback/issues`. You also need to create secret called `access-tokens` with a key `github-for-feedback` containing a personal access token with permissions to create issues in the private repo (this secret is currently not covered by `create-secrets` tool in step 2).
 
 If using Google Cloud SQL follow the instructions here https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine
 
