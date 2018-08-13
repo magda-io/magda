@@ -5,7 +5,7 @@ metadata:
 data:
   # When the config map is mounted as a volume, these will be created as files.
   web.json: '{
+    {{- if .Values.fallbackUrl -}} "fallbackUrl": {{ .Values.fallbackUrl | quote }}, {{- end -}}
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
-    "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
-    "showFallbackBanner": {{ .Values.showFallbackBanner }}
+    "baseUrl": {{ .Values.baseUrl | default "/" | quote }}
   }'

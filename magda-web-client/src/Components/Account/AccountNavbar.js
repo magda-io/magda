@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { NavLink, withRouter } from "react-router-dom";
 import { bindActionCreators } from "redux";
 import { requestSignOut } from "../../actions/userManagementActions";
 
@@ -16,9 +16,9 @@ class AccountNavbar extends React.Component {
                 {this.props.user ? (
                     [
                         <li key="/account">
-                            <Link to={`/account`}>
+                            <NavLink to={`/account`}>
                                 {this.props.user.displayName}
-                            </Link>
+                            </NavLink>
                         </li>,
                         <li key="/signOut">
                             <a href="" onClick={this.signOut.bind(this)}>
@@ -28,9 +28,9 @@ class AccountNavbar extends React.Component {
                     ]
                 ) : (
                     <li key="/account">
-                        <Link to={`/account`}>
+                        <NavLink to={`/account`}>
                             <span>Sign In</span>
-                        </Link>
+                        </NavLink>
                     </li>
                 )}
             </React.Fragment>
@@ -55,7 +55,12 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(AccountNavbar);
+// This component is connected to redux via connect, and is not a route component,
+// therefore does not get updated when location change
+// we need to explicitly make it update by wrapping it in `withRouter`
+export default withRouter(
+    connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(AccountNavbar)
+);

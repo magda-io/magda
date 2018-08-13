@@ -26,7 +26,7 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
-routes: 
+routes:
   search:
     to: http://search-api/v0
   registry:
@@ -47,6 +47,8 @@ routes:
     to: http://feedback-api/v0
   correspondence:
     to: http://correspondence-api/v0/public
+  apidocs:
+    to: http://apidocs-server/
 helmet: {}
 csp:
   browserSniff: false

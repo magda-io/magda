@@ -47,6 +47,12 @@ export function requestPublisherError(error: FetchError): FacetAction {
     };
 }
 
+export function resetFetchPublisher() {
+    return {
+        type: actionTypes.RESET_FETCH_PUBLISHER
+    };
+}
+
 function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
@@ -55,10 +61,15 @@ function fetchPublishers(start, query) {
             config.resultsPerPage}&limit=${config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then(json => {
                 return dispatch(receivePublishers(json, query));
@@ -101,10 +112,15 @@ function fetchPublisher(id) {
 
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then(json => {
                 return dispatch(receivePublisher(json));

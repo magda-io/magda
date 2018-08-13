@@ -1,3 +1,5 @@
+const cleanOrgTitle = libraries.cleanOrgTitle;
+
 let phone = undefined;
 let website = undefined;
 let email = undefined;
@@ -20,7 +22,7 @@ if (organization && organization.extras && organization.extras.length) {
 
 const data = {
     name: organization.name,
-    title: organization.title,
+    title: cleanOrgTitle(organization.title),
     description: organization.description,
     imageUrl: organization.image_display_url || organization.image_url,
     phone,
