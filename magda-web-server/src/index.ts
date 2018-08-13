@@ -230,7 +230,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${argv.baseExternalUrl}sitemap.xml
+Sitemap: ${argv.baseExternalUrl}/sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
