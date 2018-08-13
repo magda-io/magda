@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.45-RC1",
+  "version": "0.0.46-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -15,7 +15,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.45-RC1",
+    "@magda/typescript-common": "^0.0.46-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -45,8 +45,8 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
+    "@magda/scripts": "^0.0.46-0",
     "@types/chai": "^4.0.1",
-    "@magda/scripts": "^0.0.45-RC1",
     "@types/compression": "^0.0.36",
     "@types/cors": "^2.8.1",
     "@types/ejs": "^2.3.33",
@@ -65,10 +65,10 @@
     "@types/supertest": "^2.0.2",
     "@types/urijs": "^1.15.34",
     "@types/yargs": "^8.0.2",
-    "request": "^2.79.0",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
+    "request": "^2.79.0",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "typescript": "~2.5.0"
