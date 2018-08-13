@@ -19,6 +19,7 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
         });
         super(_question, rl, answers);
     }
+
     search(searchTerm) {
         return super.search(searchTerm).then(value => {
             this.currentChoices.getChoice = choiceIndex => {
@@ -34,6 +35,7 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
             };
         });
     }
+
     onSubmit(line) {
         if (typeof this.opt.validate === "function") {
             var validationResult = this.opt.validate(
