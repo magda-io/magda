@@ -39,6 +39,10 @@ function doK8sExecution(config, shouldNotAsk = false) {
         configData = overrideSettingWithEnvVars(env, configData);
     }
     let promise = Promise.resolve().then(function() {
+        /**
+         * All errors / exceptions should be process through promise chain rather than stop program here.
+         * There are different logic outside doK8sExecution requires some clean-up job to be done before exit program.
+         */
         checkIfKubectlValid(env);
         configData["cluster-namespace"] = trim(configData["cluster-namespace"]);
         if (!configData["cluster-namespace"]) {
@@ -52,7 +56,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
     if (!checkNamespace(env, configData["cluster-namespace"])) {
         if (shouldNotAsk) {
             promise = promise.then(function() {
-                // --- leave error to be handled at end of then chain
+                // --- leave error to be handled at end of then chain. see above
                 throw new Error(
                     `Namespace ${
                         configData["cluster-namespace"]
@@ -106,13 +110,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             });
         }
 
-        (function() {
-            const data = {};
-            dbPasswordNames.forEach(key => {
-                data[key] = configData["db-passwords"];
-            });
-            createSecret(env, namespace, "db-passwords", data);
-        })();
+        createDbPasswords(env, namespace, configData);
 
         if (configData["use-regcred"] === true) {
             /**
@@ -149,12 +147,10 @@ function doK8sExecution(config, shouldNotAsk = false) {
             createSecret(env, namespace, "oauth-secrets", data);
         }
 
-        (function() {
-            const data = {};
-            data["jwt-secret"] = pwgen();
-            data["session-secret"] = pwgen();
-            createSecret(env, namespace, "auth-secrets", data);
-        })();
+        createSecret(env, namespace, "auth-secrets", {
+            "jwt-secret": pwgen(),
+            "session-secret": pwgen()
+        });
     });
 }
 
@@ -273,6 +269,17 @@ function buildTemplateObject(name, namespace) {
             creationTimestamp: null
         }
     };
+}
+
+function createDbPasswords(env, namespace, configData) {
+    /**
+     * dbPasswordNames is defined as const at top of the file
+     */
+    const data = {};
+    dbPasswordNames.forEach(key => {
+        data[key] = configData["db-passwords"];
+    });
+    createSecret(env, namespace, "db-passwords", data);
 }
 
 function createFileContentSecret(
