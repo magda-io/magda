@@ -1,7 +1,6 @@
 ---
-title: How do you use public data?
+title: IP data – now intuitive, visually
 titleImage: story6.png
-titleUrl: "https://data.gov.au/showcase"
+titleUrl: "https://blog.data.gov.au/"
 ---
-
-We’re keen to hear how you’re using public data. Submit a use case and tell us what you discovered after download.
+<p>IP Australia has a wealth of intellectual property data. But with more than 40 interconnected data sets, it is enough to make the most data-savvy users shake in their slippers.</p>
