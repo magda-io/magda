@@ -70,13 +70,7 @@ class Header extends Component {
                                     </div>
                                 </Link>
                             </div>
-                            <div
-                                className={
-                                    this.state.isMobileMenuOpen
-                                        ? ""
-                                        : "col-md-6 col-xs-12"
-                                }
-                            >
+                            <div className="col-md-6 col-xs-12">
                                 <button
                                     id="menu-toggle"
                                     className={`menu-toggle au-btn au-btn--block au-btn--tertiary icon au-accordion--${
@@ -90,6 +84,8 @@ class Header extends Component {
                                         ? "Close menu"
                                         : "Open menu"}
                                 </button>
+                            </div>
+                            <div className="col-md-6 col-xs-12">
                                 <div
                                     className={`au-accordion__body au-accordion--${
                                         this.state.isMobileMenuOpen
