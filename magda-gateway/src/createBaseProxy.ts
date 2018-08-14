@@ -27,6 +27,9 @@ export default function createBaseProxy(): httpProxy {
         /**
          * Remove security sensitive headers
          * `server` header is from scala APIs
+         * Proxied content has to be filtered from here
+         * while other content (produced locally by gateway) has been
+         * taken care of by `app.disable("x-powered-by");` in index.js
          */
         Object.keys(proxyRes.headers).forEach(headerKey => {
             headerKey = headerKey.toLowerCase();
