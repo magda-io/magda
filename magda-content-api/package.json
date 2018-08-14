@@ -1,5 +1,5 @@
 {
-  "name": "@magda/contents-api",
+  "name": "@magda/content-api",
   "version": "0.0.46-0",
   "scripts": {
     "build": "yarn run compile",
@@ -43,7 +43,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-contents-api",
+      "name": "data61/magda-content-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

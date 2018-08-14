@@ -1,5 +1,5 @@
 {
-  "name": "@magda/migrator-contents-db",
+  "name": "@magda/migrator-content-db",
   "version": "0.0.46-0",
   "description": "The MAGDA database for storing content data.",
   "license": "Apache-2.0",
@@ -11,7 +11,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-contents-db",
+      "name": "data61/magda-migrator-content-db",
       "include": "Dockerfile sql"
     }
   },

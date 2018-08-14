@@ -43,7 +43,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     throw new Error(`Unsupported format requested: ${format}`);
             }
         } catch (e) {
-            res.status(500).end();
+            res.status(500)
+                .send(e.stack + "")
+                .end();
             console.error(e);
         }
     });

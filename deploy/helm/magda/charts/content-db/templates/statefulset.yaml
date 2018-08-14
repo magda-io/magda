@@ -2,21 +2,21 @@
 apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
-  name: contents-db
+  name: content-db
 spec:
-  serviceName: contents-db
+  serviceName: content-db
   replicas: 1
   selector:
     matchLabels:
-      service: contents-db
+      service: content-db
   template:
     metadata:
       labels:
-        service: contents-db
+        service: content-db
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-      - name: contents-db
+      - name: content-db
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ template "postgres" . }}

@@ -32,7 +32,7 @@ export default {
         apidocs: {
             to: "http://localhost:6118"
         },
-        contents: {
+        content: {
             to: "http://localhost:6119/v0"
         }
     },

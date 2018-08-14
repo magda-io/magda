@@ -1,16 +1,16 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE public.contents
+CREATE TABLE public.content
 (
     id character varying(200) NOT NULL,
     type character varying(200) NOT NULL,
     content text NOT NULL,
-    CONSTRAINT contents_pkey PRIMARY KEY (id)
+    CONSTRAINT content_pkey PRIMARY KEY (id)
 )
 WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
 
-ALTER TABLE public.contents
+ALTER TABLE public.content
     OWNER to postgres;

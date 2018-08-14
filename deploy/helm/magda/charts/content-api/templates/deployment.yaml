@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: contents-api
+  name: content-api
 spec:
   replicas: {{ .Values.replicas | default 1 }}
   strategy:
@@ -10,23 +10,23 @@ spec:
   template:
     metadata:
       labels:
-        service: contents-api
+        service: content-api
     spec:
       containers:
-      - name: contents-api
+      - name: content-api
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--dbHost", {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "contents-db" {{- end }},
+            "--dbHost", "content-db",
             "--dbPort", "5432"
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /v0/contents/logo.svg
+            path: /v0/content/logo.bin
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -52,5 +52,5 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-passwords
-              key: contents-db-client
+              key: content-db-client
 {{- end }}

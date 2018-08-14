@@ -8,7 +8,7 @@ export interface PoolCreationOptions {
 export default function createPool(options: PoolCreationOptions) {
     //   conString: "postgres://postgres@192.168.99.100:30544/postgres"
     const config = {
-        database: "contents", //env var: PGDATABASE
+        database: "content", //env var: PGDATABASE
         host: options.dbHost, // Server hosting the postgres database
         port: options.dbPort, //env var: PGPORT
         max: 10, // max number of clients in the pool

@@ -18,7 +18,7 @@ export default class Database {
 
     getContentById(id: string): Promise<Maybe<Content>> {
         return this.pool
-            .query('SELECT * FROM contents WHERE "id" = $1', [id])
+            .query('SELECT * FROM content WHERE "id" = $1', [id])
             .then(res => arrayToMaybe(res.rows));
     }
 }
