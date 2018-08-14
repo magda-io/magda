@@ -15,6 +15,7 @@
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 -   Updated header logo to be correct branding type
 -   Uses the Header component from Design System
+-   Added `create-secrets` script for managing secrets
 -   Make source link wrap and add line break
 
 ## 0.0.45
