@@ -24,6 +24,10 @@ export default function createBaseProxy(): httpProxy {
         ) {
             proxyRes.headers["Cache-Control"] = "public, max-age=60";
         }
+        /**
+         * Remove security sensitive headers
+         * `server` header is from scala APIs
+         */
         Object.keys(proxyRes.headers).forEach(headerKey => {
             headerKey = headerKey.toLowerCase();
             if (headerKey === "x-powered-by" || headerKey === "server") {
