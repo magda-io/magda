@@ -177,7 +177,7 @@ files.forEach(function(connectorConfigFile) {
             schedule:
                 configFile.schedule && prod
                     ? configFile.schedule
-                    : "0 14 * * 0", // 12am Sydney time on Sunday
+                    : "0 14 * * 6", // 12am Sydney time on Sunday
             jobTemplate: {
                 spec: jobSpec
             }
