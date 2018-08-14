@@ -35,9 +35,16 @@ function doK8sExecution(config, shouldNotAsk = false) {
     const env = getEnvByClusterType(config);
     let configData = Object.assign({}, config.all);
     const allowEnvVarOverride = configData["allow-env-override-settings"];
+
+    configData = overrideSettingWithEnvVarsBasedOnQuestionAnswers(
+        env,
+        configData
+    );
+
     if (allowEnvVarOverride) {
         configData = overrideSettingWithEnvVars(env, configData);
     }
+
     let promise = Promise.resolve().then(function() {
         /**
          * All errors / exceptions should be process through promise chain rather than stop program here.
@@ -183,38 +190,49 @@ function getEnvByClusterType(config) {
     return env;
 }
 
+/**
+ * the difference between this function and `overrideSettingWithEnvVars` is:
+ * `overrideSettingWithEnvVars` allows users to override any questions answers
+ * and it will only be run when the answer to question
+ * `Do you want to allow environment variables (see --help for full list) to override current settings at runtime?`
+ * is `YES`.
+ * This function will always be run so if user said YES to a specific question
+ * (e.g. Do you want namespace to be overiden), that particular question answer will be overriden.
+ */
+function overrideSettingWithEnvVarsBasedOnQuestionAnswers(env, configData) {
+    if (
+        configData["get-namespace-from-env"] === true &&
+        env[settingNameToEnvVarName("cluster-namespace")]
+    ) {
+        configData["cluster-namespace"] =
+            env[settingNameToEnvVarName("cluster-namespace")];
+    }
+
+    if (
+        configData["use-regcred-password-from-env"] === true &&
+        env["CI_JOB_TOKEN"]
+    ) {
+        configData["regcred-password"] = env["CI_JOB_TOKEN"];
+    }
+
+    if (
+        typeof configData["manual-db-passwords"] === "object" &&
+        configData["manual-db-passwords"]["answer"] === false &&
+        configData["manual-db-passwords"]["password"]
+    ) {
+        configData["db-passwords"] =
+            configData["manual-db-passwords"]["password"];
+    }
+
+    return configData;
+}
+
 function overrideSettingWithEnvVars(env, configData) {
     getEnvVarInfo().forEach(item => {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
         configData[item.settingName] = envVal;
     });
-
-    if (
-        configData["use-regcred-password-from-env"] === true &&
-        env["CI_JOB_TOKEN"] &&
-        !env[settingNameToEnvVarName("regcred-password")]
-    ) {
-        configData["regcred-password"] = env["CI_JOB_TOKEN"];
-    }
-
-    if (
-        configData["get-namespace-from-env"] === true &&
-        env["CI_COMMIT_REF_SLUG"] &&
-        !env[settingNameToEnvVarName("cluster-namespace")]
-    ) {
-        configData["cluster-namespace"] = env["CI_COMMIT_REF_SLUG"];
-    }
-
-    if (
-        typeof configData["manual-db-passwords"] === "object" &&
-        configData["manual-db-passwords"]["answer"] === false &&
-        configData["manual-db-passwords"]["password"] &&
-        !env[settingNameToEnvVarName("db-passwords")]
-    ) {
-        configData["db-passwords"] =
-            configData["manual-db-passwords"]["password"];
-    }
 
     return configData;
 }

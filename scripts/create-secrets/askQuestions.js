@@ -64,7 +64,7 @@ const questions = [
                 value: true
             }
         ],
-        //--- config needs to prefill later before run questionnaire
+        //--- config parameter needs to be prefilled later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
             if (
@@ -91,7 +91,7 @@ const questions = [
         rootPath: path.resolve(),
         message:
             "Please provide the path to the credentials JSON file for your Google SQL cloud service access:",
-        //--- config needs to prefill later before run questionnaire
+        //--- config parameter needs to be prefilled later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
         when: function(config, answers) {
             if (
@@ -373,16 +373,15 @@ const questions = [
         type: "list",
         name: "get-namespace-from-env",
         message:
-            "Do you want to use environment variable ($CI_COMMIT_REF_SLUG) to determine which k8s namespace the secrets should be create into or input manually now?",
+            "Specify a namespace or leave blank and override by env variable later?",
         choices: [
             {
-                name:
-                    "YES (Determin k8s namespace by $CI_COMMIT_REF_SLUG at runtime)",
-                value: true
+                name: "YES (Specify a namespace)",
+                value: false
             },
             {
-                name: "NO (input manually now)",
-                value: false
+                name: "NO (leave blank and override by env variable later)",
+                value: true
             }
         ]
     },
