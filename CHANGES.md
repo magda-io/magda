@@ -14,6 +14,7 @@
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 -   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
 
 ## 0.0.45
 
