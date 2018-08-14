@@ -65,8 +65,9 @@ csp:
     - rum-static.pingdom.net
     - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
     - https://tagmanager.google.com/debug
-    - http://assets.zendesk.com/embeddable_framework/main.js
-    - https://assets.zendesk.com/embeddable_framework/main.js
+    - assets.zendesk.com
+    - static.zdassets.com
+    - ekr.zdassets.com
     objectSrc:
     - "''none''"
     sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
