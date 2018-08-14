@@ -587,10 +587,6 @@
   dependencies:
     email-validator "*"
 
-"@types/escape-string-regexp@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/escape-string-regexp/-/escape-string-regexp-1.0.0.tgz#052d16d87db583b72daceae4eaabddb66954424c"
-
 "@types/escape-string-regexp@^0.0.32":
   version "0.0.32"
   resolved "https://registry.yarnpkg.com/@types/escape-string-regexp/-/escape-string-regexp-0.0.32.tgz#296005808f51d27fb2a2de8d1ca080a91ee3375c"
