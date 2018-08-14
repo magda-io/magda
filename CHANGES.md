@@ -17,7 +17,9 @@
 -   Hid filters on mobile
 -   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
 -   Added a more generic purple tooltip component
+-   Added `create-secrets` script for managing secrets
 -   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
 
 ## 0.0.45
 

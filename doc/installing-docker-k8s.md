@@ -1,16 +1,14 @@
 # Installing Docker Kubernetes
 
-In the latest Edge release for MacOS, Docker have included a local kubernetes cluster that works a bit like Minikube - although in our experience it runs a bit better.
+The latest releases of Docker Desktop for Windows and Mac include a Kubernetes setup that works similar to minikube - although in our experience it runs a bit better.
 
 Download and install:
 
--   [Docker for Mac Edge Client](https://docs.docker.com/docker-for-mac/install/#download-docker-for-mac)
-
-Make sure you get the EDGE client - as of the time of writing Kubernetes isn't in the stable client.
+-   [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
 ## Setup
 
-Start up Docker for Mac. Find the icon in the top-right hand corner of the screen and open "Preferences". Then navigate to "Advanced" and set the resources so your cluster has 2 processors and 4gb of RAM.
+Start docker, and find the Docker preferences. Then navigate to "Advanced" and set the resources so your cluster has 2 processors and 4gb of RAM.
 
 ![Advanced Tab Screenshot](./screenshots/set-resources-docker-macos.png)
 
