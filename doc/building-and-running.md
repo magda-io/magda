@@ -76,13 +76,22 @@ lerna run docker-build-local --include-filtered-dependencies
 ```bash
 kubectl create configmap config --from-file deploy/kubernetes/config
 kubectl create configmap connector-config --from-file deploy/connector-config
-deploy/helm/create-auth-secrets.sh
 ```
+
+## Create the necessary k8s secrets
+
+Please run `create-secrets` tool:
+
+```bash
+yarn run create-secrets
+```
+
+and follow the instructions.
 
 ## Install Magda on your minikube cluster
 
 ```bash
-helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda  
+helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.

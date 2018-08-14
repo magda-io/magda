@@ -13,6 +13,7 @@
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Added `create-secrets` script for managing secrets
 -   Make source link wrap and add line break
 
 ## 0.0.45
