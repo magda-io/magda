@@ -1,6 +1,7 @@
 ## 0.0.47
 
 -   Hyperlink organisation url on organisation page
+-   Remove browser default button background for search facet (for safari and IE)
 
 ## 0.0.46
 

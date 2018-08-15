@@ -40,7 +40,6 @@ body {
 
     .au-btn.au-btn--secondary,
     a.au-btn.au-btn--secondary {
-        color: $AU-color-foreground-action;
         background: transparent;
         color: $AU-color-foreground-action;
     }
@@ -117,6 +116,10 @@ a.au-btn:hover:not(:disabled) {
 
 div {
     box-sizing: border-box;
+}
+
+button {
+    background: transparent;
 }
 
 .breadcrumb {
