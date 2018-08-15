@@ -174,7 +174,10 @@ files.forEach(function(connectorConfigFile) {
             name: "connector-" + basename
         },
         spec: {
-            schedule: configFile.schedule || "* * */3 * *",
+            schedule:
+                configFile.schedule && prod
+                    ? configFile.schedule
+                    : "0 14 * * 6", // 12am Sydney time on Sunday
             jobTemplate: {
                 spec: jobSpec
             }

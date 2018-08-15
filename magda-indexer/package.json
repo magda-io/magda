@@ -1,6 +1,6 @@
 {
   "name": "@magda/indexer",
-  "version": "0.0.46-0",
+  "version": "0.0.47-0",
   "description": "Indexes the registry for searching.",
   "scripts": {
     "build": "yarn run compile",
