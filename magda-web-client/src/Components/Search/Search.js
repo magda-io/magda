@@ -160,9 +160,13 @@ class Search extends Component {
     render() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
+        const currentPage =
+            +queryString.parse(this.props.location.search).page || 1;
         return (
             <ReactDocumentTitle
-                title={`Searching for ${searchText} | ${config.appName}`}
+                title={`Datasets search: ${searchText} | Page ${currentPage} | ${
+                    config.appName
+                }`}
             >
                 <div>
                     {this.props.isFetching && <ProgressBar />}
@@ -222,12 +226,7 @@ class Search extends Component {
                                         {this.props.hitCount >
                                             config.resultsPerPage && (
                                             <Pagination
-                                                currentPage={
-                                                    +queryString.parse(
-                                                        this.props.location
-                                                            .search
-                                                    ).page || 1
-                                                }
+                                                currentPage={currentPage}
                                                 maxPage={Math.ceil(
                                                     this.props.hitCount /
                                                         config.resultsPerPage

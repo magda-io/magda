@@ -496,8 +496,8 @@ class RecordHandler extends React.Component {
             ? this.props.distribution.title
             : this.props.dataset.title;
         const type = this.props.match.params.distributionId
-            ? "Resource"
-            : "Dataset";
+            ? "Resources"
+            : "Datasets";
 
         return (
             <ReactDocumentTitle
