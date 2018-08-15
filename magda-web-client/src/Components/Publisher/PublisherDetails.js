@@ -5,7 +5,10 @@ import { Link } from "react-router-dom";
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
-import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
+import {
+    fetchPublisherIfNeeded,
+    resetFetchPublisher
+} from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
@@ -39,6 +42,10 @@ class PublisherDetails extends Component {
                 publisher: this.props.publisher.name
             });
         }
+    }
+
+    componentWillUnmount() {
+        this.props.resetFetchPublisher();
     }
 
     renderContent() {
@@ -162,6 +169,7 @@ function mapDispatchToProps(dispatch) {
     return bindActionCreators(
         {
             fetchPublisherIfNeeded: fetchPublisherIfNeeded,
+            resetFetchPublisher: resetFetchPublisher,
             fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
             resetDatasetSearch: resetDatasetSearch
         },

@@ -9,9 +9,14 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Mobile menu style change
+-   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
 -   Hyperlink organisation url on organisation page
+-   Added `create-secrets` script for managing secrets
+-   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
 
 ## 0.0.45
 
