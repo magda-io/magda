@@ -94,14 +94,25 @@ class PublisherDetails extends Component {
                                 {details.email && (
                                     <div className="publisher-details-contacts-item">
                                         Email:&nbsp;
-                                        <a href={emailLink(details.email)}>
+                                        <a
+                                            href={emailLink(details.email)}
+                                            className="url"
+                                        >
                                             {details.email}
                                         </a>
                                     </div>
                                 )}
                                 {details.website && (
                                     <div className="publisher-details-contacts-item">
-                                        Website: {details.website}
+                                        Website:{" "}
+                                        <a
+                                            href={details.website}
+                                            className="url"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {details.website}
+                                        </a>
                                     </div>
                                 )}
                                 {details.phone && (

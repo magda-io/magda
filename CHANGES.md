@@ -1,5 +1,7 @@
 ## 0.0.47
 
+-   Hyperlink organisation url on organisation page
+
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
