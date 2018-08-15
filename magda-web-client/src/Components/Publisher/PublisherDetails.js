@@ -108,6 +108,8 @@ class PublisherDetails extends Component {
                                         <a
                                             href={details.website}
                                             className="url"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                         >
                                             {details.website}
                                         </a>
