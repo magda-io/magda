@@ -2,23 +2,27 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingressClass | default "gce" }}
+    {{- if .Values.ingressClass }}
+    kubernetes.io/ingress.class: {{ .Values.ingressClass }}
+    {{- end }}
     {{- if .Values.ipName }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
     {{- end }}
   name: ingress
 spec:
+  {{- if .Values.enableTls }}
   tls:
   - hosts:
     - {{ .Values.hostname }}
-  {{- if .Values.enableTls }}
     secretName: magda-cert-tls
   {{- end }}
   rules:
-  - host: {{ .Values.hostname }}
-    http:
+  - http:
       paths:
       - backend:
           serviceName: {{ .Values.targetService | default "gateway" }}
           servicePort: 80
-        path: {{ if eq .Values.ingressClass "gce" -}} /* {{- else -}} / {{- end }}
+        path: {{ if eq (.Values.ingressClass | default "") "gce" -}} /* {{- else -}} / {{- end }}
+    {{- if .Values.hostname  }}
+    host: {{ .Values.hostname }}
+    {{- end }}

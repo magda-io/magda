@@ -22,9 +22,6 @@ ingress:
   hostname: dev.magda.io
   ingressClass: nginx
 gateway:
-  service:
-    type: LoadBalancer
-  loadBalancerIP: "104.199.180.124"
   ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true
   auth:
@@ -38,6 +35,31 @@ gateway:
     requests:
       cpu: 50m
       memory: 100Mi
+  csp:
+    directives:
+      scriptSrc:
+      - "''self''"
+      - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
+      - "data:" # Also for VWO
+      - browser-update.org
+      - dev.visualwebsiteoptimizer.com
+      - platform.twitter.com
+      - www.googletagmanager.com
+      - www.google-analytics.com
+      - rum-static.pingdom.net
+      - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
+      - https://tagmanager.google.com/debug
+      - http://assets.zendesk.com/embeddable_framework/main.js
+      - https://assets.zendesk.com/embeddable_framework/main.js
+      objectSrc:
+      - "''none''"
+      sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
+      - allow-scripts
+      - allow-same-origin
+      - allow-popups
+      - allow-forms
+      - allow-popups-to-escape-sandbox
+      reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 combined-db:
   resources:
     requests:
