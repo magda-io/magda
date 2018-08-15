@@ -37,7 +37,7 @@ export default function createBaseProxy(): httpProxy {
                 headerKeyLowerCase === "x-powered-by" ||
                 headerKeyLowerCase === "server"
             ) {
-                delete proxyRes.headers[headerKey];
+                proxyRes.headers[headerKey] = undefined;
             }
         });
     });
