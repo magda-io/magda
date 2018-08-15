@@ -1,6 +1,7 @@
 ## 0.0.47
 
 -   Hyperlink organisation url on organisation page
+-   Reformat page title to be consistent throughout
 
 ## 0.0.46
 
