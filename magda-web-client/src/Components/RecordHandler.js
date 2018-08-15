@@ -169,7 +169,7 @@ class RecordHandler extends React.Component {
                 decodeURIComponent(this.props.match.params.distributionId)
             ) {
                 return (
-                    <div className="distribution">
+                    <div className="record--distribution">
                         <Medium>
                             <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
                         </Medium>
@@ -332,7 +332,11 @@ class RecordHandler extends React.Component {
                 decodeURIComponent(this.props.match.params.datasetId)
             ) {
                 return (
-                    <div itemScope itemType="http://schema.org/Dataset">
+                    <div
+                        itemScope
+                        itemType="http://schema.org/Dataset"
+                        className="record--dataset"
+                    >
                         <Medium>
                             <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
                         </Medium>

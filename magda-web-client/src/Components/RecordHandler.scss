@@ -44,18 +44,6 @@
             }
         }
     }
-    .updated-date {
-        color: $AU-color-foreground-action;
-    }
-
-    .separator {
-        opacity: 0.25;
-        color: $AU-color-foreground-action;
-        margin: 0;
-        display: inline;
-        padding-left: 8px;
-        padding-right: 8px;
-    }
 }
 
 .dataset-details-source {
@@ -114,10 +102,7 @@
 
 .distribution-meta {
     display: flex;
-
-    .created-date {
-        margin-bottom: 1em;
-    }
+    margin-bottom: 0.5em;
 }
 
 .distribution-props {
@@ -141,4 +126,16 @@
 
 .distribution-icon {
     margin-right: 0.75em;
+}
+
+.record--distribution,
+.record--dataset {
+    .separator {
+        opacity: 0.25;
+        color: $AU-color-foreground-action;
+        margin: 0;
+        display: inline;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
 }
