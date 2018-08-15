@@ -69,7 +69,7 @@ class PublisherDetails extends Component {
 
         return (
             <ReactDocumentTitle
-                title={publisher.name + "| Organisation |" + config.appName}
+                title={`${publisher.name} | Organisation | ${config.appName}`}
             >
                 <div className="publisher-details">
                     <div>

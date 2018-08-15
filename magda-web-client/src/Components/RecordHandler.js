@@ -501,7 +501,7 @@ class RecordHandler extends React.Component {
 
         return (
             <ReactDocumentTitle
-                title={title + "|" + type + "|" + config.appName}
+                title={`${title} | ${type} | ${config.appName}`}
             >
                 <div>{this.renderByState()}</div>
             </ReactDocumentTitle>

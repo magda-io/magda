@@ -26,9 +26,9 @@ class Account extends React.Component {
     }
 
     render() {
-        const pageTitle = this.props.user ? "Account" : "Sign in";
+        const pageTitle = this.props.user ? "Account" : "Sign In";
         return (
-            <ReactDocumentTitle title={` ${pageTitle} | ${config.appName}`}>
+            <ReactDocumentTitle title={`${pageTitle} | ${config.appName}`}>
                 <div className="account">
                     <Medium>
                         <Breadcrumbs

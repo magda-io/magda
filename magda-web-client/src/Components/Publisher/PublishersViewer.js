@@ -203,7 +203,7 @@ class PublishersViewer extends Component {
 
         return (
             <ReactDocumentTitle
-                title={`Organisations | Page${currentPage} | + ${
+                title={`Organisations | Page ${currentPage} | ${
                     config.appName
                 }`}
             >
