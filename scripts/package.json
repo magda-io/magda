@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "0.0.46-0",
+  "version": "0.0.47-0",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "bin": {
@@ -14,8 +14,8 @@
     "create-secrets": "create-secrets/index.js"
   },
   "devDependencies": {
-    "apidoc": "^0.17.6",
     "ansi-styles": "^3.2.1",
+    "apidoc": "^0.17.6",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
     "commander": "^2.17.0",

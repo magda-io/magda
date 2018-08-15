@@ -82,8 +82,11 @@
 
 .quality-rating-box {
     margin: 20px 0;
+    .tooltip {
+        line-height: 2rem;
+    }
 
-    span {
+    .title {
         color: #535353;
     }
 }
