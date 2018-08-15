@@ -76,8 +76,17 @@ lerna run docker-build-local --include-filtered-dependencies
 ```bash
 kubectl create configmap config --from-file deploy/kubernetes/config
 kubectl create configmap connector-config --from-file deploy/connector-config
-deploy/helm/create-auth-secrets.sh
 ```
+
+## Create the necessary k8s secrets
+
+Please run `create-secrets` tool:
+
+```bash
+yarn run create-secrets
+```
+
+and follow the instructions.
 
 ## Install Magda on your minikube cluster
 
@@ -217,7 +226,7 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-preview-map`               | `Terria Server (NodeJS)`                                                                                                                                                                                                                             |
 | `magda-postgres`                  | All databases - see the migrators that set up the individual database schemas below                                                                                                                                                                  |
 | `magda-migrator-authorization-db` | `Auth DB (Postgres)`. `magda-migrator-authorization-db` is only used for production environment.                                                                                                                                                     |
-|  |
+|                                   |
 | `magda-migrator-registry-db`      | `Registry DB (Postgres)`. `magda-migrator-registry-db` is only used for production environment.                                                                                                                                                      |
 | `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
 | `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |

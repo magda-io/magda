@@ -1,3 +1,9 @@
+## 0.0.47
+
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
+-   Hyperlink organisation url on organisation page
+-   Removed `x-powered-by` & `server` headers from response
+
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
@@ -9,9 +15,17 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Mobile menu style change
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
+-   Added `create-secrets` script for managing secrets
+-   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
 
 ## 0.0.45
 

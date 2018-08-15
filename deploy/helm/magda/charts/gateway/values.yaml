@@ -35,6 +35,8 @@ routes:
   admin:
     to: http://admin-api/v0
     auth: true
+  content:
+    to: http://content-api/v0
   correspondence:
     to: http://correspondence-api/v0/public
   apidocs:

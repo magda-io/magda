@@ -24,6 +24,22 @@ export default function createBaseProxy(): httpProxy {
         ) {
             proxyRes.headers["Cache-Control"] = "public, max-age=60";
         }
+        /**
+         * Remove security sensitive headers
+         * `server` header is from scala APIs
+         * Proxied content has to be filtered from here
+         * while other content (produced locally by gateway) has been
+         * taken care of by `app.disable("x-powered-by");` in index.js
+         */
+        Object.keys(proxyRes.headers).forEach(headerKey => {
+            const headerKeyLowerCase = headerKey.toLowerCase();
+            if (
+                headerKeyLowerCase === "x-powered-by" ||
+                headerKeyLowerCase === "server"
+            ) {
+                proxyRes.headers[headerKey] = undefined;
+            }
+        });
     });
 
     return proxy;
