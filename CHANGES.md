@@ -1,3 +1,5 @@
+## 0.0.47
+
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
