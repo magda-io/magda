@@ -1,3 +1,8 @@
+## 0.0.47
+
+-   Hyperlink organisation url on organisation page
+-   Removed `x-powered-by` & `server` headers from response
+
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
@@ -13,7 +18,10 @@
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
--   Removed `x-powered-by` & `server` headers from response
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
 -   Added `create-secrets` script for managing secrets
 -   Make source link wrap and add line break
 -   Made dev connector jobs execute every week only

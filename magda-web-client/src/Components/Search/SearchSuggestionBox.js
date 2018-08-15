@@ -6,6 +6,11 @@ import queryString from "query-string";
 import getDateString from "../../helpers/getDateString";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import { Small, Medium } from "../../UI/Responsive";
+import {
+    retrieveLocalData,
+    prependToLocalStorageArray,
+    deleteFromLocalStorageArray
+} from "../../storage/localStorage";
 import "./SearchSuggestionBox.css";
 import recentSearchIcon from "../../assets/updated.svg";
 import closeIcon from "../../assets/mobile-menu-close.svg";
@@ -31,12 +36,21 @@ const maxDefaultListItemNumber = 5;
  */
 const maxSavedItemNumber = 5;
 
+function getRecentSearches() {
+    const items = retrieveLocalData("recentSearches", []);
+    if (!items || typeof items !== "object" || !items.length) {
+        return [];
+    } else {
+        return items;
+    }
+}
+
 class SearchSuggestionBox extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isMouseOver: false,
-            recentSearches: this.retrieveLocalData("recentSearches"),
+            recentSearches: getRecentSearches(),
             selectedItemIdx: null
         };
         this.cacheImgs();
@@ -57,73 +71,6 @@ class SearchSuggestionBox extends Component {
         cacheImg(recentSearchIcon);
         cacheImg(closeIcon);
     }
-
-    retrieveLocalData(key): searchDataType {
-        try {
-            if (!("localStorage" in window) || !window.localStorage) return [];
-        } catch (e) {
-            /// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
-            return [];
-        }
-        if (!key || typeof key !== "string")
-            throw new Error("Invalid key parameter!");
-        try {
-            const items = JSON.parse(window.localStorage.getItem(key));
-            if (!items || typeof items !== "object" || !items.length) return [];
-            return items;
-        } catch (e) {
-            console.error(
-                `Failed to retrieve search save data '${key}' from local storage: ${
-                    e.message
-                }`,
-                e
-            );
-            return [];
-        }
-    }
-
-    insertItemIntoLocalData(
-        key,
-        searchData: searchDataType,
-        limit = maxSavedItemNumber
-    ) {
-        if (!window.localStorage) return [];
-        let items = this.retrieveLocalData(key);
-        items = items.filter(item => item.data.q !== searchData.data.q);
-        items.unshift(searchData);
-        if (limit && limit >= 1) items = items.slice(0, limit);
-        try {
-            window.localStorage.setItem(key, JSON.stringify(items));
-            return items;
-        } catch (e) {
-            console.error(
-                `Failed to save search save data '${key}' to local storage: ${
-                    e.message
-                }`,
-                e
-            );
-            return [];
-        }
-    }
-
-    deleteItemFromLocalData(key, idx) {
-        if (!window.localStorage) return [];
-        let items = this.retrieveLocalData(key);
-        items.splice(idx, 1);
-        try {
-            window.localStorage.setItem(key, JSON.stringify(items));
-            return items;
-        } catch (e) {
-            console.error(
-                `Failed to save search save data '${key}' to local storage: ${
-                    e.message
-                }`,
-                e
-            );
-            return [];
-        }
-    }
-
     createSearchDataFromProps(props): searchDataType {
         if (!props || !props.location || !props.location.search) return null;
         const data = queryString.parse(props.location.search);
@@ -189,9 +136,11 @@ class SearchSuggestionBox extends Component {
             return;
         const currentSearchData = this.createSearchDataFromProps(prevProps);
         if (isEqual(currentSearchData, searchData)) return;
-        const recentSearches = this.insertItemIntoLocalData(
+        const recentSearches = prependToLocalStorageArray(
             "recentSearches",
-            searchData
+            searchData,
+            maxSavedItemNumber,
+            []
         );
         this.setState({ recentSearches });
     }
@@ -220,9 +169,10 @@ class SearchSuggestionBox extends Component {
 
     onDeleteItemClick(e, idx) {
         e.preventDefault();
-        const recentSearches = this.deleteItemFromLocalData(
+        const recentSearches = deleteFromLocalStorageArray(
             "recentSearches",
-            idx
+            idx,
+            []
         );
         this.setState({ recentSearches });
     }
