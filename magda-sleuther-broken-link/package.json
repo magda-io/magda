@@ -1,7 +1,7 @@
 {
   "name": "@magda/sleuther-broken-link",
   "description": "MAGDA Broken Link Sleuther",
-  "version": "0.0.45-RC1",
+  "version": "0.0.45",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -16,7 +16,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.45-RC1",
+    "@magda/scripts": "^0.0.45",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
@@ -36,9 +36,9 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.45-RC1",
-    "@magda/sleuther-framework": "^0.0.45-RC1",
-    "@magda/typescript-common": "^0.0.45-RC1",
+    "@magda/registry-aspects": "^0.0.45",
+    "@magda/sleuther-framework": "^0.0.45",
+    "@magda/typescript-common": "^0.0.45",
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
     "lru-cache": "4.0.2",
