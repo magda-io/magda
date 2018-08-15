@@ -17,6 +17,7 @@ import {
 } from "../../actions/datasetSearchActions";
 import queryString from "query-string";
 import ProgressBar from "../../UI/ProgressBar";
+import stripFiltersFromQuery from "./stripFiltersFromQuery";
 
 // eslint-disable-next-line
 import PropTypes from "prop-types";
@@ -71,16 +72,11 @@ class Search extends Component {
      * update only the search text, remove all facets
      */
     updateSearchText(text: string) {
-        this.updateQuery({
-            q: text,
-            publisher: [],
-            regionId: undefined,
-            regionType: undefined,
-            dateFrom: undefined,
-            dateTo: undefined,
-            format: [],
-            page: undefined
-        });
+        this.updateQuery(
+            stripFiltersFromQuery({
+                q: text
+            })
+        );
     }
 
     /**

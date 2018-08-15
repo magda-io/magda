@@ -64,7 +64,7 @@ generate-connector-jobs:
   cache: {}
   script:
     - cd deploy
-    - yarn run generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod --imageVersion=$CI_COMMIT_REF_SLUG --imagePrefix=registry.gitlab.com/magda-data/magda/data61/
+    - yarn run generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/prod --imageVersion=$CI_COMMIT_REF_SLUG --imagePrefix=registry.gitlab.com/magda-data/magda/data61/
     - mkdir kubernetes/generated/prod/cron
     - mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
   artifacts:
