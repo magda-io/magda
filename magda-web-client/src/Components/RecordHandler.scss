@@ -51,6 +51,10 @@
     .separator {
         opacity: 0.25;
         color: $AU-color-foreground-action;
+        margin: 0;
+        display: inline;
+        padding-left: 8px;
+        padding-right: 8px;
     }
 }
 

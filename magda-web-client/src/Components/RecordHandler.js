@@ -20,7 +20,6 @@ import DistributionDetails from "./Dataset/DistributionDetails";
 import DistributionPreview from "./Dataset/DistributionPreview";
 import queryString from "query-string";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
-import Separator from "../UI/Separator";
 import { Small, Medium } from "../UI/Responsive";
 import DescriptionBox from "../UI/DescriptionBox";
 import DistributionIcon from "../assets/distribution_icon.svg";
@@ -191,7 +190,9 @@ class RecordHandler extends React.Component {
 
                             {defined(this.props.distribution.updatedDate) && (
                                 <div className="updated-date">
-                                    <Separator />
+                                    <span className="separator hidden-sm">
+                                        &nbsp;/&nbsp;
+                                    </span>
                                     Updated{" "}
                                     {this.props.distribution.updatedDate}
                                 </div>
@@ -199,7 +200,9 @@ class RecordHandler extends React.Component {
 
                             {defined(this.props.dataset.issuedDate) && (
                                 <div className="created-date">
-                                    <Separator />
+                                    <span className="separator hidden-sm">
+                                        &nbsp;/&nbsp;
+                                    </span>
                                     Created {this.props.dataset.issuedDate}
                                 </div>
                             )}
@@ -207,10 +210,14 @@ class RecordHandler extends React.Component {
                         <div className="distribution-format">
                             {this.props.distribution.format}
                         </div>
-                        <div className="distribution-license">
-                            <Separator />
-                            {this.props.distribution.license}
-                        </div>
+                        {defined(this.props.distribution.license) && (
+                            <div className="distribution-license">
+                                <span className="separator hidden-sm">
+                                    &nbsp;/&nbsp;
+                                </span>
+                                {this.props.distribution.license}
+                            </div>
+                        )}
                         <br />
                         <a
                             className="au-btn distribution-download-button"
@@ -347,25 +354,27 @@ class RecordHandler extends React.Component {
                                             {this.props.dataset.publisher.name}
                                         </Link>
                                     </span>
-                                    <span className="separator hidden-sm">
-                                        {" "}
-                                        /{" "}
-                                    </span>
+
                                     {defined(this.props.dataset.issuedDate) && (
-                                        <span className="updated-date hidden-sm">
+                                        <div className="created-date hidden-sm">
+                                            <span className="separator hidden-sm">
+                                                {" "}
+                                                /{" "}
+                                            </span>
                                             Created{" "}
                                             <span itemProp="dateCreated">
                                                 {this.props.dataset.issuedDate}
                                             </span>&nbsp;
-                                        </span>
+                                        </div>
                                     )}
-                                    <span className="separator hidden-sm">
-                                        &nbsp;/&nbsp;
-                                    </span>
+
                                     {defined(
                                         this.props.dataset.updatedDate
                                     ) && (
                                         <span className="updated-date hidden-sm">
+                                            <span className="separator hidden-sm">
+                                                &nbsp;/&nbsp;
+                                            </span>
                                             Updated{" "}
                                             <span itemProp="dateModified">
                                                 {this.props.dataset.updatedDate}
