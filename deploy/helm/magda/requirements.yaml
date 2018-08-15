@@ -75,18 +75,6 @@ dependencies:
     version: 0.1.0
     tags:
       - admin-api
-  - name: discussions-api
-    version: 0.1.0
-    tags:
-      - discussions-api
-  - name: discussions-db
-    version: 0.1.0
-    tags:
-      - discussions-db
-  - name: feedback-api
-    version: 0.1.0
-    tags:
-      - feedback-api
 
 # Sleuthers
   - name: sleuther-format

@@ -18,10 +18,7 @@ tags:
   authorization-api: false
   authorization-db: false
   combined-db: false
-  discussions-api: false
-  discussions-db: false
   elasticsearch: false
-  feedback: false
   gateway: false
   indexer: false
   preview-map: false

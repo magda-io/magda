@@ -12,10 +12,6 @@ export default {
             methods: ["GET"],
             auth: true
         },
-        discussions: {
-            to: "http://localhost:6105/v0",
-            auth: true
-        },
         web: {
             to: "http://localhost:6108"
         },

@@ -129,11 +129,6 @@ authorization-api:
     requests:
       cpu: 100m
       memory: 0
-discussions-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
 correspondence-api:
   resources:
     requests:

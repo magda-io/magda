@@ -27,8 +27,6 @@ tags:
     correspondence-api: true
     ingress: true
 
-    feedback-api: false
-
 ingress:
   hostname: search.data.gov.au
   ipName: search-data-gov-au-ingress

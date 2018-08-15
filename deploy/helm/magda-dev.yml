@@ -66,8 +66,6 @@ elasticsearch:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: db-service-account-private-key.json
-feedback-api:
-  gitHubIssuesUrl: "https://api.github.com/repos/TerriaJS/Magda-Feedback/issues"
 indexer:
   resources:
     requests:
@@ -132,11 +130,6 @@ admin-api:
       cpu: 100m
       memory: 0
 authorization-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-discussions-api:
   resources:
     requests:
       cpu: 100m

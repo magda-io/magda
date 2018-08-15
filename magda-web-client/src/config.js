@@ -18,11 +18,9 @@ const homePageConfig: {
 const serverConfig: {
     authApiBaseUrl?: string,
     baseUrl?: string,
-    discussionsApiBaseUrl?: string,
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string,
     correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
@@ -57,12 +55,6 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
-    discussionsApiUrl:
-        serverConfig.discussionsApiBaseUrl ||
-        fallbackApiHost + "api/v0/discussions/",
-    feedbackUrl:
-        serverConfig.feedbackApiBaseUrl ||
-        fallbackApiHost + "api/v0/feedback/user",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
