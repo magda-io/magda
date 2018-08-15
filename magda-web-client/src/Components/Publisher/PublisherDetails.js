@@ -116,9 +116,15 @@ class PublisherDetails extends Component {
                         <div>
                             <Link
                                 className="au-cta-link"
-                                to={`/search?organisation=${encodeURIComponent(
-                                    publisher.name
-                                )}`}
+                                to={{
+                                    pathname: "/search",
+                                    search: `?organisation=${encodeURIComponent(
+                                        publisher.name
+                                    )}`,
+                                    state: {
+                                        showFilterExplanation: true
+                                    }
+                                }}
                             >
                                 View all {hitCount}
                                 datasets from {publisher.name}

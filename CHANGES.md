@@ -13,6 +13,10 @@
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
 -   Added `create-secrets` script for managing secrets
 -   Make source link wrap and add line break
 -   Made dev connector jobs execute every week only

@@ -17,9 +17,15 @@ function PublisherSummary(props) {
             </h2>
             <div className="publisher-meta">
                 <Link
-                    to={`/search?organisation=${encodeURIComponent(
-                        props.publisher.name
-                    )}`}
+                    to={{
+                        pathname: "/search",
+                        search: `organisation=${encodeURIComponent(
+                            props.publisher.name
+                        )}`,
+                        state: {
+                            showFilterExplanation: true
+                        }
+                    }}
                 >
                     {props.publisher.datasetCount
                         ? `${props.publisher.datasetCount} ${
