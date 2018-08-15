@@ -1,7 +1,9 @@
 ## 0.0.47
 
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
 -   Reformat page title to be consistent throughout
+-   Removed `x-powered-by` & `server` headers from response
 
 ## 0.0.46
 

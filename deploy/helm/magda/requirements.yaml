@@ -19,6 +19,16 @@ dependencies:
     tags:
       - all
       - combined-db
+  - name: content-api
+    version: 0.1.0
+    tags:
+      - all
+      - content-api
+  - name: content-db
+    version: 0.1.0
+    tags:
+      - all
+      - content-db
   - name: elasticsearch
     version: 0.1.0
     tags:
