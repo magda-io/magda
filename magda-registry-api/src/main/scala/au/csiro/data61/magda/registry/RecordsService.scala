@@ -185,7 +185,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
             // --- DB session needs to be created within the `Future`
             // --- as the `Future` will keep running after timeout and require active DB session
             DB localTx { implicit session =>
-              recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId)
+              recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, Some(logger))
             }
           } map { result =>
             webHookActor ! WebHookActor.Process()
