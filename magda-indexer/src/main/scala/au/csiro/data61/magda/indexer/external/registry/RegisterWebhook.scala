@@ -28,7 +28,7 @@ object RegisterWebhook {
     interface.getWebhook(config.getString("registry.webhookId")).flatMap {
       case Some(existingHook) =>
         logger.info("Hook already exists, updating...")
-        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects, true)
           .map { _ =>
             logger.info("Updated, attempting to resume...")
             interface.resumeWebhook(config.getString("registry.webhookId"))
