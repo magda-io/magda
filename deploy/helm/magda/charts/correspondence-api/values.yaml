@@ -1,8 +1,4 @@
 image: {}
-  #repository: data61/
-  #tag: latest
-  # pullPolicy: Always
-gitHubIssuesUrl:
 resources:
   requests:
     cpu: 10m

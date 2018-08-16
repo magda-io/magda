@@ -11,8 +11,8 @@ tags:
 
   authorization-api: true
   authorization-db: true
-  content-db: true
-  content-api: true
+  content-db: false
+  content-api: false
   elasticsearch: true
   gateway: true
   indexer: true

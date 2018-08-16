@@ -3,6 +3,7 @@ global:
     maxUnavailable: 1000
   image:
     imagePullSecret: "regcred"
+    pullPolicy: Always
   exposeNodePorts: false
 
 tags:

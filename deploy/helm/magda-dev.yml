@@ -2,6 +2,8 @@ global:
   useCombinedDb: true
   useCloudSql: false
   externalUrl: https://dev.magda.io
+  image:
+    pullPolicy: Always
   rollingUpdate:
     maxUnavailable: 1
 

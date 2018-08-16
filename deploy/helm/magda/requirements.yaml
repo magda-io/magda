@@ -29,6 +29,11 @@ dependencies:
     tags:
       - all
       - content-db
+  - name: correspondence-api
+    version: 0.1.0
+    tags:
+      - all
+      - correspondence-api
   - name: elasticsearch
     version: 0.1.0
     tags:
@@ -74,11 +79,6 @@ dependencies:
     tags:
       - all
       - web-server
-  - name: correspondence-api
-    version: 0.1.0
-    tags:
-      - all
-      - correspondence-api
 
 # Deprecated or not currently used services
   - name: admin-api
@@ -87,22 +87,22 @@ dependencies:
       - admin-api
 
 # Sleuthers
-  - name: sleuther-format
-    version: 0.1.0
-    tags:
-      - sleuther-format
   - name: sleuther-broken-link
     version: 0.1.0
     tags:
       - sleuther-broken-link
-  - name: sleuther-visualization
+  - name: sleuther-format
     version: 0.1.0
     tags:
-      - sleuther-visualization
+      - sleuther-format
   - name: sleuther-linked-data-rating
     version: 0.1.0
     tags:
       - sleuther-linked-data-rating
+  - name: sleuther-visualization
+    version: 0.1.0
+    tags:
+      - sleuther-visualization
 
   - name: ingress
     version: 0.1.0
