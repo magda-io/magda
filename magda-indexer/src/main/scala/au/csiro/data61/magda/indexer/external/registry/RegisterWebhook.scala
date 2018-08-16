@@ -51,7 +51,8 @@ object RegisterWebhook {
   private def registerIndexerWebhook(
     interface: RegistryExternalInterface,
     aspects: List[String],
-    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
+    optionalAspects: List[String],
+    isUpdate: Boolean = false)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
     val webhook = WebHook(
       id = Some(config.getString("registry.webhookId")),
       name = "Indexer",
@@ -73,7 +74,15 @@ object RegisterWebhook {
       isWaitingForResponse = None,
       active = true)
 
-    interface.putWebhook(webhook).map { _ =>
+    var doRegister: Option[Future[WebHook]] = None
+
+    if (isUpdate) {
+      doRegister = Some(interface.putWebhook(webhook))
+    } else {
+      doRegister = Some(interface.createWebhook(webhook))
+    }
+
+    doRegister.get.map { _ =>
       system.log.info("Successfully added webhook")
 
       Unit
