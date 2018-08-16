@@ -180,28 +180,31 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
         parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
-          val result = DB localTx { implicit session =>
-            val deleteFuture = Future {
+
+          val deleteFuture = Future {
+            // --- DB session needs to be created within the `Future`
+            // --- as the `Future` will keep running after timeout and require active DB session
+            DB localTx { implicit session =>
               recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId)
-            } map { result =>
-              webHookActor ! WebHookActor.Process()
-              result
             }
-
-            val deleteResult = try {
-              Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
-            } catch {
-              case e: Throwable => Failure(e)
-            }
-
-            deleteResult match {
-              case Success(result)                             => complete(MultipleDeleteResult(result))
-              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
-              case Failure(exception) =>
-                complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-            }
+          } map { result =>
+            webHookActor ! WebHookActor.Process()
+            result
           }
-          result
+
+          val deleteResult = try {
+            Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
+          } catch {
+            case e: Throwable => Failure(e)
+          }
+
+          deleteResult match {
+            case Success(result)                             => complete(MultipleDeleteResult(result))
+            case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
+            case Failure(exception) =>
+              complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+          }
+
         }
       }
     }
