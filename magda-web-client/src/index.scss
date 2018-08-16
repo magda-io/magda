@@ -205,6 +205,14 @@ h4 {
     background: #ffffff;
 }
 
+.au-skip-link__link {
+    color: $AU-color-background !important;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
+}
+
 .au-page-alerts {
     h3 {
         margin: 0;

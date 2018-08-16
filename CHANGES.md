@@ -4,6 +4,8 @@
 -   Hyperlink organisation url on organisation page
 -   Remove browser default button background for search facet (for safari and IE)
 -   Removed `x-powered-by` & `server` headers from response
+-   Updated header logo to be correct branding type
+-   Uses the Header component from Design System
 
 ## 0.0.46
 
