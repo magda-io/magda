@@ -20,6 +20,8 @@ resources:
   requests:
     cpu: 50m
     memory: 40Mi
+  limits:
+    cpu: 200m
 
 routes:
   search:

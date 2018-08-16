@@ -3,7 +3,7 @@ data:
   storage: 200Gi
 resources:
   requests:
-    cpu: 400m
-    memory: 1500Mi
+    cpu: 200m
+    memory: 500Mi
   limits:
-    cpu: 1500m
+    cpu: 500m

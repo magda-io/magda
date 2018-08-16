@@ -14,8 +14,10 @@ data:
   heapSize: "512m"
   resources:
     requests:
-      cpu: 400m
+      cpu: 200m
       memory: 1000Mi
+    limits:
+      cpu: 500m
 master:
   pluginsInstall: ""
   resources:

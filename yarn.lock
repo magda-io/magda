@@ -652,7 +652,7 @@
   version "0.1.29"
   resolved "https://registry.yarnpkg.com/@types/jsonpath/-/jsonpath-0.1.29.tgz#5551487728b154a361eb1caf82fee226cabebcd1"
 
-"@types/lodash@^4.14.108", "@types/lodash@^4.14.64", "@types/lodash@^4.14.66", "@types/lodash@^4.14.68", "@types/lodash@^4.14.71", "@types/lodash@^4.14.73", "@types/lodash@^4.14.74", "@types/lodash@^4.14.88", "@types/lodash@^4.14.96":
+"@types/lodash@^4.14.108", "@types/lodash@^4.14.66", "@types/lodash@^4.14.68", "@types/lodash@^4.14.71", "@types/lodash@^4.14.73", "@types/lodash@^4.14.74", "@types/lodash@^4.14.88", "@types/lodash@^4.14.96":
   version "4.14.110"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.110.tgz#fb07498f84152947f30ea09d89207ca07123461e"
 
@@ -755,7 +755,7 @@
   dependencies:
     moment ">=2.14.0"
 
-"@types/pg@^6.1.40", "@types/pg@^6.1.41":
+"@types/pg@^6.1.41":
   version "6.1.47"
   resolved "https://registry.yarnpkg.com/@types/pg/-/pg-6.1.47.tgz#af44309e26042e5d92c3961ad8a0988b9d4c0d60"
   dependencies:
@@ -784,7 +784,7 @@
     "@types/node" "*"
     "@types/tough-cookie" "*"
 
-"@types/request@^2.0.0", "@types/request@^2.47.0":
+"@types/request@^2.0.0":
   version "2.47.1"
   resolved "https://registry.yarnpkg.com/@types/request/-/request-2.47.1.tgz#25410d3afbdac04c91a94ad9efc9824100735824"
   dependencies:
@@ -800,7 +800,7 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/sinon@^2.3.3", "@types/sinon@^2.3.7":
+"@types/sinon@^2.3.3":
   version "2.3.7"
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-2.3.7.tgz#e92c2fed3297eae078d78d1da032b26788b4af86"
 
@@ -13352,7 +13352,7 @@ sinon@^2.4.1:
     text-encoding "0.6.4"
     type-detect "^4.0.0"
 
-sinon@^3.0.0, sinon@^3.2.1, sinon@^3.3.0:
+sinon@^3.0.0, sinon@^3.2.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-3.3.0.tgz#9132111b4bbe13c749c2848210864250165069b1"
   dependencies:
