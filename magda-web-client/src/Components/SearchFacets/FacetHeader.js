@@ -28,6 +28,7 @@ class FacetHeader extends Component {
     constructor(props) {
         super(props);
         this.state = { buttonActive: false };
+        this.headerDiv = React.createRef();
     }
 
     componentDidUpdate() {
@@ -129,11 +130,12 @@ class FacetHeader extends Component {
                 className={`facet-header ${
                     this.hasFilter() ? "not-empty" : ""
                 }`}
+                ref={this.headerDiv}
             >
                 <button
                     className={`au-btn au-btn--secondary btn-facet ${
-                        this.props.isOpen ? "is-open" : ""
-                    }`}
+                        this.props.title
+                    } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
                 >
                     <img

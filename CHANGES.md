@@ -1,6 +1,7 @@
 ## 0.0.47
 
 -   Hyperlink organisation url on organisation page
+-   Align format facet based on its position on the page
 
 ## 0.0.46
 
