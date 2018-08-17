@@ -2,6 +2,7 @@
 
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
+-   Reformat page title to be consistent throughout
 -   Remove browser default button background for search facet (for safari and IE)
 -   Removed `x-powered-by` & `server` headers from response
 -   Updated header logo to be correct branding type

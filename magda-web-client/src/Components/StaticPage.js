@@ -19,11 +19,9 @@ export default function StaticPage(props) {
     if (content) {
         return (
             <ReactDocumentTitle
-                title={
-                    (content.title ? content.title : id) +
-                    " | " +
+                title={`${content.title ? content.title : id} | ${
                     config.appName
-                }
+                }`}
             >
                 <div className={`static-page-container container page-${id}`}>
                     <Medium>

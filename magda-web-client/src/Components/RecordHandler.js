@@ -495,8 +495,14 @@ class RecordHandler extends React.Component {
         const title = this.props.match.params.distributionId
             ? this.props.distribution.title
             : this.props.dataset.title;
+        const type = this.props.match.params.distributionId
+            ? "Resources"
+            : "Datasets";
+
         return (
-            <ReactDocumentTitle title={title + "|" + config.appName}>
+            <ReactDocumentTitle
+                title={`${title} | ${type} | ${config.appName}`}
+            >
                 <div>{this.renderByState()}</div>
             </ReactDocumentTitle>
         );

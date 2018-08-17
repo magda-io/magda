@@ -198,8 +198,15 @@ class PublishersViewer extends Component {
     }
 
     render() {
+        const currentPage =
+            +queryString.parse(this.props.location.search).page || 1;
+
         return (
-            <ReactDocumentTitle title={"Organisations | " + config.appName}>
+            <ReactDocumentTitle
+                title={`Organisations | Page ${currentPage} | ${
+                    config.appName
+                }`}
+            >
                 <div className="publishers-viewer">
                     <Medium>
                         <Breadcrumbs
@@ -234,11 +241,7 @@ class PublishersViewer extends Component {
                         !this.props.error &&
                         this.props.hitCount > config.resultsPerPage && (
                             <Pagination
-                                currentPage={
-                                    +queryString.parse(
-                                        this.props.location.search
-                                    ).page || 1
-                                }
+                                currentPage={currentPage}
                                 maxPage={Math.ceil(
                                     this.props.hitCount / config.resultsPerPage
                                 )}
