@@ -4,5 +4,5 @@
     "name": "South Australia Government",
     "sourceUrl": "https://data.sa.gov.au/data/",
     "pageSize": 100,
-    "schedule": "0 10 */3 * *"
+    "schedule": "40 * * * *"
 }

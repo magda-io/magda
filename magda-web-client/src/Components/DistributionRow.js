@@ -78,7 +78,7 @@ const CategoryDetermineConfigItems = [
 ];
 
 export type PropType = {
-    datasetId: string,
+    dataset: Dataset,
     distribution: ParsedDistribution
 };
 
@@ -132,13 +132,13 @@ class DistributionRow extends Component {
     };
 
     render() {
-        const { datasetId, distribution } = this.props;
+        const { dataset, distribution } = this.props;
         let distributionLink;
         if (!distribution.downloadURL && distribution.accessURL) {
             distributionLink = distribution.accessURL;
         } else {
             distributionLink = `/dataset/${encodeURIComponent(
-                datasetId
+                dataset.identifier
             )}/distribution/${encodeURIComponent(distribution.identifier)}/?q=${
                 this.props.searchText
             }`;
@@ -168,7 +168,7 @@ class DistributionRow extends Component {
                             </div>
                         </Medium>
 
-                        <div className="col-md-11">
+                        <div className="col-sm-11">
                             <div className="distribution-row-link">
                                 {!distribution.downloadURL &&
                                 distribution.accessURL ? (
@@ -216,7 +216,7 @@ class DistributionRow extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="col-md-3 button-area">
+                <div className="col-sm-3 button-area">
                     {distribution.downloadURL && (
                         <a
                             className="download-button au-btn au-btn--secondary"
@@ -229,10 +229,30 @@ class DistributionRow extends Component {
                                     distribution.downloadURL
                                 );
                                 if (resource_url) {
+                                    // legacy support
                                     ga("send", {
                                         hitType: "event",
                                         eventCategory: "Resource",
                                         eventAction: "Download",
+                                        eventLabel: resource_url
+                                    });
+                                    // new events
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Dataset",
+                                        eventAction: dataset.title,
+                                        eventLabel: resource_url
+                                    });
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Source",
+                                        eventAction: dataset.source,
+                                        eventLabel: resource_url
+                                    });
+                                    ga("send", {
+                                        hitType: "event",
+                                        eventCategory: "Download by Publisher",
+                                        eventAction: dataset.publisher.name,
                                         eventLabel: resource_url
                                     });
                                 }
@@ -248,12 +268,12 @@ class DistributionRow extends Component {
 }
 
 DistributionRow.propTypes = {
-    datasetId: PropTypes.string,
+    dataset: PropTypes.object,
     distribution: PropTypes.object
 };
 
 DistributionRow.defaultProps = {
-    datasetId: null,
+    dataset: null,
     distribution: null
 };
 

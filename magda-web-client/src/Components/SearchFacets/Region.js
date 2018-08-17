@@ -4,6 +4,7 @@ import { fetchRegionSearchResults } from "../../actions/facetRegionSearchActions
 import defined from "../../helpers/defined";
 import RegionWrapper from "./RegionWrapper";
 import React, { Component } from "react";
+import queryString from "query-string";
 
 class Region extends Component {
     constructor(props) {
@@ -11,6 +12,10 @@ class Region extends Component {
         this.onResetRegionFacet = this.onResetRegionFacet.bind(this);
         this.onSearchRegionFacet = this.onSearchRegionFacet.bind(this);
         this.onToggleRegionOption = this.onToggleRegionOption.bind(this);
+        // we use an integer event to notify children of the reset event
+        //-- we should find a better way to do this. At least, its value should be set synchronously
+        //-- Can't use state as you don't know when it's in place
+        this.resetFilterEvent = 0;
     }
 
     onToggleRegionOption(region) {
@@ -24,14 +29,25 @@ class Region extends Component {
         this.props.closeFacet();
     }
 
-    async onResetRegionFacet() {
+    onResetRegionFacet() {
         this.props.updateQuery({
             regionId: undefined,
             regionType: undefined,
             page: undefined
         });
-        await this.props.dispatch(resetRegion());
-        this.props.closeFacet();
+        this.props.dispatch(resetRegion());
+        // let children know that the filter is being reset
+        this.resetFilterEvent++;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location.search !== prevProps.location.search) {
+            const query = queryString.parse(this.props.location.search);
+            if (!query.regionId) {
+                this.props.dispatch(resetRegion());
+                this.resetFilterEvent++;
+            }
+        }
     }
 
     onSearchRegionFacet(facetKeyword) {
@@ -55,6 +71,8 @@ class Region extends Component {
                 regionMapping={this.props.regionMapping}
                 toggleFacet={this.props.toggleFacet}
                 isOpen={this.props.isOpen}
+                closeFacet={this.props.closeFacet}
+                resetFilterEvent={this.resetFilterEvent}
             />
         );
     }

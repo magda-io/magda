@@ -48,11 +48,17 @@ export function requestDistributionError(error: FetchError): RecordAction {
     };
 }
 
+export function resetFetchRecord() {
+    return {
+        type: actionTypes.RESET_FETCH_RECORD
+    };
+}
+
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
         let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=link-status&optionalAspect=dataset-quality-rating";
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating";
         let url: string;
         if (id.startsWith("ds-")) {
             url =
@@ -79,10 +85,15 @@ export function fetchDatasetFromRegistry(id: string): Function {
         }
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then((json: Object) => {
                 if (json.records) {
@@ -116,10 +127,15 @@ export function fetchDistributionFromRegistry(id: string): Object {
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then((json: Object) => {
                 return dispatch(receiveDistribution(json));

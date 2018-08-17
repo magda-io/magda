@@ -3,7 +3,7 @@
 @mixin text() {
     font-size: 1rem;
     border-bottom: 0;
-    padding: 24px 8px;
+    padding: 24px 60px 24px 16px;
     box-sizing: border-box;
     display: block;
     background-color: transparent;
@@ -15,7 +15,6 @@
     background-image: none;
     color: #ffffff;
     @media (min-width: $medium) {
-        padding-bottom: 5px;
         padding-left: 0;
         margin-bottom: 0;
         display: block;
@@ -48,19 +47,17 @@
     background-color: rgba($AU-color-foreground-action, 0.8);
     background: $AU-color-background;
     border-radius: 0px;
-    @media (max-width: $medium) {
-        input::-webkit-input-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input:-moz-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input::-moz-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
-        input:-ms-input-placeholder {
-            color: rgba($AU-colordark-foreground-action, 0.8);
-        }
+    input::-webkit-input-placeholder {
+        color: #dad2da;
+    }
+    input:-moz-placeholder {
+        color: #dad2da;
+    }
+    input::-moz-placeholder {
+        color: #dad2da;
+    }
+    input:-ms-input-placeholder {
+        color: #dad2da;
     }
 
     input:focus::-webkit-input-placeholder {
@@ -77,9 +74,9 @@
     }
 
     @media (min-width: $medium) {
-        margin: 16px auto 32px auto;
-        padding: 40px 90px;
-        width: 788px;
+        margin: 0 auto 2rem auto;
+        padding: 3rem 6rem;
+        width: 48rem;
         border: 0;
         box-shadow: none;
         border-radius: 2px;
@@ -101,7 +98,7 @@
 
     .search-btn {
         position: absolute;
-        right: 0;
+        right: 8px;
         padding: 8px;
         bottom: 12px;
         border: 2px solid transparent;
@@ -123,7 +120,12 @@
         }
         @media (min-width: $medium) {
             padding: 5px;
-            bottom: 1px;
+            bottom: 0px;
+            right: -3px;
+            border-radius: 4px;
+            &.not-empty {
+                border-bottom: 2px solid $AU-colordark-foreground-focus;
+            }
             img {
                 width: 32px;
                 height: 32px;
@@ -162,6 +164,7 @@
 
 .home {
     .searchBox {
+        margin: 6rem auto 6rem auto;
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 4px;

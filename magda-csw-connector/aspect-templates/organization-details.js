@@ -1,3 +1,5 @@
+const cleanOrgTitle = libraries.cleanOrgTitle;
+
 const name = transformer.getNameFromJsonOrganization(organization);
 const jsonpath = libraries.jsonpath;
 const phone = jsonpath.value(
@@ -28,14 +30,20 @@ const addrPostCode = jsonpath.value(
     organization,
     "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].postalCode[*].CharacterString[0]._"
 );
-const addrCountry = jsonpath.value(
+let addrCountry = jsonpath.value(
     organization,
-    "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._"
+    "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].CharacterString[0]._"
 );
+if (!addrCountry) {
+    addrCountry = jsonpath.value(
+        organization,
+        "$.contactInfo[*].CI_Contact[*].address[*].CI_Address[*].country[*].Country[0]._"
+    );
+}
 
 const data = {
     name: name,
-    title: name,
+    title: cleanOrgTitle(name),
     description: undefined,
     imageUrl: undefined,
     phone,

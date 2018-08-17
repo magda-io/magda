@@ -4,13 +4,15 @@ global:
     externalUrl: https://search.data.gov.au
     image:
         pullPolicy: IfNotPresent
-        tag: "0.0.43-RC1"
+        tag: "0.0.44-RC1"
     enableLivenessProbes: true
 tags:
     all: false
 
     authorization-api: true
     authorization-db: true
+    content-db: true
+    content-api: true
     elasticsearch: true
     gateway: true
     indexer: true
@@ -58,13 +60,21 @@ elasticsearch:
 gateway:
     type: LoadBalancer
     loadBalancerIP: "35.189.8.102"
+    ckanRedirectionDomain: "ckan.data.gov.au"
     autoscaler:
         minReplicas: 2
         maxReplicas: 4
-    cspReportUri: https://sdga.report-uri.com/r/d/csp/enforce
     auth:
         facebookClientId: "173073926555600"
         googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+    csp:
+        directives:
+            reportUri: https://sdga.report-uri.com/r/d/csp/enforce
+    helmet:
+        hsts:
+            maxAge: 31536000
+            includeSubdomains: true
+            preload: true
     resources:
         requests:
             cpu: 100m
@@ -107,6 +117,7 @@ web-server:
             cpu: 100m
             memory: 100Mi
     disableAuthenticationFeatures: true
+    fallbackUrl: "https://data.gov.au"
 sleuther-broken-link:
     resources:
         requests:

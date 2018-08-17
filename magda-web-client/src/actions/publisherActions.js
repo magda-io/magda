@@ -12,10 +12,11 @@ export function requestPublishers(): FacetAction {
     };
 }
 
-export function receivePublishers(json: Object): FacetAction {
+export function receivePublishers(json: Object, keyword: string): FacetAction {
     return {
         type: actionTypes.RECEIVE_PUBLISHERS,
-        json
+        json,
+        keyword
     };
 }
 
@@ -46,20 +47,32 @@ export function requestPublisherError(error: FetchError): FacetAction {
     };
 }
 
+export function resetFetchPublisher() {
+    return {
+        type: actionTypes.RESET_FETCH_PUBLISHER
+    };
+}
+
 function fetchPublishers(start, query) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
         const url = `${config.searchApiUrl +
-            "organisations"}?query=${query}&start=${(start - 1) * 20}&limit=20`;
+            "organisations"}?query=${query}&start=${(start - 1) *
+            config.resultsPerPage}&limit=${config.resultsPerPage}`;
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then(json => {
-                return dispatch(receivePublishers(json));
+                return dispatch(receivePublishers(json, query));
             })
             .catch(error =>
                 dispatch(
@@ -99,10 +112,15 @@ function fetchPublisher(id) {
 
         return fetch(url)
             .then(response => {
-                if (response.status === 200) {
-                    return response.json();
+                if (!response.ok) {
+                    let statusText = response.statusText;
+                    // response.statusText are different in different browser, therefore we unify them here
+                    if (response.status === 404) {
+                        statusText = "Not Found";
+                    }
+                    throw Error(statusText);
                 }
-                throw new Error(response.statusText);
+                return response.json();
             })
             .then(json => {
                 return dispatch(receivePublisher(json));

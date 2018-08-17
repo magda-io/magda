@@ -2,7 +2,9 @@
 @import "./pancake/sass/pancake.scss";
 html {
 }
-
+body {
+    overflow-y: scroll;
+}
 .au-body .au-grid {
     p,
     input,
@@ -38,7 +40,6 @@ html {
 
     .au-btn.au-btn--secondary,
     a.au-btn.au-btn--secondary {
-        color: $AU-color-foreground-action;
         background: transparent;
         color: $AU-color-foreground-action;
     }
@@ -115,6 +116,10 @@ a.au-btn:hover:not(:disabled) {
 
 div {
     box-sizing: border-box;
+}
+
+button {
+    background: transparent;
 }
 
 .breadcrumb {
@@ -198,4 +203,33 @@ h4 {
 
 .au-link {
     background: #ffffff;
+}
+
+.au-skip-link__link {
+    color: $AU-color-background !important;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
+}
+
+.au-page-alerts {
+    h3 {
+        margin: 0;
+    }
+    p {
+        margin-top: 0.5rem;
+    }
+}
+
+.url {
+    /* These are technically the same, but use both */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+
+    -ms-word-break: break-all;
+    /* This is the dangerous one in WebKit, as it breaks things wherever */
+    word-break: break-all;
+    /* Instead use this non-standard one: */
+    word-break: break-word;
 }

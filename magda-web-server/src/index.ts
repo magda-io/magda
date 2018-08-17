@@ -26,7 +26,6 @@ const argv = yargs
         describe:
             "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
         type: "string",
-        default: "http://localhost:6100/",
         required: true
     })
     .option("registryApiBaseUrlInternal", {
@@ -75,6 +74,11 @@ const argv = yargs
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
+    })
+    .option("fallbackUrl", {
+        describe:
+            "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -101,7 +105,6 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
-        baseExternalUrl: addTrailingSlash(argv.baseExternalUrl),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -158,7 +161,8 @@ app.get("/server-config.js", function(req, res) {
                     .segment("v0")
                     .segment("correspondence")
                     .toString()
-        )
+        ),
+        fallbackUrl: argv.fallbackUrl
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
@@ -178,7 +182,8 @@ const topLevelRoutes = [
     "projects",
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
-    "suggest"
+    "suggest",
+    "error"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -220,13 +225,43 @@ if (argv.devProxy) {
     });
 }
 
+const robotsTxt = `User-agent: *
+Crawl-delay: 100
+Disallow: /auth
+Disallow: /search
+
+Sitemap: ${argv.baseExternalUrl}/sitemap.xml
+`;
+
+app.use("/robots.txt", (_, res) => {
+    res.status(200).send(robotsTxt);
+});
+
 app.use(
-    "/sitemap",
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
-        registry: new Registry({ baseUrl: argv.registryApiBaseUrlInternal })
+        registry: new Registry({
+            baseUrl: argv.registryApiBaseUrlInternal,
+            maxRetries: 0
+        })
     })
 );
+
+// Proxy any other URL to 404 error page
+const maxErrorDataUrlLength = 1500;
+app.use("/", function(req, res) {
+    let redirectUri: any = new URI("/error");
+    const url =
+        req.originalUrl.length > maxErrorDataUrlLength
+            ? req.originalUrl.substring(0, maxErrorDataUrlLength)
+            : req.originalUrl;
+    const errorData = {
+        errorCode: 404,
+        url: url
+    };
+    redirectUri = redirectUri.escapeQuerySpace(false).search(errorData);
+    res.redirect(303, redirectUri.toString());
+});
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);

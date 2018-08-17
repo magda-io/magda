@@ -1,5 +1,56 @@
+## 0.0.47
+
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
+-   Hyperlink organisation url on organisation page
+-   Remove browser default button background for search facet (for safari and IE)
+-   Removed `x-powered-by` & `server` headers from response
+-   Updated header logo to be correct branding type
+-   Uses the Header component from Design System
+
+## 0.0.46
+
+-   Make pagination on mobile responsive.
+-   Added cronjob for broken-link-sleuther
+-   Remove all starting non word chars from organisation title
+-   Make pagination on mobile responsive.
+-   Fixed inconsistent case with format
+-   Made broken links sleuther perform a get request with content range when head request returns 405 (method not allowed).
+-   Make pagination on mobile responsive.
+-   Fixed a facet overflow issue on desktop
+-   Allow user apply default date in filter
+-   Mobile menu style change
+-   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
+-   Added mechanism to produce api documentation
+-   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
+-   Added `create-secrets` script for managing secrets
+-   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
+
+## 0.0.45
+
+-   Redirect CKAN/DGA Urls
+-   Add config for fallback banner
+-   prevent old content being loaded when navigating through page history
+-   Display a 'clear search' link after error message
+-   Fixed inconsistent breakpoints
+-   Unify styles of tagline for search results
+-   Unify result count style
+-   Fixed a date filter bug that freeze UI on slow internet
+-   Fixed the error 'Can't call setState (or forceUpdate) on an unmounted component' for Data Preview
+-   Fixed `Clear All` button not clear filter panel UI state
+-   Change non-homepage search placeholder text color to WCAG AAA compliant
+-   Added more details in organisations/publishers page to reflect design.
+-   Adjusted sitemap and robots.txt to help google navigate around better
+-   Made the javascript work with chrome 41 (googlebot)
+-   Made the fallback banner site url configurable
+
 ## 0.0.44
 
+-   Added more analytics events for Downloads/Views by Organisation, Search result click and Dataset request/feedback
 -   Removed `button` element for distribution download link on dataset page.
 -   Updated documentation for setting up `Docker Edge` for Kubernetes.
 -   Modified error message text and omitted homepage articles if search error occurs.
@@ -21,11 +72,16 @@
 -   Improved dataset page paddings and margins
 -   Moved express helmet to gateway module
 -   Make chart title wrap
+-   Upgraded TerriaJS to 6.0.4 in preview map
+-   Changed the preview map to not use terrain.
+-   Made CORS, CSP, Node-Helmet and proxied routes configurable through helm.
 -   Add links to about page
 -   Fixed a rendering glitch with react modal
 -   Trim empty rows off before table rendering to prevent empty rows after sorting by column
 -   Make suggestion form scrollable on short screen
 -   Default button color fix
+-   Small improvement on how search box looks on mobile and desktop
+-   Improve organisation search page
 -   Added extra contact fields to registry & search organization API
 -   Added connector for CSIRO DAP (thanks @jevy-wangfei!)
 -   Adjust line spacing for dataset page
@@ -35,7 +91,19 @@
 -   Improved styling of suggest dataset form
 -   Improve distribution link alignment
 -   Improve UI for chart loading error
+-   Make dataset ask a question form only scrollable on short screens
 -   Added auto gzip compress to gateway
+-   Made CSW connector retrieve country field from alternative JSON path
+-   Fixed Sitemap times out if input is invalid
+-   Fixed Organisation content position moved (flicking) during data loading
+-   Fixed Organisation page router history issue
+-   Fixed Search Panel `Clear` button doesn't work
+-   Fixed bug where dataset ids where "undefined" in distribution URLs.
+-   Corrected incorrect source-link-status aspect name in UI dataset request URL
+-   Updated URL of City of Launceston connector.
+-   Keep search text in synch.
+-   Make pagination on mobile responsive.
+-   Made CKAN harvesters execute on an hourly basis.
 
 ## 0.0.43
 

@@ -18,7 +18,6 @@ const homePageConfig: {
 const serverConfig: {
     authApiBaseUrl?: string,
     baseUrl?: string,
-    baseExternalUrl?: string,
     discussionsApiBaseUrl?: string,
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
@@ -36,14 +35,19 @@ const registryApiUrl =
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
+const baseUrl = serverConfig.baseUrl || fallbackApiHost;
+const baseExternalUrl =
+    baseUrl === "/"
+        ? window.location.protocol + "//" + window.location.host + "/"
+        : baseUrl;
 
 export const config = {
     homePageConfig: homePageConfig,
-    appName: "data.gov.au",
+    appName: "data.gov.au - beta",
     about:
         "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
-    baseUrl: serverConfig.baseUrl || fallbackApiHost,
-    baseExternalUrl: serverConfig.baseExternalUrl || fallbackApiHost,
+    baseUrl,
+    baseExternalUrl,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
@@ -72,7 +76,12 @@ export const config = {
     },
     appTitle: "Australian open data search",
     facets: [
-        { id: "publisher", component: Publisher },
+        {
+            id: "publisher",
+            component: Publisher,
+            showExplanation: true,
+            name: "Organisation"
+        },
         { id: "region", component: Region },
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
@@ -152,5 +161,6 @@ export const config = {
         south: -45,
         east: 155,
         north: -5
-    }
+    },
+    fallbackUrl: serverConfig.fallbackUrl
 };

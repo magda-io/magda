@@ -1,10 +1,21 @@
 import React, { Component } from "react";
 import { config } from "../../config";
-import { Small, Medium } from "../../UI/Responsive";
-import downArrowDark from "../../assets/downArrowDark.svg";
-import ClearAllButtom from "./ClearAllButton";
+import { Medium } from "../../UI/Responsive";
+import Tooltip from "../../UI/Tooltip";
+import ClearAllButton from "./ClearAllButton";
+import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
+import FilterExplanation from "./FilterExplanation";
+import memoize from "memoize-one";
 
 import "./SearchFacets.css";
+
+// partition an array by size n
+const partitionArray = (array, size) =>
+    array
+        .map((e, i) => (i % size === 0 ? array.slice(i, i + size) : null))
+        .filter(e => e);
+
+const partitionWithCache = memoize(partitionArray);
 
 class SearchFacets extends Component {
     constructor(props) {
@@ -13,7 +24,6 @@ class SearchFacets extends Component {
         this.toggleFacet = this.toggleFacet.bind(this);
         this.closeFacetWithKeyBoard = this.closeFacetWithKeyBoard.bind(this);
         this.onToggleFacetOnMobile = this.onToggleFacetOnMobile.bind(this);
-        this.renderMobile = this.renderMobile.bind(this);
         this.renderDesktop = this.renderDesktop.bind(this);
     }
 
@@ -63,62 +73,72 @@ class SearchFacets extends Component {
         });
     }
 
-    renderDesktop() {
-        return (
-            <div className="search-facets-desktop">
-                {config.facets.map(c => (
-                    <div
-                        className="search-facet"
-                        key={c.id}
-                        onClick={ev => ev.stopPropagation()}
-                    >
-                        <c.component
-                            updateQuery={this.props.updateQuery}
-                            location={this.props.location}
-                            title={c.id}
-                            isOpen={this.state.openFacet === c.id}
-                            toggleFacet={this.toggleFacet.bind(this, c.id)}
-                            closeFacet={this.closeFacet.bind(this, c.id)}
-                        />
-                    </div>
-                ))}
-                <ClearAllButtom key={"clear-all-button"} />
+    renderFilterButton = filter => {
+        const filterComponent = (
+            <div
+                className="search-facet"
+                key={filter.id}
+                onClick={ev => ev.stopPropagation()}
+            >
+                <filter.component
+                    updateQuery={this.props.updateQuery}
+                    location={this.props.location}
+                    title={filter.id}
+                    isOpen={this.state.openFacet === filter.id}
+                    toggleFacet={this.toggleFacet.bind(this, filter.id)}
+                    closeFacet={this.closeFacet.bind(this, filter.id)}
+                />
             </div>
         );
-    }
 
-    renderMobile() {
-        return (
-            <div className="search-facets-mobile">
-                <button
-                    className="filter-toggle-button au-btn"
-                    onClick={this.onToggleFacetOnMobile}
+        if (
+            filter.showExplanation &&
+            this.props.location.state &&
+            this.props.location.state.showFilterExplanation &&
+            !retrieveLocalData("hideFilterTooltips", false)
+        ) {
+            return (
+                <Tooltip
+                    key={filter.id + "tooltip"}
+                    startOpen={true}
+                    requireClickToDismiss={true}
+                    launcher={() => filterComponent}
+                    onDismiss={() => setLocalData("hideFilterTooltips", true)}
+                    orientation="below"
                 >
-                    Filters <img src={downArrowDark} alt="open filter" />
-                </button>
-                {this.state.showFilterOnMobile &&
-                    config.facets.map(c => (
-                        <div
-                            className="search-facet"
-                            key={c.id}
-                            onClick={ev => ev.stopPropagation()}
-                        >
-                            <c.component
-                                updateQuery={this.props.updateQuery}
-                                location={this.props.location}
-                                title={c.id}
-                                isOpen={this.state.openFacet === c.id}
-                                toggleFacet={this.toggleFacet.bind(this, c.id)}
-                                closeFacet={this.closeFacet.bind(this, c.id)}
-                            />
+                    {dismiss => (
+                        <FilterExplanation
+                            dismiss={dismiss}
+                            filterType={filter.name}
+                        />
+                    )}
+                </Tooltip>
+            );
+        } else {
+            return filterComponent;
+        }
+    };
+
+    renderDesktop() {
+        // if we group facets in two, it would help some of the layout issues on smaller screen
+        const facetGroup = partitionWithCache(config.facets, 2);
+        return (
+            <div className="search-facets-desktop">
+                {facetGroup.map((group, i) => {
+                    if (i === facetGroup.length - 1) {
+                        return (
+                            <div key={i} className="facet-group">
+                                {group.map(this.renderFilterButton)}
+                                <ClearAllButton key={"clear-all-button"} />
+                            </div>
+                        );
+                    }
+                    return (
+                        <div key={i} className="facet-group">
+                            {group.map(this.renderFilterButton)}
                         </div>
-                    ))}
-                {this.state.showFilterOnMobile && (
-                    <ClearAllButtom key={"clear-all-button"} />
-                )}
-                {this.state.openFacet && (
-                    <div className="mobile-facet-background" />
-                )}
+                    );
+                })}
             </div>
         );
     }
@@ -127,7 +147,6 @@ class SearchFacets extends Component {
         return (
             <div>
                 <Medium>{this.renderDesktop()}</Medium>
-                <Small>{this.renderMobile()}</Small>
             </div>
         );
     }

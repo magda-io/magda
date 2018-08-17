@@ -5,12 +5,19 @@ import { Link } from "react-router-dom";
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
-import { fetchPublisherIfNeeded } from "../../actions/publisherActions";
+import {
+    fetchPublisherIfNeeded,
+    resetFetchPublisher
+} from "../../actions/publisherActions";
 import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
-
+import AUpageAlert from "../../pancake/react/page-alerts";
+import {
+    fetchSearchResultsIfNeeded,
+    resetDatasetSearch
+} from "../../actions/datasetSearchActions";
 import "./PublisherDetails.css";
 
 class PublisherDetails extends Component {
@@ -26,7 +33,19 @@ class PublisherDetails extends Component {
             this.props.fetchPublisherIfNeeded(
                 this.props.match.params.publisherId
             );
+        } else if (
+            this.props.publisher.name &&
+            this.props.publisher.name !== this.props.searchPublisherName
+        ) {
+            this.props.resetDatasetSearch();
+            this.props.fetchSearchResultsIfNeeded({
+                publisher: this.props.publisher.name
+            });
         }
+    }
+
+    componentWillUnmount() {
+        this.props.resetFetchPublisher();
     }
 
     renderContent() {
@@ -38,16 +57,18 @@ class PublisherDetails extends Component {
                 : "This publisher has no description";
 
         const breadcrumbs = [
-            <li>
+            <li key="organisations">
                 <Link to="/organisations">Organisations</Link>
             </li>,
-            <li>
+            <li key={publisher.name}>
                 <span>{publisher.name}</span>
             </li>
         ];
+
+        const hitCount = this.props.hitCount ? this.props.hitCount + " " : "";
+
         return (
             <div className="publisher-details">
-                {this.props.isFetching && <ProgressBar />}
                 <div>
                     <Medium>
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -60,18 +81,64 @@ class PublisherDetails extends Component {
                         </div>
 
                         <div className="publisher-details-overview">
-                            <h3 className="section-heading">Overview</h3>
                             <OverviewBox content={description} />
                         </div>
+
+                        {(details.email ||
+                            details.website ||
+                            details.phone) && (
+                            <div className="publisher-details-contacts">
+                                <h3 className="section-heading">
+                                    Contact details
+                                </h3>
+                                {details.email && (
+                                    <div className="publisher-details-contacts-item">
+                                        Email:&nbsp;
+                                        <a
+                                            href={emailLink(details.email)}
+                                            className="url"
+                                        >
+                                            {details.email}
+                                        </a>
+                                    </div>
+                                )}
+                                {details.website && (
+                                    <div className="publisher-details-contacts-item">
+                                        Website:{" "}
+                                        <a
+                                            href={details.website}
+                                            className="url"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {details.website}
+                                        </a>
+                                    </div>
+                                )}
+                                {details.phone && (
+                                    <div className="publisher-details-contacts-item">
+                                        Phone: {details.phone}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <br />
                         <div>
                             <Link
                                 className="au-cta-link"
-                                to={`/search?publisher=${encodeURIComponent(
-                                    publisher.name
-                                )}`}
+                                to={{
+                                    pathname: "/search",
+                                    search: `?organisation=${encodeURIComponent(
+                                        publisher.name
+                                    )}`,
+                                    state: {
+                                        showFilterExplanation: true
+                                    }
+                                }}
                             >
-                                View all datasets from {publisher.name}
+                                View all {hitCount}
+                                datasets from {publisher.name}
                             </Link>
                         </div>
                     </div>
@@ -83,21 +150,36 @@ class PublisherDetails extends Component {
     render() {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
+        } else if (this.props.isFetching) {
+            return <ProgressBar />;
+        } else if (
+            decodeURIComponent(this.props.match.params.publisherId) ===
+            this.props.publisher.id
+        ) {
+            return (
+                <ReactDocumentTitle
+                    title={this.props.publisher.name + " | " + config.appName}
+                >
+                    {this.renderContent()}
+                </ReactDocumentTitle>
+            );
+        } else {
+            return (
+                <AUpageAlert as="info" className="notification__inner">
+                    Organisation cannot be found
+                </AUpageAlert>
+            );
         }
-        return (
-            <ReactDocumentTitle
-                title={this.props.publisher.name + " | " + config.appName}
-            >
-                {this.renderContent()}
-            </ReactDocumentTitle>
-        );
     }
 }
 
 function mapDispatchToProps(dispatch) {
     return bindActionCreators(
         {
-            fetchPublisherIfNeeded: fetchPublisherIfNeeded
+            fetchPublisherIfNeeded: fetchPublisherIfNeeded,
+            resetFetchPublisher: resetFetchPublisher,
+            fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,
+            resetDatasetSearch: resetDatasetSearch
         },
         dispatch
     );
@@ -108,12 +190,26 @@ function mapStateToProps(state: Object, ownProps: Object) {
     const isFetching: boolean = state.publisher.isFetchingPublisher;
     const error: object = state.publisher.errorFetchingPublisher;
     const location: Location = ownProps.location;
+    const datasetSearch: Object = state.datasetSearch;
+    const searchPublisherName =
+        datasetSearch.queryObject && datasetSearch.queryObject.publisher;
+    const hitCount = datasetSearch.hitCount;
     return {
         publisher,
         isFetching,
         location,
+        searchPublisherName,
+        hitCount,
         error
     };
+}
+
+function emailLink(address: string) {
+    if (address.match(/^[a-z]+:/)) {
+        return address;
+    } else {
+        return "mailto:" + address;
+    }
 }
 
 export default connect(

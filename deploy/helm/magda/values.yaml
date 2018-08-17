@@ -13,10 +13,13 @@ global:
   noDbAuth: false
 tags:
   all: true
+  apidocs-server: false
   admin-api: false
   authorization-api: false
   authorization-db: false
   combined-db: false
+  content-api: false
+  content-db: false
   discussions-api: false
   discussions-db: false
   elasticsearch: false
