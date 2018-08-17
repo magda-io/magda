@@ -40,7 +40,6 @@ body {
 
     .au-btn.au-btn--secondary,
     a.au-btn.au-btn--secondary {
-        color: $AU-color-foreground-action;
         background: transparent;
         color: $AU-color-foreground-action;
     }
@@ -117,6 +116,10 @@ a.au-btn:hover:not(:disabled) {
 
 div {
     box-sizing: border-box;
+}
+
+button {
+    background: transparent;
 }
 
 .breadcrumb {
@@ -200,6 +203,14 @@ h4 {
 
 .au-link {
     background: #ffffff;
+}
+
+.au-skip-link__link {
+    color: $AU-color-background !important;
+}
+
+.ReactModal__Body--open div.au-grid {
+    filter: blur(1.5px);
 }
 
 .au-page-alerts {
