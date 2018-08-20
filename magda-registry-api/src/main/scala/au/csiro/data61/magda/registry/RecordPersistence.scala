@@ -457,12 +457,12 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     result match {
       case Success(count:Long) =>
         if(!logger.isEmpty) {
-          logger.get.info(s"Trimed ${count} records.")
+          logger.get.info(s"Trimmed ${count} records.")
         }
         Success(count)
       case Failure(err) =>
         if(!logger.isEmpty) {
-          logger.get.error(err, "Error happened when trim records.")
+          logger.get.error(err, "Error happened when trimming records.")
         }
         Failure(err)
     }
