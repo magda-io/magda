@@ -112,7 +112,7 @@ object WebHookActor {
 
     private def retryAllInactiveHooks(retryInterval:Long): Unit ={
       DB localTx  { implicit session =>
-        HookPersistence.getAll(session)
+        val hookIds = HookPersistence.getAll(session)
           .filter{ hook =>
             if(hook.active) false
             else{
@@ -124,9 +124,11 @@ object WebHookActor {
             }
           }
           .flatMap(_.id.toList)
-          .foreach{ hookId =>
-            HookPersistence.retry(session, hookId)
-          }
+
+        hookIds.foreach( hookId => HookPersistence.retry(session, hookId))
+        if(hookIds.size>0){
+          self ! InvalidateWebhookCache
+        }
       }
     }
 
