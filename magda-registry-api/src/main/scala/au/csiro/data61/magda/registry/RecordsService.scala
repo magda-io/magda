@@ -202,7 +202,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
             case Success(result)                             => complete(MultipleDeleteResult(result))
             case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
             case Failure(exception) =>
-              complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
           }
 
         }
