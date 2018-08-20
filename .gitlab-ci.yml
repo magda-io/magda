@@ -532,15 +532,17 @@ Release Tags To Docker Hub:
 
 Publish Helm Chart:
   stage: release
-  # only:
-  #   - /^v.*RC.*$/
+  only:
+    - /^v.*\..*\..*$/
   except:
     - branches
     - triggers
   image:
     name: dtzar/helm-kubectl
   cache:
-    - deploy/helm/chart-repo
+    key: $CI_JOB_NAME
+    paths:
+      - deploy/helm/chart-repo
   retry: 1
   script:
     - apk add --update aws-cli
