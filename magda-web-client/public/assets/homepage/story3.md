@@ -1,5 +1,5 @@
 ---
-title: Datacard: Breeds in Ballarat
+title: "Datacard: Breeds in Ballarat"
 titleImage: story3.png
 titleUrl: "http://nationalmap.gov.au/#share=s-eKMrYHvDz7vYgRSl8HtNav4CHK3"
 ---
