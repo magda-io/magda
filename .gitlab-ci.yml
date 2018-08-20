@@ -530,6 +530,28 @@ Release Tags To Docker Hub:
     - yarn install
     - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
 
+Publish Helm Chart:
+  stage: release
+  # only:
+  #   - /^v.*RC.*$/
+  except:
+    - branches
+    - triggers
+  image:
+    name: dtzar/helm-kubectl
+  cache:
+    - deploy/helm/chart-repo
+  retry: 1
+  script:
+    - apk add --update aws-cli
+    - aws configure
+    - cd deploy/helm
+    - mkdir -p chart-repo
+    - aws s3 sync s3://magda-charts/ chart-repo
+    - helm package magda -d chart-repo
+    - helm repo index chart-repo
+    - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
+
 Deploy Released Tags As Staging:
   <<: *runAsPreview
   stage: deploy-staging

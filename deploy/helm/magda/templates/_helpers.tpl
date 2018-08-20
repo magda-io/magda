@@ -155,6 +155,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{- define "magda.postgresLivenessProbe" }}
+        readinessProbe:
+          exec:
+            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432" ]
+          initialDelaySeconds: 10
+          periodSeconds: 30
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           exec:

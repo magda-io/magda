@@ -1,110 +1,88 @@
 dependencies:
   - name: apidocs-server
-    version: 0.1.0
     tags:
       - all
       - apidocs-server
   - name: authorization-api
-    version: 0.1.0
     tags:
       - all
       - authorization-api
   - name: authorization-db
-    version: 0.1.0
     tags:
       - all
       - authorization-db
   - name: combined-db
-    version: 0.1.0
     tags:
       - all
       - combined-db
   - name: content-api
-    version: 0.1.0
     tags:
       - all
       - content-api
   - name: content-db
-    version: 0.1.0
     tags:
       - all
       - content-db
   - name: correspondence-api
-    version: 0.1.0
     tags:
       - all
       - correspondence-api
   - name: elasticsearch
-    version: 0.1.0
     tags:
       - all
       - elasticsearch
   - name: gateway
-    version: 0.1.0
     tags:
       - all
       - gateway
   - name: indexer
-    version: 0.1.0
     tags:
       - all
       - indexer
   - name: preview-map
-    version: 0.1.0
     tags:
       - all
       - preview-map
   - name: registry-api
-    version: 0.1.0
     tags:
       - all
       - registry-api
   - name: registry-db
-    version: 0.1.0
     tags:
       - all
       - registry-db
   - name: search-api
-    version: 0.1.0
     tags:
       - all
       - search-api
   - name: session-db
-    version: 0.1.0
     tags:
       - all
       - session-db
   - name: web-server
-    version: 0.1.0
     tags:
       - all
       - web-server
 
 # Deprecated or not currently used services
   - name: admin-api
-    version: 0.1.0
     tags:
       - admin-api
 
 # Sleuthers
   - name: sleuther-broken-link
-    version: 0.1.0
     tags:
       - sleuther-broken-link
   - name: sleuther-format
-    version: 0.1.0
     tags:
       - sleuther-format
   - name: sleuther-linked-data-rating
-    version: 0.1.0
     tags:
       - sleuther-linked-data-rating
   - name: sleuther-visualization
-    version: 0.1.0
     tags:
       - sleuther-visualization
 
   - name: ingress
-    version: 0.1.0
     tags:
       - ingress
