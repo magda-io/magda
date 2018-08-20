@@ -74,15 +74,14 @@ object RegisterWebhook {
       isWaitingForResponse = None,
       active = true)
 
-    var doRegister: Option[Future[WebHook]] = None
 
-    if (isUpdate) {
-      doRegister = Some(interface.putWebhook(webhook))
+    val doRegister = if (isUpdate) {
+      interface.putWebhook(webhook)
     } else {
-      doRegister = Some(interface.createWebhook(webhook))
+      interface.createWebhook(webhook)
     }
 
-    doRegister.get.map { _ =>
+    doRegister.map { _ =>
       system.log.info("Successfully added webhook")
 
       Unit
