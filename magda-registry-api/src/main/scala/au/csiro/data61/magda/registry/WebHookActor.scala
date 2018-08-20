@@ -1,9 +1,12 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
+import java.time.OffsetDateTime
+
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import au.csiro.data61.magda.model.Registry._
 import akka.pattern.pipe
 import scalikejdbc.DB
+
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -23,10 +26,11 @@ object WebHookActor {
   case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
   case class GetStatus(webHookId: String)
   case object InvalidateWebhookCache
+  case object RetryInactiveHooks
 
   case class Status(isProcessing: Option[Boolean])
 
-  def props(registryApiBaseUrl: String)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl))
+  def props(registryApiBaseUrl: String, webHooksRetryInterval: Long = 600000)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl, webHooksRetryInterval))
 
   private def createWebHookActor(context: ActorContext, registryApiBaseUrl: String, hook: WebHook)(implicit config: Config): ActorRef = {
     context.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
@@ -35,7 +39,7 @@ object WebHookActor {
   private case class GotAllWebHooks(webHooks: List[WebHook], startup: Boolean)
   private case class DoneProcessing(result: Option[WebHookProcessingResult], exception: Option[Throwable] = None)
 
-  private class AllWebHooksActor(val registryApiBaseUrl: String)(implicit val config: Config) extends Actor with ActorLogging {
+  private class AllWebHooksActor(val registryApiBaseUrl: String, val webHooksRetryInterval:Long)(implicit val config: Config) extends Actor with ActorLogging {
     import context.dispatcher
 
     private var webHookActors = Map[String, ActorRef]()
@@ -80,8 +84,14 @@ object WebHookActor {
 
     setup
 
+    scheduler.schedule(500 milliseconds, webHooksRetryInterval milliseconds, self, RetryInactiveHooks)
+
     def receive = {
-      case InvalidateWebhookCache => 
+
+      case RetryInactiveHooks =>
+        retryAllInactiveHooks(webHooksRetryInterval)
+
+      case InvalidateWebhookCache =>
         log.info("Invalidated webhook cache")
         setup
       case Process(ignoreWaitingForResponse, aspectIds, webHookId) => {
@@ -98,6 +108,26 @@ object WebHookActor {
           case None               => sender() ! WebHookActor.Status(None)
           case Some(webHookActor) => webHookActor forward WebHookActor.GetStatus
         }
+    }
+
+    private def retryAllInactiveHooks(retryInterval:Long): Unit ={
+      DB localTx  { implicit session =>
+        HookPersistence.getAll(session)
+          .filter{ hook =>
+            if(hook.active) false
+            else{
+              if(hook.lastRetryTime.isEmpty) true
+              else {
+                val expectedDiff = Math.pow(2, hook.retryCount) * retryInterval / 1000
+                OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
+              }
+            }
+          }
+          .flatMap(_.id.toList)
+          .foreach{ hookId =>
+            HookPersistence.retry(session, hookId)
+          }
+      }
     }
 
     private def queryForAllWebHooks(): List[WebHook] = {

@@ -24,7 +24,9 @@ object HookPersistence extends Protocols with DiffsonProtocol {
               from WebHookEvents
               where WebHookEvents.webHookId=WebHooks.webHookId
             ) as eventTypes,
-            config
+            config,
+            lastRetryTime,
+            retryCount
           from WebHooks"""
       .map(rowToHook).list.apply()
   }
@@ -43,7 +45,9 @@ object HookPersistence extends Protocols with DiffsonProtocol {
               from WebHookEvents
               where WebHookEvents.webHookId=WebHooks.webHookId
             ) as eventTypes,
-            config
+            config,
+            lastRetryTime,
+            retryCount
           from WebHooks
           where webHookId=$id"""
       .map(rowToHook).single.apply()
@@ -93,6 +97,10 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     sql"update WebHooks set active=$active where webHookId=$id".update.apply()
   }
 
+  def retry(implicit session: DBSession, id: String ) = {
+    sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 where webHookId=$id".update.apply()
+  }
+
   def putById(implicit session: DBSession, id: String, hook: WebHook): Try[WebHook] = {
     if (id != hook.id.getOrElse("")) {
       Failure(new RuntimeException("The provided ID does not match the web hook's ID."))
@@ -136,5 +144,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     url = rs.string("url"),
     eventTypes = rs.arrayOpt("eventTypes").map(a => a.getArray().asInstanceOf[Array[Integer]].map(EventType.withValue(_)).toSet).getOrElse(Set()),
     isWaitingForResponse = rs.booleanOpt("isWaitingForResponse"),
-    config = JsonParser(rs.string("config")).convertTo[WebHookConfig])
+    config = JsonParser(rs.string("config")).convertTo[WebHookConfig],
+    lastRetryTime = rs.offsetDateTimeOpt("lastRetryTime"),
+    retryCount = rs.int("retryCount")
+  )
 }
