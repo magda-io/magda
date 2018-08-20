@@ -5,10 +5,11 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.Try
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import java.sql.SQLException
 
 import akka.NotUsed
+import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -70,7 +71,7 @@ trait RecordPersistence {
 
   def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean]
 
-  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String)(implicit session: DBSession): Try[Long]
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long]
 
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject]
 
@@ -434,13 +435,13 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield rowsDeleted > 0
   }
 
-  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String)(implicit session: DBSession): Try[Long] = {
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
       sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
         .map(rs => rs.string("recordId")).list.apply()
     }
 
-    recordIds match {
+    val result = recordIds match {
       case Success(Nil) => Success(0)
       case Success(ids) =>
         ids
@@ -452,6 +453,20 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           })
       case Failure(err) => Failure(err)
     }
+
+    result match {
+      case Success(count:Long) =>
+        if(!logger.isEmpty) {
+          logger.get.info(s"Trimmed ${count} records.")
+        }
+        Success(count)
+      case Failure(err) =>
+        if(!logger.isEmpty) {
+          logger.get.error(err, "Error happened when trimming records.")
+        }
+        Failure(err)
+    }
+
   }
 
   def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {

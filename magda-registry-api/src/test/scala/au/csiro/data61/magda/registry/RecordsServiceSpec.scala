@@ -6,8 +6,10 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json._
 import scalikejdbc.DBSession
+
 import scala.util.Success
 import akka.actor.ActorSystem
+import akka.event.LoggingAdapter
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import scala.concurrent.duration.`package`.DurationInt
 import scalikejdbc._
@@ -1655,7 +1657,7 @@ class RecordsServiceSpec extends ApiSpec {
         val mockedRecordPersistence = mock[RecordPersistence]
         val mockedApi = new RecordsService(param.api.config, param.webHookActor, param.authClient, system, materializer, mockedRecordPersistence)
 
-        (mockedRecordPersistence.trimRecordsBySource(_: String, _: String)(_: DBSession)).expects(*, *, *).onCall { (sourceId: String, tag: String, session: DBSession) =>
+        (mockedRecordPersistence.trimRecordsBySource(_: String, _: String, _: Option[LoggingAdapter])(_: DBSession)).expects(*, *, *, *).onCall { (sourceId: String, tag: String, logger: Option[LoggingAdapter], session: DBSession) =>
           Thread.sleep(600)
           Success(1)
         }

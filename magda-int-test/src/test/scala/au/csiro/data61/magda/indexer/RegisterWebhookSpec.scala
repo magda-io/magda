@@ -36,12 +36,12 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the new hook to be posted
-      (param.fetcher.put(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook]))
-        .expects(s"/v0/hooks/indexer", *, *, *)
+      (param.fetcher.post(_: String, _: WebHook, _: Seq[HttpHeader])(_: ToEntityMarshaller[WebHook]))
+        .expects(s"/v0/hooks", *, *, *)
         .onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
           // Forward the req to the registry api
           expectAdminCheck(param.fetcher, true)
-          val request = Put(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+          val request = Post(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
 
           assert(webhook.id.isDefined)
 
