@@ -101,6 +101,10 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 where webHookId=$id".update.apply()
   }
 
+  def resetRetryCount(implicit session: DBSession, id: String ) = {
+    sql"update WebHooks set lastretrytime=NULL, retrycount=0 where webHookId=$id".update.apply()
+  }
+
   def putById(implicit session: DBSession, id: String, hook: WebHook): Try[WebHook] = {
     if (id != hook.id.getOrElse("")) {
       Failure(new RuntimeException("The provided ID does not match the web hook's ID."))
