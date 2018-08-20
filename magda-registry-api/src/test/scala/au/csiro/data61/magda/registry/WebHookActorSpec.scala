@@ -1,12 +1,14 @@
 package au.csiro.data61.magda.registry
 
+import java.util.Timer
+
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
 import akka.pattern.ask
 import akka.util.Timeout
-import au.csiro.data61.magda.model.Registry.{ EventType, WebHook, WebHookConfig }
+import au.csiro.data61.magda.model.Registry.{EventType, WebHook, WebHookConfig}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Promise}
 import scala.concurrent.duration._
 import akka.http.scaladsl.model.headers.RawHeader
 import com.auth0.jwt.JWT
@@ -91,4 +93,50 @@ class WebHookActorSpec extends ApiSpec {
 
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
   }
+
+  it("Will restart inactive hook") { param =>
+    val actor = param.webHookActor
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+
+    val hook = WebHook(
+      id = Some("abc"),
+      userId = None,
+      name = "abc",
+      active = false,
+      lastEvent = None,
+      url = "http://example.com/foo",
+      eventTypes = Set(EventType.CreateRecord),
+      isWaitingForResponse = None,
+      config = WebHookConfig(
+        optionalAspects = Some(List("aspect")),
+        includeEvents = Some(true),
+        includeRecords = Some(true),
+        includeAspectDefinitions = Some(true),
+        dereference = Some(true)))
+
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+      status shouldEqual StatusCodes.OK
+    }
+
+    // --- should not in processing as initial value for active is false
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+    val promise = Promise[Unit]()
+
+    val t = new Timer()
+    val task = new java.util.TimerTask{
+      def run() ={
+        promise.success()
+      }
+    }
+    t.schedule(task, 3000)
+
+    Await.ready(promise.future, 4 seconds)
+
+    // --- After 3 seconds, the keeper timer in webhook should have run (set to 2 seconds for test cases)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
+
+  }
+
+
 }

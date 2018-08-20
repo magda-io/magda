@@ -92,7 +92,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
+    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/", 2000)(testConfig))
     val api = new Api(actor, authClient, testConfig, system, executor, materializer)
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {
@@ -146,14 +146,14 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     def expectCredentialsMissingRejection() = {
       rejection match {
-        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success 
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success
         case _ => fail()
       }
     }
 
     def expectCredentialsRejectedRejection() = {
       rejection match {
-        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, _) => // success 
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, _) => // success
         case _ => fail(s"Rejection was $rejection")
       }
     }
