@@ -60,6 +60,28 @@ export default function createApiRouter(
             })
     );
 
+    /**
+     * @apiGroup Correspondence
+     *
+     * @api {post} /v0/send/dataset/request Send Dataset Request
+     * @apiDescription TODO
+     *
+     * @apiParam (Request body) {string} csp-report TODO
+     *
+     * @apiSuccess {string} result SUCCESS
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "result": "SUCCESS"
+     *    }
+     *
+     * @apiError {string} result FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "result": "FAILED"
+     *    }
+     */
     router.post("/public/send/dataset/request", validateMiddleware, function(
         req,
         res

@@ -14,7 +14,7 @@ This requires you to create a secret for the route 53 credentials in the right n
 kubectl create secret generic prod-route53-credentials-secret --from-literal=secret-access-key=aergaergaegargearger --namespace kube-system
 ```
 
-For route53 it also required you to create the right IAM policy:
+For route53 it also requires you to create the right IAM policy:
 
 ```
 {
