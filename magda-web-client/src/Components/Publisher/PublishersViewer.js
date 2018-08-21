@@ -17,6 +17,7 @@ import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
+import { withRouter } from "react-router-dom";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -32,6 +33,9 @@ class PublishersViewer extends Component {
         this.clearSearch = this.clearSearch.bind(this);
         this.onClickSearch = this.onClickSearch.bind(this);
         this.searchInputFieldRef = null;
+        props.history.listen(location => {
+            this.debounceUpdateSearchQuery.cancel();
+        });
     }
 
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
@@ -46,6 +50,7 @@ class PublishersViewer extends Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.location.search !== this.props.location.search) {
+            this.debounceUpdateSearchQuery.cancel();
             this.fetchData();
         }
     }
@@ -269,13 +274,11 @@ function mapStateToProps(state, ownProps) {
     const isFetching: boolean = state.publisher.isFetchingPublishers;
     const hitCount: number = state.publisher.hitCount;
     const error: Object = state.publisher.errorFetchingPublishers;
-    const location: Location = ownProps.location;
     const keyword = state.publisher.keyword;
     return {
         publishers,
         isFetching,
         hitCount,
-        location,
         error,
         keyword
     };
@@ -285,7 +288,11 @@ PublishersViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
+const PublishersViewerWithRouter = withRouter(props => (
+    <PublishersViewer {...props} />
+));
+
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(PublishersViewer);
+)(PublishersViewerWithRouter);
