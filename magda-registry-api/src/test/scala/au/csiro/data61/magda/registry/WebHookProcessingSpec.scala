@@ -4,7 +4,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
-
 import akka.actor.ActorRef
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
@@ -17,10 +16,12 @@ import akka.util.Timeout
 import au.csiro.data61.magda.model.Registry._
 import spray.json._
 import java.util.UUID
+
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import org.scalatest.BeforeAndAfterAll
 import akka.pattern.ask
+import scalikejdbc.DB
 
 class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
@@ -1439,6 +1440,45 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           payloads.length shouldEqual (2)
         }
       }
+
+      it("When recipient returns success code, registry should reset webHook lastRetryTime & retryCount") { param =>
+        def response(): ToResponseMarshallable = {
+          StatusCodes.OK
+        }
+
+        testWebHookWithResponse(param, Some(defaultWebHook), response) { (payloads, actor) =>
+          //--- retry will increase try count and set lastRetryTime
+          DB localTx { session =>
+            HookPersistence.retry(session, "test")
+          }
+
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual (true)
+            hook.retryCount shouldEqual 1
+            hook.lastRetryTime.isEmpty shouldEqual false
+          }
+
+          val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilDone(actor, "test")
+
+          payloads.length should be(1)
+
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual (true)
+            hook.retryCount shouldEqual 0
+            hook.lastRetryTime.isEmpty shouldEqual true
+          }
+        }
+      }
+
     }
   }
 
@@ -1475,9 +1515,9 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
   }
 
   private def testWebHookWithResponse(param: FixtureParam, webHook: Option[WebHook], response: () ⇒ ToResponseMarshallable)(testCallback: (ArrayBuffer[WebHookPayload], ActorRef) => Unit): Unit = {
-    // Why this super-global approach instead of creating a new http server for each test? For some reason if you do it fast enough, 
+    // Why this super-global approach instead of creating a new http server for each test? For some reason if you do it fast enough,
     // the akka http server from the old test can receive hooks for the new server, even after you've waited for it to unbind and bound
-    // the new one on the current port (this is hard to reproduce but happens maybe 1/20th of the time. 
+    // the new one on the current port (this is hard to reproduce but happens maybe 1/20th of the time.
     this.currentResponse = Some(response)
     val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString + "/hook")
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {

@@ -134,6 +134,7 @@ class WebHookActorSpec extends ApiSpec {
     Await.ready(promise.future, 4 seconds)
 
     // --- After 3 seconds, the keeper timer in webhook should have run (set to 2 seconds for test cases)
+    // --- check the hook again to see if it's live now
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
 
   }
