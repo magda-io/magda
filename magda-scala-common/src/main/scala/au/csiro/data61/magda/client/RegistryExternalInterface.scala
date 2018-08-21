@@ -100,6 +100,15 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
     }
   }
 
+  def createWebhook(webhook: WebHook): Future[WebHook] = {
+    fetcher.post(s"${baseApiPath}/hooks", webhook, Seq(authHeader)).flatMap { response =>
+      response.status match {
+        case OK => Unmarshal(response.entity).to[WebHook]
+        case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
+      }
+    }
+  }
+
   def resumeWebhook(webhookId: String): Future[WebHookAcknowledgementResponse] = {
     fetcher.post(s"${baseApiPath}/hooks/$webhookId/ack", WebHookAcknowledgement(succeeded = false), Seq(authHeader)).flatMap { response =>
       response.status match {
