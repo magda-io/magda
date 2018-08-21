@@ -25,6 +25,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
               where WebHookEvents.webHookId=WebHooks.webHookId
             ) as eventTypes,
             config,
+            enabled,
             lastRetryTime,
             retryCount
           from WebHooks"""
@@ -46,6 +47,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
               where WebHookEvents.webHookId=WebHooks.webHookId
             ) as eventTypes,
             config,
+            enabled,
             lastRetryTime,
             retryCount
           from WebHooks
@@ -149,6 +151,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     eventTypes = rs.arrayOpt("eventTypes").map(a => a.getArray().asInstanceOf[Array[Integer]].map(EventType.withValue(_)).toSet).getOrElse(Set()),
     isWaitingForResponse = rs.booleanOpt("isWaitingForResponse"),
     config = JsonParser(rs.string("config")).convertTo[WebHookConfig],
+    enabled = rs.boolean("enabled"),
     lastRetryTime = rs.offsetDateTimeOpt("lastRetryTime"),
     retryCount = rs.int("retryCount")
   )

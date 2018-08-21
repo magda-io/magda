@@ -92,6 +92,7 @@ object Registry {
     eventTypes: Set[EventType],
     isWaitingForResponse: Option[Boolean],
     config: WebHookConfig,
+    enabled: Boolean = true,
     lastRetryTime: Option[OffsetDateTime] = None,
     retryCount: Int = 0)
 
@@ -149,7 +150,7 @@ object Registry {
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
     implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
-    implicit val webHookFormat = jsonFormat11(WebHook.apply)
+    implicit val webHookFormat = jsonFormat12(WebHook.apply)
     implicit val registryRecordsResponseFormat = jsonFormat3(RegistryRecordsResponse.apply)
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
     implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)

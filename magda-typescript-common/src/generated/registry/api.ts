@@ -153,6 +153,7 @@ export class WebHook {
     "eventTypes": Array<EventType>;
     "isWaitingForResponse": any;
     "config": WebHookConfig;
+    "enabled": boolean;
     "lastRetryTime": Date;
     "retryCount": number;
 }

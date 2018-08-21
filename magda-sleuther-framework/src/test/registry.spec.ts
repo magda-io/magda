@@ -238,6 +238,7 @@ function buildWebHook(
         },
         lastEvent: null,
         isWaitingForResponse: false,
+        enabled: true,
         lastRetryTime: null,
         retryCount: 0
     };

@@ -41,6 +41,7 @@ export default async function registerNewWebhook(
         config: webHookConfig,
         lastEvent: null,
         isWaitingForResponse: false,
+        enabled: true,
         lastRetryTime: null,
         retryCount: 0
     };
