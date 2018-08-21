@@ -2,7 +2,13 @@
 
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
+-   Reformat page title to be consistent throughout
+-   Remove browser default button background for search facet (for safari and IE)
 -   Removed `x-powered-by` & `server` headers from response
+-   Updated header logo to be correct branding type
+-   Uses the Header component from Design System
+-   Fixed an issue that connector record triming might not fully completed
+-   Fixed an issue that indexer webhook event types not properly setup
 
 ## 0.0.46
 
@@ -19,6 +25,7 @@
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Remove extra slash when additional info is missing on dataset page and distribution page
 -   Added a tooltip to organisation filter if it's clicked to from the org page the first time
 -   Hid filters on mobile
 -   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them

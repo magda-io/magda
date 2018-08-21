@@ -43,7 +43,7 @@ function FooterLink({ link }) {
 function FooterNavs({ footerNavs }) {
     return footerNavs.map(item => (
         <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.category}>
-            <h4 className="nav-title">{item.category}</h4>
+            <h3 className="au-display-lg">{item.category}</h3>
 
             <ul className="au-link-list">
                 {item.links.map(link => (
