@@ -8,6 +8,8 @@ client:
     requests:
       cpu: 50m
       memory: 500Mi
+    limits:
+      cpu: 100m
 data:
   storage: 200Gi
   pluginsInstall: ""
@@ -24,5 +26,7 @@ master:
     requests:
       cpu: 50m
       memory: 900Mi
+    limits:
+      cpu: 100m
 backup:
   googleApplicationCreds: {}
