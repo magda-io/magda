@@ -1,0 +1,10 @@
+image: {}
+resources:
+  requests:
+    cpu: 50m
+    memory: 30Mi
+  limits:
+    cpu: 100m
+config: []
+includeInitialJobs: true
+includeCronJobs: true

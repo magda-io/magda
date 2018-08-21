@@ -176,3 +176,43 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
             exec:
               command: ["/bin/bash", 'pkill backup-push && gosu postgres psql -c "SELECT pg_stop_backup()"']
 {{- end }}
+
+{{- define "magda.connectorJobSpec" }}
+spec:
+  template:
+    metadata:
+      name: connector-{{ .jobConfig.name }}
+    spec:
+      containers:
+        - name: connector-{{ .jobConfig.id }}
+          image: "{{ .jobConfig.image.repository | default .root.Values.image.repository | default .root.Values.global.image.repository }}/{{ .jobConfig.image.name }}:{{ .jobConfig.image.tag | default .root.Values.image.tag | default .root.Values.global.image.tag }}"
+          imagePullPolicy: {{ .jobConfig.image.pullPolicy | default .root.Values.image.pullPolicy | default .root.Values.global.image.pullPolicy }}
+          command:
+            - "node"
+            - "/usr/src/app/component/dist/index.js"
+            - "--config"
+            - "/etc/config/connector.json"
+            - "--registryUrl"
+            - "http://registry-api/v0"
+          resources:
+{{ .jobConfig.resources | default .root.Values.resources | toYaml | indent 12 }}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config
+          env: 
+            - name: USER_ID
+              value: 00000000-0000-4000-8000-000000000000
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: jwt-secret
+      restartPolicy: "OnFailure"
+      volumes:
+        - name: config
+          configMap:
+            name: "connector-config"
+            items:
+              - key: "{{ .jobConfig.id }}.json"
+                path: "connector.json"
+{{- end }}

@@ -12,6 +12,7 @@ global:
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
   noDbAuth: false
+
 tags:
   all: true
   apidocs-server: false
@@ -35,3 +36,4 @@ tags:
   sleuther-format: false
   web-server: false
   ingress: false
+  connectors: false

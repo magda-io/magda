@@ -63,6 +63,10 @@ dependencies:
     tags:
       - all
       - web-server
+  - name: connectors
+    tags:
+      - all
+      - connectors
 
 # Deprecated or not currently used services
   - name: admin-api
