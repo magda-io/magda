@@ -40,7 +40,9 @@ export default async function registerNewWebhook(
         ],
         config: webHookConfig,
         lastEvent: null,
-        isWaitingForResponse: false
+        isWaitingForResponse: false,
+        lastRetryTime: null,
+        retryCount: 0
     };
 
     return registry.postHook(newWebHook);
