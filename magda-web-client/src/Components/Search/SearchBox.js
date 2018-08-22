@@ -41,6 +41,9 @@ class SearchBox extends Component {
         this.searchInputFieldRef = null;
         props.history.listen(location => {
             this.debounceUpdateSearchQuery.cancel();
+            this.setState({
+                searchText: null
+            });
         });
     }
 
