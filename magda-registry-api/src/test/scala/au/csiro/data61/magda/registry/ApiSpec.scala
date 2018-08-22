@@ -92,7 +92,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/", 2000)(testConfig))
+    val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
     val api = new Api(actor, authClient, testConfig, system, executor, materializer)
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {

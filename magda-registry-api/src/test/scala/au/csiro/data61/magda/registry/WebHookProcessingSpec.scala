@@ -1482,6 +1482,81 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     }
   }
 
+  describe("Retry inactive Webhooks"){
+
+    implicit val timeout = Timeout(5 seconds)
+
+    it("Will restart inactive hook and start to process event immediately") { param =>
+
+      val hook = defaultWebHook.copy(
+        url = "http://localhost:" + server.localAddress.getPort.toString + "/hook",
+        active = false,
+        enabled = true
+      )
+
+      val actor = param.webHookActor
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      def response(): ToResponseMarshallable = {
+        StatusCodes.OK
+      }
+
+      this.currentResponse = Some(response);
+
+      val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // --- should not in processing as initial value for active is false
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      // --- No payload should be received by hook yet
+      payloads.length should be(0)
+
+      // --- send message to trigger the retry
+      Await.ready(actor ? WebHookActor.RetryInactiveHooks, 15 seconds)
+
+      Util.waitUntilDone(actor, hook.id.get)
+
+      // --- check the hook again to see if it's live now
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be None
+      // --- should at send one request to hook
+      payloads.length should be(1)
+
+    }
+
+    it("Will not restart disabled inactive hook") { param =>
+
+      val hook = defaultWebHook.copy(
+        url = "http://localhost:" + server.localAddress.getPort.toString + "/hook",
+        active = false,
+        enabled = false
+      )
+
+      val actor = param.webHookActor
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // --- should not in processing as initial value for active is false
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+      // --- send message to trigger the retry
+      Await.ready(actor ? WebHookActor.RetryInactiveHooks, 15 seconds)
+
+      // --- check the hook again to see if it's still inactive
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+    }
+
+  }
+
   private val defaultWebHook = WebHook(
     id = Some("test"),
     userId = None,
