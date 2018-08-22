@@ -159,11 +159,10 @@
         float: right;
     }
 
-
     &.au-accordion--closed {
         @media screen and (max-width: $medium) {
             display: none;
-      }
+        }
     }
 }
 
@@ -201,6 +200,6 @@
             span {
                 border-bottom: 1px solid $AU-color-foreground-action;
             }
-       }
-  }
+        }
+    }
 }
