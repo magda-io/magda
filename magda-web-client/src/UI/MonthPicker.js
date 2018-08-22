@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
-import help from "../assets/help.svg";
+import helpIcon from "../assets/help.svg";
 import defined from "../helpers/defined";
 import Tooltip from "./Tooltip";
 
@@ -153,9 +153,15 @@ class MonthPicker extends Component {
         ) {
             return (
                 <Tooltip
-                    startOpen={true}
-                    requireClickToDismiss={true}
-                    launcher={() => null}
+                    startOpen={false}
+                    requireClickToDismiss={false}
+                    launcher={() => (
+                        <img
+                            className="monthpicker-tooltip-launcher"
+                            src={helpIcon}
+                            alt="Help Link"
+                        />
+                    )}
                     onDismiss={() => null}
                     orientation="below"
                 >
