@@ -1,8 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import ReactTooltip from "react-tooltip";
-
 import {
     fetchFeedback,
     resetFeedback,
@@ -198,8 +196,6 @@ class FeedbackForm extends React.Component {
                                 ? "Sending..."
                                 : "Send"}
                         </button>
-
-                        <ReactTooltip />
                         <div className="privacy-link">
                             <a href="/page/privacy-policy" target="_blank">
                                 Privacy Policy

@@ -9,7 +9,6 @@ import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 import ga from "../analytics/googleAnalytics";
-import ReactTooltip from "react-tooltip";
 
 const formatIcons = {
     default: defaultFormatIcon
@@ -155,7 +154,6 @@ class DistributionRow extends Component {
                     <div className="row">
                         <Medium>
                             <div className="col-sm-1">
-                                <ReactTooltip />
                                 <img
                                     className="format-icon"
                                     src={
