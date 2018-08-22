@@ -32,7 +32,7 @@ export default function Login(props) {
                     </div>
                 </div>
             )}
-            <div className="col-sm-6 col-md-5 col-md-offset-1">
+            <div className="col-sm-6 col-md-5">
                 <h2>Sign In / Register through External Provider</h2>
                 <ul className="login__providers">
                     {props.providers.indexOf("facebook") !== -1 && (
