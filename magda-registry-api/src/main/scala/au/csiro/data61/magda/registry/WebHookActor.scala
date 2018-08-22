@@ -111,6 +111,9 @@ object WebHookActor {
     }
 
     private def retryAllInactiveHooks(retryInterval:Long): Unit ={
+
+      log.info("Start to retry all inactive webhooks...")
+
       DB localTx  { implicit session =>
         val hookIds = HookPersistence.getAll(session)
           .filter{ hook =>
@@ -119,7 +122,11 @@ object WebHookActor {
               if(hook.lastRetryTime.isEmpty) true
               else {
                 val expectedDiff = Math.pow(2, hook.retryCount) * retryInterval / 1000
-                OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
+                val isOutOfBackoffTimeWin = OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
+                if(!isOutOfBackoffTimeWin){
+                  log.info(s"Skip retry ${hook.id} as it is still in backoff time window. Last retry time: ${hook.lastRetryTime.get}..")
+                }
+                isOutOfBackoffTimeWin
               }
             }
           }
@@ -127,7 +134,13 @@ object WebHookActor {
 
         hookIds.foreach( hookId => HookPersistence.retry(session, hookId))
         if(hookIds.size>0){
-          self ! InvalidateWebhookCache
+          log.info(s"Invalidate Webhook Cache for retry ${hookIds.size} inactive hooks...")
+          setup
+          log.info("Sending Process message...")
+          self ! Process(true)
+          log.info("Completed retry all inactive webhooks.")
+        }else{
+          log.info("Completed retry all inactive webhooks: No inactive webhook need to be restarted...")
         }
       }
     }
