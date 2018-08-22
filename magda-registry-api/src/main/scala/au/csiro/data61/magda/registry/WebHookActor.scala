@@ -68,7 +68,7 @@ object WebHookActor {
             this.webHookActors.get(id).get ! "kill"
             this.webHookActors -= id
           } // Create actors for new WebHooks and post to all actors (new and old).
-          webHooks.filter(_.active).foreach { hook =>
+          webHooks.filter(_.active).filter(_.enabled).foreach { hook =>
             val id = hook.id.get
             val actorRef = this.webHookActors.get(id) match {
               case Some(actorRef) => actorRef
