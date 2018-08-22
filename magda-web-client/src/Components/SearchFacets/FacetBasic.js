@@ -8,29 +8,13 @@ class FacetBasic extends Component {
         super(props);
         // create a ref to store the textInput DOM element
         this.facetHeader = React.createRef();
+        this.updateComponentAlignment = this.updateComponentAlignment.bind(
+            this
+        );
         this.state = { marginLeft: null, alignment: null };
     }
 
-    componentDidMount() {
-        this.updateComponentAlignment();
-        window.addEventListener(
-            "resize",
-            this.updateComponentAlignment.bind(this)
-        );
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener(
-            "resize",
-            this.updateComponentAlignment.bind(this)
-        );
-    }
-
-    componentDidUpdate() {
-        this.updateComponentAlignment();
-    }
-
-    updateComponentAlignment() {
+    updateComponentAlignment(offsetLeft) {
         // get the absolute position of this facet header
 
         //in order to decide whether facet should be open from left or right, we need to detect where the
@@ -41,17 +25,12 @@ class FacetBasic extends Component {
 
         // we then pass on that knowledge to the actual facet dropdown
 
-        if (this.facetHeader.current) {
-            const offsetLeft = this.facetHeader.current.headerDiv.current.getBoundingClientRect()
-                .x;
-            const newAlignment =
-                offsetLeft >= window.innerWidth / 2 ? "right" : "left";
-            console.log(newAlignment);
-            if (newAlignment !== this.state.alignment) {
-                this.setState({
-                    alignment: newAlignment
-                });
-            }
+        const newAlignment =
+            offsetLeft >= window.innerWidth / 2 ? "right" : "left";
+        if (newAlignment !== this.state.alignment) {
+            this.setState({
+                alignment: newAlignment
+            });
         }
     }
 
@@ -67,6 +46,7 @@ class FacetBasic extends Component {
                     hasQuery={this.props.hasQuery}
                     onClick={this.props.toggleFacet}
                     ref={this.facetHeader}
+                    updateComponentAlignment={this.updateComponentAlignment}
                 />
 
                 <FacetBasicBody

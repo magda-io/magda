@@ -3,6 +3,9 @@
 .facet-header {
     display: flex;
     &.not-empty {
+        .btn-facet.format {
+            text-transform: uppercase;
+        }
         button {
             &,
             &:hover,
@@ -16,10 +19,6 @@
     .btn-remove {
         padding: 4px;
         display: flex;
-    }
-
-    .btn-facet.format {
-        text-transform: uppercase;
     }
 
     button {

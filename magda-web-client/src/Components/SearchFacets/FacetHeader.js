@@ -31,6 +31,14 @@ class FacetHeader extends Component {
         this.headerDiv = React.createRef();
     }
 
+    componentDidMount() {
+        if (this.props.updateComponentAlignment) {
+            this.props.updateComponentAlignment(
+                this.headerDiv.current.getBoundingClientRect().x
+            );
+        }
+    }
+
     componentDidUpdate() {
         // if it has filter and the button is not active
         // then set it to active
@@ -38,6 +46,12 @@ class FacetHeader extends Component {
             this.setState({
                 buttonActive: this.hasFilter()
             });
+        }
+
+        if (this.props.updateComponentAlignment) {
+            this.props.updateComponentAlignment(
+                this.headerDiv.current.getBoundingClientRect().x
+            );
         }
     }
 
