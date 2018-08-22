@@ -96,7 +96,7 @@ class WebHookActorSpec extends ApiSpec {
 
   it("Will restart inactive hook") { param =>
     val actor = param.webHookActor
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
 
     val hook = WebHook(
       id = Some("abc"),
@@ -112,7 +112,9 @@ class WebHookActorSpec extends ApiSpec {
         includeEvents = Some(true),
         includeRecords = Some(true),
         includeAspectDefinitions = Some(true),
-        dereference = Some(true)))
+        dereference = Some(true)),
+      enabled = true
+    )
 
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
       status shouldEqual StatusCodes.OK
@@ -135,7 +137,54 @@ class WebHookActorSpec extends ApiSpec {
 
     // --- After 3 seconds, the keeper timer in webhook should have run (set to 2 seconds for test cases)
     // --- check the hook again to see if it's live now
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be None
+
+  }
+
+  it("Will not restart disabled inactive hook") { param =>
+    val actor = param.webHookActor
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+    val hook = WebHook(
+      id = Some("abc"),
+      userId = None,
+      name = "abc",
+      active = false,
+      lastEvent = None,
+      url = "http://example.com/foo",
+      eventTypes = Set(EventType.CreateRecord),
+      isWaitingForResponse = None,
+      config = WebHookConfig(
+        optionalAspects = Some(List("aspect")),
+        includeEvents = Some(true),
+        includeRecords = Some(true),
+        includeAspectDefinitions = Some(true),
+        dereference = Some(true)),
+      enabled = false
+    )
+
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+      status shouldEqual StatusCodes.OK
+    }
+
+    // --- should not in processing as initial value for active is false
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+
+    val promise = Promise[Unit]()
+
+    val t = new Timer()
+    val task = new java.util.TimerTask{
+      def run() ={
+        promise.success()
+      }
+    }
+    t.schedule(task, 3000)
+
+    Await.ready(promise.future, 4 seconds)
+
+    // --- After 3 seconds, the keeper timer in webhook should NOT have run (set to 2 seconds for test cases)
+    // --- check the hook again to see if it's still inactive
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
 
   }
 

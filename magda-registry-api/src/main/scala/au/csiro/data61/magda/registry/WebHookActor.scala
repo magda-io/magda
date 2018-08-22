@@ -58,7 +58,7 @@ object WebHookActor {
         .map { webHooks =>
           // Create a child actor for each WebHook that doesn't already have one.
           // Send a `Process` message to all existing and new WebHook actors.
-          val currentHooks = webHooks.filter(_.active).map(_.id.get).toSet
+          val currentHooks = webHooks.filter(_.active).filter(_.enabled).map(_.id.get).toSet
           val existingHooks = webHookActors.keySet
 
           // Shut down actors for WebHooks that no longer exist
@@ -114,7 +114,7 @@ object WebHookActor {
       DB localTx  { implicit session =>
         val hookIds = HookPersistence.getAll(session)
           .filter{ hook =>
-            if(hook.active) false
+            if(hook.active || !hook.enabled) false
             else{
               if(hook.lastRetryTime.isEmpty) true
               else {

@@ -61,8 +61,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       case Some(id) => id
     }
 
-    sql"""insert into WebHooks (webHookId, userId, name, active, lastEvent, url, config)
-          values (${id}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb)"""
+    sql"""insert into WebHooks (webHookId, userId, name, active, lastEvent, url, config, enabled)
+          values (${id}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})"""
       .update.apply()
 
     val batchParameters = hook.eventTypes.map(eventType => Seq('webhookId -> id, 'eventTypeId -> eventType.value)).toSeq
@@ -77,7 +77,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       url = hook.url,
       eventTypes = hook.eventTypes,
       isWaitingForResponse = None,
-      config = hook.config))
+      config = hook.config,
+      enabled = hook.enabled))
   }
 
   def delete(implicit session: DBSession, hookId: String): Try[Boolean] = {
@@ -111,8 +112,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     if (id != hook.id.getOrElse("")) {
       Failure(new RuntimeException("The provided ID does not match the web hook's ID."))
     } else {
-      sql"""insert into WebHooks (webHookId, userId, name, active, lastevent, url, config)
-          values (${hook.id.get}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb)
+      sql"""insert into WebHooks (webHookId, userId, name, active, lastevent, url, config, enabled)
+          values (${hook.id.get}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})
           on conflict (webHookId) do update
           set name = ${hook.name}, active = ${hook.active}, url = ${hook.url}, config = ${hook.config.toJson.compactPrint}::jsonb""".update.apply()
       Success(hook)
