@@ -277,7 +277,6 @@ function mapStateToProps(state, ownProps) {
         activeDateTo: datasetSearch.activeDateTo,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
-        progress: datasetSearch.progress,
         strategy: datasetSearch.strategy,
         error: datasetSearch.error,
         freeText: datasetSearch.freeText
