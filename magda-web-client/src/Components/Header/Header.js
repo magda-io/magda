@@ -39,36 +39,27 @@ class Header extends Component {
                         <div className="row">
                             <div className="col-md-6 col-xs-12">
                                 <Link to="/" className="au-header__brand">
-                                    <div>
-                                        <Small>
-                                            <img
-                                                src={govtLogoMobile}
-                                                height={62}
-                                                alt="Coat of Arms"
-                                                className="au-header__brand-image"
-                                            />
-                                        </Small>
-                                        <Medium>
-                                            <img
-                                                src={govtLogo}
-                                                height={70}
-                                                alt="Coat of Arms"
-                                                className="au-header__brand-image"
-                                            />
-                                        </Medium>
-                                        <div className="au-header__text">
-                                            <img
-                                                src={logoUrl}
-                                                height={70}
-                                                style="max-width: 103px;"
-                                                alt={config.appName}
-                                                className="au-header__heading"
-                                            />
-                                            <span className="header__badge">
-                                                beta
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <Small>
+                                        <img
+                                            src={govtLogoMobile}
+                                            height={62}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Small>
+                                    <Medium>
+                                        <img
+                                            src={govtLogo}
+                                            height={70}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Medium>
+                                    <img
+                                        src={logoUrl}
+                                        alt={config.appName}
+                                        className="au-header__logo"
+                                    />
                                 </Link>
                             </div>
                             <div className="col-md-6 col-xs-12">
