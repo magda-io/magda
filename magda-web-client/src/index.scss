@@ -173,7 +173,7 @@ a {
 // gold starts here
 
 h1 {
-    @include AU-fontgrid(xl, heading);
+    font-size: 32px;
     font-weight: 400;
 }
 

@@ -9,6 +9,7 @@
 -   Uses the Header component from Design System
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Unify H1 size
 
 ## 0.0.46
 
