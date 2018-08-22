@@ -10,6 +10,7 @@
 -   Uses the Header component from Design System
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
 
