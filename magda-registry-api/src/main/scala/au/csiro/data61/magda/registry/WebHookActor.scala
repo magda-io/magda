@@ -114,16 +114,16 @@ object WebHookActor {
 
       log.info("Start to retry all inactive webhooks...")
 
-      DB localTx  { implicit session =>
+      val hookIds = DB localTx { implicit session =>
         val hookIds = HookPersistence.getAll(session)
-          .filter{ hook =>
-            if(hook.active || !hook.enabled) false
-            else{
-              if(hook.lastRetryTime.isEmpty) true
+          .filter { hook =>
+            if (hook.active || !hook.enabled) false
+            else {
+              if (hook.lastRetryTime.isEmpty) true
               else {
                 val expectedDiff = Math.pow(2, hook.retryCount) * retryInterval / 1000
                 val isOutOfBackoffTimeWin = OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
-                if(!isOutOfBackoffTimeWin){
+                if (!isOutOfBackoffTimeWin) {
                   log.info(s"Skip retry ${hook.id} as it is still in backoff time window. Last retry time: ${hook.lastRetryTime.get}..")
                 }
                 isOutOfBackoffTimeWin
@@ -133,16 +133,19 @@ object WebHookActor {
           .flatMap(_.id.toList)
 
         hookIds.foreach( hookId => HookPersistence.retry(session, hookId))
-        if(hookIds.size>0){
-          log.info(s"Invalidate Webhook Cache for retry ${hookIds.size} inactive hooks...")
-          setup
-          log.info("Sending Process message...")
-          self ! Process(true)
-          log.info("Completed retry all inactive webhooks.")
-        }else{
-          log.info("Completed retry all inactive webhooks: No inactive webhook need to be restarted...")
-        }
+        hookIds
+      }//--- must be in a separate block to make sure SQL transaction is commit before setup
+
+      if(hookIds.size>0){
+        log.info(s"Invalidate Webhook Cache for retry ${hookIds.size} inactive hooks...")
+        setup
+        log.info("Sending Process message...")
+        self ! Process(true)
+        log.info("Completed retry all inactive webhooks.")
+      }else{
+        log.info("Completed retry all inactive webhooks: No inactive webhook need to be restarted...")
       }
+
     }
 
     private def queryForAllWebHooks(): List[WebHook] = {
