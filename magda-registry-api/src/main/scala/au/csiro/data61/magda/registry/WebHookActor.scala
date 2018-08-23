@@ -28,12 +28,14 @@ object WebHookActor {
   case object InvalidateWebhookCache
   case object RetryInactiveHooks
 
+  val defaultWebHooksRetryInterval:Long = 600000
+
   case class Status(isProcessing: Option[Boolean])
 
-  def props(registryApiBaseUrl: String, webHooksRetryInterval: Long = 600000)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl, webHooksRetryInterval))
+  def props(registryApiBaseUrl: String, webHooksRetryInterval: Long = defaultWebHooksRetryInterval)(implicit config: Config) = Props(new AllWebHooksActor(registryApiBaseUrl, webHooksRetryInterval))
 
-  private def createWebHookActor(context: ActorContext, registryApiBaseUrl: String, hook: WebHook)(implicit config: Config): ActorRef = {
-    context.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
+  private def createWebHookActor(context: ActorContext, registryApiBaseUrl: String, hook: WebHook, forceWakeUpInterval:Long)(implicit config: Config): ActorRef = {
+    context.actorOf(Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl, forceWakeUpInterval)), name = "WebHookActor-" + java.net.URLEncoder.encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString)
   }
 
   private case class GotAllWebHooks(webHooks: List[WebHook], startup: Boolean)
@@ -74,7 +76,7 @@ object WebHookActor {
               case Some(actorRef) => actorRef
               case None => {
                 log.info("Creating new web hook actor for {}.", id)
-                val actorRef = WebHookActor.createWebHookActor(context, registryApiBaseUrl, hook)
+                val actorRef = WebHookActor.createWebHookActor(context, registryApiBaseUrl, hook, webHooksRetryInterval)
                 this.webHookActors += (id -> actorRef)
                 actorRef
               }
@@ -155,7 +157,10 @@ object WebHookActor {
     }
   }
 
-  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String)(implicit val config: Config) extends Actor with ActorLogging {
+  private class SingleWebHookActor(val id: String, val registryApiBaseUrl: String, forceWakeUpInterval: Long = defaultWebHooksRetryInterval)(implicit val config: Config) extends Actor with ActorLogging {
+
+    case object WakeUp
+
     import context.dispatcher
 
     val MAX_EVENTS = 100
@@ -233,10 +238,17 @@ object WebHookActor {
         .to(Sink.ignore)
         .run()
 
+    context.system.scheduler.schedule(forceWakeUpInterval milliseconds, forceWakeUpInterval milliseconds, self, WakeUp)
+
     def receive = {
       case Process(ignoreWaitingForResponse, _, _) => {
         indexQueue.offer(ignoreWaitingForResponse)
       }
+      case WakeUp =>
+        if(count == 0){
+          log.info("Force to wake up idle WebHook {}...", this.id)
+          indexQueue.offer(true)
+        }
       case GetStatus =>
         sender() ! Status(Some(count != 0))
     }
