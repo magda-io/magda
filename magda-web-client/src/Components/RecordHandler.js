@@ -342,7 +342,7 @@ class RecordHandler extends React.Component {
                         </Medium>
                         <div className="row">
                             <div className="col-sm-8">
-                                <h1 className="dataset-title" itemProp="name">
+                                <h1 itemProp="name">
                                     {this.props.dataset.title}
                                 </h1>
                                 <div className="publisher-basic-info-row">

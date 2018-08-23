@@ -116,7 +116,11 @@ class FacetBasicBody extends Component {
         // the option that has the max hit value, use to calculate volumne indicator
         let maxOptionOptionList = maxBy(this.props.options, o => +o.hitCount);
         return (
-            <div className={`facet-body facet-${this.props.title}`}>
+            <div
+                className={`facet-body facet-${this.props.title} facet-${
+                    this.props.alignment
+                }`}
+            >
                 <div className="clearfix facet-body__header">
                     <FacetSearchBox
                         renderOption={this.renderOption}

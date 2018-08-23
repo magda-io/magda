@@ -76,7 +76,7 @@ export function prependToLocalStorageArray(
     if (limit && limit >= 1) {
         items = items.slice(0, limit);
     }
-    setLocalData(key, items, defaultValue);
+    return setLocalData(key, items, defaultValue);
 }
 
 /**

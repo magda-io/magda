@@ -56,7 +56,7 @@ class StoryBox extends Component {
                     : null}
                 {content.title
                     ? this.getClickableElement(
-                          <h1 className="story-title">{content.title}</h1>,
+                          <h2 className="story-title">{content.title}</h2>,
                           content.titleUrl
                       )
                     : null}

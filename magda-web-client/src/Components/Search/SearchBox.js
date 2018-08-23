@@ -15,6 +15,7 @@ import queryString from "query-string";
 import SearchSuggestionBox from "./SearchSuggestionBox";
 import { Small, Medium } from "../../UI/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
+import { withRouter } from "react-router-dom";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -38,6 +39,12 @@ class SearchBox extends Component {
             isFocus: false
         };
         this.searchInputFieldRef = null;
+        props.history.listen(location => {
+            this.debounceUpdateSearchQuery.cancel();
+            this.setState({
+                searchText: null
+            });
+        });
     }
 
     debounceUpdateSearchQuery = debounce(this.updateSearchText, 3000);
@@ -213,7 +220,9 @@ const mapDispatchToProps = dispatch =>
         dispatch
     );
 
+const SearchBoxWithRouter = withRouter(props => <SearchBox {...props} />);
+
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(SearchBox);
+)(SearchBoxWithRouter);
