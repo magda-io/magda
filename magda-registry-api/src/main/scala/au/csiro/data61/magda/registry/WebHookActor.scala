@@ -5,6 +5,7 @@ import java.time.OffsetDateTime
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import au.csiro.data61.magda.model.Registry._
 import akka.pattern.pipe
+import akka.pattern.ask
 import scalikejdbc.DB
 
 import scala.concurrent.Future
@@ -21,6 +22,7 @@ import akka.stream.DelayOverflowStrategy
 import akka.stream.Attributes
 import com.typesafe.config.Config
 import akka.actor.ActorContext
+import akka.util.Timeout
 
 object WebHookActor {
   case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
@@ -88,6 +90,15 @@ object WebHookActor {
 
     scheduler.schedule(500 milliseconds, webHooksRetryInterval milliseconds, self, RetryInactiveHooks)
 
+    def getStatus(webHookId:String) : Future[Any] = {
+      webHookActors.get(webHookId) match {
+        case None               => Future.successful(WebHookActor.Status(None))
+        case Some(webHookActor) =>
+          implicit val timeout = Timeout(5 seconds)
+          webHookActor ? WebHookActor.GetStatus
+      }
+    }
+
     def receive = {
 
       case RetryInactiveHooks =>
@@ -116,30 +127,44 @@ object WebHookActor {
 
       log.info("Start to retry all inactive webhooks...")
 
-      val hookIds = DB localTx { implicit session =>
-        val hookIds = HookPersistence.getAll(session)
-          .filter { hook =>
-            if (hook.active || !hook.enabled) false
-            else {
-              if (hook.lastRetryTime.isEmpty) true
-              else {
-                val expectedDiff = Math.pow(2, hook.retryCount) * retryInterval / 1000
-                val isOutOfBackoffTimeWin = OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
-                if (!isOutOfBackoffTimeWin) {
-                  log.info(s"Skip retry ${hook.id} as it is still in backoff time window. Last retry time: ${hook.lastRetryTime.get}..")
-                }
-                isOutOfBackoffTimeWin
-              }
-            }
-          }
-          .flatMap(_.id.toList)
+      val hooks = DB readOnly { implicit session =>
+        HookPersistence.getAll(session).filter(_.enabled)
+      }
 
-        hookIds.foreach( hookId => HookPersistence.retry(session, hookId))
-        hookIds
-      }//--- must be in a separate block to make sure SQL transaction is commit before setup
+      val hookIds = hooks.map{ hook =>
+        if(!hook.active){
+          hook.copy(
+            isProcessing = Some(false),
+            isRunning = Some(false)
+          )
+        }else{
+          val status = Await.result(getStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status]
+          hook.copy(
+            isRunning = Some(!status.isProcessing.isEmpty),
+            isProcessing = Some(status.isProcessing.getOrElse(false))
+          )
+        }
+      }.filter{ hook =>
+        if(hook.active && hook.isRunning.get) {
+          false
+        } else {
+          if (hook.lastRetryTime.isEmpty) true
+          else {
+            val expectedDiff = Math.pow(2, hook.retryCount) * retryInterval / 1000
+            val isOutOfBackoffTimeWin = OffsetDateTime.now.minusSeconds(expectedDiff.toLong).isAfter(hook.lastRetryTime.get)
+            if (!isOutOfBackoffTimeWin) {
+              log.info(s"Skip retry ${hook.id} as it is still in backoff time window. Last retry time: ${hook.lastRetryTime.get}..")
+            }
+            isOutOfBackoffTimeWin
+          }
+        }
+      }.flatMap(_.id.toList)
 
       if(hookIds.size>0){
         log.info(s"Invalidate Webhook Cache for retry ${hookIds.size} inactive hooks...")
+        DB localTx { implicit session =>
+          hookIds.foreach( hookId => HookPersistence.retry(session, hookId))
+        }
         setup
         log.info("Sending Process message...")
         self ! Process(true)
