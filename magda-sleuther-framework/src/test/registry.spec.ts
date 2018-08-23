@@ -240,6 +240,8 @@ function buildWebHook(
         isWaitingForResponse: false,
         enabled: true,
         lastRetryTime: null,
-        retryCount: 0
+        retryCount: 0,
+        isRunning: null,
+        isProcessing: null
     };
 }

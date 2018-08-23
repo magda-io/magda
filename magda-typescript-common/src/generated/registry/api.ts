@@ -156,6 +156,8 @@ export class WebHook {
     "enabled": boolean;
     "lastRetryTime": Date;
     "retryCount": number;
+    "isRunning": any;
+    "isProcessing": any;
 }
 
 /**
