@@ -157,6 +157,9 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             }
           }
           case (Failure(error), _) =>
+            DB localTx { session =>
+              HookPersistence.setActive(session, webHook.id.get, false)
+            }
             Future.failed(error)
         }
       }
