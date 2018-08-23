@@ -34,7 +34,7 @@ case class Query(
   dateFrom: Option[FilterValue[OffsetDateTime]] = None,
   dateTo: Option[FilterValue[OffsetDateTime]] = None,
   regions: Set[FilterValue[Region]] = Set(),
-  regionsInFreeText: Set[FilterValue[Region]] = Set(),
+  boostRegions: Set[Region] = Set(),
   formats: Set[FilterValue[String]] = Set())
 
 object Query {
@@ -47,17 +47,8 @@ object Query {
       dateFrom = dateFilterValueFromString(dateFrom),
       dateTo = dateFilterValueFromString(dateTo),
       regions = regions.map(regionValueFromString).flatten.toSet,
-      regionsInFreeText = regionsFromFreeText(freeText),
+      boostRegions = Set(),
       formats = formats.map(x => filterValueFromString(Some(x))).flatten.toSet)
-  }
-
-  private def regionsFromFreeText(freeText: Option[String])(implicit config: Config): Set[FilterValue[Region]] = {
-    filterValueFromString(freeText).map(_.map(string => if (string.toLowerCase.contains("queensland")) Some(Region(QueryRegion("ithinkthisisregiontype", "3"))) else None)) match {
-      case Some(Specified(Some(x))) => Set(Specified(x))
-      case Some(Specified(None))    => Set()
-      case Some(Unspecified())      => Set(Unspecified())
-      case None                     => Set()
-    }
   }
 
   private def regionValueFromString(input: String)(implicit config: Config): Option[FilterValue[Region]] = {

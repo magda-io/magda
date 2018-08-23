@@ -288,11 +288,136 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     try {
       blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+Queensland&limit=${datasets.size}""") ~> routes ~> check {
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual qldDataset.identifier
+        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual qldDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
+        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
+    }
+  }
+
+  it("for a region in query text should boost results from that region by acronym") {
+
+    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
+
+    val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
+
+    val saDataset = DataSet(
+      identifier="ds-region-in-query-test-1",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density as measured by the state survey"),
+      catalog=Some("region-in-query-test-catalog"),
+      spatial=Some(Location(geoJson=saGeometry)),
+      quality = 0.6)
+    val nationalDataset = DataSet(
+      identifier="ds-region-in-query-test-2",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6)
+
+    val datasets = List(nationalDataset, saDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual saDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
+        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
+      }
+
+      // Verify that half the name doesn't boost results
+      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual saDataset.identifier
+
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
+    }
+  }
+
+  it("for a region in query text should boost results from that region in Alfredton") {
+    // 2 fake datasets. One that relates to Alfredton, the other to all of Australia
+    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    //  Alfredton dataset should be boosted if a user searches for wildlife density in Alfredton
+
+    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
+
+    val alfGeometry = Location.fromBoundingBox(Seq(BoundingBox(-37.555, 143.81, -37.56, 143.80)))
+
+    val alfDataset = DataSet(
+      identifier="ds-region-in-query-test-1",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density as measured by the state survey"),
+      catalog=Some("region-in-query-test-catalog"),
+      spatial=Some(Location(geoJson=alfGeometry)),
+      quality = 0.6)
+    val nationalDataset = DataSet(
+      identifier="ds-region-in-query-test-2",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6)
+
+    val datasets = List(nationalDataset, alfDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual alfDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual alfDataset.identifier // Failed
         response.dataSets(1).identifier shouldEqual nationalDataset.identifier
       }
 
