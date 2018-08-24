@@ -16,12 +16,32 @@ import scala.util.{ Failure, Success }
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 
+
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
 class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   @ApiOperation(value = "Get a list of all web hooks", nickname = "getAll", httpMethod = "GET", response = classOf[WebHook], responseContainer = "List")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
+  /**
+    * @apiGroup Registry Hooks Service
+    * @api {get} /hooks Get all system webhooks
+    * @apiName getAll
+    * @apiDescription TODO
+    * @apiParam (Request header)   {string}  X-Magda-Session  Magda internal session id
+    *
+    * @apiSuccess {Object[]} webhooks List of webhooks
+    * @apiSuccess {String} webhooks.name Webhook name
+    * @apiSuccess {String[]} webhooks.eventTypes Webhook eventTypes
+    * @apiSuccess {Number} webhooks.lastEvent Webhook lastEvent
+    * @apiSuccess {String} webhooks.url Webhook url
+    * @apiSuccess {Object} webhooks.config Webhook config
+    * @apiSuccess {Boolean} webhooks.isWaitingForResponse Webhook isWaitingForResponse
+    * @apiSuccess {String} webhooks.id Webhook id
+    * @apiSuccess {Number} webhooks.userId Webhook userId
+    * @apiSuccess {Boolean} webhooks.active Webhook active
+    *
+    * */
   def getAll = get {
     pathEnd {
       complete {
@@ -127,7 +147,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def ack = post {
     path(Segment / "ack") { (id: String) =>
-      entity(as[WebHookAcknowledgement]) { acknowledgement =>        
+      entity(as[WebHookAcknowledgement]) { acknowledgement =>
         val result = DB localTx { session =>
           HookPersistence.acknowledgeRaisedHook(session, id, acknowledgement) match {
             case Success(result)    => complete(result)
