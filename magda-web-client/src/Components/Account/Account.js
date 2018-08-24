@@ -51,7 +51,7 @@ class Account extends React.Component {
                     )}
                     {this.props.user && (
                         <div>
-                            <h2>Account</h2>
+                            <h1>Account</h1>
                             <p>Display Name: {this.props.user.displayName}</p>
                             <p>Email: {this.props.user.email}</p>
                         </div>

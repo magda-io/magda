@@ -113,14 +113,14 @@ export default class ChartConfig extends Component {
                     {this.renderDropdownSelect(
                         this.props.xAxisOptions,
                         "xAxis",
-                        "xAxis"
+                        "X axis"
                     )}
                 </div>
                 <div className="y-axis">
                     {this.renderDropdownSelect(
                         this.props.yAxisOptions,
                         "yAxis",
-                        "yAxis"
+                        "Y axis"
                     )}
                 </div>
             </div>
