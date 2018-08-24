@@ -19,7 +19,7 @@ const argv = yargs
             demand: true
         },
         config: {
-            description: "Configuration direction.",
+            description: "Configuration directory.",
             type: "string",
             demand: true
         },
@@ -43,9 +43,10 @@ const input = fs
 
 const output = `-o ${argv.output}`;
 
-const config = `-x ${argv.config}`;
+// --- apidoc require directory name of the config file and doesn't accept config file name
+const config = `-c ${argv.config}`;
 
-childProcess.execSync(`apidoc ${input} ${output}`);
+childProcess.execSync(`apidoc ${input} ${output} ${config}`);
 
 // Convert APIDOC to swagger and openapi specs
 
