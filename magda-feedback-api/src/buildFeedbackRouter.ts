@@ -21,7 +21,8 @@ export default function buildFeedbackRouter(
 
     /**
      * @apiGroup Feedback
-     * @api {post} /v0/csp Report CSP Violation
+     * @api {post} /csp Report CSP Violation
+     * @apiName csp
      * @apiDescription TODO
      *
      * @apiParam (Request body) {string} csp-report TODO
@@ -53,7 +54,8 @@ export default function buildFeedbackRouter(
 
     /**
      * @apiGroup Feedback
-     * @api {post} /v0/user Post User Feedback
+     * @api {post} /user Post User Feedback
+     * @apiName user
      * @apiDescription TODO
      *
      * @apiParam (Request body) {string} [title] TODO

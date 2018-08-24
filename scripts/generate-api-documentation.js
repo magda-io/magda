@@ -175,7 +175,7 @@ function makePathCall(apiCall, flavor) {
         }
     }
 
-    return {
+    const pathData = {
         tags,
         summary,
         description,
@@ -183,6 +183,12 @@ function makePathCall(apiCall, flavor) {
         requestBody,
         responses
     };
+
+    if (flavor === "swagger") {
+        pathData["operationId"] = apiCall.name;
+    }
+
+    return pathData;
 }
 
 const apiProject = JSON.parse(

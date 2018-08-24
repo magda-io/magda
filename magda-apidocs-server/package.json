@@ -4,7 +4,7 @@
   "version": "0.0.47-0",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "generate-api-documentation --config $PWD/apidoc.json --output $PWD/build",
+    "build": "generate-api-documentation --config $PWD --output $PWD/build",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
   },

@@ -335,6 +335,20 @@
                 "squirrel"
             ],
             "cwd": "${workspaceRoot}/magda-ckan-connector"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "generate-api-documentation",
+            "program": "${workspaceRoot}/scripts/generate-api-documentation.js",
+            "cwd": "${workspaceRoot}/scripts",
+            "args": [
+                "--config",
+                "../magda-apidocs-server",
+                "--output",
+                "../magda-apidocs-server/build"
+            ]
         }
     ]
 }

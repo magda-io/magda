@@ -59,7 +59,8 @@ const app = buildFeedbackRouter({
 
 /**
  * @apiGroup Feedback
- * @api {get} /v0/healthz Health Check
+ * @api {get} /healthz Health Check
+ * @apiName healthz
  * @apiDescription TODO
  * @apiSuccessExample {string} 200
  *    OK
