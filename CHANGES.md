@@ -10,6 +10,7 @@
 -   Uses the Header component from Design System
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Push footer below the fold while loading page content
 -   Unify tooltip styles across different instances, remove react-tooltip
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
