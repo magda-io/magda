@@ -31,13 +31,12 @@ tags:
 
 
 ingress:
-  hostname: search.data.gov.au
-  ipName: search-data-gov-au-ingress
+  hostname: staging.search.data.gov.au
+  ipName: staging-search-data-gov-au-ingress
   ingressClass: gce
   enableTls: true
   domains:
-    - search.data.gov.au
-    - letest.search.data.gov.au
+    - staging.search.data.gov.au
 elasticsearch:
   production: true
   client:
@@ -174,13 +173,13 @@ indexer:
   elasticsearch:
     shards: 2
     replicas: 4
-  #  useGcsSnapshots: true
-  #  gcsSnapshotBucket: "magda-es-snapshots"
-  #  gcsSnapshotServiceAccount: "_default"
+#    useGcsSnapshots: true
+#    gcsSnapshotBucket: "magda-es-snapshots"
+#    gcsSnapshotServiceAccount: "_default"
   resources:
     requests:
       cpu: 200m
-      memory: 200Mi
+      memory: 500Mi
 cloud-sql-proxy:
   replicas: 2
   instanceConnectionName: terriajs:australia-southeast1:magda-prod

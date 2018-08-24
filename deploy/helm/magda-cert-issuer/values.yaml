@@ -1,7 +1,7 @@
 useStaging: true
-hostedZoneID: Z1FY04JPVA0ZUP
-accessKeyID: AKIAJLPF6GKZMIUFYOXQ 
-acmeEmail: alex.gilleran@data61.csiro.au
+hostedZoneID: 
+accessKeyID:  
+acmeEmail: 
 secretAccessKeySecretRef:
   name: prod-route53-credentials-secret
   key: secret-access-key
