@@ -545,7 +545,11 @@ Publish Helm Chart:
       - deploy/helm/chart-repo
   retry: 1
   script:
-    - apk add --update aws-cli
+    # Get AWS CLI
+    - apk -v --update add python py-pip groff less mailcap
+    - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
+
+    # Run deploy
     - aws configure
     - cd deploy/helm
     - mkdir -p chart-repo
