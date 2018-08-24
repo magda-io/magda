@@ -46,7 +46,12 @@ const output = `-o ${argv.output}`;
 // --- apidoc require directory name of the config file and doesn't accept config file name
 const config = `-c ${argv.config}`;
 
-childProcess.execSync(`apidoc ${input} ${output} ${config}`);
+const apidocPath = path.resolve(
+    path.dirname(__dirname),
+    "./node_modules/.bin/apidoc"
+);
+
+childProcess.execSync(`${apidocPath} ${input} ${output} ${config}`);
 
 // Convert APIDOC to swagger and openapi specs
 
