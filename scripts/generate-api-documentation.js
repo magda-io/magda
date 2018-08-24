@@ -5,6 +5,7 @@ const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
+const { toSwagger: apidocToSwagger } = require("./apidocToSwagger");
 
 const argv = yargs
     .options({
@@ -198,16 +199,11 @@ const apiData = JSON.parse(
     fs.readFileSync(path.join(argv.output, "api_data.json"))
 );
 
+const swaggerJson = apidocToSwagger(apiData, apiProject);
+
 fs.writeFileSync(
     path.join(argv.output, "swagger.json"),
-    JSON.stringify(
-        Object.assign(
-            makeMeta(apiProject, apiData, "swagger"),
-            makePaths(apiProject, apiData, "swagger")
-        ),
-        null,
-        2
-    )
+    JSON.stringify(swaggerJson, null, 2)
 );
 
 fs.writeFileSync(
