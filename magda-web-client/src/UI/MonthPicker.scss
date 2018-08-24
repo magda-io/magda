@@ -45,17 +45,20 @@
         border-bottom: 5px solid $AU-colordark-foreground-focus;
         text-decoration: underline;
     }
-}
 
-.future-date-tooltip {
-    font-weight: 200;
-}
+    .tooltip {
+        right: 12px;
+        position: absolute;
+        z-index: 99999;
+        top: 12px;
 
-.help-icon-position {
-    position: absolute;
-    right: 11px;
-    transition: right 0.2s;
-    top: 11px;
+        .tooltiptext {
+            margin-left: -50px;
+            top: calc(100% + 5px);
+            font-weight: normal;
+            padding: 8px;
+        }
+    }
 }
 
 .year-input-container {

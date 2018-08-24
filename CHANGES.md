@@ -2,6 +2,7 @@
 
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
+-   Align format facet based on its position on the page
 -   Reformat page title to be consistent throughout
 -   Remove browser default button background for search facet (for safari and IE)
 -   Removed `x-powered-by` & `server` headers from response
@@ -13,6 +14,11 @@
 -   Moved standard and data.gov.au config to a separate repo
 -   Added better readiness probes to elasticsearch
 -   Adjusted resources requirements/limits
+-   Push footer below the fold while loading page content
+-   Unify tooltip styles across different instances, remove react-tooltip
+-   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
+-   Unify H1 size
+-   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
 
 ## 0.0.46
 
