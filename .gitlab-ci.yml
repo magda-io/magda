@@ -57,21 +57,6 @@ registry-typescript-api:
       - "magda-typescript-common/src/generated"
     expire_in: 30 days
 
-generate-connector-jobs:
-  stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  retry: 1
-  cache: {}
-  script:
-    - cd deploy
-    - yarn run generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/prod --imageVersion=$CI_COMMIT_REF_SLUG --imagePrefix=registry.gitlab.com/magda-data/magda/data61/
-    - mkdir kubernetes/generated/prod/cron
-    - mv kubernetes/generated/prod/*-cron.json kubernetes/generated/prod/cron
-  artifacts:
-    paths:
-      - "deploy/kubernetes/generated"
-    expire_in: 30 days
-
 buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
@@ -492,8 +477,6 @@ Deploy Master To Dev:
   stage: deploy-dev
   only:
     - master
-  dependencies:
-    - generate-connector-jobs
   cache: {}
   image:
     name: dtzar/helm-kubectl
@@ -507,9 +490,7 @@ Deploy Master To Dev:
   - export KUBECONFIG=kubectlconfig.yaml
   - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
   - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 1200 --wait
-  - kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file deploy/connector-config/
-  - kubectl apply -f deploy/kubernetes/generated/prod/cron
-
+  
 Release Tags To Docker Hub:
   stage: release
   only:

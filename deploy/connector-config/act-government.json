@@ -1,7 +1,0 @@
-{
-    "type": "magda-project-open-data-connector",
-    "id": "act",
-    "name": "ACT Government data.act.gov.au",
-    "sourceUrl": "http://www.data.act.gov.au/data.json",
-    "schedule": "0 0 */3 * *"
-}

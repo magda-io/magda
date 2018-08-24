@@ -1,8 +1,0 @@
-{
-    "type": "magda-csw-connector",
-    "id": "mrt",
-    "name": "Mineral Resources Tasmania",
-    "sourceUrl": "http://www.mrt.tas.gov.au/web-catalogue/srv/eng/csw",
-    "pageSize": 100,
-    "schedule": "30 6 */3 * *"
-}
