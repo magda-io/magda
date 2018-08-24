@@ -146,14 +146,14 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     def expectCredentialsMissingRejection() = {
       rejection match {
-        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success 
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, _) => // success
         case _ => fail()
       }
     }
 
     def expectCredentialsRejectedRejection() = {
       rejection match {
-        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, _) => // success 
+        case AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, _) => // success
         case _ => fail(s"Rejection was $rejection")
       }
     }

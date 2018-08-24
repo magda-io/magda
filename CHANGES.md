@@ -8,6 +8,7 @@
 -   Removed `x-powered-by` & `server` headers from response
 -   Updated header logo to be correct branding type
 -   Uses the Header component from Design System
+-   Registry will now periodically retry Webhook
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
 -   Push footer below the fold while loading page content

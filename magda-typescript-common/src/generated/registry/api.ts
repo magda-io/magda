@@ -28,23 +28,27 @@ export class AspectDefinition {
     /**
      * The unique identifier for the aspect type.
      */
-    id: string;
+    "id": string;
     /**
      * The name of the aspect.
      */
-    name: string;
+    "name": string;
     /**
      * The JSON Schema of this aspect.
      */
-    jsonSchema: any;
+    "jsonSchema": any;
 }
 
 export class BadRequest {
-    message: string;
+    "message": string;
+}
+
+export class CountResponse {
+    "count": number;
 }
 
 export class DeleteResult {
-    deleted: boolean;
+    "deleted": boolean;
 }
 
 /**
@@ -66,23 +70,27 @@ export type EventType =
  */
 export class EventsPage {
     /**
+     * Whether there are more events available.
+     */
+    "hasMore": boolean;
+    /**
      * A token to be used to get the next page of events.
      */
-    nextPageToken: string;
+    "nextPageToken": string;
     /**
      * The events in this page.
      */
-    events: Array<RegistryEvent>;
+    "events": Array<RegistryEvent>;
 }
 
 export class JsObject {
-    fields: { [key: string]: JsValue };
+    "fields": { [key: string]: JsValue };
 }
 
 export class JsValue {}
 
 export class MultipleDeleteResult {
-    count: number;
+    "count": number;
 }
 
 export class Operation {}
@@ -94,19 +102,19 @@ export class Record {
     /**
      * The unique identifier of the record
      */
-    id: string;
+    "id": string;
     /**
      * The name of the record
      */
-    name: string;
+    "name": string;
     /**
      * The aspects included in this record
      */
-    aspects: any;
+    "aspects": any;
     /**
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
-    sourceTag: string;
+    "sourceTag": string;
 }
 
 /**
@@ -116,35 +124,40 @@ export class RecordSummary {
     /**
      * The unique identifier of the record
      */
-    id: string;
+    "id": string;
     /**
      * The name of the record
      */
-    name: string;
+    "name": string;
     /**
      * The list of aspect IDs for which this record has data
      */
-    aspects: Array<string>;
+    "aspects": Array<string>;
 }
 
 export class RegistryEvent {
-    id: any;
-    eventTime: Date;
-    eventType: EventType;
-    userId: number;
-    data: JsObject;
+    "id": any;
+    "eventTime": Date;
+    "eventType": EventType;
+    "userId": number;
+    "data": JsObject;
 }
 
 export class WebHook {
-    id: string;
-    userId: any;
-    name: string;
-    active: boolean;
-    lastEvent: any;
-    url: string;
-    eventTypes: Array<EventType>;
-    isWaitingForResponse: any;
-    config: WebHookConfig;
+    "id": string;
+    "userId": any;
+    "name": string;
+    "active": boolean;
+    "lastEvent": any;
+    "url": string;
+    "eventTypes": Array<EventType>;
+    "isWaitingForResponse": any;
+    "config": WebHookConfig;
+    "enabled": boolean;
+    "lastRetryTime": Date;
+    "retryCount": number;
+    "isRunning": any;
+    "isProcessing": any;
 }
 
 /**
@@ -154,15 +167,15 @@ export class WebHookAcknowledgement {
     /**
      * True if the web hook was received successfully and the listener is ready for further notifications.  False if the web hook was not received and the same notification should be repeated.
      */
-    succeeded: boolean;
+    "succeeded": boolean;
     /**
      * The ID of the last event received by the listener.  This should be the value of the `lastEventId` property of the web hook payload that is being acknowledged.  This value is ignored if `succeeded` is false.
      */
-    lastEventIdReceived: any;
+    "lastEventIdReceived": any;
     /**
      * Should the webhook be active or inactive?
      */
-    active: any;
+    "active": any;
 }
 
 /**
@@ -172,16 +185,16 @@ export class WebHookAcknowledgementResponse {
     /**
      * The ID of the last event successfully received by the listener.  Further notifications will start after this event.
      */
-    lastEventIdReceived: number;
+    "lastEventIdReceived": number;
 }
 
 export class WebHookConfig {
-    aspects: Array<string>;
-    optionalAspects: Array<string>;
-    includeEvents: any;
-    includeRecords: any;
-    includeAspectDefinitions: any;
-    dereference: any;
+    "aspects": Array<string>;
+    "optionalAspects": Array<string>;
+    "includeEvents": any;
+    "includeRecords": any;
+    "includeAspectDefinitions": any;
+    "dereference": any;
 }
 
 export interface Authentication {
@@ -1715,6 +1728,69 @@ export class RecordsApi {
         return new Promise<{
             response: http.IncomingMessage;
             body: RecordSummary;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
+     *
+     * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
+     * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     */
+    public getCount(
+        aspect?: Array<string>,
+        aspectQuery?: Array<string>
+    ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
+        const localVarPath = this.basePath + "/records/count";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        if (aspect !== undefined) {
+            queryParameters["aspect"] = aspect;
+        }
+
+        if (aspectQuery !== undefined) {
+            queryParameters["aspectQuery"] = aspectQuery;
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: CountResponse;
         }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
