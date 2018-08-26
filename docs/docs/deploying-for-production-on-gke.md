@@ -11,13 +11,13 @@ deploy/helm/create-auth-secrets.sh
 4.  Find out the latest release version from https://github.com/TerriaJS/magda/releases
 5.  Copy deploy/helm/search-data.gov.au and adapt it to create your helm config. Important options:
 
-*   **useCombinedDb**: Do you want each db-using service to have its own db, or use one big combined one?
-*   **useCloudSql**: Do you want to use Google Cloud SQL for the databases? This should be used with `useCombinedDb=false`
-*   **externalUrl**: What's the external url that you'll be deploying the website on? This is used for OAuth2 callback URLs
-*   **indexer.elasticsearch.useGcsSnapshots**: Do you want to have elasticsearch snapshot to GCS? If so you'll need to create a GCS bucket for it, and set that in gcsSnapshotBucket. You'll also need to make sure your GKE cluster has access to GCS when you create it.
-*   **gateway.loadBalancerIP**: What's the external IP you want to use?
-*   **gateway.auth.x**: Put the ids of your google/facebook apps for OAuth if you have them. You'll also need to create an `oauth-secrets` secret containing a `facebook-client-secret` and `google-client-secret`.
-*   **feedback-api.gitHubIssuesUrl**: Put the API URL of your (private) GitHub repo where feedback issues will be created, e.g. `https://api.github.com/repos/TerriaJS/Magda-Feedback/issues`. You also need to create secret called `access-tokens` with a key `github-for-feedback` containing a personal access token with permissions to create issues in the private repo.
+-   **useCombinedDb**: Do you want each db-using service to have its own db, or use one big combined one?
+-   **useCloudSql**: Do you want to use Google Cloud SQL for the databases? This should be used with `useCombinedDb=false`
+-   **externalUrl**: What's the external url that you'll be deploying the website on? This is used for OAuth2 callback URLs
+-   **indexer.elasticsearch.useGcsSnapshots**: Do you want to have elasticsearch snapshot to GCS? If so you'll need to create a GCS bucket for it, and set that in gcsSnapshotBucket. You'll also need to make sure your GKE cluster has access to GCS when you create it.
+-   **gateway.loadBalancerIP**: What's the external IP you want to use?
+-   **gateway.auth.x**: Put the ids of your google/facebook apps for OAuth if you have them. You'll also need to create an `oauth-secrets` secret containing a `facebook-client-secret` and `google-client-secret`.
+-   **feedback-api.gitHubIssuesUrl**: Put the API URL of your (private) GitHub repo where feedback issues will be created, e.g. `https://api.github.com/repos/TerriaJS/Magda-Feedback/issues`. You also need to create secret called `access-tokens` with a key `github-for-feedback` containing a personal access token with permissions to create issues in the private repo.
 
 If using Google Cloud SQL follow the instructions here https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine
 

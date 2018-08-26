@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang=" en-US ">
+
+<head>
+    <meta charset="UTF-8"> <!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Roadmap | magda</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Roadmap" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<meta property="og:description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<link rel="canonical" href="http://localhost:4000/docs/roadmap.html" />
+<meta property="og:url" content="http://localhost:4000/docs/roadmap.html" />
+<meta property="og:site_name" content="magda" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/docs/roadmap.html","description":"A complete solution for managing, publishing and discovering government data, private and open.","headline":"Roadmap","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/assets/css/style.css?v=607cfec1a68d89f4e2e9c69ebec2c0f8fb1511b7">
+</head>
+
+<body>
+    <header class="page-header" role="banner">
+        <h1 class="project-name">
+            <img src="/magda-inverse.svg" alt="magda" style="max-height: 100px">
+        </h1>
+        <h2 class="project-tagline">A complete solution for managing, publishing and discovering government data, private and open.</h2>
+        
+    </header>
+
+    <main id="content" class="main-content" role="main">
+        <h1 id="roadmap">Roadmap</h1>
+
+<p>This is a <em>loose</em> plan of what we’re planning to do in Magda in the future. This is provided mainly so potential contributors can see our direction, and so those who are considering using Magda can see where it’s going to go in the future. Please keep in keep in mind that this is not a promise - we could change direction at any time (and have done in the past!), so don’t make any plans based on this that you can’t change! Get in touch if you want to contribute!</p>
+
+<h2 id="past-priorities-jan---june-2018">Past Priorities Jan - June 2018</h2>
+
+<p>✅ <strong>New Design</strong>: Converting to a new, nicer looking design site-wide, with a focus on usability and simplification.</p>
+
+<p>✅ <strong>Search Results</strong>: Changing the search page based off analysis of how it’s been used on data.gov.au and search.data.gov.au - particularly removing the query language and simplifying the way that facets are used.</p>
+
+<p>✅ <strong>Productionising</strong>: Magda has been in alpha at search.data.gov.au for some time, but as we look at making it live as the official data.gov.au we need to make sure it’s secure and robust.</p>
+
+<p>✅ <strong>Home Page</strong>: Creating an attractive page for users to land on that draws them into search, blog posts or use cases.</p>
+
+<p>✅ <strong>Format Sleuther</strong>: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We’re developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.</p>
+
+<p>✅ <strong>Data Page</strong>: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn’t appropriate.</p>
+
+<p>✅ <strong>Data Quality</strong>: We currently calculate “data quality” based on an average of how many links work in a dataset and the Tim Berners-Lee 5-star data quality scale, but don’t really explain this very well. We’re changing this so that it’s strictly based on the 5 star scale (broken link = 0 stars, naturally, as it isn’t accessible), and making sure we explain this whereever its present.</p>
+
+<p>✅ <strong>MVP Dataset Feedback/Collaboration</strong>: Using the contactPoint info attached to datasets to allow users to directly email data custodians… precursor of the more advanced features below.</p>
+
+<h2 id="current-priorities-june-2018---june-2019">Current Priorities June 2018 - June 2019</h2>
+
+<p><strong>APIification</strong>: The ability to turn well-formatted datasets into RESTful APIs - this is something that’s already offered by CKAN and is depended upon by users of data.gov.au. This may mean replicating how CKAN does it - ingesting the data into a single database and running queries on it - or adopting an AWS Lambda-esque approach where we spin up containers on demand to server requests.</p>
+
+<p><strong>API Documentation</strong>: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.</p>
+
+<p><strong>Research: Magda as an Internal Portal</strong>: Building on publishing and access-control, we want to extend Magda so that it’s useful for government agencies to run as internal data portals. This involves:</p>
+
+<ul>
+  <li>Being able to publish data directly</li>
+  <li>Ingesting data from a range of existing applications</li>
+  <li>Allowing each user to search over data that they’re allowed to see</li>
+  <li>Providing features to finely control the openness of data - data can be private to the agency or to certain users, completely open or some mix of the two, e.g. users can find the metadata of the dataset but must be approved before the data itself is accessible.</li>
+  <li>Expand federation features - allow an agency to expose certain datasets to other instances of Magda in other agencies for ingestion.</li>
+</ul>
+
+<p><strong>Authorisation</strong>: User access controls and basic UI</p>
+
+<p><strong>Publishing</strong>: Currently datasets can only be ingested into Magda from other sources. We want to build in the ability to publish data directly and explore data hosting, making Magda a complete data portal solution in its own right. Our philosophy for data publishing will be opinionated - we want to force custodians to publish data with metadata defined strictly, but we also want to automate this wherever possible - e.g. we won’t allow spatial extent to be specified as free text, but we’ll also scan the data to auto-generate it where possible.</p>
+
+<p><strong>User Management/Administration</strong>: Currently it’s possible to create an account with Magda and log in, but there’s very little ability to change your details, or for administrators to ban or delete abusive accounts - these features need to be added.</p>
+
+<p><strong>Access Control</strong>: Currently Magda has two roles: <code class="highlighter-rouge">isAdmin=true</code> and <code class="highlighter-rouge">isAdmin=false</code>. We want to build Role-Based Access Control into magda so that fine-grained policies can be set as to what users are allowed to change or see what within the system.</p>
+
+<h2 id="long-term-priorities-next-2-years">Long-Term Priorities (next 2 years)</h2>
+
+<p><strong>Exposing Usage to Custodians</strong>: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.</p>
+
+<p><strong>Subjective Data Usefulness/Usability/Ease-of-Use/Interest</strong>: On data.gov.au there are many datasets that rate well on the 5-star scale (say a CC-licensed CSV), but are subjectively not as useful as other datasets. Ideally in addition to applying <em>objective</em> measures of quality like the 5-star scale, Magda would also measure datasets <em>subjectively</em>, taking into account how useful, usable and relevant to the average user a dataset is. When an internet user searches for a document on the web via Google, they don’t just expect the most relevant results to come back, they also expect the highest quality results, which Google determines via a number of measures, some of which apply quite a subjective view of what a high-quality page is. We’d like to develop something similar for Magda: we want to make it so that a search for specific data always returns that data, but more general searches return the most useful and interesting datasets that fit the criteria. Some ideas we’re considering:</p>
+
+<ul>
+  <li>General vs. Specific Interest: e.g. a CSV of a single local council’s bin collection dates is only ever going to be useful to a handful of people, and ideally would show up in the search below datasets of a more general interest unless directly searched for.</li>
+  <li>Promoting datasets that match established formats and schemas - e.g. CSV-Geo-Au, Frictionless data</li>
+  <li>Promoting datasets with clear and commonly-used member/column names, e.g. “latitude”, “longitude”, “date” etc, as these are easier to understand, interpret, link together, visualise etc.</li>
+  <li>Demoting datasets where the primary information is present as ids: e.g. a CSV of dates along with the id of a record of whatever correlates with that date. Sometimes the data that goes along with the ids is present elsewhere and hence the dataset is still useful, but these kinds of datasets are less useful than those that put all the relevant information together for easy consumption, or use IDs in a way that makes it possible to easily combine datasets, e.g. with linked data formats.</li>
+  <li>Demoting datasets where the data is unnecessarily split up into many files, e.g. a CSV for each month: this is easier to publish, but harder to consume.</li>
+  <li>Demoting datasets with inconsistently formatted data: e.g. columns shouldn’t switch from one date format to another in row 21000, or introduce text into a column that otherwise consists of numbers.</li>
+</ul>
+
+<p>We’re planning to do a lot of research into what exactly data consumers find useful</p>
+
+<p><strong>Dataset Feedback/Collaboration V2</strong>: Closing the loop between data users and custodians by providing a Quora-styled Q&amp;A interface that allows users to ask questions / report problems with the data, that causes data custodians (as identified in the dataset’s metadata) to be notified and invited to join the discussion with the user. Naturally this will also involve building moderation features for administrators and the ability to have some Q&amp;As private.</p>
+
+<p><strong>Layering</strong>: Allowing for parts of an aspect to be changed in such a way that the next time the dataset is harvested the changes aren’t overwritten.</p>
+
+<p><strong>GraphQL API</strong>: The structure of the registry is effectively a graph, and hence lends itself well to being queries via GraphQL.</p>
+
+<h2 id="backlog">Backlog</h2>
+
+<p><strong>Saved Search</strong>: Just as with eBay you can search for something you want to buy and be emailed when there’s new items listed, on Magda you should be able to save a search for data and be notified when new datasets are posted that match it.</p>
+
+
+        <footer class="site-footer">
+            <span class="site-footer-credits">This page was generated by
+                <a href="https://pages.github.com">GitHub Pages</a>.</span>
+        </footer>
+    </main>
+
+    
+</body>
+
+</html>

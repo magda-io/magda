@@ -1,4 +1,4 @@
-## A new generation of data portals
+## A new kind of data portal
 
 Most open data portals are written with publishing in mind, Magda has been built for the federation of data. It doesn't matter what state the metadata is in, or where the data is stored, Magda can work with it.
 
@@ -8,7 +8,9 @@ Magda is built around a collection of microservices that are distributed as dock
 
 It's ideal for powering open data portals, particularly those that involve federating over a number of other more focused portals. It can just as easily be run on an organisational intranet as a central private data portal - and can even be set up to include relevant open data in search results alongside private data without exposing any private data to the internet.
 
-Want to see what we're up to in the future? Check out **our [roadmap](https://github.com/magda-io/magda/blob/master/doc/roadmap.md)**
+Want to see what we're up to in the future? Check out our **[roadmap](/docs/roadmap)**
+
+<a href="https://github.com/magda-io/magda-config" class="btn">Get Started</a>
 
 ## Features
 

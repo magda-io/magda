@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang=" en-US ">
+
+<head>
+    <meta charset="UTF-8"> <!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Building and Running | magda</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="Building and Running" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<meta property="og:description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<link rel="canonical" href="http://localhost:4000/docs/building-and-running.html" />
+<meta property="og:url" content="http://localhost:4000/docs/building-and-running.html" />
+<meta property="og:site_name" content="magda" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/docs/building-and-running.html","description":"A complete solution for managing, publishing and discovering government data, private and open.","headline":"Building and Running","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/assets/css/style.css?v=607cfec1a68d89f4e2e9c69ebec2c0f8fb1511b7">
+</head>
+
+<body>
+    <header class="page-header" role="banner">
+        <h1 class="project-name">
+            <img src="/magda-inverse.svg" alt="magda" style="max-height: 100px">
+        </h1>
+        <h2 class="project-tagline">A complete solution for managing, publishing and discovering government data, private and open.</h2>
+        
+    </header>
+
+    <main id="content" class="main-content" role="main">
+        <h1 id="building-and-running">Building and Running</h1>
+
+<p>These instructions assume you are using a Bash shell. You can easily get a Bash shell on Windows by installing the <a href="https://git-scm.com/downloads">git</a> client.</p>
+
+<h1 id="prerequisites">Prerequisites</h1>
+
+<p>You need to install following in order to build MAGDA:</p>
+
+<ul>
+  <li><a href="https://nodejs.org/en/">Node.js</a> - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.</li>
+  <li><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Java 8 JDK</a> - To run the JVM components, and to build the small amount of Java code.</li>
+  <li><a href="http://www.scala-sbt.org/">sbt</a> - To build the Scala components.</li>
+  <li><a href="https://yarnpkg.com/">yarn</a> - Npm replacement that makes node deps in a monorepo much easier.</li>
+  <li><a href="https://lernajs.io/">lerna</a> - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as <code class="highlighter-rouge">yarn global add lerna</code>.</li>
+  <li><a href="https://github.com/govau/pancake">pancake</a> - To manage design components. Once you have Node.js installed, installing pancake is as simple as <code class="highlighter-rouge">yarn global add @gov.au/pancake</code>.</li>
+</ul>
+
+<p>To push the images and run them on kubernetes, you’ll need to install:</p>
+
+<ul>
+  <li><a href="https://www.gnu.org/software/tar/">GNU tar</a> - (Mac only) MacOS ships with <code class="highlighter-rouge">BSD tar</code>. However, you will need <code class="highlighter-rouge">GNU tar</code> for docker images operations. On MacOS, you can install <code class="highlighter-rouge">GNU Tar</code> via <a href="https://brew.sh/">Homebrew</a>: <code class="highlighter-rouge">brew install gnu-tar</code></li>
+  <li><a href="https://cloud.google.com/sdk/gcloud/">gcloud</a> - For the <code class="highlighter-rouge">kubectl</code> tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.</li>
+  <li><a href="https://github.com/kubernetes/helm/blob/master/docs/install.md">Helm</a> to manage kubernetes deployments and config.</li>
+  <li><a href="https://docs.docker.com/install/">Docker</a> - Magda uses <code class="highlighter-rouge">docker</code> command line tool to build docker images.</li>
+</ul>
+
+<p>You’ll also need a Kubernetes cluster - to develop locally this means installing either <a href="/docs/installing-minikube.html">minikube</a> or <a href="/docs/installing-docker-k8s.html">docker</a> (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven’t tried it.</p>
+
+<h1 id="building-and-running-components">Building and running components</h1>
+
+<p>First clone the magda directory and <code class="highlighter-rouge">cd</code> into it.</p>
+
+<p>Then install <code class="highlighter-rouge">npm</code> dependencies and set up the links between components by running:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yarn install
+</code></pre></div></div>
+
+<p>Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lerna run build <span class="nt">--include-filtered-dependencies</span>
+</code></pre></div></div>
+
+<p>You can also run the same command in an individual component’s directory (i.e. <code class="highlighter-rouge">magda-whatever/</code>) to build just that component.</p>
+
+<h2 id="set-up-helm">Set up Helm</h2>
+
+<p>Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.</p>
+
+<p>In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> deploy/kubernetes/rbac-config.yaml
+helm init <span class="nt">--service-account</span> tiller
+helm init
+</code></pre></div></div>
+
+<h2 id="install-a-local-kube-registry">Install a local kube registry</h2>
+
+<p>This gives you a local docker registry that you’ll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm repo update
+helm install <span class="nt">--name</span> docker-registry <span class="nt">-f</span> deploy/helm/docker-registry.yml stable/docker-registry
+helm install <span class="nt">--name</span> kube-registry-proxy <span class="nt">-f</span> deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+</code></pre></div></div>
+
+<h2 id="build-local-docker-images">Build local docker images</h2>
+
+<p>Now you can build the docker containers locally - this might take quite a while so get a cup of tea.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lerna run docker-build-local <span class="nt">--include-filtered-dependencies</span>
+</code></pre></div></div>
+
+<h2 id="create-the-necessary-config-maps">Create the necessary config maps</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create configmap config <span class="nt">--from-file</span> deploy/kubernetes/config
+kubectl create configmap connector-config <span class="nt">--from-file</span> deploy/connector-config
+deploy/helm/create-auth-secrets.sh
+</code></pre></div></div>
+
+<h2 id="install-magda-on-your-minikube-cluster">Install Magda on your minikube cluster</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade <span class="nt">--install</span> <span class="nt">--timeout</span> 9999999999 <span class="nt">-f</span> deploy/helm/minikube-dev.yml magda deploy/helm/magda  
+</code></pre></div></div>
+
+<p>This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what’s happening by opening another tab and running <code class="highlighter-rouge">kubectl get pods</code>.</p>
+
+<p>Also note that by default there won’t be any sleuthers running, as some of them can be very CPU intensive. You can toggle them on by specifying <code class="highlighter-rouge">--set tags.sleuther-&lt;sleuthername&gt;=true</code> when you run <code class="highlighter-rouge">helm upgrade</code>.</p>
+
+<h2 id="crawl-data">Crawl Data</h2>
+
+<p>This will crawl all the datasets locally stored on the data.gov.au CKAN instance - roughly 4000 at the time of writing. To crawl other sources, run this but with other connector-<source />-.json files.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>deploy
+yarn run create-connector-configmap
+yarn run generate-connector-jobs-local
+kubectl create <span class="nt">-f</span> kubernetes/generated/local/connector-data-gov-au.json
+</code></pre></div></div>
+
+<h1 id="kubernetes-tricks">Kubernetes tricks</h1>
+
+<h2 id="running-individual-services">Running individual services</h2>
+
+<p>If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the <code class="highlighter-rouge">all</code> tag to <code class="highlighter-rouge">false</code> and the tag for the pod you want to <code class="highlighter-rouge">true</code>, e.g.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm install <span class="nt">--name</span> magda deploy/helm/magda <span class="nt">-f</span> deploy/helm/minikube-dev.yml <span class="nt">--set</span> tags.all<span class="o">=</span><span class="nb">false</span> <span class="nt">--set</span> tags.combined-db<span class="o">=</span><span class="nb">true</span>
+</code></pre></div></div>
+
+<p><strong>You can find all available tags in <a href="../deploy/helm/magda/requirements.yaml">deploy/helm/magda/requirements.yaml</a></strong></p>
+
+<p>Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>minikube ip
+</code></pre></div></div>
+
+<p>It’s a good idea to add an entry for <code class="highlighter-rouge">minikube.data.gov.au</code> to your <code class="highlighter-rouge">hosts</code> file (<code class="highlighter-rouge">C:\Windows\System32\drivers\etc\hosts</code> on Windows), mapping it to your Minikube IP address. Some services may assume this is in place. For example:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>192.168.99.100	minikube.data.gov.au
+</code></pre></div></div>
+
+<h2 id="running-on-both-host-and-minikube">Running on both host and minikube</h2>
+
+<p>It’s also possible to run what you’re working on your host, and the services your dependent on in minikube. Depending on what you’re doing, this might be simple or complicated.</p>
+
+<h3 id="using-the-minikube-database">Using the minikube database</h3>
+
+<p>This is super-easy, just run</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl port-forward combined-db-0 5432:5432
+</code></pre></div></div>
+
+<p>Now you can connect to the database in minikube as if it were running locally, while still taking advantage of all the automatic schema setup that the docker image does.</p>
+
+<h3 id="running-a-microservice-locally-but-still-connecting-through-the-gateway">Running a microservice locally but still connecting through the gateway</h3>
+
+<p>You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to <code class="highlighter-rouge">192.168.99.1</code> in <code class="highlighter-rouge">deploy/helm/magda/charts/gateway/templates/configmap.yaml</code>. For instance, if I wanted to run the search api locally, I’d change <code class="highlighter-rouge">configmap.yaml</code> like so:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">data</span><span class="pi">:</span>
+  <span class="c1"># When the config map is mounted as a volume, these will be created as files.</span>
+  <span class="s">routes.json</span><span class="pi">:</span> <span class="s1">'</span><span class="s">{</span>
+    <span class="s">"search":</span><span class="nv"> </span><span class="s">{</span>
+        <span class="s">"to":</span><span class="nv"> </span><span class="s">"http://192.168.99.1:6102/v0"</span>
+    <span class="s">},</span>
+    <span class="s">#</span><span class="nv"> </span><span class="s">...etc</span>
+</code></pre></div></div>
+
+<p>Then update helm:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade magda <span class="nt">-f</span> deploy/helm/minikube-dev.yml deploy/helm/magda
+</code></pre></div></div>
+
+<p>Now when I go to <code class="highlighter-rouge">http://${minikube ip}/api/v0/search</code>, it’ll be proxied to my local search rather than the one in minikube.</p>
+
+<p>Be aware that if your local service has to connect to the database or other microservices in minikube you’ll have to use <code class="highlighter-rouge">kube-port-forward</code> to proxy from <code class="highlighter-rouge">localhost:{port}</code> to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.</p>
+
+<p>In the likely even you need to figure out what the jwt shared secret is on your minikube, you can cheat by opening up a shell to a container that has that secret and echoing the environment variable:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">exec</span> <span class="nt">-it</span> gateway-cf9c575bb-th57x <span class="nt">--</span> /bin/bash
+<span class="nb">echo</span> <span class="nv">$JWT_SECRET</span>
+</code></pre></div></div>
+
+<h3 id="running-local-sleuthers">Running local sleuthers</h3>
+
+<p>You can use the same pattern for sleuthers - register a webhook with a url host of <code class="highlighter-rouge">192.168.99.1</code> and it’ll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther won’t be able to find the registry until you use <code class="highlighter-rouge">kubectl port-forward</code> to make it work… e.g.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
+</code></pre></div></div>
+
+<h1 id="what-do-i-need-to-run">What do I need to run?</h1>
+
+<p>Running individual components is easy enough, but how do we get a fully working system? It is rarely necessary to run <em>all</em> of MAGDA locally, but various components depend on other components as follows:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Dependencies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">magda-*-connector</code></td>
+      <td><code class="highlighter-rouge">magda-registry-api</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-*-sleuther</code></td>
+      <td><code class="highlighter-rouge">magda-registry-api</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-authorization-api</code></td>
+      <td><code class="highlighter-rouge">magda-postgres</code>, <code class="highlighter-rouge">magda-migrator-combined-db</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-discussions-api</code></td>
+      <td><code class="highlighter-rouge">magda-postgres</code>, <code class="highlighter-rouge">magda-migrator-combined-db</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-gateway</code></td>
+      <td><code class="highlighter-rouge">magda-registry-api</code>, <code class="highlighter-rouge">magda-search-api</code>, <code class="highlighter-rouge">magda-web-client</code>, <code class="highlighter-rouge">magda-authorization-api</code>, <code class="highlighter-rouge">magda-discussions-api</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-indexer</code></td>
+      <td><code class="highlighter-rouge">magda-elastic-search</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-registry-api</code></td>
+      <td><code class="highlighter-rouge">magda-postgres</code>, <code class="highlighter-rouge">magda-migrator-combined-db</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-search-api</code></td>
+      <td><code class="highlighter-rouge">magda-elastic-search</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-web-client</code></td>
+      <td><code class="highlighter-rouge">magda-web-server</code>, but uses API at https://dev.magda.io/api if server is not running.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-web-server</code></td>
+      <td>none, but if this is running then <code class="highlighter-rouge">magda-gateway</code> and its dependencies must be too or API calls will fail.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="architecture-diagram">Architecture Diagram</h1>
+
+<p>The following <code class="highlighter-rouge">Architecture Diagram</code> may help you to get clearer idea which components you need to run in order to look at a particular function area:</p>
+
+<p><img src="/docs/magda-architecture.png" alt="Magda Architecture Diagram" /></p>
+
+<p>The following table shows the relationship between <code class="highlighter-rouge">Magda components</code> and <code class="highlighter-rouge">Diagram elements</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Diagram elements</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">magda-admin-api</code></td>
+      <td><code class="highlighter-rouge">Admin API (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-*-connector</code></td>
+      <td><code class="highlighter-rouge">Connectors</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-elastic-search</code></td>
+      <td><code class="highlighter-rouge">ES Client</code>, <code class="highlighter-rouge">ES Data (x2)</code>, <code class="highlighter-rouge">ES Master (x3)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-*-sleuther</code></td>
+      <td><code class="highlighter-rouge">Sleuthers</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-authorization-api</code></td>
+      <td><code class="highlighter-rouge">Auth API (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-discussions-api</code></td>
+      <td><code class="highlighter-rouge">Discussion API (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-gateway</code></td>
+      <td><code class="highlighter-rouge">Gateway (x1+) (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-indexer</code></td>
+      <td><code class="highlighter-rouge">Search Indexer (Scala)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-registry-api</code></td>
+      <td><code class="highlighter-rouge">Registry API (Scala)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-search-api</code></td>
+      <td><code class="highlighter-rouge">Search API (Scala)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-web-client</code></td>
+      <td><code class="highlighter-rouge">MAGDA Web UI</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-web-server</code></td>
+      <td><code class="highlighter-rouge">Web Server (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-preview-map</code></td>
+      <td><code class="highlighter-rouge">Terria Server (NodeJS)</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-postgres</code></td>
+      <td>All databases - see the migrators that set up the individual database schemas below</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-migrator-authorization-db</code></td>
+      <td><code class="highlighter-rouge">Auth DB (Postgres)</code>. <code class="highlighter-rouge">magda-migrator-authorization-db</code> is only used for production environment.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-migrator-discussions-db</code></td>
+      <td><code class="highlighter-rouge">Discussion DB (Postgres)</code>. <code class="highlighter-rouge">magda-migrator-discussions-db</code> is only used for production environment.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-migrator-registry-db</code></td>
+      <td><code class="highlighter-rouge">Registry DB (Postgres)</code>. <code class="highlighter-rouge">magda-migrator-registry-db</code> is only used for production environment.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-migrator-session-db</code></td>
+      <td><code class="highlighter-rouge">Session DB (Postgres)</code>. <code class="highlighter-rouge">magda-migrator-session-db</code> is only used for production environment.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">magda-migrator-combined-db</code></td>
+      <td><code class="highlighter-rouge">Registry DB (Postgres)</code>, <code class="highlighter-rouge">Session DB (Postgres)</code>, <code class="highlighter-rouge">Discussion DB (Postgres)</code>, <code class="highlighter-rouge">Auth DB (Postgres)</code>. <code class="highlighter-rouge">magda-migrator-combined-db</code> component is only used for dev environment. Production environment will launch all DB components above separately.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="running-on-your-host-machine">Running on your host machine</h1>
+
+<p>You can also avoid minikube and run magda components on your local machine - this is much, much trickier.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yarn run dev
+</code></pre></div></div>
+
+<p>This will build and launch the component, and automatically stop, build, and restart it whenever source changes are detected. In some cases (e.g. code generation), it is necessary to run <code class="highlighter-rouge">yarn run build</code> at least once before <code class="highlighter-rouge">yarn run dev</code> will work. Typically it is <em>not</em> necessary to run <code class="highlighter-rouge">yarn run build</code> again in the course of development, though, unless you’re changing something other than source code.</p>
+
+<p>A typical use case would be:</p>
+
+<ol>
+  <li>Start <code class="highlighter-rouge">combined-db</code> in <code class="highlighter-rouge">Minikube</code> using <code class="highlighter-rouge">helm:</code></li>
+</ol>
+
+<p>From root level of the project directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm install <span class="nt">--name</span> magda deploy/helm/magda <span class="nt">-f</span> deploy/helm/minikube-dev.yml <span class="nt">--set</span> tags.all<span class="o">=</span><span class="nb">false</span> <span class="nt">--set</span> tags.combined-db<span class="o">=</span><span class="nb">true</span>
+</code></pre></div></div>
+
+<ol>
+  <li>Port forward database service port to localhost so that your local running program (outside the <code class="highlighter-rouge">Kubernetes</code> cluster in <code class="highlighter-rouge">minikube</code>) can connect to them:</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Port forward database</span>
+<span class="c"># this command doesn't terminate, so run it in a separate terminal</span>
+kubectl port-forward combined-db-0 5432:5432
+</code></pre></div></div>
+
+<ol>
+  <li>Start the registry API and a connector (via <code class="highlighter-rouge">yarn run dev</code>) by executing the following two commands in two separate terminal windows:</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># these two commands don't terminate, so run them in separate terminals</span>
+<span class="nb">cd </span>magda-registry-api <span class="o">&amp;&amp;</span> yarn run dev
+<span class="nb">cd </span>magda-ckan-connector <span class="o">&amp;&amp;</span> yarn run dev <span class="nt">--</span> <span class="nt">--config</span> ../deploy/connector-config/data-gov-au.json
+</code></pre></div></div>
+
+<p>See <a href="/docs/connectors.html">connectors</a> for more detailed information about running connectors.</p>
+
+<ol>
+  <li>(Optional) If later you wanted to start elastic search as well:</li>
+</ol>
+
+<p>Like <code class="highlighter-rouge">combined-db</code>, elastic search can only be started in <code class="highlighter-rouge">minikube</code> via <code class="highlighter-rouge">helm</code> rather than <code class="highlighter-rouge">yarn run dev</code>.</p>
+
+<p>You need to upgrade previously installed <code class="highlighter-rouge">helm</code> chart <code class="highlighter-rouge">magda</code> to include <code class="highlighter-rouge">magda-elastic-search</code> component:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade magda deploy/helm/magda <span class="nt">-f</span> deploy/helm/minikube-dev.yml <span class="nt">--set</span> tags.all<span class="o">=</span><span class="nb">false</span> <span class="nt">--set</span> tags.combined-db<span class="o">=</span><span class="nb">true</span> <span class="nt">--set</span> tags.elasticsearch<span class="o">=</span><span class="nb">true</span>
+</code></pre></div></div>
+
+<p>And then, port forward <code class="highlighter-rouge">elasticsearch</code> so that you can run other components that may need to connect to <code class="highlighter-rouge">elasticsearch</code> outside the <code class="highlighter-rouge">minikube</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Port forward elasticsearch</span>
+<span class="c"># this commands doesn't terminate, so run it in a separate terminal</span>
+kubectl port-forward es-data-0 9300:9300
+</code></pre></div></div>
+
+<h2 id="debugging-nodejs--typescript-components">Debugging Node.js / TypeScript components</h2>
+
+<p>Node.js / TypeScript components can easily be debugged using the <a href="https://code.visualstudio.com/">Visual Studio Code</a> debugger. Set up a launch configuration like this:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"node"</span><span class="p">,</span>
+    <span class="s2">"request"</span><span class="p">:</span> <span class="s2">"launch"</span><span class="p">,</span>
+    <span class="s2">"protocol"</span><span class="p">:</span> <span class="s2">"inspector"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Launch CKAN Connector"</span><span class="p">,</span>
+    <span class="s2">"runtimeExecutable"</span><span class="p">:</span> <span class="s2">"${workspaceRoot}/scripts/node_modules/.bin/ts-node"</span><span class="p">,</span>
+    <span class="s2">"windows"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"runtimeExecutable"</span><span class="p">:</span> <span class="s2">"${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"</span>
+    <span class="p">},</span>
+    <span class="s2">"runtimeArgs"</span><span class="p">:[</span>
+        <span class="s2">"src/index.ts"</span>
+    <span class="p">],</span>
+    <span class="s2">"args"</span><span class="p">:[</span>
+        <span class="s2">"--name"</span><span class="p">,</span> <span class="s2">"data.gov.au"</span><span class="p">,</span> <span class="s2">"--sourceUrl"</span><span class="p">,</span> <span class="s2">"https://data.gov.au/"</span>
+    <span class="p">],</span>
+    <span class="s2">"cwd"</span><span class="p">:</span> <span class="s2">"${workspaceRoot}/magda-ckan-connector"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="debugging-scala-components">Debugging Scala components</h2>
+
+<p>Scala components can easily be debugged using the IntelliJ debugger. Create a debug configuration for the <code class="highlighter-rouge">App</code> class of whatever component you’re debugging.</p>
+
+
+        <footer class="site-footer">
+            <span class="site-footer-credits">This page was generated by
+                <a href="https://pages.github.com">GitHub Pages</a>.</span>
+        </footer>
+    </main>
+
+    
+</body>
+
+</html>

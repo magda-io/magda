@@ -70,11 +70,13 @@ kubectl config use-context <prod-cluster-name>
 -   [ ] Helm upgrade prod
 
 If there were changes to the index versions, you'll need to set the search api to still point at the previous version of the index while the indexer builds the new one:
+
 ```bash
 helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda --set search-api.datasetsIndexVersion=<version>,search-api.regionsIndexVersion=<version>
 ```
 
 Once the indexer has finished (watch `kubectl logs -f <indexer pod name>`) or if there's no changes to the indices:
+
 ```bash
 helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```

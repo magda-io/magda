@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang=" en-US ">
+
+<head>
+    <meta charset="UTF-8"> <!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>magda | A complete solution for managing, publishing and discovering government data, private and open.</title>
+<meta name="generator" content="Jekyll v3.7.3" />
+<meta property="og:title" content="magda" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<meta property="og:description" content="A complete solution for managing, publishing and discovering government data, private and open." />
+<link rel="canonical" href="http://localhost:4000/docs/deploying-for-production-on-gke.html" />
+<meta property="og:url" content="http://localhost:4000/docs/deploying-for-production-on-gke.html" />
+<meta property="og:site_name" content="magda" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/docs/deploying-for-production-on-gke.html","description":"A complete solution for managing, publishing and discovering government data, private and open.","headline":"magda","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/assets/css/style.css?v=607cfec1a68d89f4e2e9c69ebec2c0f8fb1511b7">
+</head>
+
+<body>
+    <header class="page-header" role="banner">
+        <h1 class="project-name">
+            <img src="/magda-inverse.svg" alt="magda" style="max-height: 100px">
+        </h1>
+        <h2 class="project-tagline">A complete solution for managing, publishing and discovering government data, private and open.</h2>
+        
+    </header>
+
+    <main id="content" class="main-content" role="main">
+        <p>NOTE: Work in progress… this probably won’t work 100% for you. But it’s a start :).</p>
+
+<ol>
+  <li>Connect to the cluster you want to deploy on with kubectl</li>
+  <li>Install helm https://github.com/kubernetes/helm/blob/master/docs/install.md</li>
+  <li>Create secrets:</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>deploy/helm/create-auth-secrets.sh
+</code></pre></div></div>
+
+<ol>
+  <li>Find out the latest release version from https://github.com/TerriaJS/magda/releases</li>
+  <li>Copy deploy/helm/search-data.gov.au and adapt it to create your helm config. Important options:</li>
+</ol>
+
+<ul>
+  <li><strong>useCombinedDb</strong>: Do you want each db-using service to have its own db, or use one big combined one?</li>
+  <li><strong>useCloudSql</strong>: Do you want to use Google Cloud SQL for the databases? This should be used with <code class="highlighter-rouge">useCombinedDb=false</code></li>
+  <li><strong>externalUrl</strong>: What’s the external url that you’ll be deploying the website on? This is used for OAuth2 callback URLs</li>
+  <li><strong>indexer.elasticsearch.useGcsSnapshots</strong>: Do you want to have elasticsearch snapshot to GCS? If so you’ll need to create a GCS bucket for it, and set that in gcsSnapshotBucket. You’ll also need to make sure your GKE cluster has access to GCS when you create it.</li>
+  <li><strong>gateway.loadBalancerIP</strong>: What’s the external IP you want to use?</li>
+  <li><strong>gateway.auth.x</strong>: Put the ids of your google/facebook apps for OAuth if you have them. You’ll also need to create an <code class="highlighter-rouge">oauth-secrets</code> secret containing a <code class="highlighter-rouge">facebook-client-secret</code> and <code class="highlighter-rouge">google-client-secret</code>.</li>
+  <li><strong>feedback-api.gitHubIssuesUrl</strong>: Put the API URL of your (private) GitHub repo where feedback issues will be created, e.g. <code class="highlighter-rouge">https://api.github.com/repos/TerriaJS/Magda-Feedback/issues</code>. You also need to create secret called <code class="highlighter-rouge">access-tokens</code> with a key <code class="highlighter-rouge">github-for-feedback</code> containing a personal access token with permissions to create issues in the private repo.</li>
+</ul>
+
+<p>If using Google Cloud SQL follow the instructions here https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine</p>
+
+<ol>
+  <li>Create db passwords (change the passwords and make them all different!):</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic db-passwords <span class="nt">--from-literal</span><span class="o">=</span>combined-db<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>authorization-db<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>discussions-db<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>session-db<span class="o">=</span>p4ssw0rd  <span class="nt">--from-literal</span><span class="o">=</span>registry-db<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>combined-db-client<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>authorization-db-client<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>discussions-db-client<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>session-db-client<span class="o">=</span>p4ssw0rd <span class="nt">--from-literal</span><span class="o">=</span>registry-db-client<span class="o">=</span>p4ssw0rd
+</code></pre></div></div>
+
+<ol>
+  <li>If using automatic backups for elasticsearch or postgres, add the service account for putting these into Google Cloud Storage:</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret storage-account-credentials <span class="nt">--from-file</span><span class="o">=[</span>YOUR-SERVICE-ACCOUNT-JSON]
+</code></pre></div></div>
+
+<ol>
+  <li>Install MAGDA:</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm install <span class="nt">--name</span> magda deploy/helm/magda <span class="nt">-f</span> &lt;path to your config file&gt;
+</code></pre></div></div>
+
+<ol>
+  <li>Create crawling jobs (until we get the admin interface up to scratch)</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>deploy
+yarn run create-connector-configmap
+yarn run generate-connector-jobs-prod
+kubectl create <span class="nt">-f</span> kubernetes/generated/prod/
+</code></pre></div></div>
+
+<p>If this doesn’t work for you, <a href="https://github.com/TerriaJS/magda/issues">file an issue</a>.</p>
+
+
+        <footer class="site-footer">
+            <span class="site-footer-credits">This page was generated by
+                <a href="https://pages.github.com">GitHub Pages</a>.</span>
+        </footer>
+    </main>
+
+    
+</body>
+
+</html>

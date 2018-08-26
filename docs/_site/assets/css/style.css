@@ -858,3 +858,11 @@ a:hover {
 .site-footer-credits {
     color: #819198;
 }
+
+.btn {
+    margin-bottom: 0;
+}
+
+.page-header {
+    padding: 3em 3em;
+}

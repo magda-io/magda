@@ -1,10 +1,12 @@
 1.  Set up a kubernetes cluster on your cloud of choice, or to run locally install [minikube](./installing-minikube.md) or a version of [docker with kubernetes](./installing-docker-k8s.md)
-2.  Install helm: https://github.com/kubernetes/helm/blob/master/docs/install.md and 
+2.  Install helm: https://github.com/kubernetes/helm/blob/master/docs/install.md and
+
 ```bash
 kubectl apply -f deploy/kubernetes/rbac-config.yaml
 helm init --service-account tiller
 helm init
 ```
+
 3.  Create necessary config
 
 ```bash

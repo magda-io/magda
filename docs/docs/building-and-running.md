@@ -82,7 +82,7 @@ deploy/helm/create-auth-secrets.sh
 ## Install Magda on your minikube cluster
 
 ```bash
-helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda  
+helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.
