@@ -314,7 +314,10 @@ function groupByUrl(apidocJson) {
         .groupBy("url")
         .toPairs()
         .map(function(element) {
-            return _.object(_.zip(["url", "verbs"], element));
+            return {
+                url: element[0],
+                verbs: element[1]
+            };
         })
         .value();
 }
