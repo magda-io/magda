@@ -203,7 +203,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
     * @apiGroup Registry
-    * @api {delete} http://registry-api/v0/hooks/{id}/ack Acknowledge a previously-deferred web hook
+    * @api {post} http://registry-api/v0/hooks/{id}/ack Acknowledge a previously-deferred web hook
     *
     * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
     *
