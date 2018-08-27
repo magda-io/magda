@@ -30,16 +30,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiDescription TODO
     * @apiHeader {string}  X-Magda-Session  Magda internal session id
     *
-    * @apiSuccess {Object[]} webhooks List of webhooks
-    * @apiSuccess {String} webhooks.name Webhook name
-    * @apiSuccess {String[]} webhooks.eventTypes Webhook eventTypes
-    * @apiSuccess {Number} webhooks.lastEvent Webhook lastEvent
-    * @apiSuccess {String} webhooks.url Webhook url
-    * @apiSuccess {Object} webhooks.config Webhook config
-    * @apiSuccess {Boolean} webhooks.isWaitingForResponse Webhook isWaitingForResponse
-    * @apiSuccess {String} webhooks.id Webhook id
-    * @apiSuccess {Number} webhooks.userId Webhook userId
-    * @apiSuccess {Boolean} webhooks.active Webhook active
+    * @apiSchema {jsonschema=../../../../../../resources/jsonschema/responses/getHooks.json} apiSuccess
     *
     * */
   def getAll = get {

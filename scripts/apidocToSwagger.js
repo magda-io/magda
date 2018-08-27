@@ -112,12 +112,9 @@ function createPostPushPutOutput(verbs, definitions, pathKeys) {
             "200": {
                 description: "successful operation",
                 schema: {
-                    //type: verbDefinitionResult.topLevelSuccessRefType,
-                    //items: {
                     $ref:
                         "#/definitions/" +
                         verbDefinitionResult.topLevelSuccessRef
-                    //}
                 }
             }
         };
@@ -272,12 +269,9 @@ function createGetDeleteOutput(verbs, definitions) {
             "200": {
                 description: "successful operation",
                 schema: {
-                    //type: verbDefinitionResult.topLevelSuccessRefType,
-                    //items: {
                     $ref:
                         "#/definitions/" +
                         verbDefinitionResult.topLevelSuccessRef
-                    //}
                 }
             }
         };

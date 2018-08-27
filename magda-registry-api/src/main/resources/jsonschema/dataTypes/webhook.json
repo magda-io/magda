@@ -1,0 +1,199 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "$id": "https://magda.io/schema/dataTypes/webhook.json", 
+    "type": "object", 
+    "description": "The Webhook Schema", 
+    "required": [
+      "name", 
+      "eventTypes", 
+      "lastEvent", 
+      "url", 
+      "config", 
+      "isWaitingForResponse", 
+      "id", 
+      "userId", 
+      "active"
+    ], 
+    "properties": {
+      "name": {
+        "$id": "#/properties/name", 
+        "type": "string", 
+        "description": "The Name Schema", 
+        "default": "", 
+        "examples": [
+          "Indexer"
+        ], 
+        "pattern": "^(.*)$"
+      }, 
+      "eventTypes": {
+        "$id": "#/properties/eventTypes", 
+        "type": "array", 
+        "description": "The Eventtypes Schema", 
+        "items": {
+          "$id": "#/properties/eventTypes/items", 
+          "type": "string", 
+          "description": "The Items Schema", 
+          "default": "", 
+          "examples": [
+            "CreateRecord", 
+            "PatchRecordAspect", 
+            "DeleteRecord", 
+            "CreateRecordAspect", 
+            "PatchRecord", 
+            "DeleteRecordAspect"
+          ], 
+          "pattern": "^(.*)$"
+        }
+      }, 
+      "lastEvent": {
+        "$id": "#/properties/lastEvent", 
+        "type": "integer", 
+        "description": "The Lastevent Schema", 
+        "default": 0, 
+        "examples": [
+          403780
+        ]
+      }, 
+      "url": {
+        "$id": "#/properties/url", 
+        "type": "string", 
+        "description": "The Url Schema", 
+        "default": "", 
+        "examples": [
+          "http://localhost:6103/v0/registry-hook"
+        ], 
+        "pattern": "^(.*)$"
+      }, 
+      "config": {
+        "$id": "#/properties/config", 
+        "type": "object", 
+        "description": "The Config Schema", 
+        "required": [
+          "optionalAspects", 
+          "includeEvents", 
+          "dereference", 
+          "aspects", 
+          "includeRecords"
+        ], 
+        "properties": {
+          "optionalAspects": {
+            "$id": "#/properties/config/properties/optionalAspects", 
+            "type": "array", 
+            "description": "The Optionalaspects Schema", 
+            "items": {
+              "$id": "#/properties/config/properties/optionalAspects/items", 
+              "type": "string", 
+              "description": "The Items Schema", 
+              "default": "", 
+              "examples": [
+                "temporal-coverage", 
+                "dataset-publisher", 
+                "dataset-quality-rating", 
+                "dataset-format"
+              ], 
+              "pattern": "^(.*)$"
+            }
+          }, 
+          "includeEvents": {
+            "$id": "#/properties/config/properties/includeEvents", 
+            "type": "boolean", 
+            "description": "The Includeevents Schema", 
+            "default": false, 
+            "examples": [
+              true
+            ]
+          }, 
+          "dereference": {
+            "$id": "#/properties/config/properties/dereference", 
+            "type": "boolean", 
+            "description": "The Dereference Schema", 
+            "default": false, 
+            "examples": [
+              true
+            ]
+          }, 
+          "aspects": {
+            "$id": "#/properties/config/properties/aspects", 
+            "type": "array", 
+            "description": "The Aspects Schema", 
+            "items": {
+              "$id": "#/properties/config/properties/aspects/items", 
+              "type": "string", 
+              "description": "The Items Schema", 
+              "default": "", 
+              "examples": [
+                "dcat-dataset-strings", 
+                "dataset-distributions", 
+                "source"
+              ], 
+              "pattern": "^(.*)$"
+            }
+          }, 
+          "includeRecords": {
+            "$id": "#/properties/config/properties/includeRecords", 
+            "type": "boolean", 
+            "description": "The Includerecords Schema", 
+            "default": false, 
+            "examples": [
+              true
+            ]
+          }
+        }
+      }, 
+      "isWaitingForResponse": {
+        "$id": "#/properties/isWaitingForResponse", 
+        "type": "boolean", 
+        "description": "The Iswaitingforresponse Schema", 
+        "default": false, 
+        "examples": [
+          false
+        ]
+      }, 
+      "id": {
+        "$id": "#/properties/id", 
+        "type": "string", 
+        "description": "The Id Schema", 
+        "default": "", 
+        "examples": [
+          "indexer"
+        ], 
+        "pattern": "^(.*)$"
+      }, 
+      "userId": {
+        "$id": "#/properties/userId", 
+        "type": "integer", 
+        "description": "The Userid Schema", 
+        "default": 0, 
+        "examples": [
+          0
+        ]
+      }, 
+      "active": {
+        "$id": "#/properties/active", 
+        "type": "boolean", 
+        "description": "The Active Schema", 
+        "default": false, 
+        "examples": [
+          false
+        ]
+      },
+      "isRunning": {
+        "$id": "#/properties/isRunning", 
+        "type": "boolean", 
+        "description": "Whether the webhook actor is running",
+        "default": false, 
+        "examples": [
+          false
+        ]
+      },
+      "isProcessing": {
+        "$id": "#/properties/isProcessing", 
+        "type": "boolean", 
+        "description": "Whether the webhook actor is processing data",
+        "default": false, 
+        "examples": [
+          false
+        ]
+      }
+    }
+  }
