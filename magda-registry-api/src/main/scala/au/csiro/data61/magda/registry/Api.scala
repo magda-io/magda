@@ -25,6 +25,11 @@ import scalikejdbc._
 import scala.util.control.NonFatal
 import au.csiro.data61.magda.client.AuthApiClient
 
+/**
+  * @apiDefine GenericError
+  * @apiError (Error 500) {String} Response "Failure"
+  */
+
 class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
   val logger = Logging(system, getClass)
 

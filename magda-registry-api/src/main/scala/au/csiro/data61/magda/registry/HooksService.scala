@@ -21,7 +21,15 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 
 
-
+/**
+  * @apiGroup Registry
+  * @api {get} http://registry-api/v0/hooks Get a list of all web hooks
+  *
+  * @apiDescription Get a list of all web hooks
+  * @apiHeader {string} X-Magda-Session Magda internal session id
+  * @apiSuccess (Success 200) {json} Response a list of webhook records
+  * @apiUse GenericError
+  */
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
 class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
@@ -48,6 +56,19 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     }
   }
 
+
+  /**
+    * @apiGroup Registry
+    * @api {post} http://registry-api/v0/hooks Create a new web hook
+    *
+    * @apiDescription Create a new web hook
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (body) {Object} webhook An object contains all webhook information
+    *
+    * @apiSuccess (Success 200) {json} Response the created webhook record
+    * @apiUse GenericError
+    */
   @ApiOperation(value = "Create a new web hook", nickname = "create", httpMethod = "POST", response = classOf[WebHook])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The definition of the new web hook."),
@@ -68,6 +89,16 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     }
   }
 
+  /**
+    * @apiGroup Registry
+    * @api {get} http://registry-api/v0/hooks/{id} Get a web hook by ID
+    *
+    * @apiDescription Get a web hook by ID
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the web hook to be fetched.
+    * @apiSuccess (Success 200) {json} Response the webhook record
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Get a web hook by ID", nickname = "getById", httpMethod = "GET", response = classOf[WebHook])
   @ApiImplicitParams(Array(
@@ -95,6 +126,19 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     }
   }
 
+  /**
+    * @apiGroup Registry
+    * @api {put} http://registry-api/v0/hooks/{id} Modify a web hook by ID
+    *
+    * @apiDescription Modifies the web hook with a given ID. If a web hook with the ID does not yet exist, it is created.
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the web hook to be fetched.
+    * @apiParam (body) {Object} webhook The web hook to save.
+    *
+    * @apiSuccess (Success 200) {json} Response the created webhook record
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify a web hook by ID", nickname = "putById", httpMethod = "PUT", response = classOf[WebHook],
     notes = "Modifies the web hook with a given ID.  If a web hook with the ID does not yet exist, it is created.")
@@ -120,6 +164,20 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     }
   }
 
+
+  /**
+    * @apiGroup Registry
+    * @api {delete} http://registry-api/v0/hooks/{id} Delete a web hook
+    *
+    * @apiDescription Delete a web hook
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the web hook to delete.
+    *
+    * @apiSuccess (Success 200) {json} Response deletion result
+    * @apiError (Error 400) {json} could not delete
+    * @apiUse GenericError
+    */
   @Path("/{hookId}")
   @ApiOperation(value = "Delete a web hook", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
@@ -143,6 +201,18 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     }
   }
 
+  /**
+    * @apiGroup Registry
+    * @api {delete} http://registry-api/v0/hooks/{id}/ack Acknowledge a previously-deferred web hook
+    *
+    * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the web hook to be acknowledged.
+    *
+    * @apiSuccess (Success 200) {json} Response The details of the acknowledgement.
+    * @apiUse GenericError
+    */
   @Path("/{id}/ack")
   @ApiOperation(value = "Acknowledge a previously-deferred web hook", nickname = "ack", httpMethod = "POST", response = classOf[WebHookAcknowledgementResponse],
     notes = "Acknowledges a previously-deferred web hook with a given ID.  Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.")
