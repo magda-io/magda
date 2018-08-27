@@ -19,6 +19,16 @@ import scala.util.Success
 import au.csiro.data61.magda.client.AuthApiClient
 import com.typesafe.config.Config
 
+
+/**
+  * @apiGroup Registry Record Aspects
+  * @api {get} http://registry-api/v0/records/{recordId}/aspects Get a list of all aspects of a record
+  *
+  * @apiDescription Get a list of all aspects of a record
+  * @apiParam (path) {string} recordId ID of the record for which to fetch aspects.
+  * @apiSuccess (Success 200) {json} Response a list of aspects
+  * @apiUse GenericError
+  */
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
 class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends Protocols with SprayJsonSupport {
@@ -38,6 +48,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {get} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
+    *
+    * @apiDescription Get a list of all aspects of a record
+    * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
+    * @apiParam (path) {string} aspectId ID of the aspect to fetch
+    * @apiSuccess (Success 200) {json} Response the aspect detail
+    * @apiUse GenericError
+    */
   @Path("/{aspectId}")
   @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[Aspect])
   @ApiImplicitParams(Array(
@@ -58,6 +78,19 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {put} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
+    *
+    * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
+    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+    * @apiParam (path) {string} aspectId ID of the aspect to update
+    * @apiParam (body) {json} aspect The record aspect to save
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response the aspect detail
+    * @apiUse GenericError
+    */
   @Path("/{aspectId}")
   @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Aspect],
     notes = "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.")
@@ -85,6 +118,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {delete} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
+    * @apiDescription Deletes a record aspect.
+    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+    * @apiParam (path) {string} aspectId ID of the aspect to update
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiSuccess (Success 200) {json} Response operation result
+    * @apiUse GenericError
+    */
   @Path("/{aspectId}")
   @ApiOperation(value = "Delete a record aspect by ID", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult],
     notes = "Deletes a record aspect.")
@@ -105,6 +148,18 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
+
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {patch} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+    * @apiParam (path) {string} aspectId ID of the aspect to update
+    * @apiParam (aspectPatch) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiSuccess (Success 200) {json} Response operation result
+    * @apiUse GenericError
+    */
   @Path("/{aspectId}")
   @ApiOperation(value = "Modify a record aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[Aspect],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
