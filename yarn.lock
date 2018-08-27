@@ -1094,9 +1094,9 @@ apidoc-core@~0.8.2:
     lodash "~4.17.4"
     semver "~5.3.0"
 
-apidoc@^0.17.6:
+"apidoc@https://github.com/magda-io/apidoc":
   version "0.17.6"
-  resolved "https://registry.yarnpkg.com/apidoc/-/apidoc-0.17.6.tgz#4ee8ac610dedddcb1006c3e28fa7dd634b4a5ce6"
+  resolved "https://github.com/magda-io/apidoc#d77c3dab6a09e6a597b87c1505d6f3db52e56a55"
   dependencies:
     apidoc-core "~0.8.2"
     fs-extra "~3.0.1"
@@ -12199,13 +12199,6 @@ react-themeable@^1.1.0:
   resolved "https://registry.yarnpkg.com/react-themeable/-/react-themeable-1.1.0.tgz#7d4466dd9b2b5fa75058727825e9f152ba379a0e"
   dependencies:
     object-assign "^3.0.0"
-
-react-tooltip@^3.4.0:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-3.6.1.tgz#2ca993baa50d7e0271b8d13c6024445a883842eb"
-  dependencies:
-    classnames "^2.2.5"
-    prop-types "^15.6.0"
 
 react-transition-group@^2.0.0, react-transition-group@^2.3.1:
   version "2.3.1"
