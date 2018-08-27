@@ -92,6 +92,24 @@ function makePaths(apiProject, apiData, flavor) {
     return { paths };
 }
 
+function makeParamaterSchema(part, flavor) {
+    let schema = {
+        type: part
+    };
+    if (part.match(/\[\]$/)) {
+        schema = {
+            type: "array",
+            items: {
+                type: part.substr(0, part.length - 2)
+            }
+        };
+    }
+    if (flavor === "openapi") {
+        schema = { schema };
+    }
+    return schema;
+}
+
 function makePathCall(apiCall, flavor) {
     const { group, title, description } = apiCall;
     const summary = title;
@@ -117,15 +135,17 @@ function makePathCall(apiCall, flavor) {
                         bodyParameters.required.push(param.field);
                     }
                 } else {
-                    parameters.push({
-                        in: "query",
-                        name: param.field,
-                        description: param.description,
-                        required: !param.optional,
-                        schema: {
-                            type: param.type
-                        }
-                    });
+                    parameters.push(
+                        Object.assign(
+                            {
+                                in: "query",
+                                name: param.field,
+                                description: param.description,
+                                required: !param.optional
+                            },
+                            makeParamaterSchema(param.type, flavor)
+                        )
+                    );
                 }
             }
 
