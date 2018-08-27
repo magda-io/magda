@@ -28,7 +28,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @api {get} /hooks Get all system webhooks
     * @apiName getAll
     * @apiDescription TODO
-    * @apiParam (Request header)   {string}  X-Magda-Session  Magda internal session id
+    * @apiHeader {string}  X-Magda-Session  Magda internal session id
     *
     * @apiSuccess {Object[]} webhooks List of webhooks
     * @apiSuccess {String} webhooks.name Webhook name

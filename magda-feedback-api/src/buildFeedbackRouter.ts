@@ -25,7 +25,7 @@ export default function buildFeedbackRouter(
      * @apiName csp
      * @apiDescription TODO
      *
-     * @apiParam (Request body) {string} csp-report TODO
+     * @apiParam {string} csp-report TODO
      *
      * @apiSuccess {string} result SUCCESS
      *
@@ -58,11 +58,11 @@ export default function buildFeedbackRouter(
      * @apiName user
      * @apiDescription TODO
      *
-     * @apiParam (Request body) {string} [title] TODO
-     * @apiParam (Request body) {string} [name] TODO
-     * @apiParam (Request body) {string} [email] TODO
-     * @apiParam (Request body) {string} [comment] TODO
-     * @apiParam (Request body) {string} [shareLink] TODO
+     * @apiParam {string} [title] TODO
+     * @apiParam {string} [name] TODO
+     * @apiParam {string} [email] TODO
+     * @apiParam {string} [comment] TODO
+     * @apiParam {string} [shareLink] TODO
      *
      * @apiSuccess {string} result SUCCESS
      *

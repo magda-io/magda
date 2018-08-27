@@ -12,7 +12,8 @@ Please document apis like the following:
 
 /**
  * @apiGroup Feedback
- * @api {get} /v0/healthz Health Check
+ * @apiName healthz
+ * @api {get} /healthz Health Check
  * @apiDescription TODO
  * @apiSuccessExample {string} 200
  *    OK
@@ -27,14 +28,15 @@ app.get("/v0/healthz", function(req, res, next) {
 
 /**
  * @apiGroup Feedback
- * @api {post} /v0/user Post User Feedback
+ * @apiName user
+ * @api {post} /user Post User Feedback
  * @apiDescription TODO
  *
- * @apiParam (Request body) {string} [title] TODO
- * @apiParam (Request body) {string} [name] TODO
- * @apiParam (Request body) {string} [email] TODO
- * @apiParam (Request body) {string} comment TODO
- * @apiParam (Request body) {string} [shareLink] TODO
+ * @apiParam {string} [title] TODO
+ * @apiParam {string} [name] TODO
+ * @apiParam {string} [email] TODO
+ * @apiParam {string} comment TODO
+ * @apiParam {string} [shareLink] TODO
  *
  * @apiSuccess {string} result SUCCESS
  *
