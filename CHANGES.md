@@ -16,6 +16,7 @@
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Added apiDoc for indexer
 
 ## 0.0.46
 
