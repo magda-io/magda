@@ -103,7 +103,8 @@ function createPostPushPutOutput(verbs, definitions, pathKeys) {
         summary: removeTags(verbs.description),
         consumes: ["application/json"],
         produces: ["application/json"],
-        parameters: params
+        parameters: params,
+        operationId: verbs.name
     };
 
     if (verbDefinitionResult.topLevelSuccessRef) {
@@ -111,12 +112,12 @@ function createPostPushPutOutput(verbs, definitions, pathKeys) {
             "200": {
                 description: "successful operation",
                 schema: {
-                    type: verbDefinitionResult.topLevelSuccessRefType,
-                    items: {
-                        $ref:
-                            "#/definitions/" +
-                            verbDefinitionResult.topLevelSuccessRef
-                    }
+                    //type: verbDefinitionResult.topLevelSuccessRefType,
+                    //items: {
+                    $ref:
+                        "#/definitions/" +
+                        verbDefinitionResult.topLevelSuccessRef
+                    //}
                 }
             }
         };
@@ -263,19 +264,20 @@ function createGetDeleteOutput(verbs, definitions) {
         summary: removeTags(verbs.description),
         consumes: ["application/json"],
         produces: ["application/json"],
-        parameters: createPathParameters(verbs)
+        parameters: createPathParameters(verbs),
+        operationId: verbs.name
     };
     if (verbDefinitionResult.topLevelSuccessRef) {
         pathItemObject[verbs.type].responses = {
             "200": {
                 description: "successful operation",
                 schema: {
-                    type: verbDefinitionResult.topLevelSuccessRefType,
-                    items: {
-                        $ref:
-                            "#/definitions/" +
-                            verbDefinitionResult.topLevelSuccessRef
-                    }
+                    //type: verbDefinitionResult.topLevelSuccessRefType,
+                    //items: {
+                    $ref:
+                        "#/definitions/" +
+                        verbDefinitionResult.topLevelSuccessRef
+                    //}
                 }
             }
         };
