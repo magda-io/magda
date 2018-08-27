@@ -22,7 +22,7 @@ import scala.concurrent.Await
 
 
 /**
-  * @apiGroup Registry
+  * @apiGroup Registry Webhooks
   * @api {get} http://registry-api/v0/hooks Get a list of all web hooks
   *
   * @apiDescription Get a list of all web hooks
@@ -58,7 +58,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
 
   /**
-    * @apiGroup Registry
+    * @apiGroup Registry Webhooks
     * @api {post} http://registry-api/v0/hooks Create a new web hook
     *
     * @apiDescription Create a new web hook
@@ -90,7 +90,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   }
 
   /**
-    * @apiGroup Registry
+    * @apiGroup Registry Webhooks
     * @api {get} http://registry-api/v0/hooks/{id} Get a web hook by ID
     *
     * @apiDescription Get a web hook by ID
@@ -127,7 +127,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   }
 
   /**
-    * @apiGroup Registry
+    * @apiGroup Registry Webhooks
     * @api {put} http://registry-api/v0/hooks/{id} Modify a web hook by ID
     *
     * @apiDescription Modifies the web hook with a given ID. If a web hook with the ID does not yet exist, it is created.
@@ -166,7 +166,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
 
   /**
-    * @apiGroup Registry
+    * @apiGroup Registry Webhooks
     * @api {delete} http://registry-api/v0/hooks/{id} Delete a web hook
     *
     * @apiDescription Delete a web hook
@@ -202,7 +202,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
   }
 
   /**
-    * @apiGroup Registry
+    * @apiGroup Registry Webhooks
     * @api {post} http://registry-api/v0/hooks/{id}/ack Acknowledge a previously-deferred web hook
     *
     * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
