@@ -1,6 +1,14 @@
-## A new kind of data portal
+## Get control of your agency's data
 
-Most open data portals are written with publishing in mind, Magda has been built for the federation of data. It doesn't matter what state the metadata is in, or where the data is stored, Magda can work with it.
+Government agencies do a great job of collecting valuable data, but rarely exploit it to its full potential. Once collected, data sits on share drives and inside spreadsheets where staff members can't find it. Non-sensitive data that could be opened and
+
+## Make your open data easier to find
+
+Even when data is available on open data portals, it's often not easy to find. Most open data portals operate as silos where data is uploaded and published, but searching often misses relevant results that are just outside the scope of what's being search, returns low-quality barely-relevant results instead, and is unable to properly utilise the metadata available (such as geographic or time ranges) as part of the search.
+
+## The next generation of government data management
+
+Magda is a complete solution for the entire life-cycle of government data, enabling more effective and efficient collection, hosting, publishing, search and preview of data.
 
 You can see a working example of it at [Australia's data portal](https://search.data.gov.au/)
 
