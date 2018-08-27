@@ -2,7 +2,6 @@ dependencies:
   - name: apidocs-server
     version: 0.1.0
     tags:
-      - all
       - apidocs-server
   - name: authorization-api
     version: 0.1.0
