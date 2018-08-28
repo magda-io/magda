@@ -24,12 +24,7 @@
   ],
   "commands": {
     "docker-build-prod": {
-      "ignore": [
-        "magda-authorization-db",
-        "magda-discussions-db",
-        "magda-authorization-api",
-        "magda-discussions-api"
-      ]
+      "ignore": ["magda-authorization-db", "magda-authorization-api"]
     }
   }
 }

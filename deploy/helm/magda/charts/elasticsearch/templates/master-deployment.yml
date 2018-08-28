@@ -9,7 +9,7 @@ metadata:
 spec:
   strategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+      maxUnavailable: 0
   replicas: 3
   template:
     metadata:
@@ -36,15 +36,18 @@ spec:
       containers:
       - name: es-master
         resources:
-          requests:
-            cpu: 0m
-            memory: 0Mi
+{{ toYaml .Values.master.resources | indent 10 }}
         securityContext:
           privileged: true
           capabilities:
             add:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
+        readinessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 30
+          periodSeconds: 10
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:

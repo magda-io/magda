@@ -1,6 +1,7 @@
 ## 0.0.47
 
 -   Document public portions of authorization api
+-   Document search api
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
 -   Align format facet based on its position on the page
@@ -9,8 +10,14 @@
 -   Removed `x-powered-by` & `server` headers from response
 -   Updated header logo to be correct branding type
 -   Uses the Header component from Design System
+-   Registry will now periodically retry Webhook
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Removed feedback-api, discussions-api and discussions-db as they're no longer used
+-   Moved standard and data.gov.au config to a separate repo
+-   Added better readiness probes to elasticsearch
+-   Adjusted resources requirements/limits
+-   Push footer below the fold while loading page content
 -   Unify tooltip styles across different instances, remove react-tooltip
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size

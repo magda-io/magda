@@ -1,0 +1,15 @@
+{{- if .Values.includeCronJobs }}
+{{- range .Values.config }}
+{{ $params := dict "root" $ "jobConfig" . }}
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: connector-{{ .id }}
+spec:
+  schedule: {{ .schedule | default "0 14 * * 6" }} # default = 12am Sydney time on Sunday"
+  jobTemplate:
+{{ include "magda.connectorJobSpec" $params | indent 4 }}
+...
+{{- end }}
+{{- end }}

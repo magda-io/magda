@@ -36,8 +36,8 @@ spec:
           httpGet:
             path: /_cluster/health
             port: http
-          initialDelaySeconds: 20
           timeoutSeconds: 5
+          initialDelaySeconds: 30
         resources:
 {{ toYaml .Values.client.resources | indent 10 }}
         env:

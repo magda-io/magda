@@ -1,9 +1,0 @@
-{
-    "type": "magda-dap-connector",
-    "id": "dap",
-    "name": "CSIRO",
-    "sourceUrl": "https://data.csiro.au/dap/ws/v2/",
-    "pageSize": 100,
-    "schedule": "30 12 */3 * *",
-    "ignoreHarvestSources": []
-}
