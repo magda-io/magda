@@ -43,10 +43,11 @@
           const file = input.files[0];
           const fileReader = new FileReader();
           fileReader.onloadend = async function (e) {
-              await request('POST', `${instanceURL}/content/logo`, e.target.result, file.type);
+							const data = new Blob([new Uint8Array(e.target.result)]);
+              await request('POST', `${instanceURL}/content/logo`, data, file.type);
               alert('DONE');
           };
-          fileReader.readAsBinaryString(file);
+          fileReader.readAsArrayBuffer(file);
         }
       });
 
