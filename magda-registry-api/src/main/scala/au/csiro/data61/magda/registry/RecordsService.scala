@@ -180,16 +180,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {post} http://registry-api/records Create a new record
+    * @api {get} http://registry-api/records/pagetokens Get a list tokens for paging through the records
     *
-    * @apiDescription Create a new record
+    * @apiDescription Get a list tokens for paging through the records
     *
-    * @apiParam (body) {json} record The definition of the new record.
+    * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+    * @apiParam (query) {number} limit The size of each page to get tokens for.
     *
-    * @apiHeader {string} X-Magda-Session Magda internal session id
-    *
-    * @apiSuccess (Success 200) {json} Response the record created
-    * @apiError (Error 400) {json} could not create
+    * @apiSuccess (Success 200) {json} Response a list of page token
     * @apiUse GenericError
     */
   @Path("/pagetokens")
@@ -211,6 +209,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {delete} http://registry-api/records/{recordId} Delete a record
+    *
+    * @apiDescription Delete a record
+    *
+    * @apiParam (path) {string} recordId ID of the record to delete.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response the record deletion result
+    * @apiUse GenericError
+    */
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
@@ -235,6 +245,21 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {delete} http://registry-api/records Trim by source tag
+    *
+    * @apiDescription Trims records with the provided source that DON’T have the supplied source tag
+    *
+    * @apiParam (query) {string} sourceTagToPreserve Source tag of the records to PRESERVE.
+    * @apiParam (query) {string} sourceId Source id of the records to delete.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response the trim result
+    * @apiSuccess (Success 202) {string} Response Deletion is taking a long time (normal for sources with many records) but it has worked
+    * @apiError (Error 400) {string} The records could not be deleted, possibly because they are used by other records.
+    * @apiUse GenericError
+    */
   @Path("/")
   @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
     nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
@@ -279,6 +304,21 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} http://registry-api/records/{id} Get a record by ID
+    *
+    * @apiDescription Gets a complete record, including data for all aspects.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+    * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
+    * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
+    *
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Get a record by ID", nickname = "getById", httpMethod = "GET", response = classOf[Record],
     notes = "Gets a complete record, including data for all aspects.")
@@ -302,6 +342,17 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} http://registry-api/records/summary/{id} Get a summary record by ID
+    *
+    * @apiDescription Gets a summary record, including all the aspect ids for which this record has data.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    *
+    * @apiSuccess (Success 200) {json} Response the record summary detail
+    * @apiUse GenericError
+    */
   @Path("/summary/{id}")
   @ApiOperation(value = "Get a summary record by ID", nickname = "getByIdSummary", httpMethod = "GET", response = classOf[RecordSummary],
     notes = "Gets a summary record, including all the aspect ids for which this record has data.")
@@ -322,6 +373,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {put} http://registry-api/records/{id} Modify a record by ID
+    *
+    * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiParam (body) {string} record The record to save.
+    *
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
@@ -349,6 +412,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {patch} http://registry-api/records/{id} Modify a record by applying a JSON Patch
+    *
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (body) {string} recordPatch The RFC 6902 patch to apply to the aspect.
+    *
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
