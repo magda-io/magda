@@ -1,10 +1,11 @@
 ## 0.0.48
 
+-   Add ability to change content (logo).
+
 ## 0.0.47
 
 -   Document public portions of authorization api
 -   Document search api
--   Add ability to change content (logo).
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
 -   Align format facet based on its position on the page
