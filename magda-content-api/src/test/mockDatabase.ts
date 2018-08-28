@@ -20,4 +20,9 @@ export default class MockDatabase {
             );
         });
     }
+    setContentById(id: string, type: string, content: string): Promise<any> {
+        return new Promise(function(resolve, reject) {
+            resolve(mockContentDataStore.setContentById(id, type, content));
+        });
+    }
 }

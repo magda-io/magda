@@ -1,5 +1,7 @@
 ## 0.0.48
 
+-   Add ability to change content (logo).
+
 ## 0.0.47
 
 -   Document public portions of authorization api

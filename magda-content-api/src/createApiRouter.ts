@@ -1,11 +1,13 @@
 import * as express from "express";
-
+import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 import Database from "./Database";
 import { Content } from "./model";
+import { content, ContentEncoding, ContentItem } from "./content";
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
+    authApiUrl: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -17,6 +19,32 @@ export default function createApiRouter(options: ApiRouterOptions) {
         res.status(200).send("OK");
     });
 
+    /**
+     * @apiGroup Content
+     * @api {get} /v0/content/:contentId.:format Get Content
+     * @apiDescription Returns content by content id.
+     *
+     * @apiParam {string} contentId id of content item
+     * @apiParam {string} format The format to return result with.
+     * * If specified format is text, will return content as plain/text.
+     * * If specified format is json, will return content as application/json.
+     * * If specified format is bin, will return content as saved mime type.
+     *
+     * @apiSuccessExample {any} 200
+     *    Content in format requested
+     *
+     * @apiError {string} result=FAILED
+     *
+     * @apiErrorExample {json} 404
+     *    {
+     *         "result": "FAILED"
+     *    }
+     *
+     * @apiErrorExample {json} 500
+     *    {
+     *         "result": "FAILED"
+     *    }
+     */
     router.get("/:contentId.:format", async function(req, res) {
         const contentId = req.params.contentId;
         const format = req.params.format;
@@ -28,8 +56,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
 
             if (content === null) {
-                res.status(404).end();
-                return;
+                throw new Error(
+                    `Unsupported configuration item requested: ${format}`
+                );
             }
 
             switch (format) {
@@ -43,11 +72,79 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     throw new Error(`Unsupported format requested: ${format}`);
             }
         } catch (e) {
-            res.status(500)
-                .send(e.stack + "")
-                .end();
+            res.status(e.message.match(/^unsupported/i) ? 404 : 500).json({
+                result: "FAILED"
+            });
             console.error(e);
         }
+    });
+
+    const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
+
+    Object.entries(content).forEach(function(config: [string, ContentItem]) {
+        const [contentId, configurationItem] = config;
+
+        const body = configurationItem.body || null;
+
+        /**
+         * @apiGroup Content
+         * @api {post} /v0/content/:contentId Update Content
+         * @apiDescription Update content by id
+         *
+         * @apiParam {string} contentId id of content item
+         * @apiHeader {string} Content-Type=text/plain mime type of posted content.
+         *
+         * @apiSuccess {string} result=SUCCESS
+         *
+         * @apiSuccessExample {json} 200
+         *    {
+         *         "result": "SUCCESS"
+         *    }
+         *
+         * @apiError {string} result=FAILED
+         *
+         * @apiErrorExample {json} 400
+         *    {
+         *         "result": "FAILED"
+         *    }
+         */
+
+        router.post(`/${contentId}`, ADMIN, body, async function(req, res) {
+            try {
+                let content = req.body;
+
+                switch (configurationItem.encode) {
+                    case ContentEncoding.base64:
+                        if (!(content instanceof Buffer)) {
+                            throw new Error("Can not base64 encode non-raw");
+                        }
+                        content = content.toString("base64");
+                        break;
+                }
+
+                if (typeof content !== "string") {
+                    throw new Error(
+                        `Config value is not string yet (${typeof content}). You'll got some work to do.`
+                    );
+                }
+
+                const contentType =
+                    configurationItem.contentType ||
+                    req.headers["content-type"] ||
+                    "text/plain";
+
+                await database.setContentById(contentId, contentType, content);
+
+                res.status(201).send({
+                    result: "SUCCESS"
+                });
+            } catch (e) {
+                res.status(e.message.match(/^unsupported/i) ? 404 : 500).json({
+                    result: "FAILED"
+                });
+                console.error(e);
+            }
+        });
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
