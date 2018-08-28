@@ -12,6 +12,7 @@ tags:
 
 ingress:
   ingressClass: nginx
+  enableTls: true
   domains:
     - '*.magda.io'
     - '*.dev.magda.io'
