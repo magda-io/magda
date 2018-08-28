@@ -83,8 +83,5 @@
     "react": {
       "location": "pancake/react/"
     }
-  },
-  "dependencies": {
-    "global": "^4.3.2"
   }
 }

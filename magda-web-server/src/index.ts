@@ -65,11 +65,6 @@ const argv = yargs
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("discussionsApiBaseUrl", {
-        describe:
-            "The base URL of the MAGDA Discussions API.  If not specified, the URL is built from the apiBaseUrl.",
-        type: "string"
-    })
     .option("adminApiBaseUrl", {
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -126,13 +121,6 @@ app.get("/server-config.js", function(req, res) {
                     .segment("auth")
                     .toString()
         ),
-        discussionsApiBaseUrl: addTrailingSlash(
-            argv.discussionsApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("discussions")
-                    .toString()
-        ),
         adminApiBaseUrl: addTrailingSlash(
             argv.adminApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -145,14 +133,6 @@ app.get("/server-config.js", function(req, res) {
                 new URI(apiBaseUrl)
                     .segment("..")
                     .segment("preview-map")
-                    .toString()
-        ),
-        feedbackApiBaseUrl: addTrailingSlash(
-            argv.feedbackApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("feedback")
-                    .segment("user")
                     .toString()
         ),
         correspondenceApiBaseUrl: addTrailingSlash(

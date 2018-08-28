@@ -1,7 +1,0 @@
-{
-    "type": "magda-project-open-data-connector",
-    "id": "logan",
-    "name": "Logan City Council",
-    "sourceUrl": "http://data-logancity.opendata.arcgis.com/data.json",
-    "schedule": "30 5 */3 * *"
-}

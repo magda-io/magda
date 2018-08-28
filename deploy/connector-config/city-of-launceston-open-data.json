@@ -1,7 +1,0 @@
-{
-    "type": "magda-project-open-data-connector",
-    "id": "launceston",
-    "name": "City of Launceston Open Data",
-    "sourceUrl": "https://data-launceston.opendata.arcgis.com/data.json",
-    "schedule": "0 3 */3 * *"
-}

@@ -20,7 +20,9 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
+            {{- if .Values.ckanRedirectionDomain }}
             "--ckanRedirectionDomain", {{ .Values.ckanRedirectionDomain | quote }},
+            {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
 {{- if .Values.auth.facebookClientId }}
