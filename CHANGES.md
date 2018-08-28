@@ -1,3 +1,5 @@
+## 0.0.48
+
 ## 0.0.47
 
 -   Document public portions of authorization api
