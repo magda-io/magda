@@ -26,7 +26,7 @@ const argv = yargs
         include: {
             description: "Regex for which components to include",
             type: "string",
-            default: "^magda-.*-api$"
+            default: "^magda-.*$"
         }
     })
     .help().argv;
@@ -38,16 +38,19 @@ argv.include = new RegExp(argv.include);
 const input = fs
     .readdirSync(argv.input)
     .filter(x => x.match(argv.include))
-    .map(x => `-i ${path.join(argv.input, x, "src")}`)
+    .map(x => path.join(argv.input, x, "src"))
+    .filter(x => fs.existsSync(x))
+    .map(x => `-i ${x}`)
     .join(" ");
 
 const output = `-o ${argv.output}`;
 
 const config = `-x ${argv.config}`;
 
-childProcess.execSync(`apidoc ${input} ${output} ${config}`, {
-    stdio: "inherit"
-});
+childProcess.execSync(
+    `apidoc ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
+    { stdio: "pipe" }
+);
 
 // Convert APIDOC to swagger and openapi specs
 
