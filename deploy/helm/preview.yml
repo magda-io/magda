@@ -3,6 +3,7 @@ global:
     maxUnavailable: 1000
   image:
     imagePullSecret: "regcred"
+    pullPolicy: Always
   exposeNodePorts: false
 
 tags:
@@ -19,21 +20,37 @@ gateway:
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
   autoscaler:
     enabled: false
   enableAuthEndpoint: true
   ckanRedirectionDomain: "ckan.data.gov.au"
+  csp:
+    directives:
+      scriptSrc:
+      - "''self''"
+      - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
+      - "data:" # Also for VWO
+      - browser-update.org
+      - dev.visualwebsiteoptimizer.com
+      - platform.twitter.com
+      - www.googletagmanager.com
+      - www.google-analytics.com
+      - rum-static.pingdom.net
+      - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
+      - https://tagmanager.google.com/debug
+      - assets.zendesk.com
+      - static.zdassets.com
+      - ekr.zdassets.com
+      objectSrc:
+      - "''none''"
+      sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
+      - allow-scripts
+      - allow-same-origin
+      - allow-popups
+      - allow-forms
+      - allow-popups-to-escape-sandbox
+      reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 combined-db:
-  resources:
-    requests:
-      cpu: 400m
-      memory: 1500Mi
-    limits:
-      cpu: 1500m
   waleBackup:
     method: WAL
     readOnly: "TRUE"
@@ -48,10 +65,6 @@ elasticsearch:
   data:
     heapSize: 500m
     pluginsInstall: "repository-gcs"
-    resources:
-      requests:
-        cpu: 400m
-        memory: 1000Mi
   backup:
     googleApplicationCreds:
       secretName: storage-account-credentials
@@ -67,83 +80,11 @@ indexer:
     useGcsSnapshots: true
     gcsSnapshotBucket: "magda-es-snapshots-dev"
     gcsSnapshotClient: "default"
-preview-map:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-registry-api:
-  resources:
-    requests:
-      cpu: 250m
-      memory: 0
-search-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
+
 web-server:
   fallbackUrl: "https://data.gov.au"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-apidocs-server:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-sleuther-linked-data-rating:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-sleuther-broken-link:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-    limits:
-      cpu: 500m
-sleuther-visualization:
-  resources:
-    requests:
-      cpu: 200m
-      memory: 200Mi
-    limits:
-      cpu: 500m
-sleuther-format:
-  resources:
-    requests:
-      cpu: 0
-      memory: 0
-    limits:
-      cpu: 500m
-admin-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-authorization-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-content-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
-discussions-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
+
 correspondence-api:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 0
   defaultRecipient: "magda-test@googlegroups.com"
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525

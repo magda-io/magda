@@ -1,8 +1,0 @@
-{
-    "type": "magda-csw-connector",
-    "id": "bom",
-    "name": "Bureau of Meteorology",
-    "sourceUrl": "http://www.bom.gov.au/geonetwork/srv/eng/csw",
-    "pageSize": 100,
-    "schedule": "0 13 */3 * *"
-}

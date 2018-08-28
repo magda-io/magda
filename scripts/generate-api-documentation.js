@@ -45,7 +45,9 @@ const output = `-o ${argv.output}`;
 
 const config = `-x ${argv.config}`;
 
-childProcess.execSync(`apidoc ${input} ${output}`);
+childProcess.execSync(`apidoc ${input} ${output} ${config}`, {
+    stdio: "inherit"
+});
 
 // Convert APIDOC to swagger and openapi specs
 

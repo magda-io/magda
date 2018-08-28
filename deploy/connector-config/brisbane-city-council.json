@@ -1,8 +1,0 @@
-{
-    "type": "magda-ckan-connector",
-    "id": "brisbane",
-    "name": "Brisbane City Council",
-    "sourceUrl": "https://www.data.brisbane.qld.gov.au/data/",
-    "pageSize": 100,
-    "schedule": "10 * * * *"
-}

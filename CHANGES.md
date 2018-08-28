@@ -11,6 +11,10 @@
 -   Registry will now periodically retry Webhook
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Removed feedback-api, discussions-api and discussions-db as they're no longer used
+-   Moved standard and data.gov.au config to a separate repo
+-   Added better readiness probes to elasticsearch
+-   Adjusted resources requirements/limits
 -   Push footer below the fold while loading page content
 -   Unify tooltip styles across different instances, remove react-tooltip
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
