@@ -29,7 +29,7 @@ import com.typesafe.config.Config
   * @apiSuccess (Success 200) {json} Response a list of aspects
   * @apiSuccessExample {json} Response:
   *{
-  *  "dap-resource": {
+  *    "dap-resource": {
   *      "format": "text/csv",
   *      "mediaType": "text/csv",
   *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
