@@ -211,9 +211,9 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   /**
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records/pagetokens Get a list tokens for paging through the records
-    *
+    * @apiPrivate
     * @apiDescription Get a list tokens for paging through the records
-    *
+    * 
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {number} limit The size of each page to get tokens for.
     *
