@@ -98,6 +98,32 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     *
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (body) {Object} webhook An object contains all webhook information
+    * @apiParamExample {json} Request-Example
+    *  {
+    *    "id": "string",
+    *    "userId": {},
+    *    "name": "string",
+    *    "active": true,
+    *    "lastEvent": {},
+    *    "url": "string",
+    *    "eventTypes": [
+    *      "CreateRecord"
+    *    ],
+    *    "isWaitingForResponse": {},
+    *    "config": {
+    *      "aspects": [
+    *        "string"
+    *      ],
+    *      "optionalAspects": [
+    *        "string"
+    *      ],
+    *      "includeEvents": {},
+    *      "includeRecords": {},
+    *      "includeAspectDefinitions": {},
+    *      "dereference": {}
+    *    },
+    *    "enabled": true
+    *  }
     *
     * @apiSuccess (Success 200) {json} Response the created webhook record
     * @apiSuccessExample {json} Response:

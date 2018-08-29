@@ -187,7 +187,12 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (path) {string} id ID of the aspect to be saved.
     * @apiParam (body) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
-    *
+    * @apiParamExample {json} Request-Example
+    * [
+    *    {
+    *        "path": "string"
+    *    }
+    * ]
     * @apiSuccess (Success 200) {json} Response The details of the aspect patched.
     * @apiSuccessExample {json} Response:
     *
