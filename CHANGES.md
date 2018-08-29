@@ -1,6 +1,7 @@
 ## 0.0.48
 
 -   Add ability to change content (logo).
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
 
 ## 0.0.47
 
