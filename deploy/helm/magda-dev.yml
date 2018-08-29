@@ -108,7 +108,7 @@ connectors:
         name: magda-csw-connector
       id: aims
       name: Australian Institute of Marine Science
-      sourceUrl: http://data.aims.gov.au/geonetwork/srv/eng/csw
+      sourceUrl: http://geo.aims.gov.au/geonetwork/srv/eng/csw
       pageSize: 100
     - image:
         name: magda-csw-connector
