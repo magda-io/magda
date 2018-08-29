@@ -28,6 +28,39 @@ import scala.concurrent.Await
   * @apiDescription Get a list of all web hooks
   * @apiHeader {string} X-Magda-Session Magda internal session id
   * @apiSuccess (Success 200) {json} Response a list of webhook records
+  * @apiSuccessExample {json} Response:
+  *[
+  *  {
+  *    "id": "string",
+  *    "userId": {},
+  *    "name": "string",
+  *    "active": true,
+  *    "lastEvent": {},
+  *    "url": "string",
+  *    "eventTypes": [
+  *      "CreateRecord"
+  *    ],
+  *    "isWaitingForResponse": {},
+  *    "config": {
+  *      "aspects": [
+  *        "string"
+  *      ],
+  *      "optionalAspects": [
+  *        "string"
+  *      ],
+  *      "includeEvents": {},
+  *      "includeRecords": {},
+  *      "includeAspectDefinitions": {},
+  *      "dereference": {}
+  *    },
+  *    "enabled": true,
+  *    "lastRetryTime": "2018-08-29T07:04:15.711Z",
+  *    "retryCount": 0,
+  *    "isRunning": true,
+  *    "isProcessing": true
+  *  }
+  *  ...
+  *]
   * @apiUse GenericError
   */
 @Path("/hooks")
@@ -67,6 +100,36 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiParam (body) {Object} webhook An object contains all webhook information
     *
     * @apiSuccess (Success 200) {json} Response the created webhook record
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "id": "string",
+    *    "userId": {},
+    *    "name": "string",
+    *    "active": true,
+    *    "lastEvent": {},
+    *    "url": "string",
+    *    "eventTypes": [
+    *      "CreateRecord"
+    *    ],
+    *    "isWaitingForResponse": {},
+    *    "config": {
+    *      "aspects": [
+    *        "string"
+    *      ],
+    *      "optionalAspects": [
+    *        "string"
+    *      ],
+    *      "includeEvents": {},
+    *      "includeRecords": {},
+    *      "includeAspectDefinitions": {},
+    *      "dereference": {}
+    *    },
+    *    "enabled": true,
+    *    "lastRetryTime": "2018-08-29T07:04:15.711Z",
+    *    "retryCount": 0,
+    *    "isRunning": true,
+    *    "isProcessing": true
+    *  }
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new web hook", nickname = "create", httpMethod = "POST", response = classOf[WebHook])
@@ -97,6 +160,36 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (path) {string} id ID of the web hook to be fetched.
     * @apiSuccess (Success 200) {json} Response the webhook record
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "id": "string",
+    *    "userId": {},
+    *    "name": "string",
+    *    "active": true,
+    *    "lastEvent": {},
+    *    "url": "string",
+    *    "eventTypes": [
+    *      "CreateRecord"
+    *    ],
+    *    "isWaitingForResponse": {},
+    *    "config": {
+    *      "aspects": [
+    *        "string"
+    *      ],
+    *      "optionalAspects": [
+    *        "string"
+    *      ],
+    *      "includeEvents": {},
+    *      "includeRecords": {},
+    *      "includeAspectDefinitions": {},
+    *      "dereference": {}
+    *    },
+    *    "enabled": true,
+    *    "lastRetryTime": "2018-08-29T07:04:15.711Z",
+    *    "retryCount": 0,
+    *    "isRunning": true,
+    *    "isProcessing": true
+    *  }
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -136,7 +229,37 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiParam (path) {string} id ID of the web hook to be fetched.
     * @apiParam (body) {Object} webhook The web hook to save.
     *
-    * @apiSuccess (Success 200) {json} Response the created webhook record
+    * @apiSuccess (Success 200) {json} Response the modified webhook record
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "id": "string",
+    *    "userId": {},
+    *    "name": "string",
+    *    "active": true,
+    *    "lastEvent": {},
+    *    "url": "string",
+    *    "eventTypes": [
+    *      "CreateRecord"
+    *    ],
+    *    "isWaitingForResponse": {},
+    *    "config": {
+    *      "aspects": [
+    *        "string"
+    *      ],
+    *      "optionalAspects": [
+    *        "string"
+    *      ],
+    *      "includeEvents": {},
+    *      "includeRecords": {},
+    *      "includeAspectDefinitions": {},
+    *      "dereference": {}
+    *    },
+    *    "enabled": true,
+    *    "lastRetryTime": "2018-08-29T07:04:15.711Z",
+    *    "retryCount": 0,
+    *    "isRunning": true,
+    *    "isProcessing": true
+    *  }
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -175,6 +298,10 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiParam (path) {string} id ID of the web hook to delete.
     *
     * @apiSuccess (Success 200) {json} Response deletion result
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "deleted": true
+    *  }
     * @apiError (Error 400) {json} Response could not delete
     * @apiUse GenericError
     */
@@ -211,6 +338,10 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiParam (path) {string} id ID of the web hook to be acknowledged.
     *
     * @apiSuccess (Success 200) {json} Response The details of the acknowledgement.
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "lastEventIdReceived": 0
+    *  }
     * @apiUse GenericError
     */
   @Path("/{id}/ack")
