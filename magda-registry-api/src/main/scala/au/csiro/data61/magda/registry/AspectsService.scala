@@ -191,12 +191,12 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiSuccess (Success 200) {json} Response The details of the aspect patched.
     * @apiSuccessExample {json} Response:
     *
-    * [
-    *   {
-    *     "path": "string"
-    *   }
-    *   ...
-    * ]
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *  
     * @apiUse GenericError
     */
   @Path("/{id}")
