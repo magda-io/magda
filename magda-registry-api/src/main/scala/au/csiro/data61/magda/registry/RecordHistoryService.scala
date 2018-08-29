@@ -22,6 +22,13 @@ import scalikejdbc.DB
   * @apiParam (path) {string} eventId The ID of the last event to be applied to the record. The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.
   *
   * @apiSuccess (Success 200) {json} Response the record detail
+  * @apiSuccessExample {json} Response:
+  *  {
+  *      "id": "string",
+  *      "name": "string",
+  *      "aspects": {},
+  *      "sourceTag": "string"
+  *  }
   * @apiUse GenericError
   */
 @Path("/records/{recordId}/history")
@@ -49,6 +56,26 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
     * @apiParam (path) {string} recordId ID of the record to fetch.
     *
     * @apiSuccess (Success 200) {json} Response the event list
+    * @apiSuccessExample {json} Response:
+    *  {
+    *    "hasMore": true,
+    *    "nextPageToken": "string",
+    *    "events": [
+    *        {
+    *            "id": {},
+    *            "eventTime": "2018-08-29T07:45:48.011Z",
+    *            "eventType": "CreateRecord",
+    *            "userId": 0,
+    *            "data": {
+    *                "fields": {
+    *                  "additionalProp1": {},
+    *                  "additionalProp2": {},
+    *                  "additionalProp3": {}
+    *                }
+    *            }
+    *        }
+    *    ]
+    *  }
     * @apiUse GenericError
     */
   @Path("/{eventId}")
