@@ -27,6 +27,19 @@ import com.typesafe.config.Config
   * @apiDescription Get a list of all aspects of a record
   * @apiParam (path) {string} recordId ID of the record for which to fetch aspects.
   * @apiSuccess (Success 200) {json} Response a list of aspects
+  * @apiSuccessExample {json} Response:
+  *{
+  *  "dap-resource": {
+  *      "format": "text/csv",
+  *      "mediaType": "text/csv",
+  *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+  *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+  *      "licence": "CSIRO Data Licence",
+  *      "id": 103023,
+  *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+  *    },
+  *  ...
+  *}
   * @apiUse GenericError
   */
 @Path("/records/{recordId}/aspects")
@@ -56,6 +69,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
     * @apiParam (path) {string} aspectId ID of the aspect to fetch
     * @apiSuccess (Success 200) {json} Response the aspect detail
+    * @apiSuccessExample {json} Response:
+    *    {
+    *      "format": "text/csv",
+    *      "mediaType": "text/csv",
+    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+    *      "licence": "CSIRO Data Licence",
+    *      "id": 103023,
+    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+    *    }
     * @apiUse GenericError
     */
   @Path("/{aspectId}")
@@ -89,6 +112,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the aspect detail
+    * @apiSuccessExample {json} Response:
+    *    {
+    *      "format": "text/csv",
+    *      "mediaType": "text/csv",
+    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+    *      "licence": "CSIRO Data Licence",
+    *      "id": 103023,
+    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+    *    }
     * @apiUse GenericError
     */
   @Path("/{aspectId}")
@@ -126,6 +159,10 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response operation result
+    * @apiSuccessExample {json} Response:
+    * {
+    *   "deleted": true
+    * }
     * @apiUse GenericError
     */
   @Path("/{aspectId}")
@@ -158,6 +195,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiParam (aspectPatch) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response operation result
+    * @apiSuccessExample {json} Response:
+    *    {
+    *      "format": "text/csv",
+    *      "mediaType": "text/csv",
+    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+    *      "licence": "CSIRO Data Licence",
+    *      "id": 103023,
+    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+    *    }
     * @apiUse GenericError
     */
   @Path("/{aspectId}")
