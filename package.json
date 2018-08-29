@@ -38,7 +38,8 @@
     "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**'",
     "precommit": "pretty-quick --staged",
     "retag-and-push": "lerna run retag-and-push --stream",
-    "eslint": "./node_modules/.bin/eslint magda-web-client/src/"
+    "eslint": "./node_modules/.bin/eslint magda-web-client/src/",
+    "create-secrets": "create-secrets"
   },
   "pancake": {
     "auto-save": true,
@@ -82,8 +83,5 @@
     "react": {
       "location": "pancake/react/"
     }
-  },
-  "dependencies": {
-    "global": "^4.3.2"
   }
 }

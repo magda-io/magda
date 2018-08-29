@@ -1,27 +1,111 @@
-import React from "react";
-import { Medium, Small } from "../../UI/Responsive";
+import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 import govtLogo from "../../assets/au-govt-logo.svg";
+import govtLogoMobile from "../../assets/au-govt-logo-mobile.svg";
 import HeaderNav from "./HeaderNav";
-import HeaderMobile from "./HeaderMobile";
 import "./Header.css";
+import { config } from "../../config";
+import { Small, Medium } from "../../UI/Responsive";
 
-const Header = props => {
-    return (
-        <div className="top-header-container">
-            <Small>
-                <HeaderMobile />
-            </Small>
-            <Medium>
-                <div className="desktop-nav container">
-                    <Link to="/" className="logo">
-                        <img src={govtLogo} alt="Coat of Arms" />
-                    </Link>
-                    <HeaderNav />
+class Header extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isMobileMenuOpen: false
+        };
+    }
+
+    componentDidMount() {
+        this.context.router.history.listen(() => {
+            this.setState({
+                isMobileMenuOpen: false
+            });
+        });
+    }
+
+    toggleMenu() {
+        this.setState({
+            isMobileMenuOpen: !this.state.isMobileMenuOpen
+        });
+    }
+
+    render() {
+        const logoUrl = `${config.contentApiURL}/logo.bin`;
+        return (
+            <div className="header">
+                <div className="au-header">
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-md-6 col-xs-12">
+                                <Link to="/" className="au-header__brand">
+                                    <Small>
+                                        <img
+                                            src={govtLogoMobile}
+                                            height={62}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Small>
+                                    <Medium>
+                                        <img
+                                            src={govtLogo}
+                                            height={70}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Medium>
+                                    <img
+                                        src={logoUrl}
+                                        alt={config.appName}
+                                        className="au-header__logo"
+                                    />
+                                </Link>
+                            </div>
+                            <div className="col-md-6 col-xs-12">
+                                <button
+                                    id="menu-toggle"
+                                    className={`menu-toggle au-btn au-btn--block au-btn--tertiary icon au-accordion--${
+                                        this.state.isMobileMenuOpen
+                                            ? "open"
+                                            : "closed"
+                                    }`}
+                                    onClick={() => this.toggleMenu()}
+                                >
+                                    {this.state.isMobileMenuOpen
+                                        ? "Close menu"
+                                        : "Open menu"}
+                                </button>
+                            </div>
+                            <div className="col-md-6 col-xs-12">
+                                <div
+                                    className={`au-accordion__body au-accordion--${
+                                        this.state.isMobileMenuOpen
+                                            ? "open"
+                                            : "closed"
+                                    } menu`}
+                                    aria-hidden={!this.state.isMobileMenuOpen}
+                                >
+                                    <Small>
+                                        <div className="mobile-nav">
+                                            <HeaderNav isMobile={true} />
+                                        </div>
+                                    </Small>
+                                    <Medium>
+                                        <HeaderNav />
+                                    </Medium>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </Medium>
-        </div>
-    );
+            </div>
+        );
+    }
+}
+
+Header.contextTypes = {
+    router: PropTypes.object.isRequired
 };
 
 export default Header;

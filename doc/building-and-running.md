@@ -76,13 +76,22 @@ lerna run docker-build-local --include-filtered-dependencies
 ```bash
 kubectl create configmap config --from-file deploy/kubernetes/config
 kubectl create configmap connector-config --from-file deploy/connector-config
-deploy/helm/create-auth-secrets.sh
 ```
+
+## Create the necessary k8s secrets
+
+Please run `create-secrets` tool:
+
+```bash
+yarn run create-secrets
+```
+
+and follow the instructions.
 
 ## Install Magda on your minikube cluster
 
 ```bash
-helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda  
+helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.
@@ -181,18 +190,17 @@ kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
 
 Running individual components is easy enough, but how do we get a fully working system? It is rarely necessary to run _all_ of MAGDA locally, but various components depend on other components as follows:
 
-| Component                 | Dependencies                                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `magda-*-connector`       | `magda-registry-api`                                                                                             |
-| `magda-*-sleuther`        | `magda-registry-api`                                                                                             |
-| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-discussions-api`   | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
-| `magda-indexer`           | `magda-elastic-search`                                                                                           |
-| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
-| `magda-search-api`        | `magda-elastic-search`                                                                                           |
-| `magda-web-client`        | `magda-web-server`, but uses API at https://dev.magda.io/api if server is not running.                           |
-| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail.       |
+| Component                 | Dependencies                                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `magda-*-connector`       | `magda-registry-api`                                                                                       |
+| `magda-*-sleuther`        | `magda-registry-api`                                                                                       |
+| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                             |
+| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`                    |
+| `magda-indexer`           | `magda-elastic-search`                                                                                     |
+| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                             |
+| `magda-search-api`        | `magda-elastic-search`                                                                                     |
+| `magda-web-client`        | `magda-web-server`, but uses API at https://dev.magda.io/api if server is not running.                     |
+| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail. |
 
 # Architecture Diagram
 
@@ -209,7 +217,6 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-elastic-search`            | `ES Client`, `ES Data (x2)`, `ES Master (x3)`                                                                                                                                                                                                        |
 | `magda-*-sleuther`                | `Sleuthers`                                                                                                                                                                                                                                          |
 | `magda-authorization-api`         | `Auth API (NodeJS)`                                                                                                                                                                                                                                  |
-| `magda-discussions-api`           | `Discussion API (NodeJS)`                                                                                                                                                                                                                            |
 | `magda-gateway`                   | `Gateway (x1+) (NodeJS)`                                                                                                                                                                                                                             |
 | `magda-indexer`                   | `Search Indexer (Scala)`                                                                                                                                                                                                                             |
 | `magda-registry-api`              | `Registry API (Scala)`                                                                                                                                                                                                                               |
@@ -219,7 +226,7 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-preview-map`               | `Terria Server (NodeJS)`                                                                                                                                                                                                                             |
 | `magda-postgres`                  | All databases - see the migrators that set up the individual database schemas below                                                                                                                                                                  |
 | `magda-migrator-authorization-db` | `Auth DB (Postgres)`. `magda-migrator-authorization-db` is only used for production environment.                                                                                                                                                     |
-| `magda-migrator-discussions-db`   | `Discussion DB (Postgres)`. `magda-migrator-discussions-db` is only used for production environment.                                                                                                                                                 |
+|                                   |
 | `magda-migrator-registry-db`      | `Registry DB (Postgres)`. `magda-migrator-registry-db` is only used for production environment.                                                                                                                                                      |
 | `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
 | `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |

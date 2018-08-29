@@ -2,8 +2,9 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import "./MonthPicker.css";
-import help from "../assets/help.svg";
-import ReactTooltip from "react-tooltip";
+import helpIcon from "../assets/help.svg";
+import defined from "../helpers/defined";
+import Tooltip from "./Tooltip";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -22,27 +23,18 @@ class MonthPicker extends Component {
         this.resetField = this.resetField.bind(this);
         this.state = {
             prompt: "",
-            yearValue: "",
+            yearValue: undefined,
             isDefault: false
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.setState({
-            yearValue: this.props.year,
             // whether the current year is default or by user selection
             // if it's by default, we want to show it slightly opaque
             // to invite user to edit
             isDefault: this.props.showingDefault
         });
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.year !== this.props.year) {
-            this.setState({
-                yearValue: this.props.year
-            });
-        }
     }
 
     changeYear(value) {
@@ -52,9 +44,9 @@ class MonthPicker extends Component {
                     this.props.yearUpper
                 }`
             });
-            this.props.onInvalidInput(true);
+            //this.props.onInvalidInput(true);
         } else {
-            this.props.selectYear(value);
+            this.props.selectYear(+value);
         }
     }
 
@@ -67,21 +59,19 @@ class MonthPicker extends Component {
         if (event.target.value.length >= 5) {
             return false;
         } else {
+            const yearValue = event.target.value;
             this.setState({
-                yearValue: event.target.value
+                yearValue: yearValue
             });
-            const value = +event.target.value;
-            this.debounceValidateYearField(value);
+
+            this.debounceValidateYearField(yearValue);
         }
     }
 
     onFocus() {
         this.setState({
-            yearValue: "",
             prompt: ""
         });
-        // since input now is empty, we notify the parent
-        this.props.onInvalidInput(true);
     }
 
     onBlur(event) {
@@ -115,7 +105,7 @@ class MonthPicker extends Component {
 
     checkYearValid(year) {
         if (
-            isNaN(year) ||
+            !year ||
             year < this.props.yearLower ||
             year > this.props.yearUpper
         ) {
@@ -162,23 +152,33 @@ class MonthPicker extends Component {
             (upperYear === currYear && upperMonth > currMonth)
         ) {
             return (
-                <span className="help-icon-position">
-                    <img
-                        src={help}
-                        alt="Help Link"
-                        data-tip={"Some datasets are predictions"}
-                        data-place="top"
-                        data-html={true}
-                        data-class="future-date-tooltip"
-                    />
-                    <ReactTooltip type="dark" />
-                </span>
+                <Tooltip
+                    startOpen={false}
+                    requireClickToDismiss={false}
+                    launcher={() => (
+                        <img
+                            className="monthpicker-tooltip-launcher"
+                            src={helpIcon}
+                            alt="Help Link"
+                        />
+                    )}
+                    onDismiss={() => null}
+                    orientation="below"
+                >
+                    {dismiss => "Some datasets are predictions"}
+                </Tooltip>
             );
         }
     };
 
+    getYearValue() {
+        const propYear = isNaN(this.props.year) ? "" : this.props.year;
+        return defined(this.state.yearValue) ? this.state.yearValue : propYear;
+    }
+
     render() {
         const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
+        const yearValue = this.getYearValue();
         return (
             <table className="month-picker">
                 <tbody>
@@ -191,7 +191,7 @@ class MonthPicker extends Component {
                                     onChange={this.onChange}
                                     onFocus={this.onFocus}
                                     onBlur={this.onBlur}
-                                    value={this.state.yearValue}
+                                    value={yearValue}
                                     className={`au-text-input au-text-input--block ${
                                         this.state.isDefault ? "is-default" : ""
                                     }`}
@@ -208,7 +208,7 @@ class MonthPicker extends Component {
                                     <button
                                         disabled={
                                             !this.checkMonthValid(
-                                                +this.state.yearValue,
+                                                yearValue,
                                                 monthIndex(i, j)
                                             )
                                         }
@@ -220,7 +220,7 @@ class MonthPicker extends Component {
                                             this.props.month ===
                                                 monthIndex(i, j) &&
                                             this.checkMonthValid(
-                                                +this.state.yearValue,
+                                                yearValue,
                                                 monthIndex(i, j)
                                             )
                                                 ? "is-active"

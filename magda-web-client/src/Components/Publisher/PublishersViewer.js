@@ -17,10 +17,14 @@ import "./PublishersViewer.css";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
+import { withRouter } from "react-router-dom";
 
 class PublishersViewer extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            inputText: ""
+        };
         this.onUpdateSearchText = this.onUpdateSearchText.bind(this);
         this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
@@ -29,62 +33,61 @@ class PublishersViewer extends Component {
         this.clearSearch = this.clearSearch.bind(this);
         this.onClickSearch = this.onClickSearch.bind(this);
         this.searchInputFieldRef = null;
+        props.history.listen(location => {
+            this.debounceUpdateSearchQuery.cancel();
+        });
     }
+
     debounceUpdateSearchQuery = debounce(this.updateSearchQuery, 3000);
 
     onPageChange(i) {
-        this.context.router.history.push({
-            pathname: this.props.location.pathname,
-            search: queryString.stringify(
-                Object.assign(queryString.parse(this.props.location.search), {
-                    page: i
-                })
-            )
-        });
-
-        this.updateSearchQuery(
+        this.debounceUpdateSearchQuery(
             queryString.parse(this.props.location.search).q,
             i
         );
+        this.debounceUpdateSearchQuery.flush();
     }
 
-    componentDidMount() {
-        const q = queryString.parse(this.props.location.search).q;
-        this.props.fetchPublishersIfNeeded(
-            getPageNumber(this.props) || 1,
-            q && q.trim().length > 0 ? q : "*"
-        );
-    }
-
-    updateQuery(query) {
-        this.context.router.history.push({
-            pathname: "/organisations",
-            search: queryString.stringify(
-                Object.assign(
-                    queryString.parse(this.props.location.search),
-                    query
-                )
-            )
-        });
-    }
-
-    handleSearchFieldEnterKeyPress(event) {
-        // when user hit enter, no need to submit the form
-        if (event.charCode === 13) {
-            event.preventDefault();
-            this.updateSearchQuery(
-                queryString.parse(this.props.location.search).q,
-                1
-            );
+    componentDidUpdate(prevProps) {
+        if (prevProps.location.search !== this.props.location.search) {
+            this.debounceUpdateSearchQuery.cancel();
+            this.fetchData();
         }
     }
 
-    updateSearchQuery(text, page) {
-        this.debounceUpdateSearchQuery.flush();
-        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
+    componentDidMount() {
+        const { q } = queryString.parse(this.props.location.search);
+        const inputText = q && q.trim().length > 0 ? q : "";
+        this.setState({ inputText });
+        this.fetchData();
+    }
+
+    updateQuery(query) {
+        if (
+            typeof query.q === "undefined" &&
+            typeof query.page === "undefined"
+        ) {
+            this.context.router.history.push({
+                pathname: "/organisations"
+            });
+        } else {
+            this.context.router.history.push({
+                pathname: "/organisations",
+                search: queryString.stringify(
+                    Object.assign(
+                        queryString.parse(this.props.location.search),
+                        query
+                    )
+                )
+            });
+        }
+    }
+
+    fetchData() {
+        const { q, page } = queryString.parse(this.props.location.search);
         let searchText = "*";
-        if (text && text.trim().length > 0) {
-            searchText = text;
+        if (q && q.trim().length > 0) {
+            searchText = q;
         }
         const pageIndex = page
             ? page
@@ -94,28 +97,36 @@ class PublishersViewer extends Component {
         this.props.fetchPublishersIfNeeded(pageIndex, searchText);
     }
 
-    clearSearch() {
+    handleSearchFieldEnterKeyPress(event) {
+        if (event.charCode === 13) {
+            this.debounceUpdateSearchQuery(this.state.inputText, 1);
+            this.debounceUpdateSearchQuery.flush();
+        }
+    }
+
+    updateSearchQuery(text, page) {
+        if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
         this.updateQuery({
-            q: "",
-            page: 1
+            q: text ? text.trim() : text,
+            page: page
         });
-        this.debounceUpdateSearchQuery("", 1);
+    }
+
+    clearSearch() {
+        this.setState({
+            inputText: ""
+        });
+        this.debounceUpdateSearchQuery();
         this.debounceUpdateSearchQuery.flush();
     }
 
     onUpdateSearchText(e) {
-        this.updateQuery({
-            q: e.target.value,
-            page: 1
-        });
+        this.setState({ inputText: e.target.value });
         this.debounceUpdateSearchQuery(e.target.value, 1);
     }
 
     onClickSearch() {
-        this.debounceUpdateSearchQuery(
-            queryString.parse(this.props.location.search).q,
-            1
-        );
+        this.debounceUpdateSearchQuery(this.state.inputText, 1);
         this.debounceUpdateSearchQuery.flush();
     }
 
@@ -126,8 +137,15 @@ class PublishersViewer extends Component {
             if (this.props.publishers.length === 0) {
                 return (
                     <AUpageAlert as="error">
-                        Sorry, we couldn't find any organisations that match
+                        Sorry, we couldn&#39;t find any organisations that match
                         your search.
+                        <button
+                            className="clear-btn au-btn au-btn--tertiary"
+                            type="button"
+                            onClick={this.clearSearch}
+                        >
+                            Clear search
+                        </button>
                     </AUpageAlert>
                 );
             }
@@ -158,7 +176,6 @@ class PublishersViewer extends Component {
     }
 
     renderSearchBar() {
-        const q = queryString.parse(this.props.location.search).q;
         return (
             <div className="organization-search">
                 <label htmlFor="organization-search" className="sr-only">
@@ -169,7 +186,7 @@ class PublishersViewer extends Component {
                     name="organization-search"
                     id="organization-search"
                     type="text"
-                    value={q ? q : ""}
+                    value={this.state.inputText}
                     placeholder="Search for Organisations"
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
@@ -186,11 +203,16 @@ class PublishersViewer extends Component {
     }
 
     render() {
-        return (
-            <ReactDocumentTitle title={"Organisations | " + config.appName}>
-                <div className="publishers-viewer">
-                    {this.props.isFetching && <ProgressBar />}
+        const currentPage =
+            +queryString.parse(this.props.location.search).page || 1;
 
+        return (
+            <ReactDocumentTitle
+                title={`Organisations | Page ${currentPage} | ${
+                    config.appName
+                }`}
+            >
+                <div className="publishers-viewer">
                     <Medium>
                         <Breadcrumbs
                             breadcrumbs={[
@@ -212,19 +234,19 @@ class PublishersViewer extends Component {
                             </div>
                         </div>
 
-                        <div className="col-sm-8">
-                            {!this.props.isFetching && this.renderContent()}
+                        <div className="col-sm-8 org-result-page-body">
+                            {this.props.isFetching ? (
+                                <ProgressBar />
+                            ) : (
+                                this.renderContent()
+                            )}
                         </div>
                     </div>
                     {!this.props.isFetching &&
                         !this.props.error &&
                         this.props.hitCount > config.resultsPerPage && (
                             <Pagination
-                                currentPage={
-                                    +queryString.parse(
-                                        this.props.location.search
-                                    ).page || 1
-                                }
+                                currentPage={currentPage}
                                 maxPage={Math.ceil(
                                     this.props.hitCount / config.resultsPerPage
                                 )}
@@ -252,13 +274,11 @@ function mapStateToProps(state, ownProps) {
     const isFetching: boolean = state.publisher.isFetchingPublishers;
     const hitCount: number = state.publisher.hitCount;
     const error: Object = state.publisher.errorFetchingPublishers;
-    const location: Location = ownProps.location;
     const keyword = state.publisher.keyword;
     return {
         publishers,
         isFetching,
         hitCount,
-        location,
         error,
         keyword
     };
@@ -268,7 +288,11 @@ PublishersViewer.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
+const PublishersViewerWithRouter = withRouter(props => (
+    <PublishersViewer {...props} />
+));
+
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(PublishersViewer);
+)(PublishersViewerWithRouter);

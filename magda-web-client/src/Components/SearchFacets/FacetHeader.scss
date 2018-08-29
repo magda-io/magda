@@ -3,6 +3,9 @@
 .facet-header {
     display: flex;
     &.not-empty {
+        .btn-facet.format {
+            text-transform: uppercase;
+        }
         button {
             &,
             &:hover,
@@ -18,11 +21,6 @@
         display: flex;
     }
 
-    @media (max-width: $medium) {
-        .btn-facet {
-            width: 100%;
-        }
-    }
     button {
         border: 1px solid rgba(73, 73, 73, 0.05);
         border-radius: 2px;

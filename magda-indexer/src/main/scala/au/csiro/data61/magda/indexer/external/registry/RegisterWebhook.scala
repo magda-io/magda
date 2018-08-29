@@ -28,7 +28,7 @@ object RegisterWebhook {
     interface.getWebhook(config.getString("registry.webhookId")).flatMap {
       case Some(existingHook) =>
         logger.info("Hook already exists, updating...")
-        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
+        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects, true)
           .map { _ =>
             logger.info("Updated, attempting to resume...")
             interface.resumeWebhook(config.getString("registry.webhookId"))
@@ -51,7 +51,8 @@ object RegisterWebhook {
   private def registerIndexerWebhook(
     interface: RegistryExternalInterface,
     aspects: List[String],
-    optionalAspects: List[String])(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
+    optionalAspects: List[String],
+    isUpdate: Boolean = false)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
     val webhook = WebHook(
       id = Some(config.getString("registry.webhookId")),
       name = "Indexer",
@@ -73,7 +74,14 @@ object RegisterWebhook {
       isWaitingForResponse = None,
       active = true)
 
-    interface.putWebhook(webhook).map { _ =>
+
+    val doRegister = if (isUpdate) {
+      interface.putWebhook(webhook)
+    } else {
+      interface.createWebhook(webhook)
+    }
+
+    doRegister.map { _ =>
       system.log.info("Successfully added webhook")
 
       Unit

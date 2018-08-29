@@ -68,16 +68,20 @@ export default class ChartConfig extends Component {
         return (
             <div className="chart-config_icon-select">
                 <label tabIndex="-1">Chart Type</label>
-                {ChartDatasetEncoder.avlChartTypes.map(v => (
-                    <button
-                        className={this.props.chartType === v ? "isActive" : ""}
-                        onClick={e => this.onChange("chartType", v)}
-                        key={v}
-                        title={chartTitles[v]}
-                    >
-                        <img alt={v} src={chartIcons[v]} />
-                    </button>
-                ))}
+                <div className="button-group">
+                    {ChartDatasetEncoder.avlChartTypes.map(v => (
+                        <button
+                            className={
+                                this.props.chartType === v ? "isActive" : ""
+                            }
+                            onClick={e => this.onChange("chartType", v)}
+                            key={v}
+                            title={chartTitles[v]}
+                        >
+                            <img alt={v} src={chartIcons[v]} />
+                        </button>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -109,14 +113,14 @@ export default class ChartConfig extends Component {
                     {this.renderDropdownSelect(
                         this.props.xAxisOptions,
                         "xAxis",
-                        "xAxis"
+                        "X axis"
                     )}
                 </div>
                 <div className="y-axis">
                     {this.renderDropdownSelect(
                         this.props.yAxisOptions,
                         "yAxis",
-                        "yAxis"
+                        "Y axis"
                     )}
                 </div>
             </div>

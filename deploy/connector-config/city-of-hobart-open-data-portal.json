@@ -1,7 +1,0 @@
-{
-    "type": "magda-project-open-data-connector",
-    "id": "hobart",
-    "name": "City of Hobart Open Data Portal",
-    "sourceUrl": "http://data-1-hobartcc.opendata.arcgis.com/data.json",
-    "schedule": "30 2 */3 * *"
-}

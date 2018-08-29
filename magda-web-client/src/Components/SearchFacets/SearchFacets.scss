@@ -5,6 +5,11 @@
     margin-bottom: 32px;
     flex-direction: row;
     flex-wrap: wrap;
+
+    .facet-group {
+        display: flex;
+        margin-bottom: 8px;
+    }
     .search-facet {
         margin-right: 8px;
         position: relative;
@@ -77,28 +82,28 @@
     z-index: 1;
     padding: 0 16px;
 
-    @media (max-width: $medium) {
-        position: fixed;
-        left: 5px;
-        right: 5px;
-        top: 50px;
-        z-index: 10;
-    }
-
     @media (min-width: $medium+1) {
         width: 460px;
         max-width: 100vw;
         position: absolute;
-        &.facet-publisher,
+        &.facet-publisher {
+            left: 0px;
+        }
         &.facet-temporal {
             left: 0px;
         }
-        &.facet-format,
+
         &.facet-region {
-            right: -40px;
+            right: 0px;
         }
         &.facet-region {
             left: 0;
+        }
+        &.facet-format {
+            right: 0;
+            &.facet-left {
+                left: 0;
+            }
         }
     }
 }
@@ -154,6 +159,10 @@
     display: block;
     padding: 8px 0;
     font-weight: 400;
+
+    .facet-format & {
+        text-transform: uppercase;
+    }
 }
 
 .facet-footer {

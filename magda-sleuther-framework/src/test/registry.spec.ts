@@ -237,6 +237,11 @@ function buildWebHook(
             includeRecords: true
         },
         lastEvent: null,
-        isWaitingForResponse: false
+        isWaitingForResponse: false,
+        enabled: true,
+        lastRetryTime: null,
+        retryCount: 0,
+        isRunning: null,
+        isProcessing: null
     };
 }

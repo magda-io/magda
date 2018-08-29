@@ -1,0 +1,38 @@
+{
+    "hasMore": false,
+    "records": [
+        {
+            "id": "dist-dga-af618603-e529-4998-b977-e8751f291e6e",
+            "name":
+                "wwLink to Australian Fish and Fisheries web site managed by Fisheries Research and Development Corporation",
+            "aspects": {
+                "ckan-resource": {
+                    "mimetype": "audio/basic",
+                    "format": "HTML",
+                    "name":
+                        "wwLink to Australian Fish and Fisheries web site managed by Fisheries Research and Development Corporation",
+                    "package_id": "8beb4387-ec03-46f9-8048-3ad76c0416c8",
+                    "datastore_active": false,
+                    "size": null,
+                    "state": "active",
+                    "url": "http://www.fish.gov.au",
+                    "description":
+                        "KeyDocument 01 \\r\\n Website with details about Australian Fisheries, and fish stocks",
+                    "resource_type": null,
+                    "url_type": null,
+                    "last_modified": "2014-12-10T00:00:00",
+                    "hash": "",
+                    "id": "af618603-e529-4998-b977-e8751f291e6e",
+                    "cache_url": null,
+                    "wms_layer": "",
+                    "position": 0,
+                    "mimetype_inner": null,
+                    "cache_last_updated": null,
+                    "revision_id": "af1d049b-8074-4b92-ac5c-1431a8942f14",
+                    "created": "2018-07-19T23:56:15.464718"
+                }
+            },
+            "sourceTag": "45262f84-5043-443a-a028-377108bda3b5"
+        }
+    ]
+}

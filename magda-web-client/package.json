@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.45-0",
+  "version": "0.0.48-0",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -42,7 +42,7 @@
     "@gov.au/skip-link": "^2.0.6",
     "@gov.au/tags": "^3.1.1",
     "@gov.au/text-inputs": "^2.0.6",
-    "@magda/scripts": "^0.0.45-0",
+    "@magda/scripts": "^0.0.48-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",
@@ -122,7 +122,6 @@
     "react-responsive": "^4.1.0",
     "react-router-dom": "^4.2.2",
     "react-table": "^6.5.1",
-    "react-tooltip": "^3.4.0",
     "react-transition-group": "^2.3.1",
     "redux": "^4.0.0",
     "redux-devtools-extension": "^2.13.2",
@@ -141,6 +140,11 @@
       "target": "http://localhost:6107/"
     }
   },
+  "browserslist": [
+    "last 2 versions",
+    "ie 11",
+    "chrome 41"
+  ],
   "pancake": {
     "auto-save": true,
     "plugins": true,

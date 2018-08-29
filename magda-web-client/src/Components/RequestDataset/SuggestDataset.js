@@ -57,7 +57,7 @@ export default class Suggest extends React.Component {
         };
 
         return (
-            <ReactDocumentTitle title={"Suggest a Dataset |" + config.appName}>
+            <ReactDocumentTitle title={`Suggest a Dataset | ${config.appName}`}>
                 <div>
                     <Medium>
                         <Breadcrumbs

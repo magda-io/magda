@@ -26,6 +26,11 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: Acto
   val crawlerRoutes = new CrawlerApi(crawler, indexer).routes
   val hookRoutes = new WebhookApi(indexer).routes
 
+  /**
+  * @apiDefine GenericError
+  * @apiError (Error 500) {String} Response "Failure"
+  */
+
   val routes =
     magdaRoute {
       pathPrefix("v0") {

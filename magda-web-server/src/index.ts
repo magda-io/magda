@@ -55,6 +55,11 @@ const argv = yargs
             "The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("contentApiBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("registryApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -65,14 +70,14 @@ const argv = yargs
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("discussionsApiBaseUrl", {
-        describe:
-            "The base URL of the MAGDA Discussions API.  If not specified, the URL is built from the apiBaseUrl.",
-        type: "string"
-    })
     .option("adminApiBaseUrl", {
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("fallbackUrl", {
+        describe:
+            "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
         type: "string"
     }).argv;
 
@@ -100,6 +105,13 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        contentApiBaseUrl: addTrailingSlash(
+            argv.contentApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("content")
+                    .toString()
+        ),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -121,13 +133,6 @@ app.get("/server-config.js", function(req, res) {
                     .segment("auth")
                     .toString()
         ),
-        discussionsApiBaseUrl: addTrailingSlash(
-            argv.discussionsApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("discussions")
-                    .toString()
-        ),
         adminApiBaseUrl: addTrailingSlash(
             argv.adminApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -142,21 +147,14 @@ app.get("/server-config.js", function(req, res) {
                     .segment("preview-map")
                     .toString()
         ),
-        feedbackApiBaseUrl: addTrailingSlash(
-            argv.feedbackApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("feedback")
-                    .segment("user")
-                    .toString()
-        ),
         correspondenceApiBaseUrl: addTrailingSlash(
             argv.correspondenceApiBaseUrl ||
                 new URI(apiBaseUrl)
                     .segment("v0")
                     .segment("correspondence")
                     .toString()
-        )
+        ),
+        fallbackUrl: argv.fallbackUrl
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
@@ -176,7 +174,8 @@ const topLevelRoutes = [
     "projects",
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
-    "suggest"
+    "suggest",
+    "error"
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
@@ -218,8 +217,19 @@ if (argv.devProxy) {
     });
 }
 
+const robotsTxt = `User-agent: *
+Crawl-delay: 100
+Disallow: /auth
+Disallow: /search
+
+Sitemap: ${argv.baseExternalUrl}/sitemap.xml
+`;
+
+app.use("/robots.txt", (_, res) => {
+    res.status(200).send(robotsTxt);
+});
+
 app.use(
-    "/sitemap",
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
@@ -228,6 +238,22 @@ app.use(
         })
     })
 );
+
+// Proxy any other URL to 404 error page
+const maxErrorDataUrlLength = 1500;
+app.use("/", function(req, res) {
+    let redirectUri: any = new URI("/error");
+    const url =
+        req.originalUrl.length > maxErrorDataUrlLength
+            ? req.originalUrl.substring(0, maxErrorDataUrlLength)
+            : req.originalUrl;
+    const errorData = {
+        errorCode: 404,
+        url: url
+    };
+    redirectUri = redirectUri.escapeQuerySpace(false).search(errorData);
+    res.redirect(303, redirectUri.toString());
+});
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);

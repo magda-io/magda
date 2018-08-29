@@ -1,8 +1,0 @@
-{
-    "type": "magda-csw-connector",
-    "id": "environment",
-    "name": "Department of the Environment and Energy",
-    "sourceUrl": "http://www.environment.gov.au/fed/csw",
-    "pageSize": 100,
-    "schedule": "30 13 */3 * *"
-}

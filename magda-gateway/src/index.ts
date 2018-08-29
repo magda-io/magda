@@ -13,6 +13,7 @@ import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
+import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -136,6 +137,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
+        .option("ckanRedirectionDomain", {
+            describe:
+                "The target domain for redirecting ckan Urls. If not specified, default value `ckan.data.gov.au` will be used.",
+            type: "string",
+            default: "ckan.data.gov.au"
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -199,15 +206,24 @@ if (argv.enableAuthEndpoint) {
     );
 }
 
+const routes = _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson);
+
 app.use(
     "/api/v0",
     createApiRouter({
         authenticator: authenticator,
         jwtSecret: argv.jwtSecret,
-        routes: _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson)
+        routes
     })
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
+
+app.use(
+    createCkanRedirectionRouter({
+        ckanRedirectionDomain: argv.ckanRedirectionDomain,
+        registryApiBaseUrlInternal: routes.registry.to
+    })
+);
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));

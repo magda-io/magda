@@ -28,6 +28,15 @@ class FacetHeader extends Component {
     constructor(props) {
         super(props);
         this.state = { buttonActive: false };
+        this.headerDiv = React.createRef();
+    }
+
+    componentDidMount() {
+        if (this.props.updateComponentAlignment) {
+            this.props.updateComponentAlignment(
+                this.headerDiv.current.getBoundingClientRect().x
+            );
+        }
     }
 
     componentDidUpdate() {
@@ -37,6 +46,12 @@ class FacetHeader extends Component {
             this.setState({
                 buttonActive: this.hasFilter()
             });
+        }
+
+        if (this.props.updateComponentAlignment) {
+            this.props.updateComponentAlignment(
+                this.headerDiv.current.getBoundingClientRect().x
+            );
         }
     }
 
@@ -129,11 +144,12 @@ class FacetHeader extends Component {
                 className={`facet-header ${
                     this.hasFilter() ? "not-empty" : ""
                 }`}
+                ref={this.headerDiv}
             >
                 <button
                     className={`au-btn au-btn--secondary btn-facet ${
-                        this.props.isOpen ? "is-open" : ""
-                    }`}
+                        this.props.title
+                    } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
                 >
                     <img

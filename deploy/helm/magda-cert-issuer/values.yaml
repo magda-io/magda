@@ -1,0 +1,7 @@
+useStaging: true
+hostedZoneID: 
+accessKeyID:  
+acmeEmail: 
+secretAccessKeySecretRef:
+  name: prod-route53-credentials-secret
+  key: secret-access-key

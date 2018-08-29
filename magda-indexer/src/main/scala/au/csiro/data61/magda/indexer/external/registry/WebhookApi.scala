@@ -30,6 +30,17 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
 
   implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
+  /**
+  * @apiGroup Indexer
+  * @api {post} http://indexer/v0/registry-hook Hook endpoint (internal)
+  * 
+  * @apiDescription Registry webhook endpoint - accepts webhook payloads from the registry.
+  *   This generally means datasets from the registry as they're updated. This shouldn't
+  *   be called manually, it's purely for registry use.
+  *
+  * @apiSuccess (Success 202) {String} Response (blank)
+  * @apiUse GenericError
+  */
   val routes =
     magdaRoute {
       post {

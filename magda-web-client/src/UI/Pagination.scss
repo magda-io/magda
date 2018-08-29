@@ -5,6 +5,7 @@
     .pagination-list {
         list-style: none;
         display: flex;
+        flex-flow: row wrap;
         padding-left: 0;
         justify-content: center;
         margin-bottom: 24px;

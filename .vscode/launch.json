@@ -178,6 +178,21 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Gatewat Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-gateway",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Gateway",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
@@ -217,11 +232,10 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Web Server",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",

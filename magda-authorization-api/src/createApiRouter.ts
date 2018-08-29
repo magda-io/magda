@@ -11,6 +11,10 @@ export interface ApiRouterOptions {
     jwtSecret: string;
 }
 
+/**
+ * @apiDefine Auth Authorization API
+ */
+
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
 
@@ -90,12 +94,50 @@ export default function createApiRouter(options: ApiRouterOptions) {
         res.end();
     });
 
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/whoami Get Current User
+     * @apiDescription Returns current user
+     *
+     * @apiSuccessExample {any} 200
+     *    {
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true
+     *    }
+     *
+     * @apiErrorExample {json} 401
+     *    Not Authorized (if not logged in).
+     */
+
     router.get("/public/users/whoami", function(req, res) {
         getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
             handlePromise(res, database.getUser(userId))
         );
     });
 
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/:userId Get User By Id
+     * @apiDescription Returns user by id
+     *
+     * @apiParam {string} userId id of user
+     *
+     * @apiSuccessExample {any} 200
+     *    {
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "photoURL":"...",
+     *        "isAdmin": true
+     *    }
+     *
+     *
+     * @apiErrorExample {json} 500
+     *    Nothing
+     */
     router.get("/public/users/:userId", (req, res) => {
         const userId = req.params.userId;
 

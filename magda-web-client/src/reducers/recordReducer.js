@@ -19,7 +19,7 @@ const initialData = {
 type RecordResult = {
     datasetIsFetching: boolean,
     distributionIsFetching: boolean,
-    datasetFetchError: ?number,
+    datasetFetchError: ?Object,
     distributionFetchError: ?number,
     dataset: ?ParsedDataset,
     distribution: ?ParsedDistribution
@@ -56,6 +56,8 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
                 distributionIsFetching: false,
                 distributionFetchError: action.error
             });
+        case "RESET_FETCH_RECORD":
+            return initialData;
         default:
             return state;
     }

@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
+import { connect } from "react-redux";
 import Search from "../Components/Search/Search";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
@@ -9,6 +10,7 @@ import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
 import { staticPageRegister } from "../content/register";
 import RouteNotFound from "../Components/RouteNotFound";
+import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
@@ -58,6 +60,7 @@ const renderBody = () => {
                 />
             ))}
             <Route exact path="/404" component={RouteNotFound} />
+            <Route exact path="/error" component={ErrorPage} />
             <Route path="/*" component={RouteNotFound} />
         </Switch>
     );
@@ -73,11 +76,32 @@ const OtherPages = props => {
                     theme="none-home"
                 />
             )}
-            <div className="container app-container" id="content">
+            <div
+                className={`container app-container ${
+                    props.finishedFetching ? "loaded" : "loading"
+                }`}
+                id="content"
+            >
                 {renderBody()}
             </div>
         </div>
     );
 };
 
-export default OtherPages;
+const mapStateToProps = (state, ownProps) => {
+    const datasetIsFetching = state.record.datasetIsFetching;
+    const distributionIsFetching = state.record.distributionIsFetching;
+    const publishersAreFetching = state.publisher.isFetchingPublishers;
+    const datasetSearchIsFetching = state.datasetSearch.isFetching;
+    const publisherIsFetching = state.publisher.isFetchingPublisher;
+    return {
+        finishedFetching:
+            !datasetIsFetching &&
+            !publishersAreFetching &&
+            !datasetSearchIsFetching &&
+            !distributionIsFetching &&
+            !publisherIsFetching
+    };
+};
+
+export default connect(mapStateToProps)(OtherPages);
