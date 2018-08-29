@@ -24,6 +24,17 @@ import akka.actor.ActorRef
   * @apiGroup Registry Aspects
   * @api {get} /v0/registry/aspects Get a list of all aspects
   * @apiSuccess (Success 200) {json} Response The aspect definitions.
+  * @apiSuccessExample {json} Response:
+  *
+  *  [
+  *    {
+  *      "id": "string",
+  *      "name": "string",
+  *      "jsonSchema": {}
+  *    }
+  *    ...
+  *  ]
+  *  
   * @apiUse GenericError
   */
 @Path("/aspects")
@@ -49,7 +60,15 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (body) {json} aspect The definition of the new aspect.
     *
-    * @apiSuccess (Success 200) {json} Response The details of the acknowledgement.
+    * @apiSuccess (Success 200) {json} Response The created aspect
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *  
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
@@ -84,6 +103,14 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiParam (path) {string} id ID of the aspect to be fetched.
     *
     * @apiSuccess (Success 200) {json} Response The details of the aspect.
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *  
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -114,6 +141,14 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiParam (body) {json} aspect The aspect to save.
     *
     * @apiSuccess (Success 200) {json} Response The details of the aspect saved.
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *  
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -154,6 +189,14 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiParam (body) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
     *
     * @apiSuccess (Success 200) {json} Response The details of the aspect patched.
+    * @apiSuccessExample {json} Response:
+    *
+    * [
+    *   {
+    *     "path": "string"
+    *   }
+    *   ...
+    * ]
     * @apiUse GenericError
     */
   @Path("/{id}")
