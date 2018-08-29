@@ -45,6 +45,15 @@ import scalikejdbc.DB
   * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
   * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
   * @apiSuccess (Success 200) {json} Response the record detail
+  * @apiSuccessExample {json} Response:
+  *  [
+  *      {
+  *          "id": "string",
+  *          "name": "string",
+  *          "aspects": {},
+  *          "sourceTag": "string"
+  *      }
+  *  ]
   * @apiUse GenericError
   */
 @Path("/records")
@@ -89,6 +98,16 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     *
     * @apiSuccess (Success 200) {json} Response the record summary
+    * @apiSuccessExample {json} Response:
+    *  [
+    *        {
+    *            "id": "string",
+    *            "name": "string",
+    *            "aspects": [
+    *              "string"
+    *            ]
+    *        }
+    *    ]
     * @apiUse GenericError
     */
   @Path("/summary")
@@ -119,6 +138,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
     *
     * @apiSuccess (Success 200) {json} Response the record count
+    * @apiSuccessExample {json} Response:
+    *    {
+    *      "count": 0
+    *    }
     * @apiUse GenericError
     */
   @Path("/count")
@@ -152,6 +175,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the record created
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
     * @apiError (Error 400) {json} Response could not create
     * @apiUse GenericError
     */
@@ -188,6 +218,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (query) {number} limit The size of each page to get tokens for.
     *
     * @apiSuccess (Success 200) {json} Response a list of page token
+    * @apiSuccessExample {json} Response:
+    *   [
+    *      "string"
+    *   ]
     * @apiUse GenericError
     */
   @Path("/pagetokens")
@@ -219,6 +253,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the record deletion result
+    * @apiSuccessExample {json} Response:
+    *   {
+    *     "deleted": true
+    *   }
     * @apiUse GenericError
     */
   @Path("/{recordId}")
@@ -256,6 +294,10 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the trim result
+    * @apiSuccessExample {json} Response:
+    *   {
+    *     "count": 0
+    *   }
     * @apiSuccess (Success 202) {string} Response Deletion is taking a long time (normal for sources with many records) but it has worked
     * @apiError (Error 400) {string} Response The records could not be deleted, possibly because they are used by other records.
     * @apiUse GenericError
@@ -317,6 +359,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
     *
     * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -351,6 +400,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (path) {string} id ID of the record to be fetched.
     *
     * @apiSuccess (Success 200) {json} Response the record summary detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "aspects": [
+    *            "string"
+    *        ]
+    *      }
     * @apiUse GenericError
     */
   @Path("/summary/{id}")
@@ -383,6 +440,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (body) {string} record The record to save.
     *
     * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -422,6 +486,12 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
     *
     * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "jsonSchema": {}
+    *      }
     * @apiUse GenericError
     */
   @Path("/{id}")
