@@ -6,7 +6,8 @@
   "scripts": {
     "build": "generate-api-documentation --config $PWD/apidoc.json --output $PWD/build",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.47-RC2"
