@@ -1,6 +1,7 @@
 ## 0.0.48
 
 -   Add ability to change content (logo).
+-   Updated aims connector URL
 
 ## 0.0.47
 
