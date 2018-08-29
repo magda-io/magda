@@ -439,7 +439,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             helpers.mockCreateJob(k8sApiScope, 200, namespace, (body: any) => {
                 const metadataMatch = (metadata: any) =>
                     metadata.name === `connector-${name}` &&
-                    metadata.magdaSleuther === true;
+                    metadata.magdaMinion === true;
 
                 const jobMetadataMatches = metadataMatch(body.metadata);
                 const podMetadataMatches = metadataMatch(

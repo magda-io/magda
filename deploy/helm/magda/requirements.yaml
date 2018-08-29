@@ -73,19 +73,19 @@ dependencies:
     tags:
       - admin-api
 
-# Sleuthers
-  - name: sleuther-broken-link
+# Minions
+  - name: minion-broken-link
     tags:
-      - sleuther-broken-link
-  - name: sleuther-format
+      - minion-broken-link
+  - name: minion-format
     tags:
-      - sleuther-format
-  - name: sleuther-linked-data-rating
+      - minion-format
+  - name: minion-linked-data-rating
     tags:
-      - sleuther-linked-data-rating
-  - name: sleuther-visualization
+      - minion-linked-data-rating
+  - name: minion-visualization
     tags:
-      - sleuther-visualization
+      - minion-visualization
 
   - name: ingress
     tags:

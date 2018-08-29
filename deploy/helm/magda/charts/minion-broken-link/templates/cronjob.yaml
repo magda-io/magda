@@ -1,0 +1,27 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: minion-broken-link-recrawl
+spec:
+  concurrencyPolicy: Allow
+  schedule: "0 0 14,28 * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: minion-broken-link-recrawl
+          labels:
+            cron: minion-broken-link-recrawl
+        spec:
+          containers:
+          - image: "alpine"
+            imagePullPolicy: IfNotPresent
+            name: minion-broken-link-recrawl
+            command:
+              - "/bin/sh"
+              - "-c"
+              - "apk add --no-cache ca-certificates curl && curl -i -X POST http://minion-broken-link/recrawl"
+          restartPolicy: OnFailure

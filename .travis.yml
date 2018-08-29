@@ -38,13 +38,13 @@ matrix:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
-      script: 
+      script:
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test 
+        - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test
         - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
-        - yarn run in-submodules -- -f categories.connector=true -- run test 
-        - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
-        - yarn run in-submodules -- -f categories.sleuther=true -- run test
+        - yarn run in-submodules -- -f categories.connector=true -- run test
+        - yarn run in-submodules -- -f categories.minion=true -- run build --include-filtered-dependencies
+        - yarn run in-submodules -- -f categories.minion=true -- run test
       env:
         global:
           - CI=true

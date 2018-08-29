@@ -84,7 +84,7 @@ helm upgrade --install --timeout 9999999999 --wait -f deploy/helm/minikube-dev.y
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
 
-Also note that by default there won't be any sleuthers running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.sleuther-<sleuthername>=true` when you run `helm upgrade`.
+Also note that by default there won't be any minions running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.minion-<minionname>=true` when you run `helm upgrade`.
 
 ### Crawl Data
 
@@ -159,9 +159,9 @@ kubectl exec -it gateway-cf9c575bb-th57x -- /bin/bash
 echo $JWT_SECRET
 ```
 
-### Running local sleuthers
+### Running local minions
 
-You can use the same pattern for sleuthers - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your sleuther won't be able to find the registry until you use `kubectl port-forward` to make it work... e.g.
+You can use the same pattern for minions - register a webhook with a url host of `192.168.99.1` and it'll post webhooks to your local machine instead of within the minikube network. Be aware that your minion won't be able to find the registry until you use `kubectl port-forward` to make it work... e.g.
 
 ```bash
 kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
@@ -174,7 +174,7 @@ Running individual components is easy enough, but how do we get a fully working 
 | Component                 | Dependencies                                                                                                     |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `magda-*-connector`       | `magda-registry-api`                                                                                             |
-| `magda-*-sleuther`        | `magda-registry-api`                                                                                             |
+| `magda-*-minion`        | `magda-registry-api`                                                                                             |
 | `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
 | `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
 | `magda-indexer`           | `magda-elastic-search`                                                                                           |
@@ -196,7 +196,7 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-admin-api`                 | `Admin API (NodeJS)`                                                                                                                                                                                                                                 |
 | `magda-*-connector`               | `Connectors`                                                                                                                                                                                                                                         |
 | `magda-elastic-search`            | `ES Client`, `ES Data (x2)`, `ES Master (x3)`                                                                                                                                                                                                        |
-| `magda-*-sleuther`                | `Sleuthers`                                                                                                                                                                                                                                          |
+| `magda-*-minion`                | `Minions`                                                                                                                                                                                                                                          |
 | `magda-authorization-api`         | `Auth API (NodeJS)`                                                                                                                                                                                                                                  |
 | `magda-gateway`                   | `Gateway (x1+) (NodeJS)`                                                                                                                                                                                                                             |
 | `magda-indexer`                   | `Search Indexer (Scala)`                                                                                                                                                                                                                             |
