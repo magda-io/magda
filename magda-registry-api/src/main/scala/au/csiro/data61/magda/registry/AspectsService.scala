@@ -34,7 +34,7 @@ import akka.actor.ActorRef
   *    }
   *    ...
   *  ]
-  *  
+  *
   * @apiUse GenericError
   */
 @Path("/aspects")
@@ -59,7 +59,12 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     *
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (body) {json} aspect The definition of the new aspect.
-    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "jsonSchema": {}
+    * }
     * @apiSuccess (Success 200) {json} Response The created aspect
     * @apiSuccessExample {json} Response:
     *
@@ -68,7 +73,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     *      "name": "string",
     *      "jsonSchema": {}
     *    }
-    *  
+    *
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
@@ -110,7 +115,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     *      "name": "string",
     *      "jsonSchema": {}
     *    }
-    *  
+    *
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -139,7 +144,12 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (path) {string} id ID of the aspect to be saved.
     * @apiParam (body) {json} aspect The aspect to save.
-    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "jsonSchema": {}
+    * }
     * @apiSuccess (Success 200) {json} Response The details of the aspect saved.
     * @apiSuccessExample {json} Response:
     *
@@ -148,7 +158,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     *      "name": "string",
     *      "jsonSchema": {}
     *    }
-    *  
+    *
     * @apiUse GenericError
     */
   @Path("/{id}")
@@ -201,7 +211,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     *      "name": "string",
     *      "jsonSchema": {}
     *    }
-    *  
+    *
     * @apiUse GenericError
     */
   @Path("/{id}")
