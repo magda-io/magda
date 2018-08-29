@@ -262,8 +262,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
     //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
-    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
-
     val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))
 
     val qldDataset = DataSet(
@@ -312,9 +310,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region by acronym") {
-
-    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
-
     val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
 
     val saDataset = DataSet(
@@ -376,8 +371,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     // 2 fake datasets. One that relates to Alfredton, the other to all of Australia
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
     //  Alfredton dataset should be boosted if a user searches for wildlife density in Alfredton
-
-    indexedRegions.foreach{case (a,b) => println(s"a: $a, b: $b")}
 
     val alfGeometry = Location.fromBoundingBox(Seq(BoundingBox(-37.555, 143.81, -37.56, 143.80)))
 

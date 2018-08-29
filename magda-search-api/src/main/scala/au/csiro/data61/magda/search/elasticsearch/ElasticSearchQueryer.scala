@@ -121,8 +121,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       ).map {
         case Left(ESGenericException(e)) => throw e
         case Right(results) => {
-          println(s"Searching for boost regions with phrase '$freeText' found ${results.result.totalHits} results")
-          println(results.result.totalHits)
           results.result.totalHits match {
             case 0 => Set[Region]() // If there's no hits, no need to do anything more
             case _ => results.result.to[Region].toSet
