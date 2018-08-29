@@ -22,7 +22,7 @@ import akka.actor.ActorRef
 
 /**
   * @apiGroup Registry Aspects
-  * @api {get} http://registry-api/v0/aspects Get a list of all aspects
+  * @api {get} /v0/registry/aspects Get a list of all aspects
   * @apiSuccess (Success 200) {json} Response The aspect definitions.
   * @apiUse GenericError
   */
@@ -42,7 +42,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
 
   /**
     * @apiGroup Registry Aspects
-    * @api {post} http://registry-api/v0/aspects Create a new aspect
+    * @api {post} /v0/registry/aspects Create a new aspect
     *
     * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
     *
@@ -76,7 +76,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
 
   /**
     * @apiGroup Registry Aspects
-    * @api {get} http://registry-api/v0/aspects/{id} Get an aspect by ID
+    * @api {get} /v0/registry/aspects/{id} Get an aspect by ID
     *
     * @apiDescription Get an aspect by ID
     *
@@ -105,7 +105,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
 
   /**
     * @apiGroup Registry Aspects
-    * @api {put} http://registry-api/v0/aspects/{id} Modify an aspect by ID
+    * @api {put} /v0/registry/aspects/{id} Modify an aspect by ID
     *
     * @apiDescription Modifies the aspect with a given ID. If an aspect with the ID does not yet exist, it is created.
     *
@@ -145,7 +145,7 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
 
   /**
     * @apiGroup Registry Aspects
-    * @api {patch} http://registry-api/v0/aspects/{id} Modify an aspect by applying a JSON Patch
+    * @api {patch} /v0/registry/aspects/{id} Modify an aspect by applying a JSON Patch
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *

@@ -15,7 +15,7 @@ import scalikejdbc.DB
 
 /**
   * @apiGroup Registry Record History
-  * @api {get} http://registry-api/v0/records/{recordId}/history/{eventId} Get the version of a record that existed after a given event was applied
+  * @api {get} /v0/registry/records/{recordId}/history/{eventId} Get the version of a record that existed after a given event was applied
   *
   * @apiDescription Get the version of a record that existed after a given event was applied
   * @apiParam (path) {string} recordId ID of the record to fetch.
@@ -43,7 +43,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
 
   /**
     * @apiGroup Registry Record History
-    * @api {get} http://registry-api/v0/records/{recordId}/history Get a list of all events affecting this record
+    * @api {get} /v0/registry/records/{recordId}/history Get a list of all events affecting this record
     *
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record to fetch.

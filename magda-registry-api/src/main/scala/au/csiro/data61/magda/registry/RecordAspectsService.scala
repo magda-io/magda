@@ -22,7 +22,7 @@ import com.typesafe.config.Config
 
 /**
   * @apiGroup Registry Record Aspects
-  * @api {get} http://registry-api/v0/records/{recordId}/aspects Get a list of all aspects of a record
+  * @api {get} /v0/registry/records/{recordId}/aspects Get a list of all aspects of a record
   *
   * @apiDescription Get a list of all aspects of a record
   * @apiParam (path) {string} recordId ID of the record for which to fetch aspects.
@@ -50,7 +50,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {get} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
+    * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
     *
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
@@ -80,7 +80,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {put} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
+    * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
     *
     * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
@@ -120,7 +120,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {delete} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
+    * @api {delete} /v0/registry/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
     * @apiDescription Deletes a record aspect.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
@@ -151,7 +151,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {patch} http://registry-api/v0/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
+    * @api {patch} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update

@@ -34,7 +34,7 @@ import scalikejdbc.DB
 
 /**
   * @apiGroup Registry Record Service
-  * @api {get} http://registry-api/v0/records Get a list of all records
+  * @api {get} /v0/registry/records Get a list of all records
   *
   * @apiDescription Get a list of all records
   * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
@@ -80,7 +80,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} http://registry-api/records/summary Get a list of all records as summaries
+    * @api {get} /v0/registry/records/summary Get a list of all records as summaries
     *
     * @apiDescription Get a list of all records as summaries
     *
@@ -111,7 +111,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} http://registry-api/records/count Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
+    * @api {get} /v0/registry/records/count Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
     *
     * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
     *
@@ -143,7 +143,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {post} http://registry-api/records Create a new record
+    * @api {post} /v0/registry/records Create a new record
     *
     * @apiDescription Create a new record
     *
@@ -152,7 +152,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the record created
-    * @apiError (Error 400) {json} could not create
+    * @apiError (Error 400) {json} Response could not create
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
@@ -180,7 +180,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} http://registry-api/records/pagetokens Get a list tokens for paging through the records
+    * @api {get} /v0/registry/records/pagetokens Get a list tokens for paging through the records
     *
     * @apiDescription Get a list tokens for paging through the records
     *
@@ -211,7 +211,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {delete} http://registry-api/records/{recordId} Delete a record
+    * @api {delete} /v0/registry/records/{recordId} Delete a record
     *
     * @apiDescription Delete a record
     *
@@ -247,7 +247,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {delete} http://registry-api/records Trim by source tag
+    * @api {delete} /v0/registry/records Trim by source tag
     *
     * @apiDescription Trims records with the provided source that DON’T have the supplied source tag
     *
@@ -257,7 +257,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     *
     * @apiSuccess (Success 200) {json} Response the trim result
     * @apiSuccess (Success 202) {string} Response Deletion is taking a long time (normal for sources with many records) but it has worked
-    * @apiError (Error 400) {string} The records could not be deleted, possibly because they are used by other records.
+    * @apiError (Error 400) {string} Response The records could not be deleted, possibly because they are used by other records.
     * @apiUse GenericError
     */
   @Path("/")
@@ -307,7 +307,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} http://registry-api/records/{id} Get a record by ID
+    * @api {get} /v0/registry/records/{id} Get a record by ID
     *
     * @apiDescription Gets a complete record, including data for all aspects.
     *
@@ -344,7 +344,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} http://registry-api/records/summary/{id} Get a summary record by ID
+    * @api {get} /v0/registry/records/summary/{id} Get a summary record by ID
     *
     * @apiDescription Gets a summary record, including all the aspect ids for which this record has data.
     *
@@ -375,7 +375,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {put} http://registry-api/records/{id} Modify a record by ID
+    * @api {put} /v0/registry/records/{id} Modify a record by ID
     *
     * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
     *
@@ -414,12 +414,12 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {patch} http://registry-api/records/{id} Modify a record by applying a JSON Patch
+    * @api {patch} /v0/registry/records/{id} Modify a record by applying a JSON Patch
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *
     * @apiParam (path) {string} id ID of the aspect to be saved.
-    * @apiParam (body) {string} recordPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
     *
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiUse GenericError
