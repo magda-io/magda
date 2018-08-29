@@ -254,7 +254,27 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (path) {string} id ID of the web hook to be fetched.
     * @apiParam (body) {Object} webhook The web hook to save.
-    *
+    * @apiParamExample {json} Request-Example
+    *  {
+    *    "id": "string",
+    *    "userId": {},
+    *    "name": "string",
+    *    "active": true,
+    *    "url": "string",
+    *    "config": {
+    *      "aspects": [
+    *        "string"
+    *      ],
+    *      "optionalAspects": [
+    *        "string"
+    *      ],
+    *      "includeEvents": {},
+    *      "includeRecords": {},
+    *      "includeAspectDefinitions": {},
+    *      "dereference": {}
+    *    },
+    *    "enabled": true
+    *  }
     * @apiSuccess (Success 200) {json} Response the modified webhook record
     * @apiSuccessExample {json} Response:
     *  {
