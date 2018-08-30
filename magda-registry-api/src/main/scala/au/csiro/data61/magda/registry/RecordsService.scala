@@ -107,7 +107,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     *              "string"
     *            ]
     *        }
-    *    ]
+    *  ]
     * @apiUse GenericError
     */
   @Path("/summary")
@@ -171,7 +171,13 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiDescription Create a new record
     *
     * @apiParam (body) {json} record The definition of the new record.
-    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "aspects": {},
+    *    "sourceTag": "string"
+    * }
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the record created
@@ -182,7 +188,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     *          "aspects": {},
     *          "sourceTag": "string"
     *      }
-    * @apiError (Error 400) {json} Response could not create
+    * @apiError (Error 400) {string} Response could not create
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
@@ -437,8 +443,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
     *
     * @apiParam (path) {string} id ID of the record to be fetched.
-    * @apiParam (body) {string} record The record to save.
-    *
+    * @apiParam (body) {json} record The record to save.
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "aspects": {},
+    *    "sourceTag": "string"
+    * }
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *      {
@@ -484,7 +496,12 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     *
     * @apiParam (path) {string} id ID of the aspect to be saved.
     * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
-    *
+    * @apiParamExample {json} Request-Example
+    * [
+    *    {
+    *        "path": "string"
+    *    }
+    * ]
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *      {
