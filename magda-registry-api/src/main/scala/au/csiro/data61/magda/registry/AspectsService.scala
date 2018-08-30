@@ -19,6 +19,24 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 import akka.actor.ActorRef
 
+
+/**
+  * @apiGroup Registry Aspects
+  * @api {get} /v0/registry/aspects Get a list of all aspects
+  * @apiSuccess (Success 200) {json} Response The aspect definitions.
+  * @apiSuccessExample {json} Response:
+  *
+  *  [
+  *    {
+  *      "id": "string",
+  *      "name": "string",
+  *      "jsonSchema": {}
+  *    }
+  *    ...
+  *  ]
+  *
+  * @apiUse GenericError
+  */
 @Path("/aspects")
 @io.swagger.annotations.Api(value = "aspect definitions", produces = "application/json")
 class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: ActorRef, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
@@ -33,6 +51,31 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     }
   }
 
+  /**
+    * @apiGroup Registry Aspects
+    * @api {post} /v0/registry/aspects Create a new aspect
+    *
+    * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (body) {json} aspect The definition of the new aspect.
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "jsonSchema": {}
+    * }
+    * @apiSuccess (Success 200) {json} Response The created aspect
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *
+    * @apiUse GenericError
+    */
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The definition of the new aspect."),
@@ -55,6 +98,26 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     }
   }
 
+  /**
+    * @apiGroup Registry Aspects
+    * @api {get} /v0/registry/aspects/{id} Get an aspect by ID
+    *
+    * @apiDescription Get an aspect by ID
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the aspect to be fetched.
+    *
+    * @apiSuccess (Success 200) {json} Response The details of the aspect.
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Get an aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
@@ -72,6 +135,32 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     }
   }
 
+  /**
+    * @apiGroup Registry Aspects
+    * @api {put} /v0/registry/aspects/{id} Modify an aspect by ID
+    *
+    * @apiDescription Modifies the aspect with a given ID. If an aspect with the ID does not yet exist, it is created.
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (body) {json} aspect The aspect to save.
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "jsonSchema": {}
+    * }
+    * @apiSuccess (Success 200) {json} Response The details of the aspect saved.
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify an aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[AspectDefinition],
     notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
@@ -99,6 +188,32 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     }
   }
 
+  /**
+    * @apiGroup Registry Aspects
+    * @api {patch} /v0/registry/aspects/{id} Modify an aspect by applying a JSON Patch
+    *
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (body) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParamExample {json} Request-Example
+    * [
+    *    {
+    *        "path": "string"
+    *    }
+    * ]
+    * @apiSuccess (Success 200) {json} Response The details of the aspect patched.
+    * @apiSuccessExample {json} Response:
+    *
+    *    {
+    *      "id": "string",
+    *      "name": "string",
+    *      "jsonSchema": {}
+    *    }
+    *
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify an aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
