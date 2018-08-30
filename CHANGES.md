@@ -1,5 +1,6 @@
 ## 0.0.48
 
+-   Whitelist KMZ.
 -   Add ability to change content (logo).
 
 ## 0.0.47
