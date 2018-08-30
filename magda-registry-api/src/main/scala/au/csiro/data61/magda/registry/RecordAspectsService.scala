@@ -109,6 +109,16 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiParam (body) {json} aspect The record aspect to save
+    * @apiParamExample {json} Request-Example
+    *    {
+    *      "format": "text/csv",
+    *      "mediaType": "text/csv",
+    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+    *      "licence": "CSIRO Data Licence",
+    *      "id": 103023,
+    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+    *    }
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
     * @apiSuccess (Success 200) {json} Response the aspect detail
