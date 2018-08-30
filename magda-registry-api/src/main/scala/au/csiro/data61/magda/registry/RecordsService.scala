@@ -195,9 +195,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
           val deleteResult = try {
             Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
           } catch {
-            case e: Throwable =>
-              logger.error(e, "Error happened when trimming records: ")
-              Failure(e)
+            case e: Throwable => Failure(e)
           }
 
           deleteResult match {
@@ -299,6 +297,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
+                  logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
                   complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
