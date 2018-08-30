@@ -299,7 +299,6 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
-                  logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
                   complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }

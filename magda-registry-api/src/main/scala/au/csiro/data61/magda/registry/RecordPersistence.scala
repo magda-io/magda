@@ -442,7 +442,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
 
     val result = recordIds match {
-      case Success(Nil) => Success(0l)
+      case Success(Nil) => Success(0)
       case Success(ids) =>
         ids
           .map(recordId => deleteRecord(session, recordId))
