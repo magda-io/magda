@@ -130,7 +130,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/count Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
+    * @api {get} /v0/registry/records/count Get the count of records matching the parameters
     *
     * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
     *
@@ -299,8 +299,8 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiParam (query) {string} sourceId Source id of the records to delete.
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
-    * @apiSuccess (Success 200) {json} Response the trim result
-    * @apiSuccessExample {json} Response:
+    * @apiSuccess (Success 200) {json} Response-200 the trim result
+    * @apiSuccessExample {json} Response-200:
     *   {
     *     "count": 0
     *   }
