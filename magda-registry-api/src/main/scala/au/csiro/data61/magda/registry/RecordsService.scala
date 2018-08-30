@@ -195,7 +195,9 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
           val deleteResult = try {
             Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
           } catch {
-            case e: Throwable => Failure(e)
+            case e: Throwable =>
+              logger.error(e, "Error happened when trimming records: ")
+              Failure(e)
           }
 
           deleteResult match {
