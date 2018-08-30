@@ -203,6 +203,12 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiParam (aspectPatch) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParamExample {json} Request-Example
+    *    [
+    *       {
+    *          "path": "string"
+    *       }
+    *    ]
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response operation result
     * @apiSuccessExample {json} Response:
