@@ -154,5 +154,17 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 }
 
 object BaseApiSpec {
-  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get
+  val testStates = {
+    import spray.json._
+    List(
+      (new RegionSource("ithinkthisisregiontype",new URL("http://example.com"), "STE_CODE11", "STE_NAME11", Some("STE_ABBREV"), false, false, 10), """
+      {"type":"Feature","properties":{"STE_NAME11":"Queensland","STE_CODE11":"3","STE_ABBREV":"QLD"},"geometry":{"type":"Polygon","coordinates":[[[142.4,-10.7],[141.5,-13.6],[141.6,-15.1],[140.8,-17.5],[139.9,-17.7],[139,-17.3],[137.9,-16.4],[137.9,-26],[140.9,-26],[141,-29],[148.9,-28.9],[150,-28.6],[150.8,-28.7],[151.3,-29.1],[151.9,-28.9],[152,-28.6],[152.5,-28.4],[153.4,-28.2],[152.9,-27.4],[153,-26],[152.4,-24.9],[150.9,-23.6],[150.5,-22.4],[149.5,-22.3],[149.1,-21],[147.4,-19.5],[146.2,-18.9],[145.8,-17.3],[145.2,-16.3],[145.3,-15],[144.4,-14.2],[143.6,-14.3],[143.4,-12.7],[142.4,-10.7]]]}}
+      """.parseJson.asJsObject),
+      (new RegionSource("ithinkthisisregiontype",new URL("http://example.com"), "STE_CODE11", "STE_NAME11", Some("STE_ABBREV"), false, false, 10), """
+      {"type":"Feature","properties":{"STE_NAME11":"South Australia","STE_CODE11":"4","STE_ABBREV":"SA"},"geometry":{"type":"Polygon","coordinates":[[[128.9,-26],[129.1,-31.5],[132.5,-31.9],[135.6,-34.8],[138.5,-34.9],[140.9,-38],[141,-26],[128.9,-26]]]}}
+      """.parseJson.asJsObject)
+    )
+
+  }
+  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
 }
