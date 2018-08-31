@@ -1,9 +1,11 @@
 ## 0.0.48
 
+-   Whitelist KMZ.
 -   Add ability to change content (logo).
 -   CSW connector will exit with code 1 if error happens
 -   Fixed an issue of format enhancer processing MIME
 -   Fixed an issue that format enhancer may exit when dcat-string not available
+-   Updated aims connector URL
 
 ## 0.0.47
 
