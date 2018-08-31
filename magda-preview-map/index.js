@@ -34,7 +34,6 @@ import render from "./lib/Views/render";
 import knockout from "terriajs-cesium/Source/ThirdParty/knockout";
 
 import createCatalogMemberFromType from "terriajs/lib/Models/createCatalogMemberFromType";
-import MagdaCatalogItem from "./lib/Models/MagdaCatalogItem";
 import ViewerMode from "terriajs/lib/Models/ViewerMode.js";
 
 // Tell the OGR catalog item where to find its conversion service.  If you're not using OgrCatalogItem you can remove this.
@@ -45,7 +44,6 @@ OgrCatalogItem.conversionServiceBaseUrl =
 // (i.e. to reduce the size of your application if you don't actually use them all), feel free to copy a subset of
 // the code in the registerCatalogMembers function here instead.
 registerCatalogMembers();
-createCatalogMemberFromType.register("magda-item", MagdaCatalogItem);
 registerAnalytics();
 
 terriaOptions.analytics = new GoogleAnalytics();

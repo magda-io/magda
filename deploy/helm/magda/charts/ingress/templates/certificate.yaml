@@ -1,4 +1,4 @@
-{{- if .Values.enableTls }}
+{{- if and .Values.enableTls (not .Values.useDefaultCertificate) }}
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
