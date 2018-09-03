@@ -55,6 +55,11 @@ const argv = yargs
             "The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("contentApiBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("registryApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -63,11 +68,6 @@ const argv = yargs
     .option("authApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
-        type: "string"
-    })
-    .option("discussionsApiBaseUrl", {
-        describe:
-            "The base URL of the MAGDA Discussions API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
     .option("adminApiBaseUrl", {
@@ -105,6 +105,13 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        contentApiBaseUrl: addTrailingSlash(
+            argv.contentApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("content")
+                    .toString()
+        ),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -126,13 +133,6 @@ app.get("/server-config.js", function(req, res) {
                     .segment("auth")
                     .toString()
         ),
-        discussionsApiBaseUrl: addTrailingSlash(
-            argv.discussionsApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("discussions")
-                    .toString()
-        ),
         adminApiBaseUrl: addTrailingSlash(
             argv.adminApiBaseUrl ||
                 new URI(apiBaseUrl)
@@ -145,14 +145,6 @@ app.get("/server-config.js", function(req, res) {
                 new URI(apiBaseUrl)
                     .segment("..")
                     .segment("preview-map")
-                    .toString()
-        ),
-        feedbackApiBaseUrl: addTrailingSlash(
-            argv.feedbackApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("feedback")
-                    .segment("user")
                     .toString()
         ),
         correspondenceApiBaseUrl: addTrailingSlash(
@@ -230,7 +222,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${argv.baseExternalUrl}sitemap.xml
+Sitemap: ${argv.baseExternalUrl}/sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {

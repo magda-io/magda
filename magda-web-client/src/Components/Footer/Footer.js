@@ -3,9 +3,6 @@ import React from "react";
 
 import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
-// temporary disable feedback from so we can try something else
-// import FeedbackForm from "./Feedback/FeedbackForm";
-// import { FeedbackButton, FeedbackLink } from "./Feedback/FeedbackButton";
 import { Small } from "../../UI/Responsive";
 
 import dtaLogo from "./dta-logo.png";
@@ -19,7 +16,6 @@ function FooterLink({ link }) {
     if (link[1].indexOf("mailto") === 0) {
         return <a href={link[1]}>{link[0]}</a>;
     } else if (link[1] === "feedback") {
-        // return <FeedbackLink caption={link[0]} />;
         return (
             <a
                 href="#feedback"
@@ -47,7 +43,7 @@ function FooterLink({ link }) {
 function FooterNavs({ footerNavs }) {
     return footerNavs.map(item => (
         <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.category}>
-            <h4 className="nav-title">{item.category}</h4>
+            <h3 className="au-display-lg">{item.category}</h3>
 
             <ul className="au-link-list">
                 {item.links.map(link => (

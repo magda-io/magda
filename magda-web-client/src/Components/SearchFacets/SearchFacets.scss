@@ -8,12 +8,12 @@
 
     .facet-group {
         display: flex;
+        margin-bottom: 8px;
     }
     .search-facet {
         margin-right: 8px;
         position: relative;
         width: 45%;
-        margin-bottom: 8px;
         @media (min-width: $medium) {
             width: auto;
         }
@@ -82,14 +82,6 @@
     z-index: 1;
     padding: 0 16px;
 
-    @media (max-width: $medium) {
-        position: fixed;
-        left: 5px;
-        right: 5px;
-        top: 50px;
-        z-index: 10;
-    }
-
     @media (min-width: $medium+1) {
         width: 460px;
         max-width: 100vw;
@@ -98,17 +90,20 @@
             left: 0px;
         }
         &.facet-temporal {
-            left: -16px;
+            left: 0px;
         }
 
         &.facet-region {
-            right: -40px;
+            right: 0px;
         }
         &.facet-region {
             left: 0;
         }
         &.facet-format {
-            left: -150px;
+            right: 0;
+            &.facet-left {
+                left: 0;
+            }
         }
     }
 }

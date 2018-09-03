@@ -12,10 +12,6 @@ export default {
             methods: ["GET"],
             auth: true
         },
-        discussions: {
-            to: "http://localhost:6105/v0",
-            auth: true
-        },
         web: {
             to: "http://localhost:6108"
         },
@@ -31,6 +27,10 @@ export default {
         },
         apidocs: {
             to: "http://localhost:6118"
+        },
+        content: {
+            to: "http://localhost:6119/v0",
+            auth: true
         }
     },
     csp: {

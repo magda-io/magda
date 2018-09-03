@@ -17,6 +17,7 @@ import {
 } from "../../actions/datasetSearchActions";
 import queryString from "query-string";
 import ProgressBar from "../../UI/ProgressBar";
+import stripFiltersFromQuery from "./stripFiltersFromQuery";
 
 // eslint-disable-next-line
 import PropTypes from "prop-types";
@@ -71,16 +72,11 @@ class Search extends Component {
      * update only the search text, remove all facets
      */
     updateSearchText(text: string) {
-        this.updateQuery({
-            q: text,
-            publisher: [],
-            regionId: undefined,
-            regionType: undefined,
-            dateFrom: undefined,
-            dateTo: undefined,
-            format: [],
-            page: undefined
-        });
+        this.updateQuery(
+            stripFiltersFromQuery({
+                q: text
+            })
+        );
     }
 
     /**
@@ -164,9 +160,13 @@ class Search extends Component {
     render() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
+        const currentPage =
+            +queryString.parse(this.props.location.search).page || 1;
         return (
             <ReactDocumentTitle
-                title={`Searching for ${searchText} | ${config.appName}`}
+                title={`Datasets search: ${searchText} | Page ${currentPage} | ${
+                    config.appName
+                }`}
             >
                 <div>
                     {this.props.isFetching && <ProgressBar />}
@@ -226,12 +226,7 @@ class Search extends Component {
                                         {this.props.hitCount >
                                             config.resultsPerPage && (
                                             <Pagination
-                                                currentPage={
-                                                    +queryString.parse(
-                                                        this.props.location
-                                                            .search
-                                                    ).page || 1
-                                                }
+                                                currentPage={currentPage}
                                                 maxPage={Math.ceil(
                                                     this.props.hitCount /
                                                         config.resultsPerPage
@@ -282,7 +277,6 @@ function mapStateToProps(state, ownProps) {
         activeDateTo: datasetSearch.activeDateTo,
         hitCount: datasetSearch.hitCount,
         isFetching: datasetSearch.isFetching,
-        progress: datasetSearch.progress,
         strategy: datasetSearch.strategy,
         error: datasetSearch.error,
         freeText: datasetSearch.freeText

@@ -1,3 +1,40 @@
+## 0.0.48
+
+-   Whitelist KMZ.
+-   Add ability to change content (logo).
+-   CSW connector will exit with code 1 if error happens
+-   Fixed an issue of format enhancer processing MIME
+-   Fixed an issue that format enhancer may exit when dcat-string not available
+-   Updated email template & make email clickable
+-   Updated aims connector URL
+-   Raised the default resources for registry-api.
+
+## 0.0.47
+
+-   Document public portions of authorization api
+-   Document search api
+-   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
+-   Hyperlink organisation url on organisation page
+-   Align format facet based on its position on the page
+-   Reformat page title to be consistent throughout
+-   Remove browser default button background for search facet (for safari and IE)
+-   Removed `x-powered-by` & `server` headers from response
+-   Updated header logo to be correct branding type
+-   Uses the Header component from Design System
+-   Registry will now periodically retry Webhook
+-   Fixed an issue that connector record triming might not fully completed
+-   Fixed an issue that indexer webhook event types not properly setup
+-   Removed feedback-api, discussions-api and discussions-db as they're no longer used
+-   Moved standard and data.gov.au config to a separate repo
+-   Added better readiness probes to elasticsearch
+-   Adjusted resources requirements/limits
+-   Push footer below the fold while loading page content
+-   Unify tooltip styles across different instances, remove react-tooltip
+-   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
+-   Unify H1 size
+-   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Added apiDoc for indexer
+
 ## 0.0.46
 
 -   Make pagination on mobile responsive.
@@ -9,9 +46,18 @@
 -   Make pagination on mobile responsive.
 -   Fixed a facet overflow issue on desktop
 -   Allow user apply default date in filter
+-   Mobile menu style change
 -   Fixed Not found redirect working differently in different browsers, and fixed not found error preventing new record from showing
 -   Added mechanism to produce api documentation
 -   Fixed an issue where organisation Page dataset links set incorrect `publisher` query parameter
+-   Remove extra slash when additional info is missing on dataset page and distribution page
+-   Added a tooltip to organisation filter if it's clicked to from the org page the first time
+-   Hid filters on mobile
+-   Made it so that if you follow a link with filters active on mobile, the next search you make cancels them
+-   Added a more generic purple tooltip component
+-   Added `create-secrets` script for managing secrets
+-   Make source link wrap and add line break
+-   Made dev connector jobs execute every week only
 
 ## 0.0.45
 

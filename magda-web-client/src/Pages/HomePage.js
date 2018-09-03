@@ -12,7 +12,6 @@ import Stories from "./HomePageComponents/Stories";
 import { Small, Medium } from "../UI/Responsive";
 
 import MediaQuery from "react-responsive";
-import dgaLogo from "../assets/dga-logo.svg";
 
 const getBgImg = () => {
     let imageMap = {};
@@ -91,11 +90,6 @@ const HomePage = withRouter(({ location, isTopBannerShown }) => {
                 <div className="homepage-background" />
             </Small>
             <div className="container app-container" id="content">
-                <Medium>
-                    <div className="homepage-dga-logo">
-                        <img src={dgaLogo} alt="dga logo" />
-                    </div>
-                </Medium>
                 <Small>
                     <TagLine taglineText={getTagLine().mobile} />
                 </Small>

@@ -1,7 +1,6 @@
 import React from "react";
 import AUtextInput from "../../pancake/react/text-inputs";
 import AUbutton from "../../pancake/react/buttons";
-import AUheader from "../../pancake/react/header";
 import "./FormTemplate.css";
 
 //This is the react form template
@@ -140,7 +139,7 @@ export default class RequestFormTemplate extends React.Component {
     render() {
         return (
             <form className="correspondence-form" method="post">
-                {this.props.title && <AUheader>{this.props.title}</AUheader>}
+                {this.props.title && <h1>{this.props.title}</h1>}
                 <label htmlFor="message" className="field-label">
                     {this.props.textAreaLabel}
                 </label>

@@ -1,7 +1,7 @@
 {
   "name": "@magda/project-open-data-connector",
   "description": "MAGDA Project Open Data (data.json) Connector",
-  "version": "0.0.46-0",
+  "version": "0.0.48-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -16,7 +16,7 @@
     "retag-and-push": "retag-and-push"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.46-0",
+    "@magda/scripts": "^0.0.48-0",
     "@types/node": "^8.0.14",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.34",
@@ -26,8 +26,8 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.46-0",
-    "@magda/typescript-common": "^0.0.46-0",
+    "@magda/registry-aspects": "^0.0.48-0",
+    "@magda/typescript-common": "^0.0.48-0",
     "jsonpath": "^0.2.11",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",

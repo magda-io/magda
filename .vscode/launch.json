@@ -232,8 +232,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Web Server",
-            "runtimeExecutable":
-                "${workspaceRoot}/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
                 "runtimeExecutable":
                     "${workspaceRoot}/node_modules/.bin/ts-node.cmd"

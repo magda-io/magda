@@ -68,65 +68,86 @@ class PublisherDetails extends Component {
         const hitCount = this.props.hitCount ? this.props.hitCount + " " : "";
 
         return (
-            <div className="publisher-details">
-                <div>
-                    <Medium>
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
-                    </Medium>
-                    <div className="publisher-details__body">
-                        <div className="media">
-                            <div className="media-body">
-                                <h1>{publisher.name}</h1>
+            <ReactDocumentTitle
+                title={`${publisher.name} | Organisations | ${config.appName}`}
+            >
+                <div className="publisher-details">
+                    <div>
+                        <Medium>
+                            <Breadcrumbs breadcrumbs={breadcrumbs} />
+                        </Medium>
+                        <div className="publisher-details__body">
+                            <div className="media">
+                                <div className="media-body">
+                                    <h1>{publisher.name}</h1>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="publisher-details-overview">
-                            <OverviewBox content={description} />
-                        </div>
-
-                        {(details.email ||
-                            details.website ||
-                            details.phone) && (
-                            <div className="publisher-details-contacts">
-                                <h3 className="section-heading">
-                                    Contact details
-                                </h3>
-                                {details.email && (
-                                    <div className="publisher-details-contacts-item">
-                                        Email:&nbsp;
-                                        <a href={emailLink(details.email)}>
-                                            {details.email}
-                                        </a>
-                                    </div>
-                                )}
-                                {details.website && (
-                                    <div className="publisher-details-contacts-item">
-                                        Website: {details.website}
-                                    </div>
-                                )}
-                                {details.phone && (
-                                    <div className="publisher-details-contacts-item">
-                                        Phone: {details.phone}
-                                    </div>
-                                )}
+                            <div className="publisher-details-overview">
+                                <OverviewBox content={description} />
                             </div>
-                        )}
 
-                        <br />
-                        <div>
-                            <Link
-                                className="au-cta-link"
-                                to={`/search?organisation=${encodeURIComponent(
-                                    publisher.name
-                                )}`}
-                            >
-                                View all {hitCount}
-                                datasets from {publisher.name}
-                            </Link>
+                            {(details.email ||
+                                details.website ||
+                                details.phone) && (
+                                <div className="publisher-details-contacts">
+                                    <h3 className="section-heading">
+                                        Contact details
+                                    </h3>
+                                    {details.email && (
+                                        <div className="publisher-details-contacts-item">
+                                            Email:&nbsp;
+                                            <a
+                                                href={emailLink(details.email)}
+                                                className="url"
+                                            >
+                                                {details.email}
+                                            </a>
+                                        </div>
+                                    )}
+                                    {details.website && (
+                                        <div className="publisher-details-contacts-item">
+                                            Website:{" "}
+                                            <a
+                                                href={details.website}
+                                                className="url"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {details.website}
+                                            </a>
+                                        </div>
+                                    )}
+                                    {details.phone && (
+                                        <div className="publisher-details-contacts-item">
+                                            Phone: {details.phone}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <br />
+                            <div>
+                                <Link
+                                    className="au-cta-link"
+                                    to={{
+                                        pathname: "/search",
+                                        search: `?organisation=${encodeURIComponent(
+                                            publisher.name
+                                        )}`,
+                                        state: {
+                                            showFilterExplanation: true
+                                        }
+                                    }}
+                                >
+                                    View all {hitCount}
+                                    datasets from {publisher.name}
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </ReactDocumentTitle>
         );
     }
 

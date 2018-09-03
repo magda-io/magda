@@ -127,11 +127,17 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                 if (webHookResponse.deferResponse) {
                   DB localTx { session =>
                     HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
+                    if(webHook.retryCount>0) {
+                      HookPersistence.resetRetryCount(session, webHook.id.get)
+                    }
                   }
                   WebHookProcessor.Deferred
                 } else {
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                    if(webHook.retryCount>0) {
+                      HookPersistence.resetRetryCount(session, webHook.id.get)
+                    }
                   }
                   WebHookProcessor.NotDeferred
                 }
@@ -141,6 +147,9 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                   // It just means the webhook was handled successfully.
                   DB localTx { session =>
                     HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                    if(webHook.retryCount>0) {
+                      HookPersistence.resetRetryCount(session, webHook.id.get)
+                    }
                   }
                   WebHookProcessor.NotDeferred
                 }
@@ -148,6 +157,9 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             }
           }
           case (Failure(error), _) =>
+            DB localTx { session =>
+              HookPersistence.setActive(session, webHook.id.get, false)
+            }
             Future.failed(error)
         }
       }

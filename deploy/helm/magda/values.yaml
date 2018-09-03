@@ -6,11 +6,13 @@ global:
     maxUnavailable: 0
   exposeNodePorts: false
   image:
+    tag: 0.0.48-0
     repository: "data61"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
   noDbAuth: false
+
 tags:
   all: true
   apidocs-server: false
@@ -18,10 +20,9 @@ tags:
   authorization-api: false
   authorization-db: false
   combined-db: false
-  discussions-api: false
-  discussions-db: false
+  content-api: false
+  content-db: false
   elasticsearch: false
-  feedback: false
   gateway: false
   indexer: false
   preview-map: false
@@ -35,3 +36,4 @@ tags:
   sleuther-format: false
   web-server: false
   ingress: false
+  connectors: false

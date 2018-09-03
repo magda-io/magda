@@ -73,6 +73,10 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         res.render("login");
     });
 
+    authRouter.get("/config", function(req, res) {
+        res.render("config");
+    });
+
     providers.filter(provider => provider.enabled).forEach(provider => {
         authRouter.use("/login/" + provider.id, provider.authRouter);
     });

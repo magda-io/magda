@@ -24,6 +24,8 @@ spec:
           exec:
             command: ["nc", "-z", "127.0.0.1", "5432"]
 {{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
         volumeMounts:
         - name: cloudsql-instance-credentials
           mountPath: /secrets/cloudsql
