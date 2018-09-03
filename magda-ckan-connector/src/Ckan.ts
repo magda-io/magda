@@ -129,7 +129,7 @@ export default class Ckan implements ConnectorSource {
 
         return AsyncPage.create<CkanPackageSearchResponse>(previous => {
             if (previous) {
-                startIndex += previous.result.results.length;
+                startIndex += this.pageSize;
                 if (
                     startIndex >= previous.result.count ||
                     (options.maxResults &&
@@ -292,7 +292,6 @@ export default class Ckan implements ConnectorSource {
         startIndex: number,
         maxResults: number
     ): Promise<CkanPackageSearchResponse> {
-
         const pageUrl = url.clone();
         pageUrl.addSearch("start", startIndex);
         pageUrl.addSearch("rows", this.pageSize);
