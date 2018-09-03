@@ -1,5 +1,6 @@
 ## 0.0.48
 
+-   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
 -   Whitelist KMZ.
 -   Add ability to change content (logo).
 -   CSW connector will exit with code 1 if error happens
