@@ -1,3 +1,8 @@
+## 0.0.48
+
+-   Whitelist KMZ.
+-   Add ability to change content (logo).
+
 ## 0.0.47
 
 -   Document public portions of authorization api
@@ -22,6 +27,7 @@
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Upgraded terriajs server to 2.7.4 to address redirect vulnerability.
 
 ## 0.0.46
 
