@@ -2,6 +2,7 @@
 
 -   Whitelist KMZ.
 -   Add ability to change content (logo).
+-   Updated email template & make email clickable
 -   Updated aims connector URL
 
 ## 0.0.47
