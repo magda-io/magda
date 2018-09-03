@@ -2,7 +2,7 @@ image: {}
 livenessProbe: {}
 resources:
   requests:
-    cpu: 100m
-    memory: 300Mi
-  limits:
     cpu: 250m
+    memory: 500Mi
+  limits:
+    cpu: 750m
