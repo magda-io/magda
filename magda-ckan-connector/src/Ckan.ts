@@ -292,14 +292,10 @@ export default class Ckan implements ConnectorSource {
         startIndex: number,
         maxResults: number
     ): Promise<CkanPackageSearchResponse> {
-        const pageSize =
-            maxResults && maxResults < this.pageSize
-                ? maxResults
-                : this.pageSize;
 
         const pageUrl = url.clone();
         pageUrl.addSearch("start", startIndex);
-        pageUrl.addSearch("rows", pageSize);
+        pageUrl.addSearch("rows", this.pageSize);
 
         const operation = () =>
             new Promise<CkanPackageSearchResponse>((resolve, reject) => {
