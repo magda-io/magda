@@ -7,6 +7,7 @@
 -   Fixed an issue that format enhancer may exit when dcat-string not available
 -   Updated email template & make email clickable
 -   Updated aims connector URL
+-   Raised the default resources for registry-api.
 
 ## 0.0.47
 
