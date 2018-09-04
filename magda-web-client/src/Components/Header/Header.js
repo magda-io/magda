@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import govtLogo from "../../assets/au-govt-logo.svg";
 import govtLogoMobile from "../../assets/au-govt-logo-mobile.svg";
-import dgaLogo from "../../assets/dga-logo.svg";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
@@ -32,6 +31,7 @@ class Header extends Component {
     }
 
     render() {
+        const logoUrl = `${config.contentApiURL}/logo.bin`;
         return (
             <div className="header">
                 <div className="au-header">
@@ -39,35 +39,27 @@ class Header extends Component {
                         <div className="row">
                             <div className="col-md-6 col-xs-12">
                                 <Link to="/" className="au-header__brand">
-                                    <div>
-                                        <Small>
-                                            <img
-                                                src={govtLogoMobile}
-                                                height={62}
-                                                alt="Coat of Arms"
-                                                className="au-header__brand-image"
-                                            />
-                                        </Small>
-                                        <Medium>
-                                            <img
-                                                src={govtLogo}
-                                                height={70}
-                                                alt="Coat of Arms"
-                                                className="au-header__brand-image"
-                                            />
-                                        </Medium>
-                                        <div className="au-header__text">
-                                            <img
-                                                src={dgaLogo}
-                                                height={70}
-                                                alt={config.appName}
-                                                className="au-header__heading"
-                                            />
-                                            <span className="header__badge">
-                                                beta
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <Small>
+                                        <img
+                                            src={govtLogoMobile}
+                                            height={62}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Small>
+                                    <Medium>
+                                        <img
+                                            src={govtLogo}
+                                            height={70}
+                                            alt="Coat of Arms"
+                                            className="au-header__brand-image2"
+                                        />
+                                    </Medium>
+                                    <img
+                                        src={logoUrl}
+                                        alt={config.appName}
+                                        className="au-header__logo"
+                                    />
                                 </Link>
                             </div>
                             <div className="col-md-6 col-xs-12">

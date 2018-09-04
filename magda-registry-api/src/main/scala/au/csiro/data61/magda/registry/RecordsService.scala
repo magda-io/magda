@@ -31,6 +31,31 @@ import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
 
+
+/**
+  * @apiGroup Registry Record Service
+  * @api {get} /v0/registry/records Get a list of all records
+  *
+  * @apiDescription Get a list of all records
+  * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+  * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
+  * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+  * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
+  * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+  * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
+  * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
+  * @apiSuccess (Success 200) {json} Response the record detail
+  * @apiSuccessExample {json} Response:
+  *  [
+  *      {
+  *          "id": "string",
+  *          "name": "string",
+  *          "aspects": {},
+  *          "sourceTag": "string"
+  *      }
+  *  ]
+  * @apiUse GenericError
+  */
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends Protocols with SprayJsonSupport {
@@ -62,6 +87,29 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/summary Get a list of all records as summaries
+    *
+    * @apiDescription Get a list of all records as summaries
+    *
+    * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+    * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
+    * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+    *
+    * @apiSuccess (Success 200) {json} Response the record summary
+    * @apiSuccessExample {json} Response:
+    *  [
+    *        {
+    *            "id": "string",
+    *            "name": "string",
+    *            "aspects": [
+    *              "string"
+    *            ]
+    *        }
+    *  ]
+    * @apiUse GenericError
+    */
   @Path("/summary")
   @ApiOperation(value = "Get a list of all records as summaries", nickname = "getAllSummary", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
@@ -80,6 +128,22 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/count Get the count of records matching the parameters
+    *
+    * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
+    *
+    * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
+    *
+    * @apiSuccess (Success 200) {json} Response the record count
+    * @apiSuccessExample {json} Response:
+    *    {
+    *      "count": 0
+    *    }
+    * @apiUse GenericError
+    */
   @Path("/count")
   @ApiOperation(value = "Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.", nickname = "getCount", httpMethod = "GET", response = classOf[CountResponse])
   @ApiImplicitParams(Array(
@@ -100,6 +164,33 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {post} /v0/registry/records Create a new record
+    *
+    * @apiDescription Create a new record
+    *
+    * @apiParam (body) {json} record The definition of the new record.
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "aspects": {},
+    *    "sourceTag": "string"
+    * }
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response the record created
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
+    * @apiError (Error 400) {string} Response could not create
+    * @apiUse GenericError
+    */
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record."),
@@ -123,6 +214,22 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/pagetokens Get a list tokens for paging through the records
+    * @apiPrivate
+    * @apiDescription Get a list tokens for paging through the records
+    * 
+    * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+    * @apiParam (query) {number} limit The size of each page to get tokens for.
+    *
+    * @apiSuccess (Success 200) {json} Response a list of page token
+    * @apiSuccessExample {json} Response:
+    *   [
+    *      "string"
+    *   ]
+    * @apiUse GenericError
+    */
   @Path("/pagetokens")
   @ApiOperation(value = "Get a list tokens for paging through the records", nickname = "getPageTokens", httpMethod = "GET", response = classOf[String], responseContainer = "List")
   @ApiImplicitParams(Array(
@@ -142,6 +249,22 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {delete} /v0/registry/records/{recordId} Delete a record
+    *
+    * @apiDescription Delete a record
+    *
+    * @apiParam (path) {string} recordId ID of the record to delete.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response the record deletion result
+    * @apiSuccessExample {json} Response:
+    *   {
+    *     "deleted": true
+    *   }
+    * @apiUse GenericError
+    */
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
@@ -166,6 +289,25 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {delete} /v0/registry/records Trim by source tag
+    *
+    * @apiDescription Trims records with the provided source that DON’T have the supplied source tag
+    *
+    * @apiParam (query) {string} sourceTagToPreserve Source tag of the records to PRESERVE.
+    * @apiParam (query) {string} sourceId Source id of the records to delete.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiSuccess (Success 200) {json} Response-200 the trim result
+    * @apiSuccessExample {json} Response-200:
+    *   {
+    *     "count": 0
+    *   }
+    * @apiSuccess (Success 202) {string} Response Deletion is taking a long time (normal for sources with many records) but it has worked
+    * @apiError (Error 400) {string} Response The records could not be deleted, possibly because they are used by other records.
+    * @apiUse GenericError
+    */
   @Path("/")
   @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
     nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
@@ -210,6 +352,28 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/{id} Get a record by ID
+    *
+    * @apiDescription Gets a complete record, including data for all aspects.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
+    * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
+    * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
+    *
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Get a record by ID", nickname = "getById", httpMethod = "GET", response = classOf[Record],
     notes = "Gets a complete record, including data for all aspects.")
@@ -233,6 +397,25 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/summary/{id} Get a summary record by ID
+    *
+    * @apiDescription Gets a summary record, including all the aspect ids for which this record has data.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    *
+    * @apiSuccess (Success 200) {json} Response the record summary detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "aspects": [
+    *            "string"
+    *        ]
+    *      }
+    * @apiUse GenericError
+    */
   @Path("/summary/{id}")
   @ApiOperation(value = "Get a summary record by ID", nickname = "getByIdSummary", httpMethod = "GET", response = classOf[RecordSummary],
     notes = "Gets a summary record, including all the aspect ids for which this record has data.")
@@ -253,6 +436,31 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {put} /v0/registry/records/{id} Modify a record by ID
+    *
+    * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
+    *
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiParam (body) {json} record The record to save.
+    * @apiParamExample {json} Request-Example
+    * {
+    *    "id": "string",
+    *    "name": "string",
+    *    "aspects": {},
+    *    "sourceTag": "string"
+    * }
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *          "id": "string",
+    *          "name": "string",
+    *          "aspects": {},
+    *          "sourceTag": "string"
+    *      }
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
@@ -280,6 +488,29 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {patch} /v0/registry/records/{id} Modify a record by applying a JSON Patch
+    *
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParamExample {json} Request-Example
+    * [
+    *    {
+    *        "path": "string"
+    *    }
+    * ]
+    * @apiSuccess (Success 200) {json} Response the record detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "jsonSchema": {}
+    *      }
+    * @apiUse GenericError
+    */
   @Path("/{id}")
   @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")

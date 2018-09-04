@@ -108,9 +108,15 @@ const connector = new JsonConnector({
 });
 
 if (!argv.interactive) {
-    connector.run().then(result => {
-        console.log(result.summarize());
-    });
+    connector
+        .run()
+        .then(result => {
+            console.log(result.summarize());
+        })
+        .catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
 } else {
     connector.runInteractive({
         timeoutSeconds: argv.timeout,

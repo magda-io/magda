@@ -29,7 +29,8 @@ export default {
             to: "http://localhost:6118"
         },
         content: {
-            to: "http://localhost:6119/v0"
+            to: "http://localhost:6119/v0",
+            auth: true
         }
     },
     csp: {

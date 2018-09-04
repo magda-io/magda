@@ -1109,9 +1109,9 @@ apidoc-core@~0.8.2:
     lodash "~4.17.4"
     semver "~5.3.0"
 
-apidoc@^0.17.6:
+"apidoc@https://github.com/magda-io/apidoc":
   version "0.17.6"
-  resolved "https://registry.yarnpkg.com/apidoc/-/apidoc-0.17.6.tgz#4ee8ac610dedddcb1006c3e28fa7dd634b4a5ce6"
+  resolved "https://github.com/magda-io/apidoc#d77c3dab6a09e6a597b87c1505d6f3db52e56a55"
   dependencies:
     apidoc-core "~0.8.2"
     fs-extra "~3.0.1"

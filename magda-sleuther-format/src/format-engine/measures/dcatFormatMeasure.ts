@@ -53,12 +53,20 @@ function splitWhiteSpaceFormats(formats: Array<string>): Array<string> {
  * replace ['application/exe'] with ['exe'] or ['pdf'] with ['pdf']
  */
 function reduceMimeType(formats: Array<string>): Array<string> {
-    return formats.map(
-        format =>
-            format.lastIndexOf("/") < 0
-                ? format
-                : format.substr(format.lastIndexOf("/"))
-    );
+    return formats.map(format => {
+        const idx = format.lastIndexOf("/");
+        if (idx == -1 || idx >= format.length - 1) {
+            return format;
+        }
+        const mimePart = format.substr(idx + 1);
+        const plusIdx = mimePart.indexOf("+");
+        if (plusIdx < 1) {
+            return mimePart;
+        } else {
+            //--- we need a better format for things like image/SVG+XML
+            return mimePart.substring(0, plusIdx);
+        }
+    });
 }
 
 /**
@@ -86,6 +94,14 @@ export default function getMeasureResult(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
+    if (
+        !relatedDistribution ||
+        !relatedDistribution.aspects ||
+        !relatedDistribution.aspects["dcat-distribution-strings"]
+    ) {
+        return null;
+    }
+
     const { format } = relatedDistribution.aspects["dcat-distribution-strings"];
 
     if (format === null || format === "") {

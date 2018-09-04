@@ -55,6 +55,11 @@ const argv = yargs
             "The base URL of the MAGDA Search API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("contentApiBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("registryApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -100,6 +105,13 @@ app.get("/server-config.js", function(req, res) {
         disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
         baseUrl: addTrailingSlash(argv.baseUrl),
         apiBaseUrl: apiBaseUrl,
+        contentApiBaseUrl: addTrailingSlash(
+            argv.contentApiBaseUrl ||
+                new URI(apiBaseUrl)
+                    .segment("v0")
+                    .segment("content")
+                    .toString()
+        ),
         searchApiBaseUrl: addTrailingSlash(
             argv.searchApiBaseUrl ||
                 new URI(apiBaseUrl)

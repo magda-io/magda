@@ -2,6 +2,11 @@
 
 -   Whitelist KMZ.
 -   Add ability to change content (logo).
+-   CSW connector will exit with code 1 if error happens
+-   Fixed an issue of format enhancer processing MIME
+-   Fixed an issue that format enhancer may exit when dcat-string not available
+-   Updated email template & make email clickable
+-   Updated aims connector URL
 
 ## 0.0.47
 
@@ -28,6 +33,7 @@
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
 -   Upgraded terriajs server to 2.7.4 to address redirect vulnerability.
+-   Added apiDoc for indexer
 
 ## 0.0.46
 

@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "ansi-styles": "^3.2.1",
-    "apidoc": "^0.17.6",
+    "apidoc": "https://github.com/magda-io/apidoc",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
     "commander": "^2.17.0",

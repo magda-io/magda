@@ -19,6 +19,7 @@ spec:
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
+            "--authApiUrl", "http://authorization-api/v0",
             "--listenPort", "80",
             "--dbHost", "content-db",
             "--dbPort", "5432"
