@@ -1,7 +1,7 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "0.0.47-RC4",
+  "version": "0.0.48-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -12,8 +12,8 @@
     "dev": "yarn run watch"
   },
   "devDependencies": {
-    "@magda/registry-aspects": "^0.0.47-RC4",
-    "@magda/scripts": "^0.0.47-RC4",
+    "@magda/registry-aspects": "^0.0.48-0",
+    "@magda/scripts": "^0.0.48-0",
     "@types/chai": "^4.0.0",
     "@types/chai-as-promised": "^7.1.0",
     "@types/express": "^4.0.35",
