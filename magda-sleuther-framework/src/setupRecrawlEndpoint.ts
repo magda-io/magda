@@ -2,6 +2,16 @@ import SleutherOptions from "./SleutherOptions";
 import { Application } from "express";
 import Crawler from "./Crawler";
 
+/**
+ * @apiDefine GenericError
+ * @apiError (Error 500) {String} Response "Failure"
+ * @apiErrorExample {json} Response:
+ * {
+ *     isSuccess: false,
+ *     errorMessage: "Unknown Error"
+ * }
+ */
+
 export interface recrawlResponse {
     isSuccess: boolean;
     isNewCrawler?: boolean;
@@ -18,6 +28,20 @@ export interface crawlerProgress {
     };
 }
 
+/**
+ * @apiGroup Minions
+ * @api {post} /v0/minions/recrawl Make the minion recrawl the registry
+ *
+ * @apiDescription Make the minion recrawl the registry
+ *
+ * @apiSuccess (Success 200) {json} Response the minion recrawl status
+ * @apiSuccessExample {json} Response:
+ *  {
+ *    isSuccess: true,
+ *    isNewCrawler: true
+ *  }
+ * @apiUse GenericError
+ */
 export default function setupRecrawlEndpoint(
     server: Application,
     options: SleutherOptions,
@@ -45,6 +69,24 @@ export default function setupRecrawlEndpoint(
         }
     });
 
+    /**
+     * @apiGroup Minions
+     * @api {get} /v0/minions/crawlerProgress Get the minion recrawl progress
+     *
+     * @apiDescription Get the minion recrawl progress
+     *
+     * @apiSuccess (Success 200) {json} Response the minion recrawl progress
+     * @apiSuccessExample {json} Response:
+     *  {
+     *    isSuccess: true,
+     *    progress: {
+     *       isCrawling: true,
+     *       crawlingPageToken: "101",
+     *       crawledRecordNumber: 100
+     *    }
+     *  }
+     * @apiUse GenericError
+     */
     server.get("/crawlerProgress", (request, response) => {
         try {
             const progress = crawler.getProgress();

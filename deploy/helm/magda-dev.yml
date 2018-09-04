@@ -19,10 +19,7 @@ ingress:
   hostname: dev.magda.io
   ingressClass: nginx
   enableTls: true
-  domains:
-    - '*.magda.io'
-    - '*.dev.magda.io'
-    - magda.io
+  useDefaultCertificate: true
   
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"

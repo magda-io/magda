@@ -13,10 +13,7 @@ tags:
 ingress:
   ingressClass: nginx
   enableTls: true
-  domains:
-    - '*.magda.io'
-    - '*.dev.magda.io'
-    - magda.io
+  useDefaultCertificate: true
 gateway:
   auth:
     facebookClientId: "173073926555600"

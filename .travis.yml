@@ -58,6 +58,7 @@ matrix:
       script:
         - yarn global add lerna
         - yarn run eslint
+        - cd magda-preview-map && npm rebuild node-sass && cd ..
         - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
         - lerna run test --scope @magda/preview-map --scope @magda/web-client
       env:

@@ -1,5 +1,6 @@
 ## 0.0.48
 
+-   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
 -   Whitelist KMZ.
 -   Add ability to change content (logo).
 -   CSW connector will exit with code 1 if error happens
@@ -8,6 +9,7 @@
 -   Updated email template & make email clickable
 -   Updated aims connector URL
 -   Raised the default resources for registry-api.
+-   Added API document for Minions
 
 ## 0.0.47
 
@@ -33,6 +35,7 @@
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Upgraded terriajs server to 2.7.4 to address redirect vulnerability.
 -   Added apiDoc for indexer
 
 ## 0.0.46
