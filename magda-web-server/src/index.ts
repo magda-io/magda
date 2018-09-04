@@ -4,6 +4,8 @@ import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
 import * as request from "request";
+import * as sass from "node-sass";
+import * as cleancss from "clean-css";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -158,6 +160,15 @@ app.get("/server-config.js", function(req, res) {
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
+});
+
+app.get("/static/css/main.*.css", function(req, res) {
+    const result = sass.renderSync({
+        file: clientRoot + "/src/index.scss"
+    });
+    const minifiedResult = new cleancss().minify(result.css);
+    res.setHeader("Content-Type", "text/css");
+    return res.send(minifiedResult.styles);
 });
 
 // app.use("/admin", express.static(adminBuild));
