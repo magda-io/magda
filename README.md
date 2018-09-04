@@ -1,4 +1,4 @@
-# MAGDA
+# Magda
 
 [![GitHub release](https://img.shields.io/github/release/TerriaJS/magda.svg)](https://github.com/TerriaJS/magda/releases)
 [![GitLab Pipeline](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/pipelines)
@@ -7,13 +7,13 @@
 
 Magda is a modern platform built to power a new generation of data portals. Its goal is to improve on existing data portal and management solutions in a number of areas:
 
-*   Discoverability of high-quality and relevant data (particularly through search)
-*   Automatic derivation, repair and/or enhancement of data and metadata
-*   Seamless federation across multiple data sources
-*   Collaboration between data providers and users, as well as between users themselves
-*   Visualisation of data in the medium that best suits it - allowing easily customisable visualisations rather than text-based tables.
-*   An ecosystem that allows extension in any programming language
-*   An easy installation and setup process
+-   Discoverability of high-quality and relevant data (particularly through search)
+-   Automatic derivation, repair and/or enhancement of data and metadata
+-   Seamless federation across multiple data sources
+-   Collaboration between data providers and users, as well as between users themselves
+-   Quick and effective previewing of datasets, so that the user never has to download a dataset only to find it's not useful
+-   An ecosystem that allows extension in any programming language
+-   An easy installation and setup process
 
 Magda is a solution for any problem that involves a collection or collections of datasets that need to be searched over, discussed and/or viewed in a single place. It doesn't matter what format the data is in, how well-formed the metadata is, where the data is stored or in how many places, Magda can either work with it or be extended to do so.
 
@@ -21,7 +21,16 @@ The project was started by CSIRO Data61 and Australia's Department of Prime Mini
 
 ## Current Status
 
-Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. If you want to jump in and give it a go feel free - we've been running some form of this in production for some time and haven't had any problems.
+Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. If you want to jump in and give it a go feel free - we've been running some form of this in production (on https://search.data.gov.au) for some time and haven't had any problems.
+
+## Future
+
+Magda has been developed as a search tool for open data, but our ambition is to bring it inside government agencies as well, so that they can use have the same quality of tools for their own private data as they do for open data. We hope to make improvements in a number of areas:
+
+-   An opinionated, highly guided publishing process intended to produce high-quality metadata, rather than simply encourage publishing with any quality of metadata
+-   A robust mechanism for authorization that allows for tight controls over who can see what datasets
+-   An easy to use administration interface so that the product can be run without needing to use the command line.
+-   Workflows to facilitate data sharing and the opening of data, within the software itself
 
 Our current roadmap is available at https://github.com/TerriaJS/magda/blob/master/doc/roadmap.md
 
@@ -55,9 +64,9 @@ Datasets and distributions in the registry are ingested into an ElasticSearch cl
 
 Magda provides a user interface, which is served from its own microservice and consumes the APIs. We're planning to make the UI itself extensible with plugins at some point in the future.
 
-## To try the last version locally
+## To try the last version (with prebuilt images)
 
-https://github.com/TerriaJS/magda/blob/master/doc/quickstart.md
+Use https://github.com/magda-io/magda-config
 
 ## To build and run from source
 

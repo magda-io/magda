@@ -32,7 +32,7 @@ Want to see what we're up to in the future? Check out our **[roadmap](/docs/road
 
 ## How you can get involved
 
-1.  Try the latest version [locally](https://github.com/magda-io/magda/blob/master/doc/quickstart.md)
+1.  Try the latest version(https://github.com/magda-io/magda-config)
 2.  [Build and run](https://github.com/magda-io/magda/blob/master/doc/building-and-running.md) from source
 3.  [**Contribute!**](https://github.com/magda-io/magda/blob/master/.github/CONTRIBUTING.md)
 
