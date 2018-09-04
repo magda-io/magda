@@ -54,13 +54,15 @@ class StoryBox extends Component {
                           content.titleUrl
                       )
                     : null}
-                {content.title
-                    ? this.getClickableElement(
-                          <h2 className="story-title">{content.title}</h2>,
-                          content.titleUrl
-                      )
-                    : null}
-                <MarkdownViewer markdown={content.__content} />
+                <div className="story-box-text">
+                    {content.title
+                        ? this.getClickableElement(
+                              <h2 className="story-title">{content.title}</h2>,
+                              content.titleUrl
+                          )
+                        : null}
+                    <MarkdownViewer markdown={content.__content} />
+                </div>
             </div>
         );
         return innerBody;

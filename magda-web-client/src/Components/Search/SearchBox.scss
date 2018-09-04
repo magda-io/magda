@@ -164,7 +164,10 @@
 
 .home {
     .searchBox {
-        margin: 6rem auto 6rem auto;
+        margin: 2rem auto 2rem auto;
+        @media (min-width: $medium) {
+            margin: 6rem auto 6rem auto;
+        }
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
             0px 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 4px;
