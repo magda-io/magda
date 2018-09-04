@@ -34,5 +34,18 @@ correspondence-api:
   smtpPort: 2525
   defaultRecipient: "alex.gilleran+magda@csiro.it"
   smtpHostname: "smtp.mailgun.org"
+  
 web-server:
   fallbackUrl: "https://data.gov.au"
+
+connectors:
+  includeCronJobs: false
+  config:
+    - image:
+        name: "magda-ckan-connector"
+      id: dga
+      name: "data.gov.au"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 1000
+      schedule: "0 * * * *"
+      ignoreHarvestSources: ["*"]

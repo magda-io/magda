@@ -22,11 +22,9 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ## Current Priorities June 2018 - June 2019
 
-**APIification**: The ability to turn well-formatted datasets into RESTful APIs - this is something that's already offered by CKAN and is depended upon by users of data.gov.au. This may mean replicating how CKAN does it - ingesting the data into a single database and running queries on it - or adopting an AWS Lambda-esque approach where we spin up containers on demand to server requests.
+✅ **API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
 
-**API Documentation**: Currently only the registry API has any documentation and this is often down - an effort needs to be made to clean this up.
-
-**Research: Magda as an Internal Portal**: Building on publishing and access-control, we want to extend Magda so that it's useful for government agencies to run as internal data portals. This involves:
+**Research: Magda as an Internal Portal**: We're conducting user research in order to determine the best way to extend Magda so that it's useful for government agencies to run as internal data portals. This involves:
 
 -   Being able to publish data directly
 -   Ingesting data from a range of existing applications
@@ -43,6 +41,8 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 **Access Control**: Currently Magda has two roles: `isAdmin=true` and `isAdmin=false`. We want to build Role-Based Access Control into magda so that fine-grained policies can be set as to what users are allowed to change or see what within the system.
 
 ## Long-Term Priorities (next 2 years)
+
+**APIification**: The ability to turn well-formatted datasets into RESTful APIs - this is something that's already offered by CKAN and is depended upon by users of data.gov.au. This may mean replicating how CKAN does it - ingesting the data into a single database and running queries on it - or adopting an AWS Lambda-esque approach where we spin up containers on demand to server requests.
 
 **Exposing Usage to Custodians**: Currently data custodians publish data but have very little idea of how much take-up there is. We want to make it extremely easy for them to see how much their data is being viewed/downloaded.
 

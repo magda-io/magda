@@ -11,6 +11,7 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 | `magda-search-api`                  | 6102 |
 | `magda-indexer`                     | 6103 |
 | `magda-authorization-api`           | 6104 |
+| `magda-discussions-api`             | 6105 |
 | `magda-preview-map`                 | 6106 |
 | `magda-web-server`                  | 6107 |
 | `magda-web-client`                  | 6108 |
@@ -21,6 +22,6 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 | `magda-ckan-connector`              | 6113 |
 | `magda-web-admin`                   | 6114 |
 | `magda-sleuther-format`             | 6115 |
+| `magda-feedback`                    | 6116 |
 | `magda-correspondence-api`          | 6117 |
 | `magda-apidocs-server`              | 6118 |
-| `magda-content-api`                 | 6119 |

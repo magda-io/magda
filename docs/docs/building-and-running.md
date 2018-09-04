@@ -2,7 +2,7 @@
 
 These instructions assume you are using a Bash shell. You can easily get a Bash shell on Windows by installing the [git](https://git-scm.com/downloads) client.
 
-# Prerequisites
+## Prerequisites
 
 You need to install following in order to build MAGDA:
 
@@ -22,7 +22,7 @@ To push the images and run them on kubernetes, you'll need to install:
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
-# Building and running components
+## Building and running components
 
 First clone the magda directory and `cd` into it.
 
@@ -40,7 +40,7 @@ lerna run build --include-filtered-dependencies
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
-## Set up Helm
+### Set up Helm
 
 Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
 
@@ -49,10 +49,9 @@ In a nutshell, once you have helm installed, this is how you initialise helm and
 ```bash
 kubectl apply -f deploy/kubernetes/rbac-config.yaml
 helm init --service-account tiller
-helm init
 ```
 
-## Install a local kube registry
+### Install a local kube registry
 
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
@@ -63,7 +62,7 @@ helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/do
 helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
 ```
 
-## Build local docker images
+### Build local docker images
 
 Now you can build the docker containers locally - this might take quite a while so get a cup of tea.
 
@@ -71,47 +70,29 @@ Now you can build the docker containers locally - this might take quite a while 
 lerna run docker-build-local --include-filtered-dependencies
 ```
 
-## Create the necessary config maps
-
-```bash
-kubectl create configmap config --from-file deploy/kubernetes/config
-kubectl create configmap connector-config --from-file deploy/connector-config
-```
-
-## Create the necessary k8s secrets
-
-Please run `create-secrets` tool:
+### Create the necessary secrets with the secret creation script
 
 ```bash
 yarn run create-secrets
 ```
 
-and follow the instructions.
-
-## Install Magda on your minikube cluster
+### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
-helm upgrade --install --timeout 9999999999 -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999999999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
-This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods`.
+This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
 
 Also note that by default there won't be any sleuthers running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.sleuther-<sleuthername>=true` when you run `helm upgrade`.
 
-## Crawl Data
+### Crawl Data
 
-This will crawl all the datasets locally stored on the data.gov.au CKAN instance - roughly 4000 at the time of writing. To crawl other sources, run this but with other connector-<source>-.json files.
+By default, helm will create a one-time crawl job for data.gov.au to get you started. If you want to crawl other datasets, look at the config under `connectors:` in `deploy/helm/minikube-dev.yml`. For sources of data, check out `deploy/helm/magda-dev.yml`. Once you've changed your config, just run the `helm upgrade` command above again to make it happen.
 
-```bash
-cd deploy
-yarn run create-connector-configmap
-yarn run generate-connector-jobs-local
-kubectl create -f kubernetes/generated/local/connector-data-gov-au.json
-```
+## Kubernetes tricks
 
-# Kubernetes tricks
-
-## Running individual services
+### Running individual services
 
 If you want to just start up individual pods (e.g. just the combined database) you can do so by setting the `all` tag to `false` and the tag for the pod you want to `true`, e.g.
 
@@ -119,7 +100,7 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-**You can find all available tags in [deploy/helm/magda/requirements.yaml](../deploy/helm/magda/requirements.yaml)**
+**You can find all available tags in [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:
 
@@ -133,7 +114,7 @@ It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file
 192.168.99.100	minikube.data.gov.au
 ```
 
-## Running on both host and minikube
+### Running on both host and minikube
 
 It's also possible to run what you're working on your host, and the services your dependent on in minikube. Depending on what you're doing, this might be simple or complicated.
 
@@ -186,23 +167,23 @@ You can use the same pattern for sleuthers - register a webhook with a url host 
 kubectl port-forward registry-api-79f7bf7787-5j52x 6101:80
 ```
 
-# What do I need to run?
+## What do I need to run?
 
 Running individual components is easy enough, but how do we get a fully working system? It is rarely necessary to run _all_ of MAGDA locally, but various components depend on other components as follows:
 
-| Component                 | Dependencies                                                                                               |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `magda-*-connector`       | `magda-registry-api`                                                                                       |
-| `magda-*-sleuther`        | `magda-registry-api`                                                                                       |
-| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                             |
-| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`                    |
-| `magda-indexer`           | `magda-elastic-search`                                                                                     |
-| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                             |
-| `magda-search-api`        | `magda-elastic-search`                                                                                     |
-| `magda-web-client`        | `magda-web-server`, but uses API at https://dev.magda.io/api if server is not running.                     |
-| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail. |
+| Component                 | Dependencies                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `magda-*-connector`       | `magda-registry-api`                                                                                             |
+| `magda-*-sleuther`        | `magda-registry-api`                                                                                             |
+| `magda-authorization-api` | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
+| `magda-gateway`           | `magda-registry-api`, `magda-search-api`, `magda-web-client`, `magda-authorization-api`, `magda-discussions-api` |
+| `magda-indexer`           | `magda-elastic-search`                                                                                           |
+| `magda-registry-api`      | `magda-postgres`, `magda-migrator-combined-db`                                                                   |
+| `magda-search-api`        | `magda-elastic-search`                                                                                           |
+| `magda-web-client`        | `magda-web-server`, but uses API at https://dev.magda.io/api if server is not running.                           |
+| `magda-web-server`        | none, but if this is running then `magda-gateway` and its dependencies must be too or API calls will fail.       |
 
-# Architecture Diagram
+## Architecture Diagram
 
 The following `Architecture Diagram` may help you to get clearer idea which components you need to run in order to look at a particular function area:
 
@@ -226,14 +207,14 @@ The following table shows the relationship between `Magda components` and `Diagr
 | `magda-preview-map`               | `Terria Server (NodeJS)`                                                                                                                                                                                                                             |
 | `magda-postgres`                  | All databases - see the migrators that set up the individual database schemas below                                                                                                                                                                  |
 | `magda-migrator-authorization-db` | `Auth DB (Postgres)`. `magda-migrator-authorization-db` is only used for production environment.                                                                                                                                                     |
-|                                   |
+| `magda-migrator-discussions-db`   | `Discussion DB (Postgres)`. `magda-migrator-discussions-db` is only used for production environment.                                                                                                                                                 |
 | `magda-migrator-registry-db`      | `Registry DB (Postgres)`. `magda-migrator-registry-db` is only used for production environment.                                                                                                                                                      |
 | `magda-migrator-session-db`       | `Session DB (Postgres)`. `magda-migrator-session-db` is only used for production environment.                                                                                                                                                        |
 | `magda-migrator-combined-db`      | `Registry DB (Postgres)`, `Session DB (Postgres)`, `Discussion DB (Postgres)`, `Auth DB (Postgres)`. `magda-migrator-combined-db` component is only used for dev environment. Production environment will launch all DB components above separately. |
 
-# Running on your host machine
+## Running on your host machine
 
-You can also avoid minikube and run magda components on your local machine - this is much, much trickier.
+You can also avoid minikube and run magda components on your local machine - this is much, much trickier. In any component (except databases/elasticsearch), you can run:
 
 ```bash
 yarn run dev
@@ -259,15 +240,11 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 kubectl port-forward combined-db-0 5432:5432
 ```
 
-3.  Start the registry API and a connector (via `yarn run dev`) by executing the following two commands in two separate terminal windows:
+3.  Start the registry API by executing the following command
 
 ```bash
-# these two commands don't terminate, so run them in separate terminals
 cd magda-registry-api && yarn run dev
-cd magda-ckan-connector && yarn run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
-
-See [connectors](connectors.md) for more detailed information about running connectors.
 
 4.  (Optional) If later you wanted to start elastic search as well:
 
