@@ -1,7 +1,7 @@
 {
   "name": "@magda/sleuther-format",
   "description": "MAGDA Layering Sleuther",
-  "version": "0.0.46-RC1",
+  "version": "0.0.46",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -16,7 +16,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.46-RC1",
+    "@magda/scripts": "^0.0.46",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.88",
@@ -38,9 +38,9 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.46-RC1",
-    "@magda/sleuther-framework": "^0.0.46-RC1",
-    "@magda/typescript-common": "^0.0.46-RC1",
+    "@magda/registry-aspects": "^0.0.46",
+    "@magda/sleuther-framework": "^0.0.46",
+    "@magda/typescript-common": "^0.0.46",
     "@types/escape-string-regexp": "^0.0.32",
     "@types/lodash": "^4.14.88",
     "escape-string-regexp": "^1.0.5",

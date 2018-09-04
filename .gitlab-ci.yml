@@ -513,7 +513,7 @@ Deploy Master To Dev:
 Release Tags To Docker Hub:
   stage: release
   only:
-    - /^v.*RC.*$/
+    - /^v.*$/
   except:
     - branches
     - triggers
