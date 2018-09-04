@@ -4,8 +4,8 @@ Minikube is a local Virtual Machine with Kubernetes that runs locally, and you c
 
 You'll need to download and install:
 
-*   [VirtualBox](https://www.virtualbox.org/wiki/Downloads) We find this is the best virtual machine to use with minikube.
-*   [Minikube](https://github.com/kubernetes/minikube)
+-   [VirtualBox](https://www.virtualbox.org/wiki/Downloads) We find this is the best virtual machine to use with minikube.
+-   [Minikube](https://github.com/kubernetes/minikube)
 
 ## Setup
 
