@@ -1,6 +1,6 @@
 {
   "name": "@magda/preview-map",
-  "version": "0.0.47-RC3",
+  "version": "0.0.47-RC4",
   "description": "Geospatial preview based on TerriaJS.",
   "license": "Apache-2.0",
   "engines": {
@@ -29,7 +29,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.47-RC3",
+    "@magda/scripts": "^0.0.47-RC4",
     "babel-eslint": "^7.0.0",
     "babel-loader": "^7.0.0",
     "babel-plugin-jsx-control-statements": "^3.2.8",
