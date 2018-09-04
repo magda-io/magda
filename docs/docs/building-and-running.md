@@ -240,15 +240,11 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 kubectl port-forward combined-db-0 5432:5432
 ```
 
-3.  Start the registry API and a connector (via `yarn run dev`) by executing the following two commands in two separate terminal windows:
+3.  Start the registry API by executing the following command
 
 ```bash
-# these two commands don't terminate, so run them in separate terminals
 cd magda-registry-api && yarn run dev
-cd magda-ckan-connector && yarn run dev -- --config ../deploy/connector-config/data-gov-au.json
 ```
-
-See [connectors](connectors.md) for more detailed information about running connectors.
 
 4.  (Optional) If later you wanted to start elastic search as well:
 

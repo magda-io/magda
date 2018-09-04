@@ -1,49 +1,93 @@
-## Get control of your agency's data
+# Get the most out of your data
 
-Government agencies do a great job of collecting valuable data, but rarely exploit it to its full potential. Once collected, data sits on share drives and inside spreadsheets where staff members can't find it. Non-sensitive data that could be opened and
+Government agencies often do a great job of collecting valuable data, but don't always make the most of it - agency staff can't find their own agency's data because it's sitting hidden inside spreadsheets and on share drives, datasets that should be shared elsewhere in government or opened to the public get stuck inside the agency, and opportunities for more efficient operations and more effective data-driven governance are lost.
 
-## Make your open data easier to find
+Even if data is already opened and published to an open data portal, it still doesn't get used. Open data portals are usually focused on simply hosting files - simplistic search functionality, poor-quality metadata, and an inability to easily preview datasets before downloading them make the process of discovering and using open data difficult and painful.
 
-Even when data is available on open data portals, it's often not easy to find. Most open data portals operate as silos where data is uploaded and published, but searching often misses relevant results that are just outside the scope of what's being search, returns low-quality barely-relevant results instead, and is unable to properly utilise the metadata available (such as geographic or time ranges) as part of the search.
+## A set of tools for every part of the data landscape
 
-## The next generation of government data management
+Magda is an open-source software platform that has been designed to make publishing, searching and using government data easier, for both government agency staff using private data internally and citizens using open data publically. It consists of a set of tools that can be combined into a number of configurations:
 
-Magda is a complete solution for the entire life-cycle of government data, enabling more effective and efficient collection, hosting, publishing, search and preview of data.
+-   An internal portal for hosting data within agencies, with robust mechanisms for controlling which users can see or use which data
+-   An internal/external portal that both hosts internal data as above, but also provides workflows for safely sharing datasets between agencies or releasing some datasets as open data, and making those available to the public
+-   A public aggregator that takes datasets from many sources and makes it all easily searchable in one place
 
-You can see a working example of it at [Australia's data portal](https://search.data.gov.au/)
+... or any combination thereof. Its capabilities include:
 
-Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility. Using Kubernetes means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
+#### Powerful search
 
-It's ideal for powering open data portals, particularly those that involve federating over a number of other more focused portals. It can just as easily be run on an organisational intranet as a central private data portal - and can even be set up to include relevant open data in search results alongside private data without exposing any private data to the internet.
+The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda is able to rate datasets by their quality and return the best ones at the top of the search, understand synonyms and acronyms, as well as provide a number of advanced filters including the ability to search for datasets that affect a certain spatial region or a time period.
 
-Want to see what we're up to in the future? Check out our **[roadmap](/docs/roadmap)**
+<p style="text-align: center">
+<img src="./assets/filter-screenshot.png" style="max-width: 500px; margin: 0 auto;">
+</p>
 
-<a href="https://github.com/magda-io/magda-config" class="btn">Get Started</a>
+#### Easy federation
 
-## Features
+Seamlessly combine self-hosted datasets with those from external sources into one, easily-searchable repository.
 
--   Seamless federation across multiple data sources
--   Enhancement of metadata: Magda takes all kinds of metadata and looks for patterns
--   ElasticSearch and Princeton's synonym library
--   Data visualisation and previews for machine-readable tables
--   Spatial visualisation integration with Terria
--   Quick, lightweight, independent microservices that run inside their own docker container. Use your favourite programming language to build your own!
--   Collaboration between data providers and users
+#### Rich previews
 
-## How you can get involved
+Ensure that your users can quickly determine if a dataset is useful for them with charting, spatial preview with [TerriaJS](https://terria.io) and table previews.
 
-1.  Try the latest version(https://github.com/magda-io/magda-config)
-2.  [Build and run](https://github.com/magda-io/magda/blob/master/doc/building-and-running.md) from source
-3.  [**Contribute!**](https://github.com/magda-io/magda/blob/master/.github/CONTRIBUTING.md)
+<p style="text-align: center">
+<img src="./assets/screenshot-preview.png" style="max-width: 500px; margin: 0 auto;">
+</p>
+
+#### Automatic metadata enhancement
+
+The metadata that describes datasets is often poorly formatted or completely absent, making them difficult to search for and understand. Magda is able to enhance the metadata of both locally hosted and external datasets in by checking for broken links, normalising formats, calculating quality and determining the best means of visualisation.
+
+#### Open architecture
+
+Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment with zero downtime and no effect on upgrades of the core product.
+
+<p style="text-align: center">
+<img src="./assets/architecture.png" style="max-width: 500px; margin: 0 auto;">
+</p>
+
+#### Easy set up and upgrades
+
+Magda uses Kubernetes and Helm to allow for simple installation and zero-downtime upgrades with a single command.
+
+## Want to run Magda inside your agency?
+
+We'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
+
+## See it in action
+
+Magda currently powers the new data.gov.au beta at [search.data.gov.au](https://search.data.gov.au), serving 2000 users per week.
+
+<p style="text-align: center">
+<img src="./assets/search-screenshot.png" style="max-width: 500px; margin: 0 auto;">
+</p>
+
+## Current status
+
+Magda is currently in development, and we're currently working on adding more features to make Magda useful as an internal data portal like publishing, dataset hosting and access control. You can see our roadmap and current progress [here](/docs/roadmap).
+
+## Want to get it running yourself?
+
+[Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://github.com/magda-io/magda/blob/master/doc/building-and-running.md)
 
 ## Latest Release
 
 <a href="{{ site.github.url}}">{{ site.github.latest_release.tag_name }}</a>, released at {{ site.github.latest_release.published_at}}
 
-## Contributors
+## Open Source
+
+Magda is fully open source, licensed under the Apache License 2.0. Thanks to all our open source contributors so far:
 
 {% for contributor in site.github.contributors %}<a target="_blank" rel="nofollower noreferrer" href="{{contributor.html_url}}" alt="{{contributor.login}}" title="{{contributor.login}}">
 <img src="{{contributor.avatar_url}}" style="width:50px;height:50px;display:inline;">
 </a>{% endfor %}
+
+We welcome new contributors too! please check out our [Contributor's Guide](https://github.com/magda-io/magda/blob/master/.github/CONTRIBUTING.md).
+
+## Important links
+
+-   [Our Github](https://github.com/magda-io/magda)
+-   [Our documentation](/docs)
+-   [Magda API](https://search.data.gov.au/api/v0/apidocs/index.html)
 
 The project was started by CSIRO [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61 and the [Digital Transformation Agency](https://www.dta.gov.au/)

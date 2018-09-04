@@ -21,7 +21,7 @@ The project was started by CSIRO Data61 and Australia's Department of Prime Mini
 
 ## Current Status
 
-Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. If you want to jump in and give it a go feel free - we've been running some form of this in production (on https://search.data.gov.au) for some time and haven't had any problems.
+Magda is currently being actively developed. It's now at the point where there is a reasonably stable, documented API, and it's stable in production at https://search.data.gov.au. Currently the developed features mainly center around its use as an open data search engine - we're currently developing features to allow it to host its own data and be usable for private data too.
 
 ## Future
 
@@ -32,7 +32,7 @@ Magda has been developed as a search tool for open data, but our ambition is to 
 -   An easy to use administration interface so that the product can be run without needing to use the command line.
 -   Workflows to facilitate data sharing and the opening of data, within the software itself
 
-Our current roadmap is available at https://github.com/TerriaJS/magda/blob/master/doc/roadmap.md
+Our current roadmap is available at https://magda.io/doc/roadmap
 
 ## Architecture
 
@@ -70,12 +70,16 @@ Use https://github.com/magda-io/magda-config
 
 ## To build and run from source
 
-https://github.com/TerriaJS/magda/blob/master/doc/building-and-running.md
+https://magda.io/doc/building-and-running
 
-## To get help
+## To get help with developing or running Magda
 
 Talk to us on Gitter!
 [![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Want to talk about deploying this into your agency?
+
+Email us at contact@magda.io.
 
 ## Want to contribute?
 
