@@ -35,17 +35,20 @@ export interface ContentItem {
      */
 }
 
+const IMAGE_ITEM = {
+    body: bodyParser.raw({
+        type: [
+            "image/png",
+            "image/gif",
+            "image/jpeg",
+            "image/webp",
+            "image/svg+xml"
+        ]
+    }),
+    encode: ContentEncoding.base64
+};
+
 export const content: { [s: string]: ContentItem } = {
-    logo: {
-        body: bodyParser.raw({
-            type: [
-                "image/png",
-                "image/gif",
-                "image/jpeg",
-                "image/webp",
-                "image/svg+xml"
-            ]
-        }),
-        encode: ContentEncoding.base64
-    }
+    logo: IMAGE_ITEM,
+    "logo-mobile": IMAGE_ITEM
 };
