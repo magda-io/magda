@@ -5,7 +5,8 @@ import * as yargs from "yargs";
 import * as morgan from "morgan";
 import * as request from "request";
 import * as sass from "node-sass";
-import * as cleancss from "clean-css";
+import * as recursiveReadDir from "recursive-readdir";
+//import * as cleancss from "clean-css";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -162,13 +163,44 @@ app.get("/server-config.js", function(req, res) {
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
 });
 
-app.get("/static/css/main.*.css", function(req, res) {
-    const result = sass.renderSync({
-        file: clientRoot + "/src/index.scss"
-    });
-    const minifiedResult = new cleancss().minify(result.css);
-    res.setHeader("Content-Type", "text/css");
-    return res.send(minifiedResult.styles);
+app.get("/static/css/main.*.css", async (req, res) => {
+    try {
+        const files = await recursiveReadDir(clientRoot + "/src", [
+            (file, stats) => {
+                // --- ignore pancake directory
+                if (stats.isDirectory() && path.basename(file) === "pancake") {
+                    return true;
+                }
+                // --- only list *.scss
+                if (!stats.isDirectory() && path.extname(file) !== ".scss") {
+                    return true;
+                }
+                // --- ignore all "_xxx.scss" files
+                if (path.basename(file)[0] === "_") {
+                    return true;
+                }
+                // --- ignore index.scss as it needs to be the first one
+                if (
+                    !stats.isDirectory() &&
+                    path.dirname(file) === clientRoot + "/src" &&
+                    path.basename(file) === "index.scss"
+                ) {
+                    return true;
+                }
+                return false;
+            }
+        ]);
+        files.unshift(clientRoot + "/src/index.scss")
+        const result = sass.renderSync({
+            data: files.map((file:string) =>`@import "${file}";`).join("")
+        });
+
+        res.setHeader("Content-Type", "text/css");
+        //const minifiedResult = new cleancss().minify(result.css);
+        res.send(result.css);
+    } catch (e) {
+        res.status(500).send(e);
+    }
 });
 
 // app.use("/admin", express.static(adminBuild));
