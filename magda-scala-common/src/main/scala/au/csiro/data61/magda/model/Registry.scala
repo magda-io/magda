@@ -293,7 +293,7 @@ object Registry {
       dateString
         .flatMap(s => DateParser.parseDateDefault(s, false))
         .map {
-          //FIXME: Remove this hackiness when we get a proper temporal sleuther
+          //FIXME: Remove this hackiness when we get a proper temporal minion
           case date if date.isBefore(YEAR_100)  => date.withYear(date.getYear + 2000)
           case date if date.isBefore(YEAR_1000) => date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
           case date                             => date

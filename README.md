@@ -32,13 +32,13 @@ Magda has been developed as a search tool for open data, but our ambition is to 
 -   An easy to use administration interface so that the product can be run without needing to use the command line.
 -   Workflows to facilitate data sharing and the opening of data, within the software itself
 
-Our current roadmap is available at https://magda.io/doc/roadmap
+Our current roadmap is available at https://magda.io/docs/roadmap
 
 ## Architecture
 
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
-![Magda Architecture Diagram](doc/magda-basic-architecture.png)
+![Magda Architecture Diagram](docs/docs/magda-basic-architecture.png)
 
 ### Registry
 
@@ -50,11 +50,11 @@ Most importantly, aspects are able to be declared dynamically by other services 
 
 Connectors go out to external datasources and copy their metadata into the Registry, so that they can be searched and have other aspects attached to them. A connector is simply a docker-based microservice that is invoked as a [job](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/). It scans the target datasource (usually an open-data portal), then completes and shuts down. We have connectors for a number of existing open data formats, otherwise you can easily write and run your own.
 
-### Sleuthers
+### Minions
 
-A sleuther is a service that listens for new records or changes to existing records, performs some kind of operation and then writes the result back to the registry. For instance, we have a broken link sleuther that listens for changes to distributions, retrieves the URLs described, records whether they were able to be accessed successfully and then writes that back to the registry in its own aspect.
+A minion is a service that listens for new records or changes to existing records, performs some kind of operation and then writes the result back to the registry. For instance, we have a broken link minion that listens for changes to distributions, retrieves the URLs described, records whether they were able to be accessed successfully and then writes that back to the registry in its own aspect.
 
-Other aspects exist that are written to by many sleuthers - for instance, we have a "quality" aspect that contains a number of different quality ratings from different sources, which are averaged out and used by search.
+Other aspects exist that are written to by many minions - for instance, we have a "quality" aspect that contains a number of different quality ratings from different sources, which are averaged out and used by search.
 
 ### Search
 

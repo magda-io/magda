@@ -10,17 +10,17 @@ global:
 tags:
   all: true
   ingress: true
-  sleuther-broken-link: true
-  sleuther-linked-data-rating: true
-  sleuther-visualization: true
-  sleuther-format: true
+  minion-broken-link: true
+  minion-linked-data-rating: true
+  minion-visualization: true
+  minion-format: true
 
 ingress:
   hostname: dev.magda.io
   ingressClass: nginx
   enableTls: true
   useDefaultCertificate: true
-  
+
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true

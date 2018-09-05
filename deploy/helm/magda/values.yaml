@@ -30,10 +30,10 @@ tags:
   registry-db: false
   search-api: false
   session-db: false
-  sleuther-broken-link: false
-  sleuther-linked-data-rating: false
-  sleuther-visualization: false
-  sleuther-format: false
+  minion-broken-link: false
+  minion-linked-data-rating: false
+  minion-visualization: false
+  minion-format: false
   web-server: false
   ingress: false
   connectors: false
