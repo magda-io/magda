@@ -4,9 +4,8 @@ import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
 import * as request from "request";
-import * as sass from "node-sass";
 import * as recursiveReadDir from "recursive-readdir";
-//import * as cleancss from "clean-css";
+import { renderScssFilesExtra } from "./renderScss";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
@@ -190,14 +189,18 @@ app.get("/static/css/main.*.css", async (req, res) => {
                 return false;
             }
         ]);
-        files.unshift(clientRoot + "/src/index.scss")
-        const result = sass.renderSync({
-            data: files.map((file:string) =>`@import "${file}";`).join("")
-        });
+
+        const uri = new URI(req.originalUrl);
+
+        const result = await renderScssFilesExtra(
+            clientRoot + "/src/index.scss",
+            clientRoot + "/src/_variables.scss",
+            files,
+            uri.search(true)
+        );
 
         res.setHeader("Content-Type", "text/css");
-        //const minifiedResult = new cleancss().minify(result.css);
-        res.send(result.css);
+        res.send(result);
     } catch (e) {
         res.status(500).send(e);
     }
