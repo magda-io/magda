@@ -169,6 +169,7 @@ class FacetRegion extends Component {
             <div className="facet-body facet-region">
                 <RegionSearchBox
                     renderOption={this.renderOption}
+                    renderNoOption={this.renderNoOption}
                     onToggleOption={this.onToggleOption}
                     options={this.props.facetSearchResults}
                     searchFacet={this.props.searchFacet}
