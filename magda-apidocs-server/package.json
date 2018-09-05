@@ -12,11 +12,6 @@
   "devDependencies": {
     "@magda/scripts": "^0.0.48-0"
   },
-  "proxy": {
-    "/server-config.js": {
-      "target": "http://localhost:6118/"
-    }
-  },
   "config": {
     "docker": {
       "include": "default.conf build"
