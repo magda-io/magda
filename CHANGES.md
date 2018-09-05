@@ -11,6 +11,7 @@
 -   Updated aims connector URL
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
+-   Updated magda links in footer.
 
 ## 0.0.47
 
