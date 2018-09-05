@@ -4,6 +4,7 @@ import maxBy from "lodash.maxby";
 import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
 import "./FacetBasicBody.css";
+import { NoResultsLabel } from "./NoResultsLabel";
 
 class FacetBasicBody extends Component {
     constructor(props) {
@@ -115,6 +116,16 @@ class FacetBasicBody extends Component {
         let options = this.props.options;
         // the option that has the max hit value, use to calculate volumne indicator
         let maxOptionOptionList = maxBy(this.props.options, o => +o.hitCount);
+
+        let optionsContent;
+        if (options.length > 0) {
+            optionsContent = options.map(o =>
+                this.renderOption(o, maxOptionOptionList)
+            );
+        } else {
+            optionsContent = <NoResultsLabel />;
+        }
+
         return (
             <div
                 className={`facet-body facet-${this.props.title} facet-${
@@ -132,9 +143,7 @@ class FacetBasicBody extends Component {
                 {this.state.showOptions && (
                     <div>
                         <div className="facet-body-buttons">
-                            {options.map(o =>
-                                this.renderOption(o, maxOptionOptionList)
-                            )}
+                            {optionsContent}
                         </div>
                         <div className="facet-footer">
                             <button

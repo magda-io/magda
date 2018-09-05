@@ -1,5 +1,6 @@
 ## 0.0.48
 
+-   Add No results label when there are no results in organisation and location facets.
 -   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
 -   Whitelist KMZ.
 -   Rename sleuthers to minions
