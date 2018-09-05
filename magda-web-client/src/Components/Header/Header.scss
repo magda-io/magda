@@ -11,25 +11,17 @@
     .au-header__brand {
         display: block;
         height: 78px;
-        min-width: 290px;
+        min-width: 280px;
         overflow: hidden;
         padding: 0;
         margin: 0;
 
-        .au-header__brand-image2,
         .au-header__logo {
             display: inline-block;
-            margin-right: 8px;
             line-height: 78px;
             vertical-align: middle;
-        }
-
-        .au-header__logo {
-            max-width: 120px;
+            max-width: 367px;
             max-height: 70px;
-            border-left: 1px solid black;
-            margin-right: 0px;
-            padding-left: 8px;
         }
     }
 }

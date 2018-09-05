@@ -1,6 +1,7 @@
 ## 0.0.48
 
 -   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
+-   Remove AU govt logo and add more space to top menu.
 -   Whitelist KMZ.
 -   Rename sleuthers to minions
 -   Add ability to change content (logo).
@@ -12,6 +13,7 @@
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
 -   Updated magda links in footer.
+-   Removed unused jQuery dependency from format-minion
 
 ## 0.0.47
 
