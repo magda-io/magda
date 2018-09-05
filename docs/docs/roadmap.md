@@ -12,7 +12,7 @@ This is a _loose_ plan of what we're planning to do in Magda in the future. This
 
 ✅ **Home Page**: Creating an attractive page for users to land on that draws them into search, blog posts or use cases.
 
-✅ **Format Sleuther**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a sleuther that looks at declared format, file extensions and file contents in order to determine the file type.
+✅ **Format Minion**: Currently we trust the metadata that comes with datasets in relation to their format, but this is incredibly inconsistent. We're developing a minion that looks at declared format, file extensions and file contents in order to determine the file type.
 
 ✅ **Data Page**: Emphasising visualisation of the data via maps and charts, falling back to tables where visualisation isn't appropriate.
 

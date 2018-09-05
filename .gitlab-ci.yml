@@ -223,7 +223,7 @@ buildtest:typescript-apis:
       - "*/dist"
     expire_in: 30 days
 
-buildtest:sleuthers:
+buildtest:minions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
@@ -233,8 +233,8 @@ buildtest:sleuthers:
   cache:
     paths: []
   script:
-    - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.sleuther=true -- run test
+    - yarn run in-submodules -- -f categories.minion=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.minion=true -- run test
   artifacts:
     paths:
       - "*/dist"
@@ -331,7 +331,7 @@ dockerize:typescript-apis:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
-dockerize:sleuthers:
+dockerize:minions:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -342,10 +342,10 @@ dockerize:sleuthers:
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
-    - buildtest:sleuthers
+    - buildtest:minions
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - yarn run in-submodules -- -f categories.minion=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
 dockerize:connectors:
   stage: dockerize
@@ -490,7 +490,7 @@ Deploy Master To Dev:
   - export KUBECONFIG=kubectlconfig.yaml
   - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
   - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 1200 --wait
-  
+
 Release Tags To Docker Hub:
   stage: release
   only:

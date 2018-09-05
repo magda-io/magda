@@ -2,6 +2,7 @@
 
 -   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
 -   Whitelist KMZ.
+-   Rename sleuthers to minions
 -   Add ability to change content (logo).
 -   CSW connector will exit with code 1 if error happens
 -   Fixed an issue of format enhancer processing MIME

@@ -225,7 +225,7 @@ function getFormatString(aspects) {
 function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     // Make a guess of compatible previews from the format
     // Should be temporary before it's properly implemented
-    //  in the "visualization sleuther"
+    //  in the "visualization minion"
     const compatiblePreviews = {
         map: false,
         chart: false,
