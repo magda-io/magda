@@ -32,13 +32,13 @@ Magda has been developed as a search tool for open data, but our ambition is to 
 -   An easy to use administration interface so that the product can be run without needing to use the command line.
 -   Workflows to facilitate data sharing and the opening of data, within the software itself
 
-Our current roadmap is available at https://magda.io/doc/roadmap
+Our current roadmap is available at https://magda.io/docs/roadmap
 
 ## Architecture
 
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
-![Magda Architecture Diagram](doc/magda-basic-architecture.png)
+![Magda Architecture Diagram](docs/docs/magda-basic-architecture.png)
 
 ### Registry
 
