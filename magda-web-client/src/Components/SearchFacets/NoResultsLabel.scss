@@ -1,4 +1,7 @@
 .btn-facet-option-disabled {
     display: block;
     border: 0;
+    .btn-facet-option__name {
+        text-transform: none !important;
+    }
 }
