@@ -48,7 +48,6 @@ class FacetBasic extends Component {
                     ref={this.facetHeader}
                     updateComponentAlignment={this.updateComponentAlignment}
                 />
-
                 <FacetBasicBody
                     isOpen={this.props.isOpen}
                     options={this.props.options}

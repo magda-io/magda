@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./RegionSearchBox.css";
 import debounce from "lodash.debounce";
 import search from "../../assets/search-dark.svg";
+import { NoResultsLabel } from "./NoResultsLabel";
 
 /**
  * Searchbox for facet facet
@@ -144,6 +145,7 @@ class RegionSearchBox extends Component {
                                 )}
                             </li>
                         ))}
+                        {this.props.options.length === 0 && <NoResultsLabel />}
                     </ul>
                 )}
             </div>
