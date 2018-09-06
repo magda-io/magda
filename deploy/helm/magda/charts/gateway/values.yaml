@@ -27,6 +27,8 @@ routes:
   search:
     to: http://search-api/v0
   registry:
+    to: http://registry-api-read-only/v0
+  registry-auth:
     to: http://registry-api/v0
     auth: true
   auth:

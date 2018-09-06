@@ -1,8 +1,12 @@
 image: {}
 livenessProbe: {}
-resources:
+resources: 
   requests:
     cpu: 250m
     memory: 500Mi
   limits:
     cpu: 750m
+deployments:
+  full: {}
+  readOnly:
+    enable: false
