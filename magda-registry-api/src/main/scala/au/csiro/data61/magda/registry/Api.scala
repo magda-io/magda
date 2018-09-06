@@ -26,11 +26,11 @@ import scala.util.control.NonFatal
 import au.csiro.data61.magda.client.AuthApiClient
 
 /**
-  * @apiDefine GenericError
-  * @apiError (Error 500) {String} Response "Failure"
-  */
+ * @apiDefine GenericError
+ * @apiError (Error 500) {String} Response "Failure"
+ */
 
-class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
+class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
   val logger = Logging(system, getClass)
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
@@ -62,20 +62,22 @@ class Api(val webHookActor: ActorRef, authClient: AuthApiClient, implicit val co
     }
   }
 
-  webHookActor ! WebHookActor.Process(true)
-
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
+
+  val roleDependentRoutes = webHookActorOption match {
+    case Some(webHookActor) =>
+      pathPrefix("aspects") { new AspectsService(config, authClient, webHookActor, system, materializer).route } ~
+        pathPrefix("records") { new RecordsService(config, webHookActor, authClient, system, materializer).route } ~
+        pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route }
+    case None =>
+      pathPrefix("aspects") { new AspectsServiceRO(config, authClient, system, materializer).route } ~
+        pathPrefix("records") { new RecordsServiceRO(config, system, materializer).route }
+  }
+
   val routes = cors() {
     handleExceptions(myExceptionHandler) {
       pathPrefix("v0") {
-        path("ping") { complete("OK") } ~
-          pathPrefix("aspects") { new AspectsService(config, authClient, webHookActor, system, materializer).route } ~
-          pathPrefix("records") { new RecordsService(config, webHookActor, authClient, system, materializer).route } ~
-          pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route } ~
-          new SwaggerDocService("localhost", 9001, config.getString("http.externalUrl.v0"), system).allRoutes ~
-          pathPrefix("swagger") {
-            getFromResourceDirectory("swagger") ~ pathSingleSlash(get(redirect("index.html", StatusCodes.PermanentRedirect)))
-          }
+        path("ping") { complete("OK") } ~ roleDependentRoutes
       }
     }
   }
