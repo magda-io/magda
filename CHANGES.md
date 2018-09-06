@@ -13,6 +13,7 @@
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
 -   Removed unused jQuery dependency from format-minion
+-   Split the registry api into full and read only modes that can run separately in production
 
 ## 0.0.47
 
