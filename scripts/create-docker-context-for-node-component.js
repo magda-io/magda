@@ -399,7 +399,12 @@ function getPackageList(
         }
 
         if (!fse.existsSync(dependencyDir)) {
-            throw new Error("Could not find path for " + dependencyName);
+            throw new Error(
+                "Could not find path for " +
+                    dependencyName +
+                    " for pack: " +
+                    packageName
+            );
         }
 
         result.push({ name: dependencyName, path: dependencyDir });
