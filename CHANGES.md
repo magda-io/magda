@@ -13,6 +13,7 @@
 -   Updated aims connector URL
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
+-   Updated magda links in footer.
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 
