@@ -13,9 +13,11 @@
 -   Updated aims connector URL
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
+-   Updated magda links in footer.
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Fix logo vertical alignment and partially hidden issue
 
 ## 0.0.47
 
