@@ -1,5 +1,6 @@
 ## 0.0.48
 
+-   Add No results label when there are no results in organisation and location facets.
 -   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
 -   Remove AU govt logo and add more space to top menu.
 -   Whitelist KMZ.
@@ -12,8 +13,11 @@
 -   Updated aims connector URL
 -   Raised the default resources for registry-api.
 -   Added API document for Minions
+-   Updated magda links in footer.
+-   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Split the registry api into full and read only modes that can run separately in production
+-   Fix logo vertical alignment and partially hidden issue
 
 ## 0.0.47
 

@@ -132,7 +132,8 @@ export const config = {
             {
                 category: "Developers",
                 links: [
-                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                    ["API Documentation", "/api/v0/apidocs/index.html"],
+                    ["Powered by Magda", "https://magda.io"]
                 ]
             }
         ]
