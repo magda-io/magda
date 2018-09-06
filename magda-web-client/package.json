@@ -133,6 +133,7 @@
     "rss-parser": "^2.9.0",
     "sass-versioning": "^0.3.0",
     "traverse": "^0.6.6",
+    "urijs": "^1.19.1",
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"

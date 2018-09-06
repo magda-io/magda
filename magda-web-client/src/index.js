@@ -16,6 +16,7 @@ import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import ga from "./analytics/googleAnalytics";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
+import * as URI from "urijs";
 
 const store = createStore(
     reducer,
@@ -59,3 +60,18 @@ ReactDOM.render(
     </Provider>,
     document.getElementById("root")
 );
+
+function updateAppScssVars(params = {}) {
+    const stylesheet = document.querySelector('link[rel="stylesheet"]');
+    if (!stylesheet) {
+        throw new Error("cannot find style element");
+    }
+    const newEl = stylesheet.cloneNode(true);
+    const uri = new URI("/static/css/main.xxx.css");
+    uri.search({ ...params, rnd: Math.random() });
+    newEl.href = uri.toString();
+    stylesheet.parentNode.removeChild(stylesheet);
+    document.body.appendChild(newEl);
+}
+
+window.updateAppScssVars = updateAppScssVars;
