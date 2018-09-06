@@ -37,6 +37,7 @@
     "@types/xml2js": "^0.4.0",
     "@types/yargs": "^6.6.0",
     "chai": "^4.1.0",
+    "fsevents": "^1.2.4",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
     "node-sass": "^4.9.3",
