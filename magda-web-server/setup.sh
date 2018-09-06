@@ -1,5 +1,7 @@
 #!/bin/bash
 cd /usr/src/app
+# delete node-sass comes with pancake-sass 2.1.0 T_T
+rm -Rf node_modules/@gov.au/pancake-sass/node_modules/node-sass
 echo "Rebuild node-sass"
 npm install node-sass@4.9.3 stringstream@1.0.0
 echo "Rebuild node-sass done!"
