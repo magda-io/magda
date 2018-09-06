@@ -9,6 +9,7 @@
             "@magda/typescript-common/dist/*": [
                 "../node_modules/@magda/typescript-common/src/*"
             ]
-        }
+        },
+        "lib": ["es2017"]
     }
 }
