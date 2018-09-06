@@ -16,6 +16,7 @@
 -   Updated magda links in footer.
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
+-   Fix logo vertical alignment and partially hidden issue
 
 ## 0.0.47
 
