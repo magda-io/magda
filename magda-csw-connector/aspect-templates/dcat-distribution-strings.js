@@ -43,10 +43,13 @@ const isDownload =
     jsonpath.value(distribution, "$.function[*].CI_OnlineFunctionCode[*]._") ===
     "download";
 
+const issued =
+    jsonpath.value(dataset.json, "$.dateStamp[*].Date[*]._") || undefined;
+
 return {
     title: title,
     description: description,
-    issued: undefined,
+    issued: issued,
     modified: undefined,
     license: license,
     rights: rights,
