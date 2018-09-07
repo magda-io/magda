@@ -11,4 +11,4 @@ cp -R node_modules/@magda/web-client ./web-client
 # Will make local test easier
 cp -R ./web-client/src/pancake node_modules/@magda/web-client/src/pancake
 echo "Pancake re-cooked~"
-/usr/bin/env node /usr/src/app/component/dist/index.js
+/usr/bin/env node /usr/src/app/component/dist/index.js "$@"
