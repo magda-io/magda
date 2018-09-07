@@ -236,3 +236,8 @@ h4 {
     /* Instead use this non-standard one: */
     word-break: break-word;
 }
+
+/* Double class to get more specificity than the pancake css */
+.au-header.au-header {
+    padding: 0.5rem 0 0.5rem 0;
+}
