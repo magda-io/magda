@@ -344,6 +344,11 @@ function getPackageList(
     basePath,
     result
 ) {
+    if (dependencyName === "fsevents") {
+        // --- we never need fsevents to be dockered.
+        // --- some upstream pack could incorrectly put this to dependencies
+        return result;
+    }
     // If the package that we're finding subpackages for doesn't have its own local children, find it in the root and see if that version of it has any children.
     const childrenToUse =
         localChildren ||
