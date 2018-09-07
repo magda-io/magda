@@ -27,6 +27,7 @@ import spray.json._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import au.csiro.data61.magda.registry.Full
 
 class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
   implicit val config = TestActorSystem.config
@@ -41,11 +42,11 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
         .onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
           // Forward the req to the registry api
           expectAdminCheck(param.fetcher, true)
-          val request = Post(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+          val request = Post(url, webhook)(marshaller, param.api(Full).ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
 
           assert(webhook.id.isDefined)
 
-          request ~> param.api.routes ~> check {
+          request ~> param.api(Full).routes ~> check {
             Future.successful(response)
           }
         })
@@ -59,7 +60,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       initResult should be(RegisterWebhook.ShouldCrawl)
 
       // Make sure the new webhook was inserted correctly.
-      param.asAdmin(Get("/v0/hooks")) ~> param.api.routes ~> check {
+      param.asAdmin(Get("/v0/hooks")) ~> param.api(Full).routes ~> check {
         val hooks = responseAs[Seq[WebHook]]
 
         hooks.size should equal(1)
@@ -87,7 +88,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
           dereference = None),
         userId = Some(0),
         isWaitingForResponse = None,
-        active = true))) ~> param.api.routes ~> check {
+        active = true))) ~> param.api(Full).routes ~> check {
         status should equal(OK)
       }
 
@@ -100,11 +101,11 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
         .onCall((url: String, webhook: WebHook, headers: Seq[HttpHeader], marshaller: ToEntityMarshaller[WebHook]) => {
           // Forward the req to the registry api
           expectAdminCheck(param.fetcher, true)
-          val request = Put(url, webhook)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
+          val request = Put(url, webhook)(marshaller, param.api(Full).ec).withHeaders(scala.collection.immutable.Seq.concat(headers))
 
           assert(webhook.id.isDefined)
 
-          request ~> param.api.routes ~> check {
+          request ~> param.api(Full).routes ~> check {
             Future.successful(response)
           }
         })
@@ -118,7 +119,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
 
           val responseObj = new WebHookAcknowledgementResponse(lastEventIdReceived = 1)
 
-          ToResponseMarshallable(responseObj).apply(Post(url, webhookAck)(marshaller, param.api.ec).withHeaders(scala.collection.immutable.Seq.concat(headers)))
+          ToResponseMarshallable(responseObj).apply(Post(url, webhookAck)(marshaller, param.api(Full).ec).withHeaders(scala.collection.immutable.Seq.concat(headers)))
         })
 
       // Start the test
@@ -134,7 +135,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       (param.fetcher.get(_: String, _: Seq[HttpHeader])).expects(*, *).onCall((url: String, headers: Seq[HttpHeader]) => {
         val request = Get(url).withHeaders(scala.collection.immutable.Seq.concat(headers))
 
-        request ~> param.api.routes ~> check {
+        request ~> param.api(Full).routes ~> check {
           Future.successful(response)
         }
       })

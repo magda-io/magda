@@ -20,15 +20,6 @@ gateway:
 
 registry-api:
   skipAuthorization: true
-  # Uncomment this if you want to test postgres backups locally - download a private key from
-  # google cloud, mount it as a secret and change the filename to it.
-  # waleBackup:
-  #   method: WAL
-  #   gsPrefix: "gs://magda-postgres-backups/test"
-  #   executionTime: 03:00
-  #   googleApplicationCreds:
-  #     secretName: storage-account-credentials
-  #     fileName: <fileName>
   
 correspondence-api:
   smtpPort: 2525

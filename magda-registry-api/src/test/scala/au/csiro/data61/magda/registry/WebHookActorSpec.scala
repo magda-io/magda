@@ -6,9 +6,9 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
 import akka.pattern.ask
 import akka.util.Timeout
-import au.csiro.data61.magda.model.Registry.{EventType, WebHook, WebHookConfig}
+import au.csiro.data61.magda.model.Registry.{ EventType, WebHook, WebHookConfig }
 
-import scala.concurrent.{Await, Promise}
+import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration._
 import akka.http.scaladsl.model.headers.RawHeader
 import com.auth0.jwt.JWT
@@ -48,7 +48,7 @@ class WebHookActorSpec extends ApiSpec {
         includeAspectDefinitions = Some(true),
         dereference = Some(true)))
 
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -78,13 +78,13 @@ class WebHookActorSpec extends ApiSpec {
         dereference = Some(true)),
       enabled = false)
 
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
     processAndWaitUntilDone(actor)
 
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
   }
 
   it("removes the processor for removed web hooks") { param =>
@@ -105,7 +105,7 @@ class WebHookActorSpec extends ApiSpec {
         includeAspectDefinitions = Some(true),
         dereference = Some(true)))
 
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -113,7 +113,7 @@ class WebHookActorSpec extends ApiSpec {
 
     Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
 
-    param.asAdmin(Delete("/v0/hooks/abc")) ~> param.api.routes ~> check {
+    param.asAdmin(Delete("/v0/hooks/abc")) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 

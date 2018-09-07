@@ -19,121 +19,44 @@ import scala.util.Success
 import au.csiro.data61.magda.client.AuthApiClient
 import com.typesafe.config.Config
 
-
-/**
-  * @apiGroup Registry Record Aspects
-  * @api {get} /v0/registry/records/{recordId}/aspects Get a list of all aspects of a record
-  *
-  * @apiDescription Get a list of all aspects of a record
-  * @apiParam (path) {string} recordId ID of the record for which to fetch aspects.
-  * @apiSuccess (Success 200) {json} Response a list of aspects
-  * @apiSuccessExample {json} Response:
-  *{
-  *    "dap-resource": {
-  *      "format": "text/csv",
-  *      "mediaType": "text/csv",
-  *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-  *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-  *      "licence": "CSIRO Data Licence",
-  *      "id": 103023,
-  *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-  *    },
-  *  ...
-  *}
-  * @apiUse GenericError
-  */
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
-class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends Protocols with SprayJsonSupport {
-  val recordPersistence = DefaultRecordPersistence
-
-  @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")))
-  def getAll = get {
-    path(Segment / "aspects") { (recordId: String) =>
-      DB readOnly { session =>
-        recordPersistence.getByIdWithAspects(session, recordId) match {
-          case Some(result) => complete(result.aspects)
-          case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
-        }
-      }
-    }
-  }
+class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends RecordAspectsServiceRO(system, materializer, config) {
+  private val recordPersistence = DefaultRecordPersistence
 
   /**
-    * @apiGroup Registry Record Aspects
-    * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
-    *
-    * @apiDescription Get a list of all aspects of a record
-    * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
-    * @apiParam (path) {string} aspectId ID of the aspect to fetch
-    * @apiSuccess (Success 200) {json} Response the aspect detail
-    * @apiSuccessExample {json} Response:
-    *    {
-    *      "format": "text/csv",
-    *      "mediaType": "text/csv",
-    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-    *      "licence": "CSIRO Data Licence",
-    *      "id": 103023,
-    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-    *    }
-    * @apiUse GenericError
-    */
-  @Path("/{aspectId}")
-  @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[Aspect])
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
-    new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch.")))
-  @ApiResponses(Array(
-    new ApiResponse(code = 404, message = "No record or aspect exists with the given IDs.", response = classOf[BadRequest])))
-  def getById = get {
-    path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      {
-        DB readOnly { session =>
-          recordPersistence.getRecordAspectById(session, recordId, aspectId) match {
-            case Some(recordAspect) => complete(recordAspect)
-            case None               => complete(StatusCodes.NotFound, BadRequest("No record aspect exists with that ID."))
-          }
-        }
-      }
-    }
-  }
-
-  /**
-    * @apiGroup Registry Record Aspects
-    * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
-    *
-    * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
-    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
-    * @apiParam (path) {string} aspectId ID of the aspect to update
-    * @apiParam (body) {json} aspect The record aspect to save
-    * @apiParamExample {json} Request-Example
-    *    {
-    *      "format": "text/csv",
-    *      "mediaType": "text/csv",
-    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-    *      "licence": "CSIRO Data Licence",
-    *      "id": 103023,
-    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-    *    }
-    * @apiHeader {string} X-Magda-Session Magda internal session id
-    *
-    * @apiSuccess (Success 200) {json} Response the aspect detail
-    * @apiSuccessExample {json} Response:
-    *    {
-    *      "format": "text/csv",
-    *      "mediaType": "text/csv",
-    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-    *      "licence": "CSIRO Data Licence",
-    *      "id": 103023,
-    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-    *    }
-    * @apiUse GenericError
-    */
+   * @apiGroup Registry Record Aspects
+   * @api {put} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
+   *
+   * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
+   * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+   * @apiParam (path) {string} aspectId ID of the aspect to update
+   * @apiParam (body) {json} aspect The record aspect to save
+   * @apiParamExample {json} Request-Example
+   *    {
+   *      "format": "text/csv",
+   *      "mediaType": "text/csv",
+   *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+   *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+   *      "licence": "CSIRO Data Licence",
+   *      "id": 103023,
+   *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+   *    }
+   * @apiHeader {string} X-Magda-Session Magda internal session id
+   *
+   * @apiSuccess (Success 200) {json} Response the aspect detail
+   * @apiSuccessExample {json} Response:
+   *    {
+   *      "format": "text/csv",
+   *      "mediaType": "text/csv",
+   *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+   *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+   *      "licence": "CSIRO Data Licence",
+   *      "id": 103023,
+   *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+   *    }
+   * @apiUse GenericError
+   */
   @Path("/{aspectId}")
   @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Aspect],
     notes = "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.")
@@ -162,19 +85,19 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   }
 
   /**
-    * @apiGroup Registry Record Aspects
-    * @api {delete} /v0/registry/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
-    * @apiDescription Deletes a record aspect.
-    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
-    * @apiParam (path) {string} aspectId ID of the aspect to update
-    * @apiHeader {string} X-Magda-Session Magda internal session id
-    * @apiSuccess (Success 200) {json} Response operation result
-    * @apiSuccessExample {json} Response:
-    * {
-    *   "deleted": true
-    * }
-    * @apiUse GenericError
-    */
+   * @apiGroup Registry Record Aspects
+   * @api {delete} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
+   * @apiDescription Deletes a record aspect.
+   * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+   * @apiParam (path) {string} aspectId ID of the aspect to update
+   * @apiHeader {string} X-Magda-Session Magda internal session id
+   * @apiSuccess (Success 200) {json} Response operation result
+   * @apiSuccessExample {json} Response:
+   * {
+   *   "deleted": true
+   * }
+   * @apiUse GenericError
+   */
   @Path("/{aspectId}")
   @ApiOperation(value = "Delete a record aspect by ID", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult],
     notes = "Deletes a record aspect.")
@@ -195,34 +118,33 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
-
   /**
-    * @apiGroup Registry Record Aspects
-    * @api {patch} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
-    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
-    * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
-    * @apiParam (path) {string} aspectId ID of the aspect to update
-    * @apiParam (aspectPatch) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
-    * @apiParamExample {json} Request-Example
-    *    [
-    *       {
-    *          "path": "string"
-    *       }
-    *    ]
-    * @apiHeader {string} X-Magda-Session Magda internal session id
-    * @apiSuccess (Success 200) {json} Response operation result
-    * @apiSuccessExample {json} Response:
-    *    {
-    *      "format": "text/csv",
-    *      "mediaType": "text/csv",
-    *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-    *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-    *      "licence": "CSIRO Data Licence",
-    *      "id": 103023,
-    *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-    *    }
-    * @apiUse GenericError
-    */
+   * @apiGroup Registry Record Aspects
+   * @api {patch} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
+   * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+   * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
+   * @apiParam (path) {string} aspectId ID of the aspect to update
+   * @apiParam (aspectPatch) {json} aspectPatch The RFC 6902 patch to apply to the aspect.
+   * @apiParamExample {json} Request-Example
+   *    [
+   *       {
+   *          "path": "string"
+   *       }
+   *    ]
+   * @apiHeader {string} X-Magda-Session Magda internal session id
+   * @apiSuccess (Success 200) {json} Response operation result
+   * @apiSuccessExample {json} Response:
+   *    {
+   *      "format": "text/csv",
+   *      "mediaType": "text/csv",
+   *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
+   *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
+   *      "licence": "CSIRO Data Licence",
+   *      "id": 103023,
+   *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
+   *    }
+   * @apiUse GenericError
+   */
   @Path("/{aspectId}")
   @ApiOperation(value = "Modify a record aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[Aspect],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
@@ -248,10 +170,8 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     }
   }
 
-  val route =
-    getAll ~
-      getById ~
-      putById ~
-      deleteById ~
-      patchById
+  override def route = super.route ~
+    putById ~
+    deleteById ~
+    patchById
 }
