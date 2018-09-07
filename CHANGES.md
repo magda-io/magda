@@ -18,6 +18,7 @@
 -   Removed unused jQuery dependency from format-minion
 -   Take open data connector license from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
+-   Made header padding even
 
 ## 0.0.47
 
