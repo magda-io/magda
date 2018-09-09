@@ -30,6 +30,7 @@ import {
 import FtpHandler from "../FtpHandler";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
+import RandomStream from "./RandomStream";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -192,9 +193,20 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                 }
                             } else {
                                 intercept.reply(405);
-                                scope
-                                    .get(url.endsWith("/") ? "/" : "")
-                                    .reply(success === "success" ? 200 : 404);
+                                const scopeGet = scope.get(
+                                    url.endsWith("/") ? "/" : ""
+                                );
+
+                                if (success) {
+                                    scopeGet.reply(200, () => {
+                                        return RandomStream({
+                                            min: 250, // in milliseconds
+                                            max: 1000 // in milliseconds
+                                        });
+                                    });
+                                } else {
+                                    scopeGet.reply(404);
+                                }
                             }
                         } else {
                             intercept.replyWithError("fail");

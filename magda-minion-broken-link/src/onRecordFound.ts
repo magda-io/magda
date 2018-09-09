@@ -267,35 +267,35 @@ function retrieveHttp(
                     ) {
                         resolve(response.statusCode);
                     } else {
-                        request.get(
-                            {
+                        const thisReq = request
+                            .get({
                                 url,
                                 headers: {
                                     Range: "bytes=0-50"
                                 }
-                            },
-                            (err: Error, response: http.IncomingMessage) => {
-                                if (err) {
-                                    reject(err);
+                            })
+                            .on("error", err => {
+                                thisReq.abort();
+                                reject(err);
+                            })
+                            .on("response", response => {
+                                thisReq.abort();
+                                if (
+                                    (response.statusCode >= 200 &&
+                                        response.statusCode <= 299) ||
+                                    response.statusCode === 429
+                                ) {
+                                    resolve(response.statusCode);
                                 } else {
-                                    if (
-                                        (response.statusCode >= 200 &&
-                                            response.statusCode <= 299) ||
-                                        response.statusCode === 429
-                                    ) {
-                                        resolve(response.statusCode);
-                                    } else {
-                                        reject(
-                                            new BadHttpResponseError(
-                                                response.statusMessage,
-                                                response,
-                                                response.statusCode
-                                            )
-                                        );
-                                    }
+                                    reject(
+                                        new BadHttpResponseError(
+                                            response.statusMessage,
+                                            response,
+                                            response.statusCode
+                                        )
+                                    );
                                 }
-                            }
-                        );
+                            });
                     }
                 }
             });
