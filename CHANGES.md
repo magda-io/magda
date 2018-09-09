@@ -1,3 +1,5 @@
+## 0.0.49
+
 ## 0.0.48
 
 -   Add No results label when there are no results in organisation and location facets.
