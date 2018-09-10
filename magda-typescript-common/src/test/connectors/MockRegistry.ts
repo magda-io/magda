@@ -1,10 +1,12 @@
 import { MockExpressServer } from "./MockExpressServer";
 
 const body = require("body-parser");
+const djv = require("djv");
 
 export class MockRegistry extends MockExpressServer {
     aspects: any = {};
     records: any = {};
+    env: any = djv();
 
     runImplementation(registry: any) {
         registry.use(
@@ -15,11 +17,31 @@ export class MockRegistry extends MockExpressServer {
 
         registry.put("/aspects/:id", (req: any, res: any) => {
             this.aspects[req.params.id] = req.body;
+            // our mock registry will validate the data it gets against the schemas it gets
+            this.env.addSchema(req.params.id, req.body.jsonSchema);
             res.json(req.body);
         });
 
         registry.put("/records/:id", (req: any, res: any) => {
             this.records[req.params.id] = req.body;
+            // validate aspects
+            if (req.body.aspects) {
+                for (const [aspect, aspectBody] of Object.entries(
+                    req.body.aspects
+                )) {
+                    let invalid = this.env.validate(`${aspect}#`, aspectBody);
+                    if (invalid) {
+                        return res
+                            .status(500)
+                            .json({
+                                aspect,
+                                aspectBody,
+                                invalid
+                            })
+                            .end();
+                    }
+                }
+            }
             res.json(req.body);
         });
 
