@@ -56,7 +56,9 @@
     "docker": {
       "name": "data61/magda-scss-compiler",
       "include": "node_modules dist Dockerfile"
-    }
+    },
+    "jwtSecret": "squirrel",
+    "userId": "00000000-0000-4000-8000-000000000000"
   },
   "magda": {
     "language": "typescript",
