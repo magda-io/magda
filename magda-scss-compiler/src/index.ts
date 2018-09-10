@@ -1,6 +1,8 @@
 import * as yargs from "yargs";
 import * as path from "path";
-//import compile from "./compile";
+import getScssFileList from "./getScssFileList";
+import { renderScssFilesExtra } from "./renderScss";
+import saveToContentApi from "./saveToContentApi";
 
 const argv = yargs
     .config()
@@ -18,7 +20,6 @@ const argv = yargs
     .option("jwtSecret", {
         describe: "The shared secret for intra-network communication",
         type: "string",
-        demand: true,
         default:
             process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
     })
@@ -26,11 +27,8 @@ const argv = yargs
         describe:
             "The user id to use when making authenticated requests to the registry",
         type: "string",
-        demand: true,
         default: process.env.USER_ID || process.env.npm_package_config_userId
     }).argv;
-
-console.log(argv);
 
 const clientRoot = path.resolve(
     require.resolve("@magda/web-client/package.json"),
@@ -50,14 +48,27 @@ try {
     process.exit(1);
 }
 
-try {
-    console.log(clientRoot);
-    /*compile(clientRoot, argv.scssVars)
-        .then(result => {
-            console.log(result);
-        })
-        .catch(e => {
-            console.error("Error happend when compile SCSS: ", e);
-            process.exit(1);
-        });*/
-} catch (e) {}
+async function run() {
+    console.log("Scanning SCSS files from web-client...");
+    const files = await getScssFileList(clientRoot);
+    console.log("Compiling SCSS files from web-client...");
+    const result = await renderScssFilesExtra(
+        clientRoot + "/src/index.scss",
+        clientRoot + "/src/_variables.scss",
+        files,
+        argv.scssVars
+    );
+    console.log("Saving result to Content API...");
+    await saveToContentApi(
+        result,
+        argv.contentApiUrl,
+        argv.jwtSecret,
+        argv.userId
+    );
+    console.log("Web-client SCSS compilation completed!");
+}
+
+run().catch(e => {
+    console.error("Failed to compile web-client scss. ", e);
+    process.exit(1);
+});
