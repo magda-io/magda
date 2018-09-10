@@ -9,6 +9,7 @@ cp -R node_modules/@magda/web-client ./web-client
 ./node_modules/@gov.au/pancake/bin/pancake ./web-client
 # Copy back to node_modules/@magda/web-client. Therefore, the same porgram can run correctly both in / out docker
 # Will make local test easier
+rm -Rf node_modules/@magda/web-client/src/pancake
 cp -R ./web-client/src/pancake node_modules/@magda/web-client/src/pancake
 echo "Pancake re-cooked~"
 /usr/bin/env node /usr/src/app/component/dist/index.js "$@"
