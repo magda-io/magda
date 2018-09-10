@@ -10,7 +10,7 @@ const argv = yargs
     .option("scssVars", {
         describe: "SCSS vars to override. Expect JSON format string.",
         type: "string",
-        default: ""
+        default: process.env.SCSS_VARS || ""
     })
     .option("contentApiUrl", {
         describe: "The base URL of the content API.",
