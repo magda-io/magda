@@ -13,9 +13,8 @@ import parseUriSafe from "./parseUriSafe";
 export default async function onRecordFound(
     record: Record,
     registry: Registry,
-    retries: number = 5,
+    retries: number = 1,
     baseRetryDelaySeconds: number = 1,
-    base429RetryDelaySeconds = 60,
     ftpHandler: FTPHandler = new FTPHandler()
 ) {
     const distributions: Record[] =
@@ -126,6 +125,9 @@ type DistributionLinkCheck = {
  *
  * @param distribution The distribution Record
  * @param distStringsAspect The dcat-distributions-strings aspect for this distribution
+ * @param baseRetryDelay The first amount of time that will be waited between retries - it increases exponentially on subsequent retries
+ * @param retries Number of retries before giving up
+ * @param ftpHandler The FTP handler to use for FTP addresses
  */
 function checkDistributionLink(
     distribution: Record,
@@ -256,10 +258,18 @@ function retrieveHttp(
 ): Promise<BrokenLinkAspect> {
     const operation: () => Promise<number> = () => {
         return new Promise((resolve, reject) => {
-            request.head(url, (err: Error, response: http.IncomingMessage) => {
-                if (err) {
+            const thisReq = request
+                .get(url, {
+                    headers: {
+                        Range: "bytes=0-50"
+                    }
+                })
+                .on("error", err => {
+                    thisReq.abort();
                     reject(err);
-                } else {
+                })
+                .on("response", (response: http.IncomingMessage) => {
+                    thisReq.abort();
                     if (
                         (response.statusCode >= 200 &&
                             response.statusCode <= 299) ||
@@ -267,38 +277,15 @@ function retrieveHttp(
                     ) {
                         resolve(response.statusCode);
                     } else {
-                        const thisReq = request
-                            .get({
-                                url,
-                                headers: {
-                                    Range: "bytes=0-50"
-                                }
-                            })
-                            .on("error", err => {
-                                thisReq.abort();
-                                reject(err);
-                            })
-                            .on("response", response => {
-                                thisReq.abort();
-                                if (
-                                    (response.statusCode >= 200 &&
-                                        response.statusCode <= 299) ||
-                                    response.statusCode === 429
-                                ) {
-                                    resolve(response.statusCode);
-                                } else {
-                                    reject(
-                                        new BadHttpResponseError(
-                                            response.statusMessage,
-                                            response,
-                                            response.statusCode
-                                        )
-                                    );
-                                }
-                            });
+                        reject(
+                            new BadHttpResponseError(
+                                response.statusMessage,
+                                response,
+                                response.statusCode
+                            )
+                        );
                     }
-                }
-            });
+                });
         });
     };
 
