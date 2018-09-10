@@ -50,5 +50,9 @@ const IMAGE_ITEM = {
 
 export const content: { [s: string]: ContentItem } = {
     logo: IMAGE_ITEM,
-    "logo-mobile": IMAGE_ITEM
+    "logo-mobile": IMAGE_ITEM,
+    stylesheet: {
+        body: bodyParser.text(),
+        contentType: "text/css"
+    }
 };
