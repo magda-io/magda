@@ -8,6 +8,7 @@ echo "Rebuild node-sass done!"
 echo "Re-cook the pancake"
 #Symbol link doesn't work
 cp -R node_modules/@magda/web-client ./web-client
+rm -Rf ./web-client/src/pancake
 ./node_modules/@gov.au/pancake/bin/pancake ./web-client
 # Copy back to node_modules/@magda/web-client. Therefore, the same porgram can run correctly both in / out docker
 # Will make local test easier
