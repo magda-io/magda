@@ -10,12 +10,18 @@ const argv = yargs
     .option("scssVars", {
         describe: "SCSS vars to override. Expect JSON format string.",
         type: "string",
-        default: process.env.SCSS_VARS || ""
+        default:
+            process.env.SCSS_VARS ||
+            process.env.npm_package_config_scssVars ||
+            ""
     })
     .option("contentApiUrl", {
         describe: "The base URL of the content API.",
         type: "string",
-        default: "http://localhost:6119/v0"
+        default:
+            process.env.CONTENT_API_URL ||
+            process.env.npm_package_config_contentApiUrl ||
+            "http://localhost:6119/v0"
     })
     .option("jwtSecret", {
         describe: "The shared secret for intra-network communication",
