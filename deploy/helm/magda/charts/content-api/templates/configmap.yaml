@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: "scss-compiler-config"
 data:
-  scssVars: {{ .Values.scssVars }}
+  scssVars: {{ .Values.scssVars | quote }}
