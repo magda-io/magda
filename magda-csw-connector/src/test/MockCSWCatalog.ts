@@ -1,6 +1,6 @@
 import { MockExpressServer } from "@magda/typescript-common/dist/test/connectors/MockExpressServer";
 
-export class MockOpenDataCatalog extends MockExpressServer {
+export class MockCSWCatalog extends MockExpressServer {
     spec: any;
 
     constructor(spec: any) {
@@ -10,7 +10,7 @@ export class MockOpenDataCatalog extends MockExpressServer {
 
     runImplementation(registry: any) {
         registry.all("*", (req: any, res: any) => {
-            res.json(this.spec);
+            res.set("Content-Type", "text/xml").send(this.spec);
         });
     }
 }
