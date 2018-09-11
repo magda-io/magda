@@ -25,7 +25,10 @@ spec:
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
         - name: SCSS_VARS
-          value: {{ .Values.global.scssVars | default "" }}
+          valueFrom:
+            configMapKeyRef:
+              name: scss-compiler-config
+              key: scssVars
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:

@@ -40,3 +40,9 @@ connectors:
       pageSize: 1000
       schedule: "0 * * * *"
       ignoreHarvestSources: ["*"]
+
+content-api:
+  scssVars: '{
+    "AU-color-foreground-action":"green",
+    "AU-color-background":"red"
+  }'

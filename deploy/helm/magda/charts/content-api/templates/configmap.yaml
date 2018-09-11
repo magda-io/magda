@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "scss-compiler-config"
+data:
+  scssVars: {{ .Values.scssVars }}
