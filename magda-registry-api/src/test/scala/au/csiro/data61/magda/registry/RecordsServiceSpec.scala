@@ -1690,6 +1690,48 @@ class RecordsServiceSpec extends ApiSpec {
           }
         }
 
+        it("returns HTTP 200 if there's nothing to delete") { param =>
+
+          val junitFile = new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalFile
+          val commandLineFile = new java.io.File("./magda-registry-aspects/source.schema.json").getCanonicalFile
+
+          val file = if (junitFile.exists) junitFile else commandLineFile
+          val source = scala.io.Source.fromFile(file)
+          val lines = try source.mkString finally source.close()
+
+          val aspectDefinition = AspectDefinition("source", "source", Some(lines.parseJson.asJsObject))
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val rightTagRightSource1 = Record("righttag-rightsource", "name", buildAspects("right"), Some("righttag"))
+
+          val all = List(rightTagRightSource1)
+
+          all.foreach(record => param.asAdmin(Post("/v0/records", record)) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          })
+
+          Get("/v0/records") ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val res = responseAs[RecordsPage[Record]]
+            res.records.length shouldEqual all.length
+          }
+
+          param.asAdmin(Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[MultipleDeleteResult].count shouldEqual 0
+          }
+
+          Get("/v0/records") ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val res = responseAs[RecordsPage[Record]]
+            res.records.length shouldEqual 1
+            res.records.filter(record => record.id == ("righttag-rightsource")).length shouldEqual 1
+          }
+
+        }
+
         checkMustBeAdmin(role) {
           Delete("/v0/records?sourceTagToPreserve=blah&sourceId=blah2")
         }
