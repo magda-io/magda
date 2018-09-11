@@ -56,6 +56,11 @@
     <script src="/assets/homepage/homepage-config.js"></script>
     <script src="/server-config.js"></script>
     <title>Search</title>
+    <% if(process.env.NODE_ENV === "development"){ %>
+    <link href="<%=htmlWebpackPlugin.files.css%>" rel="stylesheet">
+    <% }else{ %>
+    <link href="/api/v0/content/stylesheet.css" rel="stylesheet">
+    <% } %>
 </head>
 <body class="au-body">
 <noscript>
@@ -69,5 +74,6 @@
 
 </noscript>
 <div id="root"></div>
+<script type="text/javascript" src="<%=htmlWebpackPlugin.files.js%>"></script>
 </body>
 </html>
