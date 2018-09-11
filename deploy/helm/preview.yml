@@ -59,6 +59,10 @@ combined-db:
       fileName: db-service-account-private-key.json
   data:
     storage: 250Gi
+  resources:
+    limits:
+      cpu: 2000m
+
 elasticsearch:
   data:
     heapSize: 500m
