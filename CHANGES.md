@@ -22,6 +22,8 @@
 -   Take open data connector license from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
+-   Made the broken link minion use `GET` for everything and ignore the data.
+-   Fixed trim with zero records deleted returning 400
 
 ## 0.0.47
 

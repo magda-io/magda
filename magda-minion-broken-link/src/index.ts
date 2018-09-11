@@ -10,7 +10,7 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
         describe:
             "Number of times to retry external links when checking whether they're broken",
         type: "number",
-        default: 3
+        default: 1
     })
 );
 
