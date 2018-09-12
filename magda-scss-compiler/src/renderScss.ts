@@ -3,14 +3,8 @@ import * as cleancss from "clean-css";
 import * as tempy from "tempy";
 import * as fse from "fs-extra";
 import * as escapeStringRegexp from "escape-string-regexp";
-import * as path from "path";
 
-const clientRoot = path.resolve(
-    require.resolve("@magda/web-client/package.json"),
-    ".."
-);
-
-export const renderScssData = (data: string) => {
+export const renderScssData = (clientRoot: string, data: string) => {
     return new Promise((resolve, reject) => {
         sass.render(
             {
@@ -33,8 +27,13 @@ export const renderScssData = (data: string) => {
         .then(cssResult => cssResult.styles);
 };
 
-export const renderScssFiles = async (files: string[], params: object = {}) => {
+export const renderScssFiles = async (
+    clientRoot: string,
+    files: string[],
+    params: object = {}
+) => {
     return await renderScssData(
+        clientRoot,
         files.map((file: string) => `@import "${file}";`).join("")
     );
 };
@@ -50,6 +49,7 @@ export const replaceParamsFromScss = (data: string, params: any = {}) => {
 };
 
 export const renderScssFilesExtra = async (
+    clientRoot: string,
     orgIdxfile: string,
     orgVarFile: string,
     otherfiles: string[],
@@ -72,6 +72,7 @@ export const renderScssFilesExtra = async (
     otherfiles.unshift(indexFile);
     otherfiles.unshift(varFile);
     return await renderScssData(
+        clientRoot,
         otherfiles.map((file: string) => `@import "${file}";`).join("")
     );
 };

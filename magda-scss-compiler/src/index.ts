@@ -59,6 +59,7 @@ async function run() {
     const files = await getScssFileList(clientRoot);
     console.log("Compiling SCSS files from web-client...");
     const result = await renderScssFilesExtra(
+        clientRoot,
         clientRoot + "/src/index.scss",
         clientRoot + "/src/_variables.scss",
         files,
