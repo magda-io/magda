@@ -399,7 +399,7 @@ function getPackageList(
         }
 
         if (!fse.existsSync(dependencyDir)) {
-            if (dependencyDir === "fsevents") {
+            if (dependencyName === "fsevents") {
                 // --- ignore `fsevents` module
                 // --- as it's not availble on linux
                 return;
