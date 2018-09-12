@@ -67,6 +67,7 @@ async function run() {
     );
     console.log("Saving result to Content API...");
     await saveToContentApi(
+        "stylesheet",
         result,
         argv.contentApiUrl,
         argv.jwtSecret,

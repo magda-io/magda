@@ -2,6 +2,7 @@ import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import * as request from "request";
 
 const saveToContentApi = (
+    fileName: string,
     cssContent: string,
     contentApiUrl: string,
     jwtSecret: string,
@@ -9,7 +10,7 @@ const saveToContentApi = (
 ) => {
     return new Promise((resolve, reject) => {
         request(
-            `${contentApiUrl}/stylesheet`,
+            `${contentApiUrl}/${fileName}`,
             {
                 method: "POST",
                 headers: {
