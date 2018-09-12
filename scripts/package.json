@@ -11,7 +11,8 @@
     "create-pod-and-forward": "create-pod-and-forward.js",
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
-    "create-secrets": "create-secrets/index.js"
+    "create-secrets": "create-secrets/index.js",
+    "set-scss-vars": "set-scss-vars.js"
   },
   "devDependencies": {
     "ansi-styles": "^3.2.1",
@@ -38,6 +39,7 @@
     "ts-node": "^3.0.4",
     "tsconfig-paths": "^2.2.0",
     "typescript": "~2.5.0",
+    "uniqid": "^5.0.3",
     "yargs": "^8.0.1"
   },
   "magda": {
