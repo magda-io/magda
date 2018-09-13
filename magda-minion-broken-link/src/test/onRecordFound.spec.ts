@@ -30,6 +30,7 @@ import {
 import FtpHandler from "../FtpHandler";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
+import RandomStream from "./RandomStream";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -141,10 +142,15 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, function({
                 record,
-                successLookup,
-                disallowHead
+                successLookup
             }) {
                 beforeEachProperty();
+
+                /** Endless stream of nonsense, similar to what you'd get if you tried to download a massive file */
+                const randomStream = RandomStream({
+                    min: 250, // in milliseconds
+                    max: 1000 // in milliseconds
+                });
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
@@ -176,28 +182,19 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     }) => {
                         const scope = nock(url);
 
-                        const intercept = scope.head(
-                            url.endsWith("/") ? "/" : ""
-                        );
-
                         if (success !== "error") {
-                            if (!disallowHead) {
-                                intercept.reply(
-                                    success === "success" ? 200 : 404
+                            scope
+                                .get(url.endsWith("/") ? "/" : "")
+                                .reply(
+                                    success === "success" ? 200 : 404,
+                                    () => {
+                                        return randomStream;
+                                    }
                                 );
-                                if (success !== "success") {
-                                    scope
-                                        .get(url.endsWith("/") ? "/" : "")
-                                        .reply(404);
-                                }
-                            } else {
-                                intercept.reply(405);
-                                scope
-                                    .get(url.endsWith("/") ? "/" : "")
-                                    .reply(success === "success" ? 200 : 404);
-                            }
                         } else {
-                            intercept.replyWithError("fail");
+                            scope
+                                .get(url.endsWith("/") ? "/" : "")
+                                .replyWithError("fail");
                         }
 
                         return scope;
@@ -321,17 +318,19 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         .reply(201);
                 });
 
-                return onRecordFound(record, registry, 0, 0, 0, fakeFtpHandler)
+                return onRecordFound(record, registry, 0, 0, fakeFtpHandler)
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
                     })
                     .then(() => {
                         afterEachProperty();
+                        randomStream.destroy();
                         return true;
                     })
                     .catch(e => {
                         afterEachProperty();
+                        randomStream.destroy();
                         throw e;
                     });
             }),
@@ -448,11 +447,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     allResults.forEach((failureCodes, i) => {
                                         failureCodes.forEach(failureCode => {
                                             scope
-                                                .head(
-                                                    url.endsWith("/") ? "/" : ""
-                                                )
-                                                .reply(failureCode);
-                                            scope
                                                 .get(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
@@ -463,7 +457,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                             result === "fail429"
                                         ) {
                                             scope
-                                                .head(
+                                                .get(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
                                                 .reply(429);
@@ -472,7 +466,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                                     if (result === "success") {
                                         scope
-                                            .head(url.endsWith("/") ? "/" : "")
+                                            .get(url.endsWith("/") ? "/" : "")
                                             .reply(200);
                                     }
 
@@ -601,17 +595,13 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                             failures.forEach(failureCode => {
                                 scope
-                                    .head(uri.path())
-                                    .delay(delayMs)
-                                    .reply(failureCode);
-                                scope
                                     .get(uri.path())
                                     .delay(delayMs)
                                     .reply(failureCode);
                             });
 
                             scope
-                                .head(uri.path())
+                                .get(uri.path())
                                 .delay(delayMs)
                                 .reply(200);
                             return scopeLookup;

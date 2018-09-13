@@ -132,6 +132,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
             case Success(result)                             => complete(MultipleDeleteResult(result))
             case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
             case Failure(exception) =>
+              logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
               complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
           }
 

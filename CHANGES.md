@@ -1,5 +1,8 @@
 ## 0.0.49
 
+-   Set CSW connector MD_Metadata dateStamp as issue date
+-   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+
 ## 0.0.48
 
 -   Add No results label when there are no results in organisation and location facets.
@@ -22,6 +25,8 @@
 -   Take open data connector license from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
+-   Made the broken link minion use `GET` for everything and ignore the data.
+-   Fixed trim with zero records deleted returning 400
 
 ## 0.0.47
 

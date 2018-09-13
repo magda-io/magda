@@ -1,14 +1,12 @@
-const express = require("express");
+import { MockExpressServer } from "./MockExpressServer";
+
 const body = require("body-parser");
 
-export class MockRegistry {
+export class MockRegistry extends MockExpressServer {
     aspects: any = {};
     records: any = {};
-    server: any;
 
-    run(port: number) {
-        const registry: any = express();
-
+    runImplementation(registry: any) {
         registry.use(
             body.json({
                 limit: "500000kb"
@@ -43,8 +41,10 @@ export class MockRegistry {
             console.log("REG", req.method, req.path, req.body, req.query);
             res.status(200);
         });
-
-        this.server = registry.listen(port);
-        return this;
     }
+}
+
+if (require.main === module) {
+    const app = new MockRegistry();
+    app.run(8080);
 }
