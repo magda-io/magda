@@ -357,7 +357,7 @@ const questions = [
                 value: true
             }
         ],
-        when: answers => answers["use-web-access-secret"]["answer"] === true,
+        when: answers => answers["use-web-access-secret"] === true,
         filter: function(input) {
             const r = {
                 answer: input
@@ -384,7 +384,7 @@ const questions = [
         message:
             "Please provide the password used to access Magda web interface:",
         when: answers =>
-            answers["use-web-access-secret"]["answer"] === true &&
+            answers["use-web-access-secret"] === true &&
             answers["manual-web-access-password"]["answer"] === true,
         validate: input =>
             trim(input).length ? true : "password cannot be empty!"
