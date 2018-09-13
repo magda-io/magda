@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import MarkdownViewer, { willBeTruncated } from "../UI/MarkdownViewer";
+import MarkdownViewer from "../UI/MarkdownViewer";
 import ToggleButton from "./ToggleButton";
 import ga from "../analytics/googleAnalytics";
 
