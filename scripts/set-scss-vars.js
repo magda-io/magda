@@ -218,7 +218,10 @@ function buildJobTemplateObject(namespace, jobId, image) {
                         {
                             name: "scss-compiler",
                             image: image,
-                            command: ["/usr/src/app/component/setup.sh"],
+                            command: [
+                                "node",
+                                "/usr/src/app/component/dist/index.js"
+                            ],
                             env: [
                                 {
                                     name: "USER_ID",
