@@ -2,6 +2,7 @@
 
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+-   Made contact point visible on dataset page
 
 ## 0.0.48
 
