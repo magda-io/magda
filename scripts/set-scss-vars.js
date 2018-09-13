@@ -248,7 +248,7 @@ function buildJobTemplateObject(namespace, jobId, image) {
                                     }
                                 }
                             ],
-                            imagePullPolicy: "IfNotPresent"
+                            imagePullPolicy: "Always"
                         }
                     ],
                     restartPolicy: "Never"
