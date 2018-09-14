@@ -53,7 +53,7 @@ let keywords = [
     .filter(i => i)
     .reduce((a, b) => a.concat(b), []);
 
-keywords = (keywords.length && keywords.join("; ")) || undefined;
+keywords = (keywords.length && keywords) || undefined;
 
 let contactPoint = fuzzy.findClosestFieldThreshold(
     dataset,

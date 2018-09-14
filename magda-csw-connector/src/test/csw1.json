@@ -54,7 +54,7 @@
             "dcat-dataset-strings": {
                 "contactPoint": "DEPT, EMAIL",
                 "description": "\nABSTRACT\n",
-                "keywords": "KW1; KW2; KW3; KW4; KW5",
+                "keywords": ["KW1", "KW2", "KW3", "KW4", "KW5"],
                 "languages": ["en"],
                 "issued": "2000-01-02",
                 "modified": "2000-01-02",

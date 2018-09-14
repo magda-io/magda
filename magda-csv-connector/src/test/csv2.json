@@ -109,7 +109,7 @@
                 "description": "DATASET\n\nDESCRIPTION 1",
                 "accrualPeriodicity": "Quarterly",
                 "themes": ["Resource"],
-                "keywords": "KE1; K W 2; KW3; Item; Resource",
+                "keywords": ["KE1", "K W 2", "KW3", "Item", "Resource"],
                 "contactPoint": "Fred Nerk",
                 "creation": {
                     "isInternallyProduced": false,
@@ -212,7 +212,7 @@
                     "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
-                "keywords": "KW4; Item; Location",
+                "keywords": ["KW4", "Item", "Location"],
                 "creation": {
                     "isInternallyProduced": true,
                     "mechanism": "Internally produced by Agency",
@@ -316,7 +316,7 @@
                 "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],
-                "keywords": "Item; Resource",
+                "keywords": ["Item", "Resource"],
                 "creation": {
                     "isInternallyProduced": true,
                     "mechanism": "Produced with magic",

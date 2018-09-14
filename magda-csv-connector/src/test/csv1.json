@@ -46,7 +46,7 @@
                 "issued": "2013-02-06",
                 "modified": "2014-01-01",
                 "themes": ["666", "#GAMERS", "DATA"],
-                "keywords": "Operations; Item; Yes",
+                "keywords": ["Operations", "Item", "Yes"],
                 "contactPoint": "Fred Nerk",
                 "creation": {
                     "mechanism": "Yes",
@@ -127,7 +127,10 @@
                 "description": "D2",
                 "accrualPeriodicity": "Monthly",
                 "themes": ["444"],
-                "keywords": "Item; Data generated and provided to us by Data61",
+                "keywords": [
+                    "Item",
+                    "Data generated and provided to us by Data61"
+                ],
                 "creation": {
                     "mechanism": "Data generated and provided to us by Data61",
                     "likelihoodOfRelease": "Restricted"
@@ -199,7 +202,7 @@
                 "modified": "2015-01-01",
                 "accrualPeriodicity": "Ad-Hoc",
                 "themes": ["For Official Use Only"],
-                "keywords": "Compliance; Item; For Official Use Only",
+                "keywords": ["Compliance", "Item", "For Official Use Only"],
                 "contactPoint": "META STD",
                 "creation": {
                     "mechanism": "No",

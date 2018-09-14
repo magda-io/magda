@@ -67,8 +67,15 @@
             }
         },
         "keywords": {
-            "title": "Keywords or tag describing the dataset.",
-            "type": "string"
+            "title": "Tags",
+            "description":
+                "Tags (or keywords) help users discover your dataset; please include terms that would be used by technical and non-technical users.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            },
+            "minItems": 1
         },
         "contactPoint": {
             "title": "Free-text account of who to contact about this dataset.",

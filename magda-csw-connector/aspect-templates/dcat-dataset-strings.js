@@ -115,12 +115,10 @@ return {
         identification,
         "$[*].topicCategory[*].MD_TopicCategoryCode[*]._"
     ),
-    keywords: jsonpath
-        .query(
-            identification,
-            "$[*].descriptiveKeywords[*].MD_Keywords[*].keyword[*].CharacterString[*]._"
-        )
-        .join("; "),
+    keywords: jsonpath.query(
+        identification,
+        "$[*].descriptiveKeywords[*].MD_Keywords[*].keyword[*].CharacterString[*]._"
+    ),
     contactPoint: contactPoint,
     landingPage: jsonpath.value(pointOfTruth, "$[*].linkage[*].URL[*]._")
 };
