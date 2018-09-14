@@ -68,6 +68,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     return returnJSON(res, content);
                 case "text":
                     return returnText(res, content);
+                case "css":
+                    return returnCss(res, content);
                 default:
                     throw new Error(`Unsupported format requested: ${format}`);
             }
@@ -171,4 +173,8 @@ function returnJSON(res: any, content: Content) {
 
 function returnText(res: any, content: Content) {
     res.header("Content-Type", "text/plain").send(content.content);
+}
+
+function returnCss(res: any, content: Content) {
+    res.header("Content-Type", "text/css").send(content.content);
 }

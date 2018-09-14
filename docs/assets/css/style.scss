@@ -8,3 +8,13 @@
 .page-header {
     padding: 3em 3em;
 }
+.center {
+    text-align: center;
+    img {
+        width: 100%;
+        @media screen and (min-width: 500px) {
+            width: 500px;
+            margin: 0 auto;
+        }
+    }
+}
