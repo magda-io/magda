@@ -1,14 +1,18 @@
+<p class="center">
+    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/3089ulXeH4M?rel=0&amp;showinfo=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+</p>
+
 # Get the most out of your data
 
-Government agencies often do a great job of collecting valuable data, but don't always make the most of it - agency staff can't find their own agency's data because it's sitting hidden inside spreadsheets and on share drives, datasets that should be shared elsewhere in government or opened to the public get stuck inside the agency, and opportunities for more efficient operations and more effective data-driven governance are lost.
+Government agencies possess a wealth of valuable data, but it often sits hidden inside spreadsheets and on shared drives, making it impossible to discover or navigate through. Data that could improve efficiency, transparency and accountability is trapped in silos, and the opportunity that it offers is lost.
 
-Even if data is already opened and published to an open data portal, it still doesn't get used. Open data portals are usually focused on simply hosting files - simplistic search functionality, poor-quality metadata, and an inability to easily preview datasets before downloading them make the process of discovering and using open data difficult and painful.
+Even if data is already opened and published to an open data portal, it’s still difficult to discover. Because current open data portals have been focused around hosting files they possess simplistic search functionality, poor metadata authoring tools and no ability to easily preview datasets before downloading, making even the best datasets difficult to find and use.
 
 ## A set of tools for every part of the data landscape
 
 Magda is an open-source software platform that has been designed to make publishing, searching and using government data easier, for both government agency staff using private data internally and citizens using open data publically. It consists of a set of tools that can be combined into a number of configurations:
 
--   An internal portal for hosting data within agencies, with robust mechanisms for controlling which users can see or use which data
+-   An internal portal for hosting data within agencies, which will eventually have robust mechanisms for controlling which users can see or use which data
 -   An internal/external portal that both hosts internal data as above, but also provides workflows for safely sharing datasets between agencies or releasing some datasets as open data, and making those available to the public
 -   A public aggregator that takes datasets from many sources and makes it all easily searchable in one place
 
@@ -18,8 +22,8 @@ Magda is an open-source software platform that has been designed to make publish
 
 The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda is able to rate datasets by their quality and return the best ones at the top of the search, understand synonyms and acronyms, as well as provide a number of advanced filters including the ability to search for datasets that affect a certain spatial region or a time period.
 
-<p style="text-align: center">
-<img src="./assets/filter-screenshot.png" style="max-width: 500px; margin: 0 auto;">
+<p class="center">
+    <img src="./assets/filter-screenshot.png">
 </p>
 
 #### Easy federation
@@ -30,8 +34,8 @@ Seamlessly combine self-hosted datasets with those from external sources into on
 
 Ensure that your users can quickly determine if a dataset is useful for them with charting, spatial preview with [TerriaJS](https://terria.io) and table previews.
 
-<p style="text-align: center">
-<img src="./assets/screenshot-preview.png" style="max-width: 500px; margin: 0 auto;">
+<p class="center">
+    <img src="./assets/screenshot-preview.png">
 </p>
 
 #### Automatic metadata enhancement
@@ -42,8 +46,8 @@ The metadata that describes datasets is often poorly formatted or completely abs
 
 Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment with zero downtime and no effect on upgrades of the core product.
 
-<p style="text-align: center">
-<img src="./assets/architecture.png" style="max-width: 500px; margin: 0 auto;">
+<p class="center">
+    <img src="./docs/magda-basic-architecture.png">
 </p>
 
 #### Easy set up and upgrades
@@ -58,8 +62,8 @@ We'd love to talk to you! Please get in contact with us at [contact@magda.io](ma
 
 Magda currently powers the new data.gov.au beta at [search.data.gov.au](https://search.data.gov.au), serving 2000 users per week.
 
-<p style="text-align: center">
-<img src="./assets/search-screenshot.png" style="max-width: 500px; margin: 0 auto;">
+<p class="center">
+    <img src="./assets/search-screenshot.png">
 </p>
 
 ## Current status
