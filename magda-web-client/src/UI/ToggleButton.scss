@@ -9,9 +9,8 @@
     position: relative;
     padding-left: 0px;
 
-    &:hover {
-        focus {
-            outline: none;
-        }
+    &:hover,
+    &:focus {
+        outline: none;
     }
 }
