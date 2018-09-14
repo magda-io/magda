@@ -1563,7 +1563,7 @@ babel-core@^6.0.0, babel-core@^6.1.2, babel-core@^6.26.0, babel-core@^6.7.4:
     slash "^1.0.0"
     source-map "^0.5.7"
 
-babel-eslint@7.2.3, babel-eslint@^7.0.0:
+babel-eslint@7.2.3:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/babel-eslint/-/babel-eslint-7.2.3.tgz#b2fe2d80126470f5c19442dc757253a897710827"
   dependencies:
@@ -8507,10 +8507,6 @@ joi@^6.10.1:
     isemail "1.x.x"
     moment "2.x.x"
     topo "1.x.x"
-
-jquery@^1.12.4:
-  version "1.12.4"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-1.12.4.tgz#01e1dfba290fe73deba77ceeacb0f9ba2fec9e0c"
 
 js-base64@^2.1.8, js-base64@^2.1.9:
   version "2.4.5"

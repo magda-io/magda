@@ -61,6 +61,12 @@ const argv = yargs
             "The email address to send data requests and questions/feedback on datasets where the email address couldn't be resolved",
         type: "string",
         demandOption: true
+    })
+    .option("alwaysSendToDefaultRecipient", {
+        describe:
+            "Whether to always send emails to the default recipient even if there's another recipient available - useful for test environments, or if you don't want users to be able to directly bother data custodians",
+        type: "string",
+        demandOption: true
     }).argv;
 
 const app = express();
