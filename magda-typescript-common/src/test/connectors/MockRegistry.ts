@@ -29,16 +29,34 @@ export class MockRegistry extends MockExpressServer {
                 for (const [aspect, aspectBody] of Object.entries(
                     req.body.aspects
                 )) {
-                    let invalid = this.env.validate(`${aspect}#`, aspectBody);
-                    if (invalid) {
-                        return res
-                            .status(500)
-                            .json({
-                                aspect,
-                                aspectBody,
-                                invalid
-                            })
-                            .end();
+                    try {
+                        let invalid = this.env.validate(
+                            `${aspect}#`,
+                            aspectBody
+                        );
+                        if (invalid) {
+                            return res
+                                .status(500)
+                                .json({
+                                    aspect,
+                                    aspectBody,
+                                    schema: this.aspects[aspect].jsonSchema,
+                                    invalid
+                                })
+                                .end();
+                        }
+                    } catch (e) {
+                        // https://github.com/korzio/djv/issues/71
+                        // return res
+                        //     .status(500)
+                        //     .json({
+                        //         aspect,
+                        //         aspectBody,
+                        //         schema: this.aspects[aspect].jsonSchema,
+                        //         error: e.message
+                        //     })
+                        //     .end();
+                        console.log(e.message);
                     }
                 }
             }
