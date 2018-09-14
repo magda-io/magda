@@ -316,6 +316,7 @@ function createWebAccessPassword(env, namespace, configData) {
         return;
     }
     const data = {
+        username: configData["web-access-username"],
         password: configData["web-access-password"]
     };
     createSecret(env, namespace, "web-access-secret", data);

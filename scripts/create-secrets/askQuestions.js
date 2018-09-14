@@ -330,7 +330,7 @@ const questions = [
         type: "list",
         name: "use-web-access-secret",
         message:
-            "Do you need to setup the password used to access Magda web interface?",
+            "Do you need to setup the username & password used to access Magda web interface?",
         choices: [
             {
                 name: "YES",
@@ -341,6 +341,23 @@ const questions = [
                 value: false
             }
         ]
+    },
+    {
+        type: "input",
+        name: "web-access-username",
+        message:
+            "Please provide the username used to access Magda web interface:",
+        when: answers => answers["use-web-access-secret"] === true,
+        validate: input => {
+            const r = trim(input);
+            if (!r.length) {
+                return "username cannot be empty!";
+            }
+            if (r.indexOf(":") !== -1) {
+                return "username cannot contains `:`!";
+            }
+            return true;
+        }
     },
     {
         type: "transformer-list",
