@@ -39,7 +39,7 @@
                 </gmd:CI_ResponsibleParty>
             </gmd:contact>
             <gmd:dateStamp>
-                <gco:Date>DATE</gco:Date>
+                <gco:Date>2000-01-02</gco:Date>
             </gmd:dateStamp>
             <gmd:metadataStandardName>
                 <gco:CharacterString>ISO 19139/19119 Metadata for Web Services</gco:CharacterString>
