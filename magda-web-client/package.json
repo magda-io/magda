@@ -21,7 +21,7 @@
     "watch": "react-app-rewired build --watch",
     "prepare": "pancake"
   },
-  "devDependencies": {
+  "dependencies": {
     "@gov.au/accordion": "^3.0.5",
     "@gov.au/animate": "^1.0.0",
     "@gov.au/body": "^2.0.7",
@@ -41,7 +41,9 @@
     "@gov.au/select": "^2.0.5",
     "@gov.au/skip-link": "^2.0.6",
     "@gov.au/tags": "^3.1.1",
-    "@gov.au/text-inputs": "^2.0.6",
+    "@gov.au/text-inputs": "^2.0.6"
+  },
+  "devDependencies": {
     "@magda/scripts": "^0.0.49-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",

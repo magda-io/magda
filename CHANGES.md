@@ -2,6 +2,8 @@
 
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+-   Allowed UI SCSS variables to be changed via k8s job
+-   Added a `set-scss-vars` script for updating UI SCSS variables
 
 ## 0.0.48
 
