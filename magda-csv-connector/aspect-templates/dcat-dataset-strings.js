@@ -1,6 +1,6 @@
 const { fuzzy, dates } = libraries;
 
-let title = fuzzy.findClosestField(dataset, "title", "datset title");
+let title = fuzzy.findClosestField(dataset, "title", "dataset title");
 
 let description = fuzzy.findClosestField(
     dataset,
@@ -215,7 +215,7 @@ function extractInformationSecurity() {
     let isSensitiveCommercialData = fuzzy.findClosestFieldThreshold(
         dataset,
         0.5,
-        "potentiallt commercially sensitive"
+        "potentially commercially sensitive"
     );
     if (
         isSensitiveCommercialData &&

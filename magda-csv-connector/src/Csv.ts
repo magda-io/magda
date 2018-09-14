@@ -82,7 +82,7 @@ export default class Csv implements ConnectorSource {
         });
         return found;
     }
-    //
+
     public searchDatasetsByTitle(
         title: string,
         maxResults: number

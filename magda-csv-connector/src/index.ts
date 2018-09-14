@@ -25,20 +25,18 @@ const argv = addJwtSecretFromEnvVar(
             demandOption: true
         })
         .option("sourceUrl", {
-            describe:
-                "The base URL of the CSW server, including /csv if present, but not including any query parameters.",
+            describe: "URL of spreadsheet.",
             type: "string",
             demandOption: true
         })
         .option("pageSize", {
-            describe:
-                "The number of datasets per page to request from the CSW server.",
+            describe: "The number of datasets to process for json transformer",
             type: "number",
             default: 1000
         })
         .option("registryUrl", {
             describe:
-                "The base URL of the registry to which to write data from CSW.",
+                "The base URL of the registry to which to write data from spreadsheet.",
             type: "string",
             default: "http://localhost:6101/v0"
         })

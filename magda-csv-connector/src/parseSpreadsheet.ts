@@ -6,7 +6,7 @@ const XLSX = require("xlsx");
 const escape = require("escape-html");
 
 export default function parseSpreadsheet(inputBuffer: Buffer) {
-    // console.log(`Reading input bytes: ${inputBuffer.length}`);
+    console.log(`Reading input bytes: ${inputBuffer.length}`);
 
     const book = XLSX.read(inputBuffer, {
         cellFormula: false,
@@ -19,11 +19,11 @@ export default function parseSpreadsheet(inputBuffer: Buffer) {
             Object.keys(book.Sheets[a]).length
     )[0];
 
-    // console.log(
-    //     "Taking sheet:",
-    //     escape(sheetName),
-    //     escape(JSON.stringify(Object.keys(book.Sheets)))
-    // );
+    console.log(
+        "Taking sheet:",
+        escape(sheetName),
+        escape(JSON.stringify(Object.keys(book.Sheets)))
+    );
 
     const sheet = book.Sheets[sheetName];
 
@@ -38,7 +38,7 @@ export default function parseSpreadsheet(inputBuffer: Buffer) {
         row: number,
         cell: number;
 
-    // console.log("Taking headings from first row of data.");
+    console.log("Taking headings from first row of data.");
 
     for (col = range.s.c; col <= range.e.c; col++) {
         cell = XLSX.utils.encode_cell({
@@ -52,7 +52,7 @@ export default function parseSpreadsheet(inputBuffer: Buffer) {
                 .toLowerCase();
             if (val != "") {
                 cols[col] = [val];
-                // console.log("Taking column", cell, "as", cols[col]);
+                console.log("Taking column", cell, "as", cols[col]);
             }
         }
     }

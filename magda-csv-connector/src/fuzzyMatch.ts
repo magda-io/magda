@@ -1,7 +1,7 @@
 const stringSimilarity = require("string-similarity");
 
 /**
- * asdasd
+ * Finds closest field of an object given a set of strings to match to
  */
 export function findClosestField(
     row: { [name: string]: string },
@@ -36,7 +36,8 @@ export function findClosestFieldThreshold(
 }
 
 /**
- * asdasd
+ * Returns similarity between a target string and a set of options.
+ * @return similarity score - a number between 0 and 1
  */
 export function similarity(target: string, ...options: string[]): number {
     return Math.min(
