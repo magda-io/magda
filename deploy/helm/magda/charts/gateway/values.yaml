@@ -1,35 +1,34 @@
 image: {}
-  #repository: data61/
-  #tag: latest
-  # pullPolicy: Always
 auth: {}
-  #facebookClientId: "173073926555600"
-  #googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
 service:
   type: NodePort
   externalPort: 80
   internalPort: 80
-  #loadBalancerIP: 127.0.0.1
+  
 autoscaler:
   enabled: true
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+
+enableAuthEndpoint: false
+
+helmet:
+  frameguard: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 40Mi
+  limits:
+    cpu: 200m
+
 routes:
   search:
     to: http://search-api/v0
   registry:
+    to: http://registry-api-read-only/v0
+  registry-auth:
     to: http://registry-api/v0
     auth: true
   auth:
@@ -37,14 +36,9 @@ routes:
     methods:
     - GET
     auth: true
-  discussions:
-    to: http://discussions-api/v0
-    auth: true
   admin:
     to: http://admin-api/v0
     auth: true
-  feedback:
-    to: http://feedback-api/v0
   content:
     to: http://content-api/v0
   correspondence:
@@ -52,30 +46,13 @@ routes:
   apidocs:
     to: http://apidocs-server/
 helmet: {}
+
 csp:
   browserSniff: false
   directives:
     scriptSrc:
     - "''self''"
-    - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
-    - "data:" # Also for VWO
-    - browser-update.org
-    - dev.visualwebsiteoptimizer.com
-    - platform.twitter.com
-    - www.googletagmanager.com
-    - www.google-analytics.com
-    - rum-static.pingdom.net
-    - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
-    - https://tagmanager.google.com/debug
-    - assets.zendesk.com
-    - static.zdassets.com
-    - ekr.zdassets.com
     objectSrc:
     - "''none''"
-    sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
-    - allow-scripts
-    - allow-same-origin
-    - allow-popups
-    - allow-forms
-    - allow-popups-to-escape-sandbox
+
 cors: {}

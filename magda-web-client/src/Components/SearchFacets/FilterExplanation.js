@@ -12,7 +12,8 @@ export default function FilterExplanation(props) {
                 You're now seeing datasets by one{" "}
                 <span className="filter-explanation-filter-type">
                     {props.filterType}
-                </span>.
+                </span>
+                .
             </p>
             <button
                 type="button"

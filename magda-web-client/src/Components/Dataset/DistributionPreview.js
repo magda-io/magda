@@ -23,7 +23,7 @@ const DataPreviewNone = () => "This distribution cannot be previewed";
 class DistributionPreview extends Component {
     renderByState() {
         // Decide which visualisation to use using visualization-info
-        // Compatibility is decided by backend "visualization sleuther"
+        // Compatibility is decided by backend "visualization minion"
         const compatiblePreviews = this.props.distribution.compatiblePreviews;
         let DataPreviewComponent = DataPreviewNone;
         if (compatiblePreviews.map) {

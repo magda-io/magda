@@ -6,6 +6,7 @@ global:
   image:
     repository: "localhost:5000/data61"
     tag: "latest"
+    pullPolicy: Always
   noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
@@ -19,35 +20,23 @@ gateway:
 
 registry-api:
   skipAuthorization: true
-  # Uncomment this if you want to test postgres backups locally - download a private key from
-  # google cloud, mount it as a secret and change the filename to it.
-  # waleBackup:
-  #   method: WAL
-  #   gsPrefix: "gs://magda-postgres-backups/test"
-  #   executionTime: 03:00
-  #   googleApplicationCreds:
-  #     secretName: storage-account-credentials
-  #     fileName: <fileName>
-
-sleuther-linked-data-rating:
-  resources:
-    limits:
-      cpu: 0.1
-sleuther-broken-link:
-  resources:
-    limits:
-      cpu: 0.1
-sleuther-visualization:
-  resources:
-    limits:
-      cpu: 0.1
-sleuther-format:
-  resources:
-    limits:
-      cpu: 0.1
+  
 correspondence-api:
   smtpPort: 2525
   defaultRecipient: "alex.gilleran+magda@csiro.it"
   smtpHostname: "smtp.mailgun.org"
+  
 web-server:
   fallbackUrl: "https://data.gov.au"
+
+connectors:
+  includeCronJobs: false
+  config:
+    - image:
+        name: "magda-ckan-connector"
+      id: dga
+      name: "data.gov.au"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 1000
+      schedule: "0 * * * *"
+      ignoreHarvestSources: ["*"]

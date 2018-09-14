@@ -1,5 +1,39 @@
+## 0.0.49
+
+-   Set CSW connector MD_Metadata dateStamp as issue date
+-   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+-   Allowed UI SCSS variables to be changed via k8s job
+-   Added a `set-scss-vars` script for updating UI SCSS variables
+
+## 0.0.48
+
+-   Add No results label when there are no results in organisation and location facets.
+-   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
+-   Remove AU govt logo and add more space to top menu.
+-   Whitelist KMZ.
+-   Rename sleuthers to minions
+-   Add ability to change content (logo).
+-   CSW connector will exit with code 1 if error happens
+-   Fixed an issue of format enhancer processing MIME
+-   Fixed an issue that format enhancer may exit when dcat-string not available
+-   Updated email template & make email clickable
+-   Updated aims connector URL
+-   Raised the default resources for registry-api.
+-   Added API document for Minions
+-   Updated magda links in footer.
+-   Switch apidocs root to `<host>`
+-   Removed unused jQuery dependency from format-minion
+-   Split the registry api into full and read only modes that can run separately in production
+-   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Fix logo vertical alignment and partially hidden issue
+-   Made header padding even
+-   Made the broken link minion use `GET` for everything and ignore the data.
+-   Fixed trim with zero records deleted returning 400
+
 ## 0.0.47
 
+-   Document public portions of authorization api
+-   Document search api
 -   Make contents API and contents database migrator for storing items which will be dynamically configurable in the future.
 -   Hyperlink organisation url on organisation page
 -   Align format facet based on its position on the page
@@ -11,11 +45,17 @@
 -   Registry will now periodically retry Webhook
 -   Fixed an issue that connector record triming might not fully completed
 -   Fixed an issue that indexer webhook event types not properly setup
+-   Removed feedback-api, discussions-api and discussions-db as they're no longer used
+-   Moved standard and data.gov.au config to a separate repo
+-   Added better readiness probes to elasticsearch
+-   Adjusted resources requirements/limits
 -   Push footer below the fold while loading page content
 -   Unify tooltip styles across different instances, remove react-tooltip
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Upgraded terriajs server to 2.7.4 to address redirect vulnerability.
+-   Added apiDoc for indexer
 
 ## 0.0.46
 

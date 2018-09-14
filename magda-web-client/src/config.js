@@ -18,11 +18,10 @@ const homePageConfig: {
 const serverConfig: {
     authApiBaseUrl?: string,
     baseUrl?: string,
-    discussionsApiBaseUrl?: string,
+    contentApiBaseUrl?: string,
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    feedbackApiBaseUrl?: string,
     correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
@@ -48,6 +47,8 @@ export const config = {
         "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl,
     baseExternalUrl,
+    contentApiURL:
+        serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/",
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
@@ -57,12 +58,6 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
-    discussionsApiUrl:
-        serverConfig.discussionsApiBaseUrl ||
-        fallbackApiHost + "api/v0/discussions/",
-    feedbackUrl:
-        serverConfig.feedbackApiBaseUrl ||
-        fallbackApiHost + "api/v0/feedback/user",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -137,7 +132,8 @@ export const config = {
             {
                 category: "Developers",
                 links: [
-                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                    ["API Documentation", "/api/v0/apidocs/index.html"],
+                    ["Powered by Magda", "https://magda.io"]
                 ]
             }
         ]

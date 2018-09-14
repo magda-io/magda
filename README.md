@@ -1,4 +1,4 @@
-# MAGDA
+# Magda
 
 [![GitHub release](https://img.shields.io/github/release/TerriaJS/magda.svg)](https://github.com/TerriaJS/magda/releases)
 [![GitLab Pipeline](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/pipelines)
@@ -7,13 +7,13 @@
 
 Magda is a modern platform built to power a new generation of data portals. Its goal is to improve on existing data portal and management solutions in a number of areas:
 
-*   Discoverability of high-quality and relevant data (particularly through search)
-*   Automatic derivation, repair and/or enhancement of data and metadata
-*   Seamless federation across multiple data sources
-*   Collaboration between data providers and users, as well as between users themselves
-*   Visualisation of data in the medium that best suits it - allowing easily customisable visualisations rather than text-based tables.
-*   An ecosystem that allows extension in any programming language
-*   An easy installation and setup process
+-   Discoverability of high-quality and relevant data (particularly through search)
+-   Automatic derivation, repair and/or enhancement of data and metadata
+-   Seamless federation across multiple data sources
+-   Collaboration between data providers and users, as well as between users themselves
+-   Quick and effective previewing of datasets, so that the user never has to download a dataset only to find it's not useful
+-   An ecosystem that allows extension in any programming language
+-   An easy installation and setup process
 
 Magda is a solution for any problem that involves a collection or collections of datasets that need to be searched over, discussed and/or viewed in a single place. It doesn't matter what format the data is in, how well-formed the metadata is, where the data is stored or in how many places, Magda can either work with it or be extended to do so.
 
@@ -21,15 +21,24 @@ The project was started by CSIRO Data61 and Australia's Department of Prime Mini
 
 ## Current Status
 
-Magda is currently being actively developed, and is still in an immature state - we've yet to fully stabilise and document our APIs or provide administration functionality outside of manually changing things via helm and kubectl. If you want to jump in and give it a go feel free - we've been running some form of this in production for some time and haven't had any problems.
+Magda is currently being actively developed. It's now at the point where there is a reasonably stable, documented API, and it's stable in production at https://search.data.gov.au. Currently the developed features mainly center around its use as an open data search engine - we're currently developing features to allow it to host its own data and be usable for private data too.
 
-Our current roadmap is available at https://github.com/TerriaJS/magda/blob/master/doc/roadmap.md
+## Future
+
+Magda has been developed as a search tool for open data, but our ambition is to bring it inside government agencies as well, so that they can use have the same quality of tools for their own private data as they do for open data. We hope to make improvements in a number of areas:
+
+-   An opinionated, highly guided publishing process intended to produce high-quality metadata, rather than simply encourage publishing with any quality of metadata
+-   A robust mechanism for authorization that allows for tight controls over who can see what datasets
+-   An easy to use administration interface so that the product can be run without needing to use the command line.
+-   Workflows to facilitate data sharing and the opening of data, within the software itself
+
+Our current roadmap is available at https://magda.io/docs/roadmap
 
 ## Architecture
 
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
-![Magda Architecture Diagram](doc/magda-basic-architecture.png)
+![Magda Architecture Diagram](docs/docs/magda-basic-architecture.png)
 
 ### Registry
 
@@ -41,11 +50,11 @@ Most importantly, aspects are able to be declared dynamically by other services 
 
 Connectors go out to external datasources and copy their metadata into the Registry, so that they can be searched and have other aspects attached to them. A connector is simply a docker-based microservice that is invoked as a [job](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/). It scans the target datasource (usually an open-data portal), then completes and shuts down. We have connectors for a number of existing open data formats, otherwise you can easily write and run your own.
 
-### Sleuthers
+### Minions
 
-A sleuther is a service that listens for new records or changes to existing records, performs some kind of operation and then writes the result back to the registry. For instance, we have a broken link sleuther that listens for changes to distributions, retrieves the URLs described, records whether they were able to be accessed successfully and then writes that back to the registry in its own aspect.
+A minion is a service that listens for new records or changes to existing records, performs some kind of operation and then writes the result back to the registry. For instance, we have a broken link minion that listens for changes to distributions, retrieves the URLs described, records whether they were able to be accessed successfully and then writes that back to the registry in its own aspect.
 
-Other aspects exist that are written to by many sleuthers - for instance, we have a "quality" aspect that contains a number of different quality ratings from different sources, which are averaged out and used by search.
+Other aspects exist that are written to by many minions - for instance, we have a "quality" aspect that contains a number of different quality ratings from different sources, which are averaged out and used by search.
 
 ### Search
 
@@ -55,18 +64,22 @@ Datasets and distributions in the registry are ingested into an ElasticSearch cl
 
 Magda provides a user interface, which is served from its own microservice and consumes the APIs. We're planning to make the UI itself extensible with plugins at some point in the future.
 
-## To try the last version locally
+## To try the last version (with prebuilt images)
 
-https://github.com/TerriaJS/magda/blob/master/doc/quickstart.md
+Use https://github.com/magda-io/magda-config
 
 ## To build and run from source
 
-https://github.com/TerriaJS/magda/blob/master/doc/building-and-running.md
+https://magda.io/doc/building-and-running
 
-## To get help
+## To get help with developing or running Magda
 
 Talk to us on Gitter!
 [![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Want to talk about deploying this into your agency?
+
+Email us at contact@magda.io.
 
 ## Want to contribute?
 

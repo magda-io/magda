@@ -1,0 +1,2 @@
+{{ $params := dict "root" $ "deploymentConfig" .Values.deployments.full "role" "full" "name" "registry-api-full" }}
+{{- include "magda.registry-deployment" $params -}}

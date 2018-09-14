@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-api-read-only
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    service: {{- if .Values.deployments.readOnly.enable }} registry-api-read-only {{- else }} registry-api-full {{- end }}

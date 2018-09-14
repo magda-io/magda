@@ -10,6 +10,7 @@
         width: 100%;
         height: 100vh;
         z-index: -1;
+        min-width: 300px;
     }
 
     .homepage-background {
@@ -24,6 +25,7 @@
         right: 0;
         bottom: 0;
         z-index: -1;
+        min-width: 300px;
     }
 
     .homepage-tagline {

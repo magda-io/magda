@@ -44,6 +44,12 @@ spec:
               - IPC_LOCK
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:
@@ -78,6 +84,8 @@ spec:
           value: {{ .Values.data.pluginsInstall | quote }}
         - name: NETWORK_HOST
           value: "0.0.0.0"
+        - name: HTTP_ENABLE
+          value: "true"
 {{- if .Values.backup.googleApplicationCreds }}
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}/{{ .Values.backup.googleApplicationCreds.fileName }}"
@@ -87,11 +95,9 @@ spec:
           value: /snapshots
 {{- end }}
         ports:
-{{- if not .Values.production }}
         - containerPort: 9200
           name: http
           protocol: TCP
-{{- end }}
         - containerPort: 9300
           name: transport
           protocol: TCP

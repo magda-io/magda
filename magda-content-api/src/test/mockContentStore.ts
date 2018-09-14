@@ -36,6 +36,11 @@ const mockContentData = [
         id: "svg-id",
         type: "image/svg+xml",
         content: "PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
+    },
+    {
+        id: "logo",
+        type: "image/gif",
+        content: "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
     }
 ];
 
@@ -54,6 +59,17 @@ const mockContentDataStore = {
         return runtimeContentDataStore.filter(record => {
             return record.id === id;
         });
+    },
+
+    setContentById(id: string, type: string, content: string) {
+        return runtimeContentDataStore
+            .filter(record => {
+                return record.id === id;
+            })
+            .forEach(record => {
+                record.type = type;
+                record.content = content;
+            });
     },
 
     countRecord: function() {

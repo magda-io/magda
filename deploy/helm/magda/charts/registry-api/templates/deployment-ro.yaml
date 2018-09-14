@@ -1,0 +1,4 @@
+{{- if .Values.deployments.readOnly.enable }}
+{{ $params := dict "root" $ "deploymentConfig" .Values.deployments.readOnly "role" "readonly" "name" "registry-api-read-only" }}
+{{- include "magda.registry-deployment" $params -}}
+{{- end }}

@@ -1,20 +1,16 @@
 {
   "name": "@magda/apidocs-server",
   "description": "The MAGDA in-browser api documentation.",
-  "version": "0.0.47-0",
+  "version": "0.0.49-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "generate-api-documentation --config $PWD/apidoc.json --output $PWD/build",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto"
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.47-0"
-  },
-  "proxy": {
-    "/server-config.js": {
-      "target": "http://localhost:6118/"
-    }
+    "@magda/scripts": "^0.0.49-0"
   },
   "config": {
     "docker": {

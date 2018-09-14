@@ -7,7 +7,7 @@ body
     |Hi there, <br/><br/>
     |A request has been raised for a dataset. Please respond to this request as soon as possible.<br/><br/>
 
-    |The query is from #{message.senderName}, #{message.senderEmail}: <br/><br/>
+    |The query is from #{message.senderName}, <a href="mailto:#{message.senderEmail}">#{message.senderEmail}</a>: <br/><br/>
 
     |!{message.html} <br/><br/>
 

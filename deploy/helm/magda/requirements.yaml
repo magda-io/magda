@@ -1,122 +1,92 @@
 dependencies:
   - name: apidocs-server
-    version: 0.1.0
     tags:
       - all
       - apidocs-server
   - name: authorization-api
-    version: 0.1.0
     tags:
       - all
       - authorization-api
   - name: authorization-db
-    version: 0.1.0
     tags:
       - all
       - authorization-db
   - name: combined-db
-    version: 0.1.0
     tags:
       - all
       - combined-db
   - name: content-api
-    version: 0.1.0
     tags:
       - all
       - content-api
   - name: content-db
-    version: 0.1.0
     tags:
       - all
       - content-db
+  - name: correspondence-api
+    tags:
+      - all
+      - correspondence-api
   - name: elasticsearch
-    version: 0.1.0
     tags:
       - all
       - elasticsearch
   - name: gateway
-    version: 0.1.0
     tags:
       - all
       - gateway
   - name: indexer
-    version: 0.1.0
     tags:
       - all
       - indexer
   - name: preview-map
-    version: 0.1.0
     tags:
       - all
       - preview-map
   - name: registry-api
-    version: 0.1.0
     tags:
       - all
       - registry-api
   - name: registry-db
-    version: 0.1.0
     tags:
       - all
       - registry-db
   - name: search-api
-    version: 0.1.0
     tags:
       - all
       - search-api
   - name: session-db
-    version: 0.1.0
     tags:
       - all
       - session-db
   - name: web-server
-    version: 0.1.0
     tags:
       - all
       - web-server
-  - name: correspondence-api
-    version: 0.1.0
+  - name: connectors
     tags:
       - all
-      - correspondence-api
+      - connectors
 
 # Deprecated or not currently used services
   - name: admin-api
-    version: 0.1.0
     tags:
       - admin-api
-  - name: discussions-api
-    version: 0.1.0
-    tags:
-      - discussions-api
-  - name: discussions-db
-    version: 0.1.0
-    tags:
-      - discussions-db
-  - name: feedback-api
-    version: 0.1.0
-    tags:
-      - feedback-api
 
-# Sleuthers
-  - name: sleuther-format
-    version: 0.1.0
+# Minions
+  - name: minion-broken-link
     tags:
-      - sleuther-format
-  - name: sleuther-broken-link
-    version: 0.1.0
+      - minion-broken-link
+  - name: minion-format
     tags:
-      - sleuther-broken-link
-  - name: sleuther-visualization
-    version: 0.1.0
+      - minion-format
+  - name: minion-linked-data-rating
     tags:
-      - sleuther-visualization
-  - name: sleuther-linked-data-rating
-    version: 0.1.0
+      - minion-linked-data-rating
+  - name: minion-visualization
     tags:
-      - sleuther-linked-data-rating
+      - minion-visualization
 
   - name: ingress
-    version: 0.1.0
     tags:
       - ingress

@@ -60,6 +60,31 @@ export default function createApiRouter(
             })
     );
 
+    /**
+     * @apiGroup Correspondence API
+     *
+     * @api {post} /v0/send/dataset/request Send Dataset Request
+     *
+     * @apiDescription Sends a request for a dataset to the site administrators
+     *
+     * @apiParam (Request body) {string} senderName The name of the sender
+     * @apiParam (Request body) {string} senderEmail The email address of the sender
+     * @apiParam (Request body) {string} message The message to send
+     *
+     * @apiSuccess {string} status OK
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "status": "OK"
+     *    }
+     *
+     * @apiError {string} status FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "status": "Failed"
+     *    }
+     */
     router.post("/public/send/dataset/request", validateMiddleware, function(
         req,
         res
@@ -85,16 +110,49 @@ export default function createApiRouter(
         );
     });
 
+    /**
+     * @apiGroup Correspondence API
+     *
+     * @api {post} /v0/send/dataset/:datasetId/question Send a question about a dataest
+     *
+     * @apiDescription Sends a question about a dataset to the data custodian if available,
+     *  and to the administrators if not
+     *
+     * @apiParam (Request body) {string} senderName The name of the sender
+     * @apiParam (Request body) {string} senderEmail The email address of the sender
+     * @apiParam (Request body) {string} message The message to send
+     *
+     * @apiSuccess {string} status OK
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "status": "OK"
+     *    }
+     *
+     * @apiError {string} status FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "status": "Failed"
+     *    }
+     */
     router.post(
         "/public/send/dataset/:datasetId/question",
         validateMiddleware,
-        function(req, res) {
+        async function(req, res) {
             const body: DatasetMessage = req.body;
 
             const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Question About ${
-                    dataset.aspects["dcat-dataset-strings"].title
-                }`;
+                const dcatDatasetStrings =
+                    dataset.aspects["dcat-dataset-strings"];
+
+                const subject = `Question About ${dcatDatasetStrings.title}`;
+
+                const { contactPoint } = dcatDatasetStrings;
+                const recipient =
+                    contactPoint && emailValidator.validate(contactPoint)
+                        ? contactPoint
+                        : options.defaultRecipient;
 
                 const html = renderTemplate(
                     Templates.Question,
@@ -110,41 +168,7 @@ export default function createApiRouter(
                     body,
                     html,
                     subject,
-                    // TODO: Send to the dataset's contactPoint
-                    options.defaultRecipient
-                );
-            });
-
-            handlePromise(promise, res, req.params.datasetId);
-        }
-    );
-
-    router.post(
-        "/public/send/dataset/:datasetId/report",
-        validateMiddleware,
-        function(req, res) {
-            const body: DatasetMessage = req.body;
-
-            const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Feedback Regarding ${
-                    dataset.aspects["dcat-dataset-strings"].title
-                }`;
-
-                const html = renderTemplate(
-                    Templates.Feedback,
-                    body,
-                    subject,
-                    options.externalUrl,
-                    dataset
-                );
-
-                return sendMail(
-                    options.smtpMailer,
-                    options.defaultRecipient,
-                    body,
-                    html,
-                    subject,
-                    options.defaultRecipient
+                    recipient
                 );
             });
 

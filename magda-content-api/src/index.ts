@@ -25,6 +25,16 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 5432
         })
+        .option("dbName", {
+            describe: "The database name.",
+            type: "string",
+            default: "content"
+        })
+        .option("authApiUrl", {
+            describe: "The base URL of the auth API",
+            type: "string",
+            default: "http://localhost:6104/v0"
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -33,15 +43,17 @@ const argv = addJwtSecretFromEnvVar(
 
 // Create a new Express application.
 var app = express();
-app.use(require("body-parser").json());
+// app.use(require("body-parser").json());
 
 app.use(
     "/v0",
     createApiRouter({
+        authApiUrl: argv.authApiUrl,
         jwtSecret: argv.jwtSecret,
         database: new Database({
             dbHost: argv.dbHost,
-            dbPort: argv.dbPort
+            dbPort: argv.dbPort,
+            dbName: argv.dbName
         })
     })
 );

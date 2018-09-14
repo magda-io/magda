@@ -93,7 +93,10 @@ export default class CswTransformer extends JsonTransformer {
     }
 
     private getRawDatasetId(jsonDataset: any): string {
-        return jsonDataset.json.fileIdentifier[0].CharacterString[0]._;
+        return jsonpath.value(
+            jsonDataset.json,
+            "$.fileIdentifier[*].CharacterString[*]._"
+        );
     }
 
     private getRawDistributionId(

@@ -1,7 +1,7 @@
 {
   "name": "@magda/csw-connector",
   "description": "MAGDA OGC Catalogue Service for the Web (CSW) Connector",
-  "version": "0.0.47-0",
+  "version": "0.0.49-0",
   "scripts": {
     "build": "yarn run compile",
     "compile": "yarn run compile-node && yarn run compile-browser",
@@ -12,11 +12,12 @@
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "retag-and-push": "retag-and-push"
+    "retag-and-push": "retag-and-push",
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.47-0",
+    "@magda/scripts": "^0.0.49-0",
     "@types/jsonpath": "^0.1.29",
     "@types/lodash": "^4.14.66",
     "@types/node": "^8.0.14",
@@ -30,8 +31,8 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.47-0",
-    "@magda/typescript-common": "^0.0.47-0",
+    "@magda/registry-aspects": "^0.0.49-0",
+    "@magda/typescript-common": "^0.0.49-0",
     "jsonpath": "^0.2.11",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",

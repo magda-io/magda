@@ -26,7 +26,7 @@ const argv = yargs
         include: {
             description: "Regex for which components to include",
             type: "string",
-            default: "^magda-.*-api$"
+            default: "^magda-.*$"
         }
     })
     .help().argv;
@@ -38,14 +38,19 @@ argv.include = new RegExp(argv.include);
 const input = fs
     .readdirSync(argv.input)
     .filter(x => x.match(argv.include))
-    .map(x => `-i ${path.join(argv.input, x, "src")}`)
+    .map(x => path.join(argv.input, x, "src"))
+    .filter(x => fs.existsSync(x))
+    .map(x => `-i ${x}`)
     .join(" ");
 
 const output = `-o ${argv.output}`;
 
 const config = `-x ${argv.config}`;
 
-childProcess.execSync(`apidoc ${input} ${output}`);
+childProcess.execSync(
+    `apidoc ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
+    { stdio: "pipe" }
+);
 
 // Convert APIDOC to swagger and openapi specs
 
@@ -92,6 +97,24 @@ function makePaths(apiProject, apiData, flavor) {
     return { paths };
 }
 
+function makeParamaterSchema(part, flavor) {
+    let schema = {
+        type: part
+    };
+    if (part.match(/\[\]$/)) {
+        schema = {
+            type: "array",
+            items: {
+                type: part.substr(0, part.length - 2)
+            }
+        };
+    }
+    if (flavor === "openapi") {
+        schema = { schema };
+    }
+    return schema;
+}
+
 function makePathCall(apiCall, flavor) {
     const { group, title, description } = apiCall;
     const summary = title;
@@ -117,15 +140,17 @@ function makePathCall(apiCall, flavor) {
                         bodyParameters.required.push(param.field);
                     }
                 } else {
-                    parameters.push({
-                        in: "query",
-                        name: param.field,
-                        description: param.description,
-                        required: !param.optional,
-                        schema: {
-                            type: param.type
-                        }
-                    });
+                    parameters.push(
+                        Object.assign(
+                            {
+                                in: "query",
+                                name: param.field,
+                                description: param.description,
+                                required: !param.optional
+                            },
+                            makeParamaterSchema(param.type, flavor)
+                        )
+                    );
                 }
             }
 

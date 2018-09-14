@@ -19,6 +19,7 @@ spec:
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
+            "--authApiUrl", "http://authorization-api/v0",
             "--listenPort", "80",
             "--dbHost", "content-db",
             "--dbPort", "5432"
@@ -26,7 +27,7 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /v0/content/logo.bin
+            path: /v0/healthz
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10

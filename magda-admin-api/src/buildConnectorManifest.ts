@@ -28,13 +28,13 @@ export default function buildConnectorManifest({
         kind: "Job",
         metadata: {
             name: jobName,
-            magdaSleuther: true
+            magdaMinion: true
         },
         spec: {
             template: {
                 metadata: {
                     name: jobName,
-                    magdaSleuther: true
+                    magdaMinion: true
                 },
                 spec: {
                     containers: [

@@ -3,36 +3,25 @@
 .au-header {
     padding: 16px 0 8px 0;
     padding: 1rem 0 0.5rem 0;
+
     @media screen and (min-width: $medium) {
         opacity: 0.9;
     }
-    .au-header__brand {
-        .au-header__text {
-            border-left: 1px solid;
-        }
-        .au-header__brand-image,
-        .au-header__text {
-            display: inline-block;
-            margin: 0;
-        }
 
-        @media screen and (max-width: $medium) {
-            text-align: center;
-            width: 100%;
-            .au-header__text {
-                margin-left: 4px;
-                margin-left: 0.25rem;
-                padding-left: 4px;
-                padding-left: 0.25rem;
-            }
-        }
-        @media screen and (min-width: $small) {
-            .au-header__text {
-                margin-left: 8px;
-                margin-left: 0.5rem;
-                padding-left: 8px;
-                padding-left: 0.5rem;
-            }
+    .au-header__brand {
+        display: block;
+        height: 78px;
+        min-width: 280px;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        line-height: 78px;
+
+        .au-header__logo {
+            display: inline-block;
+            vertical-align: middle;
+            max-width: 100%;
+            max-height: 100%;
         }
     }
 }
@@ -121,7 +110,7 @@
 
         @media screen and (min-width: $medium) {
             padding: 16px 16px;
-            padding: 1rem 1rem;
+            padding: 1rem 0.78rem;
         }
     }
     .au-link-list {

@@ -29,7 +29,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     it("aspectDefinitions if events modified them") { param =>
       testWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -46,7 +46,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     it("records if events modified them") { param =>
       testWebHook(param, None) { (payloads, actor) =>
         val record = Record("testId", "testName", Map())
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -64,17 +64,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -83,7 +83,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -100,17 +100,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -119,7 +119,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -133,17 +133,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A")), optionalAspects = Some(List("B"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -152,7 +152,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -168,17 +168,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -187,7 +187,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -204,17 +204,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -223,7 +223,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -239,17 +239,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("B")), optionalAspects = Some(List("C"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -258,7 +258,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -276,7 +276,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateRecord))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val record = Record("testId", "testName", Map())
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -293,7 +293,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateAspectDefinition))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -310,13 +310,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateRecordAspect))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
 
           val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -331,12 +331,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.DeleteRecord))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val record = Record("testId", "testName", Map())
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
 
-          param.asAdmin(Delete("/v0/records/testId")) ~> param.api.routes ~> check {
+          param.asAdmin(Delete("/v0/records/testId")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -352,12 +352,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
 
-          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api.routes ~> check {
+          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -373,12 +373,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
 
-          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -394,11 +394,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val record = Record("testId", "testName", Map())
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api.routes ~> check {
+          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -414,11 +414,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val record = Record("testId", "testName", Map())
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Put("/v0/records/testId", record.copy(name = "blah"))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/records/testId", record.copy(name = "blah"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -434,16 +434,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "aspects" / "A" / "foo", JsString("bar2"))))) ~> param.api.routes ~> check {
+          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "aspects" / "A" / "foo", JsString("bar2"))))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -459,16 +459,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
         testWebHook(param, Some(webHook)) { (payloads, actor) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
-          param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Put("/v0/records/testId", record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")))))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/records/testId", record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")))))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilDone(actor, "test")
@@ -486,17 +486,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -505,7 +505,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -519,17 +519,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "C"))))
       testWebHook(param, Some(webHook)) { (payloads, actor) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -538,7 +538,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -568,7 +568,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -577,18 +577,18 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val record = Record("testId", "testName", Map())
-        param.asAdmin(Post("/v0/records", record)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val modified = record.copy(name = "new name")
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         for (i <- 1 to 50) {
           val withAspect = modified.copy(aspects = Map("A" -> JsObject(Map("a" -> JsString(i.toString)))))
-          param.asAdmin(Put("/v0/records/testId", withAspect)) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/records/testId", withAspect)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
         }
@@ -621,7 +621,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -631,7 +631,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
         for (i <- 1 to 50) {
           val withAspect = a.copy(name = i.toString)
-          param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
         }
@@ -673,17 +673,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map())
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map())
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -692,7 +692,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -729,17 +729,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map())
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -748,7 +748,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(name = "new name")
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -789,17 +789,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map())
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString("distribution")))))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -808,7 +808,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(name = "new name")
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -845,22 +845,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -869,7 +869,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(aspects = Map("B" -> JsObject("value" -> JsString("different"))))
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -910,22 +910,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString("distribution")))))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -934,7 +934,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(aspects = Map("B" -> JsObject("value" -> JsString("different"))))
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -971,22 +971,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map())
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution")), "B" -> JsObject()))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -995,7 +995,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(name = "new name")
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1032,22 +1032,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val distribution = Record("distribution", "distribution", Map("B" -> JsObject("foo" -> JsString("bar"))))
-        param.asAdmin(Post("/v0/records", distribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1056,7 +1056,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(name = "new name")
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api.routes ~> check {
+        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1080,22 +1080,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       def doTestSync(param: FixtureParam)(resumeHook: ArrayBuffer[WebHookPayload] => Any) {
         testWebHook(param, None) { (payloads, actor) =>
-          val url = param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          val url = param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[WebHook].url
           }
 
-          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = "aerga://bargoiaergoi.aerg"))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = "aerga://bargoiaergoi.aerg"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           Util.waitUntilDone(actor, "test")
 
-          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = url))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = url))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1107,7 +1107,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       it("when subscriber posts /ack") { param =>
         doTestSync(param) { payloads =>
-          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1115,7 +1115,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           payloads.length shouldBe (1)
           payloads.last.lastEventId shouldBe (2)
 
-          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.lastEvent.get shouldBe (2)
@@ -1136,14 +1136,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       it("when new event is created") { param =>
         doTestSync(param) { payloads =>
-          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah"))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           Util.waitUntilDone(param.webHookActor, "test")
           payloads.length shouldBe (1)
 
-          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.lastEvent.get shouldBe (3)
@@ -1158,7 +1158,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       def doTestAsync(param: FixtureParam)(resumeHook: ArrayBuffer[WebHookPayload] => Any) {
         testAsyncWebHook(param, Some(defaultWebHook)) { (payloads, actor) =>
-          param.asAdmin(Post("/v0/records", dataset)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/records", dataset)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1166,7 +1166,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
           payloads.length shouldBe (1)
 
-          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.lastEvent.get shouldBe (1)
@@ -1180,7 +1180,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       it("when subscriber posts /ack") { param =>
         doTestAsync(param) { payloads =>
-          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1188,7 +1188,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           payloads.length shouldBe (2)
           payloads.last.lastEventId shouldBe (2)
 
-          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
 
@@ -1212,14 +1212,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
       it("should not resume when new event is created, but should include both events when resumed") { param =>
         doTestAsync(param) { payloads =>
-          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah2"))) ~> param.api.routes ~> check {
+          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah2"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           Util.waitUntilDone(param.webHookActor, "test")
           payloads.length shouldBe (1)
 
-          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack", WebHookAcknowledgement(false))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1236,7 +1236,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     it("delays further notifications until previous one is acknowledged") { param =>
       testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1250,7 +1250,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads(0).deferredResponseUrl shouldBe (Some("http://localhost:6101/v0/hooks/test/ack"))
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1263,7 +1263,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     it("retries an unsuccessful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1275,7 +1275,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads(0).aspectDefinitions.get.length shouldBe 1
         payloads(0).aspectDefinitions.get(0).id shouldBe ("testId")
 
-        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None))) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None))) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < (payloads(0).lastEventId)
         }
@@ -1294,7 +1294,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     it("sends the next events after a successful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, actor) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1310,11 +1310,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         payloads.clear()
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(lastEventId)))) ~> param.api.routes ~> check {
+        param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(lastEventId)))) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(lastEventId)
         }
@@ -1340,14 +1340,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
         }
 
         testWebHookWithResponse(param, Some(defaultWebHook), response) { (payloads, actor) =>
-          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.active shouldEqual (true)
           }
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1355,14 +1355,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
           payloads.length should be(1)
 
-          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.active shouldEqual (false)
           }
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1376,7 +1376,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       it("async - deactivates when /ack called with active=false") { param =>
         testAsyncWebHook(param, None) { (payloads, actor) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1385,14 +1385,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           val lastEventId = payloads(0).lastEventId
           payloads.clear()
 
-          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(false)))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(false)))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should not be (lastEventId)
           }
 
           payloads.length shouldEqual (0)
 
-          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1401,7 +1401,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
           payloads.length shouldEqual (0)
 
-          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.active shouldEqual (false)
@@ -1412,13 +1412,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       it("reactivates when /ack called with active=true") { param =>
         testAsyncWebHook(param, Some(defaultWebHook.copy(active = false))) { (payloads, actor) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           payloads.length shouldEqual (0)
 
-          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(true)))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(false, None, Some(true)))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1427,11 +1427,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           payloads.length shouldEqual (1)
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(payloads.last.lastEventId)))) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(true, Some(payloads.last.lastEventId)))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1452,7 +1452,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
             HookPersistence.retry(session, "test")
           }
 
-          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.active shouldEqual (true)
@@ -1461,7 +1461,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
           }
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1469,7 +1469,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
 
           payloads.length should be(1)
 
-          param.asAdmin(Get("/v0/hooks/test")) ~> param.api.routes ~> check {
+          param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             val hook = responseAs[WebHook]
             hook.active shouldEqual (true)
@@ -1482,7 +1482,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     }
   }
 
-  describe("Retry inactive Webhooks"){
+  describe("Retry inactive Webhooks") {
 
     implicit val timeout = Timeout(5 seconds)
 
@@ -1491,13 +1491,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val hook = defaultWebHook.copy(
         url = "http://localhost:" + server.localAddress.getPort.toString + "/hook",
         active = false,
-        enabled = true
-      )
+        enabled = true)
 
       val actor = param.webHookActor
-      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
-      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
@@ -1508,12 +1507,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       this.currentResponse = Some(response);
 
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       // --- should not in processing as initial value for active is false
-      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
       // --- No payload should be received by hook yet
       payloads.length should be(0)
 
@@ -1534,24 +1533,23 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
       val hook = defaultWebHook.copy(
         url = "http://localhost:" + server.localAddress.getPort.toString + "/hook",
         active = false,
-        enabled = false
-      )
+        enabled = false)
 
       val actor = param.webHookActor
-      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
-      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+      param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
       // --- should not in processing as initial value for active is false
-      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 1 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
       // --- send message to trigger the retry
       Await.ready(actor ? WebHookActor.RetryInactiveHooks, 15 seconds)
 
       // --- check the hook again to see if it's still inactive
-      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be (None)
+      Await.result(actor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
 
     }
 
@@ -1595,7 +1593,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll {
     // the new one on the current port (this is hard to reproduce but happens maybe 1/20th of the time.
     this.currentResponse = Some(response)
     val hook = webHook.getOrElse(defaultWebHook).copy(url = "http://localhost:" + server.localAddress.getPort.toString + "/hook")
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api.routes ~> check {
+    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 

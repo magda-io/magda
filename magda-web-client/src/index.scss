@@ -4,6 +4,7 @@ html {
 }
 body {
     overflow-y: scroll;
+    min-width: 300px;
 }
 .au-body .au-grid {
     p,
@@ -234,4 +235,9 @@ h4 {
     word-break: break-all;
     /* Instead use this non-standard one: */
     word-break: break-word;
+}
+
+/* Double class to get more specificity than the pancake css */
+.au-header.au-header {
+    padding: 0.5rem 0 0.5rem 0;
 }
