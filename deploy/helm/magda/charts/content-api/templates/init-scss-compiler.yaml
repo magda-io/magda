@@ -16,7 +16,7 @@ spec:
       containers:
       - name: init-scss-compiler
         image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js"
