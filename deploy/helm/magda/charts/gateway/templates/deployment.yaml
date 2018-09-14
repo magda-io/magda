@@ -34,6 +34,9 @@ spec:
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
+{{- if .Values.webAccessRequirePassword }}
+            "--webAccessRequirePassword", {{ .Values.webAccessRequirePassword | quote }},
+{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
@@ -72,6 +75,13 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+{{- if .Values.webAccessRequirePassword }}
+        - name: WEB_ACCESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: web-access-secret
+              key: password
+{{- end }}
         - name: SESSION_SECRET
           valueFrom:
             secretKeyRef:
