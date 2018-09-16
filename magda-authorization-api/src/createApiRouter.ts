@@ -3,7 +3,11 @@ import { Maybe } from "tsmonad";
 
 import Database from "./Database";
 import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
-import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import {
+    getUserIdHandling,
+    getUserId
+} from "@magda/typescript-common/dist/session/GetUserId";
+import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
 export interface ApiRouterOptions {
@@ -109,14 +113,35 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "isAdmin": true
      *    }
      *
-     * @apiErrorExample {json} 401
-     *    Not Authorized (if not logged in).
+     * @apiErrorExample {json} 200
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
      */
 
-    router.get("/public/users/whoami", function(req, res) {
-        getUserIdHandling(req, res, options.jwtSecret, (userId: string) =>
-            handlePromise(res, database.getUser(userId))
-        );
+    router.get("/public/users/whoami", async function(req, res) {
+        try {
+            const userId = getUserId(req, options.jwtSecret).valueOr(null);
+            if (!userId) {
+                throw new AuthError();
+            }
+            const user = (await database.getUser(userId)).valueOr(null);
+            if (!user) {
+                throw new GenericError("Not Found User", 404);
+            }
+            res.json(user);
+        } catch (e) {
+            if (e instanceof GenericError) {
+                res.json(e.toData());
+            } else {
+                console.error(
+                    `Error happened when processed \`/public/users/whoami\`: ${e}`
+                );
+                res.status(500).send("Internal Server Error.");
+            }
+        }
     });
 
     /**
