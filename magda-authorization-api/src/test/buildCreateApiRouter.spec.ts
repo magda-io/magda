@@ -465,7 +465,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             const res = await req.then(res => res);
 
-                            expect(res.status).to.equal(401);
+                            expect(res.status).to.equal(200);
 
                             return true;
                         } catch (e) {
