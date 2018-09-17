@@ -7,3 +7,4 @@ resources:
     cpu: 50m
 smtpPort: 587
 defaultRecipient: "mail@example.com"
+alwaysSendToDefaultRecipient: false
