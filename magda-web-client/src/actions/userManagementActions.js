@@ -18,13 +18,23 @@ export function requestWhoAmI() {
         fetch(config.authApiUrl + "users/whoami", {
             credentials: "include"
         })
-            .then(response => {
+            .then(async response => {
                 if (response.status === 200) {
-                    return response
-                        .json()
-                        .then(user => dispatch(receiveWhoAmISignedIn(user)));
-                } else if (response.status === 401) {
-                    dispatch(receiveWhoAmISignedOut());
+                    const res = await response.json();
+                    if (res.isError) {
+                        switch (res.errorCode) {
+                            case 401:
+                                dispatch(receiveWhoAmISignedOut());
+                                break;
+                            default:
+                                throw new Error(
+                                    "Error when fetching current user: " +
+                                        res.errorCode
+                                );
+                        }
+                    } else {
+                        dispatch(receiveWhoAmISignedIn(res));
+                    }
                 } else {
                     throw new Error(
                         "Error when fetching current user: " + response.status
