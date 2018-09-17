@@ -16,7 +16,7 @@ export interface ApiRouterOptions {
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
-    alwaysSendToDefault: boolean;
+    alwaysSendToDefaultRecipient: boolean;
 }
 
 function validateMiddleware(
@@ -174,7 +174,7 @@ export default function createApiRouter(
                     html,
                     subject,
                     recipient,
-                    options.alwaysSendToDefault
+                    options.alwaysSendToDefaultRecipient
                 );
             });
 

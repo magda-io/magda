@@ -83,7 +83,7 @@ app.use(
             smtpUsername: argv.smtpUsername || process.env.SMTP_USERNAME,
             smtpPassword: argv.smtpPassword || process.env.SMTP_PASSWORD
         }),
-        alwaysSendToDefault: argv.alwaysSendToDefault
+        alwaysSendToDefaultRecipient: argv.alwaysSendToDefaultRecipient
     })
 );
 

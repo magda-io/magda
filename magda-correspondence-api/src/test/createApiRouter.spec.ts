@@ -171,7 +171,7 @@ describe("send dataset request mail", () => {
             app = express();
             app.use(require("body-parser").json());
             const options = resolveRouterOptions(stubbedSMTPMailer);
-            options.alwaysSendToDefault = true;
+            options.alwaysSendToDefaultRecipient = true;
 
             app.use("/", createApiRouter(options));
 
@@ -412,7 +412,7 @@ describe("send dataset request mail", () => {
             smtpMailer: smtpMailer,
             registry,
             externalUrl: EXTERNAL_URL,
-            alwaysSendToDefault: false
+            alwaysSendToDefaultRecipient: false
         };
     }
 });
