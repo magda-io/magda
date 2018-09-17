@@ -136,6 +136,7 @@ export type ParsedDataset = {
     publisher: Publisher,
     source: string,
     linkedDataRating: number,
+    contactPoint: string,
     error: ?FetchError
 };
 
@@ -355,6 +356,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
         : defaultPublisher;
+    const contactPoint: string = aspects["dcat-dataset-strings"].contactPoint;
 
     const source: string = aspects["source"]
         ? aspects["source"]["name"]
@@ -427,6 +429,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         issuedDate,
         updatedDate,
         landingPage,
+        contactPoint,
         tags,
         description,
         distributions,

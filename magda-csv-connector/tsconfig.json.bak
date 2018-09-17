@@ -1,0 +1,8 @@
+{
+    "extends": "./tsconfig-build.json",
+    "compilerOptions": {
+        "paths": {
+            "@magda/typescript-common/dist/*": ["./node_modules/@magda/typescript-common/src/*"]
+        }
+    }
+}

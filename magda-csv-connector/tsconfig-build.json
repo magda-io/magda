@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "lib": ["ES2017", "dom"]
+    },
+    "include": ["src"]
+}
