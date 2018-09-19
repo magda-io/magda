@@ -111,7 +111,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        router.post(`/${contentId}`, ADMIN, body, async function(req, res) {
+        const route = configurationItem.route || `/${contentId}`;
+
+        router.post(route, ADMIN, body, async function(req, res) {
             try {
                 let content = req.body;
 
@@ -135,9 +137,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     req.headers["content-type"] ||
                     "text/plain";
 
-                await database.setContentById(contentId, contentType, content);
+                const finalContentId = req.path.substr(1);
 
-                res.status(201).send({
+                await database.setContentById(
+                    finalContentId,
+                    contentType,
+                    content
+                );
+
+                res.status(201).json({
                     result: "SUCCESS"
                 });
             } catch (e) {
@@ -147,6 +155,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 console.error(e);
             }
         });
+
+        if (configurationItem.route) {
+            router.delete(route, ADMIN, body, async function(req, res) {
+                const finalContentId = req.path.substr(1);
+
+                await database.deleteContentById(finalContentId);
+
+                res.status(204).json({
+                    result: "SUCCESS"
+                });
+            });
+        }
+    });
+
+    router.get("/all", ADMIN, async function(req, res) {
+        res.json(await database.getContentSummary());
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.

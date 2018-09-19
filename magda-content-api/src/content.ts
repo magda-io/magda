@@ -26,6 +26,7 @@ export enum ContentEncoding {
 }
 
 export interface ContentItem {
+    route?: RegExp;
     body?: any; // <-- express middleware can go here
     encode?: ContentEncoding;
     contentType?: string;
@@ -57,5 +58,19 @@ export const content: { [s: string]: ContentItem } = {
             limit: "5mb"
         }),
         contentType: "text/css"
+    },
+    // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
+    csv: {
+        route: /^\/(csv-).+$/,
+        body: bodyParser.raw({
+            type: [
+                "text/csv",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ],
+            limit: "10mb"
+        }),
+        encode: ContentEncoding.base64
     }
+    // END TEMPORARY UNTIL STORAGE API GETS HERE
 };
