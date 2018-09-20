@@ -25,6 +25,7 @@ import DescriptionBox from "../UI/DescriptionBox";
 import DistributionIcon from "../assets/distribution_icon.svg";
 import "./RecordHandler.css";
 import TagsBox from "../UI/TagsBox";
+import ContactPoint from "../UI/ContactPoint";
 import QualityIndicator from "../UI/QualityIndicator";
 
 class RecordHandler extends React.Component {
@@ -413,6 +414,13 @@ class RecordHandler extends React.Component {
                                             }
                                         />
                                     </div>
+                                    {this.props.dataset.contactPoint && (
+                                        <ContactPoint
+                                            contactPoint={
+                                                this.props.dataset.contactPoint
+                                            }
+                                        />
+                                    )}
                                     <TagsBox tags={this.props.dataset.tags} />
                                 </div>
                             </div>

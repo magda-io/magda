@@ -16,6 +16,7 @@ export interface ApiRouterOptions {
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
+    alwaysSendToDefaultRecipient: boolean;
 }
 
 function validateMiddleware(
@@ -61,25 +62,28 @@ export default function createApiRouter(
     );
 
     /**
-     * @apiGroup Correspondence
+     * @apiGroup Correspondence API
      *
      * @api {post} /v0/send/dataset/request Send Dataset Request
-     * @apiDescription TODO
      *
-     * @apiParam (Request body) {string} csp-report TODO
+     * @apiDescription Sends a request for a dataset to the site administrators
      *
-     * @apiSuccess {string} result SUCCESS
+     * @apiParam (Request body) {string} senderName The name of the sender
+     * @apiParam (Request body) {string} senderEmail The email address of the sender
+     * @apiParam (Request body) {string} message The message to send
+     *
+     * @apiSuccess {string} status OK
      *
      * @apiSuccessExample {json} 200
      *    {
-     *         "result": "SUCCESS"
+     *         "status": "OK"
      *    }
      *
-     * @apiError {string} result FAILED
+     * @apiError {string} status FAILED
      *
      * @apiErrorExample {json} 400
      *    {
-     *         "result": "FAILED"
+     *         "status": "Failed"
      *    }
      */
     router.post("/public/send/dataset/request", validateMiddleware, function(
@@ -101,22 +105,59 @@ export default function createApiRouter(
                 options.defaultRecipient,
                 body,
                 html,
-                subject
+                subject,
+                options.defaultRecipient
             ),
             res
         );
     });
 
+    /**
+     * @apiGroup Correspondence API
+     *
+     * @api {post} /v0/send/dataset/:datasetId/question Send a question about a dataest
+     *
+     * @apiDescription Sends a question about a dataset to the data custodian if available,
+     *  and to the administrators if not
+     *
+     * @apiParam (Request body) {string} senderName The name of the sender
+     * @apiParam (Request body) {string} senderEmail The email address of the sender
+     * @apiParam (Request body) {string} message The message to send
+     *
+     * @apiSuccess {string} status OK
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "status": "OK"
+     *    }
+     *
+     * @apiError {string} status FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "status": "Failed"
+     *    }
+     */
     router.post(
         "/public/send/dataset/:datasetId/question",
         validateMiddleware,
-        function(req, res) {
+        async function(req, res) {
             const body: DatasetMessage = req.body;
 
             const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Question About ${
-                    dataset.aspects["dcat-dataset-strings"].title
-                }`;
+                const dcatDatasetStrings =
+                    dataset.aspects["dcat-dataset-strings"];
+
+                const { contactPoint } = dcatDatasetStrings;
+
+                const validContactPoint =
+                    contactPoint && emailValidator.validate(contactPoint);
+
+                const recipient = validContactPoint
+                    ? contactPoint
+                    : options.defaultRecipient;
+
+                const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
                     Templates.Question,
@@ -132,41 +173,8 @@ export default function createApiRouter(
                     body,
                     html,
                     subject,
-                    // TODO: Send to the dataset's contactPoint
-                    options.defaultRecipient
-                );
-            });
-
-            handlePromise(promise, res, req.params.datasetId);
-        }
-    );
-
-    router.post(
-        "/public/send/dataset/:datasetId/report",
-        validateMiddleware,
-        function(req, res) {
-            const body: DatasetMessage = req.body;
-
-            const promise = getDataset(req.params.datasetId).then(dataset => {
-                const subject = `Feedback Regarding ${
-                    dataset.aspects["dcat-dataset-strings"].title
-                }`;
-
-                const html = renderTemplate(
-                    Templates.Feedback,
-                    body,
-                    subject,
-                    options.externalUrl,
-                    dataset
-                );
-
-                return sendMail(
-                    options.smtpMailer,
-                    options.defaultRecipient,
-                    body,
-                    html,
-                    subject,
-                    options.defaultRecipient
+                    recipient,
+                    options.alwaysSendToDefaultRecipient
                 );
             });
 

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import MarkdownViewer, { willBeTruncated } from "../UI/MarkdownViewer";
+import ToggleButton from "./ToggleButton";
 import "./DescriptionBox.css";
 import downArrowIcon from "../assets/downArrow.svg";
 import upArrowIcon from "../assets/upArrow.svg";
@@ -40,21 +41,28 @@ class DescriptionBox extends Component {
                 />
                 {shouldShowToggleButton ? (
                     this.state.isExpanded ? (
-                        <button
-                            className="toggle-button"
+                        <ToggleButton
                             onClick={e => this.onToggleButtonClick(e)}
                         >
                             <span>Show less description</span>
-                            <img src={upArrowIcon} alt="upArrowIcon" />
-                        </button>
+                            <img
+                                className="description-box-toggle-button-icon"
+                                src={upArrowIcon}
+                                alt="upArrowIcon"
+                            />
+                        </ToggleButton>
                     ) : (
-                        <button
-                            className="toggle-button"
+                        <ToggleButton
+                            className="description-box-toggle-button"
                             onClick={e => this.onToggleButtonClick(e)}
                         >
                             <span>Show full description</span>
-                            <img src={downArrowIcon} alt="downArrow" />
-                        </button>
+                            <img
+                                className="description-box-toggle-button-icon"
+                                src={downArrowIcon}
+                                alt="downArrow"
+                            />
+                        </ToggleButton>
                     )
                 ) : null}
             </div>
