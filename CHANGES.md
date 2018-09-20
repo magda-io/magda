@@ -7,6 +7,7 @@
 -   Made contact point visible on dataset page
 -   Allowed UI SCSS variables to be changed via k8s job
 -   Added a `set-scss-vars` script for updating UI SCSS variables
+-   Fixed that `leaflet.css` had not been included by SCSS compiler
 
 ## 0.0.48
 
