@@ -16,7 +16,7 @@ export function requestWhoAmI() {
         });
 
         fetch(config.authApiUrl + "users/whoami", {
-            credentials: "include"
+            credentials: "same-origin"
         })
             .then(async response => {
                 if (response.status === 200) {
@@ -76,7 +76,7 @@ export function requestSignOut() {
         });
 
         fetch(config.baseUrl + "auth/logout", {
-            credentials: "include"
+            credentials: "same-origin"
         }).then(response => {
             if (response.status <= 400) {
                 dispatch(completedSignOut());
@@ -115,7 +115,9 @@ export function requestAuthProviders() {
             type: actionTypes.REQUEST_AUTH_PROVIDERS
         });
 
-        fetch(config.baseUrl + "auth/providers")
+        fetch(config.baseUrl + "auth/providers", {
+            credentials: "same-origin"
+        })
             .then(response => {
                 if (response.status === 200) {
                     return response

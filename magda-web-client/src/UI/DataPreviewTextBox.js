@@ -35,7 +35,9 @@ class DataPreviewTextBox extends Component<{
             loading: true,
             text: null
         });
-        return fetch(config.proxyUrl + url)
+        return fetch(config.proxyUrl + url, {
+            credentials: "same-origin"
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(

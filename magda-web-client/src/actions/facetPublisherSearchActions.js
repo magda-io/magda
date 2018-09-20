@@ -62,7 +62,10 @@ export function fetchPublisherSearchResults(
                 config.searchApiUrl +
                     `facets/publisher/options?generalQuery=${encodeURIComponent(
                         generalQuery.q || "*"
-                    )}&${generalQueryString}&facetQuery=${facetQuery}`
+                    )}&${generalQueryString}&facetQuery=${facetQuery}`,
+                {
+                    credentials: "same-origin"
+                }
             )
                 .then(response => {
                     if (response.status !== 200) {

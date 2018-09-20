@@ -30,7 +30,9 @@ export function requestRegionsFailed(error: FetchError): FacetAction {
 export function fetchRegionSearchResults(facetQuery: string): Store {
     return (dispatch: Dispatch) => {
         dispatch(requestRegions(facetQuery));
-        return fetch(config.searchApiUrl + `regions?query=${facetQuery}`)
+        return fetch(config.searchApiUrl + `regions?query=${facetQuery}`, {
+            credentials: "same-origin"
+        })
             .then(response => {
                 if (response.status === 200) {
                     return response.json();

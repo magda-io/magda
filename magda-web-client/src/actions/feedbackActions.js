@@ -48,6 +48,7 @@ export function fetchFeedback(values) {
             method: "POST",
             body: values,
             responseType: "json",
+            credentials: "same-origin",
             headers: {
                 "Content-Type": "application/json"
             }

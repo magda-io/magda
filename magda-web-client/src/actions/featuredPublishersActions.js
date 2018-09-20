@@ -28,7 +28,10 @@ export function fetchFeaturedPublishersFromRegistry(
         const fetches = ids.map(id =>
             fetch(
                 config.registryApiUrl +
-                    `records/${id}?aspect=organization-details`
+                    `records/${id}?aspect=organization-details`,
+                {
+                    credentials: "same-origin"
+                }
             ).then(response => response.json())
         );
         Promise.all(fetches).then(jsons => dispatch(receivePublishers(jsons)));

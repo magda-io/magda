@@ -7,7 +7,9 @@ class ApiViewer extends React.Component {
         this.state = { data: null, hitCount: 0 };
     }
     componentDidMount() {
-        fetch(this.props.url)
+        fetch(this.props.url, {
+            credentials: "same-origin"
+        })
             .then(response => {
                 if (response.status === 200) {
                     return response.json();

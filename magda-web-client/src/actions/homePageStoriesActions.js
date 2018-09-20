@@ -29,7 +29,9 @@ export function fetchHomepageStory(idx) {
                 : "";
             const url = baseUrl + config.homePageConfig.stories[idx];
 
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                credentials: "same-origin"
+            });
             if (response.status !== 200)
                 throw new Error(
                     `Failed to load data. Status code: ${response.status}`

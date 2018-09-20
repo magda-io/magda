@@ -55,6 +55,7 @@ export default class RequestFormLogic extends React.Component {
                 "Content-type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
+            credentials: "same-origin",
             body: JSON.stringify({
                 message,
                 senderEmail,

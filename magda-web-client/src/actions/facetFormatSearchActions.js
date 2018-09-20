@@ -60,7 +60,9 @@ export function fetchFormatSearchResults(
                     generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;
 
-            return fetch(url)
+            return fetch(url, {
+                credentials: "same-origin"
+            })
                 .then(response => {
                     if (response.status === 200) {
                         return response.json();

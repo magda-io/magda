@@ -32,7 +32,9 @@ export function fetchNewsfromRss() {
             return false;
         }
         const url = config.rssUrl;
-        fetch(url)
+        fetch(url, {
+            credentials: "same-origin"
+        })
             .then(response => {
                 if (response.status === 200) {
                     return response.text();
