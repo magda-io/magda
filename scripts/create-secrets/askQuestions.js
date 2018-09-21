@@ -329,8 +329,7 @@ const questions = [
     {
         type: "list",
         name: "use-web-access-secret",
-        message:
-            "Do you need to setup the username & password used to access Magda web interface?",
+        message: "Do you want to setup HTTP Basic authentication?",
         choices: [
             {
                 name: "YES",
@@ -346,7 +345,7 @@ const questions = [
         type: "input",
         name: "web-access-username",
         message:
-            "Please provide the username used to access Magda web interface:",
+            "Please provide the username for HTTP Basic authentication setup:",
         when: answers => answers["use-web-access-secret"] === true,
         validate: input => {
             const r = trim(input);
@@ -363,7 +362,7 @@ const questions = [
         type: "transformer-list",
         name: "manual-web-access-password",
         message:
-            "Do you want to manually input the password used to access Magda web interface?",
+            "Do you want to manually input the password for HTTP Basic authentication setup?",
         choices: [
             {
                 name: "NO (A random password will be generated for you now)",
@@ -399,7 +398,7 @@ const questions = [
         type: "input",
         name: "web-access-password",
         message:
-            "Please provide the password used to access Magda web interface:",
+            "Please provide the password for HTTP Basic authentication setup:",
         when: answers =>
             answers["use-web-access-secret"] === true &&
             answers["manual-web-access-password"]["answer"] === true,
