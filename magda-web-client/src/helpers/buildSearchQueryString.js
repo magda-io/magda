@@ -39,7 +39,7 @@ export default function buildSearchQueryString(query: Query) {
         formats,
         locations,
         "start=" + startIndex,
-        "limit=" + config.resultsPerPage
+        "limit=" + (config.resultsPerPage + 1) // we get one more than we need so we can see what the score of the item at the top of the next page is
     ]);
 
     return queryArr.join("&");

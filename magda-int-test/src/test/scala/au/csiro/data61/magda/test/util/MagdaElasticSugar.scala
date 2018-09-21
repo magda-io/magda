@@ -43,18 +43,22 @@ object MagdaClassloaderLocalNodeProvider {
     val cwdPath: Path = Paths get System.getProperty("user.dir")
     val analysisFolderPath: Path = pathHome.resolve("config/analysis")
 
-    if(!Files.exists(analysisFolderPath)) Files.createDirectories(analysisFolderPath)
+    if (!Files.exists(analysisFolderPath)) Files.createDirectories(analysisFolderPath)
 
-    if(!Files.exists(cwdPath.resolve("magda-elastic-search/wn_s_test.pl"))) {
-        throw new Exception("Cannot locate sample WordNet synonym lib.")
+    val sampleWordnetPath = if (Files.exists(cwdPath.resolve("magda-elastic-search/wn_s_test.pl"))) {
+      cwdPath.resolve("magda-elastic-search/wn_s_test.pl")
+    } else if (Files.exists(cwdPath.resolve("../magda-elastic-search/wn_s_test.pl"))) {
+      cwdPath.resolve("../magda-elastic-search/wn_s_test.pl")
+    } else {
+      throw new Exception("Cannot locate sample WordNet synonym lib.")
     }
 
-    if(!Files.exists(analysisFolderPath.resolve("wn_s.pl"))){
-        println("**** WordNet synonym lib not exists. Copying...****")
-        copy (cwdPath.resolve("magda-elastic-search/wn_s_test.pl"), analysisFolderPath.resolve("wn_s.pl"), REPLACE_EXISTING)
-        println("**** WordNet synonym lib creation completed! ****")
-    }else{
-        println("**** WordNet synonym lib exists before creation****")
+    if (!Files.exists(analysisFolderPath.resolve("wn_s.pl"))) {
+      println("**** WordNet synonym lib not exists. Copying...****")
+      copy(sampleWordnetPath, analysisFolderPath.resolve("wn_s.pl"), REPLACE_EXISTING)
+      println("**** WordNet synonym lib creation completed! ****")
+    } else {
+      println("**** WordNet synonym lib exists before creation****")
     }
 
     val settings = requiredSettings ++ Map(

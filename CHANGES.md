@@ -8,6 +8,9 @@
 -   Allowed UI SCSS variables to be changed via k8s job
 -   Added a `set-scss-vars` script for updating UI SCSS variables
 -   Allowed the cluster to be protected by a password
+-   Made the add a dataset form appear where the results get to a certain configurable score threshold
+-   Made the CSW connector look for names for service-based datasets in another place
+-   Made CSW connector gracefully handle datasets without ids instead of crashing
 
 ## 0.0.48
 

@@ -79,6 +79,12 @@ const argv = yargs
         describe:
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
         type: "string"
+    })
+    .option("datasetSearchSuggestionScoreThreshold", {
+        describe:
+            "The score threshold after which to display the dataset suggestion form",
+        type: "number",
+        default: 65
     }).argv;
 
 var app = express();
@@ -154,7 +160,9 @@ app.get("/server-config.js", function(req, res) {
                     .segment("correspondence")
                     .toString()
         ),
-        fallbackUrl: argv.fallbackUrl
+        fallbackUrl: argv.fallbackUrl,
+        datasetSearchSuggestionScoreThreshold:
+            argv.datasetSearchSuggestionScoreThreshold
     };
     res.type("application/javascript");
     res.send("window.magda_server_config = " + JSON.stringify(config) + ";");

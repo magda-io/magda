@@ -67,7 +67,8 @@ package misc {
       landingPage: Option[String] = None,
       years: Option[String] = None,
       indexed: Option[OffsetDateTime] = None,
-      quality: Double) {
+      quality: Double,
+      score: Option[Float]) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
 
@@ -385,7 +386,7 @@ package misc {
     implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat14(Agent.apply)
-    implicit val dataSetFormat = jsonFormat19(DataSet.apply)
+    implicit val dataSetFormat = jsonFormat20(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

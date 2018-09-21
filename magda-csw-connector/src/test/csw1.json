@@ -85,7 +85,7 @@
             }
         },
         "id": "ds-connector-IDIDID",
-        "name": "IDIDID",
+        "name": "Imagery service Queensland - QldBase QGovSispUsers",
         "sourceTag": "stag"
     },
     "org-connector-DEPT": {

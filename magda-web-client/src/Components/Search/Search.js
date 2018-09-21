@@ -162,6 +162,8 @@ class Search extends Component {
             queryString.parse(this.props.location.search).q || "";
         const currentPage =
             +queryString.parse(this.props.location.search).page || 1;
+        const isBlankSearch = searchText === "*" || searchText === "";
+
         return (
             <ReactDocumentTitle
                 title={`Datasets search: ${searchText} | Page ${currentPage} | ${
@@ -222,6 +224,8 @@ class Search extends Component {
                                                 ).open
                                             }
                                             searchText={searchText}
+                                            isFirstPage={currentPage === 1}
+                                            suggestionBoxAtEnd={isBlankSearch}
                                         />
                                         {this.props.hitCount >
                                             config.resultsPerPage && (
