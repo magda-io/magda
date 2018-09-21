@@ -15,7 +15,10 @@ export function requestWhoAmI() {
             type: actionTypes.REQUEST_WHO_AM_I
         });
 
-        fetch(config.authApiUrl + "users/whoami", config.fetchOptions)
+        fetch(config.authApiUrl + "users/whoami", {
+            ...config.fetchOptions,
+            credentials: "include"
+        })
             .then(async response => {
                 if (response.status === 200) {
                     const res = await response.json();
@@ -73,20 +76,21 @@ export function requestSignOut() {
             type: actionTypes.REQUEST_SIGN_OUT
         });
 
-        fetch(config.baseUrl + "auth/logout", config.fetchOptions).then(
-            response => {
-                if (response.status <= 400) {
-                    dispatch(completedSignOut());
-                    return;
-                } else {
-                    dispatch(
-                        signOutError(
-                            new Error("Error signing out: " + response.status)
-                        )
-                    );
-                }
+        fetch(config.baseUrl + "auth/logout", {
+            ...config.fetchOptions,
+            credentials: "include"
+        }).then(response => {
+            if (response.status <= 400) {
+                dispatch(completedSignOut());
+                return;
+            } else {
+                dispatch(
+                    signOutError(
+                        new Error("Error signing out: " + response.status)
+                    )
+                );
             }
-        );
+        });
     };
 }
 
