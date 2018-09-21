@@ -7,6 +7,8 @@
 -   Made contact point visible on dataset page
 -   Allowed UI SCSS variables to be changed via k8s job
 -   Added a `set-scss-vars` script for updating UI SCSS variables
+-   Made the CSW connector look for names for service-based datasets in another place
+-   Made CSW connector gracefully handle datasets without ids instead of crashing
 
 ## 0.0.48
 

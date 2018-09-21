@@ -69,7 +69,7 @@ export function runConnectorTest(
                         if (options.cleanRegistry) {
                             options.cleanRegistry(registry);
                         }
-                        // console.log(JSON.stringify(registry.records, null, 2))
+
                         assert.deepEqual(registry.records, testCase.output);
                         if (code === 0) {
                             done();
