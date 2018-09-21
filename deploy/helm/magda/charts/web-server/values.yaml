@@ -14,4 +14,5 @@ resources:
   limits:
     cpu: 100m
 disableAuthenticationFeatures: false
+datasetSearchSuggestionScoreThreshold: 65
 service: {}

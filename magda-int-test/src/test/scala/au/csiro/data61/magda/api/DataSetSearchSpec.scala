@@ -122,12 +122,12 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
         val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
 
-        val synonymTestData = synonyms.map{
-          case(searchKeyword) =>
+        val synonymTestData = synonyms.map {
+          case (searchKeyword) =>
             val gen = for {
-              synonym <- Gen.oneOf(synonyms.filter(_!==searchKeyword))
+              synonym <- Gen.oneOf(synonyms.filter(_ !== searchKeyword))
               dataset <- Generators.dataSetGen(scala.collection.mutable.HashMap.empty)
-              datasetWithSynonym = dataset.copy( description = Some(synonym))
+              datasetWithSynonym = dataset.copy(description = Some(synonym))
             } yield GenResult(searchKeyword, synonym, datasetWithSynonym)
             gen.retryUntil(_ => true).sample.get
         }
@@ -774,6 +774,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
     }
+
     it("should resolve valid regions") {
       val thisQueryGen = set(innerRegionQueryGen).map(queryRegions => new Query(regions = queryRegions.map(Specified.apply)))
 
@@ -832,6 +833,28 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
           status shouldBe OK
         }
+      }
+    }
+
+    it("should return scores, and they should be in order") {
+      val gen = for {
+        index <- mediumIndexGen
+        query <- textQueryGen(queryGen(index._2))
+      } yield (index, query)
+
+      forAll(gen) {
+        case (indexTuple, queryTuple) ⇒
+          val (textQuery, _) = queryTuple
+          val (_, _, routes) = indexTuple
+
+          Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            whenever(response.hitCount > 0) {
+              response.dataSets.forall(dataSet => dataSet.score.isDefined) shouldBe true
+              response.dataSets.map(_.score.get).sortBy(-_) shouldEqual response.dataSets.map(_.score.get)
+            }
+          }
       }
     }
   }

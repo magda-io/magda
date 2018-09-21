@@ -200,8 +200,7 @@ object Registry {
         addrState = organizationDetails.extract[String]('addrState.?),
         addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
         addrCountry = organizationDetails.extract[String]('addrCountry.?),
-        website = organizationDetails.extract[String]('website.?)
-      )
+        website = organizationDetails.extract[String]('website.?))
     }
 
     def convertRegistryDataSet(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {
@@ -254,7 +253,8 @@ object Registry {
         contactPoint = dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
         distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
         landingPage = dcatStrings.extract[String]('landingPage.?),
-        quality = quality)
+        quality = quality,
+        score = None)
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {

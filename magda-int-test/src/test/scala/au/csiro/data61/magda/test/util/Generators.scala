@@ -399,7 +399,8 @@ object Generators {
     contactPoint = contactPoint,
     distributions = distributions,
     landingPage = landingPage,
-    quality = quality)
+    quality = quality,
+    score = None)
 
   val INDEXED_REGIONS_COUNT = 12
   def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)

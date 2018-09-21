@@ -14,7 +14,6 @@ import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-import { enableSuggestDatasetPage } from "../config";
 
 import "./OtherPages.css";
 
@@ -30,10 +29,7 @@ const renderBody = () => {
                 component={RecordHandler}
             />
             <Route path="/dataset/:datasetId" component={RecordHandler} />
-            {/* hide in prod */}
-            {enableSuggestDatasetPage && (
-                <Route exact path="/suggest" component={SuggestDataset} />
-            )}
+            <Route exact path="/suggest" component={SuggestDataset} />
             <Route exact path="/organisations" component={PublishersViewer} />
             <Route
                 exact

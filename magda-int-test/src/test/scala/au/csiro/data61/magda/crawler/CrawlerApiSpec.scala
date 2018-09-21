@@ -11,7 +11,7 @@ import org.scalacheck.Gen
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
+import akka.http.scaladsl.model.StatusCodes.{ Accepted, OK }
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 
 import scala.concurrent.duration._
@@ -33,6 +33,7 @@ import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
+import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -70,13 +71,12 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         val indexNames = List(
           indices.getIndex(config, Indices.DataSetsIndex),
           indices.getIndex(config, Indices.PublishersIndex),
-          indices.getIndex(config, Indices.FormatsIndex)
-        )
+          indices.getIndex(config, Indices.FormatsIndex))
 
         doTest(indices, indexNames, source, true)
         doTest(indices, indexNames, source, false)
 
-        indexNames.foreach{ idxName =>
+        indexNames.foreach { idxName =>
           deleteIndex(idxName)
         }
     }
@@ -116,7 +116,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       // Combine all the datasets but keep what interface they come from
       val allDataSets = filteredSource
 
-      indexNames.foreach{ idxName =>
+      indexNames.foreach { idxName =>
         refresh(idxName)
       }
 
@@ -129,7 +129,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
             case Right(r) =>
               logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
               logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${r.result.totalHits}" +
-              s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
+                s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
               logger.error(s"Returned results: ${r.result.hits}")
               logger.error(s"First index: ${source._1.map(_.normalToString)}")
               logger.error(s"Second index: ${source._2.map(_.normalToString)}")
@@ -159,8 +159,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         bothDataSets.foreach {
           case (resDataSet, inputDataSet) =>
             // Everything except publisher and catalog should be the same between input/output
-            def removeDynamicFields(dataSet: DataSet) = dataSet.copy(publisher = None, catalog = None, indexed = None)
-            removeDynamicFields(resDataSet) should equal(removeDynamicFields(inputDataSet))
+            MagdaMatchers.dataSetEqual(resDataSet, inputDataSet)
 
             resDataSet.publisher should equal(inputDataSet.publisher)
         }
