@@ -2,6 +2,7 @@
 
 -   Specify correct externalURL and namespace for gitlab to fix deployment auth.
 -   Add a CSV connector
+-   Rename config page to admin; include connector management functionality
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
 -   Added ability to ensure that all emails go to default recipient despite what their normal recipient would be.
