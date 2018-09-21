@@ -119,6 +119,8 @@ function doK8sExecution(config, shouldNotAsk = false) {
 
         createDbPasswords(env, namespace, configData);
 
+        createWebAccessPassword(env, namespace, configData);
+
         if (configData["use-regcred"] === true) {
             /**
              * always use `regcred-password`
@@ -224,6 +226,15 @@ function overrideSettingWithEnvVarsBasedOnQuestionAnswers(env, configData) {
             configData["manual-db-passwords"]["password"];
     }
 
+    if (
+        typeof configData["manual-web-access-password"] === "object" &&
+        configData["manual-web-access-password"]["answer"] === false &&
+        configData["manual-web-access-password"]["password"]
+    ) {
+        configData["web-access-password"] =
+            configData["manual-web-access-password"]["password"];
+    }
+
     return configData;
 }
 
@@ -298,6 +309,17 @@ function createDbPasswords(env, namespace, configData) {
         data[key] = configData["db-passwords"];
     });
     createSecret(env, namespace, "db-passwords", data);
+}
+
+function createWebAccessPassword(env, namespace, configData) {
+    if (configData["use-web-access-secret"] === false) {
+        return;
+    }
+    const data = {
+        username: configData["web-access-username"],
+        password: configData["web-access-password"]
+    };
+    createSecret(env, namespace, "web-access-secret", data);
 }
 
 function createFileContentSecret(

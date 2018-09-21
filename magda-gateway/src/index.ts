@@ -6,6 +6,7 @@ import * as ejs from "ejs";
 import * as helmet from "helmet";
 import * as _ from "lodash";
 import * as compression from "compression";
+import * as basicAuth from "express-basic-auth";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
@@ -143,6 +144,24 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "ckan.data.gov.au"
         })
+        .option("enableWebAccessControl", {
+            describe:
+                "Whether users are required to enter a username & password to access the magda web interface",
+            type: "boolean",
+            default: false
+        })
+        .option("webAccessUsername", {
+            describe:
+                "The web access username required for all users to access Magda web interface if `enableWebAccessControl` is true.",
+            type: "string",
+            default: process.env.WEB_ACCESS_USERNAME
+        })
+        .option("webAccessPassword", {
+            describe:
+                "The web access password required for all users to access Magda web interface if `enableWebAccessControl` is true.",
+            type: "string",
+            default: process.env.WEB_ACCESS_PASSWORD
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -187,6 +206,19 @@ app.use(require("morgan")("combined"));
 app.get("/v0/healthz", function(req, res) {
     res.status(200).send("OK");
 });
+
+// --- enable http basic authentication for all users
+if (argv.enableWebAccessControl) {
+    app.use(
+        basicAuth({
+            users: {
+                [argv.webAccessUsername]: argv.webAccessPassword
+            },
+            challenge: true,
+            unauthorizedResponse: `You cannot access the system unless provide correct username & password.`
+        })
+    );
+}
 
 if (argv.enableAuthEndpoint) {
     app.use(
