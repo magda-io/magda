@@ -14,6 +14,9 @@
  * The following content items (ids) are currently present:
  *
  * * "logo" - site logo - a png, gif, jpeg, webp or svg image - encoded as base64.
+ * * "logo-mobile" - site logo - a png, gif, jpeg, webp or svg image - encoded as base64.
+ * * "stylesheet" - site css style
+ * * "csv-*" - data csvs
  */
 
 const bodyParser = require("body-parser");

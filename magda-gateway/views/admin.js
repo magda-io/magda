@@ -210,7 +210,6 @@ async function deleteContent(name) {
 async function createConnector(name) {
     let sourceUrl = window.location.toString();
     sourceUrl = sourceUrl.substr(0, sourceUrl.indexOf("/", 8));
-    sourceUrl = "https://issue-1653-2.dev.magda.io"; // TODO: remove
     sourceUrl += `/api/v0/content/${name}.bin`;
 
     const body = {
