@@ -71,6 +71,7 @@ dependencies:
 # Deprecated or not currently used services
   - name: admin-api
     tags:
+      - all
       - admin-api
 
 # Minions
