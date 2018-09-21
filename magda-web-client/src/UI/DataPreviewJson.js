@@ -44,9 +44,7 @@ class DataPreviewJson extends Component<{
             loading: true,
             json: null
         });
-        return fetch(config.proxyUrl + url, {
-            credentials: "same-origin"
-        })
+        return fetch(config.proxyUrl + url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(

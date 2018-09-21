@@ -49,9 +49,7 @@ export default class News extends Component<{
             loading: true,
             newsItems: null
         });
-        return fetch(config.proxyUrl + url, {
-            credentials: "same-origin"
-        })
+        return fetch(config.proxyUrl + url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(

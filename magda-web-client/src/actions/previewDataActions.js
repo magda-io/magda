@@ -114,9 +114,7 @@ export function fetchPreviewData(distribution) {
 
                 break;
             case "xml":
-                fetch(proxy + url, {
-                    credentials: "same-origin"
-                })
+                fetch(proxy + url, config.fetchOptions)
                     .then(response => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -144,9 +142,7 @@ export function fetchPreviewData(distribution) {
                     });
                 break;
             case "json":
-                fetch(proxy + url, {
-                    credentials: "same-origin"
-                })
+                fetch(proxy + url, config.fetchOptions)
                     .then(response => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -180,9 +176,7 @@ export function fetchPreviewData(distribution) {
                 break;
 
             case "txt":
-                fetch(proxy + url, {
-                    credentials: "same-origin"
-                })
+                fetch(proxy + url, config.fetchOptions)
                     .then(response => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -246,9 +240,7 @@ export function fetchPreviewData(distribution) {
                 );
                 break;
             case "rss":
-                fetch(proxy + url, {
-                    credentials: "same-origin"
-                })
+                fetch(proxy + url, config.fetchOptions)
                     .then(response => {
                         if (response.status !== 200) {
                             return dispatch(

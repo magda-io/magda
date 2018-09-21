@@ -63,9 +63,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
             config.registryApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
 
-        return fetch(url, {
-            credentials: "same-origin"
-        })
+        return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;
@@ -107,9 +105,7 @@ export function fetchDistributionFromRegistry(id: string): Object {
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
-        return fetch(url, {
-            credentials: "same-origin"
-        })
+        return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;

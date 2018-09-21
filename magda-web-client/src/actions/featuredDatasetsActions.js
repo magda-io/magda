@@ -36,9 +36,7 @@ export function fetchFeaturedDatasetsFromRegistry(ids: Array<string>): Object {
                     `records/${encodeURIComponent(
                         id
                     )}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
-                {
-                    credentials: "same-origin"
-                }
+                config.fetchOptions
             ).then(response => response.json())
         );
         Promise.all(fetches)

@@ -15,9 +15,7 @@ export function requestWhoAmI() {
             type: actionTypes.REQUEST_WHO_AM_I
         });
 
-        fetch(config.authApiUrl + "users/whoami", {
-            credentials: "same-origin"
-        })
+        fetch(config.authApiUrl + "users/whoami", config.fetchOptions)
             .then(async response => {
                 if (response.status === 200) {
                     const res = await response.json();
@@ -75,20 +73,20 @@ export function requestSignOut() {
             type: actionTypes.REQUEST_SIGN_OUT
         });
 
-        fetch(config.baseUrl + "auth/logout", {
-            credentials: "same-origin"
-        }).then(response => {
-            if (response.status <= 400) {
-                dispatch(completedSignOut());
-                return;
-            } else {
-                dispatch(
-                    signOutError(
-                        new Error("Error signing out: " + response.status)
-                    )
-                );
+        fetch(config.baseUrl + "auth/logout", config.fetchOptions).then(
+            response => {
+                if (response.status <= 400) {
+                    dispatch(completedSignOut());
+                    return;
+                } else {
+                    dispatch(
+                        signOutError(
+                            new Error("Error signing out: " + response.status)
+                        )
+                    );
+                }
             }
-        });
+        );
     };
 }
 
@@ -115,9 +113,7 @@ export function requestAuthProviders() {
             type: actionTypes.REQUEST_AUTH_PROVIDERS
         });
 
-        fetch(config.baseUrl + "auth/providers", {
-            credentials: "same-origin"
-        })
+        fetch(config.baseUrl + "auth/providers", config.fetchOptions)
             .then(response => {
                 if (response.status === 200) {
                     return response

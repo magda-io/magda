@@ -63,9 +63,7 @@ export function fetchPublisherSearchResults(
                     `facets/publisher/options?generalQuery=${encodeURIComponent(
                         generalQuery.q || "*"
                     )}&${generalQueryString}&facetQuery=${facetQuery}`,
-                {
-                    credentials: "same-origin"
-                }
+                config.fetchOptions
             )
                 .then(response => {
                     if (response.status !== 200) {
