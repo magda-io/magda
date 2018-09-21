@@ -7,6 +7,7 @@
 -   Made contact point visible on dataset page
 -   Allowed UI SCSS variables to be changed via k8s job
 -   Added a `set-scss-vars` script for updating UI SCSS variables
+-   Fixed that `leaflet.css` had not been included by SCSS compiler
 -   Allowed the cluster to be protected by a password
 -   Made the add a dataset form appear where the results get to a certain configurable score threshold
 -   Made the CSW connector look for names for service-based datasets in another place

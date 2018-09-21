@@ -9,7 +9,32 @@ export const renderScssData = (clientRoot: string, data: string) => {
         sass.render(
             {
                 data,
-                includePaths: [clientRoot + "/src"]
+                includePaths: [clientRoot + "/src"],
+                importer: (url, prev, done) => {
+                    // --- adjust the path to `node_modules`
+                    // --- and if it's a .css file then read it manually to avoid the warning
+                    // --- the warning will be fixed in node-sass 4.10 (not yet availble)
+                    // --- https://github.com/sass/node-sass/issues/2362
+                    if (!url.match(/^[\.\/]*node_modules/i)) {
+                        done({ file: url });
+                    } else {
+                        const targetPath = url.replace(
+                            /^[\.\/]*node_modules/i,
+                            clientRoot + "/../.."
+                        );
+                        if (targetPath.match(/\.(css|scss)$/)) {
+                            done({
+                                contents: fse.readFileSync(targetPath, {
+                                    encoding: "utf-8"
+                                })
+                            });
+                        } else {
+                            done({
+                                file: targetPath
+                            });
+                        }
+                    }
+                }
             },
             (error, result) => {
                 if (!error) {
