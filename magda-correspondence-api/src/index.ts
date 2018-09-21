@@ -27,14 +27,13 @@ const argv = yargs
         describe:
             "The base external URL for constructing hyperlinks back to the portal in emails - e.g. 'https://search.data.gov.au'. Don't leave a trailing /",
         type: "string",
-        default:
-            process.env.npm_package_config_externalUrl ||
-            "https://search.data.gov.au"
+        demandOption: true,
+        default: process.env.npm_package_config_externalUrl
     })
     .option("smtpHostname", {
         describe: "The SMTP server hostname",
         type: "string",
-        default: ""
+        default: "localhost"
     })
     .option("smtpPort", {
         describe: "The SMTP server port",
@@ -61,6 +60,12 @@ const argv = yargs
             "The email address to send data requests and questions/feedback on datasets where the email address couldn't be resolved",
         type: "string",
         demandOption: true
+    })
+    .option("alwaysSendToDefaultRecipient", {
+        describe:
+            "Whether to always send emails to the default recipient even if there's another recipient available - useful for test environments, or if you don't want users to be able to directly bother data custodians",
+        type: "boolean",
+        default: false
     }).argv;
 
 const app = express();
@@ -77,7 +82,8 @@ app.use(
             smtpSecure: argv.smtpSecure,
             smtpUsername: argv.smtpUsername || process.env.SMTP_USERNAME,
             smtpPassword: argv.smtpPassword || process.env.SMTP_PASSWORD
-        })
+        }),
+        alwaysSendToDefaultRecipient: argv.alwaysSendToDefaultRecipient
     })
 );
 

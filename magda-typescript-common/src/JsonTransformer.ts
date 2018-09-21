@@ -217,7 +217,8 @@ export default abstract class JsonTransformer {
         }
 
         return {
-            id: id.toString(),
+            // If the id is undefined it'll be rejected by the JsonConnector
+            id: id && id.toString(),
             name: name,
             aspects: generatedAspects,
             sourceTag: undefined

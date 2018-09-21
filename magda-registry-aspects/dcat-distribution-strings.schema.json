@@ -40,6 +40,11 @@
                 "A landing page, feed, SPARQL endpoint or other type of resource that gives access to the distribution of the dataset.",
             "type": "string"
         },
+        "accessNotes": {
+            "title":
+                "Instructions on how to access information in the access URL.",
+            "type": "string"
+        },
         "downloadURL": {
             "title":
                 "A file that contains the distribution of the dataset in a given format.",

@@ -4,7 +4,7 @@
             "csw-distribution": {},
             "dcat-distribution-strings": {
                 "accessURL": "\nTRANSFER 1\n",
-                "issued": "DATE",
+                "issued": "2000-01-02",
                 "rights": "\nCONST 1\n"
             },
             "source": {
@@ -24,7 +24,7 @@
             "csw-distribution": {},
             "dcat-distribution-strings": {
                 "accessURL": "\nTRANSFER 2\n",
-                "issued": "DATE",
+                "issued": "2000-01-02",
                 "rights": "\nCONST 1\n"
             },
             "source": {
@@ -56,8 +56,8 @@
                 "description": "\nABSTRACT\n",
                 "keywords": ["KW1", "KW2", "KW3", "KW4", "KW5"],
                 "languages": ["en"],
-                "issued": "DATE",
-                "modified": "DATE",
+                "issued": "2000-01-02",
+                "modified": "2000-01-02",
                 "publisher": "",
                 "spatial":
                     "POLYGON((137.5 -29.5, 154.0 -29.5, 154.0 -8.5, 137.5 -8.5, 137.5 -29.5))",
@@ -85,7 +85,7 @@
             }
         },
         "id": "ds-connector-IDIDID",
-        "name": "IDIDID",
+        "name": "Imagery service Queensland - QldBase QGovSispUsers",
         "sourceTag": "stag"
     },
     "org-connector-DEPT": {

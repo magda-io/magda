@@ -166,6 +166,25 @@ describe("send dataset request mail", () => {
             });
         });
 
+        it("should fall back to default recipient if forced via options", () => {
+            // Create a new app with different options
+            app = express();
+            app.use(require("body-parser").json());
+            const options = resolveRouterOptions(stubbedSMTPMailer);
+            options.alwaysSendToDefaultRecipient = true;
+
+            app.use("/", createApiRouter(options));
+
+            return sendQuestion().then(() => {
+                const args: Message = sendStub.firstCall.args[0];
+
+                expect(args.to).to.equal(DEFAULT_RECIPIENT);
+                expect(args.subject).to.contain(
+                    "for " + DEFAULT_DATASET_CONTACT_POINT
+                );
+            });
+        });
+
         it("should fall back to default recipient if there's no contact point", () => {
             return sendQuestion({
                 contactPoint: undefined
@@ -392,7 +411,8 @@ describe("send dataset request mail", () => {
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
             registry,
-            externalUrl: EXTERNAL_URL
+            externalUrl: EXTERNAL_URL,
+            alwaysSendToDefaultRecipient: false
         };
     }
 });

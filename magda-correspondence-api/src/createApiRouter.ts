@@ -16,6 +16,7 @@ export interface ApiRouterOptions {
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
+    alwaysSendToDefaultRecipient: boolean;
 }
 
 function validateMiddleware(
@@ -104,7 +105,8 @@ export default function createApiRouter(
                 options.defaultRecipient,
                 body,
                 html,
-                subject
+                subject,
+                options.defaultRecipient
             ),
             res
         );
@@ -146,13 +148,16 @@ export default function createApiRouter(
                 const dcatDatasetStrings =
                     dataset.aspects["dcat-dataset-strings"];
 
-                const subject = `Question About ${dcatDatasetStrings.title}`;
-
                 const { contactPoint } = dcatDatasetStrings;
-                const recipient =
-                    contactPoint && emailValidator.validate(contactPoint)
-                        ? contactPoint
-                        : options.defaultRecipient;
+
+                const validContactPoint =
+                    contactPoint && emailValidator.validate(contactPoint);
+
+                const recipient = validContactPoint
+                    ? contactPoint
+                    : options.defaultRecipient;
+
+                const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
                     Templates.Question,
@@ -168,7 +173,8 @@ export default function createApiRouter(
                     body,
                     html,
                     subject,
-                    recipient
+                    recipient,
+                    options.alwaysSendToDefaultRecipient
                 );
             });
 

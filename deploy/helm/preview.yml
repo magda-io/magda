@@ -88,5 +88,6 @@ web-server:
 
 correspondence-api:
   defaultRecipient: "magda-test@googlegroups.com"
+  alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525

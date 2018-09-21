@@ -28,7 +28,7 @@ export function runConnectorTest(
                 "--jwtSecret=nerdgasm",
                 "--userId=user"
             ];
-            console.log(command.join(" "));
+            // console.log(command.join(" "));
             const proc = child.spawn("ts-node", command, {
                 stdio: "inherit"
             });
@@ -69,6 +69,7 @@ export function runConnectorTest(
                         if (options.cleanRegistry) {
                             options.cleanRegistry(registry);
                         }
+
                         assert.deepEqual(registry.records, testCase.output);
                         if (code === 0) {
                             done();

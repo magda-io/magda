@@ -1,10 +1,15 @@
 ## 0.0.49
 
+-   Add a CSV connector
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+-   Added ability to ensure that all emails go to default recipient despite what their normal recipient would be.
+-   Made contact point visible on dataset page
 -   Allowed UI SCSS variables to be changed via k8s job
 -   Added a `set-scss-vars` script for updating UI SCSS variables
 -   Made the add a dataset form appear where the results get to a certain configurable score threshold
+-   Made the CSW connector look for names for service-based datasets in another place
+-   Made CSW connector gracefully handle datasets without ids instead of crashing
 
 ## 0.0.48
 
