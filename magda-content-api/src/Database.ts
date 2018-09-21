@@ -23,6 +23,12 @@ export default class Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
+    getContentSummary(): Promise<any> {
+        return this.pool
+            .query("SELECT id, type FROM content")
+            .then(res => (res && res.rows) || []);
+    }
+
     setContentById(
         id: string,
         type: string,
@@ -37,5 +43,11 @@ export default class Database {
                 [id, type, content]
             )
             .then(res => arrayToMaybe(res.rows));
+    }
+
+    deleteContentById(id: string) {
+        return this.pool
+            .query("DELETE FROM content WHERE id=$1", [id])
+            .then(res => (res && res.rows) || []);
     }
 }
