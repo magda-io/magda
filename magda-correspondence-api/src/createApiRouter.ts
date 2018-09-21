@@ -13,6 +13,7 @@ import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 export interface ApiRouterOptions {
     registry: RegistryClient;
+    contentApiUrl: string;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;

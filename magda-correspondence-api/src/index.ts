@@ -23,6 +23,14 @@ const argv = yargs
             process.env.npm_package_config_registryUrl ||
             "http://localhost:6117/api/v0/registry"
     })
+    .option("contentApiUrl", {
+        describe: "The base URL of the content API.",
+        type: "string",
+        default:
+            process.env.CONTENT_API_URL ||
+            process.env.npm_package_config_contentApiUrl ||
+            "http://localhost:6119/v0"
+    })
     .option("externalUrl", {
         describe:
             "The base external URL for constructing hyperlinks back to the portal in emails - e.g. 'https://search.data.gov.au'. Don't leave a trailing /",
@@ -74,6 +82,7 @@ app.use(
     "/v0",
     createApiRouter({
         registry: new RegistryClient({ baseUrl: argv.registryUrl }),
+        contentApiUrl: argv.contentApiUrl,
         defaultRecipient: argv.defaultRecipient,
         externalUrl: argv.externalUrl,
         smtpMailer: new NodeMailerSMTPMailer({
