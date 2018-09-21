@@ -9,11 +9,11 @@ import org.apache.lucene.analysis.en._
 object MagdaMatchers extends org.scalatest.Matchers {
   def dataSetEqual(ds1: DataSet, ds2: DataSet) = ds1.copy(
     indexed = None,
-    publisher = ds1.publisher.map(_.copy(acronym = None))
-  ) should equal(ds2.copy(
-    indexed = None,
-    publisher = ds2.publisher.map(_.copy(acronym = None))
-  ))
+    score = None,
+    publisher = ds1.publisher.map(_.copy(acronym = None))) should equal(ds2.copy(
+      indexed = None,
+      score = None,
+      publisher = ds2.publisher.map(_.copy(acronym = None))))
   def dataSetsEqual(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = dsSeq1.zip(dsSeq2).foreach { case (ds1, ds2) => dataSetEqual(ds1, ds2) }
   def dataSetsEqualIgnoreOrder(dsSeq1: Seq[DataSet], dsSeq2: Seq[DataSet]) = for {
     dataSet <- dsSeq1
@@ -32,10 +32,10 @@ object MagdaMatchers extends org.scalatest.Matchers {
     return stemmer.stem(string)
   }
 
-  def stemString(term: String, useLightEnglishStemmer:Boolean = false) = {
-    if(useLightEnglishStemmer) {
+  def stemString(term: String, useLightEnglishStemmer: Boolean = false) = {
+    if (useLightEnglishStemmer) {
       MagdaMatchers.lightEnglishStem(term)
-    }else{
+    } else {
       MagdaMatchers.porterStem(term)
     }
   }

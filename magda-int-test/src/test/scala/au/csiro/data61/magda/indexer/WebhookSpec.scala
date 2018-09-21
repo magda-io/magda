@@ -95,6 +95,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           // We don't care about this.
           indexed = None,
           quality = 0,
+          score = None,
 
           distributions = dataSet.distributions.map(distribution => distribution.copy(
             // This will be derived from the format so might not match the input
@@ -314,7 +315,6 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       builtIndex.indexNames.foreach{ idxName =>
         deleteIndex(idxName)
       }
-
     }
   }
 

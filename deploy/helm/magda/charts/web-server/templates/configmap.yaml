@@ -7,5 +7,6 @@ data:
   web.json: '{
     {{- if .Values.fallbackUrl -}} "fallbackUrl": {{ .Values.fallbackUrl | quote }}, {{- end -}}
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
-    "baseUrl": {{ .Values.baseUrl | default "/" | quote }}
+    "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
+    "datasetSearchSuggestionScoreThreshold": {{ .Values.datasetSearchSuggestionScoreThreshold }}
   }'
