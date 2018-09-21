@@ -32,7 +32,7 @@ export function fetchNewsfromRss() {
             return false;
         }
         const url = config.rssUrl;
-        fetch(url)
+        fetch(url, config.fetchOptions)
             .then(response => {
                 if (response.status === 200) {
                     return response.text();

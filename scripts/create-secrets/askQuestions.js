@@ -327,6 +327,85 @@ const questions = [
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
+        type: "list",
+        name: "use-web-access-secret",
+        message: "Do you want to setup HTTP Basic authentication?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "web-access-username",
+        message:
+            "Please provide the username for HTTP Basic authentication setup:",
+        when: answers => answers["use-web-access-secret"] === true,
+        validate: input => {
+            const r = trim(input);
+            if (!r.length) {
+                return "username cannot be empty!";
+            }
+            if (r.indexOf(":") !== -1) {
+                return "username cannot contains `:`!";
+            }
+            return true;
+        }
+    },
+    {
+        type: "transformer-list",
+        name: "manual-web-access-password",
+        message:
+            "Do you want to manually input the password for HTTP Basic authentication setup?",
+        choices: [
+            {
+                name: "NO (A random password will be generated for you now)",
+                value: false
+            },
+            {
+                name: "YES",
+                value: true
+            }
+        ],
+        when: answers => answers["use-web-access-secret"] === true,
+        filter: function(input) {
+            const r = {
+                answer: input
+            };
+            if (input === false) {
+                r["password"] = pwgen();
+            }
+            return r;
+        },
+        transformer: function(value, answers) {
+            if (value.answer === true) {
+                return chalk.yellow("Chose to manually input password");
+            } else {
+                return chalk.yellow(
+                    "Generated password: " +
+                        chalk.green.underline(value["password"])
+                );
+            }
+        }
+    },
+    {
+        type: "input",
+        name: "web-access-password",
+        message:
+            "Please provide the password for HTTP Basic authentication setup:",
+        when: answers =>
+            answers["use-web-access-secret"] === true &&
+            answers["manual-web-access-password"]["answer"] === true,
+        validate: input =>
+            trim(input).length ? true : "password cannot be empty!"
+    },
+    {
         type: "transformer-list",
         name: "manual-db-passwords",
         message:
@@ -472,7 +551,7 @@ function getJsonFileContent(filePath) {
     }
 }
 
-function prefileQuestions(questions, config) {
+function prefillQuestions(questions, config) {
     const questionNamesRequireBindWhen = [
         "reselect-cloudsql-instance-credentials",
         "cloudsql-instance-credentials",
@@ -509,7 +588,7 @@ inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 inquirer.registerPrompt("transformer-list", inquirerListWithTransformer);
 function askSettingQuestions(config) {
     return inquirer
-        .prompt(prefileQuestions(questions, config))
+        .prompt(prefillQuestions(questions, config))
         .then(function(answers) {
             const configData = config.all;
             //--- if user didn't re-select credentials files,

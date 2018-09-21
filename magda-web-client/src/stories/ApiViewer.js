@@ -1,13 +1,14 @@
 import React from "react";
 import ReactJsonTree from "react-json-tree";
 import ReactTable from "react-table";
+import { config } from "../config";
 class ApiViewer extends React.Component {
     constructor(props) {
         super(props);
         this.state = { data: null, hitCount: 0 };
     }
     componentDidMount() {
-        fetch(this.props.url)
+        fetch(this.props.url, config.fetchOptions)
             .then(response => {
                 if (response.status === 200) {
                     return response.json();

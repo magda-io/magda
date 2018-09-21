@@ -60,7 +60,7 @@ export function fetchFormatSearchResults(
                     generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;
 
-            return fetch(url)
+            return fetch(url, config.fetchOptions)
                 .then(response => {
                     if (response.status === 200) {
                         return response.json();

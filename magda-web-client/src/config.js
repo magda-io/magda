@@ -38,7 +38,17 @@ const baseExternalUrl =
         ? window.location.protocol + "//" + window.location.host + "/"
         : baseUrl;
 
+const fetchOptions =
+    `${window.location.protocol}//${window.location.host}/` !== baseUrl
+        ? {
+              credentials: "include"
+          }
+        : {
+              credentials: "same-origin"
+          };
+
 export const config = {
+    fetchOptions,
     homePageConfig: homePageConfig,
     appName: "data.gov.au - beta",
     about:
