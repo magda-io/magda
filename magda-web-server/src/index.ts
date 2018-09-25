@@ -4,11 +4,11 @@ import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
 import * as request from "request";
-import * as fs from "fs";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import buildSitemapRouter from "./buildSitemapRouter";
+import getIndexFileContent from "./getIndexFileContent";
 
 const argv = yargs
     .config()
@@ -20,6 +20,12 @@ const argv = yargs
     })
     .option("disableAuthenticationFeatures", {
         describe: "True to disable all features that require authentication.",
+        type: "boolean",
+        default: false
+    })
+    .option("useLocalStyleSheet", {
+        describe:
+            "True to use prebuilt static stylesheet from web-client module.",
         type: "boolean",
         default: false
     })
@@ -172,14 +178,10 @@ app.get("/server-config.js", function(req, res) {
     );
 });
 
-const indexFileContent = fs
-    .readFileSync(path.join(clientBuild, "index.html"), {
-        encoding: "utf-8"
-    })
-    .replace(
-        "/api/v0/content/stylesheet.css",
-        `${webServerConfig.contentApiBaseUrl}stylesheet.css`
-    );
+const indexFileContent = getIndexFileContent(
+    clientRoot,
+    argv.useLocalStyleSheet
+);
 
 app.get(["/", "/index.html*"], function(req, res) {
     res.send(indexFileContent);
