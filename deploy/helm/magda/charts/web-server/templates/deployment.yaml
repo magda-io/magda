@@ -19,7 +19,7 @@ spec:
             "--config", "/etc/config/config.json",
             "--listenPort", "80",
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
-            "--useLocalStyleSheet", {{ .Values.useLocalStyleSheet | quote }},
+            "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0"
         ]
         readinessProbe:
