@@ -8,6 +8,7 @@ import * as request from "request";
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import buildSitemapRouter from "./buildSitemapRouter";
+import getIndexFileContent from "./getIndexFileContent";
 
 const argv = yargs
     .config()
@@ -19,6 +20,12 @@ const argv = yargs
     })
     .option("disableAuthenticationFeatures", {
         describe: "True to disable all features that require authentication.",
+        type: "boolean",
+        default: false
+    })
+    .option("useLocalStyleSheet", {
+        describe:
+            "True to use prebuilt static stylesheet from web-client module.",
         type: "boolean",
         default: false
     })
@@ -106,66 +113,78 @@ const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
 );
 
+const webServerConfig = {
+    disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
+    baseUrl: addTrailingSlash(argv.baseUrl),
+    apiBaseUrl: apiBaseUrl,
+    contentApiBaseUrl: addTrailingSlash(
+        argv.contentApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("content")
+                .toString()
+    ),
+    searchApiBaseUrl: addTrailingSlash(
+        argv.searchApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("search")
+                .toString()
+    ),
+    registryApiBaseUrl: addTrailingSlash(
+        argv.registryApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry")
+                .toString()
+    ),
+    authApiBaseUrl: addTrailingSlash(
+        argv.authApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("auth")
+                .toString()
+    ),
+    adminApiBaseUrl: addTrailingSlash(
+        argv.adminApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("admin")
+                .toString()
+    ),
+    previewMapBaseUrl: addTrailingSlash(
+        argv.previewMapBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("..")
+                .segment("preview-map")
+                .toString()
+    ),
+    correspondenceApiBaseUrl: addTrailingSlash(
+        argv.correspondenceApiBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("correspondence")
+                .toString()
+    ),
+    fallbackUrl: argv.fallbackUrl,
+    datasetSearchSuggestionScoreThreshold:
+        argv.datasetSearchSuggestionScoreThreshold
+};
+
 app.get("/server-config.js", function(req, res) {
-    const config = {
-        disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
-        baseUrl: addTrailingSlash(argv.baseUrl),
-        apiBaseUrl: apiBaseUrl,
-        contentApiBaseUrl: addTrailingSlash(
-            argv.contentApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("content")
-                    .toString()
-        ),
-        searchApiBaseUrl: addTrailingSlash(
-            argv.searchApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("search")
-                    .toString()
-        ),
-        registryApiBaseUrl: addTrailingSlash(
-            argv.registryApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("registry")
-                    .toString()
-        ),
-        authApiBaseUrl: addTrailingSlash(
-            argv.authApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("auth")
-                    .toString()
-        ),
-        adminApiBaseUrl: addTrailingSlash(
-            argv.adminApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("admin")
-                    .toString()
-        ),
-        previewMapBaseUrl: addTrailingSlash(
-            argv.previewMapBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("..")
-                    .segment("preview-map")
-                    .toString()
-        ),
-        correspondenceApiBaseUrl: addTrailingSlash(
-            argv.correspondenceApiBaseUrl ||
-                new URI(apiBaseUrl)
-                    .segment("v0")
-                    .segment("correspondence")
-                    .toString()
-        ),
-        fallbackUrl: argv.fallbackUrl,
-        datasetSearchSuggestionScoreThreshold:
-            argv.datasetSearchSuggestionScoreThreshold
-    };
     res.type("application/javascript");
-    res.send("window.magda_server_config = " + JSON.stringify(config) + ";");
+    res.send(
+        "window.magda_server_config = " + JSON.stringify(webServerConfig) + ";"
+    );
+});
+
+const indexFileContent = getIndexFileContent(
+    clientRoot,
+    argv.useLocalStyleSheet
+);
+
+app.get(["/", "/index.html*"], function(req, res) {
+    res.send(indexFileContent);
 });
 
 // app.use("/admin", express.static(adminBuild));
@@ -188,15 +207,15 @@ const topLevelRoutes = [
 
 topLevelRoutes.forEach(topLevelRoute => {
     app.get("/" + topLevelRoute, function(req, res) {
-        res.sendFile(path.join(clientBuild, "index.html"));
+        res.send(indexFileContent);
     });
     app.get("/" + topLevelRoute + "/*", function(req, res) {
-        res.sendFile(path.join(clientBuild, "index.html"));
+        res.send(indexFileContent);
     });
 });
 
 app.get("/page/*", function(req, res) {
-    res.sendFile(path.join(clientBuild, "index.html"));
+    res.send(indexFileContent);
 });
 
 // app.get("/admin", function(req, res) {

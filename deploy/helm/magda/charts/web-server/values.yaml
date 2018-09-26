@@ -16,3 +16,4 @@ resources:
 disableAuthenticationFeatures: false
 datasetSearchSuggestionScoreThreshold: 65
 service: {}
+useLocalStyleSheet: false
