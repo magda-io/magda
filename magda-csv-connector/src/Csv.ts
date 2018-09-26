@@ -33,8 +33,34 @@ export default class Csv implements ConnectorSource {
         constraint?: string,
         maxResults?: number
     ): AsyncPage<any[]> {
+        // // All data at one go
+        // return AsyncPage.create<any>((previous: any) => {
+        //     return previous ? undefined : this.getData();
+        // });
+
+        // With incremental logging
+        let data: any[] = undefined;
+        function next() {
+            const slice = data.splice(0, 100);
+            console.log(
+                `Returning a slice of ${slice.length} rows of data from ${
+                    data.length
+                } more rows!`
+            );
+            return slice.length
+                ? new Promise(resolve => resolve(slice))
+                : undefined;
+        }
         return AsyncPage.create<any>((previous: any) => {
-            return previous ? undefined : this.getData();
+            if (!previous) {
+                return new Promise(async resolve => {
+                    console.log("Fetching data!");
+                    data = await this.getData();
+                    resolve(next());
+                });
+            } else {
+                return next();
+            }
         });
     }
 
