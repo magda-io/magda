@@ -29,7 +29,8 @@ export default class Csv implements ConnectorSource {
         const data = parseSpreadsheet(await downloadBuffer(this.sheetUrl));
 
         data.forEach((row, index) => {
-            if (findClosestFieldThreshold(row, 0.95, "id") === undefined) {
+            const id = findClosestFieldThreshold(row, 0.95, "id");
+            if (id === undefined || id.length > 500) {
                 row.id = `row-${index + 1}`;
             }
         });
