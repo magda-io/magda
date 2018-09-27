@@ -1,10 +1,12 @@
 import * as express from "express";
 import * as yargs from "yargs";
+import * as path from "path";
 
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
 
 import createApiRouter from "./createApiRouter";
 import { NodeMailerSMTPMailer } from "./SMTPMailer";
+import CContentApiDirMapper from "./CContentApiDirMapper";
 
 const argv = yargs
     .config()
@@ -74,6 +76,18 @@ const argv = yargs
             "Whether to always send emails to the default recipient even if there's another recipient available - useful for test environments, or if you don't want users to be able to directly bother data custodians",
         type: "boolean",
         default: false
+    })
+    .option("jwtSecret", {
+        describe: "The shared secret for intra-network communication",
+        type: "string",
+        default:
+            process.env.JWT_SECRET || process.env.npm_package_config_jwtSecret
+    })
+    .option("userId", {
+        describe:
+            "The user id to use when making authenticated requests to the registry",
+        type: "string",
+        default: process.env.USER_ID || process.env.npm_package_config_userId
     }).argv;
 
 const app = express();
@@ -96,9 +110,28 @@ app.use(
     })
 );
 
-const listenPort = argv.listenPort;
-app.listen(listenPort);
-console.log("Listening on " + listenPort);
+console.log("Sync default email tpls to content API...");
+
+const contentDirMapper = new CContentApiDirMapper(
+    argv.contentApiUrl,
+    argv.userId,
+    argv.jwtSecret
+);
+contentDirMapper
+    .syncFolder(path.join(__dirname, "..", "templates"), "emailTpls")
+    .then(() => {
+        console.log("Sync default email tpls to content API completed!");
+        const listenPort = argv.listenPort;
+        app.listen(listenPort);
+        console.log("Listening on " + listenPort);
+    })
+    .catch(err => {
+        console.error(
+            "Failed to sync default email tpls to content API. Exiting...",
+            err
+        );
+        process.exit(1);
+    });
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error(reason);

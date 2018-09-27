@@ -76,7 +76,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const content = (await database.getContentById(
                 contentId
             )).valueOrThrow(
-                new GenericError(`Cannot locate ${contentId}.${format}`, 404)
+                new GenericError(`Cannot locate ${contentId}`, 404)
             );
             const mimeType = mime.lookup(format);
             const buffer = Buffer.from(content.content, "base64");
