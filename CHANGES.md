@@ -13,6 +13,7 @@
 -   Made the CSW connector look for names for service-based datasets in another place
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
 -   Fixed Gitlab UI only preview failed to download main CSS file
+-   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
 
 ## 0.0.48
 
