@@ -47,7 +47,7 @@
                 "modified": "2014-01-01",
                 "themes": ["666", "#GAMERS", "DATA"],
                 "keywords": ["Operations", "Item", "Yes"],
-                "contactPoint": "Fred Nerk",
+                "contactPoint": "Fred Nerk\n\nNuclear Plant",
                 "creation": {
                     "mechanism": "Yes",
                     "sourceSystem": "CRM",
@@ -131,6 +131,7 @@
                     "Item",
                     "Data generated and provided to us by Data61"
                 ],
+                "contactPoint": "Engineering",
                 "creation": {
                     "mechanism": "Data generated and provided to us by Data61",
                     "likelihoodOfRelease": "Restricted"
@@ -203,7 +204,7 @@
                 "accrualPeriodicity": "Ad-Hoc",
                 "themes": ["For Official Use Only"],
                 "keywords": ["Compliance", "Item", "For Official Use Only"],
-                "contactPoint": "META STD",
+                "contactPoint": "META STD\n\nGaming",
                 "creation": {
                     "mechanism": "No",
                     "sourceSystem": "Recycle bin",

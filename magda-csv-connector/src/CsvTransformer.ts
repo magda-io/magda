@@ -60,19 +60,24 @@ export default class CsvTransformer extends JsonTransformer {
             : undefined;
     }
 
-    getNameFromJsonOrganization(jsonOrganization: any): string {
-        const title = findClosestFieldThreshold(
-            jsonOrganization,
-            0.8,
-            "data custodian",
-            "custodian"
-        );
-        const source = findClosestFieldThreshold(
-            jsonOrganization,
-            0.8,
-            "primary source"
-        );
-        return title || source || "Unspecified";
+    getNameFromJsonOrganization(organization: any): string {
+        let title = [
+            findClosestFieldThreshold(organization, 0.8, "division"),
+            findClosestFieldThreshold(organization, 0.8, "branch"),
+            findClosestFieldThreshold(organization, 0.8, "section")
+        ]
+            .filter(i => i)
+            .join(" - ");
+
+        title =
+            title ||
+            findClosestFieldThreshold(
+                organization,
+                0.5,
+                "primary source",
+                "custodian"
+            );
+        return title || "Unspecified";
     }
 }
 

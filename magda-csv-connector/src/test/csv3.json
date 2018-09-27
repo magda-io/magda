@@ -19,9 +19,9 @@
         },
         "sourceTag": "stag"
     },
-    "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848": {
-        "id": "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848",
-        "name": "Nuclear Plant",
+    "org-connector-ea0436e1fdca43c22e55809b9a4f3475": {
+        "id": "org-connector-ea0436e1fdca43c22e55809b9a4f3475",
+        "name": "D - B - S",
         "aspects": {
             "source": {
                 "type": "csv-organization",
@@ -30,7 +30,7 @@
                 "name": "Connector"
             },
             "organization-details": {
-                "title": "Nuclear Plant"
+                "title": "D - B - S"
             }
         },
         "sourceTag": "stag"
@@ -47,7 +47,7 @@
                 "modified": "2014-01-01",
                 "themes": ["666", "#GAMERS", "DATA"],
                 "keywords": ["Operations", "Item", "Yes"],
-                "contactPoint": "Fred Nerk",
+                "contactPoint": "Fred Nerk\n\nNuclear Plant",
                 "creation": {
                     "mechanism": "Yes",
                     "sourceSystem": "CRM",
@@ -77,7 +77,7 @@
                 "distributions": ["dist-connector-row-1-0-msaccess"]
             },
             "dataset-publisher": {
-                "publisher": "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848"
+                "publisher": "org-connector-ea0436e1fdca43c22e55809b9a4f3475"
             }
         },
         "sourceTag": "stag"
@@ -131,6 +131,7 @@
                     "Item",
                     "Data generated and provided to us by Data61"
                 ],
+                "contactPoint": "Engineering",
                 "creation": {
                     "mechanism": "Data generated and provided to us by Data61",
                     "likelihoodOfRelease": "Restricted"
@@ -203,7 +204,7 @@
                 "accrualPeriodicity": "Ad-Hoc",
                 "themes": ["For Official Use Only"],
                 "keywords": ["Compliance", "Item", "For Official Use Only"],
-                "contactPoint": "META STD",
+                "contactPoint": "META STD\n\nGaming",
                 "creation": {
                     "mechanism": "No",
                     "sourceSystem": "Recycle bin",
