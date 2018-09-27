@@ -1,0 +1,73 @@
+body {
+    min-width: 400px;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+div,
+th,
+tr,
+th,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    box-sizing: border-box;
+}
+
+.inner {
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td,
+th {
+    padding: 0.5em;
+    word-wrap: break-word;
+}
+
+th {
+    text-transform: uppercase;
+    background: black;
+    color: white;
+    font-weight: bold;
+}
+
+table {
+    border: 1px solid black;
+}
+tr + tr {
+    border-top: 1px solid black;
+}
+
+td + td {
+    border-left: 1px solid black;
+}
+
+button {
+    background: black;
+    color: white;
+    font-weight: bold;
+    border: 1px solid black;
+    padding: 0.6em;
+}
+button:hover {
+    cursor: pointer;
+    background: white;
+    color: black;
+}
+
+button + button::before {
+    content: " ";
+}
+
+pre {
+    white-space: pre-wrap;
+}

@@ -1,6 +1,6 @@
 {
-    "dist-connector-0-0-msaccess": {
-        "id": "dist-connector-0-0-msaccess",
+    "dist-connector-row-1-0-msaccess": {
+        "id": "dist-connector-row-1-0-msaccess",
         "name": "T1",
         "aspects": {
             "dcat-distribution-strings": {
@@ -19,9 +19,9 @@
         },
         "sourceTag": "stag"
     },
-    "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848": {
-        "id": "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848",
-        "name": "Nuclear Plant",
+    "org-connector-ea0436e1fdca43c22e55809b9a4f3475": {
+        "id": "org-connector-ea0436e1fdca43c22e55809b9a4f3475",
+        "name": "D - B - S",
         "aspects": {
             "source": {
                 "type": "csv-organization",
@@ -30,13 +30,13 @@
                 "name": "Connector"
             },
             "organization-details": {
-                "title": "Nuclear Plant"
+                "title": "D - B - S"
             }
         },
         "sourceTag": "stag"
     },
-    "ds-connector-0": {
-        "id": "ds-connector-0",
+    "ds-connector-row-1": {
+        "id": "ds-connector-row-1",
         "name": "T1",
         "aspects": {
             "csv-dataset": {},
@@ -74,16 +74,16 @@
                 "name": "Connector"
             },
             "dataset-distributions": {
-                "distributions": ["dist-connector-0-0-msaccess"]
+                "distributions": ["dist-connector-row-1-0-msaccess"]
             },
             "dataset-publisher": {
-                "publisher": "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848"
+                "publisher": "org-connector-ea0436e1fdca43c22e55809b9a4f3475"
             }
         },
         "sourceTag": "stag"
     },
-    "dist-connector-999999-0-pdf": {
-        "id": "dist-connector-999999-0-pdf",
+    "dist-connector-row-2-0-pdf": {
+        "id": "dist-connector-row-2-0-pdf",
         "name": "T2",
         "aspects": {
             "dcat-distribution-strings": {
@@ -117,8 +117,8 @@
         },
         "sourceTag": "stag"
     },
-    "ds-connector-999999": {
-        "id": "ds-connector-999999",
+    "ds-connector-row-2": {
+        "id": "ds-connector-row-2",
         "name": "T2",
         "aspects": {
             "csv-dataset": {},
@@ -149,7 +149,7 @@
                 "name": "Connector"
             },
             "dataset-distributions": {
-                "distributions": ["dist-connector-999999-0-pdf"]
+                "distributions": ["dist-connector-row-2-0-pdf"]
             },
             "dataset-publisher": {
                 "publisher": "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca"
@@ -157,8 +157,8 @@
         },
         "sourceTag": "stag"
     },
-    "dist-connector-100": {
-        "id": "dist-connector-100",
+    "dist-connector-row-3": {
+        "id": "dist-connector-row-3",
         "name": "T3",
         "aspects": {
             "dcat-distribution-strings": {
@@ -191,8 +191,8 @@
         },
         "sourceTag": "stag"
     },
-    "ds-connector-100": {
-        "id": "ds-connector-100",
+    "ds-connector-row-3": {
+        "id": "ds-connector-row-3",
         "name": "T3",
         "aspects": {
             "csv-dataset": {},
@@ -227,7 +227,7 @@
                 "name": "Connector"
             },
             "dataset-distributions": {
-                "distributions": ["dist-connector-100"]
+                "distributions": ["dist-connector-row-3"]
             },
             "dataset-publisher": {
                 "publisher": "org-connector-967ef2eb34634ba418db94dab610ba6f"

@@ -1,6 +1,10 @@
 ## 0.0.49
 
+-   Specify correct externalURL and namespace for gitlab to fix deployment auth.
 -   Add a CSV connector
+-   Rename config page to admin; include connector management functionality
+-   Update content API to accept csvs
+-   Enable admin api and fix up admin api ability to work in speficied namespace
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
 -   Added ability to ensure that all emails go to default recipient despite what their normal recipient would be.
@@ -12,6 +16,7 @@
 -   Made the add a dataset form appear where the results get to a certain configurable score threshold
 -   Made the CSW connector look for names for service-based datasets in another place
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
+-   Fixed Gitlab UI only preview failed to download main CSS file
 
 ## 0.0.48
 

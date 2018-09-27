@@ -25,4 +25,11 @@ export default class MockDatabase {
             resolve(mockContentDataStore.setContentById(id, type, content));
         });
     }
+    getContentSummary() {
+        return mockContentDataStore.getContentSummary();
+    }
+
+    deleteContentById(id: string) {
+        return mockContentDataStore.deleteContentById(id);
+    }
 }

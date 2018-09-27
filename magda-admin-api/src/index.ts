@@ -54,6 +54,11 @@ const argv = addJwtSecretFromEnvVar(
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
         })
+        .option("namespace", {
+            describe: "Namespace for resources",
+            type: "string",
+            default: "default"
+        })
         .option("jwtSecret", {
             describe:
                 "Secret for decoding JWTs to determine if the caller is an admin",
@@ -75,7 +80,8 @@ app.use(
         registryApiUrl: argv.registryApiUrl,
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,
-        userId: argv.userId
+        userId: argv.userId,
+        namespace: argv.namespace
     })
 );
 
