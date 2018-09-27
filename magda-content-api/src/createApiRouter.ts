@@ -57,7 +57,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             if (content === null) {
                 throw new Error(
-                    `Unsupported configuration item requested: ${format}`
+                    `Unsupported configuration item requested: ${contentId}.${format}`
                 );
             }
 
@@ -82,6 +82,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
+
+    /**
+     * @apiGroup Content
+     * @api {post} /v0/content/:contentId Get All
+     * @apiDescription Get a list of content items and their type.
+     * You must be an admin for this.
+     *
+     * @apiSuccess {string} result=SUCCESS
+     *
+     * @apiSuccessExample {json} 200
+     *    [
+     *        {
+     *            "id": ...,
+     *            "type": ...
+     *        },
+     *        ...
+     *    ]
+     */
+    router.get("/all", ADMIN, async function(req, res) {
+        res.json(await database.getContentSummary());
+    });
 
     Object.entries(content).forEach(function(config: [string, ContentItem]) {
         const [contentId, configurationItem] = config;
@@ -111,7 +132,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        router.post(`/${contentId}`, ADMIN, body, async function(req, res) {
+        const route = configurationItem.route || `/${contentId}`;
+
+        router.post(route, ADMIN, body, async function(req, res) {
             try {
                 let content = req.body;
 
@@ -135,9 +158,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     req.headers["content-type"] ||
                     "text/plain";
 
-                await database.setContentById(contentId, contentType, content);
+                const finalContentId = req.path.substr(1);
 
-                res.status(201).send({
+                await database.setContentById(
+                    finalContentId,
+                    contentType,
+                    content
+                );
+
+                res.status(201).json({
                     result: "SUCCESS"
                 });
             } catch (e) {
@@ -147,6 +176,32 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 console.error(e);
             }
         });
+
+        /**
+         * @apiGroup Content
+         * @api {delete} /v0/content/:contentId Delete Content
+         * @apiDescription Delete content by content id. Must be an admin.
+         * Only available for contents with wildcard ids.
+         *
+         * @apiParam {string} contentId id of content item
+         *
+         * @apiSuccessExample {any} 204
+         *    {
+         *         "result": "SUCCESS"
+         *    }
+         *
+         */
+        if (configurationItem.route) {
+            router.delete(route, ADMIN, body, async function(req, res) {
+                const finalContentId = req.path.substr(1);
+
+                await database.deleteContentById(finalContentId);
+
+                res.status(204).json({
+                    result: "SUCCESS"
+                });
+            });
+        }
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.

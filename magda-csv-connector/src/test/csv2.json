@@ -110,10 +110,11 @@
                 "accrualPeriodicity": "Quarterly",
                 "themes": ["Resource"],
                 "keywords": ["KE1", "K W 2", "KW3", "Item", "Resource"],
-                "contactPoint": "Fred Nerk",
+                "contactPoint": "Fred Nerk\n\nActive",
                 "creation": {
                     "isInternallyProduced": false,
                     "mechanism": "Sourced from a chicken farm",
+                    "sourceSystem": "Sourced from a chicken farm",
                     "isOpenData": false
                 },
                 "accessLevel": "Not Classified",
@@ -185,9 +186,9 @@
         },
         "sourceTag": "stag"
     },
-    "org-connector-4a8cba6008fc6a637971c5177f61fcc3": {
-        "id": "org-connector-4a8cba6008fc6a637971c5177f61fcc3",
-        "name": "Joe Bloggs",
+    "org-connector-634437f607a8f344c444482c3c831cc5": {
+        "id": "org-connector-634437f607a8f344c444482c3c831cc5",
+        "name": "Internally produced by Agency",
         "aspects": {
             "source": {
                 "type": "csv-organization",
@@ -196,7 +197,7 @@
                 "name": "Connector"
             },
             "organization-details": {
-                "title": "Joe Bloggs"
+                "title": "Internally produced by Agency"
             }
         },
         "sourceTag": "stag"
@@ -213,9 +214,11 @@
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
+                "contactPoint": "Joe Bloggs",
                 "creation": {
                     "isInternallyProduced": true,
                     "mechanism": "Internally produced by Agency",
+                    "sourceSystem": "Internally produced by Agency",
                     "isOpenData": true
                 },
                 "accessLevel": "Not Classified",
@@ -237,7 +240,7 @@
                 ]
             },
             "dataset-publisher": {
-                "publisher": "org-connector-4a8cba6008fc6a637971c5177f61fcc3"
+                "publisher": "org-connector-634437f607a8f344c444482c3c831cc5"
             }
         },
         "sourceTag": "stag"
@@ -317,9 +320,11 @@
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],
                 "keywords": ["Item", "Resource"],
+                "contactPoint": "Active",
                 "creation": {
                     "isInternallyProduced": true,
                     "mechanism": "Produced with magic",
+                    "sourceSystem": "Produced with magic",
                     "isOpenData": true
                 },
                 "accessLevel": "Not Classified",

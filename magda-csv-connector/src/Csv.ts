@@ -26,15 +26,50 @@ export default class Csv implements ConnectorSource {
     }
 
     async getData() {
-        return parseSpreadsheet(await downloadBuffer(this.sheetUrl));
+        const data = parseSpreadsheet(await downloadBuffer(this.sheetUrl));
+
+        data.forEach((row, index) => {
+            const id = findClosestFieldThreshold(row, 0.95, "id");
+            if (id === undefined || id.length > 500) {
+                row.id = `row-${index + 1}`;
+            }
+        });
+
+        return data;
     }
 
     public getJsonDatasets(
         constraint?: string,
         maxResults?: number
     ): AsyncPage<any[]> {
+        // // All data at one go
+        // return AsyncPage.create<any>((previous: any) => {
+        //     return previous ? undefined : this.getData();
+        // });
+
+        // With incremental logging
+        let data: any[] = undefined;
+        function next() {
+            const slice = data.splice(0, 100);
+            console.log(
+                `Returning a slice of ${slice.length} rows of data from ${
+                    data.length
+                } more rows!`
+            );
+            return slice.length
+                ? new Promise(resolve => resolve(slice))
+                : undefined;
+        }
         return AsyncPage.create<any>((previous: any) => {
-            return previous ? undefined : this.getData();
+            if (!previous) {
+                return new Promise(async resolve => {
+                    console.log("Fetching data!");
+                    data = await this.getData();
+                    resolve(next());
+                });
+            } else {
+                return next();
+            }
         });
     }
 
