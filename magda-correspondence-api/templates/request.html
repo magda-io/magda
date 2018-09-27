@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-au">
+<head>
+    <style type="text/css">
+        body {
+            margin: auto;
+            display: block;
+        }
+
+        body>div>img {
+            padding-left: 10%;
+        }
+
+        button {
+            color: #FFFFFF;
+            text-align: center;
+            text-decoration: none;
+            line-height: 0;
+            background-color: #00698F;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 160px;
+            height: 50px;
+            font-size: 16px;
+        }
+
+        .content {
+            text-align: left;
+            padding-left: 10%;
+            padding-right: 10%;
+            line-height: 24px;
+            font-size: 16px;
+            width: 50%;
+            margin: 0 auto;
+        }
+
+        .content>.crest>img {
+            margin: 0;
+        }
+
+        .content>img {
+            display: block;
+            margin: auto;
+        }
+
+        .content>a>button {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="crest">
+            <img class="image" src="cid:govAUCrest" alt="Australian Government coat of arms">
+        </div>
+        <br />
+        <img class="image" src="cid:dataGovLogo" alt="Data gov logo">
+        Hi there, <br /><br />
+        A request has been raised for a dataset. Please respond to this request as soon as possible.<br /><br />
+        The query is from {{message.senderName}}, <a href="mailto:{{message.senderEmail}}">{{message.senderEmail}}</a>:
+        <br /><br />
+        <p>{{&message.html}}</p>
+        <br /><br />
+        <a target="_top" href="mailto:{{message.senderName}}?subject={{subject}}">
+            <button type="button">Reply</button>
+        </a>
+        <br /><br />
+        The Australian Government has mandated that agencies have a
+        responsibility to be transparent to any public consumer of open data.
+        If you have questions about why you got this email or what to do, email data@digital.gov.au <br /><br />
+        Sincerely, <br /> <br />
+        The Digital Transformation Agency at Data.gov.au
+    </div>
+</body>
+</html>
