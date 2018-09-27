@@ -15,7 +15,6 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import akka.util.Timeout
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
@@ -30,7 +29,7 @@ import au.csiro.data61.magda.client.AuthApiClient
  * @apiError (Error 500) {String} Response "Failure"
  */
 
-class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends CorsDirectives with Protocols {
+class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClient, implicit val config: Config, implicit val system: ActorSystem, implicit val ec: ExecutionContext, implicit val materializer: Materializer) extends Protocols {
   val logger = Logging(system, getClass)
 
   implicit def rejectionHandler = RejectionHandler.newBuilder()
@@ -38,13 +37,11 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
       val methods = rejections map (_.supported)
       lazy val names = methods map (_.name) mkString ", "
 
-      cors() {
-        options {
-          complete(s"Supported methods : $names.")
-        } ~
-          complete(MethodNotAllowed,
-            s"HTTP method not allowed, supported methods: $names!")
-      }
+      options {
+        complete(s"Supported methods : $names.")
+      } ~
+        complete(MethodNotAllowed,
+          s"HTTP method not allowed, supported methods: $names!")
     }
     .handleAll[MalformedRequestContentRejection] { rejections =>
       val messages = ("The request content did not have the expected format:" +: rejections.map(_.message)).mkString("\n")
@@ -56,9 +53,7 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
     case e: Exception => {
       logger.error(e, "Exception encountered")
 
-      cors() {
-        complete(StatusCodes.InternalServerError, au.csiro.data61.magda.registry.BadRequest("The server encountered an unexpected error."))
-      }
+      complete(StatusCodes.InternalServerError, au.csiro.data61.magda.registry.BadRequest("The server encountered an unexpected error."))
     }
   }
 
@@ -74,11 +69,9 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
         pathPrefix("records") { new RecordsServiceRO(config, system, materializer).route }
   }
 
-  val routes = cors() {
-    handleExceptions(myExceptionHandler) {
+  val routes = handleExceptions(myExceptionHandler) {
       pathPrefix("v0") {
         path("ping") { complete("OK") } ~ roleDependentRoutes
       }
     }
-  }
 }

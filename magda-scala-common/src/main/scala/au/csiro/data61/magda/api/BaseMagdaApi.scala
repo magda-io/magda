@@ -10,19 +10,12 @@ import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ ExceptionHandler, MethodRejection, RejectionHandler }
-import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives._
 
-trait BaseMagdaApi extends CorsDirectives {
+trait BaseMagdaApi {
   import BasicDirectives._
-
-  // Disallow credentials so that we return "Access-Control-Allow-Origin: *" instead of
-  // "Access-Control-Allow-Origin: foo.com".  The latter is fine until Chrome decides to
-  // cache the response and re-use it for other origins, causing a CORS failure.
-  val corsSettings = CorsSettings.defaultSettings.copy(allowCredentials = false)
 
   def getLogger: LoggingAdapter
 
@@ -31,15 +24,13 @@ trait BaseMagdaApi extends CorsDirectives {
       val methods = rejections map (_.supported)
       lazy val names = methods map (_.name) mkString ", "
 
-      cors(corsSettings) {
-        options {
-          complete(s"Supported methods : $names.")
-        } ~
-          complete(
-            MethodNotAllowed,
-            s"HTTP method not allowed, supported methods: $names!"
-          )
-      }
+      options {
+        complete(s"Supported methods : $names.")
+      } ~
+        complete(
+          MethodNotAllowed,
+          s"HTTP method not allowed, supported methods: $names!"
+        )
     }
     .result()
 
@@ -47,17 +38,13 @@ trait BaseMagdaApi extends CorsDirectives {
     case e: Exception ⇒ {
       getLogger.error(e, "Exception encountered")
 
-      cors(corsSettings) {
-        complete(HttpResponse(InternalServerError, entity = "Failure"))
-      }
+      complete(HttpResponse(InternalServerError, entity = "Failure"))
     }
   }
 
   def magdaRoute(inner: Route): Route = {
-    cors(corsSettings) {
-      handleExceptions(genericExceptionHandler) {
-        inner
-      }
+    handleExceptions(genericExceptionHandler) {
+      inner
     }
   }
 }

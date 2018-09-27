@@ -22,6 +22,9 @@ gateway:
     enabled: false
   enableAuthEndpoint: true
   ckanRedirectionDomain: "ckan.data.gov.au"
+  cors:
+    credentials: true
+    origin: true
   csp:
     directives:
       scriptSrc:

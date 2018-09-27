@@ -17,7 +17,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV,
     "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,
     "com.typesafe.akka" %% "akka-contrib" % akkaV,
-    "ch.megard" %% "akka-http-cors" % "0.2.1",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
