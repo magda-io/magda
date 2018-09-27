@@ -1,6 +1,12 @@
 import * as express from "express";
 import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
+import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import Database from "./Database";
+import * as mime from "mime-types";
+import * as URI from "urijs";
+import * as path from "path";
+import * as bodyParser from "body-parser";
 import { Content } from "./model";
 import { content, ContentEncoding, ContentItem } from "./content";
 
@@ -15,9 +21,135 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
+    const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
+
     router.get("/healthz", function(req, res, next) {
         res.status(200).send("OK");
     });
+
+    function parseUrlPath(pathString: string) {
+        const pathItems = URI(pathString).segmentCoded();
+        pathItems.shift(); //--- remove "commonAssets/"
+        const contentId = pathItems.join("/");
+        let format = path.extname(pathItems.pop());
+        if (format[0] === ".") {
+            format = format.substring(1);
+        }
+        return { contentId, format };
+    }
+
+    /**
+     * We will want a common way to store object in content API without prior code changes
+     * The default upload format will be `x-www-form-urlencoded`.
+     * Default mime type is: `application/octet-stream`
+     * The actually response mime type should be determined by resource ext name
+     */
+
+    /**
+     * @apiGroup Content
+     * @api {get} /v0/content/commonAssets/:contentId Get Common Content Assets
+     * @apiDescription Returns content by content id. Its mime type will be determined by ext name (i.e. format)
+     *
+     * @apiParam {string} contentId id of content item. e.g. a/b/c.png
+     * * will be determined by mime lookup using ext name of the contentId.
+     *
+     * @apiSuccessExample {any} 200
+     *    Content in format requested
+     *
+     * @apiError {string} result=FAILED
+     *
+     * @apiErrorExample {json} 404
+     *    {
+     *         "result": "FAILED",
+     *         "ErrorMessage": "xxxxx"
+     *    }
+     *
+     * @apiErrorExample {json} 500
+     *    {
+     *         "result": "FAILED",
+     *         "ErrorMessage": "xxxxx"
+     *    }
+     */
+    router.get("/commonAssets/*", async function(req, res) {
+        const { contentId, format } = parseUrlPath(req.path);
+        try {
+            const content = (await database.getContentById(
+                contentId
+            )).valueOrThrow(
+                new GenericError(`Cannot locate ${contentId}.${format}`, 404)
+            );
+            const mimeType = mime.lookup(format);
+            const buffer = Buffer.from(content.content, "base64");
+            res.header(
+                "Content-Type",
+                mimeType === false ? "application/octet-stream" : mimeType
+            ).send(buffer);
+        } catch (e) {
+            const statusCode = e.statusCode ? e.statusCode : 500;
+            res.status(statusCode).json({
+                result: "FAILED",
+                ErrorMessage: e.toString()
+            });
+            console.error(e);
+        }
+    });
+
+    /**
+     * @apiGroup Content
+     * @api {post} /v0/content/commonAssets/:contentId Update Generic Non predefined Content
+     * @apiDescription Update Generic Non predefined content by id.
+     *
+     * @apiParam {string} contentId id of content item
+     *
+     * @apiSuccess {string} result=SUCCESS
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *         "result": "SUCCESS"
+     *    }
+     *
+     * @apiError {string} result=FAILED
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *         "result": "FAILED"
+     *    }
+     */
+    router.post(
+        `/commonAssets/*`,
+        ADMIN,
+        bodyParser.raw({
+            type: "*/*",
+            inflate: true,
+            limit: "32mb"
+        }),
+        async function(req, res) {
+            try {
+                const { contentId, format } = parseUrlPath(req.path);
+                let mimeType = mime.lookup(format);
+                if (mimeType === false) {
+                    mimeType = "application/octet-stream";
+                }
+
+                let content = req.body;
+                if (!(content instanceof Buffer)) {
+                    throw new Error("Failed to process request body.");
+                }
+                content = content.toString("base64");
+
+                await database.setContentById(contentId, mimeType, content);
+
+                res.status(201).json({
+                    result: "SUCCESS"
+                });
+            } catch (e) {
+                res.status(500).json({
+                    result: "FAILED"
+                });
+                console.error(e);
+            }
+        }
+    );
 
     /**
      * @apiGroup Content
@@ -80,8 +212,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             console.error(e);
         }
     });
-
-    const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
 
     Object.entries(content).forEach(function(config: [string, ContentItem]) {
         const [contentId, configurationItem] = config;
@@ -151,9 +281,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
-        router.get("public/jwt", function(req, res) {
+        router.get("/public/jwt", function(req, res) {
             res.status(200);
-            res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
+            res.write(
+                "X-Magda-Session: " +
+                    buildJwt(
+                        options.jwtSecret,
+                        "00000000-0000-4000-8000-000000000000"
+                    )
+            );
             res.send();
         });
     }
