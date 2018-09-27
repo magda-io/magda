@@ -13,6 +13,7 @@ import * as nock from "nock";
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
 
 const REGISTRY_URL: string = "https://registry.example.com";
+const CONTENT_API_URL: string = "https://content-api.example.com";
 const registry: RegistryClient = new RegistryClient({
     baseUrl: REGISTRY_URL,
     maxRetries: 0,
@@ -408,6 +409,7 @@ describe("send dataset request mail", () => {
 
     function resolveRouterOptions(smtpMailer: SMTPMailer): ApiRouterOptions {
         return {
+            contentApiUrl: CONTENT_API_URL,
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
             registry,

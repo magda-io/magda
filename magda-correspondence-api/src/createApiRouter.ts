@@ -94,6 +94,7 @@ export default function createApiRouter(
         const body: DatasetMessage = req.body;
         const subject = `Data Request from ${body.senderName}`;
         const html = renderTemplate(
+            options.contentApiUrl,
             Templates.Request,
             body,
             subject,
@@ -101,14 +102,16 @@ export default function createApiRouter(
         );
 
         handlePromise(
-            sendMail(
-                options.smtpMailer,
-                options.defaultRecipient,
-                body,
-                html,
-                subject,
-                options.defaultRecipient
-            ),
+            html.then(html => {
+                return sendMail(
+                    options.smtpMailer,
+                    options.defaultRecipient,
+                    body,
+                    html,
+                    subject,
+                    options.defaultRecipient
+                );
+            }),
             res
         );
     });
@@ -161,6 +164,7 @@ export default function createApiRouter(
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
+                    options.contentApiUrl,
                     Templates.Question,
                     body,
                     subject,
@@ -168,15 +172,17 @@ export default function createApiRouter(
                     dataset
                 );
 
-                return sendMail(
-                    options.smtpMailer,
-                    options.defaultRecipient,
-                    body,
-                    html,
-                    subject,
-                    recipient,
-                    options.alwaysSendToDefaultRecipient
-                );
+                return html.then(html => {
+                    return sendMail(
+                        options.smtpMailer,
+                        options.defaultRecipient,
+                        body,
+                        html,
+                        subject,
+                        recipient,
+                        options.alwaysSendToDefaultRecipient
+                    );
+                });
             });
 
             handlePromise(promise, res, req.params.datasetId);

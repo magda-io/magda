@@ -1,36 +1,23 @@
-import * as pug from "pug";
-import * as path from "path";
 import * as MarkdownIt from "markdown-it";
+import * as rp from "request-promise-native";
+import * as Mustache from "mustache";
 
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
 export enum Templates {
-    Feedback = "feedback",
-    Question = "question",
-    Request = "request"
+    Feedback = "feedback.mustache",
+    Question = "question.mustache",
+    Request = "request.mustache"
 }
-
-type TemplatesLookup = { [key in Templates]: pug.compileTemplate };
-
-const templates: TemplatesLookup = {
-    request: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/request.pug")
-    ),
-    question: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/question.pug")
-    ),
-    feedback: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/feedback.pug")
-    )
-};
 
 const md = new MarkdownIt({
     breaks: true
 });
 
-export default function renderTemplate(
-    template: Templates,
+export default async function renderTemplate(
+    contentApiUrl: string,
+    templateFile: string,
     message: DatasetMessage,
     subject: string,
     externalUrl: string,
@@ -48,9 +35,6 @@ export default function renderTemplate(
         }
     };
 
-    const templateFn = (templates as { [x: string]: pug.compileTemplate })[
-        template
-    ];
-
-    return templateFn(templateContext);
+    const tplContent = await rp(`${contentApiUrl}${templateFile}`);
+    return Mustache.render(tplContent, templateContext);
 }
