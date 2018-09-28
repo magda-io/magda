@@ -2,6 +2,7 @@ import {} from "mocha";
 import { ApiRouterOptions } from "../createApiRouter";
 import { SMTPMailer, Message, Attachment } from "../SMTPMailer";
 import * as fs from "fs";
+import * as path from "path";
 
 import createApiRouter from "../createApiRouter";
 
@@ -11,6 +12,8 @@ import * as supertest from "supertest";
 import * as express from "express";
 import * as nock from "nock";
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import CContentApiDirMapper from "../CContentApiDirMapper";
+import CEmailTplRender from "../CEmailTplRender";
 
 const REGISTRY_URL: string = "https://registry.example.com";
 const CONTENT_API_URL: string = "https://content-api.example.com";
@@ -19,6 +22,34 @@ const registry: RegistryClient = new RegistryClient({
     maxRetries: 0,
     secondsBetweenRetries: 0
 });
+
+const contentMapper = new CContentApiDirMapper(
+    CONTENT_API_URL,
+    "userId",
+    "secrets"
+);
+const tplRender = new CEmailTplRender(contentMapper);
+const assetsFiles = [
+    "emailTpls/request.html",
+    "emailTpls/question.html",
+    "emailTpls/feedback.html",
+    "emailTpls/assets/AU-Govt-Logo.jpg",
+    "emailTpls/assets/Logo.jpg"
+];
+
+sinon.stub(contentMapper, "fileExist").callsFake(function(localPath: string) {
+    if (assetsFiles.findIndex(file => file === localPath) !== -1) return true;
+    throw new Error(`Tried to access non-exist file: ${localPath}`);
+});
+
+sinon
+    .stub(contentMapper, "getFileContent")
+    .callsFake(function(localPath: string) {
+        if (assetsFiles.findIndex(file => file === localPath) === -1) {
+            throw new Error(`Tried to access non-exist file: ${localPath}`);
+        }
+        return fs.readFileSync(path.join(__dirname, localPath));
+    });
 
 const stubbedSMTPMailer: SMTPMailer = {
     checkConnectivity() {
@@ -56,7 +87,10 @@ describe("send dataset request mail", () => {
 
         app = express();
         app.use(require("body-parser").json());
-        app.use("/", createApiRouter(resolveRouterOptions(stubbedSMTPMailer)));
+        app.use(
+            "/",
+            createApiRouter(resolveRouterOptions(stubbedSMTPMailer, tplRender))
+        );
 
         registryScope = nock(REGISTRY_URL);
     });
@@ -171,7 +205,7 @@ describe("send dataset request mail", () => {
             // Create a new app with different options
             app = express();
             app.use(require("body-parser").json());
-            const options = resolveRouterOptions(stubbedSMTPMailer);
+            const options = resolveRouterOptions(stubbedSMTPMailer, tplRender);
             options.alwaysSendToDefaultRecipient = true;
 
             app.use("/", createApiRouter(options));
@@ -407,9 +441,12 @@ describe("send dataset request mail", () => {
         });
     }
 
-    function resolveRouterOptions(smtpMailer: SMTPMailer): ApiRouterOptions {
+    function resolveRouterOptions(
+        smtpMailer: SMTPMailer,
+        tplRender: CEmailTplRender
+    ): ApiRouterOptions {
         return {
-            contentApiUrl: CONTENT_API_URL,
+            tplRender,
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
             registry,

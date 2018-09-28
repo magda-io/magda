@@ -3,6 +3,7 @@ import * as MarkdownIt from "markdown-it";
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import CEmailTplRender from "./CEmailTplRender";
+import { Attachment } from "./SMTPMailer";
 
 export enum Templates {
     Feedback = "feedback.mustache",
@@ -14,6 +15,11 @@ const md = new MarkdownIt({
     breaks: true
 });
 
+export interface RenderResult {
+    renderedContent: string;
+    attachments: Attachment[];
+}
+
 export default async function renderTemplate(
     tplRender: CEmailTplRender,
     templateFile: string,
@@ -21,7 +27,7 @@ export default async function renderTemplate(
     subject: string,
     externalUrl: string,
     dataset?: Record
-) {
+): Promise<RenderResult> {
     const templateContext = {
         message: {
             ...message,
