@@ -118,7 +118,7 @@ const contentDirMapper = new CContentApiDirMapper(
     argv.jwtSecret
 );
 contentDirMapper
-    .syncFolder(path.join(__dirname, "..", "templates"), "emailTpls")
+    .syncFolder(path.join(__dirname, "..", "emailTpls"))
     .then(([allFiles, skippedFiles]) => {
         skippedFiles.forEach(file =>
             console.log(`Skipped existing assets file: ${file}`)

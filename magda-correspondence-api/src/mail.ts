@@ -3,8 +3,8 @@ import * as html2text from "html-to-text";
 import { Message, SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 
-const auGovtLogoPath = require.resolve("../templates/assets/AU-Govt-Logo.jpg");
-const dataGovLogoPath = require.resolve("../templates/assets/Logo.jpg");
+const auGovtLogoPath = require.resolve("../emailTpls/assets/AU-Govt-Logo.jpg");
+const dataGovLogoPath = require.resolve("../emailTpls/assets/Logo.jpg");
 
 /**
  *
