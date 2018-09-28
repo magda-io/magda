@@ -7,6 +7,7 @@ import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClien
 import createApiRouter from "./createApiRouter";
 import { NodeMailerSMTPMailer } from "./SMTPMailer";
 import CContentApiDirMapper from "./CContentApiDirMapper";
+import CEmailTplRender from "./CEmailTplRender";
 
 const argv = yargs
     .config()
@@ -92,23 +93,6 @@ const argv = yargs
 
 const app = express();
 app.use(require("body-parser").json());
-app.use(
-    "/v0",
-    createApiRouter({
-        registry: new RegistryClient({ baseUrl: argv.registryUrl }),
-        contentApiUrl: argv.contentApiUrl,
-        defaultRecipient: argv.defaultRecipient,
-        externalUrl: argv.externalUrl,
-        smtpMailer: new NodeMailerSMTPMailer({
-            smtpHostname: argv.smtpHostname,
-            smtpPort: argv.smtpPort,
-            smtpSecure: argv.smtpSecure,
-            smtpUsername: argv.smtpUsername || process.env.SMTP_USERNAME,
-            smtpPassword: argv.smtpPassword || process.env.SMTP_PASSWORD
-        }),
-        alwaysSendToDefaultRecipient: argv.alwaysSendToDefaultRecipient
-    })
-);
 
 console.log("Sync default email tpls to content API...");
 
@@ -135,6 +119,26 @@ contentDirMapper
         );
         process.exit(1);
     });
+
+const tplRender = new CEmailTplRender(contentDirMapper);
+
+app.use(
+    "/v0",
+    createApiRouter({
+        registry: new RegistryClient({ baseUrl: argv.registryUrl }),
+        tplRender,
+        defaultRecipient: argv.defaultRecipient,
+        externalUrl: argv.externalUrl,
+        smtpMailer: new NodeMailerSMTPMailer({
+            smtpHostname: argv.smtpHostname,
+            smtpPort: argv.smtpPort,
+            smtpSecure: argv.smtpSecure,
+            smtpUsername: argv.smtpUsername || process.env.SMTP_USERNAME,
+            smtpPassword: argv.smtpPassword || process.env.SMTP_PASSWORD
+        }),
+        alwaysSendToDefaultRecipient: argv.alwaysSendToDefaultRecipient
+    })
+);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error(reason);

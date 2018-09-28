@@ -11,9 +11,10 @@ import { sendMail } from "./mail";
 import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
+import CEmailTplRender from "./CEmailTplRender";
 export interface ApiRouterOptions {
     registry: RegistryClient;
-    contentApiUrl: string;
+    tplRender: CEmailTplRender;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
@@ -94,7 +95,7 @@ export default function createApiRouter(
         const body: DatasetMessage = req.body;
         const subject = `Data Request from ${body.senderName}`;
         const html = renderTemplate(
-            options.contentApiUrl,
+            options.tplRender,
             Templates.Request,
             body,
             subject,
@@ -102,12 +103,13 @@ export default function createApiRouter(
         );
 
         handlePromise(
-            html.then(html => {
+            html.then(({ renderedContent, attachments }) => {
                 return sendMail(
                     options.smtpMailer,
                     options.defaultRecipient,
                     body,
-                    html,
+                    renderedContent,
+                    attachments,
                     subject,
                     options.defaultRecipient
                 );
@@ -164,7 +166,7 @@ export default function createApiRouter(
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
-                    options.contentApiUrl,
+                    options.tplRender,
                     Templates.Question,
                     body,
                     subject,
@@ -172,12 +174,13 @@ export default function createApiRouter(
                     dataset
                 );
 
-                return html.then(html => {
+                return html.then(({ renderedContent, attachments }) => {
                     return sendMail(
                         options.smtpMailer,
                         options.defaultRecipient,
                         body,
-                        html,
+                        renderedContent,
+                        attachments,
                         subject,
                         recipient,
                         options.alwaysSendToDefaultRecipient

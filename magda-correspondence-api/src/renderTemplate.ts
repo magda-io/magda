@@ -1,9 +1,8 @@
 import * as MarkdownIt from "markdown-it";
-import * as rp from "request-promise-native";
-import * as Mustache from "mustache";
 
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import CEmailTplRender from "./CEmailTplRender";
 
 export enum Templates {
     Feedback = "feedback.mustache",
@@ -16,7 +15,7 @@ const md = new MarkdownIt({
 });
 
 export default async function renderTemplate(
-    contentApiUrl: string,
+    tplRender: CEmailTplRender,
     templateFile: string,
     message: DatasetMessage,
     subject: string,
@@ -35,6 +34,9 @@ export default async function renderTemplate(
         }
     };
 
-    const tplContent = await rp(`${contentApiUrl}${templateFile}`);
-    return Mustache.render(tplContent, templateContext);
+    const renderedContent = await tplRender.render(
+        templateFile,
+        templateContext
+    );
+    return { renderedContent, attachments: tplRender.attachments };
 }
