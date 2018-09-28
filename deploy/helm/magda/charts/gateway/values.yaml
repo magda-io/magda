@@ -12,6 +12,7 @@ autoscaler:
   targetCPUUtilizationPercentage: 80
 
 enableAuthEndpoint: false
+enableWebAccessControl: false
 
 helmet:
   frameguard: false
