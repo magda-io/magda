@@ -48,7 +48,14 @@ sinon
         if (assetsFiles.findIndex(file => file === localPath) === -1) {
             throw new Error(`Tried to access non-exist file: ${localPath}`);
         }
-        return fs.readFileSync(path.join(__dirname, localPath));
+        if (path.extname(localPath) === ".html") {
+            return fs.readFileSync(
+                path.join(__dirname, "..", "..", localPath),
+                "utf-8"
+            );
+        } else {
+            return fs.readFileSync(path.join(__dirname, "..", "..", localPath));
+        }
     });
 
 const stubbedSMTPMailer: SMTPMailer = {
@@ -435,8 +442,9 @@ describe("send dataset request mail", () => {
     function checkAttachments(attachments: Array<Attachment>) {
         attachments.forEach(attachment => {
             expect(
-                fs.existsSync(attachment.path),
-                attachment.path + " to exist"
+                attachment.content instanceof Buffer ||
+                    typeof attachment.content === "string",
+                "attachment.content to exist"
             ).to.be.true;
         });
     }

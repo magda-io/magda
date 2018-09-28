@@ -6,9 +6,9 @@ import CEmailTplRender from "./CEmailTplRender";
 import { Attachment } from "./SMTPMailer";
 
 export enum Templates {
-    Feedback = "feedback.mustache",
-    Question = "question.mustache",
-    Request = "request.mustache"
+    Feedback = "emailTpls/feedback.html",
+    Question = "emailTpls/question.html",
+    Request = "emailTpls/request.html"
 }
 
 const md = new MarkdownIt({
