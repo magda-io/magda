@@ -90,7 +90,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 result: "FAILED",
                 ErrorMessage: e.toString()
             });
-            console.error(e);
+            if (statusCode !== 404) {
+                console.error(e);
+            }
         }
     });
 
