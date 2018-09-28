@@ -53,10 +53,12 @@
 <body>
     <div class="content">
         <div class="crest">
-            <img class="image" src="cid:govAUCrest" alt="Australian Government coat of arms">
+            {{#inlineImg}}
+                <img class="image" src="emailTpls/assets/AU-Govt-Logo.jpg" alt="Australian Government coat of arms" />
+            {{/inlineImg}}
         </div>
         <br />
-        <img class="image" src="cid:dataGovLogo" alt="Data gov logo">
+        {{#inlineImg}}<img class="image" src="emailTpls/assets/Logo.jpg" alt="Data gov logo" />{{/inlineImg}}
         Hi there, <br /><br />
         A question has been raised in relation to a dataset: {{dataset.title}}, 
         published by {{dataset.publisher}}, at
