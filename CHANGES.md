@@ -1,5 +1,6 @@
 ## 0.0.49
 
+-   Made issued and update date not appear when valid dates are not available.
 -   Specify correct externalURL and namespace for gitlab to fix deployment auth.
 -   Add a CSV connector
 -   Rename config page to admin; include connector management functionality
