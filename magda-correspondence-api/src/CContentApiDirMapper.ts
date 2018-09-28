@@ -41,6 +41,15 @@ class CContentApiDirMapper {
         });
     }
 
+    public async fileExist(localPath: string) {
+        const res = await rp.head(`${this.url}/commonAssets/${localPath}`, {
+            resolveWithFullResponse: true,
+            simple: false
+        });
+        if (res.statusCode !== 200) return false;
+        else return true;
+    }
+
     public async syncFolder(
         localFolderPath: string,
         remoteFolerName: string = ""
@@ -50,27 +59,24 @@ class CContentApiDirMapper {
         if (remoteFolerName === "") {
             targetRemoteFolderName = path.basename(absLocalFolderPath);
         }
-        const files = await recursiveReadDir(localFolderPath, [
-            (file, stats) => {
-                if (stats.isDirectory()) {
-                    return true;
-                }
-                return false;
-            }
-        ]);
+        const files = await recursiveReadDir(localFolderPath);
         if (!files || !files.length) {
-            return;
+            return [[], []];
         }
+        const skippedFiles = [];
         for (let i = 0; i < files.length; i++) {
+            const fileRemoteLocalPath = `${targetRemoteFolderName}${files[
+                i
+            ].replace(absLocalFolderPath, "")}`;
+            const checkFile = await this.fileExist(fileRemoteLocalPath);
+            if (checkFile) {
+                skippedFiles.push(fileRemoteLocalPath);
+                continue;
+            }
             const fileContent = await fse.readFile(`${files[i]}`);
-            await this.saveFile(
-                `${targetRemoteFolderName}${files[i].replace(
-                    absLocalFolderPath,
-                    ""
-                )}`,
-                fileContent
-            );
+            await this.saveFile(fileRemoteLocalPath, fileContent);
         }
+        return [files, skippedFiles];
     }
 }
 

@@ -119,7 +119,10 @@ const contentDirMapper = new CContentApiDirMapper(
 );
 contentDirMapper
     .syncFolder(path.join(__dirname, "..", "templates"), "emailTpls")
-    .then(() => {
+    .then(([allFiles, skippedFiles]) => {
+        skippedFiles.forEach(file =>
+            console.log(`Skipped existing assets file: ${file}`)
+        );
         console.log("Sync default email tpls to content API completed!");
         const listenPort = argv.listenPort;
         app.listen(listenPort);
