@@ -18,7 +18,8 @@ export interface Attachment {
     filename: string;
     contentType: string;
     contentDisposition: string;
-    path: string;
+    content?: string | Buffer;
+    path?: string;
     cid: string;
 }
 
