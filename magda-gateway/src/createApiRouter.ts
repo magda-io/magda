@@ -11,6 +11,7 @@ export interface ProxyTarget {
     to: string;
     methods?: string[];
     auth?: boolean;
+    redirectTrailingSlash?: boolean;
 }
 
 export interface ApiRouterOptions {
@@ -42,7 +43,8 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         baseRoute: string,
         target: string,
         verbs: string[] = ["all"],
-        auth = false
+        auth = false,
+        redirectTrailingSlash = false
     ) {
         console.log("PROXY", baseRoute, target);
         const routeRouter: any = express.Router();
@@ -62,11 +64,23 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
 
         router.use(baseRoute, routeRouter);
 
+        if (redirectTrailingSlash) {
+            router.get(baseRoute, function(req, res) {
+                res.redirect("./");
+            });
+        }
+
         return routeRouter;
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
-        proxyRoute(`/${key}`, value.to, value.methods, !!value.auth);
+        proxyRoute(
+            `/${key}`,
+            value.to,
+            value.methods,
+            !!value.auth,
+            value.redirectTrailingSlash
+        );
     });
 
     return router;

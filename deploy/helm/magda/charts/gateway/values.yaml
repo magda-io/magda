@@ -46,6 +46,7 @@ routes:
     to: http://correspondence-api/v0/public
   apidocs:
     to: http://apidocs-server/
+    redirectTrailingSlash: true
 helmet: {}
 
 csp:
