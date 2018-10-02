@@ -1,6 +1,7 @@
 import * as express from "express";
 import { Router } from "express";
 import * as _ from "lodash";
+import * as escapeStringRegexp from "escape-string-regexp";
 
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
@@ -62,13 +63,15 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
             )
         );
 
-        router.use(baseRoute, routeRouter);
-
         if (redirectTrailingSlash) {
-            router.get(baseRoute, function(req, res) {
-                res.redirect("./");
+            // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
+            const re = new RegExp(`^${escapeStringRegexp(baseRoute)}$`);
+            router.get(re, function(req, res) {
+                res.redirect(`${req.originalUrl}/`);
             });
         }
+
+        router.use(baseRoute, routeRouter);
 
         return routeRouter;
     }
