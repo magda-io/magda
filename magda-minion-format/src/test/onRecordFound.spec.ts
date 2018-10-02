@@ -2,151 +2,91 @@ import {} from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import onRecordFound from "../onRecordFound";
-import * as sampleAodnDataset from "./sampleDataFiles/sampleAodnDataset.json";
-import * as sampleLauncestonDataset from "./sampleDataFiles/sampleLauncestonDataset.json";
-import * as sampleDataset3 from "./sampleDataFiles/ds-aodn-a71949b0-ebf5-43fd-84ee-9cb6c4a7fd1f.json";
-import * as sampleDAPDataset from "./sampleDataFiles/sampleDAPDataset.json";
+
+import * as launcestonDist2 from "./sampleDataFiles/launceston-dist-2.json";
+import * as launcestonDist7 from "./sampleDataFiles/launceston-dist-7.json";
+import * as launcestonDist8 from "./sampleDataFiles/launceston-dist-8.json";
+
+import * as aodnDist1 from "./sampleDataFiles/aodn-dist-1.json";
+import * as aodnDist2 from "./sampleDataFiles/aodn-dist-2.json";
+import * as aodnDist3 from "./sampleDataFiles/aodn-dist-3.json";
+import * as aodnDist4 from "./sampleDataFiles/aodn-dist-4.json";
+import * as aodnDist5 from "./sampleDataFiles/aodn-dist-5.json";
+import * as aodnDist6 from "./sampleDataFiles/aodn-dist-6.json";
+
+import * as dapDist1 from "./sampleDataFiles/dap-dist-1.json";
+import * as dapDist28 from "./sampleDataFiles/dap-dist-28.json";
+
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-    describe("Should process sample launceston dataset data correctly", function() {
-        const sampleDatasetData: any = sampleLauncestonDataset;
-        const resultAspects: any = [];
+    async function testDistReturnsFormat(
+        distributionData: any,
+        format: string
+    ) {
+        let resultAspect: any;
+        const registry = sinon.createStubInstance(Registry);
+        registry.putRecordAspect.callsFake(
+            (disId: any, aType: any, aspect: any) => {
+                resultAspect = aspect;
+                return new Promise((resolve, reject) => resolve());
+            }
+        );
 
-        before(function() {
-            const registry = sinon.createStubInstance(Registry);
-            registry.putRecordAspect.callsFake(
-                (disId: any, aType: any, aspect: any) => {
-                    resultAspects.push(aspect);
-                    return new Promise((resolve, reject) => resolve());
-                }
-            );
-            return onRecordFound(sampleDatasetData, registry);
+        await onRecordFound(distributionData, registry);
+
+        expect(resultAspect).to.include({
+            format
         });
+    }
 
+    describe("Should process sample launceston dataset data correctly", function() {
         it("Should return `ESRI REST` for distribution no. 2", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[1]).to.include({
-                format: "ESRI REST"
-            });
+            return testDistReturnsFormat(launcestonDist2, "ESRI REST");
         });
 
         it("Should return `WMS` for distribution no.7", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[6]).to.include({
-                format: "WMS"
-            });
+            return testDistReturnsFormat(launcestonDist7, "WMS");
         });
 
         it("Should return `WFS` for distribution no.8", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[7]).to.include({
-                format: "WFS"
-            });
+            return testDistReturnsFormat(launcestonDist8, "WFS");
         });
     });
 
     describe("Should process sample aodn distributions correctly", function() {
-        const sampleDatasetData: any = sampleAodnDataset;
-        const resultAspects: any = [];
-
-        before(function() {
-            const registry = sinon.createStubInstance(Registry);
-            registry.putRecordAspect.callsFake(
-                (disId: any, aType: any, aspect: any) => {
-                    resultAspects.push(aspect);
-                    return new Promise((resolve, reject) => resolve());
-                }
-            );
-            return onRecordFound(sampleDatasetData, registry);
+        it("Should process 1st distribution as `HTML`", () => {
+            return testDistReturnsFormat(aodnDist1, "HTML");
         });
 
         it("Should process 2nd distribution dcat format string `WWW:DOWNLOAD-1.0-http--csiro-oa-app` as `CSIRO Open APP`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[1]).to.include({
-                format: "CSIRO OPEN APP"
-            });
+            return testDistReturnsFormat(aodnDist2, "CSIRO OPEN APP");
         });
 
         it("Should process 3rd distribution as `PDF`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[2]).to.include({
-                format: "PDF"
-            });
+            return testDistReturnsFormat(aodnDist3, "PDF");
         });
 
         it("Should process 4th distribution as `HTML`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[3]).to.include({
-                format: "HTML"
-            });
+            return testDistReturnsFormat(aodnDist4, "HTML");
         });
 
         it("Should process 5th distribution as `HTML`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[4]).to.include({
-                format: "HTML"
-            });
+            return testDistReturnsFormat(aodnDist5, "HTML");
         });
 
         it("Should process 6th distribution as `HTML`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[5]).to.include({
-                format: "HTML"
-            });
-        });
-    });
-
-    describe("Should process sample dataset no.3 data correctly", function() {
-        const sampleDatasetData: any = sampleDataset3;
-        const resultAspects: any = [];
-
-        before(function() {
-            const registry = sinon.createStubInstance(Registry);
-            registry.putRecordAspect.callsFake(
-                (disId: any, aType: any, aspect: any) => {
-                    resultAspects.push(aspect);
-                    return new Promise((resolve, reject) => resolve());
-                }
-            );
-            return onRecordFound(sampleDatasetData, registry);
-        });
-
-        it("Should process 2nd distribution as `HTML`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[1]).to.include({
-                format: "HTML"
-            });
+            return testDistReturnsFormat(aodnDist6, "HTML");
         });
     });
 
     describe("Should process sample DAP dataset correctly", function() {
-        const sampleDatasetData: any = sampleDAPDataset;
-        const resultAspects: any = [];
-
-        before(function() {
-            const registry = sinon.createStubInstance(Registry);
-            registry.putRecordAspect.callsFake(
-                (disId: any, aType: any, aspect: any) => {
-                    resultAspects.push(aspect);
-                    return new Promise((resolve, reject) => resolve());
-                }
-            );
-            return onRecordFound(sampleDatasetData, registry);
-        });
-
         it("Should process `application/pdf` (1st distribution) as `PDF`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[0]).to.include({
-                format: "PDF"
-            });
+            return testDistReturnsFormat(dapDist1, "PDF");
         });
 
         it("Should process 1image/svg+xml` (28th distribution) as `SVG`", () => {
-            expect(resultAspects).to.be.an("array");
-            expect(resultAspects[27]).to.include({
-                format: "SVG"
-            });
+            return testDistReturnsFormat(dapDist28, "SVG");
         });
     });
 });
