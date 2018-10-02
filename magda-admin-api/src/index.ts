@@ -59,6 +59,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "default"
         })
+        .option("gapiId", {
+            describe: "Google Analytics ID",
+            type: "string",
+            default: ""
+        })
         .option("jwtSecret", {
             describe:
                 "Secret for decoding JWTs to determine if the caller is an admin",
@@ -81,7 +86,8 @@ app.use(
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,
         userId: argv.userId,
-        namespace: argv.namespace
+        namespace: argv.namespace,
+        gapiId: argv.gapiId
     })
 );
 

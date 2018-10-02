@@ -13,6 +13,7 @@ global:
   logLevel: INFO
   noDbAuth: false
   namespace: default
+  gapiId: UA-92539508-3
 
 tags:
   all: true

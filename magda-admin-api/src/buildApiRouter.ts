@@ -15,6 +15,7 @@ export interface Options {
     jwtSecret: string;
     userId: string;
     namespace?: string;
+    gapiId?: string;
 }
 
 export default function buildApiRouter(options: Options) {
@@ -31,6 +32,12 @@ export default function buildApiRouter(options: Options) {
             })
             .catch(() => res.status(500).send("Error"));
     });
+
+
+    // Endpoint for other services to access the Google Analytics client ID
+    router.get("/gapi", (req, res) => {
+        res.status(200).send(options.gapiId);
+     });
 
     router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 

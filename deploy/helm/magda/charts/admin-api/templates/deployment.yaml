@@ -26,7 +26,8 @@ spec:
             "--pullPolicy", {{ .Values.global.image.pullPolicy }},
             "--kubernetesApiType", "cluster",
             "--userId", {{ .Values.global.defaultAdminUserId | quote }},
-            "--namespace", {{ .Values.global.namespace }}
+            "--namespace", {{ .Values.global.namespace }},
+            "--gapiId", {{ .Values.global.gapiId }}
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
