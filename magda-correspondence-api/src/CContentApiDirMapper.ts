@@ -4,6 +4,7 @@ import * as mime from "mime-types";
 import * as recursiveReadDir from "recursive-readdir";
 import * as fse from "fs-extra";
 import * as path from "path";
+import * as typeis from "type-is";
 
 class CContentApiDirMapper {
     public url: string;
@@ -22,7 +23,15 @@ class CContentApiDirMapper {
     }
 
     public async getFileContent(localPath: string) {
-        return await rp.get(`${this.url}/commonAssets/${localPath}`);
+        const res = await rp.get(`${this.url}/commonAssets/${localPath}`, {
+            resolveWithFullResponse: true,
+            encoding: null
+        });
+        const contentType = res.headers["content-type"];
+        if (typeis.is(contentType, ["text/*"])) {
+            return res.body.toString("utf-8");
+        }
+        return res.body;
     }
 
     public async saveFile(localPath: string, fileContent: Buffer) {
