@@ -1,6 +1,7 @@
 import * as express from "express";
 import { Router } from "express";
 import * as _ from "lodash";
+import * as escapeStringRegexp from "escape-string-regexp";
 
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
@@ -11,6 +12,7 @@ export interface ProxyTarget {
     to: string;
     methods?: string[];
     auth?: boolean;
+    redirectTrailingSlash?: boolean;
 }
 
 export interface ApiRouterOptions {
@@ -42,7 +44,8 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         baseRoute: string,
         target: string,
         verbs: string[] = ["all"],
-        auth = false
+        auth = false,
+        redirectTrailingSlash = false
     ) {
         console.log("PROXY", baseRoute, target);
         const routeRouter: any = express.Router();
@@ -60,13 +63,27 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
             )
         );
 
+        if (redirectTrailingSlash) {
+            // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
+            const re = new RegExp(`^${escapeStringRegexp(baseRoute)}$`);
+            router.get(re, function(req, res) {
+                res.redirect(`${req.originalUrl}/`);
+            });
+        }
+
         router.use(baseRoute, routeRouter);
 
         return routeRouter;
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
-        proxyRoute(`/${key}`, value.to, value.methods, !!value.auth);
+        proxyRoute(
+            `/${key}`,
+            value.to,
+            value.methods,
+            !!value.auth,
+            value.redirectTrailingSlash
+        );
     });
 
     return router;
