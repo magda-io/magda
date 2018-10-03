@@ -26,42 +26,6 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
 
   /**
    * @apiGroup Registry Record Aspects
-   * @api {get} /v0/registry/records/{recordId}/aspects Get a list of all aspects of a record
-   *
-   * @apiDescription Get a list of all aspects of a record
-   * @apiParam (path) {string} recordId ID of the record for which to fetch aspects.
-   * @apiSuccess (Success 200) {json} Response a list of aspects
-   * @apiSuccessExample {json} Response:
-   * {
-   *    "dap-resource": {
-   *      "format": "text/csv",
-   *      "mediaType": "text/csv",
-   *      "name": "qcat-outdoor~AIR_TEMP~9.csv",
-   *      "downloadURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data/103023",
-   *      "licence": "CSIRO Data Licence",
-   *      "id": 103023,
-   *      "accessURL": "https://data.csiro.au/dap/ws/v2/collections/17914/data"
-   *    },
-   *  ...
-   * }
-   * @apiUse GenericError
-   */
-  @ApiOperation(value = "Get a list of all aspects of a record", nickname = "getAll", httpMethod = "GET", response = classOf[Aspect], responseContainer = "Map")
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch aspects.")))
-  def getAll = get {
-    path(Segment / "aspects") { (recordId: String) =>
-      DB readOnly { session =>
-        recordPersistence.getByIdWithAspects(session, recordId) match {
-          case Some(result) => complete(result.aspects)
-          case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
-        }
-      }
-    }
-  }
-
-  /**
-   * @apiGroup Registry Record Aspects
    * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
    *
    * @apiDescription Get a list of all aspects of a record
@@ -101,6 +65,5 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
   }
 
   def route =
-    getAll ~
       getById
 }
