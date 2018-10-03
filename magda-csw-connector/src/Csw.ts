@@ -316,10 +316,17 @@ export default class Csw implements ConnectorSource {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return jsonpath.query(
-            dataset.json,
-            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
-        );
+        return jsonpath
+            .query(
+                dataset.json,
+                "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+            )
+            .concat(
+                jsonpath.query(
+                    dataset.json,
+                    "$.distributionInfo[*].MD_Distribution[*].distributor[*].MD_Distributor[*].distributorTransferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+                )
+            );
     }
 
     private xmlRecordToJsonRecord(recordXml: Element) {
