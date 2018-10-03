@@ -27,7 +27,11 @@ export default async function onRecordFound(
         retrievedEvalSets
     );
 
-    if (bestFormatResult && bestFormatResult.format) {
+    if (
+        bestFormatResult &&
+        bestFormatResult.format &&
+        bestFormatResult.format.format
+    ) {
         await recordFormatAspect(registry, record, {
             format: bestFormatResult.format.format,
             confidenceLevel: bestFormatResult.absConfidenceLevel

@@ -17,6 +17,9 @@ import * as aodnDist6 from "./sampleDataFiles/aodn-dist-6.json";
 import * as dapDist1 from "./sampleDataFiles/dap-dist-1.json";
 import * as dapDist28 from "./sampleDataFiles/dap-dist-28.json";
 
+import * as dgaDistSpss from "./sampleDataFiles/dga-dist-spss.json";
+import * as dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
+
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
@@ -88,5 +91,13 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         it("Should process 1image/svg+xml` (28th distribution) as `SVG`", () => {
             return testDistReturnsFormat(dapDist28, "SVG");
         });
+    });
+
+    it("Should process SPSS .sav file as SPSS", () => {
+        return testDistReturnsFormat(dgaDistSpss, "SPSS");
+    });
+
+    it("Should a dataset with the format '.csv' correctly even if the file doesn't have a csv extension", () => {
+        return testDistReturnsFormat(dsaDistCsv, "CSV");
     });
 });
