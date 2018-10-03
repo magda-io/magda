@@ -1,5 +1,7 @@
 ## 0.0.50
 
+-   Added endpoint `/gapi` in `magda-web-server` module to easily access Google Analytics ID
+
 ## 0.0.49
 
 -   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
