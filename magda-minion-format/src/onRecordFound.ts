@@ -27,10 +27,12 @@ export default async function onRecordFound(
         retrievedEvalSets
     );
 
-    await recordFormatAspect(registry, record, {
-        format: bestFormatResult.format.format,
-        confidenceLevel: bestFormatResult.absConfidenceLevel
-    });
+    if (bestFormatResult && bestFormatResult.format) {
+        await recordFormatAspect(registry, record, {
+            format: bestFormatResult.format.format,
+            confidenceLevel: bestFormatResult.absConfidenceLevel
+        });
+    }
 }
 
 function getEvaluationSets(distribution: any) {
