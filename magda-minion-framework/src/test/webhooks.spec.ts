@@ -102,9 +102,6 @@ baseSpec(
                             const registryUrl = `http://${registryDomain}.com:80`;
                             const registryScope = nock(registryUrl);
 
-                            registryScope.get(/\/hooks\/.*/).reply(200, {});
-                            registryScope.post(/\/hooks\/.*/).reply(201, {});
-
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
                                 recordsBatches,
@@ -149,6 +146,19 @@ baseSpec(
                                             : Promise.reject(fakeError);
                                     })
                             };
+
+                            registryScope.get(/\/hooks\/.*/).reply(200, {
+                                url: internalUrl + "/hook",
+                                config: {
+                                    aspects: [],
+                                    optionalAspects: [],
+                                    includeEvents: false,
+                                    includeRecords: true,
+                                    includeAspectDefinitions: false,
+                                    dereference: true
+                                }
+                            });
+                            registryScope.post(/\/hooks\/.*/).reply(201, {});
 
                             return minion(options)
                                 .then(() =>
