@@ -42,7 +42,7 @@ function inlineImg(
     }
     return content.replace(
         /(<img\s+[^>]*src=["'])([^"']*)(['"])/i,
-        `$1${cid}$3`
+        `$1${"cid:" + cid}$3`
     );
 }
 
