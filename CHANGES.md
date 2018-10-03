@@ -1,5 +1,10 @@
+## 0.0.50
+
+-   Email Templates are configurable from content API
+
 ## 0.0.49
 
+-   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
 -   Made issued and update date not appear when valid dates are not available.
 -   Specify correct externalURL and namespace for gitlab to fix deployment auth.
 -   Add a CSV connector
@@ -19,7 +24,7 @@
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
 -   Fixed Gitlab UI only preview failed to download main CSS file
 -   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
--   Email Templates are configurable from content API
+-   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
 
