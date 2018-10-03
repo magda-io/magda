@@ -12,7 +12,7 @@ import * as Mustache from "mustache";
  * @param render
  */
 function inlineImg(
-    this: CEmailTplRender,
+    this: CEmailTemplateRender,
     text: string,
     render: (text: string) => string
 ) {
@@ -46,7 +46,7 @@ function inlineImg(
     );
 }
 
-export default class CEmailTplRender {
+export default class CEmailTemplateRender {
     public attachments: Attachment[] = [];
     private contentMapper: CContentApiDirMapper = null;
 

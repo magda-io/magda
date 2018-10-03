@@ -13,7 +13,7 @@ import * as express from "express";
 import * as nock from "nock";
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
 import CContentApiDirMapper from "../CContentApiDirMapper";
-import CEmailTplRender from "../CEmailTplRender";
+import CEmailTemplateRender from "../CEmailTemplateRender";
 
 const REGISTRY_URL: string = "https://registry.example.com";
 const CONTENT_API_URL: string = "https://content-api.example.com";
@@ -28,7 +28,7 @@ const contentMapper = new CContentApiDirMapper(
     "userId",
     "secrets"
 );
-const tplRender = new CEmailTplRender(contentMapper);
+const tplRender = new CEmailTemplateRender(contentMapper);
 const assetsFiles = [
     "emailTpls/request.html",
     "emailTpls/question.html",
@@ -451,7 +451,7 @@ describe("send dataset request mail", () => {
 
     function resolveRouterOptions(
         smtpMailer: SMTPMailer,
-        tplRender: CEmailTplRender
+        tplRender: CEmailTemplateRender
     ): ApiRouterOptions {
         return {
             tplRender,

@@ -7,7 +7,7 @@ import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClien
 import createApiRouter from "./createApiRouter";
 import { NodeMailerSMTPMailer } from "./SMTPMailer";
 import CContentApiDirMapper from "./CContentApiDirMapper";
-import CEmailTplRender from "./CEmailTplRender";
+import CEmailTemplateRender from "./CEmailTemplateRender";
 
 const argv = yargs
     .config()
@@ -120,7 +120,7 @@ contentDirMapper
         process.exit(1);
     });
 
-const tplRender = new CEmailTplRender(contentDirMapper);
+const tplRender = new CEmailTemplateRender(contentDirMapper);
 
 app.use(
     "/v0",
