@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Added endpoint `/gapi` in `magda-web-server` module to easily access Google Analytics ID
+-   Delete registry API /records/{recordId}/aspects endpoint
 
 ## 0.0.49
 
@@ -24,6 +25,7 @@
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
 -   Fixed Gitlab UI only preview failed to download main CSS file
 -   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
+-   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
 
