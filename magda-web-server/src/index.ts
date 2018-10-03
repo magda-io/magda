@@ -87,6 +87,11 @@ const argv = yargs
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
         type: "string"
     })
+    .option("gapiId", {
+        describe: "Google Analytics ID",
+        type: "string",
+        default: ""
+    })
     .option("datasetSearchSuggestionScoreThreshold", {
         describe:
             "The score threshold after which to display the dataset suggestion form",
@@ -262,7 +267,8 @@ app.use(
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0
-        })
+        }),
+        gapiId: argv.gapiId
     })
 );
 

@@ -8,11 +8,13 @@ const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
 export type SitemapRouterOptions = {
     baseExternalUrl: string;
     registry: Registry;
+    gapiId?: string;
 };
 
 export default function buildSitemapRouter({
     baseExternalUrl,
-    registry
+    registry,
+    gapiId
 }: SitemapRouterOptions): express.Router {
     const app = express();
     const baseExternalUri = new URI(baseExternalUrl);
@@ -110,6 +112,11 @@ export default function buildSitemapRouter({
                     });
                 })
         );
+    });
+
+    // Endpoint for other services to access the Google Analytics client ID
+    app.get("/gapiId", function(req, res, next) {
+        res.status(200).send(gapiId);
     });
 
     /**
