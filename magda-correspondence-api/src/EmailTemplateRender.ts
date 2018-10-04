@@ -1,5 +1,5 @@
 import { Attachment } from "./SMTPMailer";
-import CContentApiDirMapper from "./CContentApiDirMapper";
+import ContentApiDirMapper from "./ContentApiDirMapper";
 import * as path from "path";
 import * as mimeTypes from "mime-types";
 import * as Mustache from "mustache";
@@ -12,7 +12,7 @@ import * as Mustache from "mustache";
  * @param render
  */
 function inlineImg(
-    this: CEmailTemplateRender,
+    this: EmailTemplateRender,
     text: string,
     render: (text: string) => string
 ) {
@@ -48,9 +48,9 @@ function inlineImg(
 
 export default class CEmailTemplateRender {
     public attachments: Attachment[] = [];
-    private contentMapper: CContentApiDirMapper = null;
+    private contentMapper: ContentApiDirMapper = null;
 
-    constructor(contentMapper: CContentApiDirMapper) {
+    constructor(contentMapper: ContentApiDirMapper) {
         this.contentMapper = contentMapper;
         if (!this.attachments) {
             throw new Error("Content Mapper cannot be empty!");

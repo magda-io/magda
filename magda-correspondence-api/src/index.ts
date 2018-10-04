@@ -6,8 +6,8 @@ import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClien
 
 import createApiRouter from "./createApiRouter";
 import { NodeMailerSMTPMailer } from "./SMTPMailer";
-import CContentApiDirMapper from "./CContentApiDirMapper";
-import CEmailTemplateRender from "./CEmailTemplateRender";
+import ContentApiDirMapper from "./ContentApiDirMapper";
+import EmailTemplateRender from "./EmailTemplateRender";
 
 const argv = yargs
     .config()
@@ -96,7 +96,7 @@ app.use(require("body-parser").json());
 
 console.log("Sync default email tpls to content API...");
 
-const contentDirMapper = new CContentApiDirMapper(
+const contentDirMapper = new ContentApiDirMapper(
     argv.contentApiUrl,
     argv.userId,
     argv.jwtSecret
@@ -120,7 +120,7 @@ contentDirMapper
         process.exit(1);
     });
 
-const tplRender = new CEmailTemplateRender(contentDirMapper);
+const tplRender = new EmailTemplateRender(contentDirMapper);
 
 app.use(
     "/v0",

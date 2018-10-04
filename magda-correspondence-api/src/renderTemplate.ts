@@ -2,7 +2,7 @@ import * as MarkdownIt from "markdown-it";
 
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import CEmailTemplateRender from "./CEmailTemplateRender";
+import EmailTemplateRender from "./EmailTemplateRender";
 import { Attachment } from "./SMTPMailer";
 
 export enum Templates {
@@ -21,7 +21,7 @@ export interface RenderResult {
 }
 
 export default async function renderTemplate(
-    tplRender: CEmailTemplateRender,
+    tplRender: EmailTemplateRender,
     templateFile: string,
     message: DatasetMessage,
     subject: string,

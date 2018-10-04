@@ -6,7 +6,7 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as typeis from "type-is";
 
-class CContentApiDirMapper {
+class ContentApiDirMapper {
     public url: string;
     public userId: string;
     private jwtSecret: string;
@@ -17,7 +17,7 @@ class CContentApiDirMapper {
         this.jwtSecret = jwtSecret;
         if (this.url === "") {
             throw new Error(
-                "CContentApiDirMapper: content API URL canot be empty!"
+                "ContentApiDirMapper: content API URL canot be empty!"
             );
         }
     }
@@ -89,4 +89,4 @@ class CContentApiDirMapper {
     }
 }
 
-export default CContentApiDirMapper;
+export default ContentApiDirMapper;

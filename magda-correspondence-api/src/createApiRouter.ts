@@ -11,10 +11,10 @@ import { sendMail } from "./mail";
 import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
-import CEmailTemplateRender from "./CEmailTemplateRender";
+import EmailTemplateRender from "./EmailTemplateRender";
 export interface ApiRouterOptions {
     registry: RegistryClient;
-    tplRender: CEmailTemplateRender;
+    tplRender: EmailTemplateRender;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
