@@ -46,7 +46,7 @@ function inlineImg(
     );
 }
 
-export default class CEmailTemplateRender {
+export default class EmailTemplateRender {
     public attachments: Attachment[] = [];
     private contentMapper: ContentApiDirMapper = null;
 
