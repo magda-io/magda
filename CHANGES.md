@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Email Templates are configurable from content API
+-   Delete registry API /records/{recordId}/aspects endpoint
 
 ## 0.0.49
 

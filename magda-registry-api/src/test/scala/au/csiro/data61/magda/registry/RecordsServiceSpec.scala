@@ -1655,7 +1655,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           List("wrongtag-rightsource", "notag-rightsource").foreach { recordId =>
-            Get(s"/v0/records/${recordId}/aspects") ~> param.api(role).routes ~> check {
+            Get(s"/v0/records/${recordId}") ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.NotFound
             }
 
