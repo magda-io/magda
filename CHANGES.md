@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
 
 ## 0.0.49
 
