@@ -6,7 +6,7 @@ import * as Mustache from "mustache";
 
 /**
  * customised mustache render function.
- * usgae: {{#inlineImg}}<img class="xxx" src="emailTpls/assets/1.png" />{{/inlineImg}}
+ * usgae: {{#inlineImg}}<img class="xxx" src="emailTemplates/assets/1.png" />{{/inlineImg}}
  *
  * @param text
  * @param render
@@ -57,9 +57,9 @@ export default class EmailTemplateRender {
         }
     }
 
-    async render(tplPath: string, data: any) {
+    async render(templatePath: string, data: any) {
         this.attachments = [];
-        const tpl = await this.contentMapper.getFileContent(tplPath);
+        const template = await this.contentMapper.getFileContent(templatePath);
         if (!data || typeof data !== "object") {
             data = {};
         }
@@ -67,7 +67,7 @@ export default class EmailTemplateRender {
         data.inlineImg = () => {
             return inlineImg.bind(this);
         };
-        const renderedContent = Mustache.render(tpl, data);
+        const renderedContent = Mustache.render(template, data);
         if (this.attachments.length) {
             for (let i = 0; i < this.attachments.length; i++) {
                 const imgContent = await this.contentMapper.getFileContent(

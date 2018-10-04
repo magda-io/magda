@@ -28,13 +28,13 @@ const contentMapper = new ContentApiDirMapper(
     "userId",
     "secrets"
 );
-const tplRender = new EmailTemplateRender(contentMapper);
+const templateRender = new EmailTemplateRender(contentMapper);
 const assetsFiles = [
-    "emailTpls/request.html",
-    "emailTpls/question.html",
-    "emailTpls/feedback.html",
-    "emailTpls/assets/AU-Govt-Logo.jpg",
-    "emailTpls/assets/Logo.jpg"
+    "emailTemplates/request.html",
+    "emailTemplates/question.html",
+    "emailTemplates/feedback.html",
+    "emailTemplates/assets/AU-Govt-Logo.jpg",
+    "emailTemplates/assets/Logo.jpg"
 ];
 
 sinon.stub(contentMapper, "fileExist").callsFake(function(localPath: string) {
@@ -96,7 +96,9 @@ describe("send dataset request mail", () => {
         app.use(require("body-parser").json());
         app.use(
             "/",
-            createApiRouter(resolveRouterOptions(stubbedSMTPMailer, tplRender))
+            createApiRouter(
+                resolveRouterOptions(stubbedSMTPMailer, templateRender)
+            )
         );
 
         registryScope = nock(REGISTRY_URL);
@@ -212,7 +214,10 @@ describe("send dataset request mail", () => {
             // Create a new app with different options
             app = express();
             app.use(require("body-parser").json());
-            const options = resolveRouterOptions(stubbedSMTPMailer, tplRender);
+            const options = resolveRouterOptions(
+                stubbedSMTPMailer,
+                templateRender
+            );
             options.alwaysSendToDefaultRecipient = true;
 
             app.use("/", createApiRouter(options));
@@ -451,10 +456,10 @@ describe("send dataset request mail", () => {
 
     function resolveRouterOptions(
         smtpMailer: SMTPMailer,
-        tplRender: EmailTemplateRender
+        templateRender: EmailTemplateRender
     ): ApiRouterOptions {
         return {
-            tplRender,
+            templateRender,
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
             registry,

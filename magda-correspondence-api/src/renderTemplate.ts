@@ -6,9 +6,9 @@ import EmailTemplateRender from "./EmailTemplateRender";
 import { Attachment } from "./SMTPMailer";
 
 export enum Templates {
-    Feedback = "emailTpls/feedback.html",
-    Question = "emailTpls/question.html",
-    Request = "emailTpls/request.html"
+    Feedback = "emailTemplates/feedback.html",
+    Question = "emailTemplates/question.html",
+    Request = "emailTemplates/request.html"
 }
 
 const md = new MarkdownIt({
@@ -21,7 +21,7 @@ export interface RenderResult {
 }
 
 export default async function renderTemplate(
-    tplRender: EmailTemplateRender,
+    templateRender: EmailTemplateRender,
     templateFile: string,
     message: DatasetMessage,
     subject: string,
@@ -40,9 +40,9 @@ export default async function renderTemplate(
         }
     };
 
-    const renderedContent = await tplRender.render(
+    const renderedContent = await templateRender.render(
         templateFile,
         templateContext
     );
-    return { renderedContent, attachments: tplRender.attachments };
+    return { renderedContent, attachments: templateRender.attachments };
 }

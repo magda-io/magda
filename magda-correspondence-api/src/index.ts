@@ -94,7 +94,7 @@ const argv = yargs
 const app = express();
 app.use(require("body-parser").json());
 
-console.log("Sync default email tpls to content API...");
+console.log("Sync default email templates to content API...");
 
 const contentDirMapper = new ContentApiDirMapper(
     argv.contentApiUrl,
@@ -102,31 +102,31 @@ const contentDirMapper = new ContentApiDirMapper(
     argv.jwtSecret
 );
 contentDirMapper
-    .syncFolder(path.join(__dirname, "..", "emailTpls"))
+    .syncFolder(path.join(__dirname, "..", "emailTemplates"))
     .then(([allFiles, skippedFiles]) => {
         skippedFiles.forEach(file =>
             console.log(`Skipped existing assets file: ${file}`)
         );
-        console.log("Sync default email tpls to content API completed!");
+        console.log("Sync default email templates to content API completed!");
         const listenPort = argv.listenPort;
         app.listen(listenPort);
         console.log("Listening on " + listenPort);
     })
     .catch(err => {
         console.error(
-            "Failed to sync default email tpls to content API. Exiting...",
+            "Failed to sync default email templates to content API. Exiting...",
             err
         );
         process.exit(1);
     });
 
-const tplRender = new EmailTemplateRender(contentDirMapper);
+const templateRender = new EmailTemplateRender(contentDirMapper);
 
 app.use(
     "/v0",
     createApiRouter({
         registry: new RegistryClient({ baseUrl: argv.registryUrl }),
-        tplRender,
+        templateRender,
         defaultRecipient: argv.defaultRecipient,
         externalUrl: argv.externalUrl,
         smtpMailer: new NodeMailerSMTPMailer({

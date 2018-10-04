@@ -14,7 +14,7 @@ import renderTemplate, { Templates } from "./renderTemplate";
 import EmailTemplateRender from "./EmailTemplateRender";
 export interface ApiRouterOptions {
     registry: RegistryClient;
-    tplRender: EmailTemplateRender;
+    templateRender: EmailTemplateRender;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
@@ -95,7 +95,7 @@ export default function createApiRouter(
         const body: DatasetMessage = req.body;
         const subject = `Data Request from ${body.senderName}`;
         const html = renderTemplate(
-            options.tplRender,
+            options.templateRender,
             Templates.Request,
             body,
             subject,
@@ -166,7 +166,7 @@ export default function createApiRouter(
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
-                    options.tplRender,
+                    options.templateRender,
                     Templates.Question,
                     body,
                     subject,
