@@ -23,10 +23,12 @@ import akka.stream.Attributes
 import com.typesafe.config.Config
 import akka.actor.ActorContext
 import akka.util.Timeout
+import scala.util.control.NonFatal
 
 object WebHookActor {
   case class Process(ignoreWaitingForResponse: Boolean = false, aspectIds: Option[List[String]] = None, webHookId: Option[String] = None)
   case class GetStatus(webHookId: String)
+  case class UpdateHookStatus(webHookId: String, isRunning:Boolean, isProcessing:Boolean)
   case object InvalidateWebhookCache
   case object RetryInactiveHooks
 
@@ -47,6 +49,7 @@ object WebHookActor {
     import context.dispatcher
 
     private var webHookActors = Map[String, ActorRef]()
+    var webHooks = Map[String, WebHook]()
     //    private var cachedWebhooks: Option[List[WebHook]] = None
     private implicit val scheduler = this.context.system.scheduler
 
@@ -71,6 +74,7 @@ object WebHookActor {
             log.info("Removing old web hook actor for {}.", id)
             this.webHookActors.get(id).get ! "kill"
             this.webHookActors -= id
+            this.webHooks -= id
           } // Create actors for new WebHooks and post to all actors (new and old).
           webHooks.filter(_.active).filter(_.enabled).foreach { hook =>
             val id = hook.id.get
@@ -80,6 +84,10 @@ object WebHookActor {
                 log.info("Creating new web hook actor for {}.", id)
                 val actorRef = WebHookActor.createWebHookActor(context, registryApiBaseUrl, hook, webHooksRetryInterval)
                 this.webHookActors += (id -> actorRef)
+                this.webHooks += (id -> hook.copy(
+                  isRunning = Some(true),
+                  isProcessing = Some(false)
+                ))
                 actorRef
               }
             }
@@ -90,12 +98,10 @@ object WebHookActor {
 
     scheduler.schedule(500 milliseconds, webHooksRetryInterval milliseconds, self, RetryInactiveHooks)
 
-    def getStatus(webHookId:String) : Future[Any] = {
-      webHookActors.get(webHookId) match {
-        case None               => Future.successful(WebHookActor.Status(None))
-        case Some(webHookActor) =>
-          implicit val timeout = Timeout(5 seconds)
-          webHookActor ? WebHookActor.GetStatus
+    def getStatus(webHookId:String) : WebHookActor.Status = {
+      webHooks.get(webHookId) match {
+        case None               => WebHookActor.Status(None)
+        case Some(hook:WebHook) => WebHookActor.Status(hook.isProcessing)
       }
     }
 
@@ -116,11 +122,17 @@ object WebHookActor {
         actors.foreach(actorRef =>
           actorRef ! Process(ignoreWaitingForResponse, aspectIds))
       }
-      case GetStatus(webHookId) =>
-        webHookActors.get(webHookId) match {
-          case None               => sender() ! WebHookActor.Status(None)
-          case Some(webHookActor) => webHookActor forward WebHookActor.GetStatus
+      case UpdateHookStatus(webHookId, isRunning, isProcessing) => {
+        webHooks.get(webHookId) match {
+          case Some(hook:WebHook) => webHooks += (webHookId -> hook.copy(
+            isRunning = Some(isRunning),
+            isProcessing = Some(isProcessing)
+          ))
+          case _ => Nil
         }
+      }
+      case GetStatus(webHookId) => sender() ! getStatus(webHookId)
+
     }
 
     private def retryAllInactiveHooks(retryInterval:Long): Unit ={
@@ -138,7 +150,7 @@ object WebHookActor {
             isRunning = Some(false)
           )
         }else{
-          val status = Await.result(getStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status]
+          val status = getStatus(hook.id.get)
           hook.copy(
             isRunning = Some(!status.isProcessing.isEmpty),
             isProcessing = Some(status.isProcessing.getOrElse(false))
@@ -201,63 +213,82 @@ object WebHookActor {
         }
       }
 
+    def updateHookStatus() = {
+      val currentIsProcessing = (count != 0)
+      if(isProcessing != currentIsProcessing) {
+        isProcessing = currentIsProcessing
+        context.parent ! UpdateHookStatus(id, true, isProcessing)
+      }
+    }
+
+    private var isProcessing:Boolean = false
+
     private var count = 0
 
     private val indexQueue: SourceQueueWithComplete[Boolean] =
       Source.queue[Boolean](0, OverflowStrategy.dropNew)
         .map { x =>
           count += 1
+          updateHookStatus()
           x
         }
         .delay(config.getInt("webhookActorTickRate") milliseconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per webhookActorTickRate to prevent sending an individual post for every event.
         .mapAsync(1) {
           ignoreWaitingForResponse =>
-            val webHook = getWebhook()
 
-            if (!ignoreWaitingForResponse && webHook.isWaitingForResponse.getOrElse(false)) {
-              log.info("Skipping WebHook {} as it's marked as waiting for response", webHook.id)
-              Future.successful(false)
-            } else {
-              val aspects = webHook.config.aspects ++ webHook.config.optionalAspects
+            try{
+              val webHook = getWebhook()
 
-              val eventPage = DB readOnly { implicit session =>
-                EventPersistence.getEvents(session, webHook.lastEvent, None, Some(MAX_EVENTS), None, None, (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet, webHook.eventTypes)
-              }
-
-              val previousLastEvent = webHook.lastEvent
-              val lastEvent = eventPage.events.lastOption.flatMap(_.id)
-
-              if (lastEvent.isEmpty) {
-                log.info("WebHook {}: Up to date at event {}", this.id, previousLastEvent)
+              if (!ignoreWaitingForResponse && webHook.isWaitingForResponse.getOrElse(false)) {
+                log.info("Skipping WebHook {} as it's marked as waiting for response", webHook.id)
                 Future.successful(false)
               } else {
-                log.info("WebHook {} Processing {}-{}: STARTING", this.id, previousLastEvent, lastEvent)
+                val aspects = webHook.config.aspects ++ webHook.config.optionalAspects
 
-                processor.sendSomeNotificationsForOneWebHook(this.id, webHook, eventPage).map {
-                  case WebHookProcessor.Deferred =>
-                    // response deferred
-                    log.info("WebHook {} Processing {}-{}: DEFERRED BY RECEIVER", this.id, previousLastEvent, lastEvent)
-                  case WebHookProcessor.NotDeferred =>
-                    // POST succeeded, is there more to do?
-                    log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
+                val eventPage = DB readOnly { implicit session =>
+                  EventPersistence.getEvents(session, webHook.lastEvent, None, Some(MAX_EVENTS), None, None, (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet, webHook.eventTypes)
+                }
 
-                    if (previousLastEvent != lastEvent) {
-                      self ! Process()
-                    }
-                  case WebHookProcessor.HttpError(status) =>
-                    // encountered an error while communicating with the hook recipient - deactivate the hook until its manually fixed
-                    log.info("WebHook {} Processing {}-{}: HTTP FAILURE {}, DEACTIVATING", this.id, previousLastEvent, lastEvent, status.reason())
-                    context.parent ! InvalidateWebhookCache
-                }.recover {
-                  case e =>
-                    // Error communicating with the hook recipient - log the failure and wait until the next Process() call to resume.
-                    log.error(e, "WebHook {} Processing {}-{}: FAILED", this.id, previousLastEvent, lastEvent)
+                val previousLastEvent = webHook.lastEvent
+                val lastEvent = eventPage.events.lastOption.flatMap(_.id)
+
+                if (lastEvent.isEmpty) {
+                  log.info("WebHook {}: Up to date at event {}", this.id, previousLastEvent)
+                  Future.successful(false)
+                } else {
+                  log.info("WebHook {} Processing {}-{}: STARTING", this.id, previousLastEvent, lastEvent)
+
+                  processor.sendSomeNotificationsForOneWebHook(this.id, webHook, eventPage).map {
+                    case WebHookProcessor.Deferred =>
+                      // response deferred
+                      log.info("WebHook {} Processing {}-{}: DEFERRED BY RECEIVER", this.id, previousLastEvent, lastEvent)
+                    case WebHookProcessor.NotDeferred =>
+                      // POST succeeded, is there more to do?
+                      log.info("WebHook {} Processing {}-{}: DELIVERED", this.id, previousLastEvent, lastEvent)
+
+                      if (previousLastEvent != lastEvent) {
+                        self ! Process()
+                      }
+                    case WebHookProcessor.HttpError(status) =>
+                      // encountered an error while communicating with the hook recipient - deactivate the hook until its manually fixed
+                      log.info("WebHook {} Processing {}-{}: HTTP FAILURE {}, DEACTIVATING", this.id, previousLastEvent, lastEvent, status.reason())
+                      context.parent ! InvalidateWebhookCache
+                  }.recover {
+                    case e =>
+                      // Error communicating with the hook recipient - log the failure and wait until the next Process() call to resume.
+                      log.error(e, "WebHook {} Processing {}-{}: FAILED", this.id, previousLastEvent, lastEvent)
+                  }
                 }
               }
+            }catch{
+              // --- make only capture nonFatal error
+              // --- So that fatal error can still terminate JVM
+              case NonFatal(e) => Future.successful(false)
             }
         }
         .map { x =>
           count -= 1
+          updateHookStatus()
           x
         }
         .to(Sink.ignore)
