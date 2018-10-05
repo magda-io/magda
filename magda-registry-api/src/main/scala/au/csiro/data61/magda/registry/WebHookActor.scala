@@ -205,6 +205,9 @@ object WebHookActor {
     private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
     implicit val materializer = ActorMaterializer()
 
+    private var isProcessing:Boolean = false
+    private var currentQueueLength = 0
+
     def getWebhook() =
       DB readOnly { implicit session =>
         HookPersistence.getById(session, id) match {
@@ -213,23 +216,19 @@ object WebHookActor {
         }
       }
 
-    def updateHookStatus() = {
-      val currentIsProcessing = (count != 0)
-      if(isProcessing != currentIsProcessing) {
-        isProcessing = currentIsProcessing
+    def notifyHookStatus() = {
+      val currentlyIsProcessing = (currentQueueLength != 0)
+      if(isProcessing != currentlyIsProcessing) {
+        isProcessing = currentlyIsProcessing
         context.parent ! UpdateHookStatus(id, true, isProcessing)
       }
     }
 
-    private var isProcessing:Boolean = false
-
-    private var count = 0
-
     private val indexQueue: SourceQueueWithComplete[Boolean] =
       Source.queue[Boolean](0, OverflowStrategy.dropNew)
         .map { x =>
-          count += 1
-          updateHookStatus()
+          currentQueueLength += 1
+          notifyHookStatus()
           x
         }
         .delay(config.getInt("webhookActorTickRate") milliseconds, OverflowStrategy.backpressure).withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per webhookActorTickRate to prevent sending an individual post for every event.
@@ -287,8 +286,8 @@ object WebHookActor {
             }
         }
         .map { x =>
-          count -= 1
-          updateHookStatus()
+          currentQueueLength -= 1
+          notifyHookStatus()
           x
         }
         .to(Sink.ignore)
@@ -301,12 +300,12 @@ object WebHookActor {
         indexQueue.offer(ignoreWaitingForResponse)
       }
       case WakeUp =>
-        if(count == 0){
+        if(currentQueueLength == 0){
           log.info("Force to wake up idle WebHook {}...", this.id)
           indexQueue.offer(true)
         }
       case GetStatus =>
-        sender() ! Status(Some(count != 0))
+        sender() ! Status(Some(currentQueueLength != 0))
     }
   }
 }
