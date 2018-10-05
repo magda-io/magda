@@ -37,6 +37,7 @@ export default function getMeasureResults(
         [".*\\.(xls)(\\.zip)?$", "XLS"],
         [".*\\.(tif)(\\.zip)?$", "TIFF"],
         [".*\\.(zip)$", "ZIP"],
+        [".*\\.(sav)$", "SPSS"],
         [".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "HTML"],
         [".*\\/$", "HTML"]
     ];

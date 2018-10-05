@@ -103,8 +103,7 @@ describe("Measure Eval", function(this: Mocha.ISuiteCallbackContext) {
                     format: "OTHER",
                     correctConfidenceLevel: 0
                 },
-                absConfidenceLevel: null,
-                distribution: null
+                absConfidenceLevel: null
             };
 
             if (combination[2] >= 1) {
