@@ -12,7 +12,7 @@ Find out more [about open data](https://blog.data.gov.au/about-open-data).
 
 In addition to government data, you can also find publicly-funded research data and datasets from private institutions that are in the public interest.
 
-The site has over 30,000 publically available datasets and continues to grow. The federal government’s <a href="https://www.pmc.gov.au/resource-centre/data/australian-government-public-data-policy-statement" target="_blank">public data policy statement<span class="visuallyhidden"> Opens in new window</span></a> requires all government agencies to make non-sensitive data open by default.
+The site has over 30,000 publically available datasets and continues to grow. The federal government’s <a href="https://www.pmc.gov.au/sites/default/files/publications/aust_govt_public_data_policy_statement_1.pdf" target="_blank">public data policy statement<span class="visuallyhidden"> Opens in new window</span></a> requires all government agencies to make non-sensitive data open by default.
 
 In addition to free, open datasets, data.gov.au now includes information about unpublished data and data available for purchase.
 
