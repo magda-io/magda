@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Delete registry API /records/{recordId}/aspects endpoint
+-   Updated external links on About page to open in new window
 
 ## 0.0.49
 
