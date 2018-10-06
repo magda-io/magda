@@ -8,13 +8,11 @@ const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
 export type SitemapRouterOptions = {
     baseExternalUrl: string;
     registry: Registry;
-    gapiId?: string;
 };
 
 export default function buildSitemapRouter({
     baseExternalUrl,
-    registry,
-    gapiId
+    registry
 }: SitemapRouterOptions): express.Router {
     const app = express();
     const baseExternalUri = new URI(baseExternalUrl);
