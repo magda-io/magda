@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 import MarkdownViewer from "../UI/MarkdownViewer";
 import ToggleButton from "./ToggleButton";
-import ga from "../analytics/googleAnalytics";
+import ReactGA from "react-ga";
 
 import "./ContactPoint.css";
 
@@ -11,13 +11,11 @@ class ContactPoint extends React.Component {
     state = { reveal: false };
 
     onRevealButtonClick = () => {
-        ga("send", {
-            hitType: "event",
-            eventCategory: "User Engagement",
-            eventAction: "Dataset Contact Point Reveal",
-            eventLabel: this.props.contactPoint
+        ReactGA.event({
+            category: "User Engagement",
+            action: "Dataset Contact Point Reveal",
+            label: this.props.contactPoint
         });
-
         this.setState({
             reveal: true
         });

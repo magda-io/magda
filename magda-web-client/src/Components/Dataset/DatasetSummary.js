@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";
 import Divider from "../../UI/Divider";
-import ga from "../../analytics/googleAnalytics";
+import ReactGA from "react-ga";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -53,13 +53,10 @@ export default class DatasetSummary extends Component {
                         )}?q=${searchText}`}
                         onClick={() => {
                             if (searchResultNumber) {
-                                ga("send", {
-                                    hitType: "event",
-                                    eventCategory: "Search and Result Clicked",
-                                    eventAction: this.props.searchText,
-                                    eventLabel: (
-                                        searchResultNumber + 1
-                                    ).toString()
+                                ReactGA.event({
+                                    category: "Search and Result Clicked",
+                                    action: this.props.searchText,
+                                    label: (searchResultNumber + 1).toString()
                                 });
                             }
                         }}

@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import DataPreviewVis from "../../UI/DataPreviewVis";
 
-import ga from "../../analytics/googleAnalytics";
+import ReactGA from "react-ga";
+
 import "./RecordDetails.css";
 
 class DistributionDetails extends Component {
@@ -25,11 +26,10 @@ class DistributionDetails extends Component {
                             distribution.downloadURL
                         );
                         if (resource_url) {
-                            ga("send", {
-                                hitType: "event",
-                                eventCategory: "Resource",
-                                eventAction: "Download",
-                                eventLabel: resource_url
+                            ReactGA.event({
+                                category: "Resource",
+                                action: "Download",
+                                label: resource_url
                             });
                         }
                     }}

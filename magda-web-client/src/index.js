@@ -15,7 +15,6 @@ import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
-import ga from "./analytics/googleAnalytics";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
 
 const store = createStore(
@@ -40,7 +39,7 @@ class GAListener extends React.Component {
 
     sendPageView(location) {
         // Send pageview event to the initialised tracker(s).
-        ReactGA.pageview(location);
+        ReactGA.pageview(location.pathname);
     }
 
     render() {

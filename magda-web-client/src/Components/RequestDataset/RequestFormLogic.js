@@ -2,7 +2,7 @@ import React from "react";
 import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
 import { config } from "../../config";
-import ga from "../../analytics/googleAnalytics";
+import ReactGA from "react-ga";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -84,14 +84,15 @@ export default class RequestFormLogic extends React.Component {
                             isSending: false
                         };
                     });
-                    ga("send", {
-                        hitType: "event",
-                        eventCategory: "User Engagement",
-                        eventAction:
+
+                    ReactGA.event({
+                        category: "User Engagement",
+                        action:
                             this.props.requestType === "request"
                                 ? "Data Request"
                                 : "Dataset Feedback"
                     });
+
                     this.handleChange(data);
                     if (this.props.formSubmitState) {
                         this.props.formSubmitState(true);
