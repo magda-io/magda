@@ -1,6 +1,6 @@
 ## 0.0.50
 
--   Added endpoint `/gapi` in `magda-web-server` module to easily access Google Analytics ID
+-   Added configurable argument to `magda-web-server` module to accept Google Analytics ID's
 -   Delete registry API /records/{recordId}/aspects endpoint
 
 ## 0.0.49
