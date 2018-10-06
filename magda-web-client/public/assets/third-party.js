@@ -31,8 +31,6 @@
     "ga"
 );
 
-ga("create", "UA-92539508-1", "auto", "terria");
-
 // Zendesk Widget
 window.zEmbed ||
     (function() {

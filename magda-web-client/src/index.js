@@ -8,6 +8,7 @@ import { BrowserRouter, Route } from "react-router-dom";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
+import ReactGA from "react-ga";
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
@@ -38,8 +39,8 @@ class GAListener extends React.Component {
     }
 
     sendPageView(location) {
-        ga("set", "location", location.pathname);
-        ga("send", "pageview");
+        // Send pageview event to the initialised tracker(s).
+        ReactGA.pageview(location);
     }
 
     render() {

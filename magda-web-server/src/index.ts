@@ -88,9 +88,9 @@ const argv = yargs
         type: "string"
     })
     .option("gapiId", {
-        describe: "Google Analytics ID",
-        type: "string",
-        default: ""
+        describe: "Google Analytics ID's",
+        type: "array",
+        default: []
     })
     .option("datasetSearchSuggestionScoreThreshold", {
         describe:
