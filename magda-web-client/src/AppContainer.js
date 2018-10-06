@@ -25,10 +25,25 @@ class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
 
+        const _trackers = [];
+
+        // Create GA trackers from the list provided to us
+        config.gapiId
+            ? [config.gapiId].map(trackingId =>
+                  _trackers.push({
+                      trackingId,
+                      options: {
+                          debug: false,
+                          alwaysSendToDefaultTracker: false
+                      }
+                  })
+              )
+            : null;
+
         // Initalise Google Analytics with tracker provided to web-server
         ReactGA.initialize([
             {
-                trackingId: config.gapiId
+                trackingId: _trackers
             }
         ]);
     }
