@@ -18,7 +18,6 @@ const parsePromise = promisify(noOptionsParseString);
 describe("sitemap router", () => {
     const baseExternalUrl = "http://example.com";
     const registryUrl = "http://registry.example.com";
-    const gapiId = "UA-12345678-9";
     const registry = new Registry({
         baseUrl: registryUrl,
         maxRetries: 0
@@ -94,17 +93,6 @@ describe("sitemap router", () => {
                     expect(xmlObj.urlset.url[0].loc[0]).to.equal(
                         baseExternalUrl + "/"
                     );
-                });
-        });
-    });
-
-    describe("/gapi", () => {
-        it("should return the Google Analytics ID provided to it", () => {
-            return supertest(router)
-                .get(`/gapi`)
-                .expect(200)
-                .then(res => {
-                    expect(res.text).to.equal(gapiId);
                 });
         });
     });

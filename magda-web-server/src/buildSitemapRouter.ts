@@ -114,11 +114,6 @@ export default function buildSitemapRouter({
         );
     });
 
-    // Endpoint for other services to access the Google Analytics client ID
-    app.get("/gapiId", function(req, res, next) {
-        res.status(200).send(gapiId);
-    });
-
     /**
      * Handles `| Error` union type failures from the registry client.
      */

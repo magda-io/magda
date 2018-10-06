@@ -173,7 +173,8 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     datasetSearchSuggestionScoreThreshold:
-        argv.datasetSearchSuggestionScoreThreshold
+        argv.datasetSearchSuggestionScoreThreshold,
+    gapiId: argv.gapiId
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -267,8 +268,7 @@ app.use(
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0
-        }),
-        gapiId: argv.gapiId
+        })
     })
 );
 
