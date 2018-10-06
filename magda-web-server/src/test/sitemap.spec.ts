@@ -27,7 +27,7 @@ describe("sitemap router", () => {
     let registryScope: nock.Scope;
 
     beforeEach(() => {
-        router = buildSitemapRouter({ baseExternalUrl, registry, gapiId });
+        router = buildSitemapRouter({ baseExternalUrl, registry });
         registryScope = nock(registryUrl);
     });
 
