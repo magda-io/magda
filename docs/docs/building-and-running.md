@@ -22,7 +22,11 @@ To push the images and run them on kubernetes, you'll need to install:
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
-## Building and running components
+## Building and running (just) the frontend
+
+If you just want to edit the UI, you don't actually even need helm - just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`. This will build/run a local version of the client, connecting to the API at https://dev.magda.io/api. If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+
+## Building and running the backend
 
 First clone the magda directory and `cd` into it.
 
