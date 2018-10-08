@@ -23,7 +23,7 @@ const serverConfig: {
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
     correspondenceApiBaseUrl?: string,
-    gapiId?: Array<string>
+    gapiIds?: Array<string>
 } =
     window.magda_server_config || {};
 

@@ -87,8 +87,8 @@ const argv = yargs
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
         type: "string"
     })
-    .option("gapiId", {
-        describe: "Google Analytics ID's",
+    .option("gapiIds", {
+        describe: "Google Analytics ID(s)",
         type: "array",
         default: []
     })
@@ -174,7 +174,7 @@ const webServerConfig = {
     fallbackUrl: argv.fallbackUrl,
     datasetSearchSuggestionScoreThreshold:
         argv.datasetSearchSuggestionScoreThreshold,
-    gapiId: argv.gapiId
+    gapiIds: argv.gapiIds
 };
 
 app.get("/server-config.js", function(req, res) {
