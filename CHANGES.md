@@ -2,6 +2,7 @@
 
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint
+-   Updated external links on About page to open in new window
 
 ## 0.0.49
 
