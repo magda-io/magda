@@ -1,3 +1,11 @@
+## 0.0.50
+
+-   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
+-   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
+-   Updated external links on About page to open in new window
+-   Fixed some WA source spatial data are not indexed properly
+
 ## 0.0.49
 
 -   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
@@ -24,6 +32,7 @@
 -   Better support for SPSS files in the format minion
 -   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
 -   Fixed an redirection issue when handling 404 status from registry API
+-   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
 

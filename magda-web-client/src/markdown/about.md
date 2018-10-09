@@ -12,7 +12,7 @@ Find out more [about open data](https://blog.data.gov.au/about-open-data).
 
 In addition to government data, you can also find publicly-funded research data and datasets from private institutions that are in the public interest.
 
-The site has over 30,000 publically available datasets and continues to grow. The federal government’s [public data policy statement](https://www.pmc.gov.au/resource-centre/data/australian-government-public-data-policy-statement) requires all government agencies to make non-sensitive data open by default.
+The site has over 30,000 publically available datasets and continues to grow. The federal government’s <a href="https://www.pmc.gov.au/sites/default/files/publications/aust_govt_public_data_policy_statement_1.pdf" target="_blank">public data policy statement<span class="visuallyhidden"> Opens in new window</span></a> requires all government agencies to make non-sensitive data open by default.
 
 In addition to free, open datasets, data.gov.au now includes information about unpublished data and data available for purchase.
 
@@ -20,13 +20,13 @@ In addition to free, open datasets, data.gov.au now includes information about u
 
 Many of the data sets can be visualised using the in-built mapping tools.
 
-Datasets that contain a geospatial field (such as latitude and longitude)can be mapped and viewed in [NationalMap](http://nationalmap.gov.au/).
+Datasets that contain a geospatial field (such as latitude and longitude)can be mapped and viewed in <a href="http://nationalmap.gov.au/" target="_blank">NationalMap<span class="visuallyhidden"> Opens in new window</span></a>.
 
 ### Contact us
 
 Contact the Digital Transformation Agency (DTA) at [data@digital.gov.au](mailto:data@digital.gov.au) for support related to data.gov.au and NationalMap.
 
-Let us know how you are using government data or if you want to contribute to our [blog ](http://blog.data.gov.au/)about public data and data.gov.au.
+Let us know how you are using government data or if you want to contribute to our [blog](http://blog.data.gov.au/) about public data and data.gov.au.
 
 Please do not include any unnecessary personal, financial or sensitive information.
 
@@ -44,17 +44,17 @@ Before you consider registering an account for a government (federal, state, loc
 
 ### Development
 
-Data.gov.au was transferred from the Department of Premier and Cabinet to the Digital Transformation Agency (DTA). The redeveloped platform MAGDA was developed in  partnership with CSIRO [Data61](http://data61.csiro.au).
+Data.gov.au was transferred from the Department of Premier and Cabinet to the Digital Transformation Agency (DTA). The redeveloped platform MAGDA was developed in  partnership with CSIRO <a href="http://data61.csiro.au" target="_blank">Data61<span class="visuallyhidden"> Opens in new window</span></a>.
 
 MAGDA (Making Australian Government Data Available) is a fully open source project.
 
-Read more about the project at [magda.io](https://magda.io/)
+Read more about the project at <a href="https://magda.io/" target="_blank">magda.io<span class="visuallyhidden"> Opens in new window</span></a>
 
 ## Terms of Use
 
 ### Copyright
 
-With the exception of the Commonwealth Coat of Arms and where otherwise noted, material presented on data.gov.au is provided under a [Creative Commons Attribution 3.0 Australia licence](http://creativecommons.org/licenses/by/3.0/au/).
+With the exception of the Commonwealth Coat of Arms and where otherwise noted, material presented on data.gov.au is provided under a <a href="http://creativecommons.org/licenses/by/3.0/au/" target="_blank">Creative Commons Attribution 3.0 Australia licence<span class="visuallyhidden"> Opens in new window</span></a>.
 
 ### How to attribute datasets
 
@@ -64,7 +64,7 @@ This website requires that you use the following form of attribution:
 
 Attribution to: Organisation name, jurisdiction, title of dataset, date the content was sourced, dataset URL
 
-Example: The Department of the Primary Industries and Regions, South Australia, Field Crop Estimates, Sourced on 22 July 2013, [http://www.data.sa.gov.au/dataset/field-crop-production-estimates](http://www.data.sa.gov.au/dataset/field-crop-production-estimates)
+Example: The Department of the Primary Industries and Regions, South Australia, Field Crop Estimates, Sourced on 22 July 2013, <a href="http://www.data.sa.gov.au/dataset/field-crop-production-estimates" target="_blank">http://www.data.sa.gov.au/dataset/field-crop-production-estimates<span class="visuallyhidden"> Opens in new window</span></a>
 
 ### Lawful purposes
 
