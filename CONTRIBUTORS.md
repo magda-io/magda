@@ -24,3 +24,4 @@ The following people have contributed to Magda:
     -   [Sukraj Ghuman](https://github.com/sukhrajghuman)
 -   Other Contributors
     -   [Kat Ballo](https://github.com/ketikat)
+    -   [Sandra Arato](https://github.com/sandra-arato)
