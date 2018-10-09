@@ -322,7 +322,7 @@ package misc {
             val multiPolygon = MultiPolygonFormat.read(json)
             val coordinates = multiPolygon.coordinates
             val firstPoint = coordinates(0)(0)(0)
-            val lastPoint = coordinates(0)(0)(coordinates.size - 1)
+            val lastPoint = coordinates(0)(0)(coordinates(0)(0).size - 1)
             if (firstPoint.x != lastPoint.x || firstPoint.y != lastPoint.y) {
               multiPolygon.copy(
                 coordinates = Seq(Seq(coordinates(0)(0) :+ firstPoint))
