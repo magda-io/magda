@@ -122,7 +122,7 @@ package misc {
     }
 
     def apply(stringWithNewLines: String): Location = {
-      val string = stringWithNewLines.replace("\n", " ")
+      val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
         case geoJsonPattern() => {
           Some(Protocols.GeometryFormat.read(string.parseJson))
