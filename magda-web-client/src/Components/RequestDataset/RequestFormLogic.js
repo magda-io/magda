@@ -2,7 +2,7 @@ import React from "react";
 import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
 import { config } from "../../config";
-import ReactGA from "react-ga";
+import { gapi } from "../../analytics/ga";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -85,7 +85,7 @@ export default class RequestFormLogic extends React.Component {
                         };
                     });
 
-                    ReactGA.event({
+                    gapi.event({
                         category: "User Engagement",
                         action:
                             this.props.requestType === "request"

@@ -1,6 +1,5 @@
 import ReactDocumentTitle from "react-document-title";
 import React from "react";
-import ReactGA from "react-ga";
 import { config } from "./config.js";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -24,28 +23,6 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
-
-        const _trackers = [];
-
-        // Create GA trackers from the list provided to us
-        config.gapiId
-            ? [config.gapiId].map(trackingId =>
-                  _trackers.push({
-                      trackingId,
-                      options: {
-                          debug: false,
-                          alwaysSendToDefaultTracker: false
-                      }
-                  })
-              )
-            : null;
-
-        // Initalise Google Analytics with tracker provided to web-server
-        ReactGA.initialize([
-            {
-                trackingId: _trackers
-            }
-        ]);
     }
 
     render() {

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 import MarkdownViewer from "../UI/MarkdownViewer";
 import ToggleButton from "./ToggleButton";
-import ReactGA from "react-ga";
+import { gapi } from "../analytics/ga";
 
 import "./ContactPoint.css";
 
@@ -11,7 +11,7 @@ class ContactPoint extends React.Component {
     state = { reveal: false };
 
     onRevealButtonClick = () => {
-        ReactGA.event({
+        gapi.event({
             category: "User Engagement",
             action: "Dataset Contact Point Reveal",
             label: this.props.contactPoint

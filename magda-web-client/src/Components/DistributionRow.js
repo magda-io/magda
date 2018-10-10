@@ -8,7 +8,7 @@ import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
-import ReactGA from "react-ga";
+import { gapi } from "../analytics/ga";
 
 const formatIcons = {
     default: defaultFormatIcon
@@ -228,23 +228,23 @@ class DistributionRow extends Component {
                                 );
                                 if (resource_url) {
                                     // legacy support
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Resource",
                                         action: "Download",
                                         label: resource_url
                                     });
                                     // new events
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Dataset",
                                         action: dataset.title,
                                         label: resource_url
                                     });
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Source",
                                         action: dataset.source,
                                         label: resource_url
                                     });
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Publisher",
                                         action: dataset.publisher.name,
                                         label: resource_url

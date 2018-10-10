@@ -12,7 +12,7 @@ import {
 } from "../actions/recordActions";
 import { config } from "../config";
 import defined from "../helpers/defined";
-import ReactGA from "react-ga";
+import { gapi } from "../analytics/ga";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
 import DatasetDetails from "./Dataset/DatasetDetails";
@@ -121,14 +121,14 @@ class RecordHandler extends React.Component {
             props.dataset.identifier !== this.props.dataset.identifier
         ) {
             if (this.props.dataset.source !== "") {
-                ReactGA.event({
+                gapi.event({
                     category: "Dataset view by Source",
                     action: this.props.dataset.source,
                     label: this.props.dataset.title
                 });
             }
             if (this.props.dataset.publisher.name !== "") {
-                ReactGA.event({
+                gapi.event({
                     category: "Dataset view by Publisher",
                     action: this.props.dataset.publisher.name,
                     label: this.props.dataset.title
@@ -229,23 +229,23 @@ class RecordHandler extends React.Component {
                                 );
                                 if (resource_url) {
                                     // legacy support
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Resource",
                                         action: "Download",
                                         label: resource_url
                                     });
                                     // new events
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Dataset",
                                         action: this.props.dataset.title,
                                         label: resource_url
                                     });
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Source",
                                         action: this.props.dataset.source,
                                         label: resource_url
                                     });
-                                    ReactGA.event({
+                                    gapi.event({
                                         category: "Download by Publisher",
                                         action: this.props.dataset,
                                         label: resource_url

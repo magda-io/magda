@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";
 import Divider from "../../UI/Divider";
-import ReactGA from "react-ga";
+import { gapi } from "../../analytics/ga";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -53,7 +53,7 @@ export default class DatasetSummary extends Component {
                         )}?q=${searchText}`}
                         onClick={() => {
                             if (searchResultNumber) {
-                                ReactGA.event({
+                                gapi.event({
                                     category: "Search and Result Clicked",
                                     action: this.props.searchText,
                                     label: (searchResultNumber + 1).toString()

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import DataPreviewVis from "../../UI/DataPreviewVis";
 
-import ReactGA from "react-ga";
+import { gapi } from "../../analytics/ga";
 
 import "./RecordDetails.css";
 
@@ -26,7 +26,7 @@ class DistributionDetails extends Component {
                             distribution.downloadURL
                         );
                         if (resource_url) {
-                            ReactGA.event({
+                            gapi.event({
                                 category: "Resource",
                                 action: "Download",
                                 label: resource_url
