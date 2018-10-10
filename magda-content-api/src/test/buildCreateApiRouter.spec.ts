@@ -206,26 +206,52 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
-        it("should upload and delete csvs", done => {
-            admin(agent.post("/csv-xxx"))
-                .set("Content-type", "text/csv")
-                .send(gifImage)
-                .expect(201)
-                .then(() => {
-                    agent
-                        .get("/csv-xxx.text")
-                        .expect(gifImage.toString("base64"))
-                        .then(() => {
-                            admin(agent.delete("/csv-xxx"))
-                                .expect(204)
-                                .then(() => {
-                                    agent
-                                        .get("/csv-xxx.txt")
-                                        .expect(404)
-                                        .end(done);
-                                });
-                        });
-                });
+        const CUSTOM_ROUTES = [
+            {
+                route: "/csv-xxx",
+                mime: "text/csv",
+                content: gifImage,
+                getRoute: "/csv-xxx.text",
+                getContent: gifImage.toString("base64")
+            },
+            {
+                route: "/emailTemplates/xxx.html",
+                mime: "text/html",
+                content: "test",
+                getRoute: "/emailTemplates/xxx.html",
+                getContent: "test"
+            },
+            {
+                route: "/emailTemplates/images/x-y-z.jpg",
+                mime: "image/svg+xml",
+                content: gifImage,
+                getRoute: "/emailTemplates/images/x-y-z.jpg",
+                getContent: gifImage.toString("utf8")
+            }
+        ];
+
+        CUSTOM_ROUTES.forEach((customRoute, index) => {
+            it(`should upload and delete with custom routes ${index}`, done => {
+                admin(agent.post(customRoute.route))
+                    .set("Content-type", customRoute.mime)
+                    .send(customRoute.content)
+                    .expect(201)
+                    .then(() => {
+                        agent
+                            .get(customRoute.getRoute)
+                            .expect(customRoute.getContent)
+                            .then(() => {
+                                admin(agent.delete(customRoute.route))
+                                    .expect(204)
+                                    .then(() => {
+                                        agent
+                                            .get(customRoute.getRoute)
+                                            .expect(404)
+                                            .end(done);
+                                    });
+                            });
+                    });
+            });
         });
     });
 });
