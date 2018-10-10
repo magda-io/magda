@@ -19,6 +19,7 @@ import * as resCkanResource from "./sampleRegistryResponses/ckanResource.json";
 
 describe("ckanRedirectionRouter router", () => {
     const ckanRedirectionDomain = "ckan.data.gov.au";
+    const ckanRedirectionPath = "";
 
     let app: express.Application;
     const registryUrl = "http://registry.example.com";
@@ -36,6 +37,7 @@ describe("ckanRedirectionRouter router", () => {
     beforeEach(() => {
         const router = createCkanRedirectionRouter({
             ckanRedirectionDomain,
+            ckanRedirectionPath,
             registryApiBaseUrlInternal: registryUrl
         });
         app = express();

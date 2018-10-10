@@ -6,6 +6,7 @@ import { escapeRegExp } from "lodash";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
+    ckanRedirectionPath: string;
     registryApiBaseUrlInternal: string;
 };
 
@@ -69,6 +70,7 @@ export function covertGenericUrlRedirectConfigToFullArgList(
 
 export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
+    ckanRedirectionPath,
     registryApiBaseUrlInternal
 }: CkanRedirectionRouterOptions): express.Router {
     const router = express.Router();
@@ -111,6 +113,12 @@ export default function buildCkanRedirectionRouter({
                 URI(req.originalUrl)
                     .domain(ckanRedirectionDomain)
                     .protocol("https")
+                    .directory(
+                        URI.joinPaths(
+                            ckanRedirectionPath,
+                            URI(req.originalUrl).directory()
+                        ).toString()
+                    )
                     .toString()
             );
         });
