@@ -13,7 +13,8 @@ export const defaultDataSourcePreference = [
     "GeoJSON",
     "WFS",
     "csv-geo-au",
-    "KML"
+    "KML",
+    "KMZ"
 ];
 
 export const isSupportedFormat = function(format) {

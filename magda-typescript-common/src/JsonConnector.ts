@@ -394,6 +394,16 @@ export default class JsonConnector {
     }
 
     private async putRecord(record: Record): Promise<Record | Error> {
+        if (!record.id) {
+            const noIdMessage = `Tried to put record with no id: ${JSON.stringify(
+                record
+            )}`;
+
+            console.error(noIdMessage);
+
+            return Promise.resolve(new Error(noIdMessage));
+        }
+
         return this.registry.putRecord({
             ...record,
             sourceTag: this.sourceTag

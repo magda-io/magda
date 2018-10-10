@@ -18,7 +18,7 @@ When a dataset is indexed by [data.gov.au](https://data.gov.au/), we automatical
 
 If a dataset’s links are all broken it will be marked as zero stars.
 
-The list of data licenses that we consider to be open is based on [the opendefinition.org list of Conformant Licenses](https://opendefinition.org/licenses/). You can find the list we use [here](https://github.com/TerriaJS/magda/blob/master/magda-sleuther-linked-data-rating/src/openLicenses.ts).
+The list of data licenses that we consider to be open is based on [the opendefinition.org list of Conformant Licenses](https://opendefinition.org/licenses/). You can find the list we use [here](https://github.com/TerriaJS/magda/blob/master/magda-minion-linked-data-rating/src/openLicenses.ts).
 
 Essentially, if a dataset declares a license field with text containing one of those licenses (for example,  “CC0” contains “CC”), then we assume that it’s open.
 
@@ -26,19 +26,19 @@ Essentially, if a dataset declares a license field with text containing one of t
 
 To get 2 stars, the data must qualify for 1-star and also be structured and machine-readable. So data contained in images, plain text, Microsoft Word documents and Portable Document Files (PDF) do not qualify, but machine readable formats such as Microsoft Excel files do.
 
-We determine this by comparing the file’s format against a list of formats that we understand to be 2-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-sleuther-linked-data-rating/src/openFormats.ts#L2).
+We determine this by comparing the file’s format against a list of formats that we understand to be 2-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-minion-linked-data-rating/src/openFormats.ts#L2).
 
 ### ⭐⭐⭐ Is it available in a non-proprietary format?
 
 To get 3 stars, the data must qualify for 2-star (machine-readable) but also be available in a [non-proprietary](https://en.oxforddictionaries.com/definition/non-proprietary) format. For example, plain comma-separated values (CSV), JSON and XML documents are all formats that are in the public domain or open standards, while a Microsoft Access MDB file is not.
 
-We determine this by comparing the file’s format against a list of formats that we understand to be 3-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-sleuther-linked-data-rating/src/openFormats.ts#L3).
+We determine this by comparing the file’s format against a list of formats that we understand to be 3-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-minion-linked-data-rating/src/openFormats.ts#L3).
 
 ### ⭐⭐⭐⭐ Does the data declare a schema?
 
 To get 4 stars, data must not only be available in a non-proprietary, machine readable format, but also specify some kind of schema – meaning the data isn’t just readable by machines, but also includes metadata that allows it to be understood by machines. This usually means that it’s specified in an open, Linked Data format that includes the schema inside the data such as [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) or [JSON-LD](https://en.wikipedia.org/wiki/JSON-LD), or uses a non-proprietary format that enforces a schema, such as [CSV GEO AU](https://github.com/TerriaJS/nationalmap/wiki/csv-geo-au).
 
-Currently we determine this by comparing the file’s format against a list of formats that we understand to be 4-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-sleuther-linked-data-rating/src/openFormats.ts#L21).
+Currently we determine this by comparing the file’s format against a list of formats that we understand to be 4-star formats – you can see the list [here](https://github.com/TerriaJS/magda/blob/master/magda-minion-linked-data-rating/src/openFormats.ts#L21).
 
 ### ⭐⭐⭐⭐⭐ Does the data link to other data?
 

@@ -47,9 +47,12 @@ export default class RequestFormLogic extends React.Component {
         } else {
             url =
                 config.correspondenceApiUrl +
-                `send/dataset/${this.props.datasetId}/report`;
+                `send/dataset/${encodeURIComponent(
+                    this.props.datasetId
+                )}/question`;
         }
         fetch(url, {
+            ...config.fetchOptions,
             method: "POST",
             headers: {
                 "Content-type": "application/json",

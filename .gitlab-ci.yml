@@ -223,7 +223,7 @@ buildtest:typescript-apis:
       - "*/dist"
     expire_in: 30 days
 
-buildtest:sleuthers:
+buildtest:minions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
@@ -233,8 +233,8 @@ buildtest:sleuthers:
   cache:
     paths: []
   script:
-    - yarn run in-submodules -- -f categories.sleuther=true -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.sleuther=true -- run test
+    - yarn run in-submodules -- -f categories.minion=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.minion=true -- run test
   artifacts:
     paths:
       - "*/dist"
@@ -331,7 +331,7 @@ dockerize:typescript-apis:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
-dockerize:sleuthers:
+dockerize:minions:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -342,10 +342,10 @@ dockerize:sleuthers:
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
-    - buildtest:sleuthers
+    - buildtest:minions
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.sleuther=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - yarn run in-submodules -- -f categories.minion=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
 dockerize:connectors:
   stage: dockerize
@@ -433,19 +433,19 @@ dockerize:dockerExtensions:
     # Helm upgrade
     - helm init --upgrade
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 (UI) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://dev.magda.io --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,ingress.targetService=web,tags.all=false,tags.web-server=true,web-server.baseUrl=https://dev.magda.io,web-server.useLocalStyleSheet=true --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,combined-db.waleBackup.method=NONE,elasticsearch.useGcsSnapshots=false --timeout 1200 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,combined-db.waleBackup.method=NONE,elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 Stop Preview: &stopPreview
@@ -489,8 +489,8 @@ Deploy Master To Dev:
   - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
   - export KUBECONFIG=kubectlconfig.yaml
   - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
-  - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 1200 --wait
-  
+  - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 3600 --wait
+
 Release Tags To Docker Hub:
   stage: release
   only:
@@ -542,24 +542,24 @@ Publish Helm Chart:
     - helm repo index chart-repo
     - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
 
-Deploy Released Tags As Staging:
-  <<: *runAsPreview
-  stage: deploy-staging
-  when: on_success
-  only:
-    - /^v.*RC.*$/
-  except:
-    - master
-    - branches
-  environment:
-    name: staging/$CI_COMMIT_REF_NAME
-    url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
-    on_stop: Stop Staging
-  script:
-    # Get version from lerna json
-    - apk add --update jq
-    - TAG=$(jq -r ".version" lerna.json)
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 1200 --wait
+# Deploy Released Tags As Staging:
+#   <<: *runAsPreview
+#   stage: deploy-staging
+#   when: on_success
+#   only:
+#     - /^v.*RC.*$/
+#   except:
+#     - master
+#     - branches
+#   environment:
+#     name: staging/$CI_COMMIT_REF_NAME
+#     url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
+#     on_stop: Stop Staging
+#   script:
+#     # Get version from lerna json
+#     - apk add --update jq
+#     - TAG=$(jq -r ".version" lerna.json)
+#     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 3600 --wait
 
 Stop Staging:
   <<: *stopPreview

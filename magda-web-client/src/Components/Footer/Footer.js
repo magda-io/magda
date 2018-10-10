@@ -10,7 +10,7 @@ import d61logo from "./data61-logo.png";
 
 import "./footer.css";
 
-const regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
+const externalLinkRegex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
 
 function FooterLink({ link }) {
     if (link[1].indexOf("mailto") === 0) {
@@ -29,14 +29,17 @@ function FooterLink({ link }) {
                 {link[0]}
             </a>
         );
-    } else if (!regex.test(link[1])) {
-        return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
-    } else {
+    } else if (
+        externalLinkRegex.test(link[1]) ||
+        link[1].substring(0, 1) === "/"
+    ) {
         return (
             <a target="_blank" rel="noopener noreferrer" href={link[1]}>
                 {link[0]}
             </a>
         );
+    } else {
+        return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
     }
 }
 

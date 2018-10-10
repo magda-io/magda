@@ -1,4 +1,3 @@
-import "leaflet/dist/leaflet.css";
 import "./RegionMap.css";
 import React, { Component } from "react";
 // eslint-disable-next-line

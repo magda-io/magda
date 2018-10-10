@@ -25,8 +25,6 @@ const serverConfig: {
     correspondenceApiBaseUrl?: string
 } =
     window.magda_server_config || {};
-//this below const enables suggest/request/report dataset forms when enabled
-export const enableSuggestDatasetPage = true;
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
@@ -40,7 +38,17 @@ const baseExternalUrl =
         ? window.location.protocol + "//" + window.location.host + "/"
         : baseUrl;
 
+const fetchOptions =
+    `${window.location.protocol}//${window.location.host}/` !== baseUrl
+        ? {
+              credentials: "include"
+          }
+        : {
+              credentials: "same-origin"
+          };
+
 export const config = {
+    fetchOptions,
     homePageConfig: homePageConfig,
     appName: "data.gov.au - beta",
     about:
@@ -95,12 +103,7 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    [
-                        "Suggest a dataset",
-                        !enableSuggestDatasetPage
-                            ? "mailto:data@digital.gov.au"
-                            : "suggest"
-                    ],
+                    ["Suggest a dataset", "suggest"],
                     ["Sign in", "https://data.gov.au/user/login"],
                     ["Give feedback", "feedback"]
                 ]
@@ -112,12 +115,7 @@ export const config = {
                 category: "Data.gov.au",
                 links: [
                     ["About", "page/about"],
-                    [
-                        "Suggest a dataset",
-                        !enableSuggestDatasetPage
-                            ? "mailto:data@digital.gov.au"
-                            : "suggest"
-                    ],
+                    ["Suggest a dataset", "suggest"],
                     ["Privacy Policy", "page/privacy-policy"],
                     ["Give feedback", "feedback"]
                 ]
@@ -132,7 +130,8 @@ export const config = {
             {
                 category: "Developers",
                 links: [
-                    ["Powered by Magda", "https://github.com/TerriaJS/magda/"]
+                    ["API Documentation", "/api/v0/apidocs/index.html"],
+                    ["Powered by Magda", "https://magda.io"]
                 ]
             }
         ]
@@ -157,5 +156,7 @@ export const config = {
         east: 155,
         north: -5
     },
-    fallbackUrl: serverConfig.fallbackUrl
+    fallbackUrl: serverConfig.fallbackUrl,
+    datasetSearchSuggestionScoreThreshold:
+        serverConfig.datasetSearchSuggestionScoreThreshold || 65
 };

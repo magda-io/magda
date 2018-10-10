@@ -6,12 +6,13 @@ global:
     maxUnavailable: 0
   exposeNodePorts: false
   image:
-    tag: 0.0.48-0
+    tag: 0.0.50-0
     repository: "data61"
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
   noDbAuth: false
+  namespace: default
 
 tags:
   all: true
@@ -30,10 +31,10 @@ tags:
   registry-db: false
   search-api: false
   session-db: false
-  sleuther-broken-link: false
-  sleuther-linked-data-rating: false
-  sleuther-visualization: false
-  sleuther-format: false
+  minion-broken-link: false
+  minion-linked-data-rating: false
+  minion-visualization: false
+  minion-format: false
   web-server: false
   ingress: false
   connectors: false

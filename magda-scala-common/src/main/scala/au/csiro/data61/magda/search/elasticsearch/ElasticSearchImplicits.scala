@@ -1,12 +1,12 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import au.csiro.data61.magda.model.misc.{Agent, BoundingBox, DataSet, FacetOption, QueryRegion, Region}
+import au.csiro.data61.magda.model.misc.{ Agent, BoundingBox, DataSet, FacetOption, QueryRegion, Region }
 import au.csiro.data61.magda.model.misc.Protocols
 import spray.json._
 
 import collection.JavaConverters._
-import com.sksamuel.elastic4s.{AggReader, Hit, HitReader, Indexable}
-import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
+import com.sksamuel.elastic4s.{ AggReader, Hit, HitReader, Indexable }
+import com.sksamuel.elastic4s.http.search.{ Aggregations, HasAggregations }
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -20,7 +20,7 @@ object ElasticSearchImplicits extends Protocols {
 
   implicit object DataSetHitAs extends HitReader[DataSet] {
     override def read(hit: Hit): Either[Throwable, DataSet] = {
-      Right(hit.sourceAsString.parseJson.convertTo[DataSet])
+      Right(hit.sourceAsString.parseJson.convertTo[DataSet].copy(score = Some(hit.score)))
     }
   }
 
@@ -39,9 +39,9 @@ object ElasticSearchImplicits extends Protocols {
   def aggregationsToFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      val buckets = if (agg.contains("buckets")){
+      val buckets = if (agg.contains("buckets")) {
         agg.get("buckets")
-      }else{
+      } else {
         agg.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
       }
 
@@ -49,8 +49,6 @@ object ElasticSearchImplicits extends Protocols {
         .map(m => new FacetOption(
           identifier = None,
           value = m("key").toString,
-          hitCount = m("doc_count").toString.toLong
-        ))
-      )
+          hitCount = m("doc_count").toString.toLong)))
   }
 }

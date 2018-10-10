@@ -14,7 +14,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http" % akkaHttpV,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV,
-    "ch.megard" %% "akka-http-cors" % "0.2.1",
     "org.scalikejdbc" %% "scalikejdbc" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-config" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-test" % "3.0.0-RC3" % "test",

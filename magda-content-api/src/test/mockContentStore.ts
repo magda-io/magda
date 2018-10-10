@@ -62,14 +62,35 @@ const mockContentDataStore = {
     },
 
     setContentById(id: string, type: string, content: string) {
-        return runtimeContentDataStore
+        let set = false;
+        runtimeContentDataStore
             .filter(record => {
                 return record.id === id;
             })
             .forEach(record => {
+                set = true;
                 record.type = type;
                 record.content = content;
             });
+        if (!set) {
+            runtimeContentDataStore.push({ id, type, content });
+        }
+    },
+
+    getContentSummary() {
+        return runtimeContentDataStore.map(record => {
+            const { id, type } = record;
+            return { id, type };
+        });
+    },
+
+    deleteContentById(id: string) {
+        const index = runtimeContentDataStore.findIndex(
+            (record: Content) => record.id === id
+        );
+        if (index !== -1) {
+            runtimeContentDataStore.splice(index, 1);
+        }
     },
 
     countRecord: function() {

@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title":
+        "Aspect capturing a underlyig spreadsheet row extracted from input spreadsheet.",
+    "type": "object",
+    "properties": {
+        "json": {
+            "title": "Spreadsheet row as parsed in json format.",
+            "type": "object"
+        }
+    }
+}

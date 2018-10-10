@@ -316,10 +316,17 @@ export default class Csw implements ConnectorSource {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return jsonpath.query(
-            dataset.json,
-            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
-        );
+        return jsonpath
+            .query(
+                dataset.json,
+                "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+            )
+            .concat(
+                jsonpath.query(
+                    dataset.json,
+                    "$.distributionInfo[*].MD_Distribution[*].distributor[*].MD_Distributor[*].distributorTransferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+                )
+            );
     }
 
     private xmlRecordToJsonRecord(recordXml: Element) {
@@ -369,8 +376,22 @@ export default class Csw implements ConnectorSource {
                         reject(error);
                         return;
                     }
-                    console.log("Received@" + startIndex);
-                    resolve(this.xmlParser.parseFromString(body));
+                    try {
+                        const data = this.xmlParser.parseFromString(body);
+                        if (
+                            data.documentElement.getElementsByTagNameNS(
+                                "*",
+                                "SearchResults"
+                            ).length < 1
+                        )
+                            throw new Error(
+                                "Invalid Server Response or Empty result returned!"
+                            );
+                        console.log("Received@" + startIndex);
+                        resolve(data);
+                    } catch (e) {
+                        reject(e);
+                    }
                 });
             });
 

@@ -45,6 +45,7 @@ export function fetchFeedback(values) {
     return (dispatch: Function, getState: Function) => {
         dispatch(sendFeedbacks());
         fetch(config.feedbackUrl, {
+            ...config.fetchOptions,
             method: "POST",
             body: values,
             responseType: "json",

@@ -24,6 +24,7 @@ export default class CswTransformer extends JsonTransformer {
         sourceId: string
     ): ConnectorRecordId {
         const id = this.getRawDatasetId(jsonDataset);
+
         return id && id.length > 0
             ? new ConnectorRecordId(id, "Dataset", sourceId)
             : undefined;
@@ -56,13 +57,22 @@ export default class CswTransformer extends JsonTransformer {
             jsonDataset.json,
             "$.identificationInfo[*].SV_ServiceIdentification[*].serviceIdentification[*]"
         );
+        const alternateServiceIdentification = jsonpath.query(
+            jsonDataset.json,
+            "$.identificationInfo[*].SV_ServiceIdentification[*]"
+        );
         const identification =
-            dataIdentification || serviceIdentification || {};
+            (dataIdentification.length > 0 && dataIdentification) ||
+            (serviceIdentification.length > 0 && serviceIdentification) ||
+            (alternateServiceIdentification.length > 0 &&
+                alternateServiceIdentification) ||
+            [];
         const title =
             jsonpath.value(
                 identification,
-                "$.citation[*].CI_Citation[*].title[*].CharacterString[*]._"
+                "$[*].citation[*].CI_Citation[*].title[*].CharacterString[*]._"
             ) || this.getRawDatasetId(jsonDataset);
+
         return title;
     }
 
@@ -93,7 +103,10 @@ export default class CswTransformer extends JsonTransformer {
     }
 
     private getRawDatasetId(jsonDataset: any): string {
-        return jsonDataset.json.fileIdentifier[0].CharacterString[0]._;
+        return jsonpath.value(
+            jsonDataset.json,
+            "$.fileIdentifier[*].CharacterString[*]._"
+        );
     }
 
     private getRawDistributionId(

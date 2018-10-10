@@ -69,7 +69,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Sleuther Format",
+            "name": "Minion Format",
             "runtimeExecutable":
                 "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
@@ -85,7 +85,7 @@
                 "--userId",
                 "00000000-0000-4000-8000-000000000000"
             ],
-            "cwd": "${workspaceRoot}/magda-sleuther-format"
+            "cwd": "${workspaceRoot}/magda-minion-format"
         },
         {
             "type": "node",
@@ -116,9 +116,9 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Sleuther Framework tests",
+            "name": "Minion Framework tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "cwd": "${workspaceRoot}/magda-sleuther-framework",
+            "cwd": "${workspaceRoot}/magda-minion-framework",
             "args": [
                 "--compilers",
                 "ts:ts-node/register",
@@ -131,9 +131,9 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "format sleuther api tests",
+            "name": "format minion api tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "cwd": "${workspaceRoot}/magda-sleuther-format",
+            "cwd": "${workspaceRoot}/magda-minion-format",
             "args": [
                 "--compilers",
                 "ts:ts-node/register",
@@ -146,10 +146,10 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "sleuther-linked-data-rating",
+            "name": "minion-linked-data-rating",
             "program":
-                "${workspaceRoot}/magda-sleuther-linked-data-rating/node_modules/mocha/bin/_mocha",
-            "cwd": "${workspaceRoot}/magda-sleuther-linked-data-rating",
+                "${workspaceRoot}/magda-minion-linked-data-rating/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-minion-linked-data-rating",
             "args": [
                 "--compilers",
                 "ts:@magda/scripts/node_modules/ts-node/register",
@@ -162,10 +162,10 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "sleuther-broken-link test",
+            "name": "minion-broken-link test",
             "program":
-                "${workspaceRoot}/magda-sleuther-broken-link/node_modules/mocha/bin/_mocha",
-            "cwd": "${workspaceRoot}/magda-sleuther-broken-link",
+                "${workspaceRoot}/magda-minion-broken-link/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-minion-broken-link",
             "args": [
                 "--compilers",
                 "ts:@magda/scripts/node_modules/ts-node/register",

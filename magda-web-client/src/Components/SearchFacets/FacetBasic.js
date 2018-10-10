@@ -35,6 +35,10 @@ class FacetBasic extends Component {
     }
 
     render() {
+        function resetAndToggle() {
+            this.props.searchFacet();
+            this.props.toggleFacet();
+        }
         return (
             <div className="facet-wrapper">
                 <FacetHeader
@@ -44,11 +48,10 @@ class FacetBasic extends Component {
                     title={this.props.title}
                     activeOptions={this.props.activeOptions}
                     hasQuery={this.props.hasQuery}
-                    onClick={this.props.toggleFacet}
+                    onClick={resetAndToggle.bind(this)}
                     ref={this.facetHeader}
                     updateComponentAlignment={this.updateComponentAlignment}
                 />
-
                 <FacetBasicBody
                     isOpen={this.props.isOpen}
                     options={this.props.options}

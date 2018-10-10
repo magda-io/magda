@@ -12,6 +12,7 @@ autoscaler:
   targetCPUUtilizationPercentage: 80
 
 enableAuthEndpoint: false
+enableWebAccessControl: false
 
 helmet:
   frameguard: false
@@ -27,6 +28,8 @@ routes:
   search:
     to: http://search-api/v0
   registry:
+    to: http://registry-api-read-only/v0
+  registry-auth:
     to: http://registry-api/v0
     auth: true
   auth:
@@ -43,6 +46,7 @@ routes:
     to: http://correspondence-api/v0/public
   apidocs:
     to: http://apidocs-server/
+    redirectTrailingSlash: true
 helmet: {}
 
 csp:

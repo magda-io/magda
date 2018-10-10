@@ -59,7 +59,7 @@ function fetchPublishers(start, query) {
         const url = `${config.searchApiUrl +
             "organisations"}?query=${query}&start=${(start - 1) *
             config.resultsPerPage}&limit=${config.resultsPerPage}`;
-        return fetch(url)
+        return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;
@@ -110,7 +110,7 @@ function fetchPublisher(id) {
             config.registryApiUrl
         }records/${id}?aspect=organization-details`;
 
-        return fetch(url)
+        return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;

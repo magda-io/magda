@@ -15,7 +15,7 @@ var freezeObject = require("terriajs-cesium/Source/Core/freezeObject");
 var GeoJsonCatalogItem = require("terriajs/lib/Models/GeoJsonCatalogItem");
 var inherit = require("terriajs/lib/Core/inherit");
 var KmlCatalogItem = require("terriajs/lib/Models/KmlCatalogItem");
-var loadJson = require("terriajs-cesium/Source/Core/loadJson");
+var loadJson = require("terriajs/lib/Core/loadJson");
 var Metadata = require("terriajs/lib/Models/Metadata");
 var TerriaError = require("terriajs/lib/Core/TerriaError");
 var proxyCatalogItemUrl = require("terriajs/lib/Models/proxyCatalogItemUrl");
@@ -103,7 +103,7 @@ function MagdaCatalogItem(terria) {
      * Gets or sets a regular expression that, when it matches a distribution's format, indicates that the distribution is a KML distribution.
      * @type {RegExp}
      */
-    this.kmlDistributionFormat = /^kml$/i;
+    this.kmlDistributionFormat = /^km[lz]$/i;
 
     /**
      * Gets or sets a value indicating whether this may be a CSV distribution.
@@ -383,13 +383,17 @@ MagdaCatalogItem.createCatalogItemFromDistribution = function(options) {
     var dcatJson = distribution.aspects["dcat-distribution-strings"];
     var datasetFormat = distribution.aspects["dataset-format"];
     let formatString = dcatJson.format;
-    if (datasetFormat && datasetFormat.format)
+    if (datasetFormat && datasetFormat.format) {
         formatString = datasetFormat.format;
+    }
 
     var baseUrl = dcatJson.downloadURL;
     if (!defined(baseUrl)) {
-        if (dcatJson.accessURL) baseUrl = dcatJson.accessURL;
-        else return when(undefined);
+        if (dcatJson.accessURL) {
+            baseUrl = dcatJson.accessURL;
+        } else {
+            return when(undefined);
+        }
     }
 
     var matchingFormats = formats.filter(function(format) {
@@ -587,9 +591,10 @@ MagdaCatalogItem.prototype._load = function() {
                 });
             }
         })
-        .then(async function(distributionsToConsider) {
+        .then(function(distributionsToConsider) {
+            var catalogItemCreatingAttempts = [];
             for (var i = 0; i < distributionsToConsider.length; ++i) {
-                var catalogItem = await MagdaCatalogItem.createCatalogItemFromDistribution(
+                var catalogItemCreatingAttempt = MagdaCatalogItem.createCatalogItemFromDistribution(
                     {
                         terria: that.terria,
                         distribution: distributionsToConsider[i],
@@ -621,22 +626,40 @@ MagdaCatalogItem.prototype._load = function() {
                         allowWmsGroups: true,
                         zoomOnEnable: that.zoomOnEnable
                     }
-                );
-
-                if (defined(catalogItem)) {
-                    catalogItem.name = that.name;
-                    return catalogItem;
-                }
+                ).then(function(catalogItem) {
+                    if (!defined(catalogItem)) {
+                        var e = new Error();
+                        e.ignore = true;
+                        throw e;
+                        //--- creation function may return undefined.
+                        //--- This should be considered as failed but not report to user.
+                    } else {
+                        catalogItem.name = that.name;
+                        return catalogItem;
+                    }
+                });
+                catalogItemCreatingAttempts.push(catalogItemCreatingAttempt);
             }
 
-            throw new TerriaError({
-                sender: that,
-                title: "No compatible distributions found",
-                message: defined(that.distributionId)
-                    ? "The MAGDA dataset does not have a distribution with the ID " +
-                      that.distributionId +
-                      " or it does not have a supported format."
-                    : "The MAGDA dataset does not have any distributions with a supported format."
+            return when.any(catalogItemCreatingAttempts).otherwise(function(e) {
+                var genericError = new TerriaError({
+                    sender: that,
+                    title: "No compatible distributions found",
+                    message: defined(that.distributionId)
+                        ? "The MAGDA dataset does not have a distribution with the ID " +
+                          that.distributionId +
+                          " or it does not have a supported format."
+                        : "The MAGDA dataset does not have any distributions with a supported format."
+                });
+                if (e instanceof RangeError || !e.length) {
+                    throw genericError;
+                } else {
+                    for (var i = 0; i < e.length; i++) {
+                        if (e[i].ignore) continue;
+                        throw e[i];
+                    }
+                    throw genericError;
+                }
             });
         });
 };

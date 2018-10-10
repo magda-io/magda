@@ -454,7 +454,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
     describe("GET /public/users/whoami", () => {
         silenceErrorLogs(() => {
-            it("should return 401 status code without including session header", async () => {
+            it("should return 200 status code without including session header", async () => {
                 await jsc.assert(
                     jsc.forall(jsc.nat, async () => {
                         try {
@@ -465,7 +465,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             const res = await req.then(res => res);
 
-                            expect(res.status).to.equal(401);
+                            expect(res.status).to.equal(200);
 
                             return true;
                         } catch (e) {

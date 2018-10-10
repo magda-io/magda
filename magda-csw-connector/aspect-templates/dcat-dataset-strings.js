@@ -19,19 +19,24 @@ const citation = jsonpath.query(
 );
 
 const dates = jsonpath.query(citation, "$[*].date[*].CI_Date[*]");
-const publicationDate = jsonpath.value(
+let issuedDate = jsonpath.value(
     findDatesWithType(dates, "creation").concat(
         findDatesWithType(dates, "publication")
     ),
     "$[*].date[*].DateTime[*]._"
 );
+if (!issuedDate) {
+    issuedDate =
+        jsonpath.value(dataset.json, "$.dateStamp[*].Date[*]._") || undefined;
+}
+
 const modifiedDate =
     jsonpath.value(
         findDatesWithType(dates, "revision"),
         "$[*].date[*].DateTime[*]._"
     ) ||
     jsonpath.value(dataset.json, "$.dateStamp[*].DateTime[*]._") ||
-    publicationDate;
+    issuedDate;
 
 const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 
@@ -78,7 +83,7 @@ return {
         identification,
         "$[*].abstract[*].CharacterString[*]._"
     ),
-    issued: publicationDate,
+    issued: issuedDate,
     modified: modifiedDate,
     languages: jsonpath
         .query(dataset.json, "$.language[*].CharacterString[*]._")

@@ -136,6 +136,7 @@ export type ParsedDataset = {
     publisher: Publisher,
     source: string,
     linkedDataRating: number,
+    contactPoint: string,
     error: ?FetchError
 };
 
@@ -225,7 +226,7 @@ function getFormatString(aspects) {
 function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     // Make a guess of compatible previews from the format
     // Should be temporary before it's properly implemented
-    //  in the "visualization sleuther"
+    //  in the "visualization minion"
     const compatiblePreviews = {
         map: false,
         chart: false,
@@ -347,14 +348,14 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const tags = datasetInfo.keywords || [];
     const landingPage = datasetInfo.landingPage || "";
     const title = datasetInfo.title || "";
-    const issuedDate =
-        getDateString(datasetInfo.issued) || "Unknown issued date";
+    const issuedDate = getDateString(datasetInfo.issued) || null;
     const updatedDate = datasetInfo.modified
         ? getDateString(datasetInfo.modified)
         : null;
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
         : defaultPublisher;
+    const contactPoint: string = aspects["dcat-dataset-strings"].contactPoint;
 
     const source: string = aspects["source"]
         ? aspects["source"]["name"]
@@ -427,6 +428,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         issuedDate,
         updatedDate,
         landingPage,
+        contactPoint,
         tags,
         description,
         distributions,

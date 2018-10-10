@@ -1,7 +1,60 @@
+## 0.0.50
+
+-   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
+-   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
+-   Updated external links on About page to open in new window
+-   Fixed some WA source spatial data are not indexed properly
+
+## 0.0.49
+
+-   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
+-   Made issued and update date not appear when valid dates are not available.
+-   Specify correct externalURL and namespace for gitlab to fix deployment auth.
+-   Add a CSV connector
+-   Rename config page to admin; include connector management functionality
+-   Update content API to accept csvs
+-   Enable admin api and fix up admin api ability to work in speficied namespace
+-   Set CSW connector MD_Metadata dateStamp as issue date
+-   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
+-   Added ability to ensure that all emails go to default recipient despite what their normal recipient would be.
+-   Made contact point visible on dataset page
+-   Allowed UI SCSS variables to be changed via k8s job
+-   Added a `set-scss-vars` script for updating UI SCSS variables
+-   Fixed that `leaflet.css` had not been included by SCSS compiler
+-   Allowed the cluster to be protected by a password
+-   Made the add a dataset form appear where the results get to a certain configurable score threshold
+-   Made the CSW connector look for names for service-based datasets in another place
+-   Made CSW connector gracefully handle datasets without ids instead of crashing
+-   Fixed Gitlab UI only preview failed to download main CSS file
+-   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
+-   Allows gateway to redirect trailing slash for APIDocs module
+
 ## 0.0.48
 
+-   Add No results label when there are no results in organisation and location facets.
+-   Make sure CKAN connector doesn't loop forever if server reports wrong dataset count or empty page
+-   Remove AU govt logo and add more space to top menu.
+-   Whitelist KMZ.
+-   Rename sleuthers to minions
 -   Add ability to change content (logo).
 -   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   CSW connector will exit with code 1 if error happens
+-   Fixed an issue of format enhancer processing MIME
+-   Fixed an issue that format enhancer may exit when dcat-string not available
+-   Updated email template & make email clickable
+-   Updated aims connector URL
+-   Raised the default resources for registry-api.
+-   Added API document for Minions
+-   Updated magda links in footer.
+-   Switch apidocs root to `<host>`
+-   Removed unused jQuery dependency from format-minion
+-   Split the registry api into full and read only modes that can run separately in production
+-   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Fix logo vertical alignment and partially hidden issue
+-   Made header padding even
+-   Made the broken link minion use `GET` for everything and ignore the data.
+-   Fixed trim with zero records deleted returning 400
 
 ## 0.0.47
 
@@ -27,6 +80,7 @@
 -   Change chart config dropdown label from xAxis to X axis and yAxis to Y axis
 -   Unify H1 size
 -   Fixed an issue that dataset / organisation debounced search request not cancel upon URL changes
+-   Upgraded terriajs server to 2.7.4 to address redirect vulnerability.
 -   Added apiDoc for indexer
 
 ## 0.0.46

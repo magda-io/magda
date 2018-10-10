@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import govtLogo from "../../assets/au-govt-logo.svg";
-import govtLogoMobile from "../../assets/au-govt-logo-mobile.svg";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
@@ -32,37 +30,31 @@ class Header extends Component {
 
     render() {
         const logoUrl = `${config.contentApiURL}/logo.bin`;
+        const mobileLogoUrl = `${config.contentApiURL}/logo-mobile.bin`;
         return (
             <div className="header">
                 <div className="au-header">
                     <div className="container">
                         <div className="row">
-                            <div className="col-md-6 col-xs-12">
+                            <div className="col-md-4 col-xs-12">
                                 <Link to="/" className="au-header__brand">
                                     <Small>
                                         <img
-                                            src={govtLogoMobile}
-                                            height={62}
-                                            alt="Coat of Arms"
-                                            className="au-header__brand-image2"
+                                            src={mobileLogoUrl}
+                                            alt={config.appName}
+                                            className="au-header__logo"
                                         />
                                     </Small>
                                     <Medium>
                                         <img
-                                            src={govtLogo}
-                                            height={70}
-                                            alt="Coat of Arms"
-                                            className="au-header__brand-image2"
+                                            src={logoUrl}
+                                            alt={config.appName}
+                                            className="au-header__logo"
                                         />
                                     </Medium>
-                                    <img
-                                        src={logoUrl}
-                                        alt={config.appName}
-                                        className="au-header__logo"
-                                    />
                                 </Link>
                             </div>
-                            <div className="col-md-6 col-xs-12">
+                            <div className="col-md-8 col-xs-12">
                                 <button
                                     id="menu-toggle"
                                     className={`menu-toggle au-btn au-btn--block au-btn--tertiary icon au-accordion--${
@@ -77,7 +69,7 @@ class Header extends Component {
                                         : "Open menu"}
                                 </button>
                             </div>
-                            <div className="col-md-6 col-xs-12">
+                            <div className="col-md-8 col-xs-12">
                                 <div
                                     className={`au-accordion__body au-accordion--${
                                         this.state.isMobileMenuOpen

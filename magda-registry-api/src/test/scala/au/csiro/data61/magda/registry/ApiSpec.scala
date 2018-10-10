@@ -20,6 +20,7 @@ import akka.http.scaladsl.model.ResponseEntity
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.server.AuthorizationFailedRejection
+import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
@@ -38,7 +39,7 @@ import scala.concurrent.duration._
 import akka.pattern.gracefulStop
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
-  case class FixtureParam(api: Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher, authClient: AuthApiClient)
+  case class FixtureParam(api: Role => Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher, authClient: AuthApiClient)
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
@@ -93,7 +94,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     flyway.migrate()
 
     val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
-    val api = new Api(actor, authClient, testConfig, system, executor, materializer)
+    val api = (role: Role) => new Api(if (role == Full) Some(actor) else None, authClient, testConfig, system, executor, materializer)
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {
       expectAdminCheck(httpFetcher, false)
@@ -123,22 +124,22 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     (httpFetcher.get _).expects("/v0/public/users/1", *).returns(resFuture)
   }
 
-  def checkMustBeAdmin(fn: => HttpRequest) {
+  def checkMustBeAdmin(role: Role)(fn: => HttpRequest) {
     describe("should only work when logged in as admin") {
       it("rejects with credentials missing if not signed in") { param =>
-        fn ~> param.api.routes ~> check {
+        fn ~> param.api(role).routes ~> check {
           expectCredentialsMissingRejection()
         }
       }
 
       it("rejects with credentials rejected if credentials are bad") { param =>
-        fn.withHeaders(RawHeader("X-Magda-Session", "aergiajreog")) ~> param.api.routes ~> check {
+        fn.withHeaders(RawHeader("X-Magda-Session", "aergiajreog")) ~> param.api(role).routes ~> check {
           expectCredentialsRejectedRejection()
         }
       }
 
       it("rejects with AuthorizationFailedRejection if not admin") { param =>
-        param.asNonAdmin(fn) ~> param.api.routes ~> check {
+        param.asNonAdmin(fn) ~> param.api(role).routes ~> check {
           expectUnauthorizedRejection()
         }
       }
@@ -163,4 +164,19 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     }
   }
 
+  def routesShouldBeNonExistentWithRole(role: Role, routes: List[(String, String => HttpRequest, String)]) {
+    describe(s"routes should not be accessible with role ${role.toString}") {
+      routes.foreach {
+        case (methodName, methodFn, route) =>
+          it(s"${methodName} ${route}") { param =>
+            methodFn(route) ~> param.api(role).routes ~> check {
+              rejection match {
+                case MethodRejection(_) => // success
+                case _                  => fail()
+              }
+            }
+          }
+      }
+    }
+  }
 }
