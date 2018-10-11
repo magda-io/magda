@@ -23,7 +23,7 @@ class ContentApiDirMapper {
     }
 
     public async getFileContent(localPath: string) {
-        const res = await rp.get(`${this.url}/commonAssets/${localPath}`, {
+        const res = await rp.get(`${this.url}/${localPath}`, {
             resolveWithFullResponse: true,
             encoding: null
         });
@@ -39,7 +39,7 @@ class ContentApiDirMapper {
         if (mimeType === false) {
             mimeType = "application/octet-stream";
         }
-        return await rp(`${this.url}/commonAssets/${localPath}`, {
+        return await rp(`${this.url}/${localPath}`, {
             method: "POST",
             resolveWithFullResponse: true,
             headers: {
@@ -51,7 +51,7 @@ class ContentApiDirMapper {
     }
 
     public async fileExist(localPath: string) {
-        const res = await rp.head(`${this.url}/commonAssets/${localPath}`, {
+        const res = await rp.head(`${this.url}/${localPath}`, {
             resolveWithFullResponse: true,
             simple: false
         });
