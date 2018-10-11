@@ -96,7 +96,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 namespace,
                 "cloudsql-instance-credentials",
                 "credentials.json",
-                configData["cloudsql-instance-credentials"]
+                configData["cloudsql-instance-credentials"]["data"]
             );
         }
 
@@ -106,7 +106,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 namespace,
                 "storage-account-credentials",
                 "db-service-account-private-key.json",
-                configData["storage-account-credentials"]
+                configData["storage-account-credentials"]["data"]
             );
         }
 
