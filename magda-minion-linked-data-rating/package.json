@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-linked-data-rating",
   "description": "MAGDA Linked Data Rating Minion",
-  "version": "0.0.49-RC2",
+  "version": "0.0.49-RC3",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -16,7 +16,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.49-RC2",
+    "@magda/scripts": "^0.0.49-RC3",
     "@types/chai": "^4.0.4",
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^2.2.42",
@@ -31,9 +31,9 @@
     "typescript": "~2.5.0"
   },
   "dependencies": {
-    "@magda/minion-framework": "^0.0.49-RC2",
-    "@magda/registry-aspects": "^0.0.49-RC2",
-    "@magda/typescript-common": "^0.0.49-RC2",
+    "@magda/minion-framework": "^0.0.49-RC3",
+    "@magda/registry-aspects": "^0.0.49-RC3",
+    "@magda/typescript-common": "^0.0.49-RC3",
     "lodash": "^4.17.4"
   },
   "config": {
