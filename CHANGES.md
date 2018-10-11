@@ -24,6 +24,10 @@
 -   Better support for SPSS files in the format minion
 -   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
 -   Fixed an redirection issue when handling 404 status from registry API
+-   Re-added admin api to released docker images
+-   Made gateway nominate its container port to fix it working with a password and also the GCE ingress
+-   Stopped the helm chart from assuming that the `postgres` user password and the `proxyuser` password are the same in GKE deploys
+-   Fixed the storage account credentials being created incorrectly through the secrets tool
 
 ## 0.0.48
 

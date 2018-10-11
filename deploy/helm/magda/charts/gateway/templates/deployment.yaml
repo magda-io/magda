@@ -15,6 +15,8 @@ spec:
       - name: gateway
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.internalPort }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
