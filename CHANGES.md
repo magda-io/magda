@@ -28,6 +28,10 @@
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
 -   Fixed Gitlab UI only preview failed to download main CSS file
 -   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
+-   Made the format minion listen to `dcat-distribution-strings` instead of `dataset-distributions`, should be more efficient
+-   Better support for SPSS files in the format minion
+-   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
+-   Fixed an redirection issue when handling 404 status from registry API
 -   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
