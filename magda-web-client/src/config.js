@@ -160,5 +160,5 @@ export const config = {
     fallbackUrl: serverConfig.fallbackUrl,
     datasetSearchSuggestionScoreThreshold:
         serverConfig.datasetSearchSuggestionScoreThreshold || 65,
-    gapiId: serverConfig.gapiId
+    gapiIds: serverConfig.gapiIds || []
 };

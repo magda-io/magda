@@ -2,24 +2,32 @@ import ReactGA from "react-ga";
 
 import { config } from "../config";
 
-const initTrackers = () => {
-    const _trackers = [];
+const gapiIds = config.gapiIds || [];
+const trackers = gapiIds.map(trackingId => ({
+    trackingId: trackingId,
+    gaOptions: {
+        name: trackingId.replace(/-/g, "")
+    }
+}));
+const trackerNames = trackers.map(tracker => tracker.gaOptions.name);
 
-    // Create GA trackers from the list provided by config
-    [config.gapiIds].forEach(trackingId => {
-        _trackers.push({
-            trackingId: trackingId,
-            options: {
-                debug: false,
-                alwaysSendToDefaultTracker: false
-            }
-        });
+// Initialize Google Analytics with tracker provided to web-server
+ReactGA.initialize(trackers, {
+    debug: false,
+    alwaysSendToDefaultTracker: false
+});
+
+// Make all the ReactGA functions automatically pass our list of trackers
+Object.keys(ReactGA)
+    .filter(key => typeof ReactGA[key] === "function")
+    .forEach(key => {
+        const oldFn = ReactGA[key];
+
+        ReactGA[key] = function(...args) {
+            const newArgs = args.concat([trackerNames]);
+            console.log(newArgs);
+            oldFn(...newArgs);
+        };
     });
-
-    return _trackers;
-};
-
-// Initalise Google Analytics with tracker provided to web-server
-ReactGA.initialize(initTrackers());
 
 export const gapi = ReactGA;
