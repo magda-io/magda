@@ -21,7 +21,9 @@ spec:
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
-            "--gapiIds", {{ .Values.global.gapiIds }}
+            {{- range .Values.gapiIds }}
+            "--gapiIds", {{ . | quote }}
+            {{- end }}
         ]
         readinessProbe:
           httpGet:
