@@ -1,5 +1,8 @@
 import * as express from "express";
-import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import {
+    getUser,
+    mustBeAdmin
+} from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import Database from "./Database";
@@ -7,10 +10,30 @@ import { Maybe } from "tsmonad";
 import { Content } from "./model";
 import { content, ContentEncoding, ContentItem } from "./content";
 
+const wildcard = require("wildcard");
+
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
     authApiUrl: string;
+}
+
+function simpleFilter(items: any[], field: any, filters: any) {
+    if (filters) {
+        if (typeof filters === "string") {
+            filters = [filters];
+        }
+        items = items.filter((item: any) => {
+            const value = field(item);
+            for (const filter of filters) {
+                if (value === filter || wildcard(filter, value)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+    return items;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -18,6 +41,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
+    const USER = getUser(options.authApiUrl, options.jwtSecret);
     const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
 
     router.get("/healthz", function(req, res, next) {
@@ -26,7 +50,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Content
-     * @api {post} /v0/content/:contentId Get All
+     * @api {post} /v0/content/all Get All
      * @apiDescription Get a list of content items and their type.
      * You must be an admin for this.
      *
@@ -35,14 +59,56 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiSuccessExample {json} 200
      *    [
      *        {
-     *            "id": ...,
+     *            "id": ...
      *            "type": ...
+     *            "length": ...
      *        },
      *        ...
      *    ]
      */
-    router.get("/all", ADMIN, async function(req, res) {
-        res.json(await database.getContentSummary());
+    router.get("/all", USER, async function(req, res) {
+        // get summary
+        let all = await database.getContentSummary();
+
+        // filter out by query
+        all = simpleFilter(all, (item: any) => item.id, req.query.id);
+        all = simpleFilter(all, (item: any) => item.type, req.query.type);
+
+        // filter out privates
+        all = all.filter((item: any) => {
+            const contentItemKey = Object.keys(content).filter(
+                key => item.id === key || wildcard(key, item.id)
+            );
+            const contentItem =
+                contentItemKey.length > 0 && content[contentItemKey[0]];
+            if (contentItem) {
+                if (!contentItem.private) {
+                    return true;
+                } else {
+                    return req.user && req.user.isAdmin;
+                }
+            } else {
+                return false;
+            }
+        });
+
+        // inline
+        if (req.query.inline) {
+            for (const item of all) {
+                switch (item.type) {
+                    case "application/json":
+                        item.content = (await database.getContentById(
+                            item.id
+                        )).caseOf({
+                            nothing: undefined,
+                            just: content => JSON.parse(content.content)
+                        });
+                        break;
+                }
+            }
+        }
+        console.log(all);
+        res.json(all);
     });
 
     /**
@@ -71,12 +137,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *         "result": "FAILED"
      *    }
      */
-    router.get("/:contentId.:format", getContent);
     router.get("/*", getContent);
 
     async function getContent(req: any, res: any) {
-        const requestContentId = req.params.contentId;
-        const requestFormat = req.params.format;
+        const requestContentId = req.path.substr(
+            1,
+            req.path.lastIndexOf(".") - 1
+        );
+        const requestFormat = req.path.substr(req.path.lastIndexOf(".") + 1);
+
         try {
             const contentPromise = await database.getContentById(
                 requestContentId
@@ -221,17 +290,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          *
          */
-        if (configurationItem.route) {
-            router.delete(route, ADMIN, body, async function(req, res) {
-                const finalContentId = req.path.substr(1);
 
-                await database.deleteContentById(finalContentId);
+        router.delete(route, ADMIN, body, async function(req, res) {
+            const finalContentId = req.path.substr(1);
 
-                res.status(204).json({
-                    result: "SUCCESS"
-                });
+            await database.deleteContentById(finalContentId);
+
+            res.status(204).json({
+                result: "SUCCESS"
             });
-        }
+        });
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.

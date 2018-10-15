@@ -29,8 +29,8 @@ class Header extends Component {
     }
 
     render() {
-        const logoUrl = `${config.contentApiURL}/logo.bin`;
-        const mobileLogoUrl = `${config.contentApiURL}/logo-mobile.bin`;
+        const logoUrl = `${config.contentApiURL}/header/logo.bin`;
+        const mobileLogoUrl = `${config.contentApiURL}/header/logo-mobile.bin`;
         return (
             <div className="header">
                 <div className="au-header">

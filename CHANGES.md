@@ -1,5 +1,7 @@
 ## 0.0.50
 
+-   Changed some existing content ids to group things better
+-   Reorganised content api to require less number of requests to get small JSON content items
 -   Email Templates are configurable from content API
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint

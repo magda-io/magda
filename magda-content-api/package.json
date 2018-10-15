@@ -22,6 +22,7 @@
     "lodash": "^4.17.4",
     "pg": "^6.4.0",
     "tsmonad": "^0.7.2",
+    "wildcard": "^1.1.2",
     "yargs": "^8.0.2"
   },
   "devDependencies": {

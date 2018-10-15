@@ -33,69 +33,113 @@ export interface ContentItem {
     body?: any; // <-- express middleware can go here
     encode?: ContentEncoding;
     contentType?: string;
+    private?: boolean;
     /**
      * TODO: if needed, add a schema property for json validation
      * TODO: if needed, add a custom validation callback function
      */
 }
 
-const IMAGE_ITEM = {
-    body: bodyParser.raw({
-        type: [
-            "image/png",
-            "image/gif",
-            "image/jpeg",
-            "image/webp",
-            "image/svg+xml"
-        ],
-        inflate: true
-    }),
-    encode: ContentEncoding.base64
-};
-
 export const content: { [s: string]: ContentItem } = {
-    logo: IMAGE_ITEM,
-    "logo-mobile": IMAGE_ITEM,
-    stylesheet: {
-        body: bodyParser.text({
-            type: "text/css",
-            limit: "5mb"
-        })
-    },
+    "header/logo": makeImageItem(),
+    "header/logo-mobile": makeImageItem(),
+    "header/menu/*": makeJsonItem(),
+    stylesheet: makeCssItem(),
+    "/staticPages/*.md": makeMarkdownItem(),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
-    csv: {
-        route: /^\/(csv-).+$/,
-        body: bodyParser.raw({
-            type: [
-                "text/csv",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            ],
-            limit: "10mb"
-        }),
-        encode: ContentEncoding.base64
-    },
+    "csv/*": makeSpreadsheetItem({
+        route: /\/csv\-[a-z][\w\-]*[a-z]/,
+        private: true
+    }),
     // END TEMPORARY UNTIL STORAGE API GETS HERE
     // BEGIN EMAIL TEMPLATE STUFF
-    emailTemplates: {
-        body: bodyParser.text({
-            type: "text/html",
-            limit: "1mb"
-        }),
-        route: /\/emailTemplates\/[a-zA-Z0-9\-]+\.html/
-    },
-    emailTemplateImages: Object.assign(
-        {
-            route: "/emailTemplates/assets/*"
-        },
-        IMAGE_ITEM
-    ),
-    staticPages: {
-        body: bodyParser.text({
-            type: "text/*",
-            limit: "5mb"
-        }),
-        route: "/staticPages/*"
-    }
+    emailTemplates: makeHtmlItem({
+        route: /\/emailTemplates\/\w+\.html/
+    }),
+    "emailTemplates/assets/*": makeImageItem()
     // END EMAIL TEMPLATE STUFF
 };
+
+function makeImageItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.raw({
+                type: [
+                    "image/png",
+                    "image/gif",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/svg+xml"
+                ],
+                inflate: true
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}
+
+function makeCssItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/css",
+                limit: "5mb"
+            })
+        },
+        extra
+    );
+}
+
+function makeHtmlItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/html",
+                limit: "1mb"
+            })
+        },
+        extra
+    );
+}
+
+function makeMarkdownItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/markdown",
+                limit: "5mb"
+            })
+        },
+        extra
+    );
+}
+
+function makeSpreadsheetItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.raw({
+                type: [
+                    "text/csv",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                limit: "10mb"
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}
+
+function makeJsonItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.json({
+                inflate: true
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}

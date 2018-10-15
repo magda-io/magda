@@ -25,7 +25,7 @@ export default class Database {
 
     getContentSummary(): Promise<any> {
         return this.pool
-            .query("SELECT id, type FROM content")
+            .query("SELECT id, type, length(content) as length FROM content")
             .then(res => (res && res.rows) || []);
     }
 
