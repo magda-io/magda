@@ -7,8 +7,8 @@ What you'll be using if you run Magda like this:
 -   AWS Route53
 -   Mailgun
 
-1. Create a new Google Kubernetes Engine cluster - for high availability you'll want to spread this over at least 3 nodes and at least two zones. How many nodes you'll need depends on how many resources you want to set in the magda config - if you use the development settings you only need 2 CPUs, if you use the search.data.gov.au settings you'll need 10-12. You can always use autoscaling to get you the right number of nodes, but be aware that it tends to love scaling up but hates scaling down.
-2. Set up a Google Cloud SQL database: https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine. Make sure you set that up for HA too.
+1.  Create a new Google Kubernetes Engine cluster - for high availability you'll want to spread this over at least 3 nodes and at least two zones. How many nodes you'll need depends on how many resources you want to set in the magda config - if you use the development settings you only need 2 CPUs, if you use the search.data.gov.au settings you'll need 10-12. You can always use autoscaling to get you the right number of nodes, but be aware that it tends to love scaling up but hates scaling down.
+2.  Set up a Google Cloud SQL database: https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine. Make sure you set that up for HA too.
 3.  Install cert-manager and a cert issuer: https://github.com/magda-io/magda/tree/master/deploy/helm/magda-cert-issuer
 4.  Go to the Google Cloud Platform console, and in VPC Network / External IP addresses, reserve yourself an IP address
 5.  In AWS Route53, point your desired domain at that address
