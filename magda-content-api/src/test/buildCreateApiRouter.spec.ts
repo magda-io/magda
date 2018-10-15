@@ -222,10 +222,10 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 getContent: "test"
             },
             {
-                route: "/emailTemplates/images/x-y-z.jpg",
+                route: "/emailTemplates/assets/x-y-z.jpg",
                 mime: "image/svg+xml",
                 content: gifImage,
-                getRoute: "/emailTemplates/images/x-y-z.jpg",
+                getRoute: "/emailTemplates/assets/x-y-z.jpg",
                 getContent: gifImage.toString("utf8")
             }
         ];

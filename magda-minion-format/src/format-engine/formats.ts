@@ -10,6 +10,7 @@ export function getCommonFormat(
     noRawFormatOutput: boolean = false
 ): string {
     const format = _.trim(rawFormat.toString()).toUpperCase();
+
     if (synonymObject[format]) {
         return format;
     } else {

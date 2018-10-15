@@ -51,5 +51,6 @@
             "data": "csiro-oa-app",
             "type": "as-keyword"
         }
-    ]
+    ],
+    "spss": ["sav"]
 }

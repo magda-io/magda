@@ -86,7 +86,7 @@ export const content: { [s: string]: ContentItem } = {
     },
     emailTemplateImages: Object.assign(
         {
-            route: "/emailTemplates/images/*"
+            route: "/emailTemplates/assets/*"
         },
         IMAGE_ITEM
     )

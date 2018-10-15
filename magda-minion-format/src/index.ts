@@ -11,7 +11,7 @@ function sleuthLayerer() {
     return minion({
         argv,
         id: ID,
-        aspects: ["dataset-distributions"],
+        aspects: ["dcat-distribution-strings"],
         optionalAspects: [],
         async: false,
         writeAspectDefs: [formatAspectDef],
