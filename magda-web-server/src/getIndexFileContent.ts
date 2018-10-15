@@ -2,28 +2,32 @@ import * as fs from "fs";
 import * as path from "path";
 import "isomorphic-fetch";
 import { throttle } from "lodash";
+
 import getStaticStyleSheetFileName from "./getStaticStyleSheetFileName";
 
-async function getDynamicContent() {
-    // const response = await fetch(`${config.contentApiURL}includeHtml.text`);
-    const response = await fetch(
-        `https://dev.magda.io/api/v0/content/includeHtml.text`
-    );
+async function getDynamicContent(contentApiBaseUrl: string) {
+    const url = `${contentApiBaseUrl}includeHtml.text`;
+
+    const response = await fetch(url);
 
     if (response.status === 200) {
         return response.text();
     } else {
+        console.error(
+            `Received status ${response.status}: ${
+                response.statusText
+            } from ${url} when getting dynamic content`
+        );
         return Promise.resolve("");
     }
 }
 
-const getDynamicContentThrottled = throttle(getDynamicContent, 60000);
-
-export default async function getIndexFileContent(
+async function getIndexFileContent(
     clientRoot: string,
-    useLocalStyleSheet: boolean
+    useLocalStyleSheet: boolean,
+    contentApiBaseUrl: string
 ) {
-    const dynamicContentPromise = getDynamicContentThrottled();
+    const dynamicContentPromise = getDynamicContent(contentApiBaseUrl);
 
     let indexFileContent = fs.readFileSync(
         path.join(clientRoot, "build/index.html"),
@@ -48,5 +52,8 @@ export default async function getIndexFileContent(
             `/static/css/${cssFileName}`
         );
     }
+
     return indexFileContent;
 }
+
+export default throttle(getIndexFileContent, 60000);

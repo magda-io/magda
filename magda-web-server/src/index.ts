@@ -177,12 +177,21 @@ app.get("/server-config.js", function(req, res) {
     );
 });
 
-const indexFileContent = getIndexFileContent(
-    clientRoot,
-    argv.useLocalStyleSheet
-);
+/**
+ * Get the index file content according to the passed in settings. Because getIndexFileContent
+ * is throttled, it'll only actually be invoked once every 60 seconds
+ */
+function getIndexFileContentZeroArgs() {
+    return getIndexFileContent(
+        clientRoot,
+        argv.useLocalStyleSheet,
+        webServerConfig.contentApiBaseUrl
+    );
+}
 
-app.get(["/", "/index.html*"], function(req, res) {
+app.get(["/", "/index.html*"], async function(req, res) {
+    const indexFileContent = await getIndexFileContentZeroArgs();
+
     res.send(indexFileContent);
 });
 
@@ -205,16 +214,16 @@ const topLevelRoutes = [
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
-    app.get("/" + topLevelRoute, function(req, res) {
-        res.send(indexFileContent);
+    app.get("/" + topLevelRoute, async function(req, res) {
+        res.send(await getIndexFileContentZeroArgs());
     });
-    app.get("/" + topLevelRoute + "/*", function(req, res) {
-        res.send(indexFileContent);
+    app.get("/" + topLevelRoute + "/*", async function(req, res) {
+        res.send(await getIndexFileContentZeroArgs());
     });
 });
 
-app.get("/page/*", function(req, res) {
-    res.send(indexFileContent);
+app.get("/page/*", async function(req, res) {
+    res.send(await getIndexFileContentZeroArgs());
 });
 
 // app.get("/admin", function(req, res) {
