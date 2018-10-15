@@ -35,10 +35,15 @@ const description = jsonpath.value(
     "$.description[*].CharacterString[*]._"
 );
 const url = jsonpath.value(distribution, "$.linkage[*].URL[*]._");
-const format = jsonpath.value(
-    distribution,
-    "$.protocol[*].CharacterString[*]._"
-);
+let format = jsonpath.value(distribution, "$.protocol[*].CharacterString[*]._");
+
+if (!format) {
+    format = jsonpath.value(
+        dataset.json,
+        "$.distributionInfo[*].MD_Distribution[*].distributor[*].MD_Distributor[*].distributorFormat[*].MD_Format[*].name[*].CharacterString[*]._"
+    );
+}
+
 const isDownload =
     jsonpath.value(distribution, "$.function[*].CI_OnlineFunctionCode[*]._") ===
     "download";

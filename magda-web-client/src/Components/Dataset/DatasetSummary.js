@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
-import getDateString from "../../helpers/getDateString";
+import { parseDataset } from "../../helpers/record";
 import QualityIndicator from "../../UI/QualityIndicator";
 import "./DatasetSummary.css";
 import { Link } from "react-router-dom";
@@ -32,6 +32,11 @@ export default class DatasetSummary extends Component {
 
     render() {
         const dataset = this.props.dataset;
+        const parsed = parseDataset({
+            aspects: {
+                "dcat-dataset-strings": dataset
+            }
+        });
         const publisher = dataset.publisher && dataset.publisher.name;
         const publisherIdent =
             dataset.publisher && dataset.publisher.identifier;
@@ -78,9 +83,9 @@ export default class DatasetSummary extends Component {
                     />
                 </div>
                 <div className="dataset-summary-meta">
-                    {defined(dataset.modified) && (
+                    {defined(parsed.updatedDate) && (
                         <span className="dataset-summary-updated">
-                            Dataset Updated {getDateString(dataset.modified)}
+                            Dataset Updated {parsed.updatedDate}
                             <Divider />
                         </span>
                     )}

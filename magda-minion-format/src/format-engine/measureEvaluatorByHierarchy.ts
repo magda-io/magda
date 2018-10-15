@@ -21,8 +21,7 @@ export default function getBestMeasureResult(
         return {
             format: sortedCandidates[0].measureResult.formats[0],
             absConfidenceLevel: sortedCandidates[0].getProcessedData()
-                .absoluteConfidenceLevel,
-            distribution: sortedCandidates[0].measureResult.distribution
+                .absoluteConfidenceLevel
         };
     }
 }

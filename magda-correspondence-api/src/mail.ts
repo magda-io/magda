@@ -1,10 +1,7 @@
 import * as html2text from "html-to-text";
 
-import { Message, SMTPMailer } from "./SMTPMailer";
+import { Message, SMTPMailer, Attachment } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
-
-const auGovtLogoPath = require.resolve("../templates/assets/AU-Govt-Logo.jpg");
-const dataGovLogoPath = require.resolve("../templates/assets/Logo.jpg");
 
 /**
  *
@@ -30,6 +27,7 @@ export function sendMail(
     defaultRecipient: string,
     input: DatasetMessage,
     html: string,
+    attachments: Attachment[],
     subject: string,
     recipient: string,
     overrideSendToDefaultRecipient: boolean = false
@@ -48,22 +46,7 @@ export function sendMail(
         subject: finalSubject,
         text: html2text.fromString(html),
         html,
-        attachments: [
-            {
-                filename: "AU-Govt-Logo.jpg",
-                contentType: "image/jpeg",
-                contentDisposition: "inline",
-                path: auGovtLogoPath,
-                cid: "govAUCrest"
-            },
-            {
-                filename: "Logo.jpg",
-                contentType: "image/jpeg",
-                contentDisposition: "inline",
-                path: dataGovLogoPath,
-                cid: "dataGovLogo"
-            }
-        ]
+        attachments
     };
 
     console.log(
