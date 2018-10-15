@@ -6,11 +6,20 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as typeis from "type-is";
 
+/**
+ * A Class attempt to create an abstract access layer between content API and local directory
+ */
 class ContentApiDirMapper {
     public url: string;
     public userId: string;
     private jwtSecret: string;
 
+    /**
+     *
+     * @param url string: Content API url access url
+     * @param userId string: Admin user ID (for uploading resources to content API)
+     * @param jwtSecret string: JWT secrets (for uploading resources to content API)
+     */
     constructor(url: string, userId: string = "", jwtSecret: string = "") {
         this.url = url;
         this.userId = userId;
@@ -22,6 +31,11 @@ class ContentApiDirMapper {
         }
     }
 
+    /**
+     * Get resource from content API by localPath.
+     * Will return string or Buffer depends `content-type` header
+     * @param localPath string: local directory path. e.g.: emailTemplates/assets/top-left-logo.jpg
+     */
     public async getFileContent(localPath: string) {
         const res = await rp.get(`${this.url}/${localPath}`, {
             resolveWithFullResponse: true,
@@ -34,6 +48,11 @@ class ContentApiDirMapper {
         return res.body;
     }
 
+    /**
+     * Upload a local content to content API.
+     * @param localPath string: local path of the resource. e.g. emailTemplates/assets/top-left-logo.jpg
+     * @param fileContent string or Buffer. Require string for text content, otherwise Buffer is required.
+     */
     public async saveFile(localPath: string, fileContent: Buffer) {
         let mimeType = mime.lookup(localPath);
         if (mimeType === false) {
@@ -50,6 +69,11 @@ class ContentApiDirMapper {
         });
     }
 
+    /**
+     * Test if a resource specified by the `localPath` is avaiable on content API
+     * This function is done via express build-in HEAD request handling
+     * @param localPath string: local path of the resource. e.g. emailTemplates/assets/top-left-logo.jpg
+     */
     public async fileExist(localPath: string) {
         const res = await rp.head(`${this.url}/${localPath}`, {
             resolveWithFullResponse: true,
@@ -59,6 +83,12 @@ class ContentApiDirMapper {
         else return true;
     }
 
+    /**
+     * Sync (i.e. upload all files in a local directory if not exist) a local directory with a target directory on content API.
+     * If a resource already exists, it will NOT be overwritten.
+     * @param localFolderPath string: Local directory path. e.g. ./emailTemplates
+     * @param remoteFolerName string: Optional. If not specify, the function will attempt to sync with a directory with the same name.
+     */
     public async syncFolder(
         localFolderPath: string,
         remoteFolerName: string = ""
