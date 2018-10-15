@@ -2,6 +2,7 @@ import {} from "mocha";
 import { ApiRouterOptions } from "../createApiRouter";
 import { SMTPMailer, Message, Attachment } from "../SMTPMailer";
 import * as fs from "fs";
+import * as path from "path";
 
 import createApiRouter from "../createApiRouter";
 
@@ -11,13 +12,51 @@ import * as supertest from "supertest";
 import * as express from "express";
 import * as nock from "nock";
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import ContentApiDirMapper from "../ContentApiDirMapper";
+import EmailTemplateRender from "../EmailTemplateRender";
 
 const REGISTRY_URL: string = "https://registry.example.com";
+const CONTENT_API_URL: string = "https://content-api.example.com";
 const registry: RegistryClient = new RegistryClient({
     baseUrl: REGISTRY_URL,
     maxRetries: 0,
     secondsBetweenRetries: 0
 });
+
+const contentMapper = new ContentApiDirMapper(
+    CONTENT_API_URL,
+    "userId",
+    "secrets"
+);
+const templateRender = new EmailTemplateRender(contentMapper);
+const assetsFiles = [
+    "emailTemplates/request.html",
+    "emailTemplates/question.html",
+    "emailTemplates/feedback.html",
+    "emailTemplates/assets/top-left-logo.jpg",
+    "emailTemplates/assets/centered-logo.jpg"
+];
+
+sinon.stub(contentMapper, "fileExist").callsFake(function(localPath: string) {
+    if (assetsFiles.findIndex(file => file === localPath) !== -1) return true;
+    throw new Error(`Tried to access non-exist file: ${localPath}`);
+});
+
+sinon
+    .stub(contentMapper, "getFileContent")
+    .callsFake(function(localPath: string) {
+        if (assetsFiles.findIndex(file => file === localPath) === -1) {
+            throw new Error(`Tried to access non-exist file: ${localPath}`);
+        }
+        if (path.extname(localPath) === ".html") {
+            return fs.readFileSync(
+                path.join(__dirname, "..", "..", localPath),
+                "utf-8"
+            );
+        } else {
+            return fs.readFileSync(path.join(__dirname, "..", "..", localPath));
+        }
+    });
 
 const stubbedSMTPMailer: SMTPMailer = {
     checkConnectivity() {
@@ -55,7 +94,12 @@ describe("send dataset request mail", () => {
 
         app = express();
         app.use(require("body-parser").json());
-        app.use("/", createApiRouter(resolveRouterOptions(stubbedSMTPMailer)));
+        app.use(
+            "/",
+            createApiRouter(
+                resolveRouterOptions(stubbedSMTPMailer, templateRender)
+            )
+        );
 
         registryScope = nock(REGISTRY_URL);
     });
@@ -170,7 +214,10 @@ describe("send dataset request mail", () => {
             // Create a new app with different options
             app = express();
             app.use(require("body-parser").json());
-            const options = resolveRouterOptions(stubbedSMTPMailer);
+            const options = resolveRouterOptions(
+                stubbedSMTPMailer,
+                templateRender
+            );
             options.alwaysSendToDefaultRecipient = true;
 
             app.use("/", createApiRouter(options));
@@ -400,14 +447,19 @@ describe("send dataset request mail", () => {
     function checkAttachments(attachments: Array<Attachment>) {
         attachments.forEach(attachment => {
             expect(
-                fs.existsSync(attachment.path),
-                attachment.path + " to exist"
+                attachment.content instanceof Buffer ||
+                    typeof attachment.content === "string",
+                "attachment.content to exist"
             ).to.be.true;
         });
     }
 
-    function resolveRouterOptions(smtpMailer: SMTPMailer): ApiRouterOptions {
+    function resolveRouterOptions(
+        smtpMailer: SMTPMailer,
+        templateRender: EmailTemplateRender
+    ): ApiRouterOptions {
         return {
+            templateRender,
             defaultRecipient: DEFAULT_RECIPIENT,
             smtpMailer: smtpMailer,
             registry,
