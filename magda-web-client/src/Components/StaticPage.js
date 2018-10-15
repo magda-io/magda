@@ -19,12 +19,16 @@ class StaticPage extends Component {
 
     componentDidMount() {
         const pageName = this.props.match.params.id;
-        this.props.fetchHomepageStory(pageName);
+        this.props.fetchStaticPage(pageName);
     }
 
     render() {
         const pageName = this.props.match.params.id;
-        const pageData = this.props.staticPages[pageName];
+        const pageData = this.props.staticPages[pageName]
+            ? this.props.staticPages[pageName]
+            : {
+                  isFetching: true
+              };
 
         if (
             pageData.isError &&
@@ -58,7 +62,7 @@ class StaticPage extends Component {
         }
 
         const breadcrumb = [
-            <li>
+            <li key={0}>
                 <span>{title}</span>
             </li>
         ];
