@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { contents } from "../content/register";
 import { config } from "../config";
 import Breadcrumbs from "../UI/Breadcrumbs";
@@ -7,41 +8,9 @@ import ReactDocumentTitle from "react-document-title";
 import { Redirect } from "react-router-dom";
 import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { fetchStaticPage } from "../actions/staticPagesActions";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
 import "./StaticPage.css";
-
-function StaticPage(props) {
-    const id = props.match.params.id;
-    const content = contents.get(id);
-
-    const breadcrumb = [
-        <li>
-            <span>{content.title}</span>
-        </li>
-    ];
-    if (content) {
-        return (
-            <ReactDocumentTitle
-                title={`${content.title ? content.title : id} | ${
-                    config.appName
-                }`}
-            >
-                <div className={`static-page-container container page-${id}`}>
-                    <Medium>
-                        <Breadcrumbs breadcrumbs={breadcrumb} />
-                    </Medium>
-                    <h1> {content.title && content.title} </h1>
-                    <div
-                        className="markdown-body"
-                        dangerouslySetInnerHTML={{
-                            __html: content.__content
-                        }}
-                    />
-                </div>
-            </ReactDocumentTitle>
-        );
-    }
-    return <Redirect to={"/404"} />;
-}
 
 class StaticPage extends Component {
     constructor(props) {
@@ -50,60 +19,8 @@ class StaticPage extends Component {
     }
 
     componentDidMount() {
-        this.props.fetchHomepageStory(this.props.idx);
-    }
-
-    getClickableElement(el, url) {
-        if (!url) return el;
-        return (
-            <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={url}
-                className="story-title-link"
-            >
-                {el}
-            </a>
-        );
-    }
-
-    renderStoryboxBody() {
-        const info = this.props.stories[this.props.idx];
-        if (info.isFetching) return <div>Loading...</div>;
-        if (info.isError) return <div>{info.error.message}</div>;
-        if (!info.content) return <div>No content available.</div>;
-        const content = safeLoadFront(info.content);
-        const innerBody = (
-            <div className="story-box-body">
-                {content.titleImage
-                    ? this.getClickableElement(
-                          <img
-                              className="story-title-image"
-                              src={`${baseUrl}${content.titleImage}`}
-                              alt="title"
-                          />,
-                          content.titleUrl
-                      )
-                    : null}
-                <div className="story-box-text">
-                    {content.title
-                        ? this.getClickableElement(
-                              <h2 className="story-title">{content.title}</h2>,
-                              content.titleUrl
-                          )
-                        : null}
-                    <MarkdownViewer markdown={content.__content} />
-                </div>
-            </div>
-        );
-        return innerBody;
-    }
-
-    getStoryBoxClassName() {
-        const classNames = ["story-box"];
-        if (this.props.className && typeof this.props.className === "string")
-            classNames.push(this.props.className);
-        return classNames.join(" ");
+        const pageName = this.props.match.params.id;
+        this.props.fetchHomepageStory(pageName);
     }
 
     render() {
@@ -127,14 +44,16 @@ class StaticPage extends Component {
         let title = pageName;
         let bodyContent = "";
 
-        if (info.isFetching) {
+        if (pageData.isFetching) {
             bodyContent = "<p> Loading... </p>";
-        } else if (info.isError) {
-            bodyContent = `<p> Failed to load page content: ${e.toString()} </p>`;
-        } else if (!info.content) {
+        } else if (pageData.isError) {
+            bodyContent = `<p> Failed to load page content: ${
+                pageData.error ? pageData.error.toString() : "Unkown Error"
+            } </p>`;
+        } else if (!pageData.content) {
             bodyContent = `<p> Error: empty page content is returned from server. </p>`;
         } else {
-            const content = safeLoadFront(info.content);
+            const content = safeLoadFront(pageData.content);
             title = content.title ? content.title : title;
             bodyContent = content.__content;
         }
