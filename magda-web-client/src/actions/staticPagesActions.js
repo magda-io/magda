@@ -1,6 +1,6 @@
 import { actionTypes } from "../constants/ActionTypes";
 import fetch from "isomorphic-fetch";
-import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
+import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 
 const contentBaseUrl = `${config.contentApiURL}staticPages/`;
