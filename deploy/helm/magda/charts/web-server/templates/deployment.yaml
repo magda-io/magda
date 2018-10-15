@@ -20,7 +20,8 @@ spec:
             "--listenPort", "80",
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
-            "--registryApiBaseUrlInternal", "http://registry-api/v0"
+            "--registryApiBaseUrlInternal", "http://registry-api/v0",
+            "--gapiIds", {{ .Values.global.gapiIds }}
         ]
         readinessProbe:
           httpGet:

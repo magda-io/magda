@@ -22,7 +22,8 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    correspondenceApiBaseUrl?: string
+    correspondenceApiBaseUrl?: string,
+    gapiIds?: Array<string>
 } =
     window.magda_server_config || {};
 
@@ -158,5 +159,6 @@ export const config = {
     },
     fallbackUrl: serverConfig.fallbackUrl,
     datasetSearchSuggestionScoreThreshold:
-        serverConfig.datasetSearchSuggestionScoreThreshold || 65
+        serverConfig.datasetSearchSuggestionScoreThreshold || 65,
+    gapiId: serverConfig.gapiId
 };
