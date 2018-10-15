@@ -3,6 +3,7 @@ import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/aut
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import Database from "./Database";
+import { Maybe } from "tsmonad";
 import { Content } from "./model";
 import { content, ContentEncoding, ContentItem } from "./content";
 
@@ -74,35 +75,39 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.get("/*", getContent);
 
     async function getContent(req: any, res: any) {
-        let contentId = req.params.contentId;
-        let format = req.params.format;
+        const requestContentId = req.params.contentId;
+        const requestFormat = req.params.format;
         try {
-            let maybeContent = await database.getContentById(contentId);
-            let content = maybeContent.caseOf({
-                nothing: () => null,
-                just: x => x
-            });
+            const contentPromise = await database.getContentById(
+                requestContentId
+            );
+            const { content, format } = (await contentPromise.caseOf({
+                just: content =>
+                    Promise.resolve(
+                        Maybe.just({
+                            format: requestFormat,
+                            content
+                        })
+                    ),
+                nothing: async () => {
+                    const tempContentId = req.path.substr(1);
+                    const tempContentMaybe = await database.getContentById(
+                        tempContentId
+                    );
 
-            // see if there is a content
-            if (content === null) {
-                const tempContentId = req.path.substr(1);
-                maybeContent = await database.getContentById(tempContentId);
-                content = maybeContent.caseOf({
-                    nothing: () => null,
-                    just: x => x
-                });
-                if (content) {
-                    contentId = tempContentId;
-                    format = contentId.substr(contentId.lastIndexOf(".") + 1);
+                    return tempContentMaybe.map(content => ({
+                        format: tempContentId.substr(
+                            tempContentId.lastIndexOf(".") + 1
+                        ),
+                        content
+                    }));
                 }
-            }
-
-            if (content === null) {
-                throw new GenericError(
-                    `Unsupported configuration item requested: ${contentId}.${format}`,
+            })).valueOrThrow(
+                new GenericError(
+                    `Unsupported configuration item requested: ${requestContentId}.${requestFormat}`,
                     404
-                );
-            }
+                )
+            );
 
             switch (format) {
                 case "json":
