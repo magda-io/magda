@@ -22,7 +22,7 @@ spec:
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
             {{- range .Values.gapiIds }}
-            "--gapiIds", {{ . | quote }}
+            "--gapiIds", {{ . | quote }},
             {{- end }}
         ]
         readinessProbe:
