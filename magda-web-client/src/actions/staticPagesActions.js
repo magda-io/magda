@@ -19,7 +19,7 @@ export function fetchStaticPage(pageName) {
 
             dispatch(requestStaticPage(pageName));
 
-            const url = contentBaseUrl + pageName;
+            const url = contentBaseUrl + pageName + ".md";
 
             const response = await fetch(url, config.fetchOptions);
             if (response.status !== 200)
