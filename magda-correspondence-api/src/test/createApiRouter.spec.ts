@@ -33,8 +33,8 @@ const assetsFiles = [
     "emailTemplates/request.html",
     "emailTemplates/question.html",
     "emailTemplates/feedback.html",
-    "emailTemplates/assets/AU-Govt-Logo.jpg",
-    "emailTemplates/assets/Logo.jpg"
+    "emailTemplates/assets/top-left-logo.jpg",
+    "emailTemplates/assets/centered-logo.jpg"
 ];
 
 sinon.stub(contentMapper, "fileExist").callsFake(function(localPath: string) {
