@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { contents } from "../content/register";
 import { config } from "../config";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { Medium } from "../UI/Responsive";

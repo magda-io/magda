@@ -1,13 +1,6 @@
 import type { Action } from "../types";
 import { actionTypes } from "../constants/ActionTypes";
 
-const initialStoryData = {
-    isFetching: false,
-    isError: false,
-    error: null,
-    content: null
-};
-
 /**
  * Initial status is {}. Strcuture would be
  *
@@ -23,7 +16,6 @@ const initialStoryData = {
 const initialData = {};
 
 const staticPageReducer = (state = initialData, action: Action) => {
-    let newState;
     switch (action.type) {
         case actionTypes.REQUEST_STATIC_PAGE:
             return {
