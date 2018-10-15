@@ -1,8 +1,11 @@
 ## 0.0.50
 
--   Added configurable argument to `magda-web-server` module to accept Google Analytics ID's
+-   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
+-   Updated external links on About page to open in new window
+-   Fixed some WA source spatial data are not indexed properly
 
 ## 0.0.49
 
@@ -26,6 +29,10 @@
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
 -   Fixed Gitlab UI only preview failed to download main CSS file
 -   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
+-   Made the format minion listen to `dcat-distribution-strings` instead of `dataset-distributions`, should be more efficient
+-   Better support for SPSS files in the format minion
+-   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
+-   Fixed an redirection issue when handling 404 status from registry API
 -   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48

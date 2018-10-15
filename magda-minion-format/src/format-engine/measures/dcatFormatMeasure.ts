@@ -146,10 +146,13 @@ export default function getMeasureResult(
         filterBracketedFormats
     ];
 
-    processedFormats = cleanUpAssemblyChain.reduce(
-        (accumulation, currentTransformer) => currentTransformer(accumulation),
-        processedFormats
-    );
+    processedFormats = cleanUpAssemblyChain
+        .reduce(
+            (accumulation, currentTransformer) =>
+                currentTransformer(accumulation),
+            processedFormats
+        )
+        .filter(format => format.trim().length > 0);
 
     if (processedFormats.length < 1) {
         return null;

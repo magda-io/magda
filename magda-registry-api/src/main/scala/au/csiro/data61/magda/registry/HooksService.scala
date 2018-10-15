@@ -76,10 +76,10 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
           HookPersistence.getAll(session)
         }
 
-        implicit val timeout = Timeout(5 seconds)
+        implicit val timeout = Timeout(30 seconds)
 
         hooks.map { hook =>
-          val status = Await.result(webHookActor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status]
+          val status = Await.result(webHookActor ? WebHookActor.GetStatus(hook.id.get), 30 seconds).asInstanceOf[WebHookActor.Status]
           hook.copy(
             isRunning = Some(!status.isProcessing.isEmpty),
             isProcessing = Some(status.isProcessing.getOrElse(false)))
@@ -228,9 +228,9 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
           HookPersistence.getById(session, id)
         } match {
           case Some(hook) =>
-            implicit val timeout = Timeout(5 seconds)
+            implicit val timeout = Timeout(30 seconds)
 
-            val status = Await.result(webHookActor ? WebHookActor.GetStatus(hook.id.get), 5 seconds).asInstanceOf[WebHookActor.Status]
+            val status = Await.result(webHookActor ? WebHookActor.GetStatus(hook.id.get), 30 seconds).asInstanceOf[WebHookActor.Status]
 
             complete(hook.copy(
               isRunning = Some(!status.isProcessing.isEmpty),

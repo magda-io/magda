@@ -1,11 +1,9 @@
-import {
-    WebHook,
-    WebHookConfig
-} from "@magda/typescript-common/dist/generated/registry/api";
+import { WebHook } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 import MinionOptions from "./MinionOptions";
 import getWebhookUrl from "./getWebhookUrl";
+import buildWebhookConfig from "./buildWebhookConfig";
 
 export type NeedsCrawl = Promise<boolean>;
 
@@ -15,14 +13,7 @@ export default async function registerNewWebhook(
 ) {
     console.info("Registering webhook");
 
-    const webHookConfig: WebHookConfig = {
-        aspects: options.aspects,
-        optionalAspects: options.optionalAspects,
-        includeEvents: false,
-        includeRecords: true,
-        includeAspectDefinitions: false,
-        dereference: true
-    };
+    const webHookConfig = buildWebhookConfig(options);
 
     const newWebHook: WebHook = {
         id: options.id,
@@ -48,5 +39,5 @@ export default async function registerNewWebhook(
         isProcessing: null
     };
 
-    return registry.postHook(newWebHook);
+    return registry.putHook(newWebHook);
 }
