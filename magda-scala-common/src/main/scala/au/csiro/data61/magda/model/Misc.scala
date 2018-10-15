@@ -102,9 +102,9 @@ package misc {
     geoJson: Option[Geometry] = None)
 
   object Location {
-    val geoJsonPattern = "\\{\"type\": \".+\",.*\\}".r
+    val geoJsonPattern = "\\{\"type\":\\s*\".+\",.*\\}".r
     val emptyPolygonPattern = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
-    val polygonPattern = "POLYGON \\(\\(((-?\\d+ -?\\d+\\,?\\s?)+)\\)\\)".r
+    val polygonPattern = "POLYGON\\s*\\(\\(((-?[\\d\\.]+ -?[\\d\\.]+\\,?\\s?)+)\\)\\)".r
     val csvPattern = "^(-?\\d+\\.?\\d*\\,){3}-?\\d+\\.?\\d*$".r
 
     def applySanitised(text: String, geoJson: Option[Geometry] = None) = {
@@ -122,7 +122,7 @@ package misc {
     }
 
     def apply(stringWithNewLines: String): Location = {
-      val string = stringWithNewLines.replace("\n", " ")
+      val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
         case geoJsonPattern() => {
           Some(Protocols.GeometryFormat.read(string.parseJson))
@@ -318,7 +318,18 @@ package misc {
           case Some(JsString("LineString"))      => LineStringFormat.read(json)
           case Some(JsString("MultiLineString")) => MultiLineStringFormat.read(json)
           case Some(JsString("Polygon"))         => PolygonFormat.read(json)
-          case Some(JsString("MultiPolygon"))    => MultiPolygonFormat.read(json)
+          case Some(JsString("MultiPolygon"))    =>
+            val multiPolygon = MultiPolygonFormat.read(json)
+            val coordinates = multiPolygon.coordinates
+            val firstPoint = coordinates(0)(0)(0)
+            val lastPoint = coordinates(0)(0)(coordinates(0)(0).size - 1)
+            if (firstPoint.x != lastPoint.x || firstPoint.y != lastPoint.y) {
+              multiPolygon.copy(
+                coordinates = Seq(Seq(coordinates(0)(0) :+ firstPoint))
+              )
+            } else {
+              multiPolygon
+            }
           case _                                 => deserializationError(s"'$json' is not a valid geojson shape")
         }
         case _ => deserializationError(s"'$json' is not a valid geojson shape")

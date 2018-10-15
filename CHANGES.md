@@ -1,6 +1,21 @@
+## 0.0.50
+
+-   Email Templates are configurable from content API
+-   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
+-   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
+-   Updated external links on About page to open in new window
+-   Fixed some WA source spatial data are not indexed properly
+
 ## 0.0.49
 
+-   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
+-   Made issued and update date not appear when valid dates are not available.
+-   Specify correct externalURL and namespace for gitlab to fix deployment auth.
 -   Add a CSV connector
+-   Rename config page to admin; include connector management functionality
+-   Update content API to accept csvs
+-   Enable admin api and fix up admin api ability to work in speficied namespace
 -   Set CSW connector MD_Metadata dateStamp as issue date
 -   Made "Ask a question" button send the question directly to the contactPoint for the dataset if possible.
 -   Added ability to ensure that all emails go to default recipient despite what their normal recipient would be.
@@ -12,6 +27,13 @@
 -   Made the add a dataset form appear where the results get to a certain configurable score threshold
 -   Made the CSW connector look for names for service-based datasets in another place
 -   Made CSW connector gracefully handle datasets without ids instead of crashing
+-   Fixed Gitlab UI only preview failed to download main CSS file
+-   Removed CORS handling from Scala APIs, should be entirely handled by the gateway.
+-   Made the format minion listen to `dcat-distribution-strings` instead of `dataset-distributions`, should be more efficient
+-   Better support for SPSS files in the format minion
+-   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
+-   Fixed an redirection issue when handling 404 status from registry API
+-   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
 

@@ -348,8 +348,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const tags = datasetInfo.keywords || [];
     const landingPage = datasetInfo.landingPage || "";
     const title = datasetInfo.title || "";
-    const issuedDate =
-        getDateString(datasetInfo.issued) || "Unknown issued date";
+    const issuedDate = getDateString(datasetInfo.issued) || null;
     const updatedDate = datasetInfo.modified
         ? getDateString(datasetInfo.modified)
         : null;

@@ -153,7 +153,10 @@ export default function buildApiRouter(options: Options) {
                         .createJob(
                             buildConnectorManifest({
                                 id,
-                                dockerImage: configMap[id].type,
+                                dockerImage:
+                                    configMap[id].type ||
+                                    (configMap[id].image &&
+                                        configMap[id].image.name),
                                 dockerImageTag: options.imageTag,
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,

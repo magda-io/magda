@@ -23,6 +23,12 @@ const argv = yargs
         type: "boolean",
         default: false
     })
+    .option("useLocalStyleSheet", {
+        describe:
+            "True to use prebuilt static stylesheet from web-client module.",
+        type: "boolean",
+        default: false
+    })
     .option("baseExternalUrl", {
         describe:
             "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
@@ -200,15 +206,15 @@ const topLevelRoutes = [
 
 topLevelRoutes.forEach(topLevelRoute => {
     app.get("/" + topLevelRoute, function(req, res) {
-        res.sendFile(path.join(clientBuild, "index.html"));
+        res.send(indexFileContent);
     });
     app.get("/" + topLevelRoute + "/*", function(req, res) {
-        res.sendFile(path.join(clientBuild, "index.html"));
+        res.send(indexFileContent);
     });
 });
 
 app.get("/page/*", function(req, res) {
-    res.sendFile(path.join(clientBuild, "index.html"));
+    res.send(indexFileContent);
 });
 
 // app.get("/admin", function(req, res) {

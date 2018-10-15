@@ -15,6 +15,8 @@ let modified = dates.formatDateTime(
     fuzzy.findClosestFieldThreshold(dataset, 0.5, "revision date")
 );
 
+let temporal = extractTemporal();
+
 let accrualPeriodicity = fuzzy.findClosestFieldThreshold(
     dataset,
     0.5,
@@ -32,7 +34,13 @@ let themes = extractKeywordList(
 
 let keywords = [
     extractKeywordList(
-        fuzzy.findClosestFieldThreshold(dataset, 0.5, "tags", "use")
+        fuzzy.findClosestFieldThreshold(
+            dataset,
+            0.5,
+            "tags",
+            "use",
+            "retention"
+        )
     ),
     extractKeywordList(
         fuzzy.findClosestFieldThreshold(
@@ -55,12 +63,17 @@ let keywords = [
 
 keywords = (keywords.length && keywords) || undefined;
 
-let contactPoint = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "data steward",
-    "point of contact"
-);
+let contactPoint = [
+    fuzzy.findClosestFieldThreshold(
+        dataset,
+        0.5,
+        "data steward",
+        "point of contact"
+    ),
+    fuzzy.findClosestFieldThreshold(dataset, 0.5, "data custodian")
+]
+    .filter(i => i)
+    .join("\n\n");
 
 let conformsTo = fuzzy.findClosestFieldThreshold(dataset, 0.5, "data standard");
 
@@ -86,6 +99,7 @@ return {
     description,
     issued,
     modified,
+    temporal,
     accrualPeriodicity,
     themes,
     keywords,
@@ -129,7 +143,8 @@ function extractCreation() {
     let sourceSystem = fuzzy.findClosestFieldThreshold(
         dataset,
         0.5,
-        "source system"
+        "source system",
+        "primary source"
     );
 
     let likelihoodOfRelease = fuzzy.findClosestFieldThreshold(
@@ -279,5 +294,18 @@ function extractMetadata() {
             standard,
             location
         };
+    }
+}
+
+function extractTemporal() {
+    let start = dates.formatDateTime(
+        fuzzy.findClosestFieldThreshold(dataset, 0.8, "start date")
+    );
+    let end = dates.formatDateTime(
+        fuzzy.findClosestFieldThreshold(dataset, 0.8, "end date")
+    );
+
+    if (start || end) {
+        return { start, end };
     }
 }

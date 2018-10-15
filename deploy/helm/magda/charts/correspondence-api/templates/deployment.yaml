@@ -21,6 +21,7 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--registryUrl", "http://registry-api/v0",
+            "--contentApiUrl", "http://content-api/v0",
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
             "--smtpHostname", {{ .Values.smtpHostname | quote }},
             "--smtpPort", {{ .Values.smtpPort | default 587 | quote }},
@@ -50,3 +51,10 @@ spec:
             secretKeyRef:
               name: smtp-secret
               key: password
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret

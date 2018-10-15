@@ -22,6 +22,11 @@ gateway:
     enabled: false
   enableAuthEndpoint: true
   ckanRedirectionDomain: "ckan.data.gov.au"
+  helmet:
+    frameguard: false
+  cors:
+    credentials: true
+    origin: true
   csp:
     directives:
       scriptSrc:
@@ -48,6 +53,7 @@ gateway:
       - allow-forms
       - allow-popups-to-escape-sandbox
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
+      
 combined-db:
   waleBackup:
     method: WAL

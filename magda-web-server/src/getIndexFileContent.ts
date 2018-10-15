@@ -48,6 +48,5 @@ export default async function getIndexFileContent(
             `/static/css/${cssFileName}`
         );
     }
-
     return indexFileContent;
 }
