@@ -8,32 +8,18 @@ import GenericError from "@magda/typescript-common/dist/authorization-api/Generi
 import Database from "./Database";
 import { Maybe } from "tsmonad";
 import { Content } from "./model";
-import { content, ContentEncoding, ContentItem } from "./content";
-
-const wildcard = require("wildcard");
+import {
+    content,
+    ContentEncoding,
+    ContentItem,
+    findContentItemById
+} from "./content";
+import { simpleFilter } from "./filter";
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
     authApiUrl: string;
-}
-
-function simpleFilter(items: any[], field: any, filters: any) {
-    if (filters) {
-        if (typeof filters === "string") {
-            filters = [filters];
-        }
-        items = items.filter((item: any) => {
-            const value = field(item);
-            for (const filter of filters) {
-                if (value === filter || wildcard(filter, value)) {
-                    return true;
-                }
-            }
-            return false;
-        });
-    }
-    return items;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -74,13 +60,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         all = simpleFilter(all, (item: any) => item.id, req.query.id);
         all = simpleFilter(all, (item: any) => item.type, req.query.type);
 
-        // filter out privates
+        // filter out privates and non-configurable
         all = all.filter((item: any) => {
-            const contentItemKey = Object.keys(content).filter(
-                key => item.id === key || wildcard(key, item.id)
-            );
-            const contentItem =
-                contentItemKey.length > 0 && content[contentItemKey[0]];
+            const contentItem = findContentItemById(item.id);
             if (contentItem) {
                 if (!contentItem.private) {
                     return true;
@@ -107,7 +89,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             }
         }
-        console.log(all);
+
         res.json(all);
     });
 
@@ -185,7 +167,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 case "text":
                     return returnText(res, content, "text/plain");
                 case "md":
-                    return returnText(res, content, "text/plain");
+                    return returnText(res, content, "text/markdown");
                 case "css":
                 case "html":
                     return returnText(res, content, `text/${format}`);
@@ -203,7 +185,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
     Object.entries(content).forEach(function(config: [string, ContentItem]) {
         const [contentId, configurationItem] = config;
 
+        const route = configurationItem.route || `/${contentId}`;
         const body = configurationItem.body || null;
+        const verify = configurationItem.verify || null;
 
         /**
          * @apiGroup Content
@@ -228,9 +212,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        const route = configurationItem.route || `/${contentId}`;
-
-        router.post(route, ADMIN, body, async function(req, res) {
+        async function post(req: any, res: any) {
             try {
                 let content = req.body;
 
@@ -242,6 +224,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             );
                         }
                         content = content.toString("base64");
+                        break;
+                    case ContentEncoding.json:
+                        if (!(content instanceof Object)) {
+                            throw new GenericError(
+                                "Can not stringify encode non-json"
+                            );
+                        }
+                        content = JSON.stringify(content);
                         break;
                 }
 
@@ -274,7 +264,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 });
                 console.error(e);
             }
-        });
+        }
+
+        router.post.apply(
+            router,
+            [route, ADMIN, body, verify, post].filter(i => i)
+        );
 
         /**
          * @apiGroup Content
@@ -291,7 +286,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *
          */
 
-        router.delete(route, ADMIN, body, async function(req, res) {
+        router.delete(route, ADMIN, async function(req, res) {
             const finalContentId = req.path.substr(1);
 
             await database.deleteContentById(finalContentId);

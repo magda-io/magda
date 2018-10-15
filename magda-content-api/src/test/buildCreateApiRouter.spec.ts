@@ -180,10 +180,10 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
 
         const CUSTOM_ROUTES = [
             {
-                route: "/csv/xxx",
+                route: "/csv-xxx",
                 mime: "text/csv",
                 content: gifImage,
-                getRoute: "/csv/xxx.text",
+                getRoute: "/csv-xxx.text",
                 getContent: gifImage.toString("base64")
             },
             {

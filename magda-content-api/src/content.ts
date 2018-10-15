@@ -20,32 +20,37 @@
  */
 
 const bodyParser = require("body-parser");
+const djv = require("djv");
+const env = djv();
+const schemas = require("./schemas");
+const wildcard = require("wildcard");
 
 /**
  * Any encoding we perform on the content.
  */
 export enum ContentEncoding {
-    base64 // binary content are stored as base64 in the db
+    base64, // binary content are stored as base64 in the db
+    json
 }
 
 export interface ContentItem {
-    route?: RegExp | string;
+    route?: RegExp;
     body?: any; // <-- express middleware can go here
     encode?: ContentEncoding;
     contentType?: string;
     private?: boolean;
-    /**
-     * TODO: if needed, add a schema property for json validation
-     * TODO: if needed, add a custom validation callback function
-     */
+    verify?: any; // <-- express middleware can go here
 }
 
 export const content: { [s: string]: ContentItem } = {
     "header/logo": makeImageItem(),
     "header/logo-mobile": makeImageItem(),
-    "header/menu/*": makeJsonItem(),
+    "header/navigation/*": makeJsonItem(
+        {},
+        { schema: schemas.headerNavigation }
+    ),
     stylesheet: makeCssItem(),
-    "/staticPages/*.md": makeMarkdownItem(),
+    "staticPages/*.md": makeMarkdownItem(),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
     "csv/*": makeSpreadsheetItem({
         route: /\/csv\-[a-z][\w\-]*[a-z]/,
@@ -132,14 +137,36 @@ function makeSpreadsheetItem(extra: any = {}) {
     );
 }
 
-function makeJsonItem(extra: any = {}) {
+function makeJsonItem(extra: any = {}, options: any = {}) {
+    const schemaId = `schema${(env.schemaCount = env.schemaCount || 1)}`;
+    env.addSchema(schemaId, options.schema || { type: "object" });
     return Object.assign(
         {
             body: bodyParser.json({
                 inflate: true
             }),
-            encode: ContentEncoding.base64
+            encode: ContentEncoding.json,
+            verify: function(req: any, res: any, next: any) {
+                const invalid = env.validate(schemaId, req.body);
+                if (!invalid) {
+                    next();
+                } else {
+                    res.status(500).json({ result: "FAILED", invalid });
+                }
+            }
         },
         extra
     );
+}
+
+export function findContentItemById(contentId: string): ContentItem {
+    const contentItem = Object.entries(content).filter(param => {
+        const [key, item] = param;
+        return (
+            contentId === key || // single item
+            (item.route && item.route.test(`/${contentId}`)) || // has custom route
+            wildcard(key, contentId) // wildcard item
+        );
+    });
+    return contentItem.length > 0 ? contentItem[0][1] : undefined;
 }

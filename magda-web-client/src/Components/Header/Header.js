@@ -1,10 +1,13 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
+import * as contentActions from "../../actions/contentActions";
 
 class Header extends Component {
     constructor(props) {
@@ -20,6 +23,7 @@ class Header extends Component {
                 isMobileMenuOpen: false
             });
         });
+        this.props.fetchContent();
     }
 
     toggleMenu() {
@@ -29,8 +33,6 @@ class Header extends Component {
     }
 
     render() {
-        const logoUrl = `${config.contentApiURL}/header/logo.bin`;
-        const mobileLogoUrl = `${config.contentApiURL}/header/logo-mobile.bin`;
         return (
             <div className="header">
                 <div className="au-header">
@@ -40,14 +42,14 @@ class Header extends Component {
                                 <Link to="/" className="au-header__brand">
                                     <Small>
                                         <img
-                                            src={mobileLogoUrl}
+                                            src={config.headerMobileLogoUrl}
                                             alt={config.appName}
                                             className="au-header__logo"
                                         />
                                     </Small>
                                     <Medium>
                                         <img
-                                            src={logoUrl}
+                                            src={config.headerLogoUrl}
                                             alt={config.appName}
                                             className="au-header__logo"
                                         />
@@ -80,11 +82,20 @@ class Header extends Component {
                                 >
                                     <Small>
                                         <div className="mobile-nav">
-                                            <HeaderNav isMobile={true} />
+                                            <HeaderNav
+                                                isMobile={true}
+                                                headerNavigation={
+                                                    this.state.headerNavigation
+                                                }
+                                            />
                                         </div>
                                     </Small>
                                     <Medium>
-                                        <HeaderNav />
+                                        <HeaderNav
+                                            headerNavigation={
+                                                this.props.headerNavigation
+                                            }
+                                        />
                                     </Medium>
                                 </div>
                             </div>
@@ -100,4 +111,27 @@ Header.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default Header;
+const mapStateToProps = state => {
+    let headerNavigation = [];
+    if (state.content.isFetched) {
+        headerNavigation = state.content.content
+            .filter(item => item.id.indexOf("header/navigation") === 0)
+            .map(item => item.content)
+            .sort((a, b) => a.order - b.order);
+    }
+    if (headerNavigation.length === 0) {
+        headerNavigation.push({
+            auth: {}
+        });
+    }
+    return { headerNavigation };
+};
+
+const mapDispatchToProps = dispatch => {
+    return bindActionCreators(contentActions, dispatch);
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Header);
