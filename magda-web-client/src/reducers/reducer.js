@@ -14,6 +14,7 @@ import news from "./newsReducer";
 import stats from "./statsReducer";
 import topNotification from "./topNotificationReducer";
 import homepageStories from "./homePageStoriesReducer";
+import staticPagesReducer from "./staticPagesReducer";
 import topBanner from "./topBannerReducer";
 
 import previewData from "./previewDataReducer";
@@ -35,6 +36,7 @@ const reducer = combineReducers({
     stats,
     previewData,
     topNotification,
+    staticPages: staticPagesReducer,
     homepageStories,
     topBanner
 });

@@ -221,7 +221,7 @@ Our website may contain links to other websites. Please be aware that we are not
 
 This website uses the analytics tools Google Analytics and Visual Web Optimiser. These services transmit website traffic data to Google and IBM SoftLayer servers, that may be located outside of Australia. These services do not identify individual users or associate your IP address with any other data held by Google or Wingify (the parent company of Visual Web Optimiser). We use reports provided by these analytics tools to help us understand website traffic and usage.
 
-By using this website, you consent to the processing of data about you by analytics tool providers in the manner described in [Google\'s Privacy Policy](http://www.google.com/policies/privacy/), [Visual Web Optimiser\'s Privacy Policy](https://vwo.com/privacy-policy/) and for the purposes set out above.
+By using this website, you consent to the processing of data about you by analytics tool providers in the manner described in [Google''s Privacy Policy](http://www.google.com/policies/privacy/), [Visual Web Optimiser''s Privacy Policy](https://vwo.com/privacy-policy/) and for the purposes set out above.
 
 You can opt out of Google Analytics if you disable or refuse the cookie, disable JavaScript, or [use the opt-out service provided by Google](https://tools.google.com/dlpage/gaoptout). You can opt out of Visual Web Optimiser if you disable or refuse the cookie, disable JavaScript, or [use the opt-out service provided by Wingify.](https://data.gov.au/?vwo_opt_out=1)
 
