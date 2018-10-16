@@ -1,6 +1,8 @@
 ## 0.0.50
 
 -   Email Templates are configurable from content API
+-   Allow a CKAN non-root path to be used for redirects
+-   Allow CKAN resource downloads to pass through to CKAN to maintain links
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint
 -   Hook actors will report its status to its parent actor when changes
