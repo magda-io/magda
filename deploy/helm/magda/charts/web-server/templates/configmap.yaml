@@ -6,6 +6,7 @@ data:
   # When the config map is mounted as a volume, these will be created as files.
   web.json: '{
     {{- if .Values.fallbackUrl -}} "fallbackUrl": {{ .Values.fallbackUrl | quote }}, {{- end -}}
+    {{- if .Values.contentApiBaseUrlInternal -}} "contentApiBaseUrlInternal": {{ .Values.contentApiBaseUrlInternal | quote }}, {{- end -}}
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
     "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
     "datasetSearchSuggestionScoreThreshold": {{ .Values.datasetSearchSuggestionScoreThreshold }}

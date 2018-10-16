@@ -64,7 +64,12 @@ const argv = yargs
     })
     .option("contentApiBaseUrl", {
         describe:
-            "The base URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+            "The base _EXTERNAL_ URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("contentApiBaseUrlInternal", {
+        describe:
+            "The base _INTERNAL_ URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
     .option("registryApiBaseUrl", {
@@ -185,7 +190,7 @@ function getIndexFileContentZeroArgs() {
     return getIndexFileContent(
         clientRoot,
         argv.useLocalStyleSheet,
-        webServerConfig.contentApiBaseUrl
+        argv.contentApiBaseUrlInternal
     );
 }
 

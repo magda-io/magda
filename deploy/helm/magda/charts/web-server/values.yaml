@@ -17,3 +17,4 @@ disableAuthenticationFeatures: false
 datasetSearchSuggestionScoreThreshold: 65
 service: {}
 useLocalStyleSheet: false
+contentApiBaseUrlInternal: "http://content-api/"
