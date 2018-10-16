@@ -406,14 +406,16 @@ class RecordHandler extends React.Component {
                                             />
                                         </Medium>
                                     </div>
-                                    <div className="quality-rating-box">
-                                        <QualityIndicator
-                                            quality={
-                                                this.props.dataset
-                                                    .linkedDataRating
-                                            }
-                                        />
-                                    </div>
+                                    {this.props.dataset.linkedDataRating && (
+                                        <div className="quality-rating-box">
+                                            <QualityIndicator
+                                                quality={
+                                                    this.props.dataset
+                                                        .linkedDataRating
+                                                }
+                                            />
+                                        </div>
+                                    )}
                                     {this.props.dataset.contactPoint && (
                                         <ContactPoint
                                             contactPoint={
