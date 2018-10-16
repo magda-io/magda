@@ -212,8 +212,11 @@ object Registry {
 
       val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
+      var hasQuality: Boolean = false
+
       val quality: Double = qualityAspectOpt match {
         case Some(qualityAspect) if !qualityAspect.fields.isEmpty =>
+          hasQuality = true
           val ratings = qualityAspect.fields.map {
             case (key, value) =>
               value.convertTo[QualityRatingAspect]
@@ -254,6 +257,7 @@ object Registry {
         distributions = distributions.extract[JsObject]('distributions.? / *).map(convertDistribution(_, hit)),
         landingPage = dcatStrings.extract[String]('landingPage.?),
         quality = quality,
+        hasQuality = hasQuality,
         score = None)
     }
 
