@@ -66,6 +66,14 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
+        it("should return data for js files as application/javascript", done => {
+            agent
+                .get("/js.js")
+                .expect(200, "var a = 1;")
+                .expect("Content-Type", /^application\/javascript/)
+                .end(done);
+        });
+
         it("should return data for existing - json - as json", done => {
             agent
                 .get("/json-2.json")
@@ -195,6 +203,10 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                     {
                         id: "logo",
                         type: "image/gif"
+                    },
+                    {
+                        id: "js",
+                        type: "application/javascript"
                     }
                 ])
                 .end(done);
