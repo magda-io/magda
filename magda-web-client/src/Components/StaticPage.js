@@ -10,16 +10,26 @@ import { fetchStaticPage } from "../actions/staticPagesActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { markdownToHtml } from "../UI/MarkdownViewer";
+import * as URI from "urijs";
 import "./StaticPage.css";
 
 class StaticPage extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        props.history.listen(location => {
+            this.loadPagaData(location.pathname);
+        });
     }
 
     componentDidMount() {
-        const pageName = this.props.match.params.id;
+        this.loadPagaData(this.props.location.pathname);
+    }
+
+    loadPagaData(urlPath) {
+        const uri = URI(urlPath);
+        // --- if url 2nd last url seq is not `page`
+        if (uri.segmentCoded(-2) !== "page") return;
+        const pageName = uri.segmentCoded(-1);
         this.props.fetchStaticPage(pageName);
     }
 
