@@ -13,6 +13,8 @@ import { markdownToHtml } from "../UI/MarkdownViewer";
 import * as URI from "urijs";
 import "./StaticPage.css";
 
+export const StaticPageNames = ["about", "privacy-policy", "dataset-quality"];
+
 class StaticPage extends Component {
     constructor(props) {
         super(props);
