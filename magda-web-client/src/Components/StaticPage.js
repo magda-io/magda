@@ -9,6 +9,7 @@ import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { fetchStaticPage } from "../actions/staticPagesActions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
+import { markdownToHtml } from "../UI/MarkdownViewer";
 import "./StaticPage.css";
 
 class StaticPage extends Component {
@@ -78,7 +79,7 @@ class StaticPage extends Component {
                     <div
                         className="markdown-body"
                         dangerouslySetInnerHTML={{
-                            __html: bodyContent
+                            __html: markdownToHtml(bodyContent)
                         }}
                     />
                 </div>
