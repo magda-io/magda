@@ -89,6 +89,13 @@ export const content: { [s: string]: ContentItem } = {
             route: "/emailTemplates/assets/*"
         },
         IMAGE_ITEM
-    )
+    ),
+    staticPages: {
+        body: bodyParser.text({
+            type: "text/*",
+            limit: "5mb"
+        }),
+        route: "/staticPages/*"
+    }
     // END EMAIL TEMPLATE STUFF
 };

@@ -117,6 +117,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     return returnText(res, content, "application/javascript");
                 case "text":
                     return returnText(res, content, "text/plain");
+                case "md":
+                    return returnText(res, content, "text/plain");
                 case "css":
                 case "html":
                     return returnText(res, content, `text/${format}`);

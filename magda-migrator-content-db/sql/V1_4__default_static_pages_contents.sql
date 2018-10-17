@@ -1,4 +1,10 @@
+INSERT INTO "public"."content" ("id", "type", "content") VALUES ('staticPages/about.md', 'text/plain', '---
+title: About
 ---
+
+### This is a sample About page
+'),
+('staticPages/dataset-quality.md', 'text/plain', '---
 title: Dataset Quality
 ---
 
@@ -8,13 +14,13 @@ Our open data quality ratings are an automatic rating based on the licensing, fo
 
 A dataset is given the rating of its best file or API – for example, if a dataset has 3 files rated at 1 star, 2 stars and 3 stars, the whole dataset will have a 3-star rating. The criteria for each star rating is described below.
 
-We will continue to update the data quality rating as research continues. If you have any feedback – particularly if you feel that a certain dataset has been misclassified – please contact us at [data@digital.gov.au](mailto:data@digital.gov.au).
+We will continue to update the data quality rating as research continues. If you have any feedback – particularly if you feel that a certain dataset has been misclassified – please contact us at [contact@magda.io](mailto:contact@magda.io).
 
 ### ⭐ Is the data available on the web, and does it have an open license?
 
 This has two components – whether we were able to successfully check that the URL for the data is working, and whether its declared license matched our list of open licenses.
 
-When a dataset is indexed by [data.gov.au](https://data.gov.au/), we automatically check every file or API link to make sure it’s not broken. The link will be marked as broken if it doesn’t respond (and times out), returns an error or not found HTTP code, requires a login to access, doesn’t support an HTTP HEAD request, or rate-limits our crawler without returning the correct HTTP code (429) so that we know to slow down our requests.
+When a dataset is indexed by Magda, we automatically check every file or API link to make sure it’s not broken. The link will be marked as broken if it doesn’t respond (and times out), returns an error or not found HTTP code, requires a login to access, doesn’t support an HTTP HEAD request, or rate-limits our crawler without returning the correct HTTP code (429) so that we know to slow down our requests.
 
 If a dataset’s links are all broken it will be marked as zero stars.
 
@@ -45,3 +51,10 @@ Currently we determine this by comparing the file’s format against a list of f
 5-star datasets are those that link to other data – for example, a dataset that included “Canberra” as a value for something wouldn’t simply include the word “Canberra”, but a link to data about Canberra, [such as its record in Geonames](http://sws.geonames.org/2172517/about.rdf).
 
 5-star datasets are very rare, and our automated process (currently) is not yet able to determine which datasets qualify for 5 stars.
+'),
+('staticPages/privacy-policy.md', 'text/plain', '---
+title: Privacy Policy
+---
+
+### This is a sample Privacy Policy Page
+');
