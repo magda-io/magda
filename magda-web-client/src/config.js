@@ -7,8 +7,7 @@ import Temporal from "./Components/SearchFacets/Temporal";
 // Local minikube/docker k8s cluster
 // const fallbackApiHost = "http://localhost:30100/";
 // Dev server
-const fallbackApiHost =
-    "https://issue-1743-make-cors-header-reflect-origin-in-dev.dev.magda.io/";
+const fallbackApiHost = "https://dev.magda.io/";
 
 const homePageConfig: {
     baseUrl: string,
