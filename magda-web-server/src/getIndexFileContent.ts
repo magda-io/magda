@@ -1,12 +1,18 @@
 import * as fs from "fs";
 import * as path from "path";
 import "isomorphic-fetch";
-import { throttle } from "lodash";
+import { throttle, memoize } from "lodash";
 
 import getStaticStyleSheetFileName from "./getStaticStyleSheetFileName";
 
-async function getDynamicContent(contentApiBaseUrl: string) {
-    const url = `${contentApiBaseUrl}includeHtml.text`;
+/**
+ * Gets the content stored under "includeHtml" in the content api. On failure
+ * simply returns a blank string.
+ *
+ * @param contentApiBaseUrlInternal The base content api to get the content from.
+ */
+async function getIncludeHtml(contentApiBaseUrlInternal: string) {
+    const url = `${contentApiBaseUrlInternal}includeHtml.text`;
 
     const response = await fetch(url);
 
@@ -22,28 +28,58 @@ async function getDynamicContent(contentApiBaseUrl: string) {
     }
 }
 
+/**
+ * Gets the base index html file.
+ *
+ * @param clientRoot The root of the client directory to get the file from.
+ */
+function getIndexHtml(clientRoot: string): Promise<string> {
+    return new Promise((resolve, reject) =>
+        fs.readFile(
+            path.join(clientRoot, "build/index.html"),
+            {
+                encoding: "utf-8"
+            },
+            (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            }
+        )
+    );
+}
+
+/**
+ * getIndexHtml, but memoized so that it's not repeatedly accessing a file.
+ */
+const memoizedGetIndexHtml = memoize(getIndexHtml);
+
+/**
+ * Gets the content of the index.html file, including dynamic portions.
+ *
+ * @param clientRoot The base of the client directory
+ * @param useLocalStyleSheet Whether to use a local stylesheet instead of the content api
+ * @param contentApiBaseUrlInternal The base URL of the content api
+ */
 async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
-    contentApiBaseUrl: string
+    contentApiBaseUrlInternal: string
 ) {
-    const dynamicContentPromise = getDynamicContent(contentApiBaseUrl);
+    const dynamicContentPromise = getIncludeHtml(contentApiBaseUrlInternal);
+    const indexHtmlPromise = memoizedGetIndexHtml(clientRoot);
 
-    let indexFileContent = fs.readFileSync(
-        path.join(clientRoot, "build/index.html"),
-        {
-            encoding: "utf-8"
-        }
+    let [dynamicContent, indexFileContent] = await Promise.all([
+        dynamicContentPromise,
+        indexHtmlPromise
+    ]);
+
+    indexFileContent = indexFileContent.replace(
+        "</body>",
+        dynamicContent + "</body>"
     );
-
-    const dynamicContent = await dynamicContentPromise;
-
-    if (dynamicContent) {
-        indexFileContent = indexFileContent.replace(
-            "</body>",
-            dynamicContent + "</body>"
-        );
-    }
 
     if (useLocalStyleSheet) {
         const cssFileName = getStaticStyleSheetFileName(clientRoot);
