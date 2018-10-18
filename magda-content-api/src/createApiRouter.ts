@@ -38,7 +38,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiGroup Content
      * @api {post} /v0/content/all Get All
      * @apiDescription Get a list of content items and their type.
-     * You must be an admin for this.
+     *
+     * @apiParam (Query) {string} id filter content id by this wildcard pattern. For example: "id=header/*&id=footer/*". Can specify multiple.
+     * @apiParam (Query) {string} type filter content mime type by this wildcard pattern. For example: "type=application/*". Can specify multiple.
+     * @apiParam (Query) {boolean} inline flag to specify if content should be inlined. Only application/json mime type content is supported now.
      *
      * @apiSuccess {string} result=SUCCESS
      *
@@ -48,6 +51,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *            "id": ...
      *            "type": ...
      *            "length": ...
+     *            "content": ...
      *        },
      *        ...
      *    ]
