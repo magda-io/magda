@@ -8,7 +8,7 @@ import SignInRedirect from "../Components/Account/SignInRedirect";
 import RecordHandler from "../Components/RecordHandler";
 import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
-import { staticPageRegister } from "../content/register";
+import StaticPage, { StaticPageNames } from "../Components/StaticPage";
 import RouteNotFound from "../Components/RouteNotFound";
 import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
@@ -48,12 +48,8 @@ const renderBody = () => {
                 path="/organisations/:publisherId"
                 component={PublisherDetails}
             />
-            {staticPageRegister.map(item => (
-                <Route
-                    path={`/page/:id`}
-                    key={item.path}
-                    component={item.component}
-                />
+            {StaticPageNames.map(item => (
+                <Route path={`/page/:id`} key={item} component={StaticPage} />
             ))}
             <Route exact path="/404" component={RouteNotFound} />
             <Route exact path="/error" component={ErrorPage} />

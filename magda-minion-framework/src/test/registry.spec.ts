@@ -72,9 +72,13 @@ baseSpec(
                     .reply(404, "");
 
                 registryScope
-                    .post(`/hooks`, hook, {
-                        reqheaders: reqHeaders(jwtSecret, userId)
-                    })
+                    .put(
+                        `/hooks/${encodeURIComponentWithApost(hook.id)}`,
+                        hook,
+                        {
+                            reqheaders: reqHeaders(jwtSecret, userId)
+                        }
+                    )
                     .reply(201, hook);
 
                 registryScope

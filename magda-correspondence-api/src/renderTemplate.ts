@@ -1,41 +1,33 @@
-import * as pug from "pug";
-import * as path from "path";
 import * as MarkdownIt from "markdown-it";
 
 import { DatasetMessage } from "./model";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import EmailTemplateRender from "./EmailTemplateRender";
+import { Attachment } from "./SMTPMailer";
 
 export enum Templates {
-    Feedback = "feedback",
-    Question = "question",
-    Request = "request"
+    Feedback = "emailTemplates/feedback.html",
+    Question = "emailTemplates/question.html",
+    Request = "emailTemplates/request.html"
 }
-
-type TemplatesLookup = { [key in Templates]: pug.compileTemplate };
-
-const templates: TemplatesLookup = {
-    request: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/request.pug")
-    ),
-    question: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/question.pug")
-    ),
-    feedback: pug.compileFile(
-        path.resolve(__dirname, "..", "templates/feedback.pug")
-    )
-};
 
 const md = new MarkdownIt({
     breaks: true
 });
 
-export default function renderTemplate(
-    template: Templates,
+export interface RenderResult {
+    renderedContent: string;
+    attachments: Attachment[];
+}
+
+export default async function renderTemplate(
+    templateRender: EmailTemplateRender,
+    templateFile: string,
     message: DatasetMessage,
     subject: string,
     externalUrl: string,
     dataset?: Record
-) {
+): Promise<RenderResult> {
     const templateContext = {
         message: {
             ...message,
@@ -48,9 +40,9 @@ export default function renderTemplate(
         }
     };
 
-    const templateFn = (templates as { [x: string]: pug.compileTemplate })[
-        template
-    ];
-
-    return templateFn(templateContext);
+    const renderedContent = await templateRender.render(
+        templateFile,
+        templateContext
+    );
+    return { renderedContent, attachments: templateRender.attachments };
 }

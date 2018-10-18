@@ -29,7 +29,7 @@ export enum ContentEncoding {
 }
 
 export interface ContentItem {
-    route?: RegExp;
+    route?: RegExp | string;
     body?: any; // <-- express middleware can go here
     encode?: ContentEncoding;
     contentType?: string;
@@ -47,7 +47,8 @@ const IMAGE_ITEM = {
             "image/jpeg",
             "image/webp",
             "image/svg+xml"
-        ]
+        ],
+        inflate: true
     }),
     encode: ContentEncoding.base64
 };
@@ -57,10 +58,9 @@ export const content: { [s: string]: ContentItem } = {
     "logo-mobile": IMAGE_ITEM,
     stylesheet: {
         body: bodyParser.text({
-            type: "text/*",
+            type: "text/css",
             limit: "5mb"
-        }),
-        contentType: "text/css"
+        })
     },
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
     csv: {
@@ -74,6 +74,28 @@ export const content: { [s: string]: ContentItem } = {
             limit: "10mb"
         }),
         encode: ContentEncoding.base64
-    }
+    },
     // END TEMPORARY UNTIL STORAGE API GETS HERE
+    // BEGIN EMAIL TEMPLATE STUFF
+    emailTemplates: {
+        body: bodyParser.text({
+            type: "text/html",
+            limit: "1mb"
+        }),
+        route: /\/emailTemplates\/[a-zA-Z0-9\-]+\.html/
+    },
+    emailTemplateImages: Object.assign(
+        {
+            route: "/emailTemplates/assets/*"
+        },
+        IMAGE_ITEM
+    ),
+    staticPages: {
+        body: bodyParser.text({
+            type: "text/*",
+            limit: "5mb"
+        }),
+        route: "/staticPages/*"
+    }
+    // END EMAIL TEMPLATE STUFF
 };
