@@ -23,6 +23,9 @@ spec:
             {{- if .Values.ckanRedirectionDomain }}
             "--ckanRedirectionDomain", {{ .Values.ckanRedirectionDomain | quote }},
             {{- end }}
+            {{- if .Values.ckanRedirectionPath }}
+            "--ckanRedirectionPath", {{ .Values.ckanRedirectionPath | quote }},
+            {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
 {{- if .Values.auth.facebookClientId }}
