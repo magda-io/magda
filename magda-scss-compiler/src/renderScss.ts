@@ -3,6 +3,7 @@ import * as cleancss from "clean-css";
 import * as tempy from "tempy";
 import * as fse from "fs-extra";
 import * as escapeStringRegexp from "escape-string-regexp";
+import * as autoprefixer from "autoprefixer-core";
 
 export const renderScssData = (clientRoot: string, data: string) => {
     return new Promise((resolve, reject) => {
@@ -47,7 +48,9 @@ export const renderScssData = (clientRoot: string, data: string) => {
     })
         .then((result: sass.Result) => {
             const cssOption: any = { returnPromise: true };
-            return new cleancss(cssOption).minify(result.css);
+            return new cleancss(cssOption).minify(
+                autoprefixer.process(result.css.toString("utf-8"))
+            );
         })
         .then(cssResult => cssResult.styles);
 };
