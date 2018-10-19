@@ -14,7 +14,6 @@ import {
     ContentItem,
     findContentItemById
 } from "./content";
-import { simpleFilter } from "./filter";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -57,12 +56,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    ]
      */
     router.get("/all", USER, async function(req, res) {
-        // get summary
-        let all = await database.getContentSummary();
+        // figure out constraints
+        let query: any[] = [];
+        let inlineContentIfType: string[] = [];
 
-        // filter out by query
-        all = simpleFilter(all, (item: any) => item.id, req.query.id);
-        all = simpleFilter(all, (item: any) => item.type, req.query.type);
+        query = query.concat(makeWildcardQuery(database, "id", req.params.id));
+
+        const inline = req.query.inline;
+        if (inline) {
+            inlineContentIfType.push("application/json");
+        }
+
+        // get summary
+        let all: any[] = await database.getContentSummary(
+            database.createOr(...query),
+            inlineContentIfType
+        );
 
         // filter out privates and non-configurable
         all = all.filter((item: any) => {
@@ -79,16 +88,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
         });
 
         // inline
-        if (req.query.inline) {
+        if (inline) {
             for (const item of all) {
                 switch (item.type) {
                     case "application/json":
-                        item.content = (await database.getContentById(
-                            item.id
-                        )).caseOf({
-                            nothing: undefined,
-                            just: content => JSON.parse(content.content)
-                        });
+                        item.content = JSON.parse(item.content);
                         break;
                 }
             }
@@ -96,6 +100,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
         res.json(all);
     });
+
+    function makeWildcardQuery(database: Database, field: string, filter: any) {
+        if (filter) {
+            if (typeof filter === "string") {
+                return [database.createWildcardMatch(field, filter)];
+            } else {
+                return filter.map((filter: any) =>
+                    database.createWildcardMatch(field, filter)
+                );
+            }
+        }
+        return [];
+    }
 
     /**
      * @apiGroup Content
