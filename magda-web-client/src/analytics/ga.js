@@ -25,7 +25,6 @@ Object.keys(ReactGA)
 
         ReactGA[key] = function(...args) {
             const newArgs = args.concat([trackerNames]);
-            console.log(newArgs);
             oldFn(...newArgs);
         };
     });
