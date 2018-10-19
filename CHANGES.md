@@ -8,6 +8,8 @@
 -   Hook actors will report its status to its parent actor when changes
 -   Updated external links on About page to open in new window
 -   Fixed some WA source spatial data are not indexed properly
+-   Boost the score weighting of name & acronym field during org seaching
+-   Sort by relevence unless keyword is "\*" (in this case sort by Alphabetical order) during org search
 
 ## 0.0.49
 
