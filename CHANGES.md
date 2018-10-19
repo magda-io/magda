@@ -14,6 +14,7 @@
 -   Fixed some WA source spatial data are not indexed properly
 -   Removed search.data.gov.au-specific third party javascript
 -   Added ability to include arbitrary HTML in `index.html` through the content api
+-   Fixed content-api test case logic
 
 ## 0.0.49
 
