@@ -6,6 +6,7 @@ import { escapeRegExp } from "lodash";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
+    ckanRedirectionPath: string;
     registryApiBaseUrlInternal: string;
 };
 
@@ -69,6 +70,7 @@ export function covertGenericUrlRedirectConfigToFullArgList(
 
 export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
+    ckanRedirectionPath,
     registryApiBaseUrlInternal
 }: CkanRedirectionRouterOptions): express.Router {
     const router = express.Router();
@@ -111,6 +113,12 @@ export default function buildCkanRedirectionRouter({
                 URI(req.originalUrl)
                     .domain(ckanRedirectionDomain)
                     .protocol("https")
+                    .directory(
+                        URI.joinPaths(
+                            ckanRedirectionPath,
+                            URI(req.originalUrl).directory()
+                        ).toString()
+                    )
                     .toString()
             );
         });
@@ -147,6 +155,7 @@ export default function buildCkanRedirectionRouter({
             super(message);
             this.errorData = errorData;
         }
+
         errorData: any = null;
     }
 
@@ -357,6 +366,33 @@ export default function buildCkanRedirectionRouter({
         }
     }
 
+    /**
+     * This route must be placed before the router for /dataset/* below
+     * as we now want to capture anything like /dataset/xxxx/resource/xxxx/download/xxx.xxx
+     */
+    router.get(
+        /^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]{1}.*\/download\/.*$/,
+        async function(req, res) {
+            try {
+                res.redirect(
+                    301,
+                    URI(req.originalUrl)
+                        .domain(ckanRedirectionDomain)
+                        .protocol("https")
+                        .directory(
+                            URI.joinPaths(
+                                ckanRedirectionPath,
+                                URI(req.originalUrl).directory()
+                            ).toString()
+                        )
+                        .toString()
+                );
+            } catch (e) {
+                console.log(e);
+                showError(res, 500);
+            }
+        }
+    );
     /**
      * This route must be placed before the router for /dataset/* below
      * as we now want to capture anything like /dataset/xxxx/view/xxxx

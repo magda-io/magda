@@ -144,6 +144,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "ckan.data.gov.au"
         })
+        .option("ckanRedirectionPath", {
+            describe:
+                "The target path for redirecting ckan Urls. If not specified, default value `` will be used.",
+            type: "string",
+            default: ""
+        })
         .option("enableWebAccessControl", {
             describe:
                 "Whether users are required to enter a username & password to access the magda web interface",
@@ -253,6 +259,7 @@ app.use("/preview-map", createGenericProxy(argv.previewMap));
 app.use(
     createCkanRedirectionRouter({
         ckanRedirectionDomain: argv.ckanRedirectionDomain,
+        ckanRedirectionPath: argv.ckanRedirectionPath,
         registryApiBaseUrlInternal: routes.registry.to
     })
 );

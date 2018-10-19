@@ -113,7 +113,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 case "json":
                     JSON.parse(content.content);
                     return returnText(res, content, "application/json");
+                case "js":
+                    return returnText(res, content, "application/javascript");
                 case "text":
+                    return returnText(res, content, "text/plain");
+                case "md":
                     return returnText(res, content, "text/plain");
                 case "css":
                 case "html":
