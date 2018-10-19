@@ -175,10 +175,6 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                     {
                         id: "header/logo",
                         type: "image/gif"
-                    },
-                    {
-                        id: "js",
-                        type: "application/javascript"
                     }
                 ])
                 .end(done);
