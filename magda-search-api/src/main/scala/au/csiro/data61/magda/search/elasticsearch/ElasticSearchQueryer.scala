@@ -444,25 +444,30 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchOrganisations(queryString: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult] = {
 
     clientFuture.flatMap{ client =>
-      client.execute(
-        ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex))
-          .start(start)
-          .limit(limit)
-          .query {
-            simpleStringQuery(queryString.getOrElse("*"))
-              .field("publisher.name")
-              .field("publisher.acronym")
-              .field("publisher.description")
-              .field("publisher.addrStreet")
-              .field("publisher.addrSuburb")
-              .field("publisher.addrState")
-          }
-          .aggs(cardinalityAgg("totalCount","publisher.identifier"))
-          .sortByFieldAsc("publisher.name.keyword")
-          .collapse(new CollapseDefinition(
+      val queryStringContent = queryString.getOrElse("*").trim
+      val query = ElasticDsl.search(indices.getIndex(config, Indices.DataSetsIndex))
+        .start(start)
+        .limit(limit)
+        .query {
+          simpleStringQuery(queryStringContent)
+            .field("publisher.name^20")
+            .field("publisher.acronym^20")
+            .field("publisher.description")
+            .field("publisher.addrStreet")
+            .field("publisher.addrSuburb")
+            .field("publisher.addrState")
+        }
+        .aggs(cardinalityAgg("totalCount","publisher.identifier"))
+        .collapse(new CollapseDefinition(
           "publisher.identifier",
           Some(new InnerHitDefinition("datasetCount", Some(1)))
         ))
+      client.execute(
+        if (queryStringContent == "*") {
+          query.sortByFieldAsc("publisher.name.keyword")
+        } else {
+          query
+        }
       ).flatMap{
         case Right(r) =>
           val orgs = r.result.hits.hits.flatMap(h=>{
