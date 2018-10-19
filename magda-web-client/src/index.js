@@ -8,13 +8,13 @@ import { BrowserRouter, Route } from "react-router-dom";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
+import { gapi } from "./analytics/ga";
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
-import ga from "./analytics/googleAnalytics";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
 
 const store = createStore(
@@ -38,8 +38,8 @@ class GAListener extends React.Component {
     }
 
     sendPageView(location) {
-        ga("set", "location", location.pathname);
-        ga("send", "pageview");
+        // Send pageview event to the initialised tracker(s).
+        gapi.pageview(location.pathname);
     }
 
     render() {

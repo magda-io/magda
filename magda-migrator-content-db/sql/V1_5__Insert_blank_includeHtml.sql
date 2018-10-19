@@ -1,0 +1,1 @@
+INSERT INTO content VALUES ('includeHtml', 'text/html', '');

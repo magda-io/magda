@@ -41,6 +41,11 @@ const mockContentData = [
         id: "logo",
         type: "image/gif",
         content: "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+    },
+    {
+        id: "js",
+        type: "application/javascript",
+        content: "var a = 1;"
     }
 ];
 
