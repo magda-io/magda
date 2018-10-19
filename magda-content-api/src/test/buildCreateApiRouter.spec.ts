@@ -105,10 +105,10 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
-        it("should not see list", done => {
+        it("should see empty list", done => {
             agent
                 .get("/all")
-                .expect(401)
+                .expect(200, [])
                 .end(done);
         });
     });
@@ -132,20 +132,20 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         }
 
         it("should write and read", done => {
-            admin(agent.post("/logo"))
+            admin(agent.post("/header/logo"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(201)
                 .then(() => {
                     agent
-                        .get("/logo.text")
+                        .get("/header/logo.text")
                         .expect(gifImage.toString("base64"))
                         .end(done);
                 });
         });
 
         it("should not write non-existing", done => {
-            admin(agent.post("/lego"))
+            admin(agent.post("/header/lego"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(404)
@@ -153,7 +153,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-conforming", done => {
-            admin(agent.post("/logo"))
+            admin(agent.post("/header/logo"))
                 .set("Content-type", "text/plain")
                 .send(gifImage)
                 .expect(500)
@@ -162,7 +162,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
 
         it("should not write without access", done => {
             agent
-                .post("/logo")
+                .post("/header/logo")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(401)
@@ -173,35 +173,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
             admin(agent.get("/all"))
                 .expect(200, [
                     {
-                        id: "text-1",
-                        type: "plain/text"
-                    },
-                    {
-                        id: "text-2",
-                        type: "plain/html"
-                    },
-                    {
-                        id: "json-1",
-                        type: "application/json"
-                    },
-                    {
-                        id: "json-2",
-                        type: "application/json"
-                    },
-                    {
-                        id: "png-id",
-                        type: "image/png"
-                    },
-                    {
-                        id: "gif-id",
-                        type: "image/gif"
-                    },
-                    {
-                        id: "svg-id",
-                        type: "image/svg+xml"
-                    },
-                    {
-                        id: "logo",
+                        id: "header/logo",
                         type: "image/gif"
                     },
                     {

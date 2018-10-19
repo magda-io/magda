@@ -1,6 +1,7 @@
 import mockContentDataStore from "./mockContentStore";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
+const wildcard = require("wildcard");
 
 import { Content } from "../model";
 
@@ -31,5 +32,14 @@ export default class MockDatabase {
 
     deleteContentById(id: string) {
         return mockContentDataStore.deleteContentById(id);
+    }
+
+    createWildcardMatch(field: string, pattern: string) {
+        return (item: any) =>
+            item[field] === pattern || wildcard(pattern, field);
+    }
+
+    createOr(...queries: any[]) {
+        return (item: any) => queries.filter(query => query(item)).length > 0;
     }
 }

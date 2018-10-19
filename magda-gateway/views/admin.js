@@ -52,11 +52,126 @@ function showConfig(body) {
 
     row = table.append("tr");
     row.append("td").text("Full Logo");
-    imageConfig(row.append("td").style("width", "100%"), "logo");
+    imageConfig(row.append("td").style("width", "100%"), "header/logo");
 
     row = table.append("tr");
     row.append("td").text("Mobile Logo");
-    imageConfig(row.append("td"), "logo-mobile");
+    imageConfig(row.append("td"), "header/logo-mobile");
+
+    showHeaderNavigation(body.append("div"));
+}
+
+async function showHeaderNavigation(body) {
+    body.text("Loading...");
+
+    let files = await request("GET", "/api/v0/content/all?inline=true");
+    files = files
+        .filter(x => x.id.match(/^header\/navigation\//))
+        .sort((a, b) => a.content.order - b.content.order);
+
+    body.text("");
+
+    body.append("h2").text("Header Navigation");
+
+    if (files.length > 0) {
+        files.forEach(file => {
+            const container = jsoneditor(
+                body.append("div").style("border", "10px solid black"),
+                "Edit",
+                headerNavigationSchema,
+                file.content,
+                "Save",
+                async newObj => {
+                    console.log(
+                        "DONE",
+                        name,
+                        await request(
+                            "POST",
+                            `/api/v0/content/${file.id}`,
+                            newObj,
+                            "application/json"
+                        )
+                    );
+                    showHeaderNavigation(body);
+                }
+            );
+            container
+                .append("button")
+                .text("Delete")
+                .on("click", async () => {
+                    console.log(
+                        "DONE",
+                        name,
+                        await request("DELETE", `/api/v0/content/${file.id}`)
+                    );
+                    showHeaderNavigation(body);
+                });
+        });
+    } else {
+        body.append("P").text("You got none!");
+    }
+
+    jsoneditor(
+        body.append("div"),
+        "Add new",
+        headerNavigationSchema,
+        null,
+        "Add",
+        async newObj => {
+            console.log(
+                "DONE",
+                name,
+                await request(
+                    "POST",
+                    `/api/v0/content/header/navigation/${Date.now()}`,
+                    newObj,
+                    "application/json"
+                )
+            );
+            showHeaderNavigation(body);
+        }
+    );
+}
+
+function jsoneditor(parent, title, schema, startval, label, callback) {
+    var element = parent.node();
+    var editor = new JSONEditor(element, {
+        schema: Object.assign({}, schema, {
+            title,
+            options: {
+                remove_empty_properties: true
+            }
+        }),
+        startval,
+        disable_edit_json: true,
+        disable_collapse: true,
+        disable_properties: false,
+        show_errors: "always",
+        form_name_root: title,
+        keep_oneof_values: false,
+        no_additional_properties: true
+    });
+    var button = parent.append("button").text(label);
+    button.on("click", async () => {
+        const value = await validate();
+        if (value) {
+            callback(value);
+        }
+    });
+    async function validate() {
+        var errors = editor.validate();
+        if (errors.length === 0) {
+            button.style("display", "");
+            return editor.getValue();
+        } else {
+            button.style("display", "none");
+            return false;
+        }
+    }
+    editor.on("ready", validate);
+    editor.on("change", validate);
+    validate();
+    return parent;
 }
 
 function showMe(body, me) {
@@ -88,7 +203,6 @@ function imageConfig(body, name) {
                         data,
                         file.type
                     );
-                    alert("DONE");
                     window.location = window.location;
                 };
                 fileReader.readAsArrayBuffer(file);
@@ -99,6 +213,7 @@ function imageConfig(body, name) {
 }
 
 function request(method, url, body = null, contentType = undefined) {
+    console.log(method, url, body);
     const headers = {};
     if (contentType) {
         headers["Content-Type"] = contentType;
@@ -143,7 +258,7 @@ function spreadsheetConfig(body) {
                         data,
                         file.type
                     );
-                    alert("DONE");
+
                     window.location = window.location;
                 };
                 fileReader.readAsArrayBuffer(file);
@@ -229,8 +344,6 @@ async function createConnector(name) {
     );
 
     console.log("DONE", job);
-
-    alert(`ADDED ${name}!!`);
 }
 
 function showConnectors(body) {
@@ -323,3 +436,67 @@ async function deleteConnector(name) {
         await request("DELETE", `/api/v0/admin/connectors/${name}`)
     );
 }
+
+const headerNavigationSchema = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1,
+            propertyOrder: 99
+        }
+    },
+    oneOf: [
+        {
+            title: "Regular Menu",
+            properties: {
+                default: {
+                    title: "Configuration",
+                    type: "object",
+                    properties: {
+                        label: {
+                            type: "string",
+                            minLength: 1,
+                            propertyOrder: 1
+                        },
+                        rel: {
+                            type: "string",
+                            minLength: 2,
+                            propertyOrder: 3
+                        },
+                        target: {
+                            type: "string",
+                            enum: ["", "blank"],
+                            propertyOrder: 4,
+                            default: ""
+                        },
+                        href: {
+                            type: "string",
+                            minLength: 1,
+                            propertyOrder: 2
+                        }
+                    },
+                    required: ["label", "href"],
+                    options: {
+                        remove_empty_properties: true
+                    }
+                }
+            },
+            required: ["default"]
+        },
+        {
+            title: "Authentication Menu",
+            properties: {
+                auth: {
+                    title: "Authentication Menu",
+                    type: "object",
+                    options: {
+                        hidden: true
+                    }
+                }
+            },
+            required: ["auth"]
+        }
+    ],
+    required: ["order"]
+};
