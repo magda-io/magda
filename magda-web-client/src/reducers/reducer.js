@@ -11,6 +11,7 @@ import userManagement from "./userManagementReducer";
 import featuredDatasets from "./featuredDatasetsReducer";
 import featuredPublishers from "./featuredPublishersReducer";
 import news from "./newsReducer";
+import content from "./contentReducer";
 import stats from "./statsReducer";
 import topNotification from "./topNotificationReducer";
 import homepageStories from "./homePageStoriesReducer";
@@ -33,6 +34,7 @@ const reducer = combineReducers({
     featuredDatasets,
     featuredPublishers,
     news,
+    content,
     stats,
     previewData,
     topNotification,

@@ -1,6 +1,9 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make header menu items come from content api
+-   Changed some existing content ids to group things better
+-   Reorganised content api to require less number of requests to get small JSON content items
 -   Email Templates are configurable from content API
 -   Allow a CKAN non-root path to be used for redirects
 -   Allow CKAN resource downloads to pass through to CKAN to maintain links

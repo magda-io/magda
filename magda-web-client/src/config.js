@@ -48,16 +48,19 @@ const fetchOptions =
               credentials: "same-origin"
           };
 
+const contentApiURL =
+    serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
+
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
+    appTitle: "Australian open data search",
     appName: "data.gov.au - beta",
     about:
         "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl,
     baseExternalUrl,
-    contentApiURL:
-        serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/",
+    contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
@@ -78,7 +81,6 @@ export const config = {
         medium: 992,
         large: 1200
     },
-    appTitle: "Australian open data search",
     facets: [
         {
             id: "publisher",
@@ -90,13 +92,9 @@ export const config = {
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
     ],
-    headerNavigation: [
-        ["Datasets", "search"],
-        ["Organisations", "organisations"],
-        ["Community", "https://community.digital.gov.au/c/open-data"],
-        ["About", "page/about"],
-        ...(serverConfig.disableAuthenticationFeatures ? [] : [])
-    ],
+    headerLogoUrl: `${contentApiURL}/header/logo.bin`,
+    headerMobileLogoUrl: `${contentApiURL}/header/logo-mobile.bin`,
+    contentUrl: `${contentApiURL}/all?id=*/navigation/*&inline=true`,
     footerNavigation: {
         // small media query (mobile)
         small: [
