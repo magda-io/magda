@@ -23,6 +23,7 @@ To push the images and run them on kubernetes, you'll need to install:
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
 ## Trying it out locally
+
 If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at https://github.com/magda-io/magda-config. What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
