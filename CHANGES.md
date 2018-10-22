@@ -15,6 +15,7 @@
 -   Removed search.data.gov.au-specific third party javascript
 -   Added ability to include arbitrary HTML in `index.html` through the content api
 -   Fixed content-api test case logic
+-   Hide "Download" button for distributions without downloadUrl
 
 ## 0.0.49
 
