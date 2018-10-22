@@ -15,13 +15,6 @@ import MediaQuery from "react-responsive";
 
 const getBgImg = backgroundImageUrls => {
     let imageMap = {};
-    // if (!config.homePageConfig || !config.homePageConfig.backgroundImageUrls)
-    //     return null;
-    // const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
-    // if (!backgroundImageUrls.length) return null;
-    // const baseUrl = config.homePageConfig.baseUrl
-    //     ? config.homePageConfig.baseUrl
-    //     : "";
 
     backgroundImageUrls.forEach(item => {
         let width;
@@ -77,18 +70,25 @@ class HomePage extends React.Component {
                     <div className="homepage-background" />
                 </Small>
                 <div className="container app-container" id="content">
-                    <Small>
-                        <TagLine taglineText={this.props.mobileTagLine} />
-                    </Small>
+                    {this.props.mobileTagLine && (
+                        <Small>
+                            <TagLine taglineText={this.props.mobileTagLine} />
+                        </Small>
+                    )}
                     <SearchBoxSwitcher
                         location={this.props.location}
                         theme="home"
                     />
-                    <Medium>
-                        <TagLine taglineText={this.props.desktopTagLine} />
-                        <Lozenge content={this.props.lozenge} />
-                    </Medium>
-                    <Stories />
+                    {this.props.desktopTagLine && (
+                        <Medium>
+                            <TagLine taglineText={this.props.desktopTagLine} />
+                            <Lozenge content={this.props.lozenge} />
+                        </Medium>
+                    )}
+                    {this.props.stories &&
+                        this.props.stories.length && (
+                            <Stories stories={this.props.stories} />
+                        )}
                 </div>
             </div>
         );
@@ -96,9 +96,10 @@ class HomePage extends React.Component {
 }
 
 function mapStateToProps(state) {
-    let desktopTagLine = "Data discovery made easy";
-    let mobileTagLine = "Data discovery made easy";
-    const highlights = {};
+    let desktopTagLine = "";
+    let mobileTagLine = "";
+    let highlights = {};
+    let stories = {};
     if (state.content.isFetched) {
         for (const item of state.content.content) {
             if (item.id === "home/tagline/desktop") {
@@ -117,6 +118,14 @@ function mapStateToProps(state) {
                 highlights[id].backgroundImageUrls.push(
                     `${config.contentApiURL}/${item.id}.bin`
                 );
+            } else if (item.id.indexOf("home/stories/") === 0) {
+                const id = item.id.substr("home/stories/".length);
+                stories[id] = stories[id] || { id };
+                stories[id].content = item.content;
+            } else if (item.id.indexOf("home/story-images/") === 0) {
+                const id = item.id.substr("home/story-images/".length);
+                stories[id] = stories[id] || { id };
+                stories[id].image = `${config.contentApiURL}/${item.id}.bin`;
             }
         }
     }
@@ -133,12 +142,18 @@ function mapStateToProps(state) {
     }
     let highlight = Object.keys(highlights);
     highlight = highlight[new Date().getDate() % highlight.length];
+
+    stories = Object.values(stories)
+        .filter(story => story.content)
+        .sort((a, b) => a.content.order - b.content.order);
+
     return {
         isTopBannerShown: state.topBanner.isShown,
         desktopTagLine,
         mobileTagLine,
         lozenge: highlights[highlight].lozenge,
-        backgroundImageUrls: highlights[highlight].backgroundImageUrls
+        backgroundImageUrls: highlights[highlight].backgroundImageUrls,
+        stories
     };
 }
 

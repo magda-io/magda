@@ -88,5 +88,5 @@ export const homeStory: any = {
             minLength: 1
         }
     },
-    required: ["title", "order, content"]
+    required: ["title", "order", "content"]
 };

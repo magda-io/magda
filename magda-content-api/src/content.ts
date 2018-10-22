@@ -53,7 +53,7 @@ export const content: { [s: string]: ContentItem } = {
     "home/tagline/mobile": makeJsonItem({}, { schema: schemas.homeTagLine }),
     "home/highlights/*": makeJsonItem({}, { schema: schemas.homeHighlight }),
     "home/highlight-images/*": makeImageItem(),
-    "home/story/*": makeJsonItem({}, { schema: schemas.homeStory }),
+    "home/stories/*": makeJsonItem({}, { schema: schemas.homeStory }),
     "home/story-images/*": makeImageItem(),
     stylesheet: makeCssItem(),
     "staticPages/*.md": makeMarkdownItem(),
@@ -82,7 +82,8 @@ function makeImageItem(extra: any = {}) {
                     "image/webp",
                     "image/svg+xml"
                 ],
-                inflate: true
+                inflate: true,
+                limit: "10mb"
             }),
             encode: ContentEncoding.base64
         },
@@ -145,6 +146,7 @@ function makeSpreadsheetItem(extra: any = {}) {
 
 function makeJsonItem(extra: any = {}, options: any = {}) {
     const schemaId = `schema${(env.schemaCount = env.schemaCount || 1)}`;
+    env.schemaCount++;
     env.addSchema(schemaId, options.schema || { type: "object" });
     return Object.assign(
         {
@@ -157,7 +159,12 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
                 if (!invalid) {
                     next();
                 } else {
-                    res.status(500).json({ result: "FAILED", invalid });
+                    res.status(500).json({
+                        result: "FAILED",
+                        invalid,
+                        schema: options.schema,
+                        content: req.body
+                    });
                 }
             }
         },
