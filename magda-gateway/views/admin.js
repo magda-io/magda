@@ -59,26 +59,52 @@ function showConfig(body) {
     imageConfig(row.append("td"), "header/logo-mobile");
 
     showHeaderNavigation(body.append("div"));
+
+    showHeaderTaglines(body.append("div"));
 }
 
-async function showHeaderNavigation(body) {
+function showHeaderNavigation(body) {
+    showJsonEditor(body, {
+        label: "Header Navigation",
+        idPattern: "header/navigation/*",
+        schema: headerNavigationSchema,
+        allowDelete: true,
+        allowAdd: true,
+        newId: () => `header/navigation/${Date.now()}`
+    });
+}
+
+function showHeaderTaglines(body) {
+    showJsonEditor(body, {
+        label: "Header Taglines",
+        idPattern: "home/tagline/*",
+        schema: headerTaglineSchema,
+        allowDelete: false,
+        allowAdd: false
+    });
+}
+
+async function showJsonEditor(body, options) {
     body.text("Loading...");
 
-    let files = await request("GET", "/api/v0/content/all?inline=true");
-    files = files
-        .filter(x => x.id.match(/^header\/navigation\//))
-        .sort((a, b) => a.content.order - b.content.order);
+    let files = await request(
+        "GET",
+        `/api/v0/content/all?id=${options.idPattern}&inline=true`
+    );
+    if (files.length && files[0].order !== undefined) {
+        files = files.sort((a, b) => a.content.order - b.content.order);
+    }
 
     body.text("");
 
-    body.append("h2").text("Header Navigation");
+    body.append("h2").text(options.label);
 
     if (files.length > 0) {
         files.forEach(file => {
             const container = jsoneditor(
                 body.append("div").style("border", "10px solid black"),
                 "Edit",
-                headerNavigationSchema,
+                options.schema,
                 file.content,
                 "Save",
                 async newObj => {
@@ -92,45 +118,52 @@ async function showHeaderNavigation(body) {
                             "application/json"
                         )
                     );
-                    showHeaderNavigation(body);
+                    showJsonEditor(body, options);
                 }
             );
-            container
-                .append("button")
-                .text("Delete")
-                .on("click", async () => {
-                    console.log(
-                        "DONE",
-                        name,
-                        await request("DELETE", `/api/v0/content/${file.id}`)
-                    );
-                    showHeaderNavigation(body);
-                });
+            if (options.allowDelete) {
+                container
+                    .append("button")
+                    .text("Delete")
+                    .on("click", async () => {
+                        console.log(
+                            "DONE",
+                            name,
+                            await request(
+                                "DELETE",
+                                `/api/v0/content/${file.id}`
+                            )
+                        );
+                        showJsonEditor(body, options);
+                    });
+            }
         });
     } else {
         body.append("P").text("You got none!");
     }
 
-    jsoneditor(
-        body.append("div"),
-        "Add new",
-        headerNavigationSchema,
-        null,
-        "Add",
-        async newObj => {
-            console.log(
-                "DONE",
-                name,
-                await request(
-                    "POST",
-                    `/api/v0/content/header/navigation/${Date.now()}`,
-                    newObj,
-                    "application/json"
-                )
-            );
-            showHeaderNavigation(body);
-        }
-    );
+    if (options.allowAdd) {
+        jsoneditor(
+            body.append("div"),
+            "Add new",
+            options.schema,
+            null,
+            "Add",
+            async newObj => {
+                console.log(
+                    "DONE",
+                    name,
+                    await request(
+                        "POST",
+                        `/api/v0/content/${options.newId()}`,
+                        newObj,
+                        "application/json"
+                    )
+                );
+                showJsonEditor(body, options);
+            }
+        );
+    }
 }
 
 function jsoneditor(parent, title, schema, startval, label, callback) {
@@ -499,4 +532,8 @@ const headerNavigationSchema = {
         }
     ],
     required: ["order"]
+};
+
+const headerTaglineSchema = {
+    type: "string"
 };

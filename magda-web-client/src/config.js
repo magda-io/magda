@@ -94,7 +94,7 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}/header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}/header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}/all?id=*/navigation/*&inline=true`,
+    contentUrl: `${contentApiURL}/all?id=*/navigation/*&id=*/home/*&inline=true`,
     footerNavigation: {
         // small media query (mobile)
         small: [

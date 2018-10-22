@@ -67,50 +67,57 @@ const getBgImg = () => {
     );
 };
 
-const getTagLine = () => {
-    const homePageConfig = config.homePageConfig;
-    return {
-        desktop:
-            config && homePageConfig.tagLineTextDesktop
-                ? homePageConfig.tagLineTextDesktop
-                : "",
-        mobile:
-            config && homePageConfig.tagLineTextMobile
-                ? homePageConfig.tagLineTextMobile
-                : ""
-    };
-};
-
-const HomePage = withRouter(({ location, isTopBannerShown }) => {
-    return (
-        <div className="homepage-app-container">
-            {getBgImg()}
-            <Header />
-            <Small>
-                <div className="homepage-background" />
-            </Small>
-            <div className="container app-container" id="content">
+class HomePage extends React.Component {
+    render() {
+        return (
+            <div className="homepage-app-container">
+                {getBgImg()}
+                <Header />
                 <Small>
-                    <TagLine taglineText={getTagLine().mobile} />
+                    <div className="homepage-background" />
                 </Small>
-                <SearchBoxSwitcher location={location} theme="home" />
-                <Medium>
-                    <TagLine taglineText={getTagLine().desktop} />
-                    <Lozenge />
-                </Medium>
-                <Stories />
+                <div className="container app-container" id="content">
+                    <Small>
+                        <TagLine taglineText={this.props.mobileTagLine} />
+                    </Small>
+                    <SearchBoxSwitcher
+                        location={this.props.location}
+                        theme="home"
+                    />
+                    <Medium>
+                        <TagLine taglineText={this.props.desktopTagLine} />
+                        <Lozenge />
+                    </Medium>
+                    <Stories />
+                </div>
             </div>
-        </div>
-    );
-});
+        );
+    }
+}
 
 function mapStateToProps(state) {
+    let desktopTagLine = "";
+    let mobileTagLine = "";
+    if (state.content.isFetched) {
+        for (const item of Object.entries(state.content.content)) {
+            switch (item.id) {
+                case "home/tagline/desktop":
+                    desktopTagLine = item.content;
+                    break;
+                case "home/tagline/mobile":
+                    mobileTagLine = item.content;
+                    break;
+            }
+        }
+    }
     return {
-        isTopBannerShown: state.topBanner.isShown
+        isTopBannerShown: state.topBanner.isShown,
+        desktopTagLine,
+        mobileTagLine
     };
 }
 
 export default connect(
     mapStateToProps,
     null
-)(HomePage);
+)(withRouter(HomePage));

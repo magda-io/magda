@@ -49,6 +49,8 @@ export const content: { [s: string]: ContentItem } = {
         {},
         { schema: schemas.headerNavigation }
     ),
+    "home/tagline/desktop": makeJsonItem({}, { schema: schemas.homeTagLine }),
+    "home/tagline/mobile": makeJsonItem({}, { schema: schemas.homeTagLine }),
     stylesheet: makeCssItem(),
     "staticPages/*.md": makeMarkdownItem(),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE

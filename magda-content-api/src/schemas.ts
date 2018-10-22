@@ -49,3 +49,7 @@ export const headerNavigation: any = {
     ],
     required: ["order"]
 };
+
+export const homeTagLine: any = {
+    type: "string"
+};
