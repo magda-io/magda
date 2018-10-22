@@ -16,6 +16,7 @@
 -   Added ability to include arbitrary HTML in `index.html` through the content api
 -   Fixed: added added vendor prefix to `au-select` component CSS
 -   Fixed content-api test case logic
+-   Fixed content-api migrator script version conflict issue
 
 ## 0.0.49
 

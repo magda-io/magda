@@ -75,7 +75,6 @@ export default class Database {
         const result = `${field} LIKE '${pattern
             .replace(/[^\w\/\-* ]/gi, "")
             .replace(/\*/g, "%")}'`;
-        console.log(result);
         return result;
     }
 
