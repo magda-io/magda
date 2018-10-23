@@ -49,7 +49,11 @@ export const renderScssData = (clientRoot: string, data: string) => {
     })
         .then((result: sass.Result) => {
             return postcss([autoprefixer])
-                .process(result.css.toString("utf-8"))
+                .process(result.css.toString("utf-8"), {
+                    //--- from & to are name only used for sourcemap
+                    from: "node-sass-raw.css",
+                    to: "stylesheet.css"
+                })
                 .then(function(result) {
                     result.warnings().forEach(function(warn) {
                         console.warn(warn.toString());
