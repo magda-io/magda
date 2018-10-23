@@ -19,7 +19,10 @@ const getBgImg = backgroundImageUrls => {
     backgroundImageUrls.forEach(item => {
         let width;
         try {
-            width = parseInt(item.replace(/[^\d]/g, ""), 10);
+            width = parseInt(
+                item.substr(item.lastIndexOf("/") + 1).replace(/[^\d]/g, ""),
+                10
+            );
             if (isNaN(width)) width = 0;
         } catch (e) {
             width = 0;
@@ -111,7 +114,8 @@ function mapStateToProps(state) {
                 highlights[id] = highlights[id] || {};
                 highlights[id].lozenge = item.content;
             } else if (item.id.indexOf("home/highlight-images/") === 0) {
-                const id = item.id.substr("home/highlight-images/".length);
+                let id = item.id.substr("home/highlight-images/".length);
+                id = id.substr(0, id.lastIndexOf("/"));
                 highlights[id] = highlights[id] || {};
                 highlights[id].backgroundImageUrls =
                     highlights[id].backgroundImageUrls || [];
