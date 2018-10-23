@@ -3,11 +3,11 @@ title: "Communities of practice"
 titleImage: story1.png
 titleUrl: "https://community.digital.gov.au/c/open-data"
 ---
-<p>This community is for people who work with public data in the Australian Public Service or who carry out publicly-funded research.</p>
+<p>This community is for people who work with open data in the Australian Public Service or who carry out publicly-funded research.</p>
 
-<p>It’s also for people who develop, innovate or carry out research using Australia’s public datasets.</p>
+<p>It’s also for people who develop, innovate or carry out research using Australian government open datasets.</p>
 
-<p>Our communities of practice bring together our government colleagues to collaborate, showcase work, solve problems and explore best practice.</p>
+<p>Our communities of practice bring together our colleagues to collaborate, showcase work, solve problems and explore best practice.</p>
 
 <p>It's new and open for everyone</p>
 
