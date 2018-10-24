@@ -16,6 +16,7 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
+import "./i18n";
 
 const store = createStore(
     reducer,

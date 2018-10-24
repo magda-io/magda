@@ -2,9 +2,11 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
+import { NamespacesConsumer } from "react-i18next";
+import ReactDocumentTitle from "react-document-title";
+
 import ErrorHandler from "../../Components/ErrorHandler";
 import { config } from "../../config";
-import ReactDocumentTitle from "react-document-title";
 import {
     fetchPublisherIfNeeded,
     resetFetchPublisher
@@ -58,7 +60,13 @@ class PublisherDetails extends Component {
 
         const breadcrumbs = [
             <li key="organisations">
-                <Link to="/organisations">Organisations</Link>
+                <Link to="/organisations">
+                    <NamespacesConsumer ns={["publisherPage"]}>
+                        {t => {
+                            return t("breadCrumb");
+                        }}
+                    </NamespacesConsumer>
+                </Link>
             </li>,
             <li key={publisher.name}>
                 <span>{publisher.name}</span>
