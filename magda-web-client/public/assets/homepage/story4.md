@@ -9,6 +9,6 @@ titleUrl: "https://community.digital.gov.au/c/open-data"
 
 <p>Our communities of practice bring together our colleagues to collaborate, showcase work, solve problems and explore best practice.</p>
 
-<p>It's new and open for everyone</p>
+<p>It's new and open for everyone.</p>
 
 <p><strong><a href="https://community.digital.gov.au/c/open-data" title="Join the open data community">Join the open data community</a></strong></p>
