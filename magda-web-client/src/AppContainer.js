@@ -8,6 +8,7 @@ import Banner from "./UI/Banner";
 import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
+import { fetchContent } from "./actions/contentActions";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
@@ -23,6 +24,7 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
+        this.props.fetchContent();
     }
 
     render() {
@@ -93,6 +95,7 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             requestWhoAmI: requestWhoAmI,
+            fetchContent,
             hideTopNotification
         },
         dispatch
