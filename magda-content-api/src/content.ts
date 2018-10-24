@@ -49,6 +49,15 @@ export const content: { [s: string]: ContentItem } = {
         {},
         { schema: schemas.headerNavigation }
     ),
+    "footer/images/*": makeImageItem(),
+    "footer/navigation/categories/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategoryItem }
+    ),
+    "footer/navigation/copyRightItems/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCopyRightItem }
+    ),
     stylesheet: makeCssItem(),
     "staticPages/*.md": makeMarkdownItem(),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
