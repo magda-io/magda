@@ -16,8 +16,8 @@ window.magda_client_homepage_config = {
         "twenty-2880w.jpg"
     ],
     tagLineTextDesktop:
-        "An easy way to find, explore and reuse Australia's public data",
-    tagLineTextMobile: "Find, explore and reuse Australia's public data",
+        "Find, explore and reuse Australian government open data",
+    tagLineTextMobile: "Find, explore and reuse open data",
     Lozenge: {
         icon: "camara.svg",
         text: "Explore QLD road data",
