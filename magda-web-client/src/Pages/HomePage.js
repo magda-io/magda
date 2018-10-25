@@ -91,7 +91,8 @@ class HomePage extends React.Component {
                     {this.props.stories &&
                         this.props.stories.length && (
                             <Stories stories={this.props.stories} />
-                        )}
+                        ) ||
+                        ""}
                 </div>
             </div>
         );
