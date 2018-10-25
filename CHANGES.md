@@ -22,6 +22,7 @@
 -   Hide "Download" button for distributions without downloadUrl
 -   Fixed content-api migrator script version conflict issue
 -   Make footer area configurable
+-   Fixed broken document link in docs/README.md
 
 ## 0.0.49
 
