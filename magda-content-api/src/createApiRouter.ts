@@ -252,7 +252,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         content = content.toString("base64");
                         break;
                     case ContentEncoding.json:
-                        if (!(content instanceof Object)) {
+                        if (
+                            !(content instanceof Object) &&
+                            !(content instanceof String) &&
+                            !(content instanceof Number) &&
+                            !(
+                                content === true ||
+                                content === false ||
+                                content === undefined
+                            )
+                        ) {
                             throw new GenericError(
                                 "Can not stringify encode non-json"
                             );
