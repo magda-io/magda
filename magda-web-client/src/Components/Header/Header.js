@@ -33,6 +33,7 @@ class Header extends Component {
     }
 
     render() {
+        const applicationName = this.props.strings.applicationName;
         return (
             <div className="header">
                 <div className="au-header">
@@ -43,14 +44,14 @@ class Header extends Component {
                                     <Small>
                                         <img
                                             src={config.headerMobileLogoUrl}
-                                            alt={config.appName}
+                                            alt={applicationName}
                                             className="au-header__logo"
                                         />
                                     </Small>
                                     <Medium>
                                         <img
                                             src={config.headerLogoUrl}
-                                            alt={config.appName}
+                                            alt={applicationName}
                                             className="au-header__logo"
                                         />
                                     </Medium>
@@ -124,7 +125,7 @@ const mapStateToProps = state => {
             auth: {}
         });
     }
-    return { headerNavigation };
+    return { headerNavigation, strings: state.content.strings };
 };
 
 const mapDispatchToProps = dispatch => {

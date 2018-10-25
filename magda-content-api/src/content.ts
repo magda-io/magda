@@ -67,8 +67,9 @@ export const content: { [s: string]: ContentItem } = {
     emailTemplates: makeHtmlItem({
         route: /\/emailTemplates\/\w+\.html/
     }),
-    "emailTemplates/assets/*": makeImageItem()
+    "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
+    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString })
 };
 
 function makeImageItem(extra: any = {}) {

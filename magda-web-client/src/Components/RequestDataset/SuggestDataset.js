@@ -1,11 +1,11 @@
 import React from "react";
 import RequestFormLogic from "./RequestFormLogic";
-import { config } from "../../config";
 import ReactDocumentTitle from "react-document-title";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
+import { connect } from "react-redux";
 
-export default class Suggest extends React.Component {
+export class Suggest extends React.Component {
     //this is the page on /suggest url
     constructor(props) {
         super(props);
@@ -57,7 +57,11 @@ export default class Suggest extends React.Component {
         };
 
         return (
-            <ReactDocumentTitle title={`Suggest a Dataset | ${config.appName}`}>
+            <ReactDocumentTitle
+                title={`Suggest a Dataset | ${
+                    this.props.strings.applicationName
+                }`}
+            >
                 <div>
                     <Medium>
                         <Breadcrumbs
@@ -82,3 +86,14 @@ export default class Suggest extends React.Component {
         );
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        strings: state.content.strings
+    };
+}
+
+export default connect(
+    mapStateToProps,
+    null
+)(Suggest);

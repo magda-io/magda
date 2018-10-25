@@ -175,9 +175,12 @@ class DistributionRow extends Component {
                                             {this.renderDistributionLink(
                                                 distribution.title
                                             )}
-                                        </span>(<span itemProp="fileFormat">
+                                        </span>
+                                        (
+                                        <span itemProp="fileFormat">
                                             {distribution.format}
-                                        </span>)
+                                        </span>
+                                        )
                                     </div>
                                 ) : (
                                     <Link to={distributionLink}>
@@ -185,9 +188,12 @@ class DistributionRow extends Component {
                                             {this.renderDistributionLink(
                                                 distribution.title
                                             )}
-                                        </span>(<span itemProp="fileFormat">
+                                        </span>
+                                        (
+                                        <span itemProp="fileFormat">
                                             {distribution.format}
-                                        </span>)
+                                        </span>
+                                        )
                                     </Link>
                                 )}
                                 <a

@@ -27,7 +27,8 @@ async function refresh() {
             "Homepage Highlights": showHomeHighlights,
             "Homepage Stories": showHomeStories,
             "CSV Data": showSpreadsheets,
-            Connectors: showConnectors
+            Connectors: showConnectors,
+            Language: showLanguage
         };
 
         const section = body.append("select");
@@ -167,6 +168,17 @@ function showHomeHighlights(body) {
                     "/2880w"
             );
         }
+    });
+}
+
+function showLanguage(body) {
+    showJsonEditor(body, {
+        label: "Language Items",
+        idPattern: "lang/en/*",
+        schema: languageSchema,
+        allowDelete: true,
+        allowAdd: true,
+        newId: () => `lang/en/${prompt("ID? See strings table.")}`
     });
 }
 
@@ -624,6 +636,10 @@ const headerNavigationSchema = {
 };
 
 const headerTaglineSchema = {
+    type: "string"
+};
+
+const languageSchema = {
     type: "string"
 };
 

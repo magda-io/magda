@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { config } from "../config";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { Medium } from "../UI/Responsive";
 import ReactDocumentTitle from "react-document-title";
@@ -80,7 +79,9 @@ class StaticPage extends Component {
             </li>
         ];
         return (
-            <ReactDocumentTitle title={`${title} | ${config.appName}`}>
+            <ReactDocumentTitle
+                title={`${title} | ${this.props.strings.applicationName}`}
+            >
                 <div
                     className={`static-page-container container page-${pageName}`}
                 >
@@ -108,7 +109,8 @@ StaticPage.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        staticPages: state.staticPages
+        staticPages: state.staticPages,
+        strings: state.content.strings
     };
 }
 
