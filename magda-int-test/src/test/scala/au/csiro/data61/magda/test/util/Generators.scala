@@ -400,8 +400,8 @@ object Generators {
     contactPoint = contactPoint,
     distributions = distributions,
     landingPage = landingPage,
-    quality = quality,
-    hasQuality = if (quality > 0) true else hasQuality,
+    quality = if (quality == 1) 0 else quality,
+    hasQuality = if (quality > 0) true else if (quality == 1) false else hasQuality,
     score = None)
 
   val INDEXED_REGIONS_COUNT = 12
