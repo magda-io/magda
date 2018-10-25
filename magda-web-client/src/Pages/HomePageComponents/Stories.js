@@ -63,17 +63,19 @@ class Stories extends Component {
                             </CSSTransition>
                         </TransitionGroup>
                     ) : (
-                        <button
-                            className="homepage-stories-show-stories-button"
-                            onClick={() => {
-                                this.setState({
-                                    shouldShowStories: true
-                                });
-                            }}
-                        >
-                            <div>Latest News</div>
-                            <img src={downArrow} alt="more-stories" />
-                        </button>
+                        <div className="homepage-stories-show-stories-button-container">
+                            <button
+                                className="homepage-stories-show-stories-button"
+                                onClick={() => {
+                                    this.setState({
+                                        shouldShowStories: true
+                                    });
+                                }}
+                            >
+                                <div>Latest News</div>
+                                <img src={downArrow} alt="more-stories" />
+                            </button>
+                        </div>
                     )}
                 </Small>
                 <Medium>
