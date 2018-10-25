@@ -158,5 +158,5 @@ export const config = {
 };
 
 export const defaultStrings = {
-    applicationName: "data.gov.au - beta"
+    applicationName: "MAGDA"
 };

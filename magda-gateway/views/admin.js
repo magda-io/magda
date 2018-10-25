@@ -178,7 +178,8 @@ function showLanguage(body) {
         schema: languageSchema,
         allowDelete: true,
         allowAdd: true,
-        newId: () => `lang/en/${prompt("ID? See strings table.")}`
+        allowIdFieldInput: true,
+        newId: id => `lang/en/${id}`
     });
 }
 
@@ -244,6 +245,12 @@ async function showJsonEditor(body, options) {
     }
 
     if (options.allowAdd) {
+        let idField;
+        if (options.allowIdFieldInput) {
+            const container = body.append("p");
+            container.append("strong").text("ID: ");
+            idField = container.append("input");
+        }
         jsoneditor(body.append("div"), {
             title: "Add new",
             schema: options.schema,
@@ -255,7 +262,9 @@ async function showJsonEditor(body, options) {
                     name,
                     await request(
                         "POST",
-                        `/api/v0/content/${options.newId()}`,
+                        `/api/v0/content/${options.newId(
+                            idField ? idField.property("value") : undefined
+                        )}`,
                         newObj,
                         "application/json"
                     )
