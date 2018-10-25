@@ -95,46 +95,6 @@ export const config = {
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
     contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&inline=true`,
-    footerNavigation: {
-        // small media query (mobile)
-        small: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Give feedback", "feedback"]
-                ]
-            }
-        ],
-        // medium media query and bigger (desktop)
-        medium: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Privacy Policy", "page/privacy-policy"],
-                    ["Give feedback", "feedback"]
-                ]
-            },
-            {
-                category: "Publishers",
-                links: [
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
-                ]
-            },
-            {
-                category: "Developers",
-                links: [
-                    ["API Documentation", "/api/v0/apidocs/index.html"],
-                    ["Powered by Magda", "https://magda.io"]
-                ]
-            }
-        ]
-    },
     months: [
         "Jan",
         "Feb",

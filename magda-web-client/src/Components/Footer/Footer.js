@@ -1,12 +1,10 @@
 /* eslint-disable no-undef */
 import React from "react";
-
+import { connect } from "react-redux";
 import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
 import { Small } from "../../UI/Responsive";
-
-import dtaLogo from "./dta-logo.png";
-import d61logo from "./data61-logo.png";
+import { config } from "../../config";
 
 import "./footer.css";
 
@@ -45,8 +43,8 @@ function FooterLink({ link }) {
 
 function FooterNavs({ footerNavs }) {
     return footerNavs.map(item => (
-        <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.category}>
-            <h3 className="au-display-lg">{item.category}</h3>
+        <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.label}>
+            <h3 className="au-display-lg">{item.label}</h3>
 
             <ul className="au-link-list">
                 {item.links.map(link => (
@@ -59,10 +57,13 @@ function FooterNavs({ footerNavs }) {
     ));
 }
 
-function Copyright({ children, href, logoSrc, logoClassName, logoAlt }) {
+function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
     return (
         <div className="copyright">
-            <div className="copyright-text">{children}</div>
+            <div
+                className="copyright-text"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
             <a
                 target="_blank"
                 rel="noopener noreferrer"
@@ -70,7 +71,7 @@ function Copyright({ children, href, logoSrc, logoClassName, logoAlt }) {
                 className="logo-link"
             >
                 <img
-                    src={logoSrc}
+                    src={config.contentApiURL + logoSrc}
                     className={"logo " + logoClassName}
                     alt={logoAlt}
                 />
@@ -79,7 +80,7 @@ function Copyright({ children, href, logoSrc, logoClassName, logoAlt }) {
     );
 }
 
-export default function Footer({ footerNavs }) {
+function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     return (
         <AUfooter dark className="au-body au-body--dark footer">
             <div className="container">
@@ -87,34 +88,54 @@ export default function Footer({ footerNavs }) {
                     {matched => (
                         <FooterNavs
                             footerNavs={
-                                matched ? footerNavs.small : footerNavs.medium
+                                matched ? footerSmallNavs : footerMediumNavs
                             }
                         />
                     )}
                 </Small>
-                <section className="footer-end col-md-3 col-sm-6 col-xs-6">
-                    <Copyright
-                        href="https://www.data61.csiro.au/"
-                        logoSrc={d61logo}
-                        logoClassName="data61-logo"
-                        logoAlt="Data61 Logo"
-                    >
-                        Developed by{" "}
-                    </Copyright>
-                    <Copyright
-                        href="https://dta.gov.au/"
-                        logoSrc={dtaLogo}
-                        logoClassName="dta-logo"
-                        logoAlt="DTA Logo"
-                    >
-                        Operated with&nbsp;
-                        <span role="img" aria-label="love">
-                            ❤️
-                        </span>{" "}
-                        by{" "}
-                    </Copyright>
-                </section>
+                {footerCopyRightItems.length ? (
+                    <section className="footer-end col-md-3 col-sm-6 col-xs-6">
+                        {footerCopyRightItems.map((item, idx) => (
+                            <Copyright
+                                key={idx}
+                                href={item.href}
+                                logoSrc={item.logoSrc}
+                                logoClassName={item.logoClassName}
+                                logoAlt={item.logoAlt}
+                                htmlContent={item.htmlContent}
+                            />
+                        ))}
+                    </section>
+                ) : null}
             </div>
         </AUfooter>
     );
 }
+
+const mapStateToProps = state => {
+    const footerMediumNavs = [];
+    const footerSmallNavs = [];
+    const footerCopyRightItems = [];
+    if (state.content.isFetched) {
+        state.content.content.forEach(item => {
+            if (item.id.indexOf("footer/navigation/categories/medium/") === 0) {
+                footerMediumNavs.push(item.content);
+            } else if (
+                item.id.indexOf("footer/navigation/categories/small/") === 0
+            ) {
+                footerSmallNavs.push(item.content);
+            } else if (
+                item.id.indexOf("footer/navigation/copyRightItems/") === 0
+            ) {
+                footerCopyRightItems.push(item.content);
+            }
+        });
+
+        footerMediumNavs.sort((a, b) => a.order - b.order);
+        footerSmallNavs.sort((a, b) => a.order - b.order);
+        footerCopyRightItems.sort((a, b) => a.order - b.order);
+    }
+    return { footerMediumNavs, footerSmallNavs, footerCopyRightItems };
+};
+
+export default connect(mapStateToProps)(Footer);

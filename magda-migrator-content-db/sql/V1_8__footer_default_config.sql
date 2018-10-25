@@ -71,7 +71,7 @@ INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/images/
 ('footer/navigation/copyRightItems/data61', 'application/json', '{
   "order": 10,
   "href": "https://www.data61.csiro.au/",
-  "logoSrc": "api/v0/content/footer/images/data61.png",
+  "logoSrc": "footer/images/data61.png",
   "logoClassName": "data61-logo",
   "logoAlt": "Data61 Logo",
   "htmlContent": "Developed by&nbsp;"
@@ -79,7 +79,7 @@ INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/images/
 ('footer/navigation/copyRightItems/dta', 'application/json', '{
   "order": 20,
   "href": "https://dta.gov.au/",
-  "logoSrc": "api/v0/content/footer/images/dta.png",
+  "logoSrc": "footer/images/dta.png",
   "logoClassName": "dta-logo",
   "logoAlt": "DTA Logo",
   "htmlContent": "Operated with&nbsp;<span role=\"img\" aria-label=\"love\">❤️</span>&nbsp;by&nbsp;"
