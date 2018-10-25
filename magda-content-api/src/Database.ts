@@ -23,9 +23,29 @@ export default class Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
-    getContentSummary(): Promise<any> {
+    getContentSummary(query: any, inlineContentIfType: string[]): Promise<any> {
+        let inline = "";
+        if (inlineContentIfType.length > 0) {
+            inline = `,
+            CASE
+              ${inlineContentIfType
+                  .map(
+                      type =>
+                          "WHEN type = '" +
+                          type.replace(/\'/g, "") +
+                          "' THEN content"
+                  )
+                  .join(" ")}
+              ELSE NULL
+            END
+            AS content`;
+        }
         return this.pool
-            .query("SELECT id, type FROM content")
+            .query(
+                `SELECT id, type, length(content) as length ${inline} FROM content ${
+                    query ? "WHERE" + query : ""
+                }`
+            )
             .then(res => (res && res.rows) || []);
     }
 
@@ -49,5 +69,16 @@ export default class Database {
         return this.pool
             .query("DELETE FROM content WHERE id=$1", [id])
             .then(res => (res && res.rows) || []);
+    }
+
+    createWildcardMatch(field: string, pattern: string) {
+        const result = `${field} LIKE '${pattern
+            .replace(/[^\w\/\-* ]/gi, "")
+            .replace(/\*/g, "%")}'`;
+        return result;
+    }
+
+    createOr(...queries: string[]) {
+        return queries.map(x => `(${x})`).join(" OR ");
     }
 }

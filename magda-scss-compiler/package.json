@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.50-0",
+    "@types/autoprefixer": "^9.1.0",
     "@types/chai": "^4.0.1",
     "@types/clean-css": "^3.4.30",
     "@types/config": "0.0.32",
@@ -40,9 +41,11 @@
   "dependencies": {
     "@magda/typescript-common": "^0.0.50-0",
     "@magda/web-client": "^0.0.50-0",
+    "autoprefixer": "^9.2.1",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",
     "fs-extra": "^7.0.0",
+    "postcss": "^7.0.5",
     "recursive-readdir": "^2.2.2",
     "request": "2.85.0",
     "tempy": "^0.2.1",

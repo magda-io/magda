@@ -1,0 +1,51 @@
+export const headerNavigation: any = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        }
+    },
+    oneOf: [
+        {
+            title: "Regular Menu",
+            properties: {
+                default: {
+                    title: "Configuration",
+                    type: "object",
+                    properties: {
+                        label: {
+                            type: "string",
+                            minLength: 1
+                        },
+                        rel: {
+                            type: "string",
+                            minLength: 2
+                        },
+                        target: {
+                            type: "string",
+                            enum: ["", "blank"]
+                        },
+                        href: {
+                            type: "string",
+                            minLength: 1
+                        }
+                    },
+                    required: ["label", "href"]
+                }
+            },
+            required: ["default"]
+        },
+        {
+            title: "Authentication Menu",
+            properties: {
+                auth: {
+                    title: "Authentication Menu",
+                    type: "object"
+                }
+            },
+            required: ["auth"]
+        }
+    ],
+    required: ["order"]
+};

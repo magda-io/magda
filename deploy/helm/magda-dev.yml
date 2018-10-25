@@ -23,6 +23,7 @@ ingress:
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
+  ckanRedirectionPath: ""
   enableAuthEndpoint: true
   auth:
     facebookClientId: "173073926555600"

@@ -1,11 +1,26 @@
 ## 0.0.50
 
+-   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make header menu items come from content api
+-   Changed some existing content ids to group things better
+-   Reorganised content api to require less number of requests to get small JSON content items
 -   Email Templates are configurable from content API
+-   Allow a CKAN non-root path to be used for redirects
+-   Allow CKAN resource downloads to pass through to CKAN to maintain links
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint
 -   Hook actors will report its status to its parent actor when changes
 -   Updated external links on About page to open in new window
 -   Fixed some WA source spatial data are not indexed properly
+-   Boost the score weighting of name & acronym field during org seaching
+-   Sort by relevence unless keyword is "\*" (in this case sort by Alphabetical order) during org search
+-   Removed search.data.gov.au-specific third party javascript
+-   Added ability to include arbitrary HTML in `index.html` through the content api
+-   Fixed: added added vendor prefix to `au-select` component CSS
+-   Fixed content-api test case logic
+-   Hide "Download" button for distributions without downloadUrl
+-   Fixed content-api migrator script version conflict issue
+-   Fixed broken document link in docs/README.md
 
 ## 0.0.49
 

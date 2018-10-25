@@ -22,6 +22,10 @@ To push the images and run them on kubernetes, you'll need to install:
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
+## Trying it out locally
+
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at https://github.com/magda-io/magda-config. What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+
 ## Building and running (just) the frontend
 
 If you just want to edit the UI, you don't actually even need helm - just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`. This will build/run a local version of the client, connecting to the API at https://dev.magda.io/api. If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
@@ -71,6 +75,7 @@ helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml i
 Now you can build the docker containers locally - this might take quite a while so get a cup of tea.
 
 ```bash
+eval $(minikube docker-env) # (If you haven't run this already)
 lerna run docker-build-local --include-filtered-dependencies
 ```
 

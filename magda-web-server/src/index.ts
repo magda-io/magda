@@ -64,7 +64,12 @@ const argv = yargs
     })
     .option("contentApiBaseUrl", {
         describe:
-            "The base URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+            "The base _EXTERNAL_ URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("contentApiBaseUrlInternal", {
+        describe:
+            "The base _INTERNAL_ URL of the MAGDA Content API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
     .option("registryApiBaseUrl", {
@@ -87,6 +92,11 @@ const argv = yargs
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
         type: "string"
     })
+    .option("gapiIds", {
+        describe: "Google Analytics ID(s)",
+        type: "array",
+        default: []
+    })
     .option("datasetSearchSuggestionScoreThreshold", {
         describe:
             "The score threshold after which to display the dataset suggestion form",
@@ -108,7 +118,6 @@ console.log("Client: " + clientBuild);
 // const adminRoot = require.resolve("@magda/web-admin");
 // const adminBuild = path.join(adminRoot, "build");
 // console.log("Admin: " + adminBuild);
-
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
 );
@@ -168,7 +177,8 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     datasetSearchSuggestionScoreThreshold:
-        argv.datasetSearchSuggestionScoreThreshold
+        argv.datasetSearchSuggestionScoreThreshold,
+    gapiIds: argv.gapiIds
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -178,12 +188,21 @@ app.get("/server-config.js", function(req, res) {
     );
 });
 
-const indexFileContent = getIndexFileContent(
-    clientRoot,
-    argv.useLocalStyleSheet
-);
+/**
+ * Get the index file content according to the passed in settings. Because getIndexFileContent
+ * is throttled, it'll only actually be invoked once every 60 seconds
+ */
+function getIndexFileContentZeroArgs() {
+    return getIndexFileContent(
+        clientRoot,
+        argv.useLocalStyleSheet,
+        argv.contentApiBaseUrlInternal
+    );
+}
 
-app.get(["/", "/index.html*"], function(req, res) {
+app.get(["/", "/index.html*"], async function(req, res) {
+    const indexFileContent = await getIndexFileContentZeroArgs();
+
     res.send(indexFileContent);
 });
 
@@ -206,16 +225,16 @@ const topLevelRoutes = [
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
-    app.get("/" + topLevelRoute, function(req, res) {
-        res.send(indexFileContent);
+    app.get("/" + topLevelRoute, async function(req, res) {
+        res.send(await getIndexFileContentZeroArgs());
     });
-    app.get("/" + topLevelRoute + "/*", function(req, res) {
-        res.send(indexFileContent);
+    app.get("/" + topLevelRoute + "/*", async function(req, res) {
+        res.send(await getIndexFileContentZeroArgs());
     });
 });
 
-app.get("/page/*", function(req, res) {
-    res.send(indexFileContent);
+app.get("/page/*", async function(req, res) {
+    res.send(await getIndexFileContentZeroArgs());
 });
 
 // app.get("/admin", function(req, res) {

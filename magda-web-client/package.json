@@ -42,7 +42,8 @@
     "@gov.au/skip-link": "^2.0.6",
     "@gov.au/tags": "^3.1.1",
     "@gov.au/text-inputs": "^2.0.6",
-    "leaflet": "^0.7.7"
+    "leaflet": "^0.7.7",
+    "urijs": "^1.19.1"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.50-0",
@@ -115,6 +116,7 @@
     "react-autosuggest": "^9.3.2",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.3.2",
+    "react-ga": "^2.5.3",
     "react-json-tree": "^0.10.9",
     "react-modal": "^3.4.5",
     "react-particles-js": "^2.1.0",

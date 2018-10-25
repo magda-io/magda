@@ -1,11 +1,19 @@
 import * as express from "express";
-import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import {
+    getUser,
+    mustBeAdmin
+} from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import Database from "./Database";
 import { Maybe } from "tsmonad";
 import { Content } from "./model";
-import { content, ContentEncoding, ContentItem } from "./content";
+import {
+    content,
+    ContentEncoding,
+    ContentItem,
+    findContentItemById
+} from "./content";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -18,6 +26,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
+    const USER = getUser(options.authApiUrl, options.jwtSecret);
     const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
 
     router.get("/healthz", function(req, res, next) {
@@ -26,24 +35,84 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Content
-     * @api {post} /v0/content/:contentId Get All
+     * @api {post} /v0/content/all Get All
      * @apiDescription Get a list of content items and their type.
-     * You must be an admin for this.
+     *
+     * @apiParam (Query) {string} id filter content id by this wildcard pattern. For example: "id=header/*&id=footer/*". Can specify multiple.
+     * @apiParam (Query) {string} type filter content mime type by this wildcard pattern. For example: "type=application/*". Can specify multiple.
+     * @apiParam (Query) {boolean} inline flag to specify if content should be inlined. Only application/json mime type content is supported now.
      *
      * @apiSuccess {string} result=SUCCESS
      *
      * @apiSuccessExample {json} 200
      *    [
      *        {
-     *            "id": ...,
+     *            "id": ...
      *            "type": ...
+     *            "length": ...
+     *            "content": ...
      *        },
      *        ...
      *    ]
      */
-    router.get("/all", ADMIN, async function(req, res) {
-        res.json(await database.getContentSummary());
+    router.get("/all", USER, async function(req, res) {
+        // figure out constraints
+        let query: any[] = [];
+        let inlineContentIfType: string[] = [];
+
+        query = query.concat(makeWildcardQuery(database, "id", req.params.id));
+
+        const inline = req.query.inline;
+        if (inline) {
+            inlineContentIfType.push("application/json");
+        }
+
+        // get summary
+        let all: any[] = await database.getContentSummary(
+            database.createOr(...query),
+            inlineContentIfType
+        );
+
+        // filter out privates and non-configurable
+        all = all.filter((item: any) => {
+            const contentItem = findContentItemById(item.id);
+            if (contentItem) {
+                if (!contentItem.private) {
+                    return true;
+                } else {
+                    return req.user && req.user.isAdmin;
+                }
+            } else {
+                return false;
+            }
+        });
+
+        // inline
+        if (inline) {
+            for (const item of all) {
+                switch (item.type) {
+                    case "application/json":
+                        item.content = JSON.parse(item.content);
+                        break;
+                }
+            }
+        }
+
+        res.json(all);
     });
+
+    function makeWildcardQuery(database: Database, field: string, filter: any) {
+        if (filter) {
+            if (typeof filter === "string") {
+                return [database.createWildcardMatch(field, filter)];
+            } else {
+                return filter.map((filter: any) =>
+                    database.createWildcardMatch(field, filter)
+                );
+            }
+        }
+        return [];
+    }
 
     /**
      * @apiGroup Content
@@ -71,12 +140,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *         "result": "FAILED"
      *    }
      */
-    router.get("/:contentId.:format", getContent);
     router.get("/*", getContent);
 
     async function getContent(req: any, res: any) {
-        const requestContentId = req.params.contentId;
-        const requestFormat = req.params.format;
+        const requestContentId = req.path.substr(
+            1,
+            req.path.lastIndexOf(".") - 1
+        );
+        const requestFormat = req.path.substr(req.path.lastIndexOf(".") + 1);
+
         try {
             const contentPromise = await database.getContentById(
                 requestContentId
@@ -113,8 +185,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 case "json":
                     JSON.parse(content.content);
                     return returnText(res, content, "application/json");
+                case "js":
+                    return returnText(res, content, "application/javascript");
                 case "text":
                     return returnText(res, content, "text/plain");
+                case "md":
+                    return returnText(res, content, "text/markdown");
                 case "css":
                 case "html":
                     return returnText(res, content, `text/${format}`);
@@ -132,7 +208,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
     Object.entries(content).forEach(function(config: [string, ContentItem]) {
         const [contentId, configurationItem] = config;
 
+        const route = configurationItem.route || `/${contentId}`;
         const body = configurationItem.body || null;
+        const verify = configurationItem.verify || null;
 
         /**
          * @apiGroup Content
@@ -157,9 +235,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        const route = configurationItem.route || `/${contentId}`;
-
-        router.post(route, ADMIN, body, async function(req, res) {
+        async function post(req: any, res: any) {
             try {
                 let content = req.body;
 
@@ -171,6 +247,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             );
                         }
                         content = content.toString("base64");
+                        break;
+                    case ContentEncoding.json:
+                        if (!(content instanceof Object)) {
+                            throw new GenericError(
+                                "Can not stringify encode non-json"
+                            );
+                        }
+                        content = JSON.stringify(content);
                         break;
                 }
 
@@ -203,7 +287,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 });
                 console.error(e);
             }
-        });
+        }
+
+        router.post.apply(
+            router,
+            [route, ADMIN, body, verify, post].filter(i => i)
+        );
 
         /**
          * @apiGroup Content
@@ -219,17 +308,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          *
          */
-        if (configurationItem.route) {
-            router.delete(route, ADMIN, body, async function(req, res) {
-                const finalContentId = req.path.substr(1);
 
-                await database.deleteContentById(finalContentId);
+        router.delete(route, ADMIN, async function(req, res) {
+            const finalContentId = req.path.substr(1);
 
-                res.status(204).json({
-                    result: "SUCCESS"
-                });
+            await database.deleteContentById(finalContentId);
+
+            res.status(204).json({
+                result: "SUCCESS"
             });
-        }
+        });
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
