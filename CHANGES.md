@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Hide dataset source for csv datasets
 -   Make home page items come from content api
 -   Make header menu items come from content api
 -   Remove all global references to config.appName and allow getting this configuration item from content api

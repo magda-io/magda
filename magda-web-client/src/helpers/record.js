@@ -356,9 +356,10 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? aspects["dataset-publisher"]["publisher"]
         : defaultPublisher;
     const contactPoint: string = aspects["dcat-dataset-strings"].contactPoint;
-
     const source: string = aspects["source"]
-        ? aspects["source"]["name"]
+        ? aspects["source"]["type"] !== "csv-dataset"
+            ? aspects["source"]["name"]
+            : undefined
         : defaultDatasetAspects["source"]["name"];
 
     function calcQuality(qualityAspect) {
