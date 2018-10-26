@@ -86,12 +86,13 @@ export default class DatasetSummary extends Component {
                             <Divider />
                         </span>
                     )}
-                    {defined(dataset.quality) && (
-                        <div className="dataset-summary-quality">
-                            <QualityIndicator quality={dataset.quality} />
-                            <Divider />
-                        </div>
-                    )}
+                    {dataset.hasQuality &&
+                        defined(dataset.quality) && (
+                            <div className="dataset-summary-quality">
+                                <QualityIndicator quality={dataset.quality} />
+                                <Divider />
+                            </div>
+                        )}
                     {defined(
                         dataset.distributions &&
                             dataset.distributions.length > 0
