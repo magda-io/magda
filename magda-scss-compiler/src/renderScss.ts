@@ -3,6 +3,8 @@ import * as cleancss from "clean-css";
 import * as tempy from "tempy";
 import * as fse from "fs-extra";
 import * as escapeStringRegexp from "escape-string-regexp";
+import * as postcss from "postcss";
+import * as autoprefixer from "autoprefixer";
 
 export const renderScssData = (clientRoot: string, data: string) => {
     return new Promise((resolve, reject) => {
@@ -46,8 +48,22 @@ export const renderScssData = (clientRoot: string, data: string) => {
         );
     })
         .then((result: sass.Result) => {
+            return postcss([autoprefixer])
+                .process(result.css.toString("utf-8"), {
+                    //--- from & to are name only used for sourcemap
+                    from: "node-sass-raw.css",
+                    to: "stylesheet.css"
+                })
+                .then(function(result) {
+                    result.warnings().forEach(function(warn) {
+                        console.warn(warn.toString());
+                    });
+                    return result.css;
+                });
+        })
+        .then((css: string) => {
             const cssOption: any = { returnPromise: true };
-            return new cleancss(cssOption).minify(result.css);
+            return new cleancss(cssOption).minify(css);
         })
         .then(cssResult => cssResult.styles);
 };
