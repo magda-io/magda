@@ -60,7 +60,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
         let query: any[] = [];
         let inlineContentIfType: string[] = [];
 
-        query = query.concat(makeWildcardQuery(database, "id", req.params.id));
+        query = query.concat(makeWildcardQuery(database, "id", req.query.id));
+        query = query.concat(
+            makeWildcardQuery(database, "type", req.query.type)
+        );
 
         const inline = req.query.inline;
         if (inline) {
