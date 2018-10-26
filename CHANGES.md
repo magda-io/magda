@@ -23,6 +23,7 @@
 -   Fixed content-api migrator script version conflict issue
 -   Fixed broken document link in docs/README.md
 -   Show quality rating only if present
+-   Fixed: cached auth api response causing login problems
 
 ## 0.0.49
 
