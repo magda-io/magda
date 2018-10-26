@@ -253,14 +253,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         break;
                     case ContentEncoding.json:
                         if (
-                            !(content instanceof Object) &&
-                            !(content instanceof String) &&
-                            !(content instanceof Number) &&
-                            !(
-                                content === true ||
-                                content === false ||
-                                content === undefined
-                            )
+                            typeof content !== "object" &&
+                            typeof content !== "string" &&
+                            typeof content !== "number" &&
+                            typeof content !== "boolean" &&
+                            content !== null
                         ) {
                             throw new GenericError(
                                 "Can not stringify encode non-json"
