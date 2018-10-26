@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make home page items come from content api
 -   Make header menu items come from content api
 -   Changed some existing content ids to group things better
 -   Reorganised content api to require less number of requests to get small JSON content items

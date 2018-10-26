@@ -49,3 +49,44 @@ export const headerNavigation: any = {
     ],
     required: ["order"]
 };
+
+export const homeTagLine: any = {
+    type: "string"
+};
+
+export const homeHighlight: any = {
+    type: "object",
+    properties: {
+        text: {
+            type: "string",
+            minLength: 1
+        },
+        url: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["text", "url"]
+};
+
+export const homeStory: any = {
+    type: "object",
+    properties: {
+        title: {
+            type: "string",
+            minLength: 1
+        },
+        titleUrl: {
+            type: "string",
+            minLength: 1
+        },
+        order: {
+            type: "number"
+        },
+        content: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["title", "order", "content"]
+};

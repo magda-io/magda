@@ -92,9 +92,9 @@ export const config = {
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
     ],
-    headerLogoUrl: `${contentApiURL}/header/logo.bin`,
-    headerMobileLogoUrl: `${contentApiURL}/header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}/all?id=*/navigation/*&inline=true`,
+    headerLogoUrl: `${contentApiURL}header/logo.bin`,
+    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
+    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&inline=true`,
     footerNavigation: {
         // small media query (mobile)
         small: [
