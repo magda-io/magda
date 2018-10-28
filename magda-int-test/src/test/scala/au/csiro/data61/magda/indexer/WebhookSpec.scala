@@ -375,7 +375,9 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                     "title" -> publisher.name.toJson,
                     "imageUrl" -> publisher.imageUrl.toJson)))))).toJson,
             "dataset-quality-rating" -> {
-              if (dataSet.quality == 1) {
+              if (!dataSet.hasQuality) {
+                JsObject()
+              } else if (dataSet.quality == 1) {
                 JsObject()
               } else if (quality.isEmpty) {
                 JsObject("x" -> JsObject("score" -> dataSet.quality.toJson, "weighting" -> 1.toJson))
