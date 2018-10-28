@@ -2,7 +2,6 @@ import "./SearchBox.css";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import propTypes from "prop-types";
-import { config } from "../../config";
 import debounce from "lodash.debounce";
 import defined from "../../helpers/defined";
 import React, { Component } from "react";
@@ -169,7 +168,7 @@ class SearchBox extends Component {
             <div className="searchBox">
                 <label htmlFor="search">
                     <span className="sr-only">
-                        {"Search " + config.appName}
+                        {"Search " + this.props.strings.applicationName}
                     </span>
                     <Medium>
                         <div style={{ position: "relative" }}>
@@ -208,7 +207,8 @@ SearchBox.contextTypes = {
 const mapStateToProps = (state, ownProps) => {
     let { datasetSearch } = state;
     return {
-        freeText: datasetSearch.freeText
+        freeText: datasetSearch.freeText,
+        strings: state.content.strings
     };
 };
 

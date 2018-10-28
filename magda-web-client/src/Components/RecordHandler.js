@@ -10,7 +10,6 @@ import {
     fetchDistributionFromRegistry,
     resetFetchRecord
 } from "../actions/recordActions";
-import { config } from "../config";
 import defined from "../helpers/defined";
 import { gapi } from "../analytics/ga";
 import ErrorHandler from "./ErrorHandler";
@@ -364,7 +363,8 @@ class RecordHandler extends React.Component {
                                             Created{" "}
                                             <span itemProp="dateCreated">
                                                 {this.props.dataset.issuedDate}
-                                            </span>&nbsp;
+                                            </span>
+                                            &nbsp;
                                         </span>
                                     )}
 
@@ -521,7 +521,9 @@ class RecordHandler extends React.Component {
 
         return (
             <ReactDocumentTitle
-                title={`${title} | ${type} | ${config.appName}`}
+                title={`${title} | ${type} | ${
+                    this.props.strings.applicationName
+                }`}
             >
                 <div>{this.renderByState()}</div>
             </ReactDocumentTitle>
@@ -544,7 +546,8 @@ function mapStateToProps(state) {
         datasetIsFetching,
         distributionIsFetching,
         distributionFetchError,
-        datasetFetchError
+        datasetFetchError,
+        strings: state.content.strings
     };
 }
 

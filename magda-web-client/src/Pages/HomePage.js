@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-import { config } from "../config.js";
 import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
@@ -100,64 +99,20 @@ class HomePage extends React.Component {
 }
 
 function mapStateToProps(state) {
-    let desktopTagLine = "";
-    let mobileTagLine = "";
-    let highlights = {};
-    let stories = {};
-    if (state.content.isFetched) {
-        for (const item of state.content.content) {
-            if (item.id === "home/tagline/desktop") {
-                desktopTagLine = item.content;
-            } else if (item.id === "home/tagline/mobile") {
-                mobileTagLine = item.content;
-            } else if (item.id.indexOf("home/highlights/") === 0) {
-                const id = item.id.substr("home/highlights/".length);
-                highlights[id] = highlights[id] || {};
-                highlights[id].lozenge = item.content;
-            } else if (item.id.indexOf("home/highlight-images/") === 0) {
-                let id = item.id.substr("home/highlight-images/".length);
-                id = id.substr(0, id.lastIndexOf("/"));
-                highlights[id] = highlights[id] || {};
-                highlights[id].backgroundImageUrls =
-                    highlights[id].backgroundImageUrls || [];
-                highlights[id].backgroundImageUrls.push(
-                    `${config.contentApiURL}/${item.id}.bin`
-                );
-            } else if (item.id.indexOf("home/stories/") === 0) {
-                const id = item.id.substr("home/stories/".length);
-                stories[id] = stories[id] || { id };
-                stories[id].content = item.content;
-            } else if (item.id.indexOf("home/story-images/") === 0) {
-                const id = item.id.substr("home/story-images/".length);
-                stories[id] = stories[id] || { id };
-                stories[id].image = `${config.contentApiURL}/${item.id}.bin`;
-            }
-        }
-    }
-    if (Object.keys(highlights).length === 0) {
-        highlights.default = {
-            backgroundImageUrls: [
-                "/assets/homepage/0w.jpg",
-                "/assets/homepage/720w.jpg",
-                "/assets/homepage/1080w.jpg",
-                "/assets/homepage/1440w.jpg",
-                "/assets/homepage/2160w.jpg"
-            ]
-        };
-    }
-    let highlight = Object.keys(highlights);
-    highlight = highlight[new Date().getDate() % highlight.length];
-
-    stories = Object.values(stories)
-        .filter(story => story.content)
-        .sort((a, b) => a.content.order - b.content.order);
+    const {
+        desktopTagLine,
+        mobileTagLine,
+        lozenge,
+        backgroundImageUrls,
+        stories
+    } = state.content;
 
     return {
         isTopBannerShown: state.topBanner.isShown,
         desktopTagLine,
         mobileTagLine,
-        lozenge: highlights[highlight].lozenge,
-        backgroundImageUrls: highlights[highlight].backgroundImageUrls,
+        lozenge,
+        backgroundImageUrls,
         stories
     };
 }

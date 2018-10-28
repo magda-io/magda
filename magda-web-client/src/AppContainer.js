@@ -8,6 +8,7 @@ import Banner from "./UI/Banner";
 import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
+import { requestContent } from "./actions/contentActions";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
@@ -23,12 +24,13 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
+        this.props.requestContent();
     }
 
     render() {
         const footerNavs = config.footerNavigation;
         return (
-            <ReactDocumentTitle title={config.appName}>
+            <ReactDocumentTitle title={this.props.strings.applicationName}>
                 <div className="au-grid wrapper">
                     <div>
                         <AUskipLink
@@ -85,7 +87,8 @@ class AppContainer extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        topNotification: state.topNotification
+        topNotification: state.topNotification,
+        strings: state.content.strings
     };
 };
 
@@ -93,6 +96,7 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             requestWhoAmI: requestWhoAmI,
+            requestContent,
             hideTopNotification
         },
         dispatch

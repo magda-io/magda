@@ -1,10 +1,10 @@
 //@flow
 import React from "react";
-import { config } from "../config";
+import { connect } from "react-redux";
 import ReactDocumentTitle from "react-document-title";
 import AUpageAlert from "../pancake/react/page-alerts";
 
-export default class ErrorHandler extends React.Component {
+class ErrorHandler extends React.Component {
     props: {
         error: {
             title: string,
@@ -14,7 +14,9 @@ export default class ErrorHandler extends React.Component {
 
     render() {
         return (
-            <ReactDocumentTitle title={"Error | " + config.appName}>
+            <ReactDocumentTitle
+                title={"Error | " + this.props.strings.applicationName}
+            >
                 <AUpageAlert as="error">
                     {this.props.error.title ? (
                         <h3>{this.props.error.title}</h3>
@@ -25,3 +27,14 @@ export default class ErrorHandler extends React.Component {
         );
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        strings: state.content.strings
+    };
+}
+
+export default connect(
+    mapStateToProps,
+    null
+)(ErrorHandler);
