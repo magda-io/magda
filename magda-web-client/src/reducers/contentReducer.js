@@ -77,7 +77,6 @@ function parseContent(content) {
     let highlights = {};
     let stories = {};
     const lang = "en";
-    let strings = Object.assign(defaultStrings);
     let strings = Object.assign({}, defaultStrings);
     for (const item of content) {
         if (item.id === "home/tagline/desktop") {
