@@ -16,10 +16,11 @@ class DatasetDetails extends Component {
         const dataset = this.props.dataset;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
-        const source = `This dataset was originally found on [${
-            this.props.dataset.source
-        }](${dataset.landingPage})`;
-
+        const source = this.props.dataset.source
+            ? `This dataset was originally found on [${
+                  this.props.dataset.source
+              }](${dataset.landingPage})`
+            : "";
         return (
             <div className="dataset-details">
                 <div className="dataset-preview">
@@ -48,19 +49,21 @@ class DatasetDetails extends Component {
                                 ))}
                             </div>
                         </div>
-                        <div className="dataset-details-source">
-                            <h3 className="section-heading">Data Source</h3>
-                            <MarkdownViewer
-                                markdown={source}
-                                truncate={false}
-                            />
-                            <a
-                                className="landing-page"
-                                href={dataset.landingPage}
-                            >
-                                {dataset.landingPage}
-                            </a>
-                        </div>
+                        {source && (
+                            <div className="dataset-details-source">
+                                <h3 className="section-heading">Data Source</h3>
+                                <MarkdownViewer
+                                    markdown={source}
+                                    truncate={false}
+                                />
+                                <a
+                                    className="landing-page"
+                                    href={dataset.landingPage}
+                                >
+                                    {dataset.landingPage}
+                                </a>
+                            </div>
+                        )}
                         <div
                             className="dataset-details-temporal-coverage"
                             style={{ display: "none" }}
