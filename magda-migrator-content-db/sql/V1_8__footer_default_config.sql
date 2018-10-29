@@ -1,5 +1,6 @@
-INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/navigation/categories/medium/data.gov.au', 'application/json', '{
-  "label": "Data.gov.au",
+INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/navigation/categories/medium/magda', 'application/json', '{
+  "label": "Magda",
+  "order": 10,
   "links": [
     [
       "About",
@@ -17,6 +18,7 @@ INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/navigat
 }'),
 ('footer/navigation/categories/medium/developers', 'application/json', '{
   "label": "Developers",
+  "order": 20,
   "links": [
     [
       "API Documentation",
@@ -28,8 +30,9 @@ INSERT INTO "public"."content" ("id", "type", "content") VALUES ('footer/navigat
     ]
   ]
 }'),
-('footer/navigation/categories/small/data.gov.au', 'application/json', '{
-  "label": "Data.gov.au",
+('footer/navigation/categories/small/magda', 'application/json', '{
+  "label": "Magda",
+  "order": 30,
   "links": [
     [
       "About",
