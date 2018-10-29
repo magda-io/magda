@@ -371,6 +371,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const linkedDataRating: number = aspects["dataset-quality-rating"]
         ? calcQuality(aspects["dataset-quality-rating"])
         : 0;
+    const hasQuality: boolean = aspects["dataset-quality-rating"]
+        ? true
+        : false;
 
     const distributions = distribution["distributions"].map(d => {
         const distributionAspects = Object.assign(
@@ -436,6 +439,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         temporalCoverage,
         publisher,
         error,
-        linkedDataRating
+        linkedDataRating,
+        hasQuality
     };
 }

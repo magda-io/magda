@@ -401,7 +401,7 @@ class RecordHandler extends React.Component {
                                             />
                                         </Medium>
                                     </div>
-                                    {this.props.dataset.linkedDataRating && (
+                                    {this.props.dataset.hasQuality ? (
                                         <div className="quality-rating-box">
                                             <QualityIndicator
                                                 quality={
@@ -410,7 +410,7 @@ class RecordHandler extends React.Component {
                                                 }
                                             />
                                         </div>
-                                    )}
+                                    ) : null}
                                     {this.props.dataset.contactPoint && (
                                         <ContactPoint
                                             contactPoint={
