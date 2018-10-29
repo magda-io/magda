@@ -123,6 +123,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.get("/public/users/whoami", async function(req, res) {
         try {
+            res.set({
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0"
+            });
             const userId = getUserId(req, options.jwtSecret).valueOr(null);
             if (!userId) {
                 throw new AuthError();
@@ -164,8 +169,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    Nothing
      */
     router.get("/public/users/:userId", (req, res) => {
+        res.set({
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0"
+        });
         const userId = req.params.userId;
-
         const getPublicUser = database.getUser(userId).then(userMaybe =>
             userMaybe.map(user => {
                 const publicUser: PublicUser = {
