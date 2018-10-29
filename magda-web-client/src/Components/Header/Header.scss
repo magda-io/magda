@@ -27,8 +27,9 @@
 }
 
 .header {
-    border-bottom: 8px solid #341039;
-    border-bottom: 0.5rem solid #341039;
+    border-bottom: 8px solid $header-color-border;
+    border-bottom: 0.5rem solid $header-color-border;
+    background-color: $header-color-background;
 }
 
 .header-nav {
@@ -132,11 +133,15 @@
                 display: inline-block;
                 border-top: 0;
             }
+            a {
+                color: $header-color-action;
+                background-color: $header-color-action-background;
+            }
 
             a:hover,
             a:focus {
-                background-color: #341039;
-                color: #fff;
+                background-color: $header-color-focus-background;
+                color: $header-color-focus;
             }
         }
     }

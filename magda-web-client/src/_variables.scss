@@ -8,6 +8,21 @@ $AU-colordark-foreground-focus: #6b7fd7;
 $AU-colordark-foreground-text: #f7f7f7;
 $AU-colordark-background: #320e3b;
 
+$header-color-background: transparent;
+$header-opacity-desktop-background: 0.9;
+$header-color-border: #341039;
+$header-color-text: $AU-color-foreground-action;
+$header-color-action: $AU-color-foreground-action;
+$header-color-action-background: transparent;
+$header-color-focus: #fff;
+$header-color-focus-background: #341039;
+
+$footer-color-background: $AU-colordark-background;
+$footer-color-border: $AU-colordark-foreground-focus;
+$footer-color-text: $AU-colordark-foreground-text;
+$footer-color-action: $AU-colordark-foreground-action;
+$footer-color-focus: $AU-colordark-foreground-focus;
+
 $magda-green: #16a085;
 $magda-red: #c0392b;
 $magda-yellow: #f1c40f;
