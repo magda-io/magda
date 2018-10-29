@@ -54,10 +54,6 @@ const contentApiURL =
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
-    appTitle: "Australian open data search",
-    appName: "data.gov.au - beta",
-    about:
-        "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl,
     baseExternalUrl,
     contentApiURL,
@@ -94,7 +90,7 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&inline=true`,
+    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=lang/*&inline=true`,
     months: [
         "Jan",
         "Feb",
@@ -119,4 +115,8 @@ export const config = {
     datasetSearchSuggestionScoreThreshold:
         serverConfig.datasetSearchSuggestionScoreThreshold || 65,
     gapiIds: serverConfig.gapiIds || []
+};
+
+export const defaultStrings = {
+    applicationName: "MAGDA"
 };

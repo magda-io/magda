@@ -30,7 +30,7 @@ class AppContainer extends React.Component {
     render() {
         const footerNavs = config.footerNavigation;
         return (
-            <ReactDocumentTitle title={config.appName}>
+            <ReactDocumentTitle title={this.props.strings.applicationName}>
                 <div className="au-grid wrapper">
                     <div>
                         <AUskipLink
@@ -87,7 +87,8 @@ class AppContainer extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        topNotification: state.topNotification
+        topNotification: state.topNotification,
+        strings: state.content.strings
     };
 };
 

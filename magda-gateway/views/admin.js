@@ -27,7 +27,8 @@ async function refresh() {
             "Homepage Highlights": showHomeHighlights,
             "Homepage Stories": showHomeStories,
             "CSV Data": showSpreadsheets,
-            Connectors: showConnectors
+            Connectors: showConnectors,
+            Language: showLanguage
         };
 
         const section = body.append("select");
@@ -170,6 +171,18 @@ function showHomeHighlights(body) {
     });
 }
 
+function showLanguage(body) {
+    showJsonEditor(body, {
+        label: "Language Items",
+        idPattern: "lang/en/*",
+        schema: languageSchema,
+        allowDelete: true,
+        allowAdd: true,
+        allowIdFieldInput: true,
+        newId: id => `lang/en/${id}`
+    });
+}
+
 async function showJsonEditor(body, options) {
     let files = await request(
         "GET",
@@ -232,6 +245,12 @@ async function showJsonEditor(body, options) {
     }
 
     if (options.allowAdd) {
+        let idField;
+        if (options.allowIdFieldInput) {
+            const container = body.append("p");
+            container.append("strong").text("ID: ");
+            idField = container.append("input");
+        }
         jsoneditor(body.append("div"), {
             title: "Add new",
             schema: options.schema,
@@ -243,7 +262,9 @@ async function showJsonEditor(body, options) {
                     name,
                     await request(
                         "POST",
-                        `/api/v0/content/${options.newId()}`,
+                        `/api/v0/content/${options.newId(
+                            idField ? idField.property("value") : undefined
+                        )}`,
                         newObj,
                         "application/json"
                     )
@@ -624,6 +645,10 @@ const headerNavigationSchema = {
 };
 
 const headerTaglineSchema = {
+    type: "string"
+};
+
+const languageSchema = {
     type: "string"
 };
 

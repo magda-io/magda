@@ -382,6 +382,7 @@ object Generators {
     distributions <- listSizeBetween(1, 5, distGen(inputCache))
     landingPage <- someBiasedOption(arbitrary[String].map(_.take(50).mkString.trim))
     quality <- twoDigitDoubleGen
+    hasQuality <- arbitrary[Boolean]
   } yield DataSet(
     identifier = identifier.toString,
     catalog = Some("test-catalog"),
@@ -399,7 +400,8 @@ object Generators {
     contactPoint = contactPoint,
     distributions = distributions,
     landingPage = landingPage,
-    quality = quality,
+    quality = if (quality == 1) 0 else quality,
+    hasQuality = if (quality > 0) true else if (quality == 1) false else hasQuality,
     score = None)
 
   val INDEXED_REGIONS_COUNT = 12

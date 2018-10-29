@@ -164,3 +164,7 @@ export const homeStory: any = {
     },
     required: ["title", "order", "content"]
 };
+
+export const languageString: any = {
+    type: "string"
+};

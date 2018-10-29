@@ -76,8 +76,9 @@ export const content: { [s: string]: ContentItem } = {
     emailTemplates: makeHtmlItem({
         route: /\/emailTemplates\/\w+\.html/
     }),
-    "emailTemplates/assets/*": makeImageItem()
+    "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
+    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString })
 };
 
 function makeImageItem(extra: any = {}) {
@@ -160,7 +161,8 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
     return Object.assign(
         {
             body: bodyParser.json({
-                inflate: true
+                inflate: true,
+                strict: false
             }),
             encode: ContentEncoding.json,
             verify: function(req: any, res: any, next: any) {

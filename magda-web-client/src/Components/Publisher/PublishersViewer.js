@@ -209,7 +209,7 @@ class PublishersViewer extends Component {
         return (
             <ReactDocumentTitle
                 title={`Organisations | Page ${currentPage} | ${
-                    config.appName
+                    this.props.strings.applicationName
                 }`}
             >
                 <div className="publishers-viewer">
@@ -280,7 +280,8 @@ function mapStateToProps(state, ownProps) {
         isFetching,
         hitCount,
         error,
-        keyword
+        keyword,
+        strings: state.content.strings
     };
 }
 

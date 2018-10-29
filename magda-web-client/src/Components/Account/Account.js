@@ -2,7 +2,6 @@ import React from "react";
 import "./Account.css";
 import Login from "./Login";
 import { connect } from "react-redux";
-import { config } from "../../config";
 import queryString from "query-string";
 import { requestAuthProviders } from "../../actions/userManagementActions";
 import ReactDocumentTitle from "react-document-title";
@@ -28,7 +27,9 @@ class Account extends React.Component {
     render() {
         const pageTitle = this.props.user ? "Account" : "Sign In";
         return (
-            <ReactDocumentTitle title={`${pageTitle} | ${config.appName}`}>
+            <ReactDocumentTitle
+                title={`${pageTitle} | ${this.props.strings.applicationName}`}
+            >
                 <div className="account">
                     <Medium>
                         <Breadcrumbs
@@ -70,7 +71,8 @@ function mapStateToProps(state) {
     return {
         user,
         providers,
-        providersError
+        providersError,
+        strings: state.content.strings
     };
 }
 
