@@ -94,3 +94,68 @@ export const homeStory: any = {
 export const languageString: any = {
     type: "string"
 };
+
+export const footerCategory: any = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        label: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "label"]
+};
+
+export const footerLink: any = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        label: {
+            type: "string",
+            minLength: 1
+        },
+        href: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "label", "href"]
+};
+
+export const footerCopyright: any = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        href: {
+            type: "string",
+            minLength: 1
+        },
+        logoSrc: {
+            type: "string",
+            minLength: 1
+        },
+        logoClassName: {
+            type: "string",
+            default: ""
+        },
+        logoAlt: {
+            type: "string",
+            default: ""
+        },
+        htmlContent: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "href", "logoSrc", "htmlContent"]
+};
