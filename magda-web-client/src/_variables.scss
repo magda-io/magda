@@ -1,22 +1,22 @@
-$AU-color-foreground-action: #4c2a85;
-$AU-color-foreground-focus: #0e0021;
-$AU-color-foreground-text: #0e0021;
+$AU-color-foreground-action: #726a5c;
+$AU-color-foreground-focus: #272727;
+$AU-color-foreground-text: #272727;
 $AU-color-background: #ffffff;
 
-$AU-colordark-foreground-action: #f7f7f7;
+$AU-colordark-foreground-action: #f2f2f2;
 $AU-colordark-foreground-focus: #6b7fd7;
-$AU-colordark-foreground-text: #f7f7f7;
-$AU-colordark-background: #320e3b;
+$AU-colordark-foreground-text: #f2f2f2;
+$AU-colordark-background: #272727;
 
-$header-color-background: #ffffff;
-$header-opacity-desktop-background: 0.9;
-$header-color-border: #341039;
+$header-color-background: #726a5c;
+$header-opacity-desktop-background: 1;
+$header-color-border: #726a5c;
 
 $header-color-text: $AU-color-foreground-action;
-$header-color-action: $AU-color-foreground-action;
+$header-color-action: #f2f2f2;
 $header-color-action-background: transparent;
-$header-color-focus: #fff;
-$header-color-focus-background: #341039;
+$header-color-focus: #f2f2f2;
+$header-color-focus-background: #272727;
 
 $header-color-mobile-nav-background: white;
 $header-color-mobile-nav-border-bottom: #dad9db;
@@ -33,11 +33,11 @@ $header-color-mobile-nav-content: inherit;
 $header-color-mobile-nav-content-background: transparent;
 $header-color-mobile-nav-content-border-bottom: $AU-color-foreground-action;
 
-$footer-color-background: $AU-colordark-background;
-$footer-color-border: $AU-colordark-foreground-focus;
-$footer-color-text: $AU-colordark-foreground-text;
-$footer-color-action: $AU-colordark-foreground-action;
-$footer-color-focus: $AU-colordark-foreground-focus;
+$footer-color-background: #272727;
+$footer-color-border: #272727;
+$footer-color-text: #f2f2f2;
+$footer-color-action: #f2f2f2;
+$footer-color-focus: #cac8bf;
 
 $magda-green: #16a085;
 $magda-red: #c0392b;
