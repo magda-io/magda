@@ -11,11 +11,27 @@ $AU-colordark-background: #320e3b;
 $header-color-background: transparent;
 $header-opacity-desktop-background: 0.9;
 $header-color-border: #341039;
+
 $header-color-text: $AU-color-foreground-action;
 $header-color-action: $AU-color-foreground-action;
 $header-color-action-background: transparent;
 $header-color-focus: #fff;
 $header-color-focus-background: #341039;
+
+$header-color-mobile-nav-background: white;
+$header-color-mobile-nav-border-bottom: #dad9db;
+$header-color-mobile-nav-border-left: transparent;
+$header-color-mobile-nav-action: $AU-colordark-background;
+$header-color-mobile-nav-action-background: transparent;
+$header-color-mobile-nav-active: inherit;
+$header-color-mobile-nav-active-background: #f4f3f5;
+$header-color-mobile-nav-active-border: $AU-colordark-background;
+$header-color-mobile-nav-focus: inherit;
+$header-color-mobile-nav-focus-background: transparent;
+$header-color-mobile-nav-focus-border: transparent;
+$header-color-mobile-nav-content: inherit;
+$header-color-mobile-nav-content-background: transparent;
+$header-color-mobile-nav-content-border-bottom: $AU-color-foreground-action;
 
 $footer-color-background: $AU-colordark-background;
 $footer-color-border: $AU-colordark-foreground-focus;

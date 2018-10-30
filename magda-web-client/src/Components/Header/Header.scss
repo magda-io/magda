@@ -161,7 +161,7 @@
 }
 
 .mobile-nav {
-    background: white;
+    background: $header-color-mobile-nav-background;
     position: absolute;
     right: 0;
     width: 100%;
@@ -170,29 +170,37 @@
     li {
         padding: 0;
         margin: 0;
-        border-bottom: 1px solid #dad9db;
+        border-bottom: 1px solid $header-color-mobile-nav-border-bottom;
         a {
             line-height: 4.5rem;
             margin: 0;
-            border-left: 10px solid transparent;
+            border-left: 10px solid $header-color-mobile-nav-border-left;
             display: block;
             padding: 0;
             padding-left: 16px;
-            color: $AU-colordark-background;
+            color: $header-color-mobile-nav-action;
+            background-color: $header-color-mobile-nav-action-background;
 
             &,
             &:hover,
             &:focus {
                 text-decoration: none;
+                background: $header-color-mobile-nav-focus-background;
+                color: $header-color-mobile-nav-focus;
+                border-color: $header-color-mobile-nav-focus-border;
             }
 
             &.active {
-                background: #f4f3f5;
+                background: $header-color-mobile-nav-active-background;
+                color: $header-color-mobile-nav-active;
                 font-weight: bold;
-                border-color: $AU-colordark-background;
+                border-color: $header-color-mobile-nav-active-border;
             }
             span {
-                border-bottom: 1px solid $AU-color-foreground-action;
+                border-bottom: 1px solid
+                    $header-color-mobile-nav-content-border-bottom;
+                color: $header-color-mobile-nav-content;
+                background: $header-color-mobile-nav-content-background;
             }
         }
     }
