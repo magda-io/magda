@@ -3,9 +3,10 @@
 .au-header {
     padding: 16px 0 8px 0;
     padding: 1rem 0 0.5rem 0;
+    background-color: $header-color-background;
 
     @media screen and (min-width: $medium) {
-        opacity: 0.9;
+        opacity: $header-opacity-desktop-background;
     }
 
     .au-header__brand {
@@ -29,7 +30,7 @@
 .header {
     border-bottom: 8px solid $header-color-border;
     border-bottom: 0.5rem solid $header-color-border;
-    background-color: $header-color-background;
+    background-color: transparent;
 }
 
 .header-nav {
