@@ -28,7 +28,9 @@ async function refresh() {
             "Homepage Stories": showHomeStories,
             "CSV Data": showSpreadsheets,
             Connectors: showConnectors,
-            Language: showLanguage
+            Language: showLanguage,
+            "Footer Navigation": showFooterNavigation,
+            "Footer Copyright": showFooterCopyright
         };
 
         const section = body.append("select");
@@ -180,6 +182,65 @@ function showLanguage(body) {
         allowAdd: true,
         allowIdFieldInput: true,
         newId: id => `lang/en/${id}`
+    });
+}
+
+function showFooterNavigation(body) {
+    body.text("");
+    showJsonEditor(body.append("div"), {
+        label: "Medium Footer Navigation Categories",
+        idPattern: "footer/navigation/medium/category/*",
+        schema: footerCategory,
+        allowDelete: true,
+        allowAdd: true,
+        newId: id => `footer/navigation/medium/category/${Date.now()}`,
+        extraControls: (parent, file) => {
+            const prefix = file.id.substr(
+                "footer/navigation/medium/category/".length
+            );
+            showJsonEditor(parent.append("div").style("padding-left", "5em"), {
+                label: "Category Menu Items",
+                idPattern: `footer/navigation/medium/category-links/${prefix}/*`,
+                schema: footerLink,
+                allowDelete: true,
+                allowAdd: true,
+                newId: id =>
+                    `footer/navigation/medium/category-links/${prefix}/${Date.now()}`
+            });
+        }
+    });
+    showJsonEditor(body.append("div"), {
+        label: "Small Footer Navigation Categories",
+        idPattern: "footer/navigation/small/category/*",
+        schema: footerCategory,
+        allowDelete: true,
+        allowAdd: true,
+        newId: id => `footer/navigation/small/category/${Date.now()}`,
+        extraControls: (parent, file) => {
+            const prefix = file.id.substr(
+                "footer/navigation/small/category/".length
+            );
+            showJsonEditor(parent.append("div").style("padding-left", "5em"), {
+                label: "Category Menu Items",
+                idPattern: `footer/navigation/small/category-links/${prefix}/*`,
+                schema: footerLink,
+                allowDelete: true,
+                allowAdd: true,
+                newId: id =>
+                    `footer/navigation/small/category-links/${prefix}/${Date.now()}`
+            });
+        }
+    });
+}
+
+function showFooterCopyright(body) {
+    showJsonEditor(body, {
+        label: "Footer Copyright",
+        idPattern: "footer/copyright/*",
+        schema: footerCopyright,
+        allowDelete: true,
+        allowAdd: true,
+        newId: id => `footer/copyright/${Date.now()}`
     });
 }
 
@@ -688,4 +749,69 @@ const homeHighlightSchema = {
         }
     },
     required: ["text", "url"]
+};
+
+const footerCategory = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        label: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "label"]
+};
+
+const footerLink = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        label: {
+            type: "string",
+            minLength: 1
+        },
+        href: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "label", "href"]
+};
+
+const footerCopyright = {
+    type: "object",
+    properties: {
+        order: {
+            type: "number",
+            default: 1
+        },
+        href: {
+            type: "string",
+            minLength: 1
+        },
+        logoSrc: {
+            type: "string",
+            minLength: 1
+        },
+        logoClassName: {
+            type: "string",
+            default: ""
+        },
+        logoAlt: {
+            type: "string",
+            default: ""
+        },
+        htmlContent: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["order", "href", "logoSrc", "htmlContent"]
 };

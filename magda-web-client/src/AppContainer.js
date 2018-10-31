@@ -8,7 +8,7 @@ import Banner from "./UI/Banner";
 import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
-import { requestContent } from "./actions/contentActions";
+import { fetchContent } from "./actions/contentActions";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
@@ -24,11 +24,10 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
-        this.props.requestContent();
+        this.props.fetchContent();
     }
 
     render() {
-        const footerNavs = config.footerNavigation;
         return (
             <ReactDocumentTitle title={this.props.strings.applicationName}>
                 <div className="au-grid wrapper">
@@ -57,7 +56,7 @@ class AppContainer extends React.Component {
                         </Switch>
                     </div>
 
-                    <Footer footerNavs={footerNavs} />
+                    <Footer />
 
                     {this.props.topNotification.visible ? (
                         <Notification
@@ -96,7 +95,7 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             requestWhoAmI: requestWhoAmI,
-            requestContent,
+            fetchContent,
             hideTopNotification
         },
         dispatch
