@@ -86,7 +86,7 @@ class Header extends Component {
                                             <HeaderNav
                                                 isMobile={true}
                                                 headerNavigation={
-                                                    this.state.headerNavigation
+                                                    this.props.headerNavigation
                                                 }
                                             />
                                         </div>
