@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { config } from "../../config";
 import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
 import ReactDocumentTitle from "react-document-title";
@@ -205,6 +204,8 @@ class PublishersViewer extends Component {
     render() {
         const currentPage =
             +queryString.parse(this.props.location.search).page || 1;
+        const searchResultsPerPage = this.props.configuration
+            .searchResultsPerPage;
 
         return (
             <ReactDocumentTitle
@@ -244,11 +245,11 @@ class PublishersViewer extends Component {
                     </div>
                     {!this.props.isFetching &&
                         !this.props.error &&
-                        this.props.hitCount > config.resultsPerPage && (
+                        this.props.hitCount > searchResultsPerPage && (
                             <Pagination
                                 currentPage={currentPage}
                                 maxPage={Math.ceil(
-                                    this.props.hitCount / config.resultsPerPage
+                                    this.props.hitCount / searchResultsPerPage
                                 )}
                                 onPageChange={this.onPageChange}
                                 totalItems={this.props.hitCount}
@@ -281,7 +282,8 @@ function mapStateToProps(state, ownProps) {
         hitCount,
         error,
         keyword,
-        strings: state.content.strings
+        strings: state.content.strings,
+        configuration: state.content.configuration
     };
 }
 

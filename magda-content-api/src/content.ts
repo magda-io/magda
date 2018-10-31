@@ -86,7 +86,15 @@ export const content: { [s: string]: ContentItem } = {
     }),
     "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
-    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString })
+    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString }),
+    "config/datasetSearchSuggestionScoreThreshold": makeJsonItem(
+        {},
+        { schema: schemas.condigDatasetSearchSuggestionScoreThreshold }
+    ),
+    "config/searchResultsPerPage": makeJsonItem(
+        {},
+        { schema: schemas.configSearchResultsPerPage }
+    )
 };
 
 function makeImageItem(extra: any = {}) {

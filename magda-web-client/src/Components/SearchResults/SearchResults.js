@@ -2,9 +2,7 @@ import React, { Component } from "react";
 import DatasetSummary from "../../Components/Dataset/DatasetSummary";
 import "./SearchResults.css";
 import SearchPageSuggest from "./SearchPageSuggest";
-import { config } from "../../config";
-
-const { datasetSearchSuggestionScoreThreshold } = config;
+import { needsContent } from "../../helpers/content";
 
 function SuggestionBox() {
     return (
@@ -20,13 +18,16 @@ function SuggestionBox() {
 class SearchResults extends Component {
     getSuggestionBoxIndex = () => {
         if (this.props.suggestionBoxAtEnd && this.props.isFirstPage) {
-            return config.resultsPerPage;
+            return this.props.configuration.searchResultsPerPage;
         }
 
         const scores = this.props.searchResults.map(result => result.score);
 
         for (let i = 0; i < scores.length; i++) {
-            if (scores[i] < datasetSearchSuggestionScoreThreshold) {
+            if (
+                scores[i] <
+                this.props.configuration.datasetSearchSuggestionScoreThreshold
+            ) {
                 return i;
             }
         }
@@ -35,7 +36,8 @@ class SearchResults extends Component {
     };
 
     render() {
-        const suggestionBoxIndex = datasetSearchSuggestionScoreThreshold
+        const suggestionBoxIndex = this.props.configuration
+            .datasetSearchSuggestionScoreThreshold
             ? this.getSuggestionBoxIndex()
             : -1;
 
@@ -43,13 +45,13 @@ class SearchResults extends Component {
         // whether to put the suggest box at the end.
         const shownSearchResults = this.props.searchResults.slice(
             0,
-            config.resultsPerPage
+            this.props.configuration.searchResultsPerPage
         );
 
         return (
             <div className="search-results">
                 <ul className="list--unstyled">
-                    {/* Only show the suggestion box before the first result if we're on the first page - if we're not 
+                    {/* Only show the suggestion box before the first result if we're on the first page - if we're not
                     on the first page then presumably it was already shown as the last result on the previous page */}
                     {suggestionBoxIndex === 0 &&
                         this.props.isFirstPage && <SuggestionBox />}
@@ -79,4 +81,4 @@ class SearchResults extends Component {
 
 SearchResults.defaultProps = { searchResults: [] };
 
-export default SearchResults;
+export default needsContent("configuration")(SearchResults);
