@@ -60,7 +60,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
         let query: any[] = [];
         let inlineContentIfType: string[] = [];
 
-        query = query.concat(makeWildcardQuery(database, "id", req.params.id));
+        query = query.concat(makeWildcardQuery(database, "id", req.query.id));
+        query = query.concat(
+            makeWildcardQuery(database, "type", req.query.type)
+        );
 
         const inline = req.query.inline;
         if (inline) {
@@ -249,7 +252,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         content = content.toString("base64");
                         break;
                     case ContentEncoding.json:
-                        if (!(content instanceof Object)) {
+                        if (
+                            typeof content !== "object" &&
+                            typeof content !== "string" &&
+                            typeof content !== "number" &&
+                            typeof content !== "boolean" &&
+                            content !== null
+                        ) {
                             throw new GenericError(
                                 "Can not stringify encode non-json"
                             );

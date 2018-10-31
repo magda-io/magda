@@ -3,10 +3,9 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
 import { NamespacesConsumer } from "react-i18next";
-import ReactDocumentTitle from "react-document-title";
 
 import ErrorHandler from "../../Components/ErrorHandler";
-import { config } from "../../config";
+import ReactDocumentTitle from "react-document-title";
 import {
     fetchPublisherIfNeeded,
     resetFetchPublisher
@@ -77,7 +76,9 @@ class PublisherDetails extends Component {
 
         return (
             <ReactDocumentTitle
-                title={`${publisher.name} | Organisations | ${config.appName}`}
+                title={`${publisher.name} | Organisations | ${
+                    this.props.strings.applicationName
+                }`}
             >
                 <div className="publisher-details">
                     <div>
@@ -170,7 +171,11 @@ class PublisherDetails extends Component {
         ) {
             return (
                 <ReactDocumentTitle
-                    title={this.props.publisher.name + " | " + config.appName}
+                    title={
+                        this.props.publisher.name +
+                        " | " +
+                        this.props.strings.applicationName
+                    }
                 >
                     {this.renderContent()}
                 </ReactDocumentTitle>
@@ -212,7 +217,8 @@ function mapStateToProps(state: Object, ownProps: Object) {
         location,
         searchPublisherName,
         hitCount,
-        error
+        error,
+        strings: state.content.strings
     };
 }
 

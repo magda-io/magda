@@ -1,7 +1,11 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Hide dataset source for csv datasets
+-   Make sure MS Excel format does not break into two.
+-   Make home page items come from content api
 -   Make header menu items come from content api
+-   Remove all global references to config.appName and allow getting this configuration item from content api
 -   Changed some existing content ids to group things better
 -   Reorganised content api to require less number of requests to get small JSON content items
 -   Email Templates are configurable from content API
@@ -20,6 +24,10 @@
 -   Fixed content-api test case logic
 -   Hide "Download" button for distributions without downloadUrl
 -   Fixed content-api migrator script version conflict issue
+-   Make footer area configurable
+-   Fixed broken document link in docs/README.md
+-   Show quality rating only if present
+-   Fixed: cached auth api response causing login problems
 
 ## 0.0.49
 

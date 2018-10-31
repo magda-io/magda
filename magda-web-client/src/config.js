@@ -54,10 +54,6 @@ const contentApiURL =
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
-    appTitle: "Australian open data search",
-    appName: "data.gov.au - beta",
-    about:
-        "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl,
     baseExternalUrl,
     contentApiURL,
@@ -92,49 +88,9 @@ export const config = {
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
     ],
-    headerLogoUrl: `${contentApiURL}/header/logo.bin`,
-    headerMobileLogoUrl: `${contentApiURL}/header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}/all?id=*/navigation/*&inline=true`,
-    footerNavigation: {
-        // small media query (mobile)
-        small: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Give feedback", "feedback"]
-                ]
-            }
-        ],
-        // medium media query and bigger (desktop)
-        medium: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Privacy Policy", "page/privacy-policy"],
-                    ["Give feedback", "feedback"]
-                ]
-            },
-            {
-                category: "Publishers",
-                links: [
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
-                ]
-            },
-            {
-                category: "Developers",
-                links: [
-                    ["API Documentation", "/api/v0/apidocs/index.html"],
-                    ["Powered by Magda", "https://magda.io"]
-                ]
-            }
-        ]
-    },
+    headerLogoUrl: `${contentApiURL}header/logo.bin`,
+    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
+    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=lang/*&id=footer/*&inline=true`,
     months: [
         "Jan",
         "Feb",
@@ -159,4 +115,8 @@ export const config = {
     datasetSearchSuggestionScoreThreshold:
         serverConfig.datasetSearchSuggestionScoreThreshold || 65,
     gapiIds: serverConfig.gapiIds || []
+};
+
+export const defaultStrings = {
+    applicationName: "MAGDA"
 };

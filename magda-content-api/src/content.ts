@@ -49,6 +49,29 @@ export const content: { [s: string]: ContentItem } = {
         {},
         { schema: schemas.headerNavigation }
     ),
+    "footer/navigation/small/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/medium/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/small/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/navigation/medium/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/copyright/*": makeJsonItem({}, { schema: schemas.footerCopyright }),
+    "home/tagline/desktop": makeJsonItem({}, { schema: schemas.homeTagLine }),
+    "home/tagline/mobile": makeJsonItem({}, { schema: schemas.homeTagLine }),
+    "home/highlights/*": makeJsonItem({}, { schema: schemas.homeHighlight }),
+    "home/highlight-images/*": makeImageItem(),
+    "home/stories/*": makeJsonItem({}, { schema: schemas.homeStory }),
+    "home/story-images/*": makeImageItem(),
     stylesheet: makeCssItem(),
     "staticPages/*.md": makeMarkdownItem(),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
@@ -61,8 +84,9 @@ export const content: { [s: string]: ContentItem } = {
     emailTemplates: makeHtmlItem({
         route: /\/emailTemplates\/\w+\.html/
     }),
-    "emailTemplates/assets/*": makeImageItem()
+    "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
+    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString })
 };
 
 function makeImageItem(extra: any = {}) {
@@ -76,7 +100,8 @@ function makeImageItem(extra: any = {}) {
                     "image/webp",
                     "image/svg+xml"
                 ],
-                inflate: true
+                inflate: true,
+                limit: "10mb"
             }),
             encode: ContentEncoding.base64
         },
@@ -139,11 +164,13 @@ function makeSpreadsheetItem(extra: any = {}) {
 
 function makeJsonItem(extra: any = {}, options: any = {}) {
     const schemaId = `schema${(env.schemaCount = env.schemaCount || 1)}`;
+    env.schemaCount++;
     env.addSchema(schemaId, options.schema || { type: "object" });
     return Object.assign(
         {
             body: bodyParser.json({
-                inflate: true
+                inflate: true,
+                strict: false
             }),
             encode: ContentEncoding.json,
             verify: function(req: any, res: any, next: any) {
@@ -151,7 +178,12 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
                 if (!invalid) {
                     next();
                 } else {
-                    res.status(500).json({ result: "FAILED", invalid });
+                    res.status(500).json({
+                        result: "FAILED",
+                        invalid,
+                        schema: options.schema,
+                        content: req.body
+                    });
                 }
             }
         },

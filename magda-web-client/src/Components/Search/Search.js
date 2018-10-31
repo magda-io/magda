@@ -167,7 +167,7 @@ class Search extends Component {
         return (
             <ReactDocumentTitle
                 title={`Datasets search: ${searchText} | Page ${currentPage} | ${
-                    config.appName
+                    this.props.strings.applicationName
                 }`}
             >
                 <div>
@@ -283,7 +283,8 @@ function mapStateToProps(state, ownProps) {
         isFetching: datasetSearch.isFetching,
         strategy: datasetSearch.strategy,
         error: datasetSearch.error,
-        freeText: datasetSearch.freeText
+        freeText: datasetSearch.freeText,
+        strings: state.content.strings
     };
 }
 

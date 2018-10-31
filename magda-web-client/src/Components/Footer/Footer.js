@@ -1,21 +1,18 @@
 /* eslint-disable no-undef */
 import React from "react";
-
+import { connect } from "react-redux";
 import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
 import { Small } from "../../UI/Responsive";
-
-import dtaLogo from "./dta-logo.png";
-import d61logo from "./data61-logo.png";
 
 import "./footer.css";
 
 const externalLinkRegex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
 
 function FooterLink({ link }) {
-    if (link[1].indexOf("mailto") === 0) {
-        return <a href={link[1]}>{link[0]}</a>;
-    } else if (link[1] === "feedback") {
+    if (link.href.indexOf("mailto") === 0) {
+        return <a href={link.href}>{link.label}</a>;
+    } else if (link.href === "feedback") {
         return (
             <a
                 href="#feedback"
@@ -26,31 +23,31 @@ function FooterLink({ link }) {
                     return false;
                 }}
             >
-                {link[0]}
+                {link.label}
             </a>
         );
     } else if (
-        externalLinkRegex.test(link[1]) ||
-        link[1].substring(0, 1) === "/"
+        externalLinkRegex.test(link.href) ||
+        link.href.substring(0, 1) === "/"
     ) {
         return (
-            <a target="_blank" rel="noopener noreferrer" href={link[1]}>
-                {link[0]}
+            <a target="_blank" rel="noopener noreferrer" href={link.href}>
+                {link.label}
             </a>
         );
     } else {
-        return <Link to={`/${encodeURI(link[1])}`}>{link[0]}</Link>;
+        return <Link to={`/${encodeURI(link.href)}`}>{link.label}</Link>;
     }
 }
 
 function FooterNavs({ footerNavs }) {
     return footerNavs.map(item => (
-        <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.category}>
-            <h3 className="au-display-lg">{item.category}</h3>
+        <AUfooterNav className="col-md-3 col-sm-6 col-xs-6" key={item.label}>
+            <h3 className="au-display-lg">{item.label}</h3>
 
             <ul className="au-link-list">
                 {item.links.map(link => (
-                    <li key={link[1]}>
+                    <li key={link.href}>
                         <FooterLink link={link} />
                     </li>
                 ))}
@@ -59,10 +56,13 @@ function FooterNavs({ footerNavs }) {
     ));
 }
 
-function Copyright({ children, href, logoSrc, logoClassName, logoAlt }) {
+function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
     return (
         <div className="copyright">
-            <div className="copyright-text">{children}</div>
+            <div
+                className="copyright-text"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
             <a
                 target="_blank"
                 rel="noopener noreferrer"
@@ -79,7 +79,7 @@ function Copyright({ children, href, logoSrc, logoClassName, logoAlt }) {
     );
 }
 
-export default function Footer({ footerNavs }) {
+function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     return (
         <AUfooter dark className="au-body au-body--dark footer">
             <div className="container">
@@ -87,34 +87,36 @@ export default function Footer({ footerNavs }) {
                     {matched => (
                         <FooterNavs
                             footerNavs={
-                                matched ? footerNavs.small : footerNavs.medium
+                                matched ? footerSmallNavs : footerMediumNavs
                             }
                         />
                     )}
                 </Small>
-                <section className="footer-end col-md-3 col-sm-6 col-xs-6">
-                    <Copyright
-                        href="https://www.data61.csiro.au/"
-                        logoSrc={d61logo}
-                        logoClassName="data61-logo"
-                        logoAlt="Data61 Logo"
-                    >
-                        Developed by{" "}
-                    </Copyright>
-                    <Copyright
-                        href="https://dta.gov.au/"
-                        logoSrc={dtaLogo}
-                        logoClassName="dta-logo"
-                        logoAlt="DTA Logo"
-                    >
-                        Operated with&nbsp;
-                        <span role="img" aria-label="love">
-                            ❤️
-                        </span>{" "}
-                        by{" "}
-                    </Copyright>
-                </section>
+                {footerCopyRightItems.length ? (
+                    <section className="footer-end col-md-3 col-sm-6 col-xs-6">
+                        {footerCopyRightItems.map((item, idx) => (
+                            <Copyright
+                                key={idx}
+                                href={item.href}
+                                logoSrc={item.logoSrc}
+                                logoClassName={item.logoClassName}
+                                logoAlt={item.logoAlt}
+                                htmlContent={item.htmlContent}
+                            />
+                        ))}
+                    </section>
+                ) : null}
             </div>
         </AUfooter>
     );
 }
+
+const mapStateToProps = state => {
+    return {
+        footerMediumNavs: state.content.footerMediumNavs,
+        footerSmallNavs: state.content.footerSmallNavs,
+        footerCopyRightItems: state.content.footerCopyRightItems
+    };
+};
+
+export default connect(mapStateToProps)(Footer);
