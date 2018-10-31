@@ -41,6 +41,7 @@
     padding: 8px 0;
     padding: 0.5rem 0;
     text-align: left;
+    color: $header-color-mobile-toggle-button-text;
 
     &:before {
         background-image: AU-svguri(
@@ -179,30 +180,32 @@
             display: block;
             padding: 0;
             padding-left: 16px;
-            color: $header-color-mobile-nav-action;
-            background-color: $header-color-mobile-nav-action-background;
 
-            &,
-            &:hover,
-            &:focus {
-                text-decoration: none;
-                background: $header-color-mobile-nav-focus-background;
-                color: $header-color-mobile-nav-focus;
-                border-color: $header-color-mobile-nav-focus-border;
-            }
-
-            &.active {
-                background: $header-color-mobile-nav-active-background;
-                color: $header-color-mobile-nav-active;
-                font-weight: bold;
-                border-color: $header-color-mobile-nav-active-border;
-            }
             span {
                 border-bottom: 1px solid
                     $header-color-mobile-nav-content-border-bottom;
                 color: $header-color-mobile-nav-content;
                 background: $header-color-mobile-nav-content-background;
             }
+        }
+    }
+    .navigation li a {
+        color: $header-color-mobile-nav-action;
+        background-color: $header-color-mobile-nav-action-background;
+
+        &:hover,
+        &:focus {
+            text-decoration: none;
+            background: $header-color-mobile-nav-focus-background;
+            color: $header-color-mobile-nav-focus;
+            border-color: $header-color-mobile-nav-focus-border;
+        }
+
+        &.active {
+            background: $header-color-mobile-nav-active-background;
+            color: $header-color-mobile-nav-active;
+            font-weight: bold;
+            border-color: $header-color-mobile-nav-active-border;
         }
     }
 }
