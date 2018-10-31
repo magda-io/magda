@@ -73,7 +73,7 @@ export const content: { [s: string]: ContentItem } = {
     "home/stories/*": makeJsonItem({}, { schema: schemas.homeStory }),
     "home/story-images/*": makeImageItem(),
     stylesheet: makeCssItem(),
-    "staticPages/*.md": makeMarkdownItem(),
+    "page/*": makeJsonItem({}, { schema: schemas.page }),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
     "csv/*": makeSpreadsheetItem({
         route: /\/csv\-[a-z][\w\-]*[a-z]/,
@@ -135,18 +135,6 @@ function makeHtmlItem(extra: any = {}) {
             body: bodyParser.text({
                 type: "text/html",
                 limit: "1mb"
-            })
-        },
-        extra
-    );
-}
-
-function makeMarkdownItem(extra: any = {}) {
-    return Object.assign(
-        {
-            body: bodyParser.text({
-                type: "text/markdown",
-                limit: "5mb"
             })
         },
         extra

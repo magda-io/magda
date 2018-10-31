@@ -23,8 +23,10 @@ const staticPageReducer = (state = initialData, action: Action) => {
                 [action.payload.pageName]: {
                     isFetching: true,
                     isError: false,
+                    isFetched: false,
                     error: null,
-                    content: null
+                    title: "Loading...",
+                    content: "Please wait..."
                 }
             };
         case actionTypes.RECEIVE_STATIC_PAGE:
@@ -33,8 +35,10 @@ const staticPageReducer = (state = initialData, action: Action) => {
                 [action.payload.pageName]: {
                     isFetching: false,
                     isError: false,
+                    isFetched: true,
                     error: null,
-                    content: action.payload.content
+                    title: action.payload.content.title,
+                    content: action.payload.content.content
                 }
             };
         case actionTypes.REQUEST_STATIC_PAGE_ERROR:
@@ -43,8 +47,10 @@ const staticPageReducer = (state = initialData, action: Action) => {
                 [action.payload.pageName]: {
                     isFetching: false,
                     isError: true,
+                    isFetched: true,
                     error: action.payload.error,
-                    content: ""
+                    title: "Error",
+                    content: action.payload.error
                 }
             };
         default:
