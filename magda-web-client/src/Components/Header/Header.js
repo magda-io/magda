@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
-import * as contentActions from "../../actions/contentActions";
 
 class Header extends Component {
     constructor(props) {
@@ -23,7 +21,6 @@ class Header extends Component {
                 isMobileMenuOpen: false
             });
         });
-        this.props.fetchContent();
     }
 
     toggleMenu() {
@@ -113,26 +110,10 @@ Header.contextTypes = {
 };
 
 const mapStateToProps = state => {
-    let headerNavigation = [];
-    if (state.content.isFetched) {
-        headerNavigation = state.content.content
-            .filter(item => item.id.indexOf("header/navigation") === 0)
-            .map(item => item.content)
-            .sort((a, b) => a.order - b.order);
-    }
-    if (headerNavigation.length === 0) {
-        headerNavigation.push({
-            auth: {}
-        });
-    }
-    return { headerNavigation, strings: state.content.strings };
+    return {
+        headerNavigation: state.content.headerNavigation,
+        strings: state.content.strings
+    };
 };
 
-const mapDispatchToProps = dispatch => {
-    return bindActionCreators(contentActions, dispatch);
-};
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Header);
+export default connect(mapStateToProps)(Header);

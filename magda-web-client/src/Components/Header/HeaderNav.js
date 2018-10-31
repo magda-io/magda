@@ -15,8 +15,12 @@ const headerNavigationPlugins = {
             </li>
         );
     },
-    auth: () =>
-        config.disableAuthenticationFeatures ? <span /> : <AccountNavbar />
+    auth: (nav, i) =>
+        config.disableAuthenticationFeatures ? (
+            <span key={i} />
+        ) : (
+            <AccountNavbar key={i} />
+        )
 };
 
 function invokeHeaderNavigationPlugin(nav, i) {
