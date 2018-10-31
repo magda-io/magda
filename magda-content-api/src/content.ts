@@ -49,6 +49,23 @@ export const content: { [s: string]: ContentItem } = {
         {},
         { schema: schemas.headerNavigation }
     ),
+    "footer/navigation/small/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/medium/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/small/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/navigation/medium/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/copyright/*": makeJsonItem({}, { schema: schemas.footerCopyright }),
     "home/tagline/desktop": makeJsonItem({}, { schema: schemas.homeTagLine }),
     "home/tagline/mobile": makeJsonItem({}, { schema: schemas.homeTagLine }),
     "home/highlights/*": makeJsonItem({}, { schema: schemas.homeHighlight }),
