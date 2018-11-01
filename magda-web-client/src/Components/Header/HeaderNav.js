@@ -7,6 +7,10 @@ const headerNavigationPlugins = {
     default: function(nav, i) {
         const { href, target, rel } = nav;
         const opts = { href, target, rel };
+        if (href === window.location.pathname) {
+            opts["className"] = "active";
+            opts["aria-active"] = "page";
+        }
         return (
             <li key={i}>
                 <a {...opts}>
