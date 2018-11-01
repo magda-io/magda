@@ -160,7 +160,7 @@ export const footerCopyright: any = {
     required: ["order", "href", "logoSrc", "htmlContent"]
 };
 
-export const condigDatasetSearchSuggestionScoreThreshold: any = {
+export const configDatasetSearchSuggestionScoreThreshold: any = {
     type: "number",
     minimum: -1
 };
