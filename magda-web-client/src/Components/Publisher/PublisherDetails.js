@@ -62,7 +62,7 @@ class PublisherDetails extends Component {
                 <Link to="/organisations">
                     <NamespacesConsumer ns={["publisherPage"]}>
                         {t => {
-                            return t("breadCrumb");
+                            return t("publisherBreadCrumb");
                         }}
                     </NamespacesConsumer>
                 </Link>

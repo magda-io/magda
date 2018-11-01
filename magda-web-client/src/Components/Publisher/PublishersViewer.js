@@ -18,6 +18,7 @@ import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
 import { withRouter } from "react-router-dom";
+import { NamespacesConsumer } from "react-i18next";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -217,7 +218,15 @@ class PublishersViewer extends Component {
                         <Breadcrumbs
                             breadcrumbs={[
                                 <li key="organisations">
-                                    <span>Organisations</span>
+                                    <span>
+                                        <NamespacesConsumer
+                                            ns={["publisherPage"]}
+                                        >
+                                            {t => {
+                                                return t("publisherBreadCrumb");
+                                            }}
+                                        </NamespacesConsumer>
+                                    </span>
                                 </li>
                             ]}
                         />
