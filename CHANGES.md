@@ -29,6 +29,8 @@
 -   Show quality rating only if present
 -   Fixed: cached auth api response causing login problems
 -   Upgraded java version for `magda-scala-builder` docker image to fix `unsatisfiable constraints` error
+-   Fixed an issue of scss-compiler not updated all variables
+-   Added more configurable scss variables
 
 ## 0.0.49
 
