@@ -89,7 +89,7 @@ export const content: { [s: string]: ContentItem } = {
     "lang/*/*": makeJsonItem({}, { schema: schemas.languageString }),
     "config/datasetSearchSuggestionScoreThreshold": makeJsonItem(
         {},
-        { schema: schemas.condigDatasetSearchSuggestionScoreThreshold }
+        { schema: schemas.configDatasetSearchSuggestionScoreThreshold }
     ),
     "config/searchResultsPerPage": makeJsonItem(
         {},
