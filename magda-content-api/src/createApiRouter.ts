@@ -68,6 +68,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const inline = req.query.inline;
         if (inline) {
             inlineContentIfType.push("application/json");
+            inlineContentIfType.push("text/plain");
         }
 
         // get summary

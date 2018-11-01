@@ -208,63 +208,68 @@ class PublishersViewer extends Component {
             +queryString.parse(this.props.location.search).page || 1;
 
         return (
-            <ReactDocumentTitle
-                title={`Organisations | Page ${currentPage} | ${
-                    this.props.strings.applicationName
-                }`}
-            >
-                <div className="publishers-viewer">
-                    <Medium>
-                        <Breadcrumbs
-                            breadcrumbs={[
-                                <li key="organisations">
-                                    <span>
-                                        <NamespacesConsumer
-                                            ns={["publisherPage"]}
-                                        >
-                                            {t => {
-                                                return t("publisherBreadCrumb");
-                                            }}
-                                        </NamespacesConsumer>
-                                    </span>
-                                </li>
-                            ]}
-                        />
-                    </Medium>
+            <NamespacesConsumer ns={["publishersPage"]}>
+                {translate => (
+                    <ReactDocumentTitle
+                        title={`${translate(
+                            "publishersBreadCrumb"
+                        )} | Page ${currentPage} | ${translate(
+                            "global.appName"
+                        )}`}
+                    >
+                        <div className="publishers-viewer">
+                            <Medium>
+                                <Breadcrumbs
+                                    breadcrumbs={[
+                                        <li key="organisations">
+                                            <span>
+                                                {translate(
+                                                    "publishersBreadCrumb"
+                                                )}
+                                            </span>
+                                        </li>
+                                    ]}
+                                />
+                            </Medium>
 
-                    <div className="row">
-                        <div className="publishers-viewer__header">
-                            <div className="col-sm-8">
-                                <h1>Organisations</h1>
+                            <div className="row">
+                                <div className="publishers-viewer__header">
+                                    <div className="col-sm-8">
+                                        <h1>
+                                            {translate("publishersPageTitle")}
+                                        </h1>
+                                    </div>
+
+                                    <div className="col-sm-4">
+                                        {this.renderSearchBar()}
+                                    </div>
+                                </div>
+
+                                <div className="col-sm-8 org-result-page-body">
+                                    {this.props.isFetching ? (
+                                        <ProgressBar />
+                                    ) : (
+                                        this.renderContent()
+                                    )}
+                                </div>
                             </div>
-
-                            <div className="col-sm-4">
-                                {this.renderSearchBar()}
-                            </div>
-                        </div>
-
-                        <div className="col-sm-8 org-result-page-body">
-                            {this.props.isFetching ? (
-                                <ProgressBar />
-                            ) : (
-                                this.renderContent()
-                            )}
-                        </div>
-                    </div>
-                    {!this.props.isFetching &&
-                        !this.props.error &&
-                        this.props.hitCount > config.resultsPerPage && (
-                            <Pagination
-                                currentPage={currentPage}
-                                maxPage={Math.ceil(
-                                    this.props.hitCount / config.resultsPerPage
+                            {!this.props.isFetching &&
+                                !this.props.error &&
+                                this.props.hitCount > config.resultsPerPage && (
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        maxPage={Math.ceil(
+                                            this.props.hitCount /
+                                                config.resultsPerPage
+                                        )}
+                                        onPageChange={this.onPageChange}
+                                        totalItems={this.props.hitCount}
+                                    />
                                 )}
-                                onPageChange={this.onPageChange}
-                                totalItems={this.props.hitCount}
-                            />
-                        )}
-                </div>
-            </ReactDocumentTitle>
+                        </div>
+                    </ReactDocumentTitle>
+                )}
+            </NamespacesConsumer>
         );
     }
 }
