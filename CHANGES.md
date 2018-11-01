@@ -29,6 +29,7 @@
 -   Show quality rating only if present
 -   Fixed: cached auth api response causing login problems
 -   Upgraded java version for `magda-scala-builder` docker image to fix `unsatisfiable constraints` error
+-   Make jurisdiction field available from registry api
 
 ## 0.0.49
 
