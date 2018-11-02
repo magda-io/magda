@@ -14,7 +14,6 @@ resources:
   limits:
     cpu: 100m
 disableAuthenticationFeatures: false
-datasetSearchSuggestionScoreThreshold: 65
 service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
