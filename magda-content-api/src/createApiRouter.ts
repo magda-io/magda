@@ -5,7 +5,7 @@ import {
 } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
-import Database from "./Database";
+import Database, { Query } from "./Database";
 import { Maybe } from "tsmonad";
 import { Content } from "./model";
 import {
@@ -56,67 +56,51 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    ]
      */
     router.get("/all", USER, async function(req, res) {
-        // figure out constraints
-        let query: any[] = [];
-        let inlineContentIfType: string[] = [];
+        try {
+            const idQuery: Query = { field: "id", pattern: req.query.id };
+            const typeQuery: Query = { field: "type", pattern: req.query.type };
 
-        query = query.concat(makeWildcardQuery(database, "id", req.query.id));
-        query = query.concat(
-            makeWildcardQuery(database, "type", req.query.type)
-        );
+            const inline = req.query.inline;
+            const inlineContentIfType: string[] = inline
+                ? ["application/json", "text/plain"]
+                : [];
 
-        const inline = req.query.inline;
-        if (inline) {
-            inlineContentIfType.push("application/json");
-            inlineContentIfType.push("text/plain");
-        }
+            // get summary
+            let all: any[] = await database.getContentSummary(
+                [idQuery, typeQuery],
+                inlineContentIfType
+            );
 
-        // get summary
-        let all: any[] = await database.getContentSummary(
-            database.createOr(...query),
-            inlineContentIfType
-        );
+            // filter out privates and non-configurable
+            all = all.filter((item: any) => {
+                const contentItem = findContentItemById(item.id);
 
-        // filter out privates and non-configurable
-        all = all.filter((item: any) => {
-            const contentItem = findContentItemById(item.id);
-            if (contentItem) {
-                if (!contentItem.private) {
-                    return true;
-                } else {
+                if (contentItem && contentItem.private) {
                     return req.user && req.user.isAdmin;
+                } else {
+                    return true;
                 }
-            } else {
-                return false;
-            }
-        });
+            });
 
-        // inline
-        if (inline) {
-            for (const item of all) {
-                switch (item.type) {
-                    case "application/json":
-                        item.content = JSON.parse(item.content);
-                        break;
+            console.log(all);
+
+            // inline
+            if (inline) {
+                for (const item of all.filter(item => item.content)) {
+                    switch (item.type) {
+                        case "application/json":
+                            item.content = JSON.parse(item.content);
+                            break;
+                    }
                 }
             }
+
+            res.json(all);
+        } catch (e) {
+            console.error(e);
+            res.sendStatus(500);
         }
-
-        res.json(all);
     });
-
-    function makeWildcardQuery(database: Database, field: string, filter: any) {
-        if (filter) {
-            if (typeof filter === "string") {
-                return [database.createWildcardMatch(field, filter)];
-            } else {
-                return filter.map((filter: any) =>
-                    database.createWildcardMatch(field, filter)
-                );
-            }
-        }
-        return [];
-    }
 
     /**
      * @apiGroup Content
@@ -125,7 +109,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiParam {string} contentId id of content item
      * @apiParam {string} format The format to return result with.
-     * * If specified format is text, will return content as plain/text.
+     * * If specified format is text, will return content as text/plain
      * * If specified format is json, will return content as application/json.
      * * If specified format is anything else, will return content as saved mime type.
      *

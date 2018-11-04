@@ -1,4 +1,5 @@
 import {} from "mocha";
+import * as chai from "chai";
 import * as request from "supertest";
 import * as express from "express";
 import * as nock from "nock";
@@ -8,6 +9,7 @@ import createApiRouter from "../createApiRouter";
 
 import mockDatabase from "./mockDatabase";
 import Database from "../Database";
+import { mockContentData } from "./mockContentStore";
 
 const IMAGE_FORMATS_SUPPORTED = ["png", "gif", "svg"];
 
@@ -105,11 +107,74 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
-        it("should see empty list", done => {
-            agent
-                .get("/all")
-                .expect(200, [])
-                .end(done);
+        describe("list", () => {
+            it("should see empty list with no params", done => {
+                agent
+                    .get("/all")
+                    .expect(200, [])
+                    .end(done);
+            });
+
+            it("should see everything when id=*", done => {
+                const expectedContent = mockContentData.map(item => ({
+                    id: item.id,
+                    type: item.type
+                }));
+
+                agent
+                    .get("/all?id=*")
+                    .expect(200, expectedContent)
+                    .end(done);
+            });
+
+            it("should inline content for json when inline=true", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        console.log(body);
+                        for (let i = 0; i < body.length; i++) {
+                            const itemInBody = body[i];
+                            const itemInMockContent = mockContentData[i];
+
+                            if (itemInMockContent.type === "application/json") {
+                                chai.expect(
+                                    itemInBody.content || null
+                                ).to.deep.equal(
+                                    JSON.parse(itemInMockContent.content)
+                                );
+                            }
+                        }
+
+                        return body.some(
+                            (item: any) => item.type === "application/json"
+                        );
+                    })
+                    .expect(200, done);
+            });
+
+            it("should inline content for plain text when inline=true", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        console.log(body);
+                        for (let i = 0; i < body.length; i++) {
+                            const itemInBody = body[i];
+                            const itemInMockContent = mockContentData[i];
+
+                            if (itemInMockContent.type === "text/plain") {
+                                chai.expect(itemInBody.content).to.equal(
+                                    "turds"
+                                    // itemInMockContent.content
+                                );
+                            }
+                        }
+
+                        return body.some(
+                            (item: any) => item.type === "text/plain"
+                        );
+                    })
+                    .expect(200, done);
+            });
         });
     });
 
@@ -166,17 +231,6 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(401)
-                .end(done);
-        });
-
-        it("should see list", done => {
-            admin(agent.get("/all"))
-                .expect(200, [
-                    {
-                        id: "header/logo",
-                        type: "image/gif"
-                    }
-                ])
                 .end(done);
         });
 

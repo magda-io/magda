@@ -48,8 +48,8 @@ const fetchOptions =
               credentials: "same-origin"
           };
 
-const contentApiURL =
-    serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
+const contentApiURL = "http://localhost:30100/api/v0/content/";
+// serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
 export const config = {
     fetchOptions,
