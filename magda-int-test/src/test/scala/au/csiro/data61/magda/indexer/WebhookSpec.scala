@@ -56,6 +56,11 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           publisher = dataSet.publisher.map(publisher =>
             Agent(
               identifier = publisher.identifier,
+              aggKeywords =
+                if (publisher.jurisdiction.isEmpty)
+                  publisher.identifier.map(_.toLowerCase)
+                else
+                  publisher.jurisdiction.map(_ + ":" + publisher.name.getOrElse(publisher.identifier.get)).map(_.toLowerCase),
               name = publisher.name,
               acronym = getAcronymFromPublisherName(publisher.name),
               imageUrl = publisher.imageUrl)),
