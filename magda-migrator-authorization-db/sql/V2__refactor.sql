@@ -2,15 +2,6 @@
 -- Make new table changes
 -------------------------------
 
-CREATE TYPE version AS (
-    id       bigserial,
-    time     timestamptz DEFAULT NOW(),
-    lastId   bigint,
-    user     uuid NOT NULL,
-    deleted  boolean DEFAULT FALSE
-);
-
-
 CREATE TABLE public.policy
 (
     id character varying(200) NOT NULL CHECK (id ~* '^[A-Z0-9_-]+$'),
@@ -30,9 +21,14 @@ WITH (
 TABLESPACE pg_default;
 
 -- partial index to get latest state
-CREATE INDEX policy_id_latest
+CREATE INDEX index_policy_id_latest
 	ON public.policy (id)
   WHERE nextSerial = -1;
+
+CREATE INDEX index_policy_id_index
+  ON public.policy (id);
+
+--------------------------
 
 CREATE TABLE public.group
 (
@@ -40,11 +36,28 @@ CREATE TABLE public.group
     description text,
     policy character varying(200)[],
     CONSTRAINT group_pkey PRIMARY KEY (id)
+    -- history
+    serial       bigserial,
+    time         timestamptz NOT NULL DEFAULT NOW(),
+    nextSerial   bigint DEFAULT -1,
+    "user"       uuid NOT NULL,
+    deleted      boolean NOT NULL DEFAULT FALSE,
+  	"comments"   text DEFAULT NULL
 )
 WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
+
+-- partial index to get latest state
+CREATE INDEX index_group_id_latest
+	ON public.group (id)
+  WHERE nextSerial = -1;
+
+CREATE INDEX index_group_id_index
+  ON public.group (id);
+
+--------------------------
 
 ALTER TABLE public.users
   ADD policy character varying(200)[],
