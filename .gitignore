@@ -35,3 +35,6 @@ dist/
 pancake
 package-lock.json
 */package-lock.json
+
+.nyc_*
+coverage/

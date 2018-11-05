@@ -2,14 +2,15 @@ const express = require("express");
 
 export abstract class MockExpressServer {
     server: any;
+    public app: any;
 
     async run(port: number) {
-        const app: any = express();
+        this.app = express();
 
-        await this.runImplementation(app);
+        await this.runImplementation(this.app);
 
         return new Promise(resolve => {
-            this.server = app.listen(port, () => {
+            this.server = this.app.listen(port, () => {
                 resolve(this);
             });
         });
