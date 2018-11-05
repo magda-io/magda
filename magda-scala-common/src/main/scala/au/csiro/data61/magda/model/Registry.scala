@@ -187,9 +187,13 @@ object Registry {
 
     private def convertPublisher(publisher: Record): Agent = {
       val organizationDetails = publisher.aspects.getOrElse("organization-details", JsObject())
+      val jurisdiction = organizationDetails.extract[String]('jurisdiction.?)
+      val name = organizationDetails.extract[String]('title.?)
       Agent(
         identifier = Some(publisher.id),
-        name = organizationDetails.extract[String]('title.?),
+        name = name,
+        jurisdiction = jurisdiction,
+        aggKeywords = if (jurisdiction.isEmpty) Some(publisher.id.toLowerCase) else jurisdiction.map(_ + ":" +name.getOrElse(publisher.id)).map(_.toLowerCase),
         description = organizationDetails.extract[String]('description.?),
         acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?),
