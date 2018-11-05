@@ -28,6 +28,7 @@ CREATE TABLE public.policy
         }
       }
     }$$, statements)),
+    owner uuid,
     CONSTRAINT users_pkey PRIMARY KEY (id)
 )
 TABLESPACE pg_default;
