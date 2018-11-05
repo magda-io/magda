@@ -64,11 +64,6 @@ ALTER TABLE public.users
   ADD groups character varying(200)[];
 
 -------------------------------
--- Insert new data
--------------------------------
-
-
--------------------------------
 -- Migrate old data
 -------------------------------
 
@@ -105,3 +100,10 @@ VALUES ('ALL', 'Full System Read and Write', '[
   --     }
   --   }
   -- }$$, statements))
+
+  -------------------------------
+  -- Insert new data
+  -------------------------------
+
+INSERT INTO public.users ("id", "displayName", email, "photoURL", source, "sourceId", "isAdmin")
+VALUES ('ffffffff-ffff-4fff-8fff-ffffffffffff', 'visitor', 'visitor@visitor.com', '', '', '', false);
