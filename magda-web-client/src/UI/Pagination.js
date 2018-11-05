@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { config } from "../config";
 import left_arrow from "../assets/left-arrow.svg";
 import right_arrow from "../assets/right-arrow.svg";
 import "./Pagination.css";
+import { needsContent } from "../helpers/content";
 
 class Pagination extends Component {
     constructor(props) {
@@ -154,15 +154,17 @@ class Pagination extends Component {
 
     render() {
         let currentPage = this.props.currentPage;
+        const searchResultsPerPage = this.props.configuration
+            .searchResultsPerPage;
 
         return (
             <div className="pagination">
                 {this.renderPageList(this.props.maxPage, currentPage)}
                 <div className="pagination-summray">
                     {" "}
-                    {(currentPage - 1) * config.resultsPerPage + 1} -{" "}
+                    {(currentPage - 1) * searchResultsPerPage + 1} -{" "}
                     {Math.min(
-                        currentPage * config.resultsPerPage,
+                        currentPage * searchResultsPerPage,
                         this.props.totalItems
                     )}{" "}
                     of {this.props.totalItems} results
@@ -172,4 +174,4 @@ class Pagination extends Component {
     }
 }
 
-export default Pagination;
+export default needsContent("configuration")(Pagination);

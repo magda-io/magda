@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
+import { needsContent } from "../../helpers/content";
 
 class Header extends Component {
     constructor(props) {
@@ -109,11 +109,4 @@ Header.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-const mapStateToProps = state => {
-    return {
-        headerNavigation: state.content.headerNavigation,
-        strings: state.content.strings
-    };
-};
-
-export default connect(mapStateToProps)(Header);
+export default needsContent("headerNavigation", "strings")(Header);

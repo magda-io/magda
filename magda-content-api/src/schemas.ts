@@ -159,3 +159,13 @@ export const footerCopyright: any = {
     },
     required: ["order", "href", "logoSrc", "htmlContent"]
 };
+
+export const configDatasetSearchSuggestionScoreThreshold: any = {
+    type: "number",
+    minimum: -1
+};
+
+export const configSearchResultsPerPage: any = {
+    type: "number",
+    minimum: 1
+};

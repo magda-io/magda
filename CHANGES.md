@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make datasetSearchSuggestionScoreThreshold and searchResultsPerPage runtime configurable
 -   Hide dataset source for csv datasets
 -   Make sure MS Excel format does not break into two.
 -   Make home page items come from content api
