@@ -13,7 +13,12 @@ const headerNavigationPlugins = {
         }
         return (
             <li key={i}>
-                <Link to={opts.href} title={`Go to ${nav.label}`}>
+                <Link
+                    to={opts.href}
+                    target={opts.target}
+                    rel={opts.rel}
+                    title={`Go to ${nav.label}`}
+                >
                     <span>{nav.label}</span>
                 </Link>
             </li>
