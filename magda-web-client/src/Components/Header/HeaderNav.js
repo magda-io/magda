@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-// import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import AccountNavbar from "../Account/AccountNavbar";
 import { config } from "../../config.js";
 
@@ -13,9 +13,9 @@ const headerNavigationPlugins = {
         }
         return (
             <li key={i}>
-                <a {...opts}>
+                <Link to={opts.href} title={`Go to ${nav.label}`}>
                     <span>{nav.label}</span>
-                </a>
+                </Link>
             </li>
         );
     },
