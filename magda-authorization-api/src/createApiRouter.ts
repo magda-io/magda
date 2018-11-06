@@ -42,7 +42,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .then(() => res.end());
     }
 
-    router.all("/private/*", function(req, res, next) {
+    const MUST_BE_ADMIN = function(req: any, res: any, next: any) {
         //--- private API requires admin level access
 
         getUserIdHandling(
@@ -71,7 +71,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             }
         );
-    });
+    };
+
+    router.all("/private/*", MUST_BE_ADMIN);
 
     router.get("/private/users/lookup", function(req, res) {
         const source = req.query.source;
@@ -149,6 +151,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     });
 
+    router.get("/public/users/all", MUST_BE_ADMIN, async (req, res) => {
+        const items = await database.getUsers();
+        res.status(200)
+            .json({
+                items
+            })
+            .end();
+    });
+
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/:userId Get User By Id
@@ -189,6 +200,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
 
         handlePromise(res, getPublicUser);
+    });
+
+    router.put("/public/users/:userId", MUST_BE_ADMIN, async (req, res) => {
+        const userId = req.params.userId;
+        // extract fields
+        const { isAdmin } = req.body;
+        const update = { isAdmin };
+        // update
+        await database.updateUser(userId, update);
+        res.status(200).json({
+            result: "SUCCESS"
+        });
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
