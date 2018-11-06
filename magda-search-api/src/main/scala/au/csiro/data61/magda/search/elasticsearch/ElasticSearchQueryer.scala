@@ -663,7 +663,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         }
         .aggs(cardinalityAgg("totalCount", "publisher.identifier"))
         .collapse(new CollapseDefinition(
-          "publisher.aggKeywords",
+          "publisher.aggKeywords.keyword",
           Some(new InnerHitDefinition("datasetCount", Some(1)))))
       client
         .execute(
