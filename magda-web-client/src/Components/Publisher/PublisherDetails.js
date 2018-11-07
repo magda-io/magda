@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { NamespacesConsumer } from "react-i18next";
 
 import ErrorHandler from "../../Components/ErrorHandler";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
 import {
     fetchPublisherIfNeeded,
     resetFetchPublisher
@@ -49,22 +49,18 @@ class PublisherDetails extends Component {
         this.props.resetFetchPublisher();
     }
 
-    renderContent() {
+    renderContent(translate) {
         const publisher = this.props.publisher;
         const details = publisher.aspects["organization-details"];
         const description =
             details.description && details.description.length > 0
                 ? details.description
-                : "This publisher has no description";
+                : translate("publisherHasNoDescMessage");
 
         const breadcrumbs = [
             <li key="organisations">
                 <Link to="/organisations">
-                    <NamespacesConsumer ns={["publisherPage"]}>
-                        {t => {
-                            return t("publisherBreadCrumb");
-                        }}
-                    </NamespacesConsumer>
+                    {translate("publishersBreadCrumb")}
                 </Link>
             </li>,
             <li key={publisher.name}>
@@ -75,10 +71,8 @@ class PublisherDetails extends Component {
         const hitCount = this.props.hitCount ? this.props.hitCount + " " : "";
 
         return (
-            <ReactDocumentTitle
-                title={`${publisher.name} | Organisations | ${
-                    this.props.strings.applicationName
-                }`}
+            <MagdaDocumentTitle
+                prefixes={[publisher.name, translate("publishersBreadCrumb")]}
             >
                 <div className="publisher-details">
                     <div>
@@ -156,37 +150,43 @@ class PublisherDetails extends Component {
                         </div>
                     </div>
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 
     render() {
-        if (this.props.error) {
-            return <ErrorHandler error={this.props.error} />;
-        } else if (this.props.isFetching) {
-            return <ProgressBar />;
-        } else if (
-            decodeURIComponent(this.props.match.params.publisherId) ===
-            this.props.publisher.id
-        ) {
-            return (
-                <ReactDocumentTitle
-                    title={
-                        this.props.publisher.name +
-                        " | " +
-                        this.props.strings.applicationName
+        return (
+            <NamespacesConsumer ns={["publisherPage"]}>
+                {translate => {
+                    if (this.props.error) {
+                        return <ErrorHandler error={this.props.error} />;
+                    } else if (this.props.isFetching) {
+                        return <ProgressBar />;
+                    } else if (
+                        decodeURIComponent(
+                            this.props.match.params.publisherId
+                        ) === this.props.publisher.id
+                    ) {
+                        return (
+                            <MagdaDocumentTitle
+                                prefixes={[this.props.publisher.name]}
+                            >
+                                {this.renderContent(translate)}
+                            </MagdaDocumentTitle>
+                        );
+                    } else {
+                        return (
+                            <AUpageAlert
+                                as="info"
+                                className="notification__inner"
+                            >
+                                {translate("publisherNotFoundMessage")}
+                            </AUpageAlert>
+                        );
                     }
-                >
-                    {this.renderContent()}
-                </ReactDocumentTitle>
-            );
-        } else {
-            return (
-                <AUpageAlert as="info" className="notification__inner">
-                    Organisation cannot be found
-                </AUpageAlert>
-            );
-        }
+                }}
+            </NamespacesConsumer>
+        );
     }
 }
 

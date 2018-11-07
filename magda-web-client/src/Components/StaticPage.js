@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { Medium } from "../UI/Responsive";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../Components/Meta/MagdaDocumentTitle";
 import { Redirect } from "react-router-dom";
 import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { fetchStaticPage } from "../actions/staticPagesActions";
@@ -79,9 +79,7 @@ class StaticPage extends Component {
             </li>
         ];
         return (
-            <ReactDocumentTitle
-                title={`${title} | ${this.props.strings.applicationName}`}
-            >
+            <MagdaDocumentTitle prefixes={[title]}>
                 <div
                     className={`static-page-container container page-${pageName}`}
                 >
@@ -96,7 +94,7 @@ class StaticPage extends Component {
                         }}
                     />
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }

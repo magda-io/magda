@@ -5,12 +5,14 @@ import * as pg from "pg";
 import * as _ from "lodash";
 import { Content } from "./model";
 
+const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
+const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);
+
 export interface DatabaseOptions {
     dbHost: string;
     dbPort: number;
     dbName: string;
 }
-
 export interface Database {
     getContentById(id: string): Promise<Maybe<Content>>;
     getContentSummary(
@@ -27,7 +29,7 @@ export interface Database {
 
 export type Query = {
     field: "id" | "type";
-    pattern: string;
+    patterns: string[];
 };
 
 export default class PostgresDatabase implements Database {
@@ -47,48 +49,49 @@ export default class PostgresDatabase implements Database {
         queries: Query[],
         inlineContentIfType: string[]
     ): Promise<any> {
-        let params: { [paramIndex: string]: string } = {};
+        for (const query of queries) {
+            if (!allowableQueryFieldLookup[query.field]) {
+                throw new Error(
+                    "Attempted to filter by unknown query field " + query.field
+                );
+            }
+        }
+
+        const params: string[] = [];
+        let paramCounter = 0;
+        const getParamIndex = () => {
+            return ++paramCounter;
+        };
+
         let inline = "";
         if (inlineContentIfType.length > 0) {
             const inlineStatements = inlineContentIfType.map((type, i) => {
-                const paramIndex = `inline${i + 1}`;
-                params[paramIndex] = type.replace(/\'/g, "");
-                `WHEN type = $${i + 1} THEN content`;
+                params.push(type.replace(/\'/g, ""));
+                return `type = $${getParamIndex()}`;
             });
 
             inline = `,
             CASE
-              ${inlineStatements.join(" ")}
+              WHEN ${inlineStatements.join(" OR ")} THEN content
               ELSE NULL
             END
             AS content`;
         }
 
-        const whereClauses = queries
-            .map((query, i) => {
-                const baseParamIndexNumber = i * 2;
-                const paramA = `where${baseParamIndexNumber + 1}`;
-                const paramB = `where${baseParamIndexNumber + 2}`;
+        const whereClauses = _.flatMap(queries, query =>
+            query.patterns.map((pattern: string) => {
+                params.push(PostgresDatabase.createWildcardMatch(pattern));
 
-                params[paramA] = query.field;
-                params[paramB] = query.pattern;
-
-                return `$${paramA} LIKE $${paramB}`;
+                return `${query.field} LIKE $${getParamIndex()}`;
             })
-            .join(" OR ");
+        ).join(" OR ");
 
-        const whereValues = _.flatMap(queries, query => [
-            query.field,
-            PostgresDatabase.createWildcardMatch(query.pattern)
-        ]);
+        const sql = `SELECT id, type, length(content) as length ${inline} FROM content ${
+            whereClauses.length > 0 ? "WHERE " + whereClauses : ""
+        }`;
 
         return this.pool
-            .query(
-                `SELECT id, type, length(content) as length ${inline} FROM content ${
-                    whereClauses.length > 0 ? "WHERE " + whereClauses : ""
-                }`,
-                whereValues
-            )
+            .query(sql, params)
             .then(res => (res && res.rows) || []);
     }
 

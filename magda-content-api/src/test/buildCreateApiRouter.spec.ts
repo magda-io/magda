@@ -131,7 +131,6 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 agent
                     .get("/all?id=*&inline=true")
                     .expect(({ body }: any) => {
-                        console.log(body);
                         for (let i = 0; i < body.length; i++) {
                             const itemInBody = body[i];
                             const itemInMockContent = mockContentData[i];
@@ -156,21 +155,35 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 agent
                     .get("/all?id=*&inline=true")
                     .expect(({ body }: any) => {
-                        console.log(body);
                         for (let i = 0; i < body.length; i++) {
                             const itemInBody = body[i];
                             const itemInMockContent = mockContentData[i];
 
                             if (itemInMockContent.type === "text/plain") {
                                 chai.expect(itemInBody.content).to.equal(
-                                    "turds"
-                                    // itemInMockContent.content
+                                    itemInMockContent.content
                                 );
                             }
                         }
 
                         return body.some(
                             (item: any) => item.type === "text/plain"
+                        );
+                    })
+                    .expect(200, done);
+            });
+
+            it("should NOT inline content for image/png", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        const pngs = body.filter(
+                            (item: any) => item.type === "image/png"
+                        );
+
+                        return (
+                            pngs.length > 0 &&
+                            pngs.every((png: any) => !png.content)
                         );
                     })
                     .expect(200, done);

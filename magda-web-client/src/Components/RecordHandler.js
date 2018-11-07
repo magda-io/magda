@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../Components/Meta/MagdaDocumentTitle";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {
@@ -520,13 +520,9 @@ class RecordHandler extends React.Component {
             : "Datasets";
 
         return (
-            <ReactDocumentTitle
-                title={`${title} | ${type} | ${
-                    this.props.strings.applicationName
-                }`}
-            >
+            <MagdaDocumentTitle prefixes={[title, type]}>
                 <div>{this.renderByState()}</div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }

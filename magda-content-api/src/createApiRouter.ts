@@ -1,4 +1,5 @@
 import * as express from "express";
+import * as _ from "lodash";
 import {
     getUser,
     mustBeAdmin
@@ -57,10 +58,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.get("/all", USER, async function(req, res) {
         try {
-            const idQuery: Query = { field: "id", pattern: req.query.id };
-            const typeQuery: Query = { field: "type", pattern: req.query.type };
+            const idQuery: Query = {
+                field: "id",
+                patterns: coerceToArray(req.query.id)
+            };
+            const typeQuery: Query = {
+                field: "type",
+                patterns: coerceToArray(req.query.type)
+            };
 
-            const inline = req.query.inline;
+            const inline =
+                req.query.inline && req.query.inline.toLowerCase() === "true";
             const inlineContentIfType: string[] = inline
                 ? ["application/json", "text/plain"]
                 : [];
@@ -82,8 +90,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             });
 
-            console.log(all);
-
             // inline
             if (inline) {
                 for (const item of all.filter(item => item.content)) {
@@ -101,6 +107,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             res.sendStatus(500);
         }
     });
+
+    function coerceToArray<T>(thing: T | T[]): T[] {
+        if (_.isArray(thing)) {
+            return thing;
+        } else if (thing) {
+            return [thing];
+        } else {
+            return [];
+        }
+    }
 
     /**
      * @apiGroup Content

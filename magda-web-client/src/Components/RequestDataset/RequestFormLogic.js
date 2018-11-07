@@ -3,6 +3,7 @@ import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
 import { config } from "../../config";
 import { gapi } from "../../analytics/ga";
+import { NamespacesConsumer } from "react-i18next";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -116,63 +117,72 @@ export default class RequestFormLogic extends React.Component {
      * Shows success or fail alert dependent on "successResult" state,
      * which is received from calling API
      */
-    renderPage() {
-        const alert = {
-            type: this.state.successResult ? "success" : "error",
-            message: this.state.successResult
-                ? this.props.alertProps.successMessage
-                : this.props.alertProps.failMessage,
-            header: this.state.successResult
-                ? this.props.alertProps.successHeader
-                : this.props.alertProps.failHeader
-        };
-        if (!this.state.posted) {
-            return (
-                <RequestFormTemplate
-                    {...this.props.formProps}
-                    handleSubmit={this.handleSubmit}
-                    isSending={this.state.isSending}
-                    handleChange={this.handleChange}
-                    senderEmail={this.props.senderEmail}
-                    senderName={this.props.senderName}
-                    message={this.props.message}
-                />
-            );
-        } else {
-            if (this.state.successResult) {
-                return (
-                    <Alert
-                        type={alert.type}
-                        header={alert.header}
-                        message={alert.message}
-                    />
-                );
-            } else {
-                return (
-                    <div>
-                        {!this.state.isSending && (
-                            <Alert
-                                type={alert.type}
-                                message={alert.message}
-                                header={alert.header}
-                            />
-                        )}
-                        <RequestFormTemplate
-                            {...this.props.formProps}
-                            handleSubmit={this.handleSubmit}
-                            handleChange={this.handleChange}
-                            isSending={this.state.isSending}
-                            senderEmail={this.props.senderEmail}
-                            senderName={this.props.senderName}
-                            message={this.props.message}
-                        />
-                    </div>
-                );
-            }
-        }
-    }
-
     render() {
-        return this.renderPage();
+        return (
+            <NamespacesConsumer ns={["datasetSuggestForm"]}>
+                {translate => {
+                    const alertProps = {
+                        successMessage: translate("suggestSuccessMessage"),
+                        successHeader: "Your request has been sent!",
+                        failMessage: null,
+                        failHeader:
+                            "Uh oh. There was an error sending your form!"
+                    };
+                    const alert = {
+                        type: this.state.successResult ? "success" : "error",
+                        message: this.state.successResult
+                            ? alertProps.successMessage
+                            : alertProps.failMessage,
+                        header: this.state.successResult
+                            ? alertProps.successHeader
+                            : alertProps.failHeader
+                    };
+                    if (!this.state.posted) {
+                        return (
+                            <RequestFormTemplate
+                                {...this.props.formProps}
+                                handleSubmit={this.handleSubmit}
+                                isSending={this.state.isSending}
+                                handleChange={this.handleChange}
+                                senderEmail={this.props.senderEmail}
+                                senderName={this.props.senderName}
+                                message={this.props.message}
+                            />
+                        );
+                    } else {
+                        if (this.state.successResult) {
+                            return (
+                                <Alert
+                                    type={alert.type}
+                                    header={alert.header}
+                                    message={alert.message}
+                                />
+                            );
+                        } else {
+                            return (
+                                <div>
+                                    {!this.state.isSending && (
+                                        <Alert
+                                            type={alert.type}
+                                            message={alert.message}
+                                            header={alert.header}
+                                        />
+                                    )}
+                                    <RequestFormTemplate
+                                        {...this.props.formProps}
+                                        handleSubmit={this.handleSubmit}
+                                        handleChange={this.handleChange}
+                                        isSending={this.state.isSending}
+                                        senderEmail={this.props.senderEmail}
+                                        senderName={this.props.senderName}
+                                        message={this.props.message}
+                                    />
+                                </div>
+                            );
+                        }
+                    }
+                }}
+            </NamespacesConsumer>
+        );
     }
 }

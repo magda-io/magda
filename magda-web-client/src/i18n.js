@@ -39,8 +39,22 @@ class Backend {
      *      has finished being retrieved.
      */
     read(language, namespace, callback) {
+        // const existing = get(i18n.store.data, `${language}.${namespace}`);
+        // console.log(existing);
+        // if (existing) {
+        //     return existing;
+        // }
+
         this.getFromCache(language, namespace)
             .then(data => {
+                console.log(
+                    "calling callback for " +
+                        language +
+                        "/" +
+                        namespace +
+                        " with " +
+                        JSON.stringify(data)
+                );
                 callback(null, data);
             })
             .catch(err => callback(err));
@@ -54,6 +68,7 @@ class Backend {
      * @returns A promise that returns the data for that lang/ns pair
      */
     getFromCache(language, namespace) {
+        // console.log(i18n);
         const existingValue = get(this.cache, `${language}.${namespace}`, null);
 
         if (existingValue !== null) {
@@ -199,7 +214,15 @@ class Backend {
 i18n.use(reactI18nextModule) // passes i18n down to react-i18next
     .use(new Backend())
     .init({
+        react: {
+            bindStore: false,
+            bindI18n: false
+        },
+        debug: true,
         lng: "en",
+        fallbackNs: "global",
+        fallbackLng: "en",
+        load: "languageOnly",
         interpolation: {
             escapeValue: false // react already safes from xss
         }

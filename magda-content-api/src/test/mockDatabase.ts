@@ -37,7 +37,7 @@ export default class MockDatabase implements Database {
             .getContentSummary()
             .filter(item =>
                 queries.some(query => {
-                    return !!wildcard(query.pattern, item[query.field]);
+                    return !!wildcard(query.patterns, item[query.field]);
                 })
             )
             .map(item => {

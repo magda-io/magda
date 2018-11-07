@@ -5,7 +5,7 @@ import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
 import Notification from "../../UI/Notification";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
 import React, { Component } from "react";
 import SearchFacets from "../../Components/SearchFacets/SearchFacets";
 import SearchResults from "../SearchResults/SearchResults";
@@ -165,10 +165,11 @@ class Search extends Component {
         const isBlankSearch = searchText === "*" || searchText === "";
 
         return (
-            <ReactDocumentTitle
-                title={`Datasets search: ${searchText} | Page ${currentPage} | ${
-                    this.props.strings.applicationName
-                }`}
+            <MagdaDocumentTitle
+                prefixes={[
+                    `Datasets search: ${searchText}`,
+                    `Page ${currentPage}`
+                ]}
             >
                 <div>
                     {this.props.isFetching && <ProgressBar />}
@@ -252,7 +253,7 @@ class Search extends Component {
                         </div>
                     </div>
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }

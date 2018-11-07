@@ -131,15 +131,14 @@ class PublishersViewer extends Component {
         this.debounceUpdateSearchQuery.flush();
     }
 
-    renderContent() {
+    renderContent(translate) {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
             if (this.props.publishers.length === 0) {
                 return (
                     <AUpageAlert as="error">
-                        Sorry, we couldn&#39;t find any organisations that match
-                        your search.
+                        {translate("noPublishersMatchSearchMessage")}
                         <button
                             className="clear-btn au-btn au-btn--tertiary"
                             type="button"
@@ -176,11 +175,11 @@ class PublishersViewer extends Component {
         }
     }
 
-    renderSearchBar() {
+    renderSearchBar(translate) {
         return (
             <div className="organization-search">
                 <label htmlFor="organization-search" className="sr-only">
-                    Search for organisations
+                    {translate("publishersSearchPlaceholder")}
                 </label>
                 <input
                     className="au-text-input au-text-input--block organization-search"
@@ -188,7 +187,7 @@ class PublishersViewer extends Component {
                     id="organization-search"
                     type="text"
                     value={this.state.inputText}
-                    placeholder="Search for Organisations"
+                    placeholder={translate("publishersSearchPlaceholder")}
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
                     ref={el => (this.searchInputFieldRef = el)}
@@ -208,13 +207,13 @@ class PublishersViewer extends Component {
             +queryString.parse(this.props.location.search).page || 1;
 
         return (
-            <NamespacesConsumer ns={["publishersPage"]}>
+            <NamespacesConsumer ns={["publishersPage", "global"]}>
                 {translate => (
                     <ReactDocumentTitle
                         title={`${translate(
                             "publishersBreadCrumb"
                         )} | Page ${currentPage} | ${translate(
-                            "global.appName"
+                            "global:appName"
                         )}`}
                     >
                         <div className="publishers-viewer">
@@ -241,7 +240,7 @@ class PublishersViewer extends Component {
                                     </div>
 
                                     <div className="col-sm-4">
-                                        {this.renderSearchBar()}
+                                        {this.renderSearchBar(translate)}
                                     </div>
                                 </div>
 
@@ -249,7 +248,7 @@ class PublishersViewer extends Component {
                                     {this.props.isFetching ? (
                                         <ProgressBar />
                                     ) : (
-                                        this.renderContent()
+                                        this.renderContent(translate)
                                     )}
                                 </div>
                             </div>

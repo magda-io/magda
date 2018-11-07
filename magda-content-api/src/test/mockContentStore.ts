@@ -83,7 +83,7 @@ const mockContentDataStore = {
     },
 
     getContentSummary() {
-        return runtimeContentDataStore;
+        return runtimeContentDataStore.map(x => ({ ...x }));
     },
 
     deleteContentById(id: string) {

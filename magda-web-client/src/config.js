@@ -90,7 +90,7 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=lang/*&id=footer/*&inline=true`,
+    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=footer/*&inline=true`,
     months: [
         "Jan",
         "Feb",
@@ -115,8 +115,4 @@ export const config = {
     datasetSearchSuggestionScoreThreshold:
         serverConfig.datasetSearchSuggestionScoreThreshold || 65,
     gapiIds: serverConfig.gapiIds || []
-};
-
-export const defaultStrings = {
-    applicationName: "MAGDA"
 };

@@ -1,7 +1,7 @@
 //@flow
 import React from "react";
 import { connect } from "react-redux";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "./Meta/MagdaDocumentTitle";
 import AUpageAlert from "../pancake/react/page-alerts";
 
 class ErrorHandler extends React.Component {
@@ -14,16 +14,14 @@ class ErrorHandler extends React.Component {
 
     render() {
         return (
-            <ReactDocumentTitle
-                title={"Error | " + this.props.strings.applicationName}
-            >
+            <MagdaDocumentTitle prefixes={["Error"]}>
                 <AUpageAlert as="error">
                     {this.props.error.title ? (
                         <h3>{this.props.error.title}</h3>
                     ) : null}
                     <p>{this.props.error.detail}</p>
                 </AUpageAlert>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
