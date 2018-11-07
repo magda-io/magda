@@ -36,9 +36,11 @@ export default class MockDatabase implements Database {
         return mockContentDataStore
             .getContentSummary()
             .filter(item =>
-                queries.some(query => {
-                    return !!wildcard(query.patterns, item[query.field]);
-                })
+                queries.some(query =>
+                    query.patterns.some(
+                        pattern => !!wildcard(pattern, item[query.field])
+                    )
+                )
             )
             .map(item => {
                 if (inlineContentIfType.indexOf(item.type) > -1) {
