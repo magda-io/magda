@@ -3,9 +3,10 @@
 .au-header {
     padding: 16px 0 8px 0;
     padding: 1rem 0 0.5rem 0;
+    background-color: $header-color-background;
 
     @media screen and (min-width: $medium) {
-        opacity: 0.9;
+        opacity: $header-opacity-desktop-background;
     }
 
     .au-header__brand {
@@ -27,8 +28,9 @@
 }
 
 .header {
-    border-bottom: 8px solid #341039;
-    border-bottom: 0.5rem solid #341039;
+    border-bottom: 8px solid $header-color-border;
+    border-bottom: 0.5rem solid $header-color-border;
+    background-color: transparent;
 }
 
 .header-nav {
@@ -39,10 +41,11 @@
     padding: 8px 0;
     padding: 0.5rem 0;
     text-align: left;
+    color: $header-color-mobile-toggle-button-text;
 
     &:before {
         background-image: AU-svguri(
-            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#{$header-color-mobile-toggle-button-icon}">' +
                 '<path d="M0 0h24v24H0z" fill="none"/>' +
                 '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>' +
                 "</svg>"
@@ -51,7 +54,7 @@
     &.au-accordion--open {
         &:before {
             background-image: AU-svguri(
-                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#{$header-color-mobile-toggle-button-icon}">' +
                     '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
                     '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
             );
@@ -59,7 +62,7 @@
 
         &:hover:before {
             background-image: AU-svguri(
-                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">' +
+                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#{$header-color-mobile-toggle-button-icon}">' +
                     '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>' +
                     '<path d="M0 0h24v24H0z" fill="none"/>' + "</svg>"
             );
@@ -132,11 +135,15 @@
                 display: inline-block;
                 border-top: 0;
             }
+            a {
+                color: $header-color-action;
+                background-color: $header-color-action-background;
+            }
 
             a:hover,
             a:focus {
-                background-color: #341039;
-                color: #fff;
+                background-color: $header-color-focus-background;
+                color: $header-color-focus;
             }
         }
     }
@@ -156,7 +163,7 @@
 }
 
 .mobile-nav {
-    background: white;
+    background: $header-color-mobile-nav-background;
     position: absolute;
     right: 0;
     width: 100%;
@@ -165,30 +172,40 @@
     li {
         padding: 0;
         margin: 0;
-        border-bottom: 1px solid #dad9db;
+        border-bottom: 1px solid $header-color-mobile-nav-border-bottom;
         a {
             line-height: 4.5rem;
             margin: 0;
-            border-left: 10px solid transparent;
+            border-left: 10px solid $header-color-mobile-nav-border-left;
             display: block;
             padding: 0;
             padding-left: 16px;
-            color: $AU-colordark-background;
 
-            &,
-            &:hover,
-            &:focus {
-                text-decoration: none;
-            }
-
-            &.active {
-                background: #f4f3f5;
-                font-weight: bold;
-                border-color: $AU-colordark-background;
-            }
             span {
-                border-bottom: 1px solid $AU-color-foreground-action;
+                border-bottom: 1px solid
+                    $header-color-mobile-nav-content-border-bottom;
+                color: $header-color-mobile-nav-content;
+                background: $header-color-mobile-nav-content-background;
             }
+        }
+    }
+    .navigation li a {
+        color: $header-color-mobile-nav-action;
+        background-color: $header-color-mobile-nav-action-background;
+
+        &:hover,
+        &:focus {
+            text-decoration: none;
+            background: $header-color-mobile-nav-focus-background;
+            color: $header-color-mobile-nav-focus;
+            border-color: $header-color-mobile-nav-focus-border;
+        }
+
+        &.active {
+            background: $header-color-mobile-nav-active-background;
+            color: $header-color-mobile-nav-active;
+            font-weight: bold;
+            border-color: $header-color-mobile-nav-active-border;
         }
     }
 }

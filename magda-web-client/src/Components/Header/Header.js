@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
@@ -130,11 +129,4 @@ Header.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-const mapStateToProps = state => {
-    return {
-        headerNavigation: state.content.headerNavigation,
-        strings: state.content.strings
-    };
-};
-
-export default connect(mapStateToProps)(Header);
+export default Header;

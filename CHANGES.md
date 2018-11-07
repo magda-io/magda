@@ -1,6 +1,7 @@
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make datasetSearchSuggestionScoreThreshold and searchResultsPerPage runtime configurable
 -   Hide dataset source for csv datasets
 -   Make sure MS Excel format does not break into two.
 -   Make home page items come from content api
@@ -29,6 +30,9 @@
 -   Show quality rating only if present
 -   Fixed: cached auth api response causing login problems
 -   Upgraded java version for `magda-scala-builder` docker image to fix `unsatisfiable constraints` error
+-   Make jurisdiction field available from registry api
+-   Fixed an issue of scss-compiler not updated all variables
+-   Added more configurable scss variables
 
 ## 0.0.49
 

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { config } from "../../config";
 import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
 import PublisherSummary from "./PublisherSummary";
@@ -213,6 +212,8 @@ class PublishersViewer extends Component {
     render() {
         const currentPage =
             +queryString.parse(this.props.location.search).page || 1;
+        const searchResultsPerPage = this.props.configuration
+            .searchResultsPerPage;
 
         return (
             <MagdaNamespacesConsumer ns={["publishersPage"]}>
@@ -305,7 +306,8 @@ function mapStateToProps(state, ownProps) {
         hitCount,
         error,
         keyword,
-        strings: state.content.strings
+        strings: state.content.strings,
+        configuration: state.content.configuration
     };
 }
 

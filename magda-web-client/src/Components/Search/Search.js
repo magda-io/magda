@@ -1,7 +1,6 @@
 import "./Search.css";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
 import Notification from "../../UI/Notification";
@@ -163,6 +162,8 @@ class Search extends Component {
         const currentPage =
             +queryString.parse(this.props.location.search).page || 1;
         const isBlankSearch = searchText === "*" || searchText === "";
+        const searchResultsPerPage = this.props.configuration
+            .searchResultsPerPage;
 
         return (
             <MagdaDocumentTitle
@@ -183,10 +184,8 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results {this.filterCount()} ({
-                                            this.props.hitCount
-                                        }
-                                        )
+                                        results {this.filterCount()} (
+                                        {this.props.hitCount})
                                     </div>
                                 )}
                             {!this.props.isFetching &&
@@ -229,12 +228,12 @@ class Search extends Component {
                                             suggestionBoxAtEnd={isBlankSearch}
                                         />
                                         {this.props.hitCount >
-                                            config.resultsPerPage && (
+                                            searchResultsPerPage && (
                                             <Pagination
                                                 currentPage={currentPage}
                                                 maxPage={Math.ceil(
                                                     this.props.hitCount /
-                                                        config.resultsPerPage
+                                                        searchResultsPerPage
                                                 )}
                                                 onPageChange={this.onPageChange}
                                                 totalItems={this.props.hitCount}
@@ -285,7 +284,8 @@ function mapStateToProps(state, ownProps) {
         strategy: datasetSearch.strategy,
         error: datasetSearch.error,
         freeText: datasetSearch.freeText,
-        strings: state.content.strings
+        strings: state.content.strings,
+        configuration: state.content.configuration
     };
 }
 

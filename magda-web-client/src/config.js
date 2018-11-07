@@ -69,7 +69,6 @@ export const config = {
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
-    resultsPerPage: 10,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
     breakpoints: {
@@ -90,7 +89,8 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=footer/*&inline=true`,
+    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=footer/*&id=configuration/*&inline=true`,
+    fallbackUrl: serverConfig.fallbackUrl,
     months: [
         "Jan",
         "Feb",
@@ -111,8 +111,10 @@ export const config = {
         east: 155,
         north: -5
     },
-    fallbackUrl: serverConfig.fallbackUrl,
-    datasetSearchSuggestionScoreThreshold:
-        serverConfig.datasetSearchSuggestionScoreThreshold || 65,
     gapiIds: serverConfig.gapiIds || []
+};
+
+export const defaultConfiguration = {
+    datasetSearchSuggestionScoreThreshold: 65,
+    searchResultsPerPage: 10
 };

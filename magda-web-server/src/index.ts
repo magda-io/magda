@@ -96,12 +96,6 @@ const argv = yargs
         describe: "Google Analytics ID(s)",
         type: "array",
         default: []
-    })
-    .option("datasetSearchSuggestionScoreThreshold", {
-        describe:
-            "The score threshold after which to display the dataset suggestion form",
-        type: "number",
-        default: 65
     }).argv;
 
 var app = express();
@@ -176,8 +170,6 @@ const webServerConfig = {
                 .toString()
     ),
     fallbackUrl: argv.fallbackUrl,
-    datasetSearchSuggestionScoreThreshold:
-        argv.datasetSearchSuggestionScoreThreshold,
     gapiIds: argv.gapiIds
 };
 
