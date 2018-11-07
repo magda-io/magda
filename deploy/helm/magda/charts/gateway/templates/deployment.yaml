@@ -57,17 +57,17 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /etc/config
-        readinessProbe:
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
           httpGet:
-            path: /v0/healthz
+            path: /status/live
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
-{{- if .Values.global.enableLivenessProbes }}
-        livenessProbe:
+        readinessProbe:
           httpGet:
-            path: /v0/healthz
+            path: /status/ready
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10

@@ -27,19 +27,19 @@ spec:
 {{- if .Values.regionsIndexVersion }}
           - "-DelasticSearch.indices.regions.version={{ .Values.regionsIndexVersion }}"
 {{- end }}
-        readinessProbe:
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
           httpGet:
-            path: "/v0/datasets"
+            path: /v0/status/live
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
-{{- if .Values.global.enableLivenessProbes }}
-        livenessProbe:
+        readinessProbe:
           httpGet:
-            path: "/v0/datasets"
+            path: /v0/status/ready
             port: 80
-          initialDelaySeconds: 60
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}

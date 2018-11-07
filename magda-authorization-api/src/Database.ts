@@ -67,4 +67,11 @@ export default class Database {
             )
             .then(result => result.rows[0]);
     }
+
+    async check(): Promise<any> {
+        await this.pool.query("SELECT id FROM users LIMIT 1");
+        return {
+            ready: true
+        };
+    }
 }

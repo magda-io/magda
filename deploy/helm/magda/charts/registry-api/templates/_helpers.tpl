@@ -51,11 +51,18 @@ spec:
 {{- if .root.Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: "/v0/ping"
+            path: /v0/status/live
             port: 80
-          initialDelaySeconds: 60
+          initialDelaySeconds: 10
           periodSeconds: 10
-          timeoutSeconds: {{ .root.Values.livenessProbe.timeoutSeconds | default 10 }}
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /v0/status/ready
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
 {{- end }}
         ports:
         - containerPort: 80
