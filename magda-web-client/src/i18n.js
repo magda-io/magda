@@ -14,7 +14,12 @@ import get from "lodash/get";
  * the interval.
  */
 const FETCH_BATCH_INTERVAL = 100;
-class Backend {
+
+/**
+ * i18next backend plugin that loads from the Magda Content API. Automatically caches fetch promises
+ * and batches requests to reduce request overhead.
+ */
+class MagdaContentAPIBackend {
     /** Tells i18next what kind of plugin this is */
     type = "backend";
 
@@ -39,22 +44,8 @@ class Backend {
      *      has finished being retrieved.
      */
     read(language, namespace, callback) {
-        // const existing = get(i18n.store.data, `${language}.${namespace}`);
-        // console.log(existing);
-        // if (existing) {
-        //     return existing;
-        // }
-
         this.getFromCache(language, namespace)
             .then(data => {
-                console.log(
-                    "calling callback for " +
-                        language +
-                        "/" +
-                        namespace +
-                        " with " +
-                        JSON.stringify(data)
-                );
                 callback(null, data);
             })
             .catch(err => callback(err));
@@ -68,14 +59,11 @@ class Backend {
      * @returns A promise that returns the data for that lang/ns pair
      */
     getFromCache(language, namespace) {
-        // console.log(i18n);
         const existingValue = get(this.cache, `${language}.${namespace}`, null);
 
         if (existingValue !== null) {
-            console.log(`Cache hit for ${language}/${namespace}`);
             return existingValue;
         } else {
-            console.log(`Cache miss for ${language}/${namespace}`);
             const promise = new Promise((resolve, reject) => {
                 this.requestBuffer.push({
                     language,
@@ -102,7 +90,8 @@ class Backend {
     }
 
     /**
-     * Schedules the retrieval of uncached strings in the request buffer.
+     * Schedules the retrieval of uncached strings in the request buffer. Executes every
+     * FETCH_BATCH_INTERVAL seconds
      */
     requestProcessBuffer = throttle(this.processBuffer, FETCH_BATCH_INTERVAL, {
         leading: false,
@@ -132,20 +121,20 @@ class Backend {
         this.requestBuffer = [];
         let data, err;
         try {
-            data = await Backend.getStrings(langNsCombos);
+            data = await MagdaContentAPIBackend.getStrings(langNsCombos);
         } catch (e) {
             console.error(e);
             err = e;
         }
 
-        for (let langNsCombo of langNsCombos) {
+        for (const langNsCombo of langNsCombos) {
             const { language, namespace } = langNsCombo;
             const callbacks = get(
                 callbackLookup,
                 `${language}.${namespace}`,
                 []
             );
-            for (let callback of callbacks) {
+            for (const callback of callbacks) {
                 if (err) {
                     callback(err);
                 } else {
@@ -160,7 +149,7 @@ class Backend {
     /**
      * Gets strings from the content API.
      *
-     * @param {*} langNsCombos
+     * @param {*} langNsCombos Combination of language and namespaces to retrieve.
      */
     static async getStrings(langNsCombos) {
         const baseUrl = config.contentApiURL + "/all?inline=true&";
@@ -212,22 +201,23 @@ class Backend {
 }
 
 i18n.use(reactI18nextModule) // passes i18n down to react-i18next
-    .use(new Backend())
+    .use(new MagdaContentAPIBackend())
     .init({
         react: {
+            // Stop events on the store causing loads of re-renders
             bindStore: false,
             bindI18n: false
-            // wait: true
         },
-        debug: true,
         lng: "en",
+        // We set these because for some reason i18next always wants to load a default
+        // NS - if we don't provide it, it'll fall back to "translation"
         ns: "global",
         defaultNS: "global",
         fallbackNS: "global",
         fallbackLng: "en",
         load: "languageOnly",
         interpolation: {
-            escapeValue: false // react already safes from xss
+            escapeValue: false // react already safe from xss
         }
     });
 
