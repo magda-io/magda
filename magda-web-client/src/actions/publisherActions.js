@@ -53,12 +53,12 @@ export function resetFetchPublisher() {
     };
 }
 
-function fetchPublishers(start, query) {
+function fetchPublishers(start, query, searchResultsPerPage) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
         const url = `${config.searchApiUrl +
             "organisations"}?query=${query}&start=${(start - 1) *
-            config.resultsPerPage}&limit=${config.resultsPerPage}`;
+            searchResultsPerPage}&limit=${searchResultsPerPage}`;
         return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
@@ -95,8 +95,15 @@ function shouldFetchPublishers(state) {
 
 export function fetchPublishersIfNeeded(start: number, query: string): Object {
     return (dispatch: Function, getState: Function) => {
-        if (shouldFetchPublishers(getState())) {
-            return dispatch(fetchPublishers(start, query));
+        const state = getState();
+        if (shouldFetchPublishers(state)) {
+            return dispatch(
+                fetchPublishers(
+                    start,
+                    query,
+                    state.content.configuration.searchResultsPerPage
+                )
+            );
         } else {
             return Promise.resolve();
         }
