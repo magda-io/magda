@@ -6,6 +6,7 @@ import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
 import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
+import { needsContent } from "../../helpers/content";
 
 class Header extends Component {
     constructor(props) {
@@ -129,4 +130,4 @@ Header.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default Header;
+export default needsContent("headerNavigation")(Header);

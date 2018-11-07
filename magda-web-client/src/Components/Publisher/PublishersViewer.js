@@ -266,12 +266,12 @@ class PublishersViewer extends Component {
                             </div>
                             {!this.props.isFetching &&
                                 !this.props.error &&
-                                this.props.hitCount > config.resultsPerPage && (
+                                this.props.hitCount > searchResultsPerPage && (
                                     <Pagination
                                         currentPage={currentPage}
                                         maxPage={Math.ceil(
                                             this.props.hitCount /
-                                                config.resultsPerPage
+                                                searchResultsPerPage
                                         )}
                                         onPageChange={this.onPageChange}
                                         totalItems={this.props.hitCount}

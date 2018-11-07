@@ -6,7 +6,7 @@ export default function MagdaDocumentTitle({ prefixes = [], children }) {
     return (
         <MagdaNamespacesConsumer ns={["global"]}>
             {translate => {
-                const appName = translate(["appName", "FALLBACK"]);
+                const appName = translate(["appName", ""]);
 
                 const title = (appName !== ""
                     ? prefixes.concat([appName])
