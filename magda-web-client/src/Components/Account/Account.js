@@ -4,7 +4,7 @@ import Login from "./Login";
 import { connect } from "react-redux";
 import queryString from "query-string";
 import { requestAuthProviders } from "../../actions/userManagementActions";
-import MagdaDocumentTitle from "../Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../i18n/MagdaDocumentTitle";
 import { bindActionCreators } from "redux";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";

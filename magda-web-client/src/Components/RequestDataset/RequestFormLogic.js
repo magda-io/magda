@@ -3,7 +3,7 @@ import RequestFormTemplate from "./RequestFormTemplate";
 import Alert from "./Alert";
 import { config } from "../../config";
 import { gapi } from "../../analytics/ga";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 export default class RequestFormLogic extends React.Component {
     constructor(props) {
@@ -119,10 +119,13 @@ export default class RequestFormLogic extends React.Component {
      */
     render() {
         return (
-            <NamespacesConsumer ns={["datasetSuggestForm"]}>
+            <MagdaNamespacesConsumer ns={["datasetSuggestForm"]}>
                 {translate => {
                     const alertProps = {
-                        successMessage: translate("suggestSuccessMessage"),
+                        successMessage: translate([
+                            "suggestSuccessMessage",
+                            "Your request has been sent to the maintainers of this site."
+                        ]),
                         successHeader: "Your request has been sent!",
                         failMessage: null,
                         failHeader:
@@ -182,7 +185,7 @@ export default class RequestFormLogic extends React.Component {
                         }
                     }
                 }}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

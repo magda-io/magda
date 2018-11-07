@@ -2,10 +2,10 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
-import { NamespacesConsumer } from "react-i18next";
 
 import ErrorHandler from "../../Components/ErrorHandler";
-import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 import {
     fetchPublisherIfNeeded,
     resetFetchPublisher
@@ -55,12 +55,12 @@ class PublisherDetails extends Component {
         const description =
             details.description && details.description.length > 0
                 ? details.description
-                : translate("publisherHasNoDescMessage");
+                : translate(["publisherHasNoDescMessage", "No description"]);
 
         const breadcrumbs = [
             <li key="organisations">
                 <Link to="/organisations">
-                    {translate("publishersBreadCrumb")}
+                    {translate(["publishersBreadCrumb", "Publishers"])}
                 </Link>
             </li>,
             <li key={publisher.name}>
@@ -72,7 +72,10 @@ class PublisherDetails extends Component {
 
         return (
             <MagdaDocumentTitle
-                prefixes={[publisher.name, translate("publishersBreadCrumb")]}
+                prefixes={[
+                    publisher.name,
+                    translate(["publishersBreadCrumb", "Publishers"])
+                ]}
             >
                 <div className="publisher-details">
                     <div>
@@ -156,7 +159,7 @@ class PublisherDetails extends Component {
 
     render() {
         return (
-            <NamespacesConsumer ns={["publisherPage"]}>
+            <MagdaNamespacesConsumer ns={["publisherPage"]}>
                 {translate => {
                     if (this.props.error) {
                         return <ErrorHandler error={this.props.error} />;
@@ -180,12 +183,15 @@ class PublisherDetails extends Component {
                                 as="info"
                                 className="notification__inner"
                             >
-                                {translate("publisherNotFoundMessage")}
+                                {translate([
+                                    "publisherNotFoundMessage",
+                                    "Publisher not found"
+                                ])}
                             </AUpageAlert>
                         );
                     }
                 }}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

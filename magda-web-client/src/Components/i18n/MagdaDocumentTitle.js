@@ -1,14 +1,17 @@
 import React from "react";
 import ReactDocumentTitle from "react-document-title";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "./MagdaNamespacesConsumer";
 
 export default function MagdaDocumentTitle({ prefixes = [], children }) {
     return (
-        <NamespacesConsumer ns={["global"]}>
+        <MagdaNamespacesConsumer ns={["global"]}>
             {translate => {
-                const title = prefixes
-                    .concat([translate("appName")])
-                    .join(" | ");
+                const appName = translate(["appName", "FALLBACK"]);
+
+                const title = (appName !== ""
+                    ? prefixes.concat([appName])
+                    : prefixes
+                ).join(" | ");
 
                 return (
                     <ReactDocumentTitle title={title}>
@@ -16,6 +19,6 @@ export default function MagdaDocumentTitle({ prefixes = [], children }) {
                     </ReactDocumentTitle>
                 );
             }}
-        </NamespacesConsumer>
+        </MagdaNamespacesConsumer>
     );
 }

@@ -1,4 +1,4 @@
-import MagdaDocumentTitle from "./Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "./Components/i18n/MagdaDocumentTitle";
 import React from "react";
 import { config } from "./config.js";
 import { connect } from "react-redux";

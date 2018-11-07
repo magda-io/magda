@@ -7,7 +7,7 @@ import { fetchPublisherSearchResults } from "../../actions/facetPublisherSearchA
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
 import queryString from "query-string";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 class Publisher extends Component {
     constructor(props) {
@@ -61,10 +61,10 @@ class Publisher extends Component {
 
     render() {
         return (
-            <NamespacesConsumer ns={["searchDatasetsPage"]}>
+            <MagdaNamespacesConsumer ns={["searchDatasetsPage"]}>
                 {translate => (
                     <FacetBasic
-                        title={translate("publisherFilterTitle")}
+                        title={translate(["publisherFilterTitle", "Publisher"])}
                         id="publisher"
                         hasQuery={Boolean(this.props.activePublishers.length)}
                         options={
@@ -81,7 +81,7 @@ class Publisher extends Component {
                         resetFilterEvent={this.resetFilterEvent}
                     />
                 )}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

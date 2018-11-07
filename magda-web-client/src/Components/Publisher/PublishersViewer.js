@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import { config } from "../../config";
 import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
-import ReactDocumentTitle from "react-document-title";
 import PublisherSummary from "./PublisherSummary";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
@@ -18,7 +17,8 @@ import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
 import { withRouter } from "react-router-dom";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "../i18n/MagdaNamespacesConsumer";
+import MagdaDocumentTitle from "../i18n/MagdaDocumentTitle";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -138,7 +138,10 @@ class PublishersViewer extends Component {
             if (this.props.publishers.length === 0) {
                 return (
                     <AUpageAlert as="error">
-                        {translate("noPublishersMatchSearchMessage")}
+                        {translate([
+                            "noPublishersMatchSearchMessage",
+                            "No publishers match your query"
+                        ])}
                         <button
                             className="clear-btn au-btn au-btn--tertiary"
                             type="button"
@@ -176,10 +179,15 @@ class PublishersViewer extends Component {
     }
 
     renderSearchBar(translate) {
+        const placeholderText = translate([
+            "publishersSearchPlaceholder",
+            "Search for Publishers"
+        ]);
+
         return (
             <div className="organization-search">
                 <label htmlFor="organization-search" className="sr-only">
-                    {translate("publishersSearchPlaceholder")}
+                    {placeholderText}
                 </label>
                 <input
                     className="au-text-input au-text-input--block organization-search"
@@ -187,7 +195,7 @@ class PublishersViewer extends Component {
                     id="organization-search"
                     type="text"
                     value={this.state.inputText}
-                    placeholder={translate("publishersSearchPlaceholder")}
+                    placeholder={placeholderText}
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
                     ref={el => (this.searchInputFieldRef = el)}
@@ -207,14 +215,13 @@ class PublishersViewer extends Component {
             +queryString.parse(this.props.location.search).page || 1;
 
         return (
-            <NamespacesConsumer ns={["publishersPage", "global"]}>
+            <MagdaNamespacesConsumer ns={["publishersPage"]}>
                 {translate => (
-                    <ReactDocumentTitle
-                        title={`${translate(
-                            "publishersBreadCrumb"
-                        )} | Page ${currentPage} | ${translate(
-                            "global:appName"
-                        )}`}
+                    <MagdaDocumentTitle
+                        prefixes={[
+                            translate(["publishersBreadCrumb", "Publishers"]),
+                            `Page ${currentPage}`
+                        ]}
                     >
                         <div className="publishers-viewer">
                             <Medium>
@@ -222,9 +229,10 @@ class PublishersViewer extends Component {
                                     breadcrumbs={[
                                         <li key="organisations">
                                             <span>
-                                                {translate(
-                                                    "publishersBreadCrumb"
-                                                )}
+                                                {translate([
+                                                    "publishersBreadCrumb",
+                                                    "Publishers"
+                                                ])}
                                             </span>
                                         </li>
                                     ]}
@@ -235,7 +243,10 @@ class PublishersViewer extends Component {
                                 <div className="publishers-viewer__header">
                                     <div className="col-sm-8">
                                         <h1>
-                                            {translate("publishersPageTitle")}
+                                            {translate([
+                                                "publishersPageTitle",
+                                                "Publishers"
+                                            ])}
                                         </h1>
                                     </div>
 
@@ -266,9 +277,9 @@ class PublishersViewer extends Component {
                                     />
                                 )}
                         </div>
-                    </ReactDocumentTitle>
+                    </MagdaDocumentTitle>
                 )}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "./RequestFormLogic";
-import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
 import { connect } from "react-redux";

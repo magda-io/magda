@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
-import MagdaDocumentTitle from "../Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {

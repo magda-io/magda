@@ -1,7 +1,7 @@
 //@flow
 import React from "react";
 import { connect } from "react-redux";
-import MagdaDocumentTitle from "./Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "./i18n/MagdaDocumentTitle";
 import AUpageAlert from "../pancake/react/page-alerts";
 
 class ErrorHandler extends React.Component {

@@ -15,7 +15,7 @@ import SearchSuggestionBox from "./SearchSuggestionBox";
 import { Small, Medium } from "../../UI/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
 import { withRouter } from "react-router-dom";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -166,12 +166,12 @@ class SearchBox extends Component {
 
         const icon = this.props.isHome ? searchDark : searchLight;
         return (
-            <NamespacesConsumer ns={["global"]}>
+            <MagdaNamespacesConsumer ns={["global"]}>
                 {translate => (
                     <div className="searchBox">
                         <label htmlFor="search">
                             <span className="sr-only">
-                                {"Search " + translate("appName")}
+                                {"Search " + translate(["appName", ""])}
                             </span>
                             <Medium>
                                 <div style={{ position: "relative" }}>
@@ -200,7 +200,7 @@ class SearchBox extends Component {
                         <Small>{suggestionBox}</Small>
                     </div>
                 )}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

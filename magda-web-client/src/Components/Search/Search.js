@@ -5,7 +5,7 @@ import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
 import Notification from "../../UI/Notification";
-import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
 import React, { Component } from "react";
 import SearchFacets from "../../Components/SearchFacets/SearchFacets";
 import SearchResults from "../SearchResults/SearchResults";

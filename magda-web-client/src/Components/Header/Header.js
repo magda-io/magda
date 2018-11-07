@@ -6,7 +6,7 @@ import HeaderNav from "./HeaderNav";
 import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
-import { NamespacesConsumer } from "react-i18next";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 class Header extends Component {
     constructor(props) {
@@ -32,9 +32,9 @@ class Header extends Component {
 
     render() {
         return (
-            <NamespacesConsumer ns={["global"]}>
+            <MagdaNamespacesConsumer ns={["global"]}>
                 {translate => {
-                    const applicationName = translate("appName");
+                    const applicationName = translate(["appName", "Magda"]);
 
                     return (
                         <div className="header">
@@ -121,7 +121,7 @@ class Header extends Component {
                         </div>
                     );
                 }}
-            </NamespacesConsumer>
+            </MagdaNamespacesConsumer>
         );
     }
 }

@@ -78,7 +78,6 @@ function parseContent(content) {
     let mobileTagLine = "";
     let highlights = {};
     let stories = {};
-    const lang = "en";
     let headerNavigation = [];
     let footerMediumNavs = {};
     let footerSmallNavs = {};

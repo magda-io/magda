@@ -217,10 +217,13 @@ i18n.use(reactI18nextModule) // passes i18n down to react-i18next
         react: {
             bindStore: false,
             bindI18n: false
+            // wait: true
         },
         debug: true,
         lng: "en",
-        fallbackNs: "global",
+        ns: "global",
+        defaultNS: "global",
+        fallbackNS: "global",
         fallbackLng: "en",
         load: "languageOnly",
         interpolation: {

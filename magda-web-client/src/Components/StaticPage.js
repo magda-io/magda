@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { Medium } from "../UI/Responsive";
-import MagdaDocumentTitle from "../Components/Meta/MagdaDocumentTitle";
+import MagdaDocumentTitle from "../Components/i18n/MagdaDocumentTitle";
 import { Redirect } from "react-router-dom";
 import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { fetchStaticPage } from "../actions/staticPagesActions";
