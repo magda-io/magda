@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import AccountNavbar from "../Account/AccountNavbar";
 import { config } from "../../config.js";
+import isExternalURL from "is-url-external";
 
 const headerNavigationPlugins = {
     default: function(nav, i) {
@@ -13,14 +14,20 @@ const headerNavigationPlugins = {
         }
         return (
             <li key={i}>
-                <Link
-                    to={opts.href}
-                    target={opts.target}
-                    rel={opts.rel}
-                    title={`Go to ${nav.label}`}
-                >
-                    <span>{nav.label}</span>
-                </Link>
+                {isExternalURL(opts.href) ? (
+                    <a {...opts} title={`Go to ${nav.label}`}>
+                        <span>{nav.label}</span>
+                    </a>
+                ) : (
+                    <Link
+                        to={opts.href}
+                        target={opts.target}
+                        rel={opts.rel}
+                        title={`Go to ${nav.label}`}
+                    >
+                        <span>{nav.label}</span>
+                    </Link>
+                )}
             </li>
         );
     },
