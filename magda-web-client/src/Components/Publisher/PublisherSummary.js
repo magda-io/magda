@@ -16,6 +16,9 @@ function PublisherSummary(props) {
                 </Link>
             </h2>
             <div className="publisher-meta">
+                {props.publisher.jurisdiction ? (
+                    <span>{props.publisher.jurisdiction} &nbsp; | &nbsp;</span>
+                ) : null}
                 <Link
                     to={{
                         pathname: "/search",
