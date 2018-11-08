@@ -34,6 +34,7 @@
 -   Fixed an issue of scss-compiler not updated all variables
 -   Added more configurable scss variables
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
+-   Fixed an issue caused search Panel option filter stop working
 
 ## 0.0.49
 
