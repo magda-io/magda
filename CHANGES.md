@@ -35,6 +35,8 @@
 -   Added more configurable scss variables
 -   Make jurisdiction information available from search api
 -   Organisation search result from search api will be aggregated based on jurisdiction and name
+-   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
+-   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 
 ## 0.0.49
 
