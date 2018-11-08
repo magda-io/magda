@@ -36,6 +36,7 @@
 -   Added internationalisation library to frontend
 -   Adjusted content-api to prevent SQL injection
 -   Made occurrences of "organisation" in the front-end configurable through internationalisation.
+-   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 
 ## 0.0.49
 
