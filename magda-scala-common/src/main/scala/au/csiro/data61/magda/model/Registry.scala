@@ -193,7 +193,7 @@ object Registry {
         identifier = Some(publisher.id),
         name = name,
         jurisdiction = jurisdiction,
-        aggKeywords = if (jurisdiction.isEmpty) Some(publisher.id.toLowerCase) else jurisdiction.map(_ + ":" +name.getOrElse(publisher.id)).map(_.toLowerCase),
+        aggKeywords = if (jurisdiction.isEmpty) Some(name.getOrElse(publisher.id).toLowerCase) else jurisdiction.map(name.getOrElse(publisher.id) + ":" + _).map(_.toLowerCase),
         description = organizationDetails.extract[String]('description.?),
         acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?),
