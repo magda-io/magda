@@ -1,5 +1,5 @@
 UPDATE public.content SET id='lang/en/global/appName' WHERE id='lang/en/appName';
-INSERT INTO public.content VALUES ('lang/en/global/appName', 'text/plain', 'Magda') ON CONFLICT DO NOTHING
+INSERT INTO public.content VALUES ('lang/en/global/appName', 'text/plain', 'Magda') ON CONFLICT DO NOTHING;
 INSERT INTO public.content VALUES ('lang/en/publishersPage/publishersBreadCrumb', 'text/plain', 'Organisations') ON CONFLICT DO NOTHING;
 INSERT INTO public.content VALUES ('lang/en/publishersPage/publishersPageTitle', 'text/plain', 'Organisations') ON CONFLICT DO NOTHING;
 INSERT INTO public.content VALUES ('lang/en/publishersPage/publishersSearchPlaceholder', 'text/plain', 'Search for Organisations') ON CONFLICT DO NOTHING;
