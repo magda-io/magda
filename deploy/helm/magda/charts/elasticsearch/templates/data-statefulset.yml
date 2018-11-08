@@ -20,6 +20,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       affinity:
+        {{ include "magda.antiPreemptibleAffinity" . }}
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 50
