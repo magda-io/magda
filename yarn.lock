@@ -9499,6 +9499,11 @@ is-unc-path@^1.0.0:
   dependencies:
     unc-path-regex "^0.1.2"
 
+is-url-external@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/is-url-external/-/is-url-external-1.0.3.tgz#caa320864a37a05752084ea5a1e5a66ee315ee97"
+  integrity sha1-yqMghko3oFdSCE6loeWmbuMV7pc=
+
 is-utf8@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/is-utf8/-/is-utf8-0.2.1.tgz#4b0da1442104d1b336340e80797e865cf39f7d72"
