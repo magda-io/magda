@@ -33,6 +33,9 @@
 -   Make jurisdiction field available from registry api
 -   Fixed an issue of scss-compiler not updated all variables
 -   Added more configurable scss variables
+-   Added internationalisation library to frontend
+-   Adjusted content-api to prevent SQL injection
+-   Made occurrences of "organisation" in the front-end configurable through internationalisation.
 
 ## 0.0.49
 
