@@ -35,6 +35,7 @@
 -   Added more configurable scss variables
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 -   Fixed an issue caused search Panel option filter stop working
+-   Fixed DAP connector not automatically being released to docker hub.
 
 ## 0.0.49
 
