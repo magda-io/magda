@@ -14,16 +14,20 @@ import getStaticStyleSheetFileName from "./getStaticStyleSheetFileName";
 async function getIncludeHtml(contentApiBaseUrlInternal: string) {
     const url = `${contentApiBaseUrlInternal}includeHtml.text`;
 
-    const response = await fetch(url);
+    try {
+        const response = await fetch(url);
 
-    if (response.status === 200) {
-        return response.text();
-    } else {
-        console.error(
-            `Received status ${response.status}: ${
-                response.statusText
-            } from ${url} when getting dynamic content`
-        );
+        if (response.status === 200) {
+            return response.text();
+        } else {
+            throw new Error(
+                `Received status ${response.status}: ${
+                    response.statusText
+                } from ${url} when getting dynamic content`
+            );
+        }
+    } catch (e) {
+        console.error(e);
         return Promise.resolve("");
     }
 }
