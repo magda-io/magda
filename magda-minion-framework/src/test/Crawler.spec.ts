@@ -188,15 +188,22 @@ baseSpec(
                         pageIdx,
                         pageIdx + limit - 1
                     );
-                    return [
-                        200,
-                        {
-                            totalCount: this.registryRecords.length,
-                            hasMore: true,
-                            nextPageToken: String(pageIdx + recordPage.length),
-                            records: recordPage
-                        }
-                    ];
+
+                    const resData: any = {
+                        totalCount: this.registryRecords.length,
+                        hasMore: true,
+                        records: recordPage
+                    };
+
+                    const nextPageToken = pageIdx + recordPage.length;
+
+                    if (nextPageToken < this.registryRecords.length) {
+                        resData.nextPageToken = String(nextPageToken);
+                    } else {
+                        resData.hasMore = false;
+                    }
+
+                    return [200, resData];
                 },
                 function(this: any) {
                     //---propertyCheckingFunc
