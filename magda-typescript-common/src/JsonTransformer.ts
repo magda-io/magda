@@ -80,12 +80,28 @@ export default abstract class JsonTransformer {
             this.sourceId
         );
         const name = this.getNameFromJsonOrganization(jsonOrganization);
-        return this.jsonToRecord(
+
+        const theRecord = this.jsonToRecord(
             id,
             name,
             jsonOrganization,
             this.organizationAspects
         );
+
+        if (this.checkDescriptionFromJsonOrganization) {
+            if (
+                theRecord.aspects["organization-details"].description ==
+                "A little information about my organization..."
+            ) {
+                theRecord.aspects["organization-details"].description = "";
+                console.log(
+                    'Removed useless organization description "A little information about my organization..." for ' +
+                        theRecord.aspects["organization-details"].name
+                );
+            }
+        }
+
+        return theRecord;
     }
 
     datasetJsonToRecord(jsonDataset: object): Record {
@@ -166,6 +182,10 @@ export default abstract class JsonTransformer {
         jsonDistribution: any,
         jsonDataset: any
     ): string;
+
+    checkDescriptionFromJsonOrganization(jsonOrganization: any): boolean {
+        return false;
+    }
 
     private jsonToRecord(
         id: ConnectorRecordId,

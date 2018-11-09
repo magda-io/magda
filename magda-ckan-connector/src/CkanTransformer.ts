@@ -47,6 +47,10 @@ export default class CkanTransformer extends JsonTransformer {
         );
     }
 
+    checkDescriptionFromJsonOrganization(jsonOrganization: any): boolean {
+        return true;
+    }
+
     getNameFromJsonDataset(jsonDataset: any): string {
         return jsonDataset.title || jsonDataset.name || jsonDataset.id;
     }
