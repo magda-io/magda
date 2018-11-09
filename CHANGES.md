@@ -34,6 +34,7 @@
 -   Fixed an issue of scss-compiler not updated all variables
 -   Added more configurable scss variables
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
+-   Fixed: minion crawler may go into an endless loop
 
 ## 0.0.49
 
