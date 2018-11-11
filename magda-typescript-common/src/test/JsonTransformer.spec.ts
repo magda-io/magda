@@ -9,79 +9,93 @@ import * as moment from "moment";
 import * as URI from "urijs";
 
 describe("JsonTransformer", () => {
-    let transformerOptions: JsonTransformerOptions;
+    describe("organizationJsonToRecord", () => {
+        let transformerOptions: JsonTransformerOptions;
 
-    beforeEach(() => {
-        const organizationAspectBuilders: AspectBuilder[] = [
-            {
-                aspectDefinition: {
-                    id: "source",
-                    name: "Source",
-                    jsonSchema: require("@magda/registry-aspects/source.schema.json")
+        beforeEach(() => {
+            const organizationAspectBuilders: AspectBuilder[] = [
+                {
+                    aspectDefinition: {
+                        id: "source",
+                        name: "Source",
+                        jsonSchema: require("@magda/registry-aspects/source.schema.json")
+                    },
+                    builderFunctionString: fs.readFileSync(
+                        "src/test/aspect-templates/organization-source.js",
+                        "utf8"
+                    )
                 },
-                builderFunctionString: fs.readFileSync(
-                    "src/test/aspect-templates/organization-source.js",
-                    "utf8"
-                )
-            },
-            {
-                aspectDefinition: {
-                    id: "organization-details",
-                    name: "Organization",
-                    jsonSchema: require("@magda/registry-aspects/organization-details.schema.json")
-                },
-                builderFunctionString: fs.readFileSync(
-                    "src/test/aspect-templates/organization-details.js",
-                    "utf8"
-                )
-            }
-        ];
+                {
+                    aspectDefinition: {
+                        id: "organization-details",
+                        name: "Organization",
+                        jsonSchema: require("@magda/registry-aspects/organization-details.schema.json")
+                    },
+                    builderFunctionString: fs.readFileSync(
+                        "src/test/aspect-templates/organization-details.js",
+                        "utf8"
+                    )
+                }
+            ];
 
-        transformerOptions = {
-            sourceId: "test",
-            organizationAspectBuilders,
-            libraries: {
-                cleanOrgTitle: cleanOrgTitle,
-                moment: moment,
-                URI: URI
-            }
-        };
-    });
+            transformerOptions = {
+                sourceId: "test",
+                organizationAspectBuilders,
+                libraries: {
+                    cleanOrgTitle: cleanOrgTitle,
+                    moment: moment,
+                    URI: URI
+                }
+            };
+        });
 
-    it("should remove useless descrition when checkDescriptionFromJsonOrganization() is true", () => {
-        const transformer = new JsonTransformerWithCheck(transformerOptions);
-        const organization = JSON.parse(
-            '{"description": "A little information about my organization...", \
-            "id": "123", "name": "abc", "type": "organization"}'
-        );
-        const theRecord = transformer.organizationJsonToRecord(organization);
-        expect(theRecord.aspects["organization-details"].description).to.equal(
-            ""
-        );
-    });
+        it("should remove useless descrition when checkDescriptionFromJsonOrganization() is true", () => {
+            const transformer = new JsonTransformerWithCheck(
+                transformerOptions
+            );
+            const organization = JSON.parse(
+                '{"description": "A little information about my organization...", \
+                "id": "123", "name": "abc", "type": "organization"}'
+            );
+            const theRecord = transformer.organizationJsonToRecord(
+                organization
+            );
+            expect(
+                theRecord.aspects["organization-details"].description
+            ).to.equal("");
+        });
 
-    it("should keep useful descrition when checkDescriptionFromJsonOrganization() is true", () => {
-        const transformer = new JsonTransformerWithCheck(transformerOptions);
-        const organization = JSON.parse(
-            '{"description": "A little information about my organization", \
-            "id": "456", "name": "def", "type": "organization"}'
-        );
-        const theRecord = transformer.organizationJsonToRecord(organization);
-        expect(theRecord.aspects["organization-details"].description).to.equal(
-            "A little information about my organization"
-        );
-    });
+        it("should keep useful descrition when checkDescriptionFromJsonOrganization() is true", () => {
+            const transformer = new JsonTransformerWithCheck(
+                transformerOptions
+            );
+            const organization = JSON.parse(
+                '{"description": "A little information about my organization", \
+                "id": "456", "name": "def", "type": "organization"}'
+            );
+            const theRecord = transformer.organizationJsonToRecord(
+                organization
+            );
+            expect(
+                theRecord.aspects["organization-details"].description
+            ).to.equal("A little information about my organization");
+        });
 
-    it("should keep any descrition when checkDescriptionFromJsonOrganization() is false", () => {
-        const transformer = new JsonTransformerWithoutCheck(transformerOptions);
-        const organization = JSON.parse(
-            '{"description": "A little information about my organization...", \
-            "id": "123456", "name": "abc def", "type": "organization"}'
-        );
-        const theRecord = transformer.organizationJsonToRecord(organization);
-        expect(theRecord.aspects["organization-details"].description).to.equal(
-            "A little information about my organization..."
-        );
+        it("should keep any descrition when checkDescriptionFromJsonOrganization() is false", () => {
+            const transformer = new JsonTransformerWithoutCheck(
+                transformerOptions
+            );
+            const organization = JSON.parse(
+                '{"description": "A little information about my organization...", \
+                "id": "123456", "name": "abc def", "type": "organization"}'
+            );
+            const theRecord = transformer.organizationJsonToRecord(
+                organization
+            );
+            expect(
+                theRecord.aspects["organization-details"].description
+            ).to.equal("A little information about my organization...");
+        });
     });
 });
 
