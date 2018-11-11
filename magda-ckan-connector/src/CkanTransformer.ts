@@ -47,7 +47,7 @@ export default class CkanTransformer extends JsonTransformer {
         );
     }
 
-    checkDescriptionFromJsonOrganization(jsonOrganization: any): boolean {
+    checkDescriptionFromJsonOrganization(): boolean {
         return true;
     }
 
