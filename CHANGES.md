@@ -35,6 +35,7 @@
 -   Added more configurable scss variables
 -   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
+-   Fixed: minion crawler may go into an endless loop
 -   Fixed an issue caused search Panel option filter stop working
 -   Fixed DAP connector not automatically being released to docker hub.
 
