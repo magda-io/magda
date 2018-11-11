@@ -94,10 +94,6 @@ export default abstract class JsonTransformer {
                 "A little information about my organization..."
             ) {
                 theRecord.aspects["organization-details"].description = "";
-                console.log(
-                    'Removed useless organization description "A little information about my organization..." for ' +
-                        theRecord.aspects["organization-details"].name
-                );
             }
         }
 
