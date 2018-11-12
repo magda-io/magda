@@ -7,6 +7,7 @@ import * as fs from "fs";
 import cleanOrgTitle from "src/util/cleanOrgTitle";
 import * as moment from "moment";
 import * as URI from "urijs";
+import { Record } from "src/generated/registry/api";
 
 describe("JsonTransformer", () => {
     describe("organizationJsonToRecord", () => {
@@ -49,28 +50,38 @@ describe("JsonTransformer", () => {
             };
         });
 
-        it("should remove useless descrition when checkDescriptionFromJsonOrganization() is true", () => {
+        it("should only revise the specific descrition", () => {
             const transformer = new JsonTransformerWithCheck(
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "A little information about my organization...", \
+                '{"description": "This description should be revised as an empty string.", \
                 "id": "123", "name": "abc", "type": "organization"}'
             );
             const theRecord = transformer.organizationJsonToRecord(
                 organization
             );
-            expect(
-                theRecord.aspects["organization-details"].description
-            ).to.equal("");
+            expect(theRecord.id).to.equal("org-test-123");
+            expect(theRecord.name).to.equal("abc");
+
+            const sourceAspect = theRecord.aspects["source"];
+            expect(sourceAspect.id).to.equal("test source id");
+            expect(sourceAspect.name).to.equal("test source name");
+            expect(sourceAspect.type).to.equal("test source organization");
+            expect(sourceAspect.url).to.equal("http://test.com");
+
+            const organizationDetailsAspect =
+                theRecord.aspects["organization-details"];
+            expect(organizationDetailsAspect.description).to.equal("");
+            expect(organizationDetailsAspect.name).to.equal("abc");
         });
 
-        it("should keep useful descrition when checkDescriptionFromJsonOrganization() is true", () => {
+        it("should not revise the non-specific descrition", () => {
             const transformer = new JsonTransformerWithCheck(
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "A little information about my organization", \
+                '{"description": "This description should be kept.", \
                 "id": "456", "name": "def", "type": "organization"}'
             );
             const theRecord = transformer.organizationJsonToRecord(
@@ -78,15 +89,15 @@ describe("JsonTransformer", () => {
             );
             expect(
                 theRecord.aspects["organization-details"].description
-            ).to.equal("A little information about my organization");
+            ).to.equal("This description should be kept.");
         });
 
-        it("should keep any descrition when checkDescriptionFromJsonOrganization() is false", () => {
+        it("should not revise any descrition when reviseOrganizationRecord does nothing", () => {
             const transformer = new JsonTransformerWithoutCheck(
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "A little information about my organization...", \
+                '{"description": "This description should be kept.", \
                 "id": "123456", "name": "abc def", "type": "organization"}'
             );
             const theRecord = transformer.organizationJsonToRecord(
@@ -94,7 +105,7 @@ describe("JsonTransformer", () => {
             );
             expect(
                 theRecord.aspects["organization-details"].description
-            ).to.equal("A little information about my organization...");
+            ).to.equal("This description should be kept.");
         });
     });
 });
@@ -111,52 +122,48 @@ class JsonTransformerWithCheck extends JsonTransformer {
         );
     }
 
+    getNameFromJsonOrganization(jsonOrganization: any): string {
+        return jsonOrganization.name;
+    }
+
+    reviseOrganizationRecord(record: Record): Record {
+        if (
+            record.aspects["organization-details"] &&
+            record.aspects["organization-details"].description ==
+                "This description should be revised as an empty string."
+        ) {
+            record.aspects["organization-details"].description = "";
+        }
+
+        return record;
+    }
+
     getIdFromJsonDataset(
         jsonDataset: any,
         sourceId: string
     ): ConnectorRecordId {
-        return new ConnectorRecordId(jsonDataset.id, "Dataset", sourceId);
+        throw new Error("Method not implemented.");
     }
-
     getIdFromJsonDistribution(
         jsonDistribution: any,
         jsonDataset: any,
         sourceId: string
     ): ConnectorRecordId {
-        return new ConnectorRecordId(
-            jsonDistribution.id,
-            "Distribution",
-            sourceId
-        );
+        throw new Error("Method not implemented.");
     }
-
-    getNameFromJsonOrganization(jsonOrganization: any): string {
-        return (
-            jsonOrganization.display_name ||
-            jsonOrganization.title ||
-            jsonOrganization.name ||
-            jsonOrganization.id
-        );
-    }
-
-    checkDescriptionFromJsonOrganization(): boolean {
-        return true;
-    }
-
     getNameFromJsonDataset(jsonDataset: any): string {
-        return jsonDataset.title || jsonDataset.name || jsonDataset.id;
+        throw new Error("Method not implemented.");
     }
-
     getNameFromJsonDistribution(
         jsonDistribution: any,
         jsonDataset: any
     ): string {
-        return jsonDistribution.name || jsonDistribution.id;
+        throw new Error("Method not implemented.");
     }
 }
 
 class JsonTransformerWithoutCheck extends JsonTransformerWithCheck {
-    checkDescriptionFromJsonOrganization(): boolean {
-        return false;
+    reviseOrganizationRecord(record: Record) {
+        return record;
     }
 }

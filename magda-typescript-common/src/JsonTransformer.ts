@@ -81,6 +81,7 @@ export default abstract class JsonTransformer {
         );
 
         const name = this.getNameFromJsonOrganization(jsonOrganization);
+
         const theRecord = this.jsonToRecord(
             id,
             name,
@@ -88,16 +89,7 @@ export default abstract class JsonTransformer {
             this.organizationAspects
         );
 
-        if (this.checkDescriptionFromJsonOrganization() == true) {
-            if (
-                theRecord.aspects["organization-details"].description ==
-                "A little information about my organization..."
-            ) {
-                theRecord.aspects["organization-details"].description = "";
-            }
-        }
-
-        return theRecord;
+        return this.reviseOrganizationRecord(theRecord);
     }
 
     datasetJsonToRecord(jsonDataset: object): Record {
@@ -179,8 +171,8 @@ export default abstract class JsonTransformer {
         jsonDataset: any
     ): string;
 
-    checkDescriptionFromJsonOrganization(): boolean {
-        return false;
+    reviseOrganizationRecord(record: Record): Record {
+        return record;
     }
 
     private jsonToRecord(

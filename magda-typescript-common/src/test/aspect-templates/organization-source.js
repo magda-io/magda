@@ -1,6 +1,6 @@
 return {
-    type: "test-organization",
+    type: "test source organization",
     url: "http://test.com",
-    id: "test id",
-    name: "test name"
+    id: "test source id",
+    name: "test source name"
 };
