@@ -36,6 +36,7 @@
 -   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 -   Fixed an issue caused search Panel option filter stop working
+-   The CkanTransformer will remove generic organisation descriptions.
 
 ## 0.0.49
 
