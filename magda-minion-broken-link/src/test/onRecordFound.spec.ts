@@ -180,7 +180,9 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         url: string;
                         success: CheckResult;
                     }) => {
-                        const scope = nock(url);
+                        const scope = nock(url, {
+                            reqheaders: { "User-Agent": /@magda.*/ }
+                        });
 
                         if (success !== "error") {
                             scope

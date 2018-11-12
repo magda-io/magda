@@ -1,5 +1,5 @@
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import AsyncPage, {
     forEachAsync
 } from "@magda/typescript-common/dist/AsyncPage";

@@ -195,7 +195,7 @@
   },
   "config": {
     "docker": {
-      "include": "node_modules build"
+      "include": "node_modules build package.json"
     },
     "magda": {
       "language": "javascript",
