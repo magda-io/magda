@@ -243,6 +243,12 @@ function overrideSettingWithEnvVars(env, configData) {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
         configData[item.settingName] = envVal;
+        if (
+            envVal.toLowerCase() === "true" ||
+            envVal.toLowerCase() === "false"
+        ) {
+            configData[item.settingName] = envVal.toLowerCase() === "true";
+        }
     });
 
     return configData;
