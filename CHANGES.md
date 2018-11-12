@@ -37,6 +37,7 @@
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 -   Fixed: minion crawler may go into an endless loop
 -   Fixed an issue caused search Panel option filter stop working
+-   Fixed non-RC versions not being released to docker hub.
 -   Fixed DAP connector not automatically being released to docker hub.
 
 ## 0.0.49
