@@ -4,9 +4,6 @@ import { expect } from "chai";
 import "mocha";
 import AspectBuilder from "src/AspectBuilder";
 import * as fs from "fs";
-import cleanOrgTitle from "src/util/cleanOrgTitle";
-import * as moment from "moment";
-import * as URI from "urijs";
 import { Record } from "src/generated/registry/api";
 
 describe("JsonTransformer", () => {
@@ -15,17 +12,6 @@ describe("JsonTransformer", () => {
 
         beforeEach(() => {
             const organizationAspectBuilders: AspectBuilder[] = [
-                {
-                    aspectDefinition: {
-                        id: "source",
-                        name: "Source",
-                        jsonSchema: require("@magda/registry-aspects/source.schema.json")
-                    },
-                    builderFunctionString: fs.readFileSync(
-                        "src/test/aspect-templates/organization-source.js",
-                        "utf8"
-                    )
-                },
                 {
                     aspectDefinition: {
                         id: "organization-details",
@@ -41,12 +27,7 @@ describe("JsonTransformer", () => {
 
             transformerOptions = {
                 sourceId: "test",
-                organizationAspectBuilders,
-                libraries: {
-                    cleanOrgTitle: cleanOrgTitle,
-                    moment: moment,
-                    URI: URI
-                }
+                organizationAspectBuilders
             };
         });
 
@@ -63,12 +44,6 @@ describe("JsonTransformer", () => {
             );
             expect(theRecord.id).to.equal("org-test-123");
             expect(theRecord.name).to.equal("abc");
-
-            const sourceAspect = theRecord.aspects["source"];
-            expect(sourceAspect.id).to.equal("test source id");
-            expect(sourceAspect.name).to.equal("test source name");
-            expect(sourceAspect.type).to.equal("test source organization");
-            expect(sourceAspect.url).to.equal("http://test.com");
 
             const organizationDetailsAspect =
                 theRecord.aspects["organization-details"];
