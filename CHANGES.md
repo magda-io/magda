@@ -38,6 +38,8 @@
 -   Fixed: minion crawler may go into an endless loop
 -   Fixed an issue caused search Panel option filter stop working
 -   Fixed DAP connector not automatically being released to docker hub.
+-   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
+-   `create-secrets` will load ENV vars according to question data types
 
 ## 0.0.49
 
