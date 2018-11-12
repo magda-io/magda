@@ -9,6 +9,7 @@ const {
 } = require("./askQuestions");
 const Base64 = require("js-base64").Base64;
 const pwgen = require("./pwgen");
+const fs = require("fs");
 
 const dbPasswordNames = [
     "authorization-db",
@@ -248,6 +249,11 @@ function overrideSettingWithEnvVars(env, configData) {
             envVal.toLowerCase() === "false"
         ) {
             configData[item.settingName] = envVal.toLowerCase() === "true";
+        } else if (
+            item.settingName === "cloudsql-instance-credentials" &&
+            fs.existsSync(envVal)
+        ) {
+            configData[item.settingName] = JSON.parse(fs.readFileSync(envVal));
         }
     });
 
