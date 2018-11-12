@@ -17,7 +17,9 @@ function PublisherSummary(props) {
             </h2>
             <div className="publisher-meta">
                 {props.publisher.jurisdiction ? (
-                    <span>{props.publisher.jurisdiction} &nbsp; | &nbsp;</span>
+                    <span className="publisher-meta-jurisdiction">
+                        {props.publisher.jurisdiction} &nbsp; | &nbsp;
+                    </span>
                 ) : null}
                 <Link
                     to={{
