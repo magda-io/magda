@@ -36,8 +36,11 @@ describe("JsonTransformer", () => {
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "This description should be revised as an empty string.", \
-                "id": "123", "name": "abc", "type": "organization"}'
+                `{
+                    "description": "This description should be revised as an empty string.",
+                    "id": "123", 
+                    "name": "abc"
+                }`
             );
             const theRecord = transformer.organizationJsonToRecord(
                 organization
@@ -56,8 +59,11 @@ describe("JsonTransformer", () => {
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "This description should be kept.", \
-                "id": "456", "name": "def", "type": "organization"}'
+                `{
+                    "description": "This description should be kept.",
+                    "id": "456", 
+                    "name": "def"
+                }`
             );
             const theRecord = transformer.organizationJsonToRecord(
                 organization
@@ -72,8 +78,11 @@ describe("JsonTransformer", () => {
                 transformerOptions
             );
             const organization = JSON.parse(
-                '{"description": "This description should be kept.", \
-                "id": "123456", "name": "abc def", "type": "organization"}'
+                `{
+                    "description": "This description should be kept.",
+                    "id": "123456", 
+                    "name": "abc def"
+                }`
             );
             const theRecord = transformer.organizationJsonToRecord(
                 organization
