@@ -4,7 +4,7 @@ import createTransformer from "src/createTransformer";
 import * as fs from "fs";
 import * as yargs from "yargs";
 
-export const argv = addJwtSecretFromEnvVar(
+export const argv: any = addJwtSecretFromEnvVar(
     yargs
         .config()
         .help()
@@ -199,4 +199,4 @@ export const transformerOptions = {
     organizationAspectBuilders
 };
 
-export const transformer = createTransformer(transformerOptions);
+export const transformer: any = createTransformer(transformerOptions);
