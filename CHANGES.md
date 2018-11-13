@@ -40,6 +40,8 @@
 -   The CkanTransformer will remove generic organisation descriptions.
 -   Fixed non-RC versions not being released to docker hub.
 -   Fixed DAP connector not automatically being released to docker hub.
+-   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
+-   `create-secrets` will load ENV vars according to question data types
 
 ## 0.0.49
 
