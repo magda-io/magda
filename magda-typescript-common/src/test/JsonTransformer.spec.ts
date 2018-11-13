@@ -54,7 +54,7 @@ describe("JsonTransformer", () => {
             expect(organizationDetailsAspect.name).to.equal("abc");
         });
 
-        it("should not revise the organisation record", () => {
+        it("organisation record should be the same if not revised", () => {
             const transformer = new JsonTransformerWithCheck(
                 transformerOptions
             );
