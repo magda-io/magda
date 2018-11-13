@@ -37,6 +37,16 @@
         }
     }
 
+    .publisher-meta-jurisdiction {
+        opacity: 0.75;
+        font-size: 14px;
+        font-size: 0.875rem;
+        line-height: 1.42857;
+        margin-bottom: 5px;
+        text-decoration: none;
+        color: #6f6f6f;
+    }
+
     .publisher-description {
         @include AU-fontgrid(xs);
         margin-bottom: 8px;
