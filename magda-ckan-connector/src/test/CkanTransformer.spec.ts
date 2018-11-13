@@ -4,7 +4,7 @@ import { transformer } from "src/setup";
 
 describe("CkanTransformer", () => {
     describe("organizationJsonToRecord", () => {
-        it("should only revise the specific descrition", () => {
+        it("should not record the default description", () => {
             const organization = JSON.parse(
                 `{
                     "description": "A little information about my organization...",
@@ -24,7 +24,7 @@ describe("CkanTransformer", () => {
             expect(organizationDetailsAspect.name).to.equal("abc");
         });
 
-        it("should not revise the non-specific descrition", () => {
+        it("should not revise the non-default description", () => {
             const organization = JSON.parse(
                 `{
                     "description": "This description should be kept.",

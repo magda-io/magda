@@ -51,7 +51,7 @@ export default class CkanTransformer extends JsonTransformer {
     reviseOrganizationRecord(record: Record): Record {
         if (
             record.aspects["organization-details"] &&
-            record.aspects["organization-details"].description ==
+            record.aspects["organization-details"].description ===
                 "A little information about my organization..."
         ) {
             record.aspects["organization-details"].description = "";

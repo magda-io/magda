@@ -31,7 +31,7 @@ describe("JsonTransformer", () => {
             };
         });
 
-        it("should only revise the specific descrition", () => {
+        it("should revise the organisation record", () => {
             const transformer = new JsonTransformerWithCheck(
                 transformerOptions
             );
@@ -54,7 +54,7 @@ describe("JsonTransformer", () => {
             expect(organizationDetailsAspect.name).to.equal("abc");
         });
 
-        it("should not revise the non-specific descrition", () => {
+        it("should not revise the organisation record", () => {
             const transformer = new JsonTransformerWithCheck(
                 transformerOptions
             );
@@ -73,8 +73,8 @@ describe("JsonTransformer", () => {
             ).to.equal("This description should be kept.");
         });
 
-        it("should not revise any descrition when reviseOrganizationRecord does nothing", () => {
-            const transformer = new JsonTransformerWithoutCheck(
+        it("should not revise the organisation record by default", () => {
+            const transformer = new JsonTransformerDefaultNoCheck(
                 transformerOptions
             );
             const organization = JSON.parse(
@@ -94,7 +94,7 @@ describe("JsonTransformer", () => {
     });
 });
 
-class JsonTransformerWithCheck extends JsonTransformer {
+class JsonTransformerDefaultNoCheck extends JsonTransformer {
     getIdFromJsonOrganization(
         jsonOrganization: any,
         sourceId: string
@@ -108,18 +108,6 @@ class JsonTransformerWithCheck extends JsonTransformer {
 
     getNameFromJsonOrganization(jsonOrganization: any): string {
         return jsonOrganization.name;
-    }
-
-    reviseOrganizationRecord(record: Record): Record {
-        if (
-            record.aspects["organization-details"] &&
-            record.aspects["organization-details"].description ==
-                "This description should be revised as an empty string."
-        ) {
-            record.aspects["organization-details"].description = "";
-        }
-
-        return record;
     }
 
     getIdFromJsonDataset(
@@ -146,8 +134,16 @@ class JsonTransformerWithCheck extends JsonTransformer {
     }
 }
 
-class JsonTransformerWithoutCheck extends JsonTransformerWithCheck {
+class JsonTransformerWithCheck extends JsonTransformerDefaultNoCheck {
     reviseOrganizationRecord(record: Record) {
+        if (
+            record.aspects["organization-details"] &&
+            record.aspects["organization-details"].description ===
+                "This description should be revised as an empty string."
+        ) {
+            record.aspects["organization-details"].description = "";
+        }
+
         return record;
     }
 }
