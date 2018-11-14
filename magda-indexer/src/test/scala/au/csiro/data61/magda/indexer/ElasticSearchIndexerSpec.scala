@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.indexer
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Cancellable}
 import akka.{NotUsed, pattern}
 import akka.stream.{ActorMaterializer, Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
@@ -11,6 +11,7 @@ import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, DefaultIndices}
+import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
 import com.typesafe.config.Config
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
@@ -31,7 +32,11 @@ class ElasticSearchIndexerSpec extends TestKit(ActorSystem("ElasticSearchIndexer
 
   "ElasticSearchIndexerSpec" must {
     "index" in {
+      val dataset = DataSet(identifier="testId", catalog =
+        Some("testCatalog"), quality = 1.0, score = Some(1.0f))
+      val datasetStream: Source[DataSet, NotUsed] = Source.repeat(dataset)
       val indexer = new ElasticSearchIndexer(new DefaultClientProvider, DefaultIndices)
+      indexer.index(datasetStream)
     }
   }
 }
