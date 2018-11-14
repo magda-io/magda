@@ -44,7 +44,7 @@ object IndexerApp extends App {
   val api = new IndexerApi(crawler, indexer)
 
   logger.info(s"Listening on ${config.getString("http.interface")}:${config.getInt("http.port")}")
-  Http().bindAndHandle(api.routes, config.getString("http.interface"), config.getInt("http.port"))
+  Http().bindAndHandle(handler = api.routes, interface = config.getString("http.interface"), port = config.getInt("http.port"))
 
   {
     if (config.getBoolean("registry.registerForWebhooks")) {
