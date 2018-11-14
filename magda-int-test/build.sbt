@@ -6,7 +6,7 @@ resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.18"
+  val akkaV       = "2.5.18"
   val scalaTestV  = "2.2.6"
   val LuceneVersion = "7.3.1"
   Seq(

@@ -7,9 +7,8 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.18"
+  val akkaV       = "2.5.18"
   val akkaHttpV   = "10.0.7"
-  val scalaTestV  = "2.2.6"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,

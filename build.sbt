@@ -1,5 +1,4 @@
 import spray.json._
-import DefaultJsonProtocol._
 
 name := "magda-metadata"
 

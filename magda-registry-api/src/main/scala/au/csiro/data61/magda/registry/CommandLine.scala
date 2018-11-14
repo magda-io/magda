@@ -1,11 +1,11 @@
 package au.csiro.data61.magda.registry
 
+import java.io.File
+
 import akka.actor.ActorSystem
 import au.csiro.data61.magda.AppConfig
-import com.typesafe.config.ConfigFactory
-import java.io.File
 import ch.qos.logback.classic.Level
-import au.csiro.data61.magda.registry.Api
+import com.typesafe.config.ConfigFactory
 
 /**
  * Command line interface for the registry.
