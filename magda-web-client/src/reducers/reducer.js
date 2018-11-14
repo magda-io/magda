@@ -17,6 +17,7 @@ import topNotification from "./topNotificationReducer";
 import homepageStories from "./homePageStoriesReducer";
 import staticPagesReducer from "./staticPagesReducer";
 import topBanner from "./topBannerReducer";
+import previewBanner from "./previewBannerReducer";
 
 import previewData from "./previewDataReducer";
 
@@ -40,7 +41,8 @@ const reducer = combineReducers({
     topNotification,
     staticPages: staticPagesReducer,
     homepageStories,
-    topBanner
+    topBanner,
+    previewBanner
 });
 
 export default reducer;

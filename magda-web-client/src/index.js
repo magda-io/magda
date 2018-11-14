@@ -1,6 +1,7 @@
 // eslint-disable-next-line
 import "es6-shim";
 import "raf/polyfill";
+import "isomorphic-fetch";
 import logger from "redux-logger";
 import "./index.css";
 import { BrowserRouter, Route } from "react-router-dom";
@@ -16,6 +17,7 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
+import { UIPreviewerManager, UIPreviewerTarget } from "./helpers/UIPreviewer";
 
 const store = createStore(
     reducer,
@@ -26,6 +28,11 @@ const store = createStore(
         )
     )
 );
+
+window.UIPreviewerManager = UIPreviewerManager;
+
+const uiPreviewerTarget = new UIPreviewerTarget(store);
+uiPreviewerTarget.register();
 
 class GAListener extends React.Component {
     static contextTypes = {

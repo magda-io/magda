@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
 import Banner from "./UI/Banner";
+import PreviewBanner from "./UI/PreviewBanner";
 import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
@@ -44,6 +45,7 @@ class AppContainer extends React.Component {
                                 }
                             ]}
                         />
+                        <PreviewBanner />
                         {config.fallbackUrl && (
                             <Medium>
                                 <Banner fallbackUrl={config.fallbackUrl} />
