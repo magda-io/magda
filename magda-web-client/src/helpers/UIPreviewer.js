@@ -104,26 +104,32 @@ class ContentStore {
         return this.data;
     }
 
-    getRecord(matchFunc) {
-        if (!matchFunc) throw new Error("`matchFunc` cannot be empty!");
-        const type = typeof matchFunc;
+    getRecord(matchFuncOrId) {
+        if (!matchFuncOrId) throw new Error("`matchFuncOrId` cannot be empty!");
+        const type = typeof matchFuncOrId;
+        let matchFunc;
         if (type === "string") {
-            matchFunc = record => record.id === matchFunc;
-        } else if (type !== "function") {
+            matchFunc = record => record.id === matchFuncOrId;
+        } else if (type === "function") {
+            matchFunc = matchFuncOrId;
+        } else {
             throw new Error(`\`matchFunc\` cannot be \`${type}\``);
         }
         return this.data.find(record => matchFunc(record));
     }
 
-    setRecord(record, matchFunc) {
-        if (!matchFunc) {
+    setRecord(record, matchFuncOrId) {
+        if (!matchFuncOrId) {
             // --- by default, search record by record.id
-            matchFunc = record.id;
+            matchFuncOrId = record.id;
         }
-        const type = typeof matchFunc;
+        const type = typeof matchFuncOrId;
+        let matchFunc;
         if (type === "string") {
-            matchFunc = record => record.id === matchFunc;
-        } else if (type !== "function") {
+            matchFunc = record => record.id === matchFuncOrId;
+        } else if (type === "function") {
+            matchFunc = matchFuncOrId;
+        } else {
             throw new Error(`\`matchFunc\` cannot be \`${type}\``);
         }
         const idx = this.data.findIndex(record => matchFunc(record));
@@ -278,6 +284,26 @@ export class UIPreviewerTarget {
                     console.log(e);
                 }
                 return Promise.resolve(new fetchResponsePolyfill(resData));
+            } else {
+                //--- other content api get calls
+                const itemId = uri.pathname().replace(/^\//, "");
+                const record = this.contentStore.getRecord(itemId);
+                if (!record) {
+                    return orgFetchApi(url, opts);
+                }
+                if (record.type === "application/json") {
+                    return Promise.resolve(
+                        new fetchResponsePolyfill(record.content)
+                    );
+                } else if (record.type.toLowerCase().indexOf("text") !== -1) {
+                    return Promise.resolve(
+                        new fetchResponsePolyfill(record.content, "text")
+                    );
+                } else {
+                    return Promise.resolve(
+                        new fetchResponsePolyfill(record.content, "base64")
+                    );
+                }
             }
         } catch (e) {
             return Promise.reject(e);
