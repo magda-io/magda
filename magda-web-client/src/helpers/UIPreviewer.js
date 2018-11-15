@@ -173,7 +173,7 @@ class fetchResponsePolyfill {
 }
 
 let isUIPreviewerTargetInitialised = false;
-let isUIPreviewerTargetRegistered = false;
+let registeredUIPreviewerTarget = null;
 
 export class UIPreviewerTarget {
     constructor(store) {
@@ -214,7 +214,7 @@ export class UIPreviewerTarget {
     initTarget() {
         this.interceptFetch();
         this.store.dispatch(togglePreviewBanner());
-        isUIPreviewerTargetRegistered = true;
+        registeredUIPreviewerTarget = this;
     }
 
     interceptFetch() {
@@ -317,14 +317,20 @@ export class UIPreviewerTarget {
 }
 
 UIPreviewerTarget.convertContentUrl = url => {
-    if (!isUIPreviewerTargetRegistered) {
+    if (!registeredUIPreviewerTarget) {
         // --- is not in previewer mode or previewer not ready
         return url;
     }
     const requestStr = "/" + url.replace(config.contentApiURL, "");
-    const uri = new URI(requestStr);
-    const itemId = uri.pathname().replace(/^\//, "");
-    const record = this.contentStore.getRecord(itemId);
+    const uri = new URI(requestStr.replace(/^\/+/, "/"));
+    const itemId = uri.pathname().replace(/^\/+/, "");
+    let record = registeredUIPreviewerTarget.contentStore.getRecord(itemId);
+    if (!record) {
+        // --- search content item without extension name
+        record = registeredUIPreviewerTarget.contentStore.getRecord(
+            itemId.replace(/\.[^\.]+$/, "")
+        );
+    }
     if (!record) {
         // --- cannot find in local store, will not try to produce inline url
         return url;
