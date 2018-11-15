@@ -14,6 +14,7 @@ import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
+import Settings from "../Components/Settings";
 
 import "./OtherPages.css";
 
@@ -53,6 +54,7 @@ const renderBody = () => {
             ))}
             <Route exact path="/404" component={RouteNotFound} />
             <Route exact path="/error" component={ErrorPage} />
+            <Route exact path="/settings" component={Settings} />
             <Route path="/*" component={RouteNotFound} />
         </Switch>
     );

@@ -213,6 +213,7 @@ const topLevelRoutes = [
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
     "suggest",
+    "settings",
     "error"
 ];
 
