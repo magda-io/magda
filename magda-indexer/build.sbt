@@ -24,7 +24,7 @@ libraryDependencies ++= {
     "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
     "org.scalaz" %% "scalaz-core" % "7.2.8",
     "com.typesafe.akka" %% "akka-testkit" % akkaTestKitV % Test,
-      "org.scalatest" %% "scalatest" % scalaTestV % "test",
+    "org.scalatest" %% "scalatest" % scalaTestV % "test",
     "com.typesafe.akka" %% "akka-stream-testkit" % akkaStreamTestKitV % Test
   )
 }

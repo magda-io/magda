@@ -52,3 +52,4 @@ Revolver.enableDebugging(port = 8000, suspend = false)
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 sbt.Keys.fork in Test := false
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.18"
