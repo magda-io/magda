@@ -187,9 +187,13 @@ object Registry {
 
     private def convertPublisher(publisher: Record): Agent = {
       val organizationDetails = publisher.aspects.getOrElse("organization-details", JsObject())
+      val jurisdiction = organizationDetails.extract[String]('jurisdiction.?)
+      val name = organizationDetails.extract[String]('title.?)
       Agent(
         identifier = Some(publisher.id),
-        name = organizationDetails.extract[String]('title.?),
+        name = name,
+        jurisdiction = jurisdiction,
+        aggKeywords = if (jurisdiction.isEmpty) Some(name.getOrElse(publisher.id).toLowerCase) else jurisdiction.map(name.getOrElse(publisher.id) + ":" + _).map(_.toLowerCase),
         description = organizationDetails.extract[String]('description.?),
         acronym = getAcronymFromPublisherName(organizationDetails.extract[String]('title.?)),
         imageUrl = organizationDetails.extract[String]('imageUrl.?),
@@ -203,8 +207,17 @@ object Registry {
         website = organizationDetails.extract[String]('website.?))
     }
 
+    def getNullableStringField(data:JsObject, field:String):Option[String] = {
+      data.fields.get(field) match {
+        case None => None
+        case Some(JsNull) => None
+        case Some(JsString(str)) => Some(str)
+        case _ => deserializationError(s"Invalid nullableString field: ${field}")
+      }
+    }
+
     def convertRegistryDataSet(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {
-      val dcatStrings = hit.aspects("dcat-dataset-strings")
+      val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
       val source = hit.aspects("source")
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
@@ -243,7 +256,7 @@ object Registry {
         identifier = hit.id,
         title = dcatStrings.extract[String]('title.?),
         catalog = source.extract[String]('name.?),
-        description = dcatStrings.extract[String]('description.?),
+        description = getNullableStringField(dcatStrings, "description"),
         issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
         modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
         languages = dcatStrings.extract[String]('languages.? / *).toSet,

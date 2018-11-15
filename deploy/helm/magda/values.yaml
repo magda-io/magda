@@ -24,6 +24,7 @@ tags:
   combined-db: false
   content-api: false
   content-db: false
+  correspondence-api: false
   elasticsearch: false
   gateway: false
   indexer: false

@@ -84,8 +84,20 @@ class PublisherDetails extends Component {
                         </Medium>
                         <div className="publisher-details__body">
                             <div className="media">
-                                <div className="media-body">
+                                <div className="media-body publisher-details-title">
                                     <h1>{publisher.name}</h1>
+                                    {publisher.aspects &&
+                                    publisher.aspects["organization-details"] &&
+                                    publisher.aspects["organization-details"]
+                                        .jurisdiction ? (
+                                        <div>
+                                            {
+                                                publisher.aspects[
+                                                    "organization-details"
+                                                ].jurisdiction
+                                            }
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
 

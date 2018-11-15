@@ -87,6 +87,8 @@ package misc {
     name: Option[String] = None,
     description: Option[String] = None,
     acronym: Option[String] = None,
+    jurisdiction: Option[String] = None,
+    aggKeywords: Option[String] = None,
     email: Option[String] = None,
     imageUrl: Option[String] = None,
     phone: Option[String] = None,
@@ -397,7 +399,7 @@ package misc {
 
     implicit val distributionFormat = jsonFormat12(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat14(Agent.apply)
+    implicit val agentFormat = jsonFormat16(Agent.apply)
     implicit val dataSetFormat = jsonFormat21(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)

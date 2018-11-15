@@ -23,6 +23,7 @@
 -   Added ability to include arbitrary HTML in `index.html` through the content api
 -   Fixed: added added vendor prefix to `au-select` component CSS
 -   Fixed content-api test case logic
+-   Migrate static pages to a json structure and make it editable.
 -   Hide "Download" button for distributions without downloadUrl
 -   Fixed content-api migrator script version conflict issue
 -   Make footer area configurable
@@ -36,7 +37,16 @@
 -   Added internationalisation library to frontend
 -   Adjusted content-api to prevent SQL injection
 -   Made occurrences of "organisation" in the front-end configurable through internationalisation.
+-   Make jurisdiction information available from search api
+-   Organisation search result from search api will be aggregated based on jurisdiction and name
+-   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
+-   Fixed: minion crawler may go into an endless loop
+-   Fixed an issue caused search Panel option filter stop working
+-   Fixed non-RC versions not being released to docker hub.
+-   Fixed DAP connector not automatically being released to docker hub.
+-   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
+-   `create-secrets` will load ENV vars according to question data types
 
 ## 0.0.49
 

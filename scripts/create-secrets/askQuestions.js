@@ -11,6 +11,7 @@ const stripJsonComments = require("strip-json-comments");
 const questions = [
     {
         type: "list",
+        dataType: "boolean",
         name: "deploy-to-google-cloud",
         message:
             "Are you creating k8s secrets for google cloud or local testing cluster?",
@@ -35,6 +36,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-cloudsql-instance-credentials",
         message: "Do you use google cloud SQL service as your database?",
         choices: [
@@ -51,6 +53,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "reselect-cloudsql-instance-credentials",
         message:
             "Has located saved Google SQL cloud credentials JSON file. Do you want to re-select?",
@@ -85,6 +88,7 @@ const questions = [
     },
     {
         type: "fuzzypath",
+        dataType: "jsonfile",
         name: "cloudsql-instance-credentials",
         pathFilter: pathFilterByExt("json"),
         suggestOnly: false,
@@ -117,6 +121,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-storage-account-credentials",
         message: "Do you use google storage service?",
         choices: [
@@ -133,6 +138,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "reselect-storage-account-credentials",
         message:
             "Has located saved Google storage private key JSON file. Do you want to re-select?",
@@ -167,6 +173,7 @@ const questions = [
     },
     {
         type: "fuzzypath",
+        dataType: "jsonfile",
         name: "storage-account-credentials",
         pathFilter: pathFilterByExt("json"),
         suggestOnly: false,
@@ -199,6 +206,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-smtp-secret",
         message:
             "Do you need to access SMTP service for sending data request email?",
@@ -231,6 +239,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-regcred",
         message:
             "Do you use Gitlab as your CI system and need the access to Gitlab docker registry?",
@@ -248,6 +257,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-regcred-password-from-env",
         message:
             "Do you want to get gitlab docker registry password from environment variable ($CI_JOB_TOKEN) or input manually now?",
@@ -282,6 +292,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-oauth-secrets-google",
         message: "Do you want to create google-client-secret for oAuth SSO?",
         choices: [
@@ -305,6 +316,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-oauth-secrets-facebook",
         message: "Do you want to create facebook-client-secret for oAuth SSO?",
         choices: [
@@ -328,6 +340,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "use-web-access-secret",
         message: "Do you want to setup HTTP Basic authentication?",
         choices: [
@@ -360,6 +373,7 @@ const questions = [
     },
     {
         type: "transformer-list",
+        dataType: "boolean",
         name: "manual-web-access-password",
         message:
             "Do you want to manually input the password for HTTP Basic authentication setup?",
@@ -407,6 +421,7 @@ const questions = [
     },
     {
         type: "transformer-list",
+        dataType: "boolean",
         name: "manual-db-passwords",
         message:
             "Do you want to manually input the password used for databases?",
@@ -450,6 +465,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "get-namespace-from-env",
         message:
             "Specify a namespace or leave blank and override by env variable later?",
@@ -475,6 +491,7 @@ const questions = [
     },
     {
         type: "list",
+        dataType: "boolean",
         name: "allow-env-override-settings",
         message:
             "Do you want to allow environment variables (see --help for full list) to override current settings at runtime?",
@@ -724,6 +741,7 @@ function askQuestions(config) {
 function getEnvVarInfo() {
     return questions.map(item => ({
         name: settingNameToEnvVarName(item.name),
+        dataType: item.dataType ? item.dataType : "string",
         settingName: item.name,
         description: item.message
     }));

@@ -70,15 +70,16 @@ combined-db:
       fileName: TerriaJS-5e042b649f8a.json
   data:
     storage: 250Gi
+  antiPreemptibleAffinity: 100
 
 elasticsearch:
   data:
     heapSize: 500m
-    pluginsInstall: "repository-gcs"
   backup:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: db-service-account-private-key.json
+  antiPreemptibleAffinity: 99
 
 indexer:
   readSnapshots: false

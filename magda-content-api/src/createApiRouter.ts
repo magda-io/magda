@@ -93,10 +93,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // inline
             if (inline) {
                 for (const item of all.filter(item => item.content)) {
-                    switch (item.type) {
-                        case "application/json":
-                            item.content = JSON.parse(item.content);
-                            break;
+                    try {
+                        switch (item.type) {
+                            case "application/json":
+                                item.content = JSON.parse(item.content);
+                                break;
+                        }
+                    } catch (e) {
+                        item.error = e.message;
+                        console.error(e.stack);
                     }
                 }
             }

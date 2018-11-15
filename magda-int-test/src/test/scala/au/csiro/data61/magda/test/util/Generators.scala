@@ -108,6 +108,7 @@ object Generators {
   def agentGen(nameGen: Gen[String]) = for {
     identifier <- Gen.uuid.map(_.toString).map(Some.apply)
     name <- nameGen.map(Some.apply)
+    jurisdiction <- nameGen.map(Some.apply)
     website <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     email <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
     phone <- someBiasedOption(arbitrary[String].map(_.take(50).trim))

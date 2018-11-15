@@ -169,3 +169,18 @@ export const configSearchResultsPerPage: any = {
     type: "number",
     minimum: 1
 };
+
+export const page: any = {
+    type: "object",
+    properties: {
+        title: {
+            type: "string",
+            minLength: 1
+        },
+        content: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["title"]
+};

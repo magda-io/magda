@@ -1,6 +1,7 @@
 // @flow
 import defined from "./defined";
 import flatten from "lodash.flatten";
+import { defaultConfiguration } from "../config.js";
 
 type Query = {
     q: string,
@@ -29,6 +30,13 @@ export default function buildSearchQueryString(
         "region",
         queryToLocation(query.regionId, query.regionType)
     );
+
+    searchResultsPerPage = defined(searchResultsPerPage)
+        ? searchResultsPerPage
+        : defined(query.limit)
+            ? query.limit
+            : defaultConfiguration.searchResultsPerPage;
+
     let startIndex = defined(query.page)
         ? (query.page - 1) * searchResultsPerPage
         : 0;

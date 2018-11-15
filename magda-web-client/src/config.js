@@ -89,7 +89,7 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?id=*/navigation/*&id=home/*&id=footer/*&id=configuration/*&id=header/*&inline=true`,
+    contentUrl: `${contentApiURL}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
     fallbackUrl: serverConfig.fallbackUrl,
     months: [
         "Jan",

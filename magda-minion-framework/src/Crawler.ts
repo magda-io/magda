@@ -61,11 +61,21 @@ class Crawler {
 
             const registryPage = AsyncPage.create<RecordsPage<Record>>(
                 previous => {
-                    if (previous && previous.records.length === 0) {
+                    if (previous && previous.hasMore === false) {
                         console.info("No more records left");
                         // Last page was an empty page, no more records left
                         return undefined;
                     } else {
+                        console.info(
+                            "Crawling after token " +
+                                (previous && previous.nextPageToken
+                                    ? previous.nextPageToken
+                                    : "<first page>")
+                        );
+                        this.crawlingPageToken =
+                            previous && previous.nextPageToken
+                                ? previous.nextPageToken
+                                : "";
                         // TODO: Retry with reduced limit if entity size too large error.
                         return this.registry
                             .getRecords<Record>(
@@ -80,17 +90,6 @@ class Crawler {
                                 this.crawledRecordNumber += page.records.length;
                                 console.info(
                                     `Crawled ${page.records.length} records`
-                                );
-                                this.crawlingPageToken =
-                                    page && page.nextPageToken
-                                        ? page.nextPageToken
-                                        : "";
-
-                                console.info(
-                                    "Crawling after token " +
-                                        (page && page.nextPageToken
-                                            ? page.nextPageToken
-                                            : "<first page>")
                                 );
                                 return page;
                             });
