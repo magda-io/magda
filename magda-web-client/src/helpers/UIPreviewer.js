@@ -328,7 +328,7 @@ UIPreviewerTarget.convertContentUrl = url => {
     if (!record) {
         // --- search content item without extension name
         record = registeredUIPreviewerTarget.contentStore.getRecord(
-            itemId.replace(/\.[^\.]+$/, "")
+            itemId.replace(/\.[^.]+$/, "")
         );
     }
     if (!record) {
