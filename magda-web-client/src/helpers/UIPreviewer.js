@@ -1,5 +1,8 @@
 import { togglePreviewBanner } from "../actions/previewBanner";
 import { config } from "../config";
+import * as URI from "urijs";
+import * as contentActions from "../actions/contentActions";
+import * as staticPagesActions from "../actions/staticPagesActions";
 
 const noop = () => {};
 const popupDefaultOptions = {
@@ -15,14 +18,6 @@ const popupDefaultOptions = {
     copyhistory: "no",
     centered: true
 };
-
-class popup {
-    constructor(src, options) {
-        //this.popupName =
-    }
-
-    open() {}
-}
 
 export class UIPreviewerManager {
     constructor() {
@@ -120,21 +115,52 @@ class ContentStore {
         return this.data.find(record => matchFunc(record));
     }
 
-    setRecord(matchFunc, record) {
-        if (!matchFunc) throw new Error("`matchFunc` cannot be empty!");
+    setRecord(record, matchFunc) {
+        if (!matchFunc) {
+            // --- by default, search record by record.id
+            matchFunc = record.id;
+        }
         const type = typeof matchFunc;
         if (type === "string") {
             matchFunc = record => record.id === matchFunc;
         } else if (type !== "function") {
             throw new Error(`\`matchFunc\` cannot be \`${type}\``);
         }
-        this.data = this.data.map(orgRecord => {
-            if (matchFunc(record) === true) {
-                return record;
-            } else {
-                return orgRecord;
-            }
-        });
+        const idx = this.data.findIndex(record => matchFunc(record));
+        if (idx === -1) {
+            //--- if not item id exist, create a new entry
+            this.data.push(record);
+        } else {
+            this.data[idx] = record;
+        }
+    }
+}
+
+class fetchResponsePolyfill {
+    constructor(data, dataType = "json") {
+        this.data = data;
+        // --- possible values: "json", "text", "base64"
+        this.dateType = dataType;
+        this.status = 200;
+        this.ok = true;
+        this.statusText = "";
+        this.type = "basic";
+    }
+
+    text() {
+        if (this.dateType === "json") {
+            return Promise.resolve(JSON.stringify(this.data));
+        } else {
+            return Promise.resolve(this.data);
+        }
+    }
+
+    json() {
+        if (this.dateType === "json") {
+            return Promise.resolve(this.data);
+        } else {
+            return Promise.reject("Non json format");
+        }
     }
 }
 
@@ -147,6 +173,11 @@ export class UIPreviewerTarget {
                 "You can only create one `UIPreviewerTarget` instance."
             );
         }
+        this.actions = {
+            contentActions,
+            staticPagesActions
+        };
+        this.contentStore = new ContentStore();
         this.store = store;
         this.targetRegisterMethod =
             typeof window["__magdaPreviewerTargetRegister"] === "function"
@@ -155,6 +186,15 @@ export class UIPreviewerTarget {
                       window["__magdaPreviewerTargetRegister"](target);
                   }
                 : noop;
+    }
+
+    dispatch(action, ...args) {
+        if (typeof action === "function") {
+            //--- it's an action creator
+            this.store.dispatch(action.apply(null, args));
+        } else {
+            this.store.dispatch(action);
+        }
     }
 
     register() {
@@ -171,10 +211,76 @@ export class UIPreviewerTarget {
         window.fetch = (url, opts) => {
             if (
                 typeof url !== "string" ||
-                url.indexOf(config.contentApiURL) !== 0
+                url.indexOf(config.contentApiURL) !== 0 ||
+                (opts &&
+                    opts.method &&
+                    String(opts.method).toLowerCase() !== "get")
             ) {
                 return orgFetchApi(url, opts);
             }
+            return this.queryContentStore(orgFetchApi, url, opts);
         };
+    }
+
+    async queryContentStore(orgFetchApi, url, opts) {
+        try {
+            const requestStr = "/" + url.replace(config.contentApiURL, "");
+            const uri = new URI(requestStr);
+            const query = uri.search(true);
+            if (uri.segment(0) === "all") {
+                const inline = query.inline === "true" ? true : false;
+                const resData = this.contentStore.getData().map(item => {
+                    const newItem = {
+                        id: item.id,
+                        type: item.type,
+                        length: item.content.length
+                    };
+                    if (inline) {
+                        if (
+                            String(item.type).toLowerCase() ===
+                            "application/json"
+                        ) {
+                            newItem.content = JSON.parse(item.content);
+                        } else {
+                            newItem.content = null;
+                        }
+                    }
+                    return newItem;
+                });
+                if (!resData.length) {
+                    return orgFetchApi(url, opts);
+                }
+                try {
+                    // --- also query live content API to fill the gap
+                    // --- i.e. if any items is not available from the local ContentStore
+                    // --- we use the value from the live content API
+                    // --- So that Previewer doesn't have to contain all content API items
+                    const apiRes = await orgFetchApi(url, opts);
+                    if (apiRes.status !== 200)
+                        throw new Error(
+                            `Failed to load data from content API. Status code: ${
+                                apiRes.status
+                            }`
+                        );
+                    const apiData = await apiRes.json();
+                    if (apiData && apiData.length) {
+                        apiData.forEach(item => {
+                            if (
+                                resData.findIndex(
+                                    localItem => localItem.id === item.id
+                                ) === -1
+                            ) {
+                                resData.push(item);
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+                return Promise.resolve(new fetchResponsePolyfill(resData));
+            }
+        } catch (e) {
+            return Promise.reject(e);
+        }
     }
 }
