@@ -26,6 +26,7 @@ async function refresh() {
             "Header Taglines": showHeaderTaglines,
             "Homepage Highlights": showHomeHighlights,
             "Homepage Stories": showHomeStories,
+            "Content Pages": showContent,
             "CSV Data": showSpreadsheets,
             Connectors: showConnectors,
             Language: showLanguage,
@@ -121,6 +122,18 @@ function showHomeStories(body) {
                 file.id.replace(/^home\/stories/, "home/story-images")
             );
         }
+    });
+}
+
+function showContent(body) {
+    showJsonEditor(body, {
+        label: "Content Pages",
+        idPattern: "page/*",
+        schema: pageSchema,
+        allowDelete: true,
+        allowAdd: true,
+        allowIdFieldInput: true,
+        newId: id => `page/${id}`
     });
 }
 
@@ -250,7 +263,14 @@ async function showJsonEditor(body, options) {
         `/api/v0/content/all?id=${options.idPattern}&inline=true`
     );
     if (files.length && files[0].order !== undefined) {
-        files = files.sort((a, b) => a.content.order - b.content.order);
+        files = files.sort(
+            (a, b) =>
+                a.content.order === b.content.order
+                    ? a.id < b.id
+                        ? -1
+                        : 1
+                    : a.content.order - b.content.order
+        );
     }
 
     body.text("");
@@ -814,4 +834,20 @@ const footerCopyright = {
         }
     },
     required: ["order", "href", "logoSrc", "htmlContent"]
+};
+
+const pageSchema = {
+    type: "object",
+    properties: {
+        title: {
+            type: "string",
+            minLength: 1
+        },
+        content: {
+            type: "string",
+            minLength: 1,
+            format: "markdown"
+        }
+    },
+    required: ["title"]
 };

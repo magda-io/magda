@@ -89,7 +89,7 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?inline=true`,
+    contentUrl: `${contentApiURL}all?id=home/*&id=header/*&id=footer/*&id=config/*&id=lang/*&inline=true`,
     fallbackUrl: serverConfig.fallbackUrl,
     // things that may get pushed to content api
     months: [
@@ -121,5 +121,6 @@ export const defaultConfiguration = {
 };
 
 export const defaultStrings = {
-    applicationName: "MAGDA"
+    applicationName: "MAGDA",
+    loading: "Loading..."
 };

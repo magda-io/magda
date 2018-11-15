@@ -3,7 +3,7 @@ import fetch from "isomorphic-fetch";
 import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 
-const contentBaseUrl = `${config.contentApiURL}staticPages/`;
+const contentBaseUrl = `${config.contentApiURL}page/`;
 
 export function fetchStaticPage(pageName) {
     return async (dispatch, getState) => {
@@ -19,7 +19,7 @@ export function fetchStaticPage(pageName) {
 
             dispatch(requestStaticPage(pageName));
 
-            const url = contentBaseUrl + pageName + ".md";
+            const url = contentBaseUrl + pageName + ".json";
 
             const response = await fetch(url, config.fetchOptions);
             if (response.status !== 200)
@@ -27,7 +27,7 @@ export function fetchStaticPage(pageName) {
                     `Failed to load data. Status code: ${response.status}`,
                     response.status
                 );
-            const content = await response.text();
+            const content = await response.json();
 
             dispatch(receiveStaticPage(pageName, content));
         } catch (e) {

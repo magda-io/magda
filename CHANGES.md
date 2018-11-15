@@ -23,6 +23,7 @@
 -   Added ability to include arbitrary HTML in `index.html` through the content api
 -   Fixed: added added vendor prefix to `au-select` component CSS
 -   Fixed content-api test case logic
+-   Migrate static pages to a json structure and make it editable.
 -   Hide "Download" button for distributions without downloadUrl
 -   Fixed content-api migrator script version conflict issue
 -   Make footer area configurable
