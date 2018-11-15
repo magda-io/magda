@@ -34,7 +34,7 @@ export default class Database {
     }
 
     async updateUser(userId: string, update: any): Promise<void> {
-        await this.pool.query(`UPDATE users SET "isAdmin" = $1 where id = $2`, [
+        await this.pool.query(`UPDATE users SET "isAdmin" = $1 WHERE id = $2`, [
             update.isAdmin || false,
             userId
         ]);
