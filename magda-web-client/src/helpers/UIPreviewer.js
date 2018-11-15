@@ -3,6 +3,8 @@ import { config } from "../config";
 import * as URI from "urijs";
 import * as contentActions from "../actions/contentActions";
 import * as staticPagesActions from "../actions/staticPagesActions";
+import { Base64 } from "js-base64";
+import * as isBase64 from "is-base64";
 
 const noop = () => {};
 const popupDefaultOptions = {
@@ -170,15 +172,17 @@ class fetchResponsePolyfill {
     }
 }
 
-const isUIPreviewerTargetInitiated = false;
+let isUIPreviewerTargetInitialised = false;
+let isUIPreviewerTargetRegistered = false;
 
 export class UIPreviewerTarget {
     constructor(store) {
-        if (isUIPreviewerTargetInitiated) {
+        if (isUIPreviewerTargetInitialised) {
             throw new Error(
                 "You can only create one `UIPreviewerTarget` instance."
             );
         }
+        isUIPreviewerTargetInitialised = true;
         this.actions = {
             contentActions,
             staticPagesActions
@@ -210,6 +214,7 @@ export class UIPreviewerTarget {
     initTarget() {
         this.interceptFetch();
         this.store.dispatch(togglePreviewBanner());
+        isUIPreviewerTargetRegistered = true;
     }
 
     interceptFetch() {
@@ -310,3 +315,23 @@ export class UIPreviewerTarget {
         }
     }
 }
+
+UIPreviewerTarget.convertContentUrl = url => {
+    if (!isUIPreviewerTargetRegistered) {
+        // --- is not in previewer mode or previewer not ready
+        return url;
+    }
+    const requestStr = "/" + url.replace(config.contentApiURL, "");
+    const uri = new URI(requestStr);
+    const itemId = uri.pathname().replace(/^\//, "");
+    const record = this.contentStore.getRecord(itemId);
+    if (!record) {
+        // --- cannot find in local store, will not try to produce inline url
+        return url;
+    }
+    const uriHeader = `data:${record.type};base64,`;
+    const data = isBase64(record.content)
+        ? record.content
+        : Base64.encode(record.content);
+    return uriHeader + data;
+};

@@ -9,6 +9,7 @@ import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/Lozenge";
 import Stories from "./HomePageComponents/Stories";
 import { Small, Medium } from "../UI/Responsive";
+import { UIPreviewerTarget } from "../helpers/UIPreviewer";
 
 import MediaQuery from "react-responsive";
 
@@ -33,6 +34,7 @@ const getBgImg = backgroundImageUrls => {
     const screenSizes = Object.keys(imageMap);
 
     function getBackgroundImage(imageUrl) {
+        imageUrl = UIPreviewerTarget.convertContentUrl(imageUrl);
         return {
             backgroundImage: "url(" + imageUrl + ")",
             backgroundPosition: "center",

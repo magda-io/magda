@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import "./StoryBox.css";
+import { UIPreviewerTarget } from "../../helpers/UIPreviewer";
 
 class StoryBox extends Component {
     getClickableElement(el, url) {
@@ -28,7 +29,7 @@ class StoryBox extends Component {
                     ? this.getClickableElement(
                           <img
                               className="story-title-image"
-                              src={`${image}`}
+                              src={UIPreviewerTarget.convertContentUrl(image)}
                               alt="title"
                           />,
                           content.titleUrl

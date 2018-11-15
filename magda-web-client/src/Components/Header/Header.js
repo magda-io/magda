@@ -6,6 +6,7 @@ import "./Header.css";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
 import { needsContent } from "../../helpers/content";
+import { UIPreviewerTarget } from "../../helpers/UIPreviewer";
 
 class Header extends Component {
     constructor(props) {
@@ -40,14 +41,18 @@ class Header extends Component {
                                 <Link to="/" className="au-header__brand">
                                     <Small>
                                         <img
-                                            src={config.headerMobileLogoUrl}
+                                            src={UIPreviewerTarget.convertContentUrl(
+                                                config.headerMobileLogoUrl
+                                            )}
                                             alt={applicationName}
                                             className="au-header__logo"
                                         />
                                     </Small>
                                     <Medium>
                                         <img
-                                            src={config.headerLogoUrl}
+                                            src={UIPreviewerTarget.convertContentUrl(
+                                                config.headerLogoUrl
+                                            )}
                                             alt={applicationName}
                                             className="au-header__logo"
                                         />
