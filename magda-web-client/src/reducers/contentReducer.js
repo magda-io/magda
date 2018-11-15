@@ -64,7 +64,17 @@ const contentReducer = (
                 },
                 parseContent(action.content)
             );
-
+        case "REQUEST_CONTENT_RESET":
+            return Object.assign(
+                {},
+                state,
+                {
+                    isFetching: false,
+                    isFetched: false,
+                    error: null
+                },
+                parseContent([])
+            );
         default:
             return state;
     }

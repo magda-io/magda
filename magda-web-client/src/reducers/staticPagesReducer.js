@@ -47,6 +47,8 @@ const staticPageReducer = (state = initialData, action: Action) => {
                     content: ""
                 }
             };
+        case actionTypes.REQUEST_STATIC_PAGE_RESET_ALL:
+            return {};
         default:
             return state;
     }

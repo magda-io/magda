@@ -1,5 +1,4 @@
 import { actionTypes } from "../constants/ActionTypes";
-import fetch from "isomorphic-fetch";
 import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 
@@ -62,5 +61,11 @@ export function requestStaticPageError(pageName, error) {
             pageName,
             error
         }
+    };
+}
+
+export function requestStaticPageResetAll() {
+    return {
+        type: actionTypes.REQUEST_STATIC_PAGE_RESET_ALL
     };
 }

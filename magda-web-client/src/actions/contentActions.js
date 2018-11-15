@@ -1,5 +1,4 @@
 import { config } from "../config";
-import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 import type { Action } from "../types";
 import type { Error } from "../types";
@@ -48,5 +47,11 @@ export function fetchContent() {
                     })
                 )
             );
+    };
+}
+
+export function requestContentReset(): Action {
+    return {
+        type: actionTypes.REQUEST_CONTENT_RESET
     };
 }
