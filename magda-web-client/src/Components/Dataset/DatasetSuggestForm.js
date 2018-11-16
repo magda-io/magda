@@ -82,16 +82,7 @@ export default class DatasetSuggestForm extends React.Component {
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?"
         };
-        const alertProps = {
-            successMessage: `Someone from the Australian Digital Transformation
-            Agency or the organisation that handles the relevant
-            data will get in touch soon. Please note that the
-            time taken to action your request may vary depending
-            on the nature of the request.`,
-            successHeader: "Your request has been sent!",
-            failMessage: null,
-            failHeader: "Uh oh. There was an error sending your form!"
-        };
+
         return (
             <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
@@ -131,7 +122,6 @@ export default class DatasetSuggestForm extends React.Component {
                          */}
                             <RequestFormLogic
                                 formProps={formProps}
-                                alertProps={alertProps}
                                 formSubmitState={this.getFormSubmitState}
                                 datasetId={this.props.datasetId}
                                 requestType="report"

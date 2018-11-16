@@ -73,7 +73,7 @@ export const content: { [s: string]: ContentItem } = {
     "home/stories/*": makeJsonItem({}, { schema: schemas.homeStory }),
     "home/story-images/*": makeImageItem(),
     stylesheet: makeCssItem(),
-    "staticPages/*.md": makeMarkdownItem(),
+    "page/*": makeJsonItem({}, { schema: schemas.page }),
     // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
     "csv/*": makeSpreadsheetItem({
         route: /\/csv\-[a-z][\w\-]*[a-z]/,
@@ -141,18 +141,6 @@ function makeHtmlItem(extra: any = {}) {
     );
 }
 
-function makeMarkdownItem(extra: any = {}) {
-    return Object.assign(
-        {
-            body: bodyParser.text({
-                type: "text/markdown",
-                limit: "5mb"
-            })
-        },
-        extra
-    );
-}
-
 function makeSpreadsheetItem(extra: any = {}) {
     return Object.assign(
         {
@@ -199,14 +187,20 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
     );
 }
 
+const contentEntries = Object.entries(content);
 export function findContentItemById(contentId: string): ContentItem {
-    const contentItem = Object.entries(content).filter(param => {
-        const [key, item] = param;
+    const contentItemById = content[contentId];
+
+    if (contentItemById) {
+        return contentItemById;
+    }
+
+    const contentItemByProperties = contentEntries.find(([key, item]) => {
         return (
-            contentId === key || // single item
             (item.route && item.route.test(`/${contentId}`)) || // has custom route
             wildcard(key, contentId) // wildcard item
         );
     });
-    return contentItem.length > 0 ? contentItem[0][1] : undefined;
+
+    return contentItemByProperties && contentItemByProperties[1];
 }

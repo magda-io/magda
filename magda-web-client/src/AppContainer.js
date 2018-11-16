@@ -1,4 +1,4 @@
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "./Components/i18n/MagdaDocumentTitle";
 import React from "react";
 import { config } from "./config.js";
 import { connect } from "react-redux";
@@ -30,7 +30,7 @@ class AppContainer extends React.Component {
 
     render() {
         return (
-            <ReactDocumentTitle title={this.props.strings.applicationName}>
+            <MagdaDocumentTitle>
                 <div className="au-grid wrapper">
                     <div>
                         <AUskipLink
@@ -81,15 +81,14 @@ class AppContainer extends React.Component {
                         />
                     ) : null}
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
 
 const mapStateToProps = state => {
     return {
-        topNotification: state.topNotification,
-        strings: state.content.strings
+        topNotification: state.topNotification
     };
 };
 

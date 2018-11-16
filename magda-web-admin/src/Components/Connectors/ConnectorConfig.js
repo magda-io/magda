@@ -9,7 +9,7 @@ import {
     updateConnectorStatus,
     fetchDatasetFromConnector
 } from "../../actions/connectorsActions";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/Meta/MagdaDocumentTitle";
 import ErrorHandler from "../../Components/ErrorHandler";
 import ProgressBar from "../../UI/ProgressBar";
 import AspectBuilder from "../../UI/AspectBuilder";
@@ -91,7 +91,7 @@ class ConnectorConfig extends Component {
             this.props.match.params.connectorId
         }/interactive/test-harness.js`;
         return (
-            <ReactDocumentTitle title={config.appName}>
+            <MagdaDocumentTitle>
                 <div>
                     <Script
                         url={url}
@@ -100,7 +100,7 @@ class ConnectorConfig extends Component {
                     />
                     {this.renderBody()}
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 
@@ -298,4 +298,7 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ConnectorConfig);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ConnectorConfig);

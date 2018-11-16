@@ -89,9 +89,8 @@ export const config = {
     ],
     headerLogoUrl: `${contentApiURL}header/logo.bin`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
-    contentUrl: `${contentApiURL}all?inline=true`,
+    contentUrl: `${contentApiURL}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
     fallbackUrl: serverConfig.fallbackUrl,
-    // things that may get pushed to content api
     months: [
         "Jan",
         "Feb",
@@ -118,8 +117,4 @@ export const config = {
 export const defaultConfiguration = {
     datasetSearchSuggestionScoreThreshold: 65,
     searchResultsPerPage: 10
-};
-
-export const defaultStrings = {
-    applicationName: "MAGDA"
 };

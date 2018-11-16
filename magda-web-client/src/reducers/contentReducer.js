@@ -1,6 +1,6 @@
 // @flow
 import type { FetchError } from "../types";
-import { config, defaultStrings, defaultConfiguration } from "../config.js";
+import { config, defaultConfiguration } from "../config.js";
 
 const initialData = Object.assign(
     {
@@ -88,8 +88,6 @@ function parseContent(content) {
     let mobileTagLine = "";
     let highlights = {};
     let stories = {};
-    const lang = "en";
-    let strings = Object.assign({}, defaultStrings);
     let configuration = Object.assign({}, defaultConfiguration);
     let headerNavigation = [];
     let footerMediumNavs = {};
@@ -122,9 +120,6 @@ function parseContent(content) {
             const id = item.id.substr("home/story-images/".length);
             stories[id] = stories[id] || { id };
             stories[id].image = `${config.contentApiURL}/${item.id}.bin`;
-        } else if (item.id.indexOf(`lang/${lang}/`) === 0) {
-            const id = item.id.substr(`lang/${lang}/`.length);
-            strings[id] = item.content;
         } else if (item.id.indexOf("header/navigation/") === 0) {
             headerNavigation.push(item.content);
         } else if (item.id.indexOf("config/") === 0) {
@@ -224,7 +219,6 @@ function parseContent(content) {
         lozenge: highlights[highlight].lozenge,
         backgroundImageUrls: highlights[highlight].backgroundImageUrls,
         stories,
-        strings,
         headerNavigation,
         footerSmallNavs,
         footerMediumNavs,

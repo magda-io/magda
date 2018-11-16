@@ -4,7 +4,7 @@ import Login from "./Login";
 import { connect } from "react-redux";
 import queryString from "query-string";
 import { requestAuthProviders } from "../../actions/userManagementActions";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../i18n/MagdaDocumentTitle";
 import { bindActionCreators } from "redux";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
@@ -27,9 +27,7 @@ class Account extends React.Component {
     render() {
         const pageTitle = this.props.user ? "Account" : "Sign In";
         return (
-            <ReactDocumentTitle
-                title={`${pageTitle} | ${this.props.strings.applicationName}`}
-            >
+            <MagdaDocumentTitle prefixes={[pageTitle]}>
                 <div className="account">
                     <Medium>
                         <Breadcrumbs
@@ -58,7 +56,7 @@ class Account extends React.Component {
                         </div>
                     )}
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
@@ -71,8 +69,7 @@ function mapStateToProps(state) {
     return {
         user,
         providers,
-        providersError,
-        strings: state.content.strings
+        providersError
     };
 }
 
