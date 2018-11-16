@@ -546,9 +546,7 @@ async function deleteContent(name) {
 }
 
 async function createConnector(name) {
-    let sourceUrl = window.location.toString();
-    sourceUrl = sourceUrl.substr(0, sourceUrl.indexOf("/", 8));
-    sourceUrl += `/api/v0/content/${name}.bin`;
+    const sourceUrl = `http://content-api/v0/content/${name}.bin`;
 
     const body = {
         id: name,
