@@ -5,6 +5,7 @@ import * as contentActions from "../actions/contentActions";
 import * as staticPagesActions from "../actions/staticPagesActions";
 import { Base64 } from "js-base64";
 import * as isBase64 from "is-base64";
+import i18n from "i18next";
 
 const noop = () => {};
 const popupDefaultOptions = {
@@ -207,6 +208,10 @@ export class UIPreviewerTarget {
         }
     }
 
+    reloadLang() {
+        i18n.reloadResources();
+    }
+
     register() {
         this.targetRegisterMethod(this);
     }
@@ -236,7 +241,7 @@ export class UIPreviewerTarget {
     async queryContentStore(orgFetchApi, url, opts) {
         try {
             const requestStr = "/" + url.replace(config.contentApiURL, "");
-            const uri = new URI(requestStr);
+            const uri = new URI(requestStr.replace(/^\/+/, "/"));
             const query = uri.search(true);
             if (uri.segment(0) === "all") {
                 const inline = query.inline === "true" ? true : false;
@@ -340,4 +345,8 @@ UIPreviewerTarget.convertContentUrl = url => {
         ? record.content
         : Base64.encode(record.content);
     return uriHeader + data;
+};
+
+UIPreviewerTarget.isActiveTarget = () => {
+    return registeredUIPreviewerTarget != null;
 };

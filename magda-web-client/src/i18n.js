@@ -7,6 +7,7 @@ import mapValues from "lodash/mapValues";
 import throttle from "lodash/throttle";
 import uniq from "lodash/uniq";
 import get from "lodash/get";
+import { UIPreviewerTarget } from "./helpers/UIPreviewer";
 
 /**
  * The minimum interval between which to make requests to the content api for new strings. If i18next asks
@@ -61,7 +62,7 @@ class MagdaContentAPIBackend {
     getFromCache(language, namespace) {
         const existingValue = get(this.cache, `${language}.${namespace}`, null);
 
-        if (existingValue !== null) {
+        if (existingValue !== null && !UIPreviewerTarget.isActiveTarget()) {
             return existingValue;
         } else {
             const promise = new Promise((resolve, reject) => {

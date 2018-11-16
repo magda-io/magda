@@ -91,6 +91,7 @@ class Settings extends React.Component {
                                         previewTarget.actions.contentActions
                                             .requestContentReset
                                     );
+                                    previewTarget.reloadLang();
                                     previewTarget.dispatch(
                                         previewTarget.actions.staticPagesActions
                                             .requestStaticPageResetAll
