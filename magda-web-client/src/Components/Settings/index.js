@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { requestAuthProviders } from "../../actions/userManagementActions";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../i18n/MagdaDocumentTitle";
 import { bindActionCreators } from "redux";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
@@ -19,9 +19,7 @@ class Settings extends React.Component {
 
     render() {
         return (
-            <ReactDocumentTitle
-                title={`Settings | ${this.props.strings.applicationName}`}
-            >
+            <MagdaDocumentTitle prefixes={["Settings"]}>
                 <div className="settings">
                     <Medium>
                         <Breadcrumbs
@@ -159,7 +157,7 @@ class Settings extends React.Component {
                         </div>
                     ) : null}
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
