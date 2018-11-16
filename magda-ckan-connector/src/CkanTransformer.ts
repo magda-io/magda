@@ -2,6 +2,7 @@ import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
 import JsonTransformer, {
     JsonTransformerOptions
 } from "@magda/typescript-common/dist/JsonTransformer";
+import { Record } from "@magda/typescript-common/src/generated/registry/api";
 
 export default class CkanTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {
@@ -45,6 +46,18 @@ export default class CkanTransformer extends JsonTransformer {
             jsonOrganization.name ||
             jsonOrganization.id
         );
+    }
+
+    reviseOrganizationRecord(record: Record): Record {
+        if (
+            record.aspects["organization-details"] &&
+            record.aspects["organization-details"].description ===
+                "A little information about my organization..."
+        ) {
+            record.aspects["organization-details"].description = "";
+        }
+
+        return record;
     }
 
     getNameFromJsonDataset(jsonDataset: any): string {
