@@ -4,7 +4,8 @@ import "raf/polyfill";
 import "isomorphic-fetch";
 import logger from "redux-logger";
 import "./index.css";
-import { BrowserRouter, Route } from "react-router-dom";
+import { Router, Route } from "react-router-dom";
+import history from "./history";
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -57,13 +58,13 @@ class GAListener extends React.Component {
 
 ReactDOM.render(
     <Provider store={store}>
-        <BrowserRouter>
+        <Router history={history}>
             <GAListener>
                 <ScrollToTop>
                     <Route path="/" component={AppContainer} />
                 </ScrollToTop>
             </GAListener>
-        </BrowserRouter>
+        </Router>
     </Provider>,
     document.getElementById("root")
 );

@@ -19,6 +19,8 @@ import OtherPages from "./Pages/OtherPages";
 import { Route, Switch } from "react-router-dom";
 import { Medium } from "./UI/Responsive";
 import AUskipLink from "./pancake/react/skip-link";
+import { UIPreviewerTarget } from "./helpers/UIPreviewer";
+import Refresh from "./Components/Refresh";
 
 import "./AppContainer.css";
 
@@ -54,6 +56,9 @@ class AppContainer extends React.Component {
 
                         <Switch>
                             <Route exact path="/" component={HomePage} />
+                            {UIPreviewerTarget.isActiveTarget() || 1 ? (
+                                <Refresh path="/refresh" />
+                            ) : null}
                             <Route path="/*" component={OtherPages} />
                         </Switch>
                     </div>
