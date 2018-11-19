@@ -115,7 +115,7 @@ class Settings extends React.Component {
                                             .fetchStaticPage,
                                         "dataset-quality"
                                     );
-                                    previewTarget.refresh();
+                                    previewTarget.refreshPage();
                                 } catch (e) {
                                     alert(`Error: ${e}`);
                                 }

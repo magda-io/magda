@@ -6,17 +6,9 @@ import * as staticPagesActions from "../actions/staticPagesActions";
 import { Base64 } from "js-base64";
 import * as isBase64 from "is-base64";
 import i18n from "i18next";
-import history from "../history";
+import refreshPage from "./refreshPage";
 
 const noop = () => {};
-
-function refresh() {
-    history.push({
-        ...history.location,
-        pathname: `/refresh${history.location.pathname}`
-    });
-}
-
 const popupDefaultOptions = {
     width: 700,
     height: 520,
@@ -102,7 +94,7 @@ export class UIPreviewerManager {
         };
     }
 }
-UIPreviewerManager.refresh = refresh;
+UIPreviewerManager.refreshPage = refreshPage;
 
 class ContentStore {
     constructor() {
@@ -223,7 +215,7 @@ export class UIPreviewerTarget {
     }
 
     refreshPage() {
-        refresh();
+        refreshPage();
     }
 
     register() {
