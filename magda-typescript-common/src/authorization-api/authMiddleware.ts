@@ -20,7 +20,6 @@ export const getUser = (baseAuthUrl: string, jwtSecret: string) => (
 ) => {
     getUserId(req, jwtSecret).caseOf({
         just: userId => {
-            // TODO: this logic is wrong; works because getUser(userId) is public api (which ideally shouldn't be public)
             const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
             apiClient
                 .getUser(userId)
