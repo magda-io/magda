@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import DataPreviewVis from "../../UI/DataPreviewVis";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 import { gapi } from "../../analytics/ga";
 
@@ -15,7 +16,7 @@ class DistributionDetails extends Component {
     }
 
     renderLinkText(distribution) {
-        const downloadText = distribution.downloadURL ? (
+        const downloadText = distribution.downloadURL && (
             <div key={distribution.identifier}>
                 This data file or API can be downloaded from: <br />
                 <a
@@ -43,48 +44,72 @@ class DistributionDetails extends Component {
                     distribution.linkActive
                 )}
             </div>
-        ) : (
-            ""
         );
-        const accessText = distribution.accessURL ? (
+        const accessText = distribution.accessURL && (
             <div>
                 This dataset can be accessed from: <br />{" "}
                 <a className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
                 </a>
             </div>
-        ) : (
-            ""
         );
-        const items = [];
-        if (downloadText) items.push(downloadText);
-        if (accessText) items.push(accessText);
-        return items;
+
+        return [downloadText, accessText].filter(x => !!x);
     }
 
     render() {
         const distribution = this.props.distribution;
+        const sourceText = this.renderLinkText(distribution);
         return (
-            <div className="distribution-details">
-                <div className="row">
-                    <div className="distribution-details__body col-sm-8">
-                        {this.renderLinkText(distribution).length > 0 && (
-                            <div>
-                                {" "}
-                                <h3>Source</h3>
-                                {this.renderLinkText(distribution)}
+            <MagdaNamespacesConsumer ns={["distributionPage"]}>
+                {translate => {
+                    const accessNotesPrefix = translate([
+                        "accessNotesPrefix",
+                        ""
+                    ]);
+                    const accessNotesSuffix = translate([
+                        "accessNotesSuffix",
+                        ""
+                    ]);
+
+                    return (
+                        <div className="distribution-details">
+                            <div className="row">
+                                <div className="distribution-details__body col-sm-8">
+                                    {sourceText.length > 0 && (
+                                        <div>
+                                            {" "}
+                                            <h3>Source</h3>
+                                            {sourceText}
+                                        </div>
+                                    )}
+                                    {distribution.accessNotes && (
+                                        <div>
+                                            <h3>Access Notes</h3>
+                                            {accessNotesPrefix && (
+                                                <div>{accessNotesPrefix}</div>
+                                            )}
+                                            <div>
+                                                {distribution.accessNotes}
+                                            </div>
+                                            {accessNotesSuffix && (
+                                                <div>{accessNotesSuffix}</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </div>
-                <div className="distribution-preview">
-                    <DataPreviewVis
-                        location={this.props.location}
-                        dataset={this.props.dataset}
-                        distribution={this.props.distribution}
-                    />{" "}
-                </div>
-            </div>
+                            <div className="distribution-preview">
+                                <DataPreviewVis
+                                    location={this.props.location}
+                                    dataset={this.props.dataset}
+                                    distribution={this.props.distribution}
+                                />{" "}
+                            </div>
+                        </div>
+                    );
+                }}
+            </MagdaNamespacesConsumer>
         );
     }
 }
