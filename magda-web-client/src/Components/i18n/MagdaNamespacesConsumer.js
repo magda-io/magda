@@ -1,6 +1,5 @@
 import React from "react";
 import { NamespacesConsumer } from "react-i18next";
-import { refreshId } from "../../helpers/refreshPage";
 
 function returnBlankString() {
     return "";
@@ -14,7 +13,6 @@ function returnBlankString() {
 export default function MagdaNamespacesConsumer(props) {
     const passThroughProps = {
         ...props,
-        refreshId,
         children: (translate, options) => {
             const modifiedTranslate = options.ready
                 ? translate
@@ -22,6 +20,5 @@ export default function MagdaNamespacesConsumer(props) {
             return props.children(modifiedTranslate, options);
         }
     };
-    console.log(passThroughProps);
     return <NamespacesConsumer {...passThroughProps} />;
 }

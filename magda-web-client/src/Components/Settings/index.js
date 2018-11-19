@@ -91,7 +91,6 @@ class Settings extends React.Component {
                                         previewTarget.actions.contentActions
                                             .requestContentReset
                                     );
-                                    previewTarget.reloadLang();
                                     previewTarget.dispatch(
                                         previewTarget.actions.staticPagesActions
                                             .requestStaticPageResetAll
@@ -115,7 +114,9 @@ class Settings extends React.Component {
                                             .fetchStaticPage,
                                         "dataset-quality"
                                     );
-                                    previewTarget.refreshPage();
+                                    previewTarget.reloadLang(() => {
+                                        previewTarget.refreshPage();
+                                    });
                                 } catch (e) {
                                     alert(`Error: ${e}`);
                                 }

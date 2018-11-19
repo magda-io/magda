@@ -210,8 +210,8 @@ export class UIPreviewerTarget {
         }
     }
 
-    reloadLang() {
-        i18n.reloadResources();
+    reloadLang(onComplete = null) {
+        i18n.reloadResources(null, null, onComplete);
     }
 
     refreshPage() {
