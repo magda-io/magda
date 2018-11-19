@@ -86,7 +86,7 @@ export const content: { [s: string]: ContentItem } = {
     }),
     "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
-    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString }),
+    "lang/*": makeTextItem({}),
     "config/datasetSearchSuggestionScoreThreshold": makeJsonItem(
         {},
         { schema: schemas.configDatasetSearchSuggestionScoreThreshold }
@@ -182,6 +182,17 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
                     });
                 }
             }
+        },
+        extra
+    );
+}
+function makeTextItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/plain",
+                limit: "1mb"
+            })
         },
         extra
     );

@@ -223,7 +223,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
         /**
          * @apiGroup Content
-         * @api {post} /v0/content/:contentId Update Content
+         * @api {put} /v0/content/:contentId Update Content
          * @apiDescription Update content by id
          *
          * @apiParam {string} contentId id of content item
@@ -244,7 +244,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        async function post(req: any, res: any) {
+        async function put(req: any, res: any) {
             try {
                 let content = req.body;
 
@@ -304,9 +304,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
         }
 
-        router.post.apply(
+        router.put.apply(
             router,
-            [route, ADMIN, body, verify, post].filter(i => i)
+            [route, ADMIN, body, verify, put].filter(i => i)
         );
 
         /**

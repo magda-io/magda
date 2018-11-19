@@ -210,7 +210,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         }
 
         it("should write and read", done => {
-            admin(agent.post("/header/logo"))
+            admin(agent.put("/header/logo"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(201)
@@ -223,7 +223,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-existing", done => {
-            admin(agent.post("/header/lego"))
+            admin(agent.put("/header/lego"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(404)
@@ -231,7 +231,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-conforming", done => {
-            admin(agent.post("/header/logo"))
+            admin(agent.put("/header/logo"))
                 .set("Content-type", "text/plain")
                 .send(gifImage)
                 .expect(500)
@@ -240,7 +240,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
 
         it("should not write without access", done => {
             agent
-                .post("/header/logo")
+                .put("/header/logo")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(401)
@@ -259,45 +259,50 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 mime: "text/csv",
                 content: gifImage,
                 getRoute: "/csv-xxx.text",
-                getContent: gifImage.toString("base64")
+                expectedContent: gifImage.toString("base64")
             },
             {
                 route: "/emailTemplates/xxx.html",
                 mime: "text/html",
                 content: "test",
                 getRoute: "/emailTemplates/xxx.html",
-                getContent: "test"
+                expectedContent: "test"
             },
             {
                 route: "/emailTemplates/assets/x-y-z.jpg",
                 mime: "image/svg+xml",
                 content: gifImage,
                 getRoute: "/emailTemplates/assets/x-y-z.jpg",
-                getContent: gifImage.toString("utf8")
+                expectedContent: gifImage.toString("utf8")
+            },
+            {
+                route: "/lang/en/publishersPage/blahface",
+                mime: "text/plain",
+                content: "Hello!",
+                getRoute: "/lang/en/publishersPage/blahface.text",
+                expectedContent: "Hello!"
             }
         ];
 
-        CUSTOM_ROUTES.forEach((customRoute, index) => {
-            it(`should upload and delete with custom routes ${index}`, done => {
-                admin(agent.post(customRoute.route))
-                    .set("Content-type", customRoute.mime)
+        CUSTOM_ROUTES.forEach(customRoute => {
+            it(`should upload and delete with custom routes ${
+                customRoute.route
+            }`, done => {
+                admin(agent.put(customRoute.route))
+                    .set("Content-Type", customRoute.mime)
                     .send(customRoute.content)
                     .expect(201)
-                    .then(() => {
+                    .then(() =>
                         agent
                             .get(customRoute.getRoute)
-                            .expect(customRoute.getContent)
-                            .then(() => {
-                                admin(agent.delete(customRoute.route))
-                                    .expect(204)
-                                    .then(() => {
-                                        agent
-                                            .get(customRoute.getRoute)
-                                            .expect(404)
-                                            .end(done);
-                                    });
-                            });
-                    });
+                            .expect(customRoute.expectedContent)
+                    )
+                    .then(() =>
+                        admin(agent.delete(customRoute.route)).expect(204)
+                    )
+                    .then(() => agent.get(customRoute.getRoute).expect(404))
+                    .then(() => done())
+                    .catch(e => done(e));
             });
         });
     });
