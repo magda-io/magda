@@ -257,6 +257,11 @@ export class UIPreviewerTarget {
                             "application/json"
                         ) {
                             newItem.content = JSON.parse(item.content);
+                        } else if (
+                            item.type.toLowerCase().indexOf("text") !== -1
+                        ) {
+                            // --- text/* mime return content as well
+                            newItem.content = item.content;
                         } else {
                             newItem.content = null;
                         }
