@@ -308,13 +308,21 @@ export class UIPreviewerTarget {
             } else {
                 //--- other content api get calls
                 const itemId = uri.pathname().replace(/^\//, "");
-                const record = this.contentStore.getRecord(itemId);
+                let record = this.contentStore.getRecord(itemId);
+                if (!record) {
+                    // --- search content item without extension name
+                    record = this.contentStore.getRecord(
+                        itemId.replace(/\.[^.]+$/, "")
+                    );
+                }
+
                 if (!record) {
                     return orgFetchApi(url, opts);
                 }
+
                 if (record.type === "application/json") {
                     return Promise.resolve(
-                        new fetchResponsePolyfill(record.content)
+                        new fetchResponsePolyfill(JSON.parse(record.content))
                     );
                 } else if (record.type.toLowerCase().indexOf("text") !== -1) {
                     return Promise.resolve(
