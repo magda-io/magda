@@ -194,7 +194,8 @@ function showLanguage(body) {
         allowDelete: true,
         allowAdd: true,
         allowIdFieldInput: true,
-        newId: id => `lang/en/${id}`
+        newId: id => `lang/en/${id}`,
+        mimeType: "text/plain"
     });
 }
 
@@ -294,7 +295,7 @@ async function showJsonEditor(body, options) {
                                 "PUT",
                                 `/api/v0/content/${file.id}`,
                                 newObj,
-                                "application/json"
+                                options.mimeType || "application/json"
                             )
                         );
                         showJsonEditor(body, options);
