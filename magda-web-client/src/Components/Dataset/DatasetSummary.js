@@ -22,12 +22,12 @@ export default class DatasetSummary extends Component {
                 .filter(dis => defined(dis.format))
                 .map(dis => dis.format)
         );
-        return (
+        return formats.length ? (
             <div className="dataset-summary-downloads">
                 <img src={fileIcon} alt="File icon" />{" "}
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
             </div>
-        );
+        ) : null;
     }
 
     render() {

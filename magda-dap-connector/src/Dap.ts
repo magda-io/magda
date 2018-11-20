@@ -293,7 +293,7 @@ export default class Dap implements ConnectorSource {
                                                 // --- and when the distribution will be available for public
                                                 detail.description = `${
                                                     detail.description
-                                                }\n\n${detail.access}`;
+                                                }\n\n${detail.access}\n\n`;
                                             }
                                             resolve2(detail);
                                         }
