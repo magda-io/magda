@@ -287,6 +287,14 @@ export default class Dap implements ConnectorSource {
                                                 reject2(error);
                                                 return;
                                             }
+                                            if (detail.access) {
+                                                // --- added access info to description
+                                                // --- so that we know why the dataset has no distribution
+                                                // --- and when the distribution will be available for public
+                                                detail.description = `${
+                                                    detail.description
+                                                }\n\n${detail.access}`;
+                                            }
                                             resolve2(detail);
                                         }
                                     );
@@ -315,6 +323,33 @@ export default class Dap implements ConnectorSource {
                                                         response,
                                                         detail
                                                     ) => {
+                                                        if (
+                                                            detail &&
+                                                            detail.errors &&
+                                                            detail.errors.length
+                                                        ) {
+                                                            // --- handle access error
+                                                            const id =
+                                                                simpleData.id
+                                                                    .identifier;
+                                                            console.log(
+                                                                `** Unable to fetch files for collection: ${id}; url: ${
+                                                                    simpleData.data
+                                                                }`
+                                                            );
+                                                            console.log(
+                                                                `** Reason: ${
+                                                                    detail
+                                                                        .errors[0]
+                                                                        .defaultMessage
+                                                                }`
+                                                            );
+                                                            resolve3({
+                                                                identifier: id,
+                                                                distributions: []
+                                                            });
+                                                            return;
+                                                        }
                                                         console.log(
                                                             ">> request distribution of " +
                                                                 simpleData.data,
