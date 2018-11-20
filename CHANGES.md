@@ -46,6 +46,7 @@
 -   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
 -   `create-secrets` will load ENV vars according to question data types
 -   Include Magda user agent in external HTTP resource accesses
+-   Made admin UI create CSV connector with internal URL
 
 ## 0.0.49
 
