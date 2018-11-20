@@ -42,6 +42,7 @@
     "passport-google-oauth20": "^1.0.0",
     "passport-local": "^1.0.0",
     "pg": "^6.4.0",
+    "read-pkg-up": "^3.0.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
     "yargs": "^8.0.2"
@@ -63,6 +64,7 @@
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.31",
     "@types/pg": "^6.1.41",
+    "@types/read-pkg-up": "^3.0.1",
     "@types/request": "2.47.0",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
@@ -79,7 +81,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-gateway",
-      "include": "node_modules dist views Dockerfile"
+      "include": "node_modules dist views Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat",

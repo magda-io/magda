@@ -2,7 +2,7 @@ import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
 import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 
 export default class ProjectOpenData implements ConnectorSource {
     public readonly id: string;

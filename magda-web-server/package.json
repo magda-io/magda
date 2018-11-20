@@ -24,6 +24,7 @@
     "@types/mocha": "^2.2.41",
     "@types/morgan": "^1.7.35",
     "@types/nock": "^8.2.1",
+    "@types/read-pkg-up": "^3.0.1",
     "@types/request": "2.47.0",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
@@ -44,6 +45,7 @@
     "@magda/web-client": "^0.0.50-0",
     "express": "^4.15.3",
     "morgan": "^1.9.0",
+    "read-pkg-up": "^3.0.0",
     "request": "2.85.0",
     "sitemap": "^1.13.0",
     "urijs": "^1.18.12",
@@ -52,7 +54,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-web-server",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     }
   },
   "magda": {
