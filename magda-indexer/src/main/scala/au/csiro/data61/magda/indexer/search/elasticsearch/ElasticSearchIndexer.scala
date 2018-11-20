@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.indexer.search.elasticsearch
 
 import java.time.{Instant, OffsetDateTime}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
@@ -39,7 +40,6 @@ import com.sksamuel.elastic4s.http.snapshots._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.mappings.GetMappingDefinition
-
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.RegistryExternalInterface
@@ -55,6 +55,9 @@ class ElasticSearchIndexer(
   val logger = system.log
   val SNAPSHOT_REPO_NAME = "snapshots"
 
+  val queueBufferSize = 2000
+  val maxBatchSize = 1000
+  val initialDelay = 500 milliseconds
   /**
    * Returns an initialised HttpClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
    *  ensures that all queries will only complete after the client is initialised.
@@ -67,13 +70,14 @@ class ElasticSearchIndexer(
 
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue: SourceQueue[(DataSet, Promise[Unit])] =
-    Source.queue[(DataSet, Promise[Unit])](Int.MaxValue, OverflowStrategy.backpressure)
+    Source.queue[(DataSet, Promise[Unit])](queueBufferSize, OverflowStrategy.backpressure)
       .map {
         case (dataSet, promise) => (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
       }
-      .batch(1000, Seq(_))(_ :+ _)
-      .initialDelay(500 milliseconds)
+      .batch(maxBatchSize, Seq(_))(_ :+ _)
+      .initialDelay(initialDelay)
       .mapAsync(1) { batch =>
+
         val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records with {}, retrying", batch.length, e.getMessage)
 
         // Combine all the ES inserts into one bulk statement
@@ -395,7 +399,13 @@ class ElasticSearchIndexer(
     indexResults.flatMap(identity)
   }
 
+  private val pulledCount = new AtomicInteger(0)
+
   def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
+    val count = pulledCount.incrementAndGet()
+    if (count % 500 == 0)
+      ElasticSearchIndexer.updateSource(count)
+
     indexQueue.offer((dataSet, promise))
       .flatMap {
         case QueueOfferResult.Enqueued    => promise.future
@@ -545,6 +555,7 @@ class ElasticSearchIndexer(
 }
 
 object ElasticSearchIndexer {
+  var crawler: RegistryCrawler = None.orNull
   def getYears(from: Option[OffsetDateTime], to: Option[OffsetDateTime]): Option[String] = {
     val newFrom = from.orElse(to).map(_.getYear)
     val newTo = to.orElse(from).map(_.getYear)
@@ -553,5 +564,13 @@ object ElasticSearchIndexer {
       case (Some(newFrom), Some(newTo)) => Some(s"$newFrom-$newTo")
       case _                            => None
     }
+  }
+
+  def setRegistryCrawler(c: RegistryCrawler): Unit = {
+    crawler = c
+  }
+
+  def updateSource(count: Int): String = {
+    crawler.updateSource(count)
   }
 }
