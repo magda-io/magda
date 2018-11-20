@@ -46,6 +46,7 @@
 -   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
 -   `create-secrets` will load ENV vars according to question data types
 -   Made admin UI create CSV connector with internal URL
+-   Fixed an issue that DAP connector not handle access error correctly
 
 ## 0.0.49
 
