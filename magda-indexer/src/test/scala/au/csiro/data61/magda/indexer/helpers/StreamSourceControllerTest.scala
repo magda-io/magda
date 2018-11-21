@@ -4,18 +4,16 @@ import akka.NotUsed
 import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import akka.testkit.{ImplicitSender, TestKit}
 import au.csiro.data61.magda.model.misc.DataSet
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest._
+import org.scalatest.{AsyncFlatSpec, _}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceControllerTest"))
-  with ImplicitSender with AsyncWordSpecLike with Matchers
+class StreamSourceControllerTest extends AsyncFlatSpec with Matchers
   with BeforeAndAfterAll with BeforeAndAfterEach {
 
+  implicit val system: ActorSystem = ActorSystem("StreamSourceControllerTest")
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val config: Config = ConfigFactory.load()
@@ -43,19 +41,15 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
   private def futureAssert(actualF: Future[Seq[DataSet]],
                            expected: Seq[DataSet]): Future[Assertion] = {
-    val resultF = actualF.map(actual => {
+    actualF.map(actual => {
       // This block might not be executed at all for some programming error.
       // Print out for checking when debugging.
       println(actual)
       actual shouldEqual expected
     })
-
-    Await.result(resultF, 10.seconds)
-    assert(resultF.isCompleted)
   }
 
-  "The stream source controller" must {
-    "fill source after the stream is alive" in {
+  "The stream source controller" should "fill the source after the stream is alive" in {
       // take(dataSets.size) in order to terminate the stream automatically
       // so that actualDataSetsF can complete.
       val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
@@ -64,49 +58,40 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
       dataSets.foreach(dataSet => actorRef ! dataSet)
 
       futureAssert(actualDataSetsF, dataSets)
-    }
+  }
 
-    "fill source before the stream is alive" in {
+  it should "fill the source before the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
       val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
       futureAssert(actualDataSetsF, dataSets)
     }
 
-    "fill source before and after the stream is alive" in {
+  it should "fill the source before and after the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
       val actualDataSetsF: Future[Seq[DataSet]] = source.take(2*dataSets.size).runWith(Sink.seq)
       dataSets.foreach(dataSet => actorRef ! dataSet)
       futureAssert(actualDataSetsF, dataSets ++ dataSets)
     }
 
-    "be able to terminate the stream explictly" in {
-      // Fill the source.
-      dataSets.foreach(dataSet => actorRef ! dataSet)
+  it should "be able to terminate the stream explicitly" in {
+    // Fill the source.
+    dataSets.foreach(dataSet => actorRef ! dataSet)
 
-      // Run the stream.
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
+    // Run the stream.
+    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
 
-      // Fill more.
-      dataSets.foreach(dataSet => actorRef ! dataSet)
+    // Fill more.
+    dataSets.foreach(dataSet => actorRef ! dataSet)
 
-      // Give some time for actualDataSetsF to run. The future will complete when the stream
-      // is terminated by calling ssc.terminate().
-      // If not sleeping here, terminate() might be called before the stream gets chance to run,
-      // resulting in an empty actualDataSets next.
-      Thread.sleep(500)
+    // Give some time for actualDataSetsF to run. The future will complete when the stream
+    // is terminated by calling ssc.terminate().
+    // If not sleeping here, terminate() might be called before the stream gets chance to run,
+    // resulting in an empty actualDataSets next.
+    Thread.sleep(500)
 
-      val resultF = actualDataSetsF.map(actualDataSets => {
-        // This block may not be executed at all due to programming error.
-        // Print out for checking when debugging.
-        println(actualDataSets)
-        actualDataSets shouldEqual dataSets ++ dataSets
-      })
-
-      // No more data to fill the source, terminate the stream so that
-      // actualDataSetsF then resultF can complete
-      ssc.terminate()
-      Await.result(resultF, 10.seconds)
-      resultF.isCompleted shouldBe true
-    }
+    // No more data to fill the source, terminate the stream so that
+    // actualDataSetsF then resultF can complete
+    ssc.terminate()
+    futureAssert(actualDataSetsF, dataSets ++ dataSets)
   }
 }
