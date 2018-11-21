@@ -62,6 +62,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             "Only admin users are authorised to access this API",
                             403
                         );
+                    req.user = user;
                     next();
                 } catch (e) {
                     console.warn(e);
@@ -204,6 +205,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.put("/public/users/:userId", MUST_BE_ADMIN, async (req, res) => {
         const userId = req.params.userId;
+        if (userId === req.user.id) {
+            throw new AuthError(
+                "Cannot change your own details through this endpoint",
+                403
+            );
+        }
         // extract fields
         const { isAdmin } = req.body;
         const update = { isAdmin };
