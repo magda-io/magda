@@ -59,7 +59,7 @@ class ContentApiDirMapper {
             mimeType = "application/octet-stream";
         }
         return await rp(`${this.url}/${localPath}`, {
-            method: "POST",
+            method: "PUT",
             resolveWithFullResponse: true,
             headers: {
                 "X-Magda-Session": buildJwt(this.jwtSecret, this.userId),

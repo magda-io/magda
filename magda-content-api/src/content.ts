@@ -86,7 +86,7 @@ export const content: { [s: string]: ContentItem } = {
     }),
     "emailTemplates/assets/*": makeImageItem(),
     // END EMAIL TEMPLATE STUFF
-    "lang/*/*": makeJsonItem({}, { schema: schemas.languageString }),
+    "lang/*": makeTextItem({}),
     "config/datasetSearchSuggestionScoreThreshold": makeJsonItem(
         {},
         { schema: schemas.configDatasetSearchSuggestionScoreThreshold }
@@ -186,15 +186,32 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
         extra
     );
 }
+function makeTextItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/plain",
+                limit: "1mb"
+            })
+        },
+        extra
+    );
+}
 
+const contentEntries = Object.entries(content);
 export function findContentItemById(contentId: string): ContentItem {
-    const contentItem = Object.entries(content).filter(param => {
-        const [key, item] = param;
+    const contentItemById = content[contentId];
+
+    if (contentItemById) {
+        return contentItemById;
+    }
+
+    const contentItemByProperties = contentEntries.find(([key, item]) => {
         return (
-            contentId === key || // single item
             (item.route && item.route.test(`/${contentId}`)) || // has custom route
             wildcard(key, contentId) // wildcard item
         );
     });
-    return contentItem.length > 0 ? contentItem[0][1] : undefined;
+
+    return contentItemByProperties && contentItemByProperties[1];
 }

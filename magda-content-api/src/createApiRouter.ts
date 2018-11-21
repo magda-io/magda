@@ -1,11 +1,12 @@
 import * as express from "express";
+import * as _ from "lodash";
 import {
     getUser,
     mustBeAdmin
 } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
-import Database from "./Database";
+import Database, { Query } from "./Database";
 import { Maybe } from "tsmonad";
 import { Content } from "./model";
 import {
@@ -56,70 +57,70 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    ]
      */
     router.get("/all", USER, async function(req, res) {
-        // figure out constraints
-        let query: any[] = [];
-        let inlineContentIfType: string[] = [];
+        try {
+            const idQuery: Query = {
+                field: "id",
+                patterns: coerceToArray(req.query.id)
+            };
+            const typeQuery: Query = {
+                field: "type",
+                patterns: coerceToArray(req.query.type)
+            };
 
-        query = query.concat(makeWildcardQuery(database, "id", req.query.id));
-        query = query.concat(
-            makeWildcardQuery(database, "type", req.query.type)
-        );
+            const inline =
+                req.query.inline && req.query.inline.toLowerCase() === "true";
+            const inlineContentIfType: string[] = inline
+                ? ["application/json", "text/plain"]
+                : [];
 
-        const inline = req.query.inline;
-        if (inline) {
-            inlineContentIfType.push("application/json");
-        }
+            // get summary
+            let all: any[] = await database.getContentSummary(
+                [idQuery, typeQuery],
+                inlineContentIfType
+            );
 
-        // get summary
-        let all: any[] = await database.getContentSummary(
-            database.createOr(...query),
-            inlineContentIfType
-        );
+            // filter out privates and non-configurable
+            all = all.filter((item: any) => {
+                const contentItem = findContentItemById(item.id);
 
-        // filter out privates and non-configurable
-        all = all.filter((item: any) => {
-            const contentItem = findContentItemById(item.id);
-            if (contentItem) {
-                if (!contentItem.private) {
-                    return true;
-                } else {
+                if (contentItem && contentItem.private) {
                     return req.user && req.user.isAdmin;
+                } else {
+                    return true;
                 }
-            } else {
-                return false;
-            }
-        });
+            });
 
-        // inline
-        if (inline) {
-            for (const item of all) {
-                try {
-                    switch (item.type) {
-                        case "application/json":
-                            item.content = JSON.parse(item.content);
-                            break;
+            // inline
+            if (inline) {
+                for (const item of all.filter(item => item.content)) {
+                    try {
+                        switch (item.type) {
+                            case "application/json":
+                                item.content = JSON.parse(item.content);
+                                break;
+                        }
+                    } catch (e) {
+                        item.error = e.message;
+                        console.error(e.stack);
                     }
-                } catch (e) {
-                    item.error = e.message;
-                    console.log(e.stack);
                 }
             }
-        }
 
-        res.json(all);
+            res.json(all);
+        } catch (e) {
+            console.error(e);
+            res.sendStatus(500);
+        }
     });
 
-    function makeWildcardQuery(database: Database, field: string, filter: any) {
-        if (filter) {
-            if (typeof filter === "string") {
-                return [database.createWildcardMatch(field, filter)];
-            } else {
-                return filter.map((filter: any) =>
-                    database.createWildcardMatch(field, filter)
-                );
-            }
+    function coerceToArray<T>(thing: T | T[]): T[] {
+        if (_.isArray(thing)) {
+            return thing;
+        } else if (thing) {
+            return [thing];
+        } else {
+            return [];
         }
-        return [];
     }
 
     /**
@@ -129,7 +130,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiParam {string} contentId id of content item
      * @apiParam {string} format The format to return result with.
-     * * If specified format is text, will return content as plain/text.
+     * * If specified format is text, will return content as text/plain
      * * If specified format is json, will return content as application/json.
      * * If specified format is anything else, will return content as saved mime type.
      *
@@ -222,7 +223,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
         /**
          * @apiGroup Content
-         * @api {post} /v0/content/:contentId Update Content
+         * @api {put} /v0/content/:contentId Update Content
          * @apiDescription Update content by id
          *
          * @apiParam {string} contentId id of content item
@@ -243,7 +244,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *    }
          */
 
-        async function post(req: any, res: any) {
+        async function put(req: any, res: any) {
             try {
                 let content = req.body;
 
@@ -303,9 +304,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
         }
 
-        router.post.apply(
+        router.put.apply(
             router,
-            [route, ADMIN, body, verify, post].filter(i => i)
+            [route, ADMIN, body, verify, put].filter(i => i)
         );
 
         /**

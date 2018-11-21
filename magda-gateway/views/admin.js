@@ -194,7 +194,8 @@ function showLanguage(body) {
         allowDelete: true,
         allowAdd: true,
         allowIdFieldInput: true,
-        newId: id => `lang/en/${id}`
+        newId: id => `lang/en/${id}`,
+        mimeType: "text/plain"
     });
 }
 
@@ -291,10 +292,10 @@ async function showJsonEditor(body, options) {
                             "DONE",
                             name,
                             await request(
-                                "POST",
+                                "PUT",
                                 `/api/v0/content/${file.id}`,
                                 newObj,
-                                "application/json"
+                                options.mimeType || "application/json"
                             )
                         );
                         showJsonEditor(body, options);
@@ -342,7 +343,7 @@ async function showJsonEditor(body, options) {
                     "DONE",
                     name,
                     await request(
-                        "POST",
+                        "PUT",
                         `/api/v0/content/${options.newId(
                             idField ? idField.property("value") : undefined
                         )}`,
@@ -419,7 +420,7 @@ function imageConfig(body, name) {
                 fileReader.onloadend = async function(e) {
                     const data = new Blob([new Uint8Array(e.target.result)]);
                     await request(
-                        "POST",
+                        "PUT",
                         `${instanceURL}/content/${name}`,
                         data,
                         file.type
@@ -474,7 +475,7 @@ function spreadsheetConfig(body) {
                 fileReader.onloadend = async function(e) {
                     const data = new Blob([new Uint8Array(e.target.result)]);
                     await request(
-                        "POST",
+                        "PUT",
                         `${instanceURL}/content/${name}`,
                         data,
                         file.type

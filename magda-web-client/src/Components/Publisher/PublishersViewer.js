@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
-import ReactDocumentTitle from "react-document-title";
 import PublisherSummary from "./PublisherSummary";
 import ErrorHandler from "../../Components/ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
@@ -17,6 +16,8 @@ import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
 import { withRouter } from "react-router-dom";
+import MagdaNamespacesConsumer from "../i18n/MagdaNamespacesConsumer";
+import MagdaDocumentTitle from "../i18n/MagdaDocumentTitle";
 
 class PublishersViewer extends Component {
     constructor(props) {
@@ -129,15 +130,17 @@ class PublishersViewer extends Component {
         this.debounceUpdateSearchQuery.flush();
     }
 
-    renderContent() {
+    renderContent(translate) {
         if (this.props.error) {
             return <ErrorHandler error={this.props.error} />;
         } else {
             if (this.props.publishers.length === 0) {
                 return (
                     <AUpageAlert as="error">
-                        Sorry, we couldn&#39;t find any organisations that match
-                        your search.
+                        {translate([
+                            "noPublishersMatchSearchMessage",
+                            "No publishers match your query"
+                        ])}
                         <button
                             className="clear-btn au-btn au-btn--tertiary"
                             type="button"
@@ -174,11 +177,16 @@ class PublishersViewer extends Component {
         }
     }
 
-    renderSearchBar() {
+    renderSearchBar(translate) {
+        const placeholderText = translate([
+            "publishersSearchPlaceholder",
+            "Search for Publishers"
+        ]);
+
         return (
             <div className="organization-search">
                 <label htmlFor="organization-search" className="sr-only">
-                    Search for organisations
+                    {placeholderText}
                 </label>
                 <input
                     className="au-text-input au-text-input--block organization-search"
@@ -186,7 +194,7 @@ class PublishersViewer extends Component {
                     id="organization-search"
                     type="text"
                     value={this.state.inputText}
-                    placeholder="Search for Organisations"
+                    placeholder={placeholderText}
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
                     ref={el => (this.searchInputFieldRef = el)}
@@ -208,55 +216,71 @@ class PublishersViewer extends Component {
             .searchResultsPerPage;
 
         return (
-            <ReactDocumentTitle
-                title={`Organisations | Page ${currentPage} | ${
-                    this.props.strings.applicationName
-                }`}
-            >
-                <div className="publishers-viewer">
-                    <Medium>
-                        <Breadcrumbs
-                            breadcrumbs={[
-                                <li key="organisations">
-                                    <span>Organisations</span>
-                                </li>
-                            ]}
-                        />
-                    </Medium>
+            <MagdaNamespacesConsumer ns={["publishersPage"]}>
+                {translate => (
+                    <MagdaDocumentTitle
+                        prefixes={[
+                            translate(["publishersBreadCrumb", "Publishers"]),
+                            `Page ${currentPage}`
+                        ]}
+                    >
+                        <div className="publishers-viewer">
+                            <Medium>
+                                <Breadcrumbs
+                                    breadcrumbs={[
+                                        <li key="organisations">
+                                            <span>
+                                                {translate([
+                                                    "publishersBreadCrumb",
+                                                    "Publishers"
+                                                ])}
+                                            </span>
+                                        </li>
+                                    ]}
+                                />
+                            </Medium>
 
-                    <div className="row">
-                        <div className="publishers-viewer__header">
-                            <div className="col-sm-8">
-                                <h1>Organisations</h1>
+                            <div className="row">
+                                <div className="publishers-viewer__header">
+                                    <div className="col-sm-8">
+                                        <h1>
+                                            {translate([
+                                                "publishersPageTitle",
+                                                "Publishers"
+                                            ])}
+                                        </h1>
+                                    </div>
+
+                                    <div className="col-sm-4">
+                                        {this.renderSearchBar(translate)}
+                                    </div>
+                                </div>
+
+                                <div className="col-sm-8 org-result-page-body">
+                                    {this.props.isFetching ? (
+                                        <ProgressBar />
+                                    ) : (
+                                        this.renderContent(translate)
+                                    )}
+                                </div>
                             </div>
-
-                            <div className="col-sm-4">
-                                {this.renderSearchBar()}
-                            </div>
-                        </div>
-
-                        <div className="col-sm-8 org-result-page-body">
-                            {this.props.isFetching ? (
-                                <ProgressBar />
-                            ) : (
-                                this.renderContent()
-                            )}
-                        </div>
-                    </div>
-                    {!this.props.isFetching &&
-                        !this.props.error &&
-                        this.props.hitCount > searchResultsPerPage && (
-                            <Pagination
-                                currentPage={currentPage}
-                                maxPage={Math.ceil(
-                                    this.props.hitCount / searchResultsPerPage
+                            {!this.props.isFetching &&
+                                !this.props.error &&
+                                this.props.hitCount > searchResultsPerPage && (
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        maxPage={Math.ceil(
+                                            this.props.hitCount /
+                                                searchResultsPerPage
+                                        )}
+                                        onPageChange={this.onPageChange}
+                                        totalItems={this.props.hitCount}
+                                    />
                                 )}
-                                onPageChange={this.onPageChange}
-                                totalItems={this.props.hitCount}
-                            />
-                        )}
-                </div>
-            </ReactDocumentTitle>
+                        </div>
+                    </MagdaDocumentTitle>
+                )}
+            </MagdaNamespacesConsumer>
         );
     }
 }

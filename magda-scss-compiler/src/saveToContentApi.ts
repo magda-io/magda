@@ -12,7 +12,7 @@ const saveToContentApi = (
         request(
             `${contentApiUrl}/${fileName}`,
             {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "X-Magda-Session": buildJwt(jwtSecret, userId),
                     "Content-type": "text/css"

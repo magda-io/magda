@@ -14,6 +14,9 @@ global:
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   enableAuthEndpoint: true
+  cors:
+    credentials: true
+    origin: true
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"

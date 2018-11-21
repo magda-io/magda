@@ -34,6 +34,9 @@
 -   Make jurisdiction field available from registry api
 -   Fixed an issue of scss-compiler not updated all variables
 -   Added more configurable scss variables
+-   Added internationalisation library to frontend
+-   Adjusted content-api to prevent SQL injection
+-   Made occurrences of "organisation" in the front-end configurable through internationalisation.
 -   Make jurisdiction information available from search api
 -   Organisation search result from search api will be aggregated based on jurisdiction and name
 -   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
