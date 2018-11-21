@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.indexer.helpers
 
 import akka.NotUsed
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.misc.DataSet
@@ -34,9 +34,14 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers
   override def beforeEach(): Unit = {
     super.beforeEach()
     ssc = new StreamSourceController(None.orNull, None.orNull)
-    val (actorRef1, source1) = ssc.refAndSource
-    actorRef = actorRef1
-    source = source1
+    val (ref, src) = ssc.refAndSource
+    actorRef = ref
+    source = src
+  }
+
+  override def afterEach(): Unit = {
+    super.afterEach()
+    actorRef ! PoisonPill
   }
 
   private def futureAssert(actualF: Future[Seq[DataSet]],
