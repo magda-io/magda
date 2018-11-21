@@ -1,1 +1,1 @@
-INSERT INTO content VALUES ('includeHtml', 'text/html', '');
+INSERT INTO content VALUES ('includeHtml', 'text/html', '') ON CONFLICT DO NOTHING;
