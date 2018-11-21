@@ -39,8 +39,8 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
   "The stream source controller" must {
     "fill source after the stream is alive" in {
-
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.fold(Seq[DataSet]())(_ :+ _))
+//    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.fold(Seq[DataSet]())(_ :+ _))
+      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
       dataSets.foreach(dataSet => actorRef ! dataSet)
       Thread.sleep(500)
       ssc.terminate()
@@ -54,7 +54,7 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
     "fill source before the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.fold(Seq[DataSet]())(_ :+ _))
+      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
       Thread.sleep(500)
       ssc.terminate()
 
@@ -67,7 +67,7 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
     "fill source before and after the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.fold(Seq[DataSet]())(_ :+ _))
+      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
       dataSets.foreach(dataSet => actorRef ! dataSet)
       Thread.sleep(500)
       ssc.terminate()
