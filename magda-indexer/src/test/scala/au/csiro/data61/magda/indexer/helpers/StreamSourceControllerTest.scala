@@ -39,27 +39,24 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
   "The stream source controller" must {
     "fill source after the stream is alive" in {
-//    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.fold(Seq[DataSet]())(_ :+ _))
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
+      // take(dataSets.size) in order to terminate the stream automatically
+      // so that actualDataSetsF can complete.
+      val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
+
+      // Fill the source.
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      Thread.sleep(500)
-      ssc.terminate()
 
       val resultF = actualDataSetsF.map(actualDataSets => actualDataSets shouldEqual dataSets)
-
       Await.result(actualDataSetsF, 10.seconds)
+      // Give time for resultF to complete.
       Thread.sleep(500)
       assert(resultF.isCompleted)
     }
 
     "fill source before the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
-      Thread.sleep(500)
-      ssc.terminate()
-
+      val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
       val resultF = actualDataSetsF.map(actualDataSets => actualDataSets shouldEqual dataSets)
-
       Await.result(actualDataSetsF, 10.seconds)
       Thread.sleep(500)
       assert(resultF.isCompleted)
@@ -67,15 +64,36 @@ class StreamSourceControllerTest extends TestKit(ActorSystem("StreamSourceContro
 
     "fill source before and after the stream is alive" in {
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
+      val actualDataSetsF: Future[Seq[DataSet]] = source.take(2*dataSets.size).runWith(Sink.seq)
       dataSets.foreach(dataSet => actorRef ! dataSet)
-      Thread.sleep(500)
-      ssc.terminate()
-
       val resultF = actualDataSetsF.map(actualDataSets =>
         actualDataSets shouldEqual dataSets :: dataSets)
 
       Await.result(actualDataSetsF, 10.seconds)
+      Thread.sleep(500)
+      assert(resultF.isCompleted)
+    }
+
+    "be able to terminate the stream explictly" in {
+      // Fill the source.
+      dataSets.foreach(dataSet => actorRef ! dataSet)
+
+      // Activate the stream.
+      val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
+
+      // Give time for actualDataSetsF to run.
+      Thread.sleep(500)
+
+      val resultF = actualDataSetsF.map(actualDataSets => {
+        println(actualDataSets)
+        actualDataSets shouldEqual dataSets
+      })
+
+      // Terminate the stream so that actualDataSetsF can complete
+      ssc.terminate()
+      Await.result(actualDataSetsF, 10.seconds)
+
+      // Give time for resultF to run.
       Thread.sleep(500)
       assert(resultF.isCompleted)
     }
