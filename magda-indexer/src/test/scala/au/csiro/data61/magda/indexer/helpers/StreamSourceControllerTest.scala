@@ -32,7 +32,7 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    ssc = new StreamSourceController(None.orNull, None.orNull)
+    ssc = new StreamSourceController()
     val (ref, src) = ssc.refAndSource
     actorRef = ref
     source = src
