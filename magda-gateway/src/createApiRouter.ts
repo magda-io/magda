@@ -47,7 +47,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         auth = false,
         redirectTrailingSlash = false
     ) {
-        console.log("PROXY", baseRoute, target);
+        console.log("PROXY", baseRoute, target, verbs);
         const routeRouter: any = express.Router();
 
         if (authenticator && auth) {
