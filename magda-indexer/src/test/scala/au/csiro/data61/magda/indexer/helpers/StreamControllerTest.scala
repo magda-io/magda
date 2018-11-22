@@ -68,6 +68,69 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
+  class MockIndexer(streamController: StreamController) extends SearchIndexer{
+    private var dataSetCount = 0
+    private val batchSize = 2
+    private val buffer = new ListBuffer[Promise[Unit]]()
+
+    override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
+      streamController.start(batchSize)
+      val indexResults = source
+        .map(dataSet => {
+          println(s"Received: $dataSet")
+          (dataSet.uniqueId, index(dataSet))
+        })
+        .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
+          case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
+            combinedResultFuture.flatMap { combinedResult =>
+              thisResultFuture.map { _ =>
+                combinedResult.copy(successes = combinedResult.successes + 1)
+              }.recover {
+                case _: Throwable =>
+                  combinedResult.copy(failures = combinedResult.failures :+ thisResultIdentifier)
+              }
+            }
+        })
+
+      indexResults.flatMap(identity)
+    }
+
+    private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
+      dataSetCount += 1
+      buffer.append(promise)
+
+      // Simulate batch processing
+      if (dataSetCount % batchSize == 0) {
+        buffer.toList.foreach(promise => promise.success())
+        buffer.clear()
+        println("Request next batch")
+        streamController.next(batchSize)
+      }
+
+      promise.future
+    }
+
+    override def delete(identifiers: Seq[String]): Future[Unit] = {
+      throw new Exception("delete() not implemented")
+    }
+
+    override def snapshot(): Future[Unit] = {
+      throw new Exception("snapshot() not implemented")
+    }
+
+    override def ready: Future[Unit] = {
+      throw new Exception("ready() not implemented")
+    }
+
+    override def trim(before: OffsetDateTime): Future[Unit] = {
+      throw new Exception("trim() not implemented")
+    }
+
+    override def isEmpty(index: Indices.Index): Future[Boolean] = {
+      throw new Exception("isEmpty() not implemented")
+    }
+  }
+
   "The stream controller" should "control the simple stream flow" in {
 
     // Create the stream source.
@@ -81,86 +144,23 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
 
     // Fill the stream source.
-    val initialTokenOptionF = sc.start(50)
-    initialTokenOptionF.map(tokenOption => tokenOption shouldEqual tokenOption1)
+    val initF = sc.start(2)
 
     // Fill the stream source, usually caused by feedback from the stream Sink.
-    val nextTokenOptionF = initialTokenOptionF.flatMap(tokenOption => {
-      sc.next(tokenOption, 50)
-    })
+    val nextF = initF.flatMap(_ => sc.next(2))
 
     // Fill the stream source, may caused by feedback from the stream Sink.
     // Because tokenOption is None, it will terminate the stream.
     // Do this after some delay to simulate stream processing.
     Thread.sleep(500)
-    nextTokenOptionF.map(tokenOption => sc.next(tokenOption, 50))
+    nextF.map(_ => sc.next( 2))
 
-    nextTokenOptionF.map(tokenOption => tokenOption shouldEqual tokenOption2)
+    nextF.map(tokenOption => tokenOption shouldEqual tokenOption2)
 
     actualDataSetsF.flatMap(dataSets => dataSets shouldEqual dataSets1 ++ dataSets2)
   }
 
-  class MockIndexer(streamController: StreamController) extends SearchIndexer{
-    private var dataSetCount = 0
-    private var batchCount = 0
-    private val batchSize = 2
-    private val batchNum = 2
-    private val buffer = new ListBuffer[Promise[Unit]]()
-    override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
-      val indexResults = source
-        .map(dataSet => {
-          println(s"Received: $dataSet")
-          (dataSet.uniqueId, index(dataSet))
-         })
-        .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
-          case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
-            if (batchCount < batchNum) {
-              println("Request next batch")
-              streamController.next(Some(""), 2)
-            }
-            else {
-              println("Terminate the stream")
-              streamController.next(None, 2)
-            }
-
-            Future(SearchIndexer.IndexResult(0, Seq()))
-//            combinedResultFuture.flatMap { combinedResult =>
-//              thisResultFuture.map { _ =>
-//
-//                combinedResult.copy(successes = combinedResult.successes + 1)
-//              }
-//            }
-      })
-
-      indexResults.flatMap(identity)
-    }
-
-    private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
-      dataSetCount += 1
-      buffer.append(promise)
-
-      // Simulate batch processing
-      if (dataSetCount % batchSize == 0) {
-        batchCount += 1
-        buffer.toList.foreach(promise => promise.future.flatMap(_ => Future.successful("Done")))
-        buffer.clear()
-      }
-
-      promise.future
-    }
-
-    override def delete(identifiers: Seq[String]): Future[Unit] = ???
-
-    override def snapshot(): Future[Unit] = ???
-
-    override def ready: Future[Unit] = ???
-
-    override def trim(before: OffsetDateTime): Future[Unit] = ???
-
-    override def isEmpty(index: Indices.Index): Future[Boolean] = ???
-  }
-
-  "The stream controller" should "control the stream flow" in {
+  "The stream controller" should "support the indexer stream" in {
 
     // Create the stream source.
     ssc = new StreamSourceController()
@@ -168,13 +168,12 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
     val mockRegistryInterface = new MockRegistryInterface()
     sc = new StreamController(mockRegistryInterface, ssc)
-    sc.start(50)
     val mockIndexer = new MockIndexer(sc)
 
     // Start the stream.
     val indexResultF: Future[SearchIndexer.IndexResult] = mockIndexer.index(source)
 
-    indexResultF.map(indexResult => indexResult shouldEqual IndexResult(0,List()))
-
+    indexResultF.map(indexResult =>
+      indexResult shouldEqual IndexResult(dataSets1.size + dataSets2.size, List()))
   }
 }

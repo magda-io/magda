@@ -27,6 +27,7 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
 
   val log = Logging(system, getClass)
   private val crawledCount = new AtomicLong(0)
+  private var tokenOption: Option[String] = None
 
   def getDataSets(nextFuture: () => Future[(Option[String], List[DataSet])])
   : Future[(Option[String], List[DataSet])] = {
@@ -62,17 +63,26 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
 
   def start(firstPageSize: Int): Future[Option[String]] = {
     val firstPageF = () => interface.getDataSetsReturnToken(0, firstPageSize)
-    fillStreamSource(firstPageF)
+    val tokenOptionF = fillStreamSource(firstPageF)
+    tokenOptionF.map(t => {
+      tokenOption = t
+      tokenOption
+    })
   }
 
-  def next(tokenOption: Option[String], nextSize: Int): Future[Option[String]] = {
+  def next(nextSize: Int): Future[Option[String]] = {
     if (tokenOption.isEmpty){
+      log.info("No more datasets, terminate the stream.")
       ssc.terminate()
-      Future{None}
+      Future.successful(None)
     }
     else {
       val nextPageF = () => interface.getDataSetsToken(tokenOption.get, nextSize)
-      fillStreamSource(nextPageF)
+      val tokenOptionF = fillStreamSource(nextPageF)
+      tokenOptionF.map(t => {
+        tokenOption = t
+        tokenOption
+      })
     }
   }
 }
