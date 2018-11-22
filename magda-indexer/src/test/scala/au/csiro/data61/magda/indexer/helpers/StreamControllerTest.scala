@@ -84,6 +84,8 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
     // Fill the stream source, may caused by feedback from the stream Sink.
     // Because tokenOption is None, it will terminate the stream.
+    // Do this after some delay to simulate stream processing.
+    Thread.sleep(500)
     nextTokenOptionF.map(tokenOption => sc.next(tokenOption, 50))
 
     nextTokenOptionF.map(tokenOption => tokenOption shouldEqual tokenOption2)

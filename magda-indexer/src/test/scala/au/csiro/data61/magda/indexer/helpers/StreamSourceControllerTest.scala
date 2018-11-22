@@ -48,34 +48,29 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
     // so that actualDataSetsF can complete.
     val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
 
-    // Fill the source.
-    dataSets.foreach(dataSet => actorRef ! dataSet)
+    ssc.fillSource(dataSets)
 
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before the stream starts" in {
-    dataSets.foreach(dataSet => actorRef ! dataSet)
+    ssc.fillSource(dataSets)
     val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before and after the stream starts" in {
-    dataSets.foreach(dataSet => actorRef ! dataSet)
+    ssc.fillSource(dataSets)
     val actualDataSetsF: Future[Seq[DataSet]] = source.take(2*dataSets.size).runWith(Sink.seq)
-    dataSets.foreach(dataSet => actorRef ! dataSet)
+    ssc.fillSource(dataSets)
     actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
   }
 
   it should "be able to terminate the stream explicitly" in {
-    // Fill the source.
-    dataSets.foreach(dataSet => actorRef ! dataSet)
 
-    // Run the stream.
+    ssc.fillSource(dataSets)
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
-
-    // Fill more to the source.
-    dataSets.foreach(dataSet => actorRef ! dataSet)
+    ssc.fillSource(dataSets)
 
     // No more data to fill the source, terminate the stream so that actualDataSetsF can complete.
     // Call terminate() after some delay in order to give some time for actualDataSetsF to run.
