@@ -57,4 +57,4 @@ title: Privacy Policy
 ---
 
 ### This is a sample Privacy Policy Page
-');
+') ON CONFLICT DO NOTHING;
