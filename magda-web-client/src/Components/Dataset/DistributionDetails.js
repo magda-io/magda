@@ -56,7 +56,7 @@ class DistributionDetails extends Component {
         );
 
         const accessNotes = distribution.accessNotes && (
-            <MagdaNamespacesConsumer ns={["distributionPage"]}>
+            <MagdaNamespacesConsumer ns={["datasetPage"]}>
                 {translate => {
                     const accessNotesPrefix = translate([
                         "accessNotesPrefix",
