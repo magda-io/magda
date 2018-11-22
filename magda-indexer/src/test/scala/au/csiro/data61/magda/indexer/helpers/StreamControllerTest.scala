@@ -23,49 +23,40 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val config: Config = ConfigFactory.load()
 
-  private var ssc: StreamSourceController = None.orNull
   private var sc: StreamController = None.orNull
-
-  private val tokenOption1 = Some("token1")
-  private val dataSet1 =
-    DataSet(identifier = "d1", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
-  private val dataSet2 =
-    DataSet(identifier = "d2", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
-  private val dataSets1: Seq[DataSet] = List(dataSet1, dataSet2)
-
+  private val tokenOption1 = Some("token")
   private val tokenOption2 = None
-  private val dataSet3 =
-    DataSet(identifier = "d3", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
-  private val dataSet4 =
-    DataSet(identifier = "d4", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
-  private val dataSets2: Seq[DataSet] = List(dataSet3, dataSet4)
-
-  assert (dataSets1.size == dataSets2.size)
-  private val batchSize = dataSets1.size
+  private val batchSize = 2
+  private var dataSets: Seq[DataSet] = Seq()
 
   override def afterEach(): Unit = {
     super.afterEach()
-    val (actorRef, _) = ssc.refAndSource
+    val actorRef = sc.getActorRef
     actorRef ! PoisonPill
   }
 
   class MockRegistryInterface extends RegistryInterface {
     private var callCount = 0
+    private var nextIndex = 0
+
     override def getDataSetsReturnToken(start: Int, size: Int)
     : Future[(Option[String], List[DataSet])] = {
-
+      assert (start == 0)
       callCount += 1
-      Future.successful(tokenOption1, dataSets1.toList)
+      nextIndex = size
+      Future.successful(tokenOption1, dataSets.slice(start, size).toList)
     }
 
     override def getDataSetsToken(token: String, size: Int)
     : Future[(Option[String], List[DataSet])] = {
-      if (callCount == 1){
-        callCount += 1
-        Future.successful(tokenOption2, dataSets2.toList)
+      callCount += 1
+      if (callCount * batchSize < dataSets.size){
+        val startIndex = nextIndex
+        val endIndex = startIndex + size
+        nextIndex = endIndex
+        Future.successful(tokenOption1, dataSets.slice(startIndex, endIndex).toList)
       }
       else {
-        callCount += 1
         Future.successful(tokenOption2, Nil)
       }
     }
@@ -76,7 +67,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     private val buffer = new ListBuffer[Promise[Unit]]()
 
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
-      streamController.start(batchSize)
+      streamController.start()
       val indexResults = source
         .map(dataSet => {
           (dataSet.uniqueId, index(dataSet))
@@ -106,6 +97,11 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
         buffer.clear()
         streamController.next(batchSize)
       }
+      else if (dataSetCount >= streamController.getTotalDataSetsNum) {
+        buffer.toList.foreach(promise => promise.success())
+        buffer.clear()
+        streamController.terminate()
+      }
 
       promise.future
     }
@@ -131,49 +127,38 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
-  "The stream controller" should "control the simple stream flow" in {
-
-    // Create the stream source.
-    ssc = new StreamSourceController()
-    val (_, source) = ssc.refAndSource
-
-    val mockRegistryInterface = new MockRegistryInterface()
-    sc = new StreamController(mockRegistryInterface, ssc)
-
-    // Start the stream.
-    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
-
-    // Fill the stream source with initial batch of datasets.
-    val initF = sc.start(batchSize)
-
-    // Fill the stream source with the next batch of datasets.
-    val nextF = initF.flatMap(_ => sc.next(batchSize))
-
-    // Fill the stream source with the next batch of datasets.
-    // It will terminate the stream because no more datasets are available.
-    // Do this after some delay to simulate stream processing.
-    Thread.sleep(500)
-    nextF.map(_ => sc.next( batchSize))
-
-    nextF.map(tokenOption => tokenOption shouldEqual tokenOption2)
-
-    actualDataSetsF.flatMap(dataSets => dataSets shouldEqual dataSets1 ++ dataSets2)
+  private def createDataSets(num: Int): Seq[DataSet] = {
+    val range = 1 to num
+    range.foldLeft(Seq[DataSet]()){
+      case (acc, e) =>
+        acc ++ Seq(
+          DataSet(identifier = s"d$e", catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
+    }
   }
 
   "The stream controller" should "support the indexer stream" in {
-
-    // Create the stream source.
-    ssc = new StreamSourceController()
-    val (_, source) = ssc.refAndSource
-
+    val dataSetNum = 8
+    dataSets = createDataSets(dataSetNum)
     val mockRegistryInterface = new MockRegistryInterface()
-    sc = new StreamController(mockRegistryInterface, ssc)
+    sc = new StreamController(mockRegistryInterface, batchSize)
+    val source = sc.getSource
     val mockIndexer = new MockIndexer(sc, batchSize)
-
-    // Start the stream.
     val indexResultF: Future[IndexResult] = mockIndexer.index(source)
 
     indexResultF.map(indexResult =>
-      indexResult shouldEqual IndexResult(dataSets1.size + dataSets2.size, List()))
+      indexResult shouldEqual IndexResult(dataSets.size, List()))
+  }
+
+  "The stream controller" should "support the indexer stream again" in {
+    val dataSetNum = 9
+    dataSets = createDataSets(dataSetNum)
+    val mockRegistryInterface = new MockRegistryInterface()
+    sc = new StreamController(mockRegistryInterface, batchSize)
+    val source = sc.getSource
+    val mockIndexer = new MockIndexer(sc, batchSize)
+    val indexResultF: Future[IndexResult] = mockIndexer.index(source)
+
+    indexResultF.map(indexResult =>
+      indexResult shouldEqual IndexResult(dataSets.size, List()))
   }
 }
