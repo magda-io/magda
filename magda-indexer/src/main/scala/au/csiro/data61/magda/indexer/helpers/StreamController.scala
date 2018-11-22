@@ -2,9 +2,11 @@ package au.csiro.data61.magda.indexer.helpers
 
 import java.util.concurrent.atomic.AtomicLong
 
-import akka.actor.{ActorSystem, Scheduler}
+import akka.NotUsed
+import akka.actor.{ActorRef, ActorSystem, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling
 import com.typesafe.config.Config
@@ -17,7 +19,7 @@ trait RegistryInterface {
   def getDataSetsToken(token: String, size: Int): Future[(Option[String], List[DataSet])]
 }
 
-class StreamController(interface: RegistryInterface, ssc: StreamSourceController)
+class StreamController(interface: RegistryInterface, batchSize: Int)
                       (implicit val system: ActorSystem,
                        implicit val config: Config,
                        implicit val materializer: Materializer) {
@@ -26,10 +28,14 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
   implicit val scheduler: Scheduler = system.scheduler
 
   val log = Logging(system, getClass)
+
+  private val ssc = new StreamSourceController(batchSize * 2)
+  private val (actorRef, source) = ssc.refAndSource
   private val crawledCount = new AtomicLong(0)
+  private val processedCount = new AtomicLong(0)
   private var tokenOption: Option[String] = None
 
-  def getDataSets(nextFuture: () => Future[(Option[String], List[DataSet])])
+  private def getDataSets(nextFuture: () => Future[(Option[String], List[DataSet])])
   : Future[(Option[String], List[DataSet])] = {
 
     val onRetry = (retryCount: Int, e: Throwable) =>
@@ -47,7 +53,7 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
     safeFuture
   }
 
-  def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])])
+  private def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])])
   : Future[Option[String]] = {
 
     getDataSets(nextFuture)
@@ -61,8 +67,16 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
       })
   }
 
-  def start(firstPageSize: Int): Future[Option[String]] = {
-    val firstPageF = () => interface.getDataSetsReturnToken(0, firstPageSize)
+  def getSource: Source[DataSet, NotUsed] = {
+    source
+  }
+
+  def getActorRef: ActorRef = {
+    actorRef
+  }
+
+  def start(): Future[Option[String]] = {
+    val firstPageF = () => interface.getDataSetsReturnToken(0, batchSize * 2)
     val tokenOptionF = fillStreamSource(firstPageF)
     tokenOptionF.map(t => {
       tokenOption = t
@@ -71,9 +85,13 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
   }
 
   def next(nextSize: Int): Future[Option[String]] = {
+    val processedTotal = processedCount.addAndGet(batchSize)
+
     if (tokenOption.isEmpty){
-      log.info("No more datasets, terminate the stream.")
-      ssc.terminate()
+      if (processedTotal >= crawledCount.get()){
+        log.info("No more datasets, terminate the stream.")
+        ssc.terminate()
+      }
       Future.successful(None)
     }
     else {
@@ -84,5 +102,14 @@ class StreamController(interface: RegistryInterface, ssc: StreamSourceController
         tokenOption
       })
     }
+  }
+
+  def getTotalDataSetsNum: Long = {
+    crawledCount.get()
+  }
+
+  def terminate(): Unit = {
+    log.info("Terminate the stream.")
+    ssc.terminate()
   }
 }

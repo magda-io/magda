@@ -30,9 +30,11 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
 
   private val dataSets: Seq[DataSet] = List(dataSet1, dataSet2, dataSet3)
 
+  private val sourceBufferSize = 2 * dataSets.size
+
   override def beforeEach(): Unit = {
     super.beforeEach()
-    ssc = new StreamSourceController()
+    ssc = new StreamSourceController(sourceBufferSize)
     val (ref, src) = ssc.refAndSource
     actorRef = ref
     source = src

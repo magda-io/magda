@@ -11,15 +11,14 @@ import org.reactivestreams.Publisher
 
 import scala.concurrent.ExecutionContextExecutor
 
-class StreamSourceController()(implicit val system: ActorSystem,
-                               implicit val config: Config,
-                               implicit val materializer: Materializer) {
+class StreamSourceController(bufferSize: Int)(implicit val system: ActorSystem,
+                                              implicit val config: Config,
+                                              implicit val materializer: Materializer) {
 
   val log = Logging(system, getClass)
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   implicit val scheduler: Scheduler = system.scheduler
 
-  private val bufferSize = 1000
   private val sharedKillSwitch = KillSwitches.shared("my-kill-switch")
   private val (ref, source) = createStreamSource()
 
