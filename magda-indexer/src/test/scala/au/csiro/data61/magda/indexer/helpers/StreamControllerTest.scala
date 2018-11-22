@@ -40,6 +40,9 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     DataSet(identifier = "d4", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
   private val dataSets2: Seq[DataSet] = List(dataSet3, dataSet4)
 
+  assert (dataSets1.size == dataSets2.size)
+  private val batchSize = dataSets1.size
+
   override def afterEach(): Unit = {
     super.afterEach()
     val (actorRef, _) = ssc.refAndSource
@@ -68,16 +71,14 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
-  class MockIndexer(streamController: StreamController) extends SearchIndexer{
+  class MockIndexer(streamController: StreamController, batchSize: Int) extends SearchIndexer{
     private var dataSetCount = 0
-    private val batchSize = 2
     private val buffer = new ListBuffer[Promise[Unit]]()
 
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
       streamController.start(batchSize)
       val indexResults = source
         .map(dataSet => {
-          println(s"Received: $dataSet")
           (dataSet.uniqueId, index(dataSet))
         })
         .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
@@ -103,7 +104,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
       if (dataSetCount % batchSize == 0) {
         buffer.toList.foreach(promise => promise.success())
         buffer.clear()
-        println("Request next batch")
         streamController.next(batchSize)
       }
 
@@ -143,17 +143,17 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     // Start the stream.
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
 
-    // Fill the stream source.
-    val initF = sc.start(2)
+    // Fill the stream source with initial batch of datasets.
+    val initF = sc.start(batchSize)
 
-    // Fill the stream source, usually caused by feedback from the stream Sink.
-    val nextF = initF.flatMap(_ => sc.next(2))
+    // Fill the stream source with the next batch of datasets.
+    val nextF = initF.flatMap(_ => sc.next(batchSize))
 
-    // Fill the stream source, may caused by feedback from the stream Sink.
-    // Because tokenOption is None, it will terminate the stream.
+    // Fill the stream source with the next batch of datasets.
+    // It will terminate the stream because no more datasets are available.
     // Do this after some delay to simulate stream processing.
     Thread.sleep(500)
-    nextF.map(_ => sc.next( 2))
+    nextF.map(_ => sc.next( batchSize))
 
     nextF.map(tokenOption => tokenOption shouldEqual tokenOption2)
 
@@ -168,10 +168,10 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
     val mockRegistryInterface = new MockRegistryInterface()
     sc = new StreamController(mockRegistryInterface, ssc)
-    val mockIndexer = new MockIndexer(sc)
+    val mockIndexer = new MockIndexer(sc, batchSize)
 
     // Start the stream.
-    val indexResultF: Future[SearchIndexer.IndexResult] = mockIndexer.index(source)
+    val indexResultF: Future[IndexResult] = mockIndexer.index(source)
 
     indexResultF.map(indexResult =>
       indexResult shouldEqual IndexResult(dataSets1.size + dataSets2.size, List()))
