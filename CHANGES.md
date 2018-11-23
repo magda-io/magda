@@ -51,6 +51,7 @@
 -   `create-secrets` will load ENV vars according to question data types
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
+-   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
 -   When `match-part` search strategy is used, a message is shown on UI
 
