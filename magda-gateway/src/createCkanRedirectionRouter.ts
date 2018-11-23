@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as URI from "urijs";
 import * as _ from "lodash";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import { escapeRegExp } from "lodash";
 
 export type CkanRedirectionRouterOptions = {

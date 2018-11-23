@@ -31,7 +31,8 @@ async function refresh() {
             Connectors: showConnectors,
             Language: showLanguage,
             "Footer Navigation": showFooterNavigation,
-            "Footer Copyright": showFooterCopyright
+            "Footer Copyright": showFooterCopyright,
+            "Manage Users": showUsers
         };
 
         const section = body.append("select");
@@ -194,7 +195,8 @@ function showLanguage(body) {
         allowDelete: true,
         allowAdd: true,
         allowIdFieldInput: true,
-        newId: id => `lang/en/${id}`
+        newId: id => `lang/en/${id}`,
+        mimeType: "text/plain"
     });
 }
 
@@ -294,7 +296,7 @@ async function showJsonEditor(body, options) {
                                 "PUT",
                                 `/api/v0/content/${file.id}`,
                                 newObj,
-                                "application/json"
+                                options.mimeType || "application/json"
                             )
                         );
                         showJsonEditor(body, options);
@@ -546,9 +548,7 @@ async function deleteContent(name) {
 }
 
 async function createConnector(name) {
-    let sourceUrl = window.location.toString();
-    sourceUrl = sourceUrl.substr(0, sourceUrl.indexOf("/", 8));
-    sourceUrl += `/api/v0/content/${name}.bin`;
+    const sourceUrl = `http://content-api/v0/${name}.bin`;
 
     const body = {
         id: name,
@@ -659,6 +659,57 @@ async function deleteConnector(name) {
         name,
         await request("DELETE", `/api/v0/admin/connectors/${name}`)
     );
+}
+
+async function showUsers(body) {
+    const users = await request("GET", "/api/v0/auth/users/all");
+    body.text("");
+    body.append("h2").text("Manage Users");
+
+    const table = body.append("table");
+    const head = table.append("thead").append("tr");
+    head.append("th").text("name");
+    head.append("th").text("email");
+    head.append("th").text("source");
+    head.append("th").text("admin");
+    users.items.forEach(user => {
+        const row = table.append("tr");
+        row.append("td").text(user.displayName);
+        row.append("td").text(user.email);
+        row.append("td").text(user.source);
+        const admin = row.append("td");
+        if (user.isAdmin) {
+            admin
+                .append("button")
+                .text("Unmake Admin")
+                .on("click", async () => {
+                    await request(
+                        "PUT",
+                        `/api/v0/auth/users/${user.id}`,
+                        {
+                            isAdmin: false
+                        },
+                        "application/json"
+                    );
+                    showUsers(body);
+                });
+        } else {
+            admin
+                .append("button")
+                .text("Make Admin")
+                .on("click", async () => {
+                    await request(
+                        "PUT",
+                        `/api/v0/auth/users/${user.id}`,
+                        {
+                            isAdmin: true
+                        },
+                        "application/json"
+                    );
+                    showUsers(body);
+                });
+        }
+    });
 }
 
 const headerNavigationSchema = {

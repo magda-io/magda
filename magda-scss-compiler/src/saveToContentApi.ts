@@ -1,5 +1,5 @@
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 
 const saveToContentApi = (
     fileName: string,
@@ -12,7 +12,7 @@ const saveToContentApi = (
         request(
             `${contentApiUrl}/${fileName}`,
             {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "X-Magda-Session": buildJwt(jwtSecret, userId),
                     "Content-type": "text/css"

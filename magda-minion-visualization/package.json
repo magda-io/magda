@@ -18,6 +18,7 @@
     "@magda/scripts": "^0.0.50-0",
     "@types/node": "^7.0.5",
     "@types/papaparse": "^4.1.31",
+    "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.31",
     "typescript": "~2.5.0"
@@ -28,6 +29,7 @@
     "@magda/typescript-common": "^0.0.50-0",
     "moment": "^2.19.1",
     "papaparse": "^4.3.6",
+    "read-pkg-up": "^3.0.0",
     "request": "^2.79.0",
     "urijs": "^1.18.7"
   },
@@ -35,7 +37,7 @@
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-minion-visualization",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

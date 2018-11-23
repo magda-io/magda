@@ -12,6 +12,7 @@
 -   Email Templates are configurable from content API
 -   Allow a CKAN non-root path to be used for redirects
 -   Allow CKAN resource downloads to pass through to CKAN to maintain links
+-   Add something to mock admin interface to make users admins and not
 -   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
 -   Delete registry API /records/{recordId}/aspects endpoint
 -   Hook actors will report its status to its parent actor when changes
@@ -43,10 +44,14 @@
 -   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
 -   Fixed: minion crawler may go into an endless loop
 -   Fixed an issue caused search Panel option filter stop working
+-   The CkanTransformer will remove generic organisation descriptions.
 -   Fixed non-RC versions not being released to docker hub.
 -   Fixed DAP connector not automatically being released to docker hub.
 -   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
 -   `create-secrets` will load ENV vars according to question data types
+-   Include Magda user agent in external HTTP resource accesses
+-   Made admin UI create CSV connector with internal URL
+-   Fixed an issue that DAP connector not handle access error correctly
 
 ## 0.0.49
 

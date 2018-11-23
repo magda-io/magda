@@ -3,7 +3,7 @@ import * as path from "path";
 import * as URI from "urijs";
 import * as yargs from "yargs";
 import * as morgan from "morgan";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 

@@ -1,4 +1,4 @@
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import * as URI from "urijs";
 import * as Papa from "papaparse";
 import * as moment from "moment";

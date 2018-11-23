@@ -20,7 +20,7 @@ describe("saveToContentApi", () => {
         const content = "" + Math.random();
 
         contentApiScope
-            .post(`/${fileName}`)
+            .put(`/${fileName}`)
             .reply(function(this: any, uri, requestBody) {
                 const uriObj = new URI(uri);
                 const segs = uriObj.segmentCoded();
