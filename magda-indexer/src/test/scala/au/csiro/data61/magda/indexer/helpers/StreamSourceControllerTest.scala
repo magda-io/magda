@@ -46,41 +46,24 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
   }
 
   "The stream source controller" should "fill the source after the stream starts" in {
-    // take(dataSets.size) in order to terminate the stream automatically
-    // so that actualDataSetsF can complete.
-    val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
-
+    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     ssc.fillSource(dataSets)
-
+    ssc.terminate()
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before the stream starts" in {
     ssc.fillSource(dataSets)
-    val actualDataSetsF: Future[Seq[DataSet]] = source.take(dataSets.size).runWith(Sink.seq)
+    ssc.terminate()
+    val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before and after the stream starts" in {
     ssc.fillSource(dataSets)
-    val actualDataSetsF: Future[Seq[DataSet]] = source.take(2*dataSets.size).runWith(Sink.seq)
-    ssc.fillSource(dataSets)
-    actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
-  }
-
-  it should "be able to terminate the stream explicitly" in {
-
-    ssc.fillSource(dataSets)
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     ssc.fillSource(dataSets)
-
-    // No more data to fill the source, terminate the stream so that actualDataSetsF can complete.
-    // Call terminate() after some delay in order to give some time for actualDataSetsF to run.
-    // If calling terminate() without delay, the future may complete before the stream gets a
-    // chance to run, resulting in an empty actualDataSetsF.
-    Thread.sleep(500)
     ssc.terminate()
-
     actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
   }
 }
