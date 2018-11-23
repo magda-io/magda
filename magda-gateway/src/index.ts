@@ -15,6 +15,7 @@ import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
+import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -168,6 +169,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: process.env.WEB_ACCESS_PASSWORD
         })
+        .option("enableHttpsRedirection", {
+            describe: "Whether redirect any http requests to https URLs",
+            type: "boolean",
+            default: false
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -186,6 +192,9 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+
+// Redirect http url to https
+app.use(createHttpsRedirectionMiddleware(argv.enableHttpsRedirection));
 
 // GZIP responses where appropriate
 app.use(compression());
