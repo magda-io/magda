@@ -52,6 +52,7 @@
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
 -   Fixed an issue that DAP connector not handle access error correctly
+-   Stopped caching anything requested through the admin ui.
 
 ## 0.0.49
 
