@@ -52,6 +52,9 @@
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
 -   Fixed an issue that DAP connector not handle access error correctly
+-   Removed old admin ui code
+-   Made access notes show up on distribution page with configurable text
+-   Added contact point to distribution page, made title configurable
 
 ## 0.0.49
 
