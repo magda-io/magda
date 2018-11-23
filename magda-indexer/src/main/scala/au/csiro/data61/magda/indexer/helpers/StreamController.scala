@@ -32,8 +32,7 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
   private val ssc = new StreamSourceController(batchSize * 2)
   private val (actorRef, source) = ssc.refAndSource
   private val crawledCount = new AtomicLong(0)
-  private val processedCount = new AtomicLong(0)
-  private var tokenOption: Option[String] = None
+  private var tokenOptionF: Future[Option[String]] = Future{None}
 
   private def getDataSets(nextFuture: () => Future[(Option[String], List[DataSet])])
   : Future[(Option[String], List[DataSet])] = {
@@ -60,9 +59,15 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
       .map(results => {
         val tokenOption = results._1
         val dataSets = results._2
-        crawledCount.addAndGet(dataSets.size)
-        log.info("Total crawled {} datasets from registry", crawledCount.get())
-        ssc.fillSource(dataSets)
+        if (dataSets.nonEmpty) {
+          crawledCount.addAndGet(dataSets.size)
+          log.info("Total crawled {} datasets from registry", crawledCount.get())
+          ssc.fillSource(dataSets)
+          if (tokenOption.isEmpty){
+            log.info("No more datasets, terminate the stream.")
+            ssc.terminate()
+          }
+        }
         tokenOption
       })
   }
@@ -77,39 +82,28 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
 
   def start(): Future[Option[String]] = {
     val firstPageF = () => interface.getDataSetsReturnToken(0, batchSize * 2)
-    val tokenOptionF = fillStreamSource(firstPageF)
-    tokenOptionF.map(t => {
-      tokenOption = t
-      tokenOption
-    })
+    tokenOptionF = fillStreamSource(firstPageF)
+    tokenOptionF
   }
 
   def next(nextSize: Int): Future[Option[String]] = {
-    val processedTotal = processedCount.addAndGet(batchSize)
-
-    if (tokenOption.isEmpty){
-      if (processedTotal >= crawledCount.get()){
-        log.info("No more datasets, terminate the stream.")
-        ssc.terminate()
+    tokenOptionF.flatMap(tokenOption => {
+      if (tokenOption.isEmpty){
+        Future.successful(None)
       }
-      Future.successful(None)
-    }
-    else {
-      val nextPageF = () => interface.getDataSetsToken(tokenOption.get, nextSize)
-      val tokenOptionF = fillStreamSource(nextPageF)
-      tokenOptionF.map(t => {
-        tokenOption = t
-        tokenOption
-      })
-    }
+      else {
+        val nextPageF = () => interface.getDataSetsToken(tokenOption.get, nextSize)
+        tokenOptionF = fillStreamSource(nextPageF)
+        tokenOptionF
+      }
+    })
   }
 
   def getTotalDataSetsNum: Long = {
     crawledCount.get()
   }
 
-  def terminate(): Unit = {
-    log.info("Terminate the stream.")
-    ssc.terminate()
+  def getTokenOptionF: Future[Option[String]] = {
+    tokenOptionF
   }
 }
