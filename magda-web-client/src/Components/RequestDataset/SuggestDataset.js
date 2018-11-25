@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "./RequestFormLogic";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
 import { connect } from "react-redux";
@@ -45,23 +45,9 @@ export class Suggest extends React.Component {
                 "It helps if you're really specific on the kind of data you're looking for and what you would use it for. Feel free to report any problems you run into as well.",
             textAreaLabel: "What sort of data are you looking for?"
         };
-        const alertProps = {
-            successMessage: `Someone from the Australian Digital Transformation
-            Agency or the organisation that handles the relevant
-            data will get in touch soon. Please note that the
-            time taken to action your request may vary depending
-            on the nature of the request.`,
-            successHeader: "Your request has been sent!",
-            failMessage: null,
-            failHeader: "Uh oh. We've run into an error. Please try again."
-        };
 
         return (
-            <ReactDocumentTitle
-                title={`Suggest a Dataset | ${
-                    this.props.strings.applicationName
-                }`}
-            >
+            <MagdaDocumentTitle prefixes={["Suggest a Dataset"]}>
                 <div>
                     <Medium>
                         <Breadcrumbs
@@ -74,7 +60,6 @@ export class Suggest extends React.Component {
                     </Medium>
                     <RequestFormLogic
                         formProps={formProps}
-                        alertProps={alertProps}
                         requestType="request"
                         senderName={this.state.senderName}
                         senderEmail={this.state.senderEmail}
@@ -82,7 +67,7 @@ export class Suggest extends React.Component {
                         handleChange={this.handleChange}
                     />
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }

@@ -1,11 +1,12 @@
 import mockContentDataStore from "./mockContentStore";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
+import { Query, Database } from "../Database";
 const wildcard = require("wildcard");
 
 import { Content } from "../model";
 
-export default class MockDatabase {
+export default class MockDatabase implements Database {
     getContentById(id: string): Promise<Maybe<Content>> {
         return new Promise(function(resolve, reject) {
             resolve(
@@ -21,25 +22,36 @@ export default class MockDatabase {
             );
         });
     }
+
     setContentById(id: string, type: string, content: string): Promise<any> {
         return new Promise(function(resolve, reject) {
             resolve(mockContentDataStore.setContentById(id, type, content));
         });
     }
-    getContentSummary() {
-        return mockContentDataStore.getContentSummary();
+
+    async getContentSummary(
+        queries: Query[],
+        inlineContentIfType: string[]
+    ): Promise<any> {
+        return mockContentDataStore
+            .getContentSummary()
+            .filter(item =>
+                queries.some(query =>
+                    query.patterns.some(
+                        pattern => !!wildcard(pattern, item[query.field])
+                    )
+                )
+            )
+            .map(item => {
+                if (inlineContentIfType.indexOf(item.type) > -1) {
+                    return item;
+                } else {
+                    return { ...item, content: undefined };
+                }
+            });
     }
 
-    deleteContentById(id: string) {
+    async deleteContentById(id: string): Promise<any> {
         return mockContentDataStore.deleteContentById(id);
-    }
-
-    createWildcardMatch(field: string, pattern: string) {
-        return (item: any) =>
-            item[field] === pattern || wildcard(pattern, field);
-    }
-
-    createOr(...queries: any[]) {
-        return (item: any) => queries.filter(query => query(item)).length > 0;
     }
 }

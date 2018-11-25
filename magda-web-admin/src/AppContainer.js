@@ -1,7 +1,5 @@
 //@flow
-import ReactDocumentTitle from "react-document-title";
 import React from "react";
-import { config } from "./config.js";
 import "./AppContainer.css";
 import { requestWhoAmI } from "./actions/userManagementActions";
 import { connect } from "react-redux";
@@ -11,6 +9,7 @@ import SignInRedirect from "./Components/Account/SignInRedirect";
 import Connectors from "./Components/Connectors/Connectors";
 import ConnectorConfig from "./Components/Connectors/ConnectorConfig";
 import SelectDataset from "./Components/Connectors/SelectDataset";
+import MagdaDocumentTitle from "./Components/Meta/MagdaDocumentTitle";
 
 import { Route, Link, Switch } from "react-router-dom";
 
@@ -19,9 +18,8 @@ class AppContainer extends React.Component {
         this.props.requestWhoAmI();
     }
     render() {
-        console.log(this.props.location);
         return (
-            <ReactDocumentTitle title={config.appName}>
+            <MagdaDocumentTitle>
                 <div>
                     <ul>
                         <li>
@@ -56,7 +54,7 @@ class AppContainer extends React.Component {
                         </Switch>
                     </main>
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
@@ -70,4 +68,7 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => {
     );
 };
 
-export default connect(null, mapDispatchToProps)(AppContainer);
+export default connect(
+    null,
+    mapDispatchToProps
+)(AppContainer);

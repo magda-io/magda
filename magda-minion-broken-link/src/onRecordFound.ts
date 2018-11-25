@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import * as http from "http";
 
 import retryBackoff from "@magda/typescript-common/dist/retryBackoff";

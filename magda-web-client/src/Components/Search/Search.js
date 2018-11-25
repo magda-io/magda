@@ -4,7 +4,7 @@ import { Redirect } from "react-router-dom";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
 import Notification from "../../UI/Notification";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
 import React, { Component } from "react";
 import SearchFacets from "../../Components/SearchFacets/SearchFacets";
 import SearchResults from "../SearchResults/SearchResults";
@@ -166,10 +166,11 @@ class Search extends Component {
             .searchResultsPerPage;
 
         return (
-            <ReactDocumentTitle
-                title={`Datasets search: ${searchText} | Page ${currentPage} | ${
-                    this.props.strings.applicationName
-                }`}
+            <MagdaDocumentTitle
+                prefixes={[
+                    `Datasets search: ${searchText}`,
+                    `Page ${currentPage}`
+                ]}
             >
                 <div>
                     {this.props.isFetching && <ProgressBar />}
@@ -190,12 +191,10 @@ class Search extends Component {
                             {!this.props.isFetching &&
                                 !this.props.error && (
                                     <div>
-                                        {!this.searchBoxEmpty() && (
-                                            <MatchingStatus
-                                                datasets={this.props.datasets}
-                                                strategy={this.props.strategy}
-                                            />
-                                        )}
+                                        <MatchingStatus
+                                            datasets={this.props.datasets}
+                                            strategy={this.props.strategy}
+                                        />
 
                                         {// redirect if we came from a 404 error and there is only one result
                                         queryString.parse(
@@ -251,7 +250,7 @@ class Search extends Component {
                         </div>
                     </div>
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }

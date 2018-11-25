@@ -2,15 +2,37 @@ import createPool from "./createPool";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
 import * as pg from "pg";
+import * as _ from "lodash";
 import { Content } from "./model";
+
+const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
+const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);
 
 export interface DatabaseOptions {
     dbHost: string;
     dbPort: number;
     dbName: string;
 }
+export interface Database {
+    getContentById(id: string): Promise<Maybe<Content>>;
+    getContentSummary(
+        queries: Query[],
+        inlineContentIfType: string[]
+    ): Promise<any>;
+    setContentById(
+        id: string,
+        type: string,
+        content: string
+    ): Promise<Maybe<Content>>;
+    deleteContentById(id: string): Promise<any[]>;
+}
 
-export default class Database {
+export type Query = {
+    field: "id" | "type";
+    patterns: string[];
+};
+
+export default class PostgresDatabase implements Database {
     private pool: pg.Pool;
 
     constructor(options: DatabaseOptions) {
@@ -23,29 +45,53 @@ export default class Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
-    getContentSummary(query: any, inlineContentIfType: string[]): Promise<any> {
+    getContentSummary(
+        queries: Query[],
+        inlineContentIfType: string[]
+    ): Promise<any> {
+        for (const query of queries) {
+            if (!allowableQueryFieldLookup[query.field]) {
+                throw new Error(
+                    "Attempted to filter by unknown query field " + query.field
+                );
+            }
+        }
+
+        const params: string[] = [];
+        let paramCounter = 0;
+        const getParamIndex = () => {
+            return ++paramCounter;
+        };
+
         let inline = "";
         if (inlineContentIfType.length > 0) {
+            const inlineStatements = inlineContentIfType.map((type, i) => {
+                params.push(type.replace(/\'/g, ""));
+                return `type = $${getParamIndex()}`;
+            });
+
             inline = `,
             CASE
-              ${inlineContentIfType
-                  .map(
-                      type =>
-                          "WHEN type = '" +
-                          type.replace(/\'/g, "") +
-                          "' THEN content"
-                  )
-                  .join(" ")}
+              WHEN ${inlineStatements.join(" OR ")} THEN content
               ELSE NULL
             END
             AS content`;
         }
+
+        const whereClauses = _.flatMap(queries, query =>
+            query.patterns.map((pattern: string) => {
+                params.push(PostgresDatabase.createWildcardMatch(pattern));
+
+                return `${query.field} LIKE $${getParamIndex()}`;
+            })
+        ).join(" OR ");
+
+        const sql = `SELECT id, type, length(content) as length ${inline} FROM content ${
+            whereClauses.length > 0 ? "WHERE " + whereClauses : ""
+        }`;
+
         return this.pool
-            .query(
-                `SELECT id, type, length(content) as length ${inline} FROM content ${
-                    query ? "WHERE" + query : ""
-                }`
-            )
+            .query(sql, params)
             .then(res => (res && res.rows) || []);
     }
 
@@ -71,14 +117,7 @@ export default class Database {
             .then(res => (res && res.rows) || []);
     }
 
-    createWildcardMatch(field: string, pattern: string) {
-        const result = `${field} LIKE '${pattern
-            .replace(/[^\w\/\-* ]/gi, "")
-            .replace(/\*/g, "%")}'`;
-        return result;
-    }
-
-    createOr(...queries: string[]) {
-        return queries.map(x => `(${x})`).join(" OR ");
+    private static createWildcardMatch(pattern: string): string {
+        return pattern.replace(/[^\w\/\-* ]/gi, "").replace(/\*/g, "%");
     }
 }

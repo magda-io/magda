@@ -1,4 +1,5 @@
 import {} from "mocha";
+import * as chai from "chai";
 import * as request from "supertest";
 import * as express from "express";
 import * as nock from "nock";
@@ -8,6 +9,7 @@ import createApiRouter from "../createApiRouter";
 
 import mockDatabase from "./mockDatabase";
 import Database from "../Database";
+import { mockContentData } from "./mockContentStore";
 
 const IMAGE_FORMATS_SUPPORTED = ["png", "gif", "svg"];
 
@@ -105,11 +107,87 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
-        it("should see empty list", done => {
-            agent
-                .get("/all")
-                .expect(200, [])
-                .end(done);
+        describe("list", () => {
+            it("should see empty list with no params", done => {
+                agent
+                    .get("/all")
+                    .expect(200, [])
+                    .end(done);
+            });
+
+            it("should see everything when id=*", done => {
+                const expectedContent = mockContentData.map(item => ({
+                    id: item.id,
+                    type: item.type
+                }));
+
+                agent
+                    .get("/all?id=*")
+                    .expect(200, expectedContent)
+                    .end(done);
+            });
+
+            it("should inline content for json when inline=true", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        for (let i = 0; i < body.length; i++) {
+                            const itemInBody = body[i];
+                            const itemInMockContent = mockContentData[i];
+
+                            if (itemInMockContent.type === "application/json") {
+                                chai.expect(
+                                    itemInBody.content || null
+                                ).to.deep.equal(
+                                    JSON.parse(itemInMockContent.content)
+                                );
+                            }
+                        }
+
+                        return body.some(
+                            (item: any) => item.type === "application/json"
+                        );
+                    })
+                    .expect(200, done);
+            });
+
+            it("should inline content for plain text when inline=true", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        for (let i = 0; i < body.length; i++) {
+                            const itemInBody = body[i];
+                            const itemInMockContent = mockContentData[i];
+
+                            if (itemInMockContent.type === "text/plain") {
+                                chai.expect(itemInBody.content).to.equal(
+                                    itemInMockContent.content
+                                );
+                            }
+                        }
+
+                        return body.some(
+                            (item: any) => item.type === "text/plain"
+                        );
+                    })
+                    .expect(200, done);
+            });
+
+            it("should NOT inline content for image/png", done => {
+                agent
+                    .get("/all?id=*&inline=true")
+                    .expect(({ body }: any) => {
+                        const pngs = body.filter(
+                            (item: any) => item.type === "image/png"
+                        );
+
+                        return (
+                            pngs.length > 0 &&
+                            pngs.every((png: any) => !png.content)
+                        );
+                    })
+                    .expect(200, done);
+            });
         });
     });
 
@@ -132,7 +210,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         }
 
         it("should write and read", done => {
-            admin(agent.post("/header/logo"))
+            admin(agent.put("/header/logo"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(201)
@@ -145,7 +223,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-existing", done => {
-            admin(agent.post("/header/lego"))
+            admin(agent.put("/header/lego"))
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(404)
@@ -153,7 +231,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-conforming", done => {
-            admin(agent.post("/header/logo"))
+            admin(agent.put("/header/logo"))
                 .set("Content-type", "text/plain")
                 .send(gifImage)
                 .expect(500)
@@ -162,21 +240,10 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
 
         it("should not write without access", done => {
             agent
-                .post("/header/logo")
+                .put("/header/logo")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(401)
-                .end(done);
-        });
-
-        it("should see list", done => {
-            admin(agent.get("/all"))
-                .expect(200, [
-                    {
-                        id: "header/logo",
-                        type: "image/gif"
-                    }
-                ])
                 .end(done);
         });
 
@@ -192,45 +259,50 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 mime: "text/csv",
                 content: gifImage,
                 getRoute: "/csv-xxx.text",
-                getContent: gifImage.toString("base64")
+                expectedContent: gifImage.toString("base64")
             },
             {
                 route: "/emailTemplates/xxx.html",
                 mime: "text/html",
                 content: "test",
                 getRoute: "/emailTemplates/xxx.html",
-                getContent: "test"
+                expectedContent: "test"
             },
             {
                 route: "/emailTemplates/assets/x-y-z.jpg",
                 mime: "image/svg+xml",
                 content: gifImage,
                 getRoute: "/emailTemplates/assets/x-y-z.jpg",
-                getContent: gifImage.toString("utf8")
+                expectedContent: gifImage.toString("utf8")
+            },
+            {
+                route: "/lang/en/publishersPage/blahface",
+                mime: "text/plain",
+                content: "Hello!",
+                getRoute: "/lang/en/publishersPage/blahface.text",
+                expectedContent: "Hello!"
             }
         ];
 
-        CUSTOM_ROUTES.forEach((customRoute, index) => {
-            it(`should upload and delete with custom routes ${index}`, done => {
-                admin(agent.post(customRoute.route))
-                    .set("Content-type", customRoute.mime)
+        CUSTOM_ROUTES.forEach(customRoute => {
+            it(`should upload and delete with custom routes ${
+                customRoute.route
+            }`, done => {
+                admin(agent.put(customRoute.route))
+                    .set("Content-Type", customRoute.mime)
                     .send(customRoute.content)
                     .expect(201)
-                    .then(() => {
+                    .then(() =>
                         agent
                             .get(customRoute.getRoute)
-                            .expect(customRoute.getContent)
-                            .then(() => {
-                                admin(agent.delete(customRoute.route))
-                                    .expect(204)
-                                    .then(() => {
-                                        agent
-                                            .get(customRoute.getRoute)
-                                            .expect(404)
-                                            .end(done);
-                                    });
-                            });
-                    });
+                            .expect(customRoute.expectedContent)
+                    )
+                    .then(() =>
+                        admin(agent.delete(customRoute.route)).expect(204)
+                    )
+                    .then(() => agent.get(customRoute.getRoute).expect(404))
+                    .then(() => done())
+                    .catch(e => done(e));
             });
         });
     });
