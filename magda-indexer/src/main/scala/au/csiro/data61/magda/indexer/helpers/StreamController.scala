@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer.helpers
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.NotUsed
-import akka.actor.{ActorRef, ActorSystem, Scheduler}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -12,14 +12,22 @@ import au.csiro.data61.magda.util.ErrorHandling
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
 trait RegistryInterface {
   def getDataSetsReturnToken(start: Int, size: Int): Future[(Option[String], List[DataSet])]
   def getDataSetsToken(token: String, size: Int): Future[(Option[String], List[DataSet])]
 }
 
-class StreamController(interface: RegistryInterface, batchSize: Int)
+class ControllerActor(controller: StreamController) extends Actor {
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+  def receive: Receive = {
+    case "start" =>  controller.start()
+    case x => throw new Exception(s"ControllerActor received unknown message s$x")
+  }
+}
+
+class StreamController(interface: RegistryInterface, bufferSize: Int)
                       (implicit val system: ActorSystem,
                        implicit val config: Config,
                        implicit val materializer: Materializer) {
@@ -29,10 +37,11 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
 
   val log = Logging(system, getClass)
 
-  private val ssc = new StreamSourceController(batchSize * 2)
+  private val ssc = new StreamSourceController(bufferSize, this)
   private val (actorRef, source) = ssc.refAndSource
   private val crawledCount = new AtomicLong(0)
   private var tokenOptionF: Future[Option[String]] = Future{None}
+  private val theActor = system.actorOf(Props(classOf[ControllerActor], this), "controllerActor")
 
   private def getDataSets(nextFuture: () => Future[(Option[String], List[DataSet])])
   : Future[(Option[String], List[DataSet])] = {
@@ -52,7 +61,8 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
     safeFuture
   }
 
-  private def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])])
+  private def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])],
+                               isFirst: Boolean = false)
   : Future[Option[String]] = {
 
     getDataSets(nextFuture)
@@ -62,12 +72,10 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
         if (dataSets.nonEmpty) {
           crawledCount.addAndGet(dataSets.size)
           log.info("Total crawled {} datasets from registry", crawledCount.get())
-          ssc.fillSource(dataSets)
-          if (tokenOption.isEmpty){
-            log.info("No more datasets, terminate the stream.")
-            ssc.terminate()
-          }
+          val hasNext = tokenOption.nonEmpty && dataSets.nonEmpty
+          ssc.fillSource(dataSets, hasNext, isFirst)
         }
+
         tokenOption
       })
   }
@@ -81,8 +89,8 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
   }
 
   def start(): Future[Option[String]] = {
-    val firstPageF = () => interface.getDataSetsReturnToken(0, batchSize * 2)
-    tokenOptionF = fillStreamSource(firstPageF)
+    val firstPageF = () => interface.getDataSetsReturnToken(0, bufferSize)
+    tokenOptionF = fillStreamSource(firstPageF, true)
     tokenOptionF
   }
 
@@ -92,18 +100,15 @@ class StreamController(interface: RegistryInterface, batchSize: Int)
         Future.successful(None)
       }
       else {
-        val nextPageF = () => interface.getDataSetsToken(tokenOption.get, nextSize)
+        val nextPageF = () => interface.getDataSetsToken(tokenOption.get, bufferSize/2)
         tokenOptionF = fillStreamSource(nextPageF)
         tokenOptionF
       }
     })
   }
 
-  def getTotalDataSetsNum: Long = {
-    crawledCount.get()
+  def asActor: ActorRef = {
+    theActor
   }
 
-  def getTokenOptionF: Future[Option[String]] = {
-    tokenOptionF
-  }
 }
