@@ -42,6 +42,7 @@
     "@gov.au/skip-link": "^2.0.6",
     "@gov.au/tags": "^3.1.1",
     "@gov.au/text-inputs": "^2.0.6",
+    "core-js": "^2.5.7",
     "i18next": "^11.10.1",
     "is-url-external": "^1.0.3",
     "leaflet": "^0.7.7",
