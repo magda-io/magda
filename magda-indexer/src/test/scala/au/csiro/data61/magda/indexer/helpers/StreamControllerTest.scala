@@ -5,8 +5,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, PoisonPill}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.stream.scaladsl.{Sink, Source}
+import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
@@ -37,11 +38,11 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 
-    override def getDataSetsReturnToken(start: Int, size: Int)
+    override def getDataSetsReturnToken(start: Long, size: Int)
     : Future[(Option[String], List[DataSet])] = {
       assert (start == 0)
       nextIndex.set(size)
-      val batch = dataSets.slice(start, size).toList
+      val batch = dataSets.slice(start.toInt, size).toList
       dataSetCount.addAndGet(batch.size)
       val token = s"token $size"
       val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
@@ -80,15 +81,14 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
-  class MockIndexer(streamController: StreamController) extends SearchIndexer{
+  class MockIndexer(bufferSize: Int) extends SearchIndexer{
     private val dataSetCount = new AtomicInteger(0)
     private val buffer = new ListBuffer[Promise[Unit]]()
     private val batchProcessingSize = 4
 
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
 //      streamController.start()
-      streamController.asActor ! "start"
-      val indexResults = source
+      val indexResults = source.buffer(bufferSize, OverflowStrategy.backpressure)
         .map(dataSet => {
           (dataSet.uniqueId, index(dataSet))
         })
@@ -108,6 +108,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
 
     private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
+      Thread.sleep(1000)
       dataSetCount.incrementAndGet()
       buffer.append(promise)
 
@@ -161,8 +162,10 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     val mockRegistryInterface = new MockRegistryInterface()
     sc = new StreamController(mockRegistryInterface, bufferSize)
     val source = sc.getSource
-    val mockIndexer = new MockIndexer(sc)
+    val mockIndexer = new MockIndexer(2)
     val indexResultF: Future[IndexResult] = mockIndexer.index(source)
+
+    sc.asActor ! "start"
 
     indexResultF.map(indexResult =>
       indexResult shouldEqual IndexResult(dataSets.size, List()))
