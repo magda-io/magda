@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.indexer.helpers
 
 import java.time.OffsetDateTime
+import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, PoisonPill}
@@ -24,53 +25,68 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
   implicit val config: Config = ConfigFactory.load()
 
   private var sc: StreamController = None.orNull
-  private val tokenOption1 = Some("token")
-  private val tokenOption2 = None
-  private val batchSize = 3
   private var dataSets: Seq[DataSet] = Seq()
 
   override def afterEach(): Unit = {
     super.afterEach()
-    val actorRef = sc.getActorRef
-    actorRef ! PoisonPill
+    sc.asActor ! PoisonPill
+    sc.getActorRef ! PoisonPill
   }
 
   class MockRegistryInterface extends RegistryInterface {
-    private var callCount = 0
-    private var nextIndex = 0
+    private val nextIndex = new AtomicInteger(0)
+    private val dataSetCount = new AtomicInteger(0)
 
     override def getDataSetsReturnToken(start: Int, size: Int)
     : Future[(Option[String], List[DataSet])] = {
       assert (start == 0)
-      callCount += 1
-      nextIndex = size
-      Future.successful(tokenOption1, dataSets.slice(start, size).toList)
+      nextIndex.set(size)
+      val batch = dataSets.slice(start, size).toList
+      dataSetCount.addAndGet(batch.size)
+      val token = s"token $size"
+//      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
+//        s"fetch: ${dataSetCount.get()}, token: $token")
+
+      Future.successful(Some(token), batch)
     }
 
     override def getDataSetsToken(token: String, size: Int)
     : Future[(Option[String], List[DataSet])] = {
       assert (token.nonEmpty)
-      callCount += 1
-      if (callCount * size < dataSets.size){
-        val startIndex = nextIndex
-        val endIndex = startIndex + size
-        nextIndex = endIndex
-        val batch = dataSets.slice(startIndex, endIndex).toList
-        val tokenOption = if (startIndex + batchSize < dataSets.size) tokenOption1 else tokenOption2
-        Future.successful(tokenOption, batch)
-      }
-      else {
-        Future.successful(tokenOption2, Nil)
-      }
+
+      val startIndex = nextIndex.get()
+      var endIndex = startIndex + size
+
+      if (endIndex > dataSets.size)
+        endIndex = dataSets.size
+
+      nextIndex.set(endIndex)
+      val batch = dataSets.slice(startIndex, endIndex).toList
+      dataSetCount.addAndGet(batch.size)
+
+      val tokenOption =
+        if (startIndex >= dataSets.size ||
+          batch.size < size ||
+          batch.size == size && endIndex == dataSets.size)
+          None
+        else
+          Some(s"token ${dataSetCount.get()}")
+
+//      println(s"** start: $startIndex, end: $endIndex, batch: ${batch.size}, " +
+//        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
+
+      Future.successful(tokenOption, batch)
     }
   }
 
-  class MockIndexer(streamController: StreamController, batchSize: Int) extends SearchIndexer{
-    private var dataSetCount = 0
+  class MockIndexer(streamController: StreamController) extends SearchIndexer{
+    private val dataSetCount = new AtomicInteger(0)
     private val buffer = new ListBuffer[Promise[Unit]]()
+    private val batchProcessingSize = 4
 
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
-      streamController.start()
+//      streamController.start()
+      streamController.asActor ! "start"
       val indexResults = source
         .map(dataSet => {
           (dataSet.uniqueId, index(dataSet))
@@ -91,20 +107,18 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
 
     private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
-      dataSetCount += 1
+      dataSetCount.incrementAndGet()
       buffer.append(promise)
 
-      if (dataSetCount % batchSize == 0) {
-        // Simulate batch processing
-        buffer.toList.foreach(promise => promise.success())
-        buffer.clear()
-        streamController.next(batchSize)
-      }
-      else if (dataSetCount == streamController.getTotalDataSetsNum) {
+      if (dataSetCount.get() == dataSets.size) {
         // Simulate non-full batch processing
         buffer.toList.foreach(promise => promise.success())
         buffer.clear()
-        streamController.next(batchSize)
+      }
+      else if (dataSetCount.get() % batchProcessingSize == 0) {
+        // Simulate batch processing
+        buffer.toList.foreach(promise => promise.success())
+        buffer.clear()
       }
 
       promise.future
@@ -140,23 +154,31 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
+  private val bufferSize = 10
   private def run(dataSetNum: Int): Future[Assertion] = {
     dataSets = createDataSets(dataSetNum)
     val mockRegistryInterface = new MockRegistryInterface()
-    sc = new StreamController(mockRegistryInterface, batchSize)
+    sc = new StreamController(mockRegistryInterface, bufferSize)
     val source = sc.getSource
-    val mockIndexer = new MockIndexer(sc, batchSize)
+    val mockIndexer = new MockIndexer(sc)
     val indexResultF: Future[IndexResult] = mockIndexer.index(source)
 
     indexResultF.map(indexResult =>
       indexResult shouldEqual IndexResult(dataSets.size, List()))
   }
 
-  "The stream controller" should "support the indexer stream" in {
-    run(dataSetNum = 17)
+  "The stream controller" should "support the indexer stream 1" in {
+    val numOfDataSets = 10 * bufferSize - 1
+    run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream again" in {
-    run(dataSetNum = 12)
+  "The stream controller" should "support the indexer stream 2" in {
+    val numOfDataSets = 10 * bufferSize
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 3" in {
+    val numOfDataSets = 10 * bufferSize + 1
+    run(numOfDataSets)
   }
 }
