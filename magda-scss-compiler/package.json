@@ -35,7 +35,6 @@
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
-    "node-sass": "^4.9.3",
     "sinon": "^2.4.1",
     "typescript": "~2.5.0"
   },
@@ -52,7 +51,8 @@
     "request": "2.85.0",
     "tempy": "^0.2.1",
     "urijs": "^1.18.12",
-    "yargs": "^8.0.2"
+    "yargs": "^8.0.2",
+    "node-sass": "^4.9.3"
   },
   "config": {
     "docker": {
