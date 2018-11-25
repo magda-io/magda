@@ -40,7 +40,9 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
           if (message == NO_MORE_DATASETS)
             completeStage()
           else if (message == HAS_MORE_DATASETS) {
-            streamController.next(bufferSize / 2)
+            if (streamController != None.orNull)
+              streamController.next(bufferSize / 2)
+
             pull(in)
           }
           else
@@ -71,13 +73,23 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
     ref ! NO_MORE_DATASETS
   }
 
-  def fillSource(dataSets: Seq[DataSet], hasNext: Boolean): Unit = {
-    dataSets foreach (dataSet => {
-      dataSet.copy(publisher = dataSet.publisher)
-      ref ! dataSet
-      if (dataSetCount.incrementAndGet() % (bufferSize/2) == 0)
-        ref ! HAS_MORE_DATASETS
-    })
+  def fillSource(dataSets: Seq[DataSet], hasNext: Boolean, isFirst: Boolean): Unit = {
+    if (isFirst){
+      dataSets foreach (dataSet => {
+        dataSet.copy(publisher = dataSet.publisher)
+        ref ! dataSet
+        if (dataSetCount.incrementAndGet() == bufferSize/2)
+          ref ! HAS_MORE_DATASETS
+      })
+    }
+    else {
+      dataSets foreach (dataSet => {
+        dataSet.copy(publisher = dataSet.publisher)
+        ref ! dataSet
+        if (dataSetCount.incrementAndGet() % (bufferSize / 2) == 0)
+          ref ! HAS_MORE_DATASETS
+      })
+    }
 
     if (!hasNext)
       ref ! NO_MORE_DATASETS

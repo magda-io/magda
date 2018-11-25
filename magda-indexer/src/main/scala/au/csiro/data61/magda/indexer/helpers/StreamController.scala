@@ -61,7 +61,8 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)
     safeFuture
   }
 
-  private def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])])
+  private def fillStreamSource(nextFuture: () => Future[(Option[String], List[DataSet])],
+                               isFirst: Boolean = false)
   : Future[Option[String]] = {
 
     getDataSets(nextFuture)
@@ -72,7 +73,7 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)
           crawledCount.addAndGet(dataSets.size)
           log.info("Total crawled {} datasets from registry", crawledCount.get())
           val hasNext = tokenOption.nonEmpty && dataSets.nonEmpty
-          ssc.fillSource(dataSets, hasNext)
+          ssc.fillSource(dataSets, hasNext, isFirst)
         }
 
         tokenOption
@@ -88,8 +89,8 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)
   }
 
   def start(): Future[Option[String]] = {
-    val firstPageF = () => interface.getDataSetsReturnToken(0, bufferSize/2)
-    tokenOptionF = fillStreamSource(firstPageF)
+    val firstPageF = () => interface.getDataSetsReturnToken(0, bufferSize)
+    tokenOptionF = fillStreamSource(firstPageF, true)
     tokenOptionF
   }
 

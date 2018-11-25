@@ -44,10 +44,11 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
       val batch = dataSets.slice(start, size).toList
       dataSetCount.addAndGet(batch.size)
       val token = s"token $size"
+      val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
-//        s"fetch: ${dataSetCount.get()}, token: $token")
+//        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
 
-      Future.successful(Some(token), batch)
+      Future.successful(tokenOption, batch)
     }
 
     override def getDataSetsToken(token: String, size: Int)
@@ -154,7 +155,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
   }
 
-  private val bufferSize = 10
+  private val bufferSize = 8
   private def run(dataSetNum: Int): Future[Assertion] = {
     dataSets = createDataSets(dataSetNum)
     val mockRegistryInterface = new MockRegistryInterface()
@@ -179,6 +180,41 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
   "The stream controller" should "support the indexer stream 3" in {
     val numOfDataSets = 10 * bufferSize + 1
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 4" in {
+    val numOfDataSets = bufferSize - 1
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 5" in {
+    val numOfDataSets = bufferSize
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 6" in {
+    val numOfDataSets = bufferSize + 1
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 7" in {
+    val numOfDataSets = bufferSize / 2 - 1
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 8" in {
+    val numOfDataSets = bufferSize / 2
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 9" in {
+    val numOfDataSets = bufferSize / 2 + 1
+    run(numOfDataSets)
+  }
+
+  "The stream controller" should "support the indexer stream 10" in {
+    val numOfDataSets = 1
     run(numOfDataSets)
   }
 }

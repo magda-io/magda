@@ -30,7 +30,7 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
 
   private val dataSets: Seq[DataSet] = List(dataSet1, dataSet2, dataSet3)
 
-  private val sourceBufferSize = 2 * dataSets.size
+  private val sourceBufferSize = dataSets.size * 2
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -47,22 +47,22 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
 
   "The stream source controller" should "fill the source after the stream starts" in {
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
-    ssc.fillSource(dataSets, false)
+    ssc.fillSource(dataSets, false, true)
 //    ssc.terminate()
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before the stream starts" in {
-    ssc.fillSource(dataSets, false)
+    ssc.fillSource(dataSets, false, true)
 //    ssc.terminate()
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before and after the stream starts" in {
-    ssc.fillSource(dataSets, true)
+    ssc.fillSource(dataSets, true, true)
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
-    ssc.fillSource(dataSets, false)
+    ssc.fillSource(dataSets, false, false)
 //    ssc.terminate()
     actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
   }
