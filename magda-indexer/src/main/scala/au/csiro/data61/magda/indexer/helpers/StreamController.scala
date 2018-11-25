@@ -7,17 +7,13 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-
-trait RegistryInterface {
-  def getDataSetsReturnToken(start: Int, size: Int): Future[(Option[String], List[DataSet])]
-  def getDataSetsToken(token: String, size: Int): Future[(Option[String], List[DataSet])]
-}
 
 class ControllerActor(controller: StreamController) extends Actor {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
