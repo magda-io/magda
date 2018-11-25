@@ -14,13 +14,26 @@ describe("Test createHttpsRedirectionMiddleware", () => {
     let urlQuery: any = {};
     let isNextHandlerCalled = false;
 
-    function setupTest(enableHttpsRedirection: boolean, protocol: string) {
+    function setupTest(
+        enableHttpsRedirection: boolean,
+        protocol: string,
+        specifiedUrlPath: string = null,
+        specifiedUrlQuery: object = null
+    ) {
         const app: express.Application = express();
         app.use(createHttpsRedirectionMiddleware(enableHttpsRedirection));
         app.use((req, res) => {
             isNextHandlerCalled = true;
             res.send("OK");
         });
+
+        if (specifiedUrlPath) {
+            urlPath = specifiedUrlPath;
+        }
+
+        if (specifiedUrlQuery) {
+            urlQuery = specifiedUrlQuery;
+        }
 
         const testRequest = supertest(app)
             .get(urlPath)
@@ -99,6 +112,32 @@ describe("Test createHttpsRedirectionMiddleware", () => {
 
         it("should forward request to next request handler if `enableHttpsRedirection` parameter is true", () => {
             const testRequest = setupTest(true, "https");
+
+            return testRequest.expect(200).then(() => {
+                expect(isNextHandlerCalled).to.equal(true);
+            });
+        });
+    });
+
+    describe("should forward request to next request handler if request url is `/v0/healthz`", () => {
+        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` = 'http'", () => {
+            const testRequest = setupTest(true, "http", "/v0/healthz");
+
+            return testRequest.expect(200).then(() => {
+                expect(isNextHandlerCalled).to.equal(true);
+            });
+        });
+
+        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` = 'https'", () => {
+            const testRequest = setupTest(true, "https", "/v0/healthz");
+
+            return testRequest.expect(200).then(() => {
+                expect(isNextHandlerCalled).to.equal(true);
+            });
+        });
+
+        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` not set", () => {
+            const testRequest = setupTest(true, null, "/v0/healthz");
 
             return testRequest.expect(200).then(() => {
                 expect(isNextHandlerCalled).to.equal(true);
