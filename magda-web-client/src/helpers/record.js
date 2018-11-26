@@ -287,6 +287,7 @@ export function parseDistribution(
     const format = getFormatString(aspects);
     const downloadURL = info.downloadURL || null;
     const accessURL = info.accessURL || null;
+    const accessNotes = info.accessNotes || null;
     const updatedDate = info.modified ? getDateString(info.modified) : null;
     const license = info.license || "License restrictions unknown";
     const description = info.description || "No description provided";
@@ -319,6 +320,7 @@ export function parseDistribution(
         format,
         downloadURL,
         accessURL,
+        accessNotes,
         updatedDate,
         license,
         linkStatusAvailable,
