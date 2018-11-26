@@ -74,7 +74,7 @@
     "draft-js-mention-plugin": "TerriaJS/draft-js-mention-plugin#v2.1.0",
     "draft-js-plugins-editor": "2.0.0-rc2",
     "echarts": "^4.1.0",
-    "echarts-for-react": "^2.0.8",
+    "echarts-for-react": "^2.0.14",
     "email-validator": "^2.0.3",
     "es6-promise": "^4.2.4",
     "es6-shim": "^0.35.3",
