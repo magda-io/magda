@@ -44,16 +44,18 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
   val routes =
     magdaRoute {
       post {
-        entity(as[WebHookPayload]) { payload =>
+        entity(as[WebHookPayload]) { payload => withoutSizeLimit
           val events = payload.events.getOrElse(List())
-
+          getLogger.info(s"Payload size of ${events.size}")
           val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
             .map(event => event.data.getFields("recordId").head.convertTo[String])
             .map(DataSet.registryIdToIdentifier)
 
           val deleteOp = () => idsToDelete match {
             case Nil  => Future.successful(Unit)
-            case list => indexer.delete(list)
+            case list =>
+              getLogger.info(s"Deleting index size of ${list.size}")
+              indexer.delete(list)
           }
 
           val insertOp = () => payload.records match {
@@ -67,6 +69,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
                   None
               })
 
+              getLogger.info(s"Indexing source size of ${dataSets.size}")
               indexer.index(Source(dataSets.flatten))
           }
 
