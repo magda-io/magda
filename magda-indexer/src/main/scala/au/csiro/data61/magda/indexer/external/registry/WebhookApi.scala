@@ -44,7 +44,8 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
   val routes =
     magdaRoute {
       post {
-        entity(as[WebHookPayload]) { payload => withoutSizeLimit
+        withoutSizeLimit
+        entity(as[WebHookPayload]) { payload =>
           val events = payload.events.getOrElse(List())
           getLogger.info(s"Payload size of ${events.size}")
           val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
