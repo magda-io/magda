@@ -1,5 +1,7 @@
 ## 0.0.51
 
+-   Fixed chart won't displayed correctly under IE11
+
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
