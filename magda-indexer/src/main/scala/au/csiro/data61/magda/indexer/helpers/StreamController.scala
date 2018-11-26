@@ -73,8 +73,8 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)
   }
 
   def start(): Future[Option[String]] = {
-    val firstPageF = () => interface.getDataSetsReturnToken(0, bufferSize)
-    tokenOptionF = fillStreamSource(firstPageF, true)
+    val firstPageF = () => interface.getDataSetsReturnToken(start = 0, size = bufferSize)
+    tokenOptionF = fillStreamSource(firstPageF, isFirst = true)
     tokenOptionF
   }
 

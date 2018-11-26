@@ -16,6 +16,19 @@ import org.reactivestreams.Publisher
 
 import scala.concurrent.ExecutionContextExecutor
 
+/**
+  * This class creates a stream source of type Source[DataSet, NotUsed]. The source can be filled
+  * with DataSet object any time after the creation.
+  *
+  * The class can also controls the life cycle of the related stream when the argument
+  * @param streamController 
+  *
+  * @param bufferSize the maximal number of datasets to fill the stream source
+  * @param streamController control the data registry crawling
+  * @param system akka actor system
+  * @param config akka config
+  * @param materializer akka materializer
+  */
 class StreamSourceController(bufferSize: Int, streamController: StreamController)
                             (implicit val system: ActorSystem,
                              implicit val config: Config,
@@ -25,11 +38,15 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   implicit val scheduler: Scheduler = system.scheduler
 
-  private val HAS_MORE_DATASETS: String = "Has more"
-  private val NO_MORE_DATASETS: String = "No more"
+  private val GET_MORE_DATASETS: String = "Get more datasets"
+  private val NO_MORE_DATASETS: String = "No more datasets"
   private val dataSetCount = new AtomicLong(0)
   private val (ref, source) = createStreamSource()
 
+  /**
+    *
+    * @tparam Object
+    */
   final case class MessageChecker[Object]() extends SimpleLinearGraphStage[Object] {
     override def initialAttributes: Attributes = DefaultAttributes.take
 
@@ -39,7 +56,7 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
           val message = grab(in)
           if (message == NO_MORE_DATASETS)
             completeStage()
-          else if (message == HAS_MORE_DATASETS) {
+          else if (message == GET_MORE_DATASETS) {
             if (streamController != None.orNull)
               streamController.next(bufferSize / 2)
 
@@ -60,8 +77,10 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
   }
 
   private def createStreamSource(): (ActorRef, Source[DataSet, NotUsed]) = {
+    // The additional 2 slots in the buffer are for the the control messages GET_MORE_DATASETS
+    // and NO_MORE_DATASETS.
     val (ref: ActorRef, publisher: Publisher[DataSet]) =
-      Source.actorRef[DataSet](bufferSize = bufferSize+3, OverflowStrategy.fail)
+      Source.actorRef[DataSet](bufferSize = bufferSize + 2, OverflowStrategy.fail)
         .toMat(Sink.asPublisher(false))(Keep.both).run()
 
     val source: Source[DataSet, NotUsed] = Source.fromPublisher(publisher)
@@ -69,17 +88,13 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
     (ref, source2)
   }
 
-  def terminate(): Unit = {
-    ref ! NO_MORE_DATASETS
-  }
-
   def fillSource(dataSets: Seq[DataSet], hasNext: Boolean, isFirst: Boolean): Unit = {
     if (isFirst){
       dataSets foreach (dataSet => {
         dataSet.copy(publisher = dataSet.publisher)
         ref ! dataSet
-        if (dataSetCount.incrementAndGet() == bufferSize/2)
-          ref ! HAS_MORE_DATASETS
+        if (dataSetCount.incrementAndGet() == bufferSize / 2)
+          ref ! GET_MORE_DATASETS
       })
     }
     else {
@@ -87,7 +102,7 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
         dataSet.copy(publisher = dataSet.publisher)
         ref ! dataSet
         if (dataSetCount.incrementAndGet() % (bufferSize / 2) == 0)
-          ref ! HAS_MORE_DATASETS
+          ref ! GET_MORE_DATASETS
       })
     }
 
