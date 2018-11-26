@@ -53,6 +53,9 @@
 -   Made admin UI create CSV connector with internal URL
 -   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
+-   Removed old admin ui code
+-   Made access notes show up on distribution page with configurable text
+-   Added contact point to distribution page, made title configurable
 -   When `match-part` search strategy is used, a message is shown on UI
 
 ## 0.0.49
