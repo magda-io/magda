@@ -88,17 +88,35 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
       }
 
       val externalInterface = filteredSource match {
-        case (dataSets) =>
+        case dataSets =>
           new RegistryExternalInterface() {
             override def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
               if (pageToken.toInt < dataSets.length) {
-                Future(Some((pageToken.toInt + number).toString), dataSets.drop(pageToken.toInt).take(Math.min(number, dataSets.length - pageToken.toInt)))
+                val start = pageToken.toInt
+                val end = start + Math.min(number, dataSets.length - pageToken.toInt)
+                val theDataSets = dataSets.slice(start, end)
+                val tokenOption =
+                  if (theDataSets.size < number ||
+                      start >= dataSets.size    ||
+                      theDataSets.size == number && end == dataSets.size )
+                    None
+                  else
+                    Some((pageToken.toInt + number).toString)
+
+                Future(tokenOption, theDataSets)
               } else {
                 Future(None, Nil)
               }
             }
             override def getDataSetsReturnToken(start: Long = 0, number: Int = 10): Future[(Option[String], List[DataSet])] = {
-              Future(Some((start.toInt + number).toString), dataSets.drop(start.toInt).take(number))
+              val theDataSets = dataSets.slice(start.toInt, start.toInt + number)
+              val tokenOption =
+                if (theDataSets.size <= number || theDataSets.size == dataSets.size || dataSets.isEmpty)
+                  None
+                else
+                  Some((start.toInt + number).toString)
+
+              Future(tokenOption, theDataSets)
             }
           }
       }

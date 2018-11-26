@@ -390,8 +390,6 @@ class ElasticSearchIndexer(
     indexResults.flatMap(identity)
   }
 
-  private val pulledCount = new AtomicInteger(0)
-
   def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
 
     indexQueue.offer((dataSet, promise))
@@ -543,7 +541,6 @@ class ElasticSearchIndexer(
 }
 
 object ElasticSearchIndexer {
-  var crawler: RegistryCrawler = None.orNull
   def getYears(from: Option[OffsetDateTime], to: Option[OffsetDateTime]): Option[String] = {
     val newFrom = from.orElse(to).map(_.getYear)
     val newTo = to.orElse(from).map(_.getYear)
@@ -552,9 +549,5 @@ object ElasticSearchIndexer {
       case (Some(newFrom), Some(newTo)) => Some(s"$newFrom-$newTo")
       case _                            => None
     }
-  }
-
-  def setRegistryCrawler(c: RegistryCrawler): Unit = {
-    crawler = c
   }
 }

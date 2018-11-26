@@ -30,7 +30,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
   override def afterEach(): Unit = {
     super.afterEach()
-    sc.asActor ! PoisonPill
     sc.getActorRef ! PoisonPill
   }
 
@@ -87,7 +86,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     private val batchProcessingSize = 4
 
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
-//      streamController.start()
       val indexResults = source.buffer(bufferSize, OverflowStrategy.backpressure)
         .map(dataSet => {
           (dataSet.uniqueId, index(dataSet))
@@ -108,7 +106,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     }
 
     private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
-      Thread.sleep(1000)
       dataSetCount.incrementAndGet()
       buffer.append(promise)
 
@@ -165,7 +162,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
     val mockIndexer = new MockIndexer(2)
     val indexResultF: Future[IndexResult] = mockIndexer.index(source)
 
-    sc.asActor ! "start"
+    sc.start()
 
     indexResultF.map(indexResult =>
       indexResult shouldEqual IndexResult(dataSets.size, List()))
