@@ -44,8 +44,6 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
 
     val interfaceSource = streamForInterface2()
 
-    ElasticSearchIndexer.setRegistryCrawler(this)
-
     indexer.index(interfaceSource)
       .flatMap { result =>
         log.info("Indexed {} datasets with {} failures", result.successes, result.failures.length)
