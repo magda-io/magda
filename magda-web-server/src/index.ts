@@ -109,9 +109,6 @@ const clientRoot = path.resolve(
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-// const adminRoot = require.resolve("@magda/web-admin");
-// const adminBuild = path.join(adminRoot, "build");
-// console.log("Admin: " + adminBuild);
 const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
 );

@@ -191,12 +191,10 @@ class Search extends Component {
                             {!this.props.isFetching &&
                                 !this.props.error && (
                                     <div>
-                                        {!this.searchBoxEmpty() && (
-                                            <MatchingStatus
-                                                datasets={this.props.datasets}
-                                                strategy={this.props.strategy}
-                                            />
-                                        )}
+                                        <MatchingStatus
+                                            datasets={this.props.datasets}
+                                            strategy={this.props.strategy}
+                                        />
 
                                         {// redirect if we came from a 404 error and there is only one result
                                         queryString.parse(
