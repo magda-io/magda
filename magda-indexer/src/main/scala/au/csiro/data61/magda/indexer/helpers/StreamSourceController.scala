@@ -81,7 +81,7 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
     // and NO_MORE_DATASETS.
     val (ref: ActorRef, publisher: Publisher[DataSet]) =
       Source.actorRef[DataSet](bufferSize = bufferSize + 2, OverflowStrategy.fail)
-        .toMat(Sink.asPublisher(false))(Keep.both).run()
+        .toMat(Sink.asPublisher(true))(Keep.both).run()
 
     val source: Source[DataSet, NotUsed] = Source.fromPublisher(publisher)
     val source2: Source[DataSet, NotUsed] = source.via(MessageChecker.apply())
