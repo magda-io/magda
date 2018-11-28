@@ -27,8 +27,6 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
   private val streamControllerSourceBufferSize =
     config.getInt("crawler.streamControllerSourceBufferSize")
 
-  private val streamController = new StreamController(interface, streamControllerSourceBufferSize)
-
   def crawlInProgress(): Boolean = lastCrawl.exists(!_.isCompleted)
 
   def crawl(): Future[Unit] = {
@@ -88,6 +86,7 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
   }
 
   private def streamForInterface(): Source[DataSet, NotUsed] = {
+    val streamController = new StreamController(interface, streamControllerSourceBufferSize)
     streamController.start()
     streamController.getSource
   }
