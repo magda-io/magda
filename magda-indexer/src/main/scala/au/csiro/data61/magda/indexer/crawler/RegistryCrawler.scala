@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer.crawler
 import java.time.OffsetDateTime
 
 import akka.NotUsed
-import akka.actor.{ActorSystem, Scheduler}
+import akka.actor.{ActorSystem, PoisonPill, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -26,6 +26,8 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
   var lastCrawl: Option[Future[Unit]] = None
   private val streamControllerSourceBufferSize =
     config.getInt("crawler.streamControllerSourceBufferSize")
+
+  private var streamController: Option[StreamController] = None
 
   def crawlInProgress(): Boolean = lastCrawl.exists(!_.isCompleted)
 
@@ -86,8 +88,11 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
   }
 
   private def streamForInterface(): Source[DataSet, NotUsed] = {
-    val streamController = new StreamController(interface, streamControllerSourceBufferSize)
-    streamController.start()
-    streamController.getSource
+    if (streamController.nonEmpty)
+      streamController.get.getActorRef ! PoisonPill
+
+    streamController = Some(new StreamController(interface, streamControllerSourceBufferSize))
+    streamController.get.start()
+    streamController.get.getSource
   }
 }
