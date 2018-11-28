@@ -1,3 +1,7 @@
+## 0.0.51
+
+-   Redirect HTTP requests to HTTPS URLs
+
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
@@ -53,7 +57,7 @@
 -   Made admin UI create CSV connector with internal URL
 -   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
--   Redirect HTTP requests to HTTPS URLs
+-   Stopped caching anything requested through the admin ui.
 -   Removed old admin ui code
 -   Made access notes show up on distribution page with configurable text
 -   Added contact point to distribution page, made title configurable
@@ -85,6 +89,10 @@
 -   Better support for SPSS files in the format minion
 -   Made files marked with a ".extension" format resolve to "extension" correctly in the format minion.
 -   Fixed an redirection issue when handling 404 status from registry API
+-   Re-added admin api to released docker images
+-   Made gateway nominate its container port to fix it working with a password and also the GCE ingress
+-   Stopped the helm chart from assuming that the `postgres` user password and the `proxyuser` password are the same in GKE deploys
+-   Fixed the storage account credentials being created incorrectly through the secrets tool
 -   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
