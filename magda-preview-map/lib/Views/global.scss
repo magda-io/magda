@@ -14,6 +14,21 @@ body {
         }
     }
 
+    .tjs-zoom_control__zoomControl {
+        background-color: #ffffff !important;
+        svg {
+            fill: #3f4755 !important;
+        }
+        border: solid 1px rgba(49, 56, 66, 0.2);
+    }
+
+    .tjs-legend__locationBar,
+    .tjs-legend__distanceLegend {
+        background-color: #ffffff !important;
+        border: solid 1px rgba(49, 56, 66, 0.2);
+        color: #3f4755 !important;
+    }
+
     // To customise the look of your Terria Map, uncomment this section and make changes to your heart's content
     // You will also want to uncomment and change values in lib/Styles/variables.scss
     /*
@@ -152,5 +167,4 @@ body {
         color:$color-secondary;
     }
     */
-
 }
