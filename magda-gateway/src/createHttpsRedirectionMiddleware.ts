@@ -16,7 +16,7 @@ export default function createHttpsRedirectionMiddleware(
             return;
         }
 
-        const protocol = req.get("X-Forwarded-Proto");
+        const protocol = req.protocol;
         if (protocol && protocol === "http") {
             res.set("Location", `https://${req.get("host")}${req.originalUrl}`);
             res.sendStatus(301);

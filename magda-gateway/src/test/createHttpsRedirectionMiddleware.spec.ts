@@ -21,6 +21,7 @@ describe("Test createHttpsRedirectionMiddleware", () => {
         specifiedUrlQuery: object = null
     ) {
         const app: express.Application = express();
+        app.set("trust proxy", true);
         app.use(createHttpsRedirectionMiddleware(enableHttpsRedirection));
         app.use((req, res) => {
             isNextHandlerCalled = true;
