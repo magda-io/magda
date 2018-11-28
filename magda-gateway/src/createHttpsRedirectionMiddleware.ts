@@ -16,8 +16,7 @@ export default function createHttpsRedirectionMiddleware(
             return;
         }
 
-        const protocol = req.protocol;
-        if (protocol && protocol === "http") {
+        if (req.protocol && req.protocol === "http") {
             res.set("Location", `https://${req.get("host")}${req.originalUrl}`);
             res.sendStatus(301);
         } else {
