@@ -38,7 +38,7 @@ class ElasticSearchIndexer(
   private val SNAPSHOT_REPO_NAME = "snapshots"
 
   private val indexingBufferSize = config.getInt("indexer.indexingBufferSize")
-  private val indexingQueueBufferSize = config.getInt("indexer.indexingQueueBufferSize")
+  private val indexingQueueBufferSize = Int.MaxValue
   private val indexingMaxBatchSize = config.getInt("indexer.indexingMaxBatchSize")
   private val indexingInitialBatchDelayMs =
     config.getInt("indexer.indexingInitialBatchDelayMs").milliseconds
