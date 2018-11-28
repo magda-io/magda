@@ -9,13 +9,64 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";
+import * as URI from "urijs";
+
+const DevNull = require("dev-null");
+
+// --- for domain without specified wait time,
+// --- this default value (in second) will be used.
+const defaultDomainWaitTime = 1;
+// --- record next access time (i.e. no request can be made before the time)
+// --- for all domains (only create entries on domain access)
+const domainAccessTimeStore: any = {};
+
+function getHostWaitTime(host: string, domainWaitTimeConfig: any) {
+    if (
+        domainWaitTimeConfig[host] &&
+        typeof domainWaitTimeConfig[host] === "number"
+    ) {
+        return domainWaitTimeConfig[host];
+    }
+    return defaultDomainWaitTime;
+}
+
+/**
+ * For given url, return the required waitTime (in milliseconds) from now before the request can be sent.
+ * This value can be used to set a timer to trigger the request at the later time.
+ *
+ * @param url String: the url that to be tested
+ * @param domainWaitTimeConfig object: domainWaitTimeConfig
+ */
+function getUrlWaitTime(url: string, domainWaitTimeConfig: any) {
+    const uri = new URI(url);
+    const host = uri.hostname();
+    const hostWaitTime = getHostWaitTime(host, domainWaitTimeConfig);
+    const now = new Date().getTime();
+    if (domainAccessTimeStore[host]) {
+        if (domainAccessTimeStore[host] < now) {
+            // --- allow to request now & need to set the new wait time
+            domainAccessTimeStore[host] = now + hostWaitTime * 1000;
+            return 0; //--- no need to wait
+        } else {
+            // --- need to wait
+            domainAccessTimeStore[host] += hostWaitTime * 1000;
+            // --- wait time should be counted from now
+            return domainAccessTimeStore[host] - now;
+        }
+    } else {
+        // --- first request && allow to request now
+        domainAccessTimeStore[host] = now + hostWaitTime * 1000;
+        return 0; //--- no need to wait
+    }
+}
 
 export default async function onRecordFound(
     record: Record,
     registry: Registry,
     retries: number = 1,
     baseRetryDelaySeconds: number = 1,
-    ftpHandler: FTPHandler = new FTPHandler()
+    ftpHandler: FTPHandler = new FTPHandler(),
+    domainWaitTimeConfig: object = {}
 ) {
     const distributions: Record[] =
         record.aspects["dataset-distributions"] &&
@@ -34,7 +85,8 @@ export default async function onRecordFound(
                 distribution.aspects["dcat-distribution-strings"],
                 baseRetryDelaySeconds,
                 retries,
-                ftpHandler
+                ftpHandler,
+                _.partialRight(getUrlWaitTime, domainWaitTimeConfig)
             )
     );
 
@@ -134,7 +186,8 @@ function checkDistributionLink(
     distStringsAspect: any,
     baseRetryDelay: number,
     retries: number,
-    ftpHandler: FTPHandler
+    ftpHandler: FTPHandler,
+    getUrlWaitTime: (url: string) => number
 ): DistributionLinkCheck[] {
     type DistURL = {
         url?: uri.URI;
@@ -178,7 +231,13 @@ function checkDistributionLink(
             op: () => {
                 console.info("Retrieving " + parsedURL);
 
-                return retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+                return retrieve(
+                    parsedURL,
+                    baseRetryDelay,
+                    retries,
+                    ftpHandler,
+                    getUrlWaitTime
+                )
                     .then(aspect => {
                         console.info("Finished retrieving  " + parsedURL);
                         return aspect;
@@ -205,10 +264,16 @@ function retrieve(
     parsedURL: uri.URI,
     baseRetryDelay: number,
     retries: number,
-    ftpHandler: FTPHandler
+    ftpHandler: FTPHandler,
+    getUrlWaitTime: (url: string) => number
 ): Promise<BrokenLinkAspect> {
     if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
-        return retrieveHttp(parsedURL.toString(), baseRetryDelay, retries);
+        return retrieveHttp(
+            parsedURL.toString(),
+            baseRetryDelay,
+            retries,
+            getUrlWaitTime
+        );
     } else if (parsedURL.protocol() === "ftp") {
         return retrieveFtp(parsedURL, ftpHandler);
     } else {
@@ -247,47 +312,99 @@ function retrieveFtp(
 }
 
 /**
+ * Wait for `waitMilliSeconds` before resolve the promise
+ */
+function wait(waitMilliSeconds: number) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(), waitMilliSeconds);
+    });
+}
+
+/**
+ * Depends on statusCode, determine a request is failed or not
+ * @param response http.IncomingMessage
+ */
+function processResponse(response: http.IncomingMessage) {
+    if (
+        (response.statusCode >= 200 && response.statusCode <= 299) ||
+        response.statusCode === 429
+    ) {
+        return response.statusCode;
+    } else {
+        throw new BadHttpResponseError(
+            response.statusMessage,
+            response,
+            response.statusCode
+        );
+    }
+}
+
+/**
+ * Send head request to the URL
+ * Received data will be discarded
+ * @param url String: url to be tested
+ */
+function headRequest(url: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+        request
+            .head(url)
+            .on("error", err => reject(err))
+            .on("response", (response: http.IncomingMessage) => {
+                try {
+                    resolve(processResponse(response));
+                } catch (e) {
+                    reject(e);
+                }
+            })
+            .pipe(DevNull());
+    });
+}
+
+/**
+ * Send head request to the URL
+ * Received data will be discarded
+ * @param url String: url to be tested
+ */
+function getRequest(url: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+        request
+            .get(url, {
+                headers: {
+                    Range: "bytes=0-50"
+                }
+            })
+            .on("error", err => reject(err))
+            .on("response", (response: http.IncomingMessage) => {
+                try {
+                    resolve(processResponse(response));
+                } catch (e) {
+                    reject(e);
+                }
+            })
+            .pipe(DevNull());
+    });
+}
+
+/**
  * Retrieves an HTTP/HTTPS url
  *
  * @param url The url to retrieve
  */
-function retrieveHttp(
+async function retrieveHttp(
     url: string,
     baseRetryDelay: number,
-    retries: number
+    retries: number,
+    getUrlWaitTime: (url: string) => number
 ): Promise<BrokenLinkAspect> {
-    const operation: () => Promise<number> = () => {
-        return new Promise((resolve, reject) => {
-            const thisReq = request
-                .get(url, {
-                    headers: {
-                        Range: "bytes=0-50"
-                    }
-                })
-                .on("error", err => {
-                    thisReq.abort();
-                    reject(err);
-                })
-                .on("response", (response: http.IncomingMessage) => {
-                    thisReq.abort();
-                    if (
-                        (response.statusCode >= 200 &&
-                            response.statusCode <= 299) ||
-                        response.statusCode === 429
-                    ) {
-                        resolve(response.statusCode);
-                    } else {
-                        reject(
-                            new BadHttpResponseError(
-                                response.statusMessage,
-                                response,
-                                response.statusCode
-                            )
-                        );
-                    }
-                });
-        });
-    };
+    async function operation() {
+        try {
+            await wait(getUrlWaitTime(url));
+            return await headRequest(url);
+        } catch (e) {
+            await wait(getUrlWaitTime(url));
+            return await getRequest(url);
+        }
+    }
 
     const onRetry = (err: BadHttpResponseError, retries: number) => {
         console.info(
