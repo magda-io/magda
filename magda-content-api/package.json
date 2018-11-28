@@ -14,8 +14,6 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.50-RC1",
-    "@types/mime-types": "^2.1.0",
-    "@types/urijs": "^1.15.38",
     "body-parser": "^1.13.2",
     "djv": "^2.1.1",
     "express": "^4.13.1",
@@ -35,6 +33,8 @@
     "@types/nock": "^9.1.2",
     "@types/node": "^8.0.14",
     "@types/pg": "^6.1.41",
+    "@types/mime-types": "^2.1.0",
+    "@types/urijs": "^1.15.38",
     "@types/sinon": "^4.1.3",
     "@types/supertest": "^2.0.4",
     "@types/yargs": "^8.0.2",
