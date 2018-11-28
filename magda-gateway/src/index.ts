@@ -194,6 +194,7 @@ const authenticator = new Authenticator({
 var app = express();
 
 // Redirect http url to https
+app.set("trust proxy", true);
 app.use(createHttpsRedirectionMiddleware(argv.enableHttpsRedirection));
 
 // GZIP responses where appropriate
