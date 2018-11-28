@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import DataPreviewVis from "../../UI/DataPreviewVis";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
+import ContactPoint from "../../UI/ContactPoint";
 
-import ga from "../../analytics/googleAnalytics";
+import { gapi } from "../../analytics/ga";
+
 import "./RecordDetails.css";
 
 class DistributionDetails extends Component {
@@ -14,7 +17,7 @@ class DistributionDetails extends Component {
     }
 
     renderLinkText(distribution) {
-        const downloadText = distribution.downloadURL ? (
+        const downloadText = distribution.downloadURL && (
             <div key={distribution.identifier}>
                 This data file or API can be downloaded from: <br />
                 <a
@@ -25,11 +28,10 @@ class DistributionDetails extends Component {
                             distribution.downloadURL
                         );
                         if (resource_url) {
-                            ga("send", {
-                                hitType: "event",
-                                eventCategory: "Resource",
-                                eventAction: "Download",
-                                eventLabel: resource_url
+                            gapi.event({
+                                category: "Resource",
+                                action: "Download",
+                                label: resource_url
                             });
                         }
                     }}
@@ -43,47 +45,83 @@ class DistributionDetails extends Component {
                     distribution.linkActive
                 )}
             </div>
-        ) : (
-            ""
         );
-        const accessText = distribution.accessURL ? (
+        const accessText = distribution.accessURL && (
             <div>
                 This dataset can be accessed from: <br />{" "}
                 <a className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
                 </a>
             </div>
-        ) : (
-            ""
         );
-        const items = [];
-        if (downloadText) items.push(downloadText);
-        if (accessText) items.push(accessText);
-        return items;
+
+        const accessNotes = distribution.accessNotes && (
+            <MagdaNamespacesConsumer ns={["datasetPage"]}>
+                {translate => {
+                    const accessNotesPrefix = translate([
+                        "accessNotesPrefix",
+                        ""
+                    ]);
+                    const accessNotesSuffix = translate([
+                        "accessNotesSuffix",
+                        ""
+                    ]);
+                    return (
+                        <React.Fragment>
+                            <div className="heading">Access Notes: </div>
+                            <div className="access-notes">
+                                {accessNotesPrefix &&
+                                    accessNotesPrefix.length && (
+                                        <p>{accessNotesPrefix}</p>
+                                    )}
+                                <p>{distribution.accessNotes}</p>
+                                {accessNotesSuffix &&
+                                    accessNotesSuffix.length && (
+                                        <p>{accessNotesSuffix}</p>
+                                    )}
+                            </div>
+                        </React.Fragment>
+                    );
+                }}
+            </MagdaNamespacesConsumer>
+        );
+
+        const contactPoint = this.props.dataset.contactPoint && (
+            <ContactPoint contactPoint={this.props.dataset.contactPoint} />
+        );
+
+        return [downloadText, accessText, accessNotes, contactPoint].filter(
+            x => !!x
+        );
     }
 
     render() {
         const distribution = this.props.distribution;
+        const sourceText = this.renderLinkText(distribution);
+
         return (
             <div className="distribution-details">
                 <div className="row">
                     <div className="distribution-details__body col-sm-8">
-                        {this.renderLinkText(distribution).length > 0 && (
+                        {sourceText.length > 0 && (
                             <div>
                                 {" "}
                                 <h3>Source</h3>
-                                {this.renderLinkText(distribution)}
+                                {sourceText}
                             </div>
                         )}
                     </div>
                 </div>
-                <div className="distribution-preview">
-                    <DataPreviewVis
-                        location={this.props.location}
-                        dataset={this.props.dataset}
-                        distribution={this.props.distribution}
-                    />{" "}
-                </div>
+
+                {distribution.downloadURL && (
+                    <div className="distribution-preview">
+                        <DataPreviewVis
+                            location={this.props.location}
+                            dataset={this.props.dataset}
+                            distribution={this.props.distribution}
+                        />{" "}
+                    </div>
+                )}
             </div>
         );
     }
@@ -91,8 +129,10 @@ class DistributionDetails extends Component {
 
 function mapStateToProps(state) {
     const distribution = state.record.distribution;
+    const dataset = state.record.dataset;
     return {
-        distribution
+        distribution,
+        dataset
     };
 }
 

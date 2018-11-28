@@ -87,6 +87,7 @@ baseSpec(
                         })
                         .reply(200, {
                             totalCount: records.length,
+                            hasMore: false,
                             nextPageToken: parseInt(index) + 1,
                             records: pageRecords
                         });

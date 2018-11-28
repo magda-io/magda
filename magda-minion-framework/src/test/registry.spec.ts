@@ -84,7 +84,7 @@ baseSpec(
                 registryScope
                     .get("/records")
                     .query(true)
-                    .reply(200, { records: [] });
+                    .reply(200, { totalCount: 0, records: [], hasMore: false });
             }
         );
 

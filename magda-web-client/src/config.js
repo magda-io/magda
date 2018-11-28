@@ -22,7 +22,8 @@ const serverConfig: {
     previewMapBaseUrl?: string,
     registryApiBaseUrl?: string,
     searchApiBaseUrl?: string,
-    correspondenceApiBaseUrl?: string
+    correspondenceApiBaseUrl?: string,
+    gapiIds?: Array<string>
 } =
     window.magda_server_config || {};
 
@@ -47,16 +48,15 @@ const fetchOptions =
               credentials: "same-origin"
           };
 
+const contentApiURL =
+    serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
+
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
-    appName: "data.gov.au - beta",
-    about:
-        "<p><span style='color:#4C2A85;'>Data.gov.au</span> provides an easy way to find, access and reuse public data.</p><p> Our team works across governments to publish data and continue to improve functionality based on user feedback.</p>",
     baseUrl,
     baseExternalUrl,
-    contentApiURL:
-        serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/",
+    contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
@@ -69,7 +69,6 @@ export const config = {
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
-    resultsPerPage: 10,
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
     breakpoints: {
@@ -77,7 +76,6 @@ export const config = {
         medium: 992,
         large: 1200
     },
-    appTitle: "Australian open data search",
     facets: [
         {
             id: "publisher",
@@ -89,53 +87,10 @@ export const config = {
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
     ],
-    headerNavigation: [
-        ["Datasets", "search"],
-        ["Organisations", "organisations"],
-        ["Community", "https://community.digital.gov.au/c/open-data"],
-        ["About", "page/about"],
-        ...(serverConfig.disableAuthenticationFeatures ? [] : [])
-    ],
-    footerNavigation: {
-        // small media query (mobile)
-        small: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Give feedback", "feedback"]
-                ]
-            }
-        ],
-        // medium media query and bigger (desktop)
-        medium: [
-            {
-                category: "Data.gov.au",
-                links: [
-                    ["About", "page/about"],
-                    ["Suggest a dataset", "suggest"],
-                    ["Privacy Policy", "page/privacy-policy"],
-                    ["Give feedback", "feedback"]
-                ]
-            },
-            {
-                category: "Publishers",
-                links: [
-                    ["Sign in", "https://data.gov.au/user/login"],
-                    ["Open data toolkit", "https://toolkit.data.gov.au/"]
-                ]
-            },
-            {
-                category: "Developers",
-                links: [
-                    ["API Documentation", "/api/v0/apidocs/index.html"],
-                    ["Powered by Magda", "https://magda.io"]
-                ]
-            }
-        ]
-    },
+    headerLogoUrl: `${contentApiURL}header/logo.bin`,
+    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
+    contentUrl: `${contentApiURL}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
+    fallbackUrl: serverConfig.fallbackUrl,
     months: [
         "Jan",
         "Feb",
@@ -156,7 +111,10 @@ export const config = {
         east: 155,
         north: -5
     },
-    fallbackUrl: serverConfig.fallbackUrl,
-    datasetSearchSuggestionScoreThreshold:
-        serverConfig.datasetSearchSuggestionScoreThreshold || 65
+    gapiIds: serverConfig.gapiIds || []
+};
+
+export const defaultConfiguration = {
+    datasetSearchSuggestionScoreThreshold: 65,
+    searchResultsPerPage: 10
 };

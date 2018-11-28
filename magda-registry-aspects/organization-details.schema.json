@@ -11,6 +11,10 @@
             "title": "A name given to the organization.",
             "type": "string"
         },
+        "jurisdiction": {
+            "title": "the organization jurisdiction.",
+            "type": "string"
+        },
         "description": {
             "title": "Free-text account of the organization.",
             "type": "string"

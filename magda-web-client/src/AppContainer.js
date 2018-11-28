@@ -1,4 +1,4 @@
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "./Components/i18n/MagdaDocumentTitle";
 import React from "react";
 import { config } from "./config.js";
 import { connect } from "react-redux";
@@ -8,6 +8,7 @@ import Banner from "./UI/Banner";
 import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
+import { fetchContent } from "./actions/contentActions";
 import Notification from "./UI/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
@@ -23,12 +24,12 @@ import "./AppContainer.css";
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
+        this.props.fetchContent();
     }
 
     render() {
-        const footerNavs = config.footerNavigation;
         return (
-            <ReactDocumentTitle title={config.appName}>
+            <MagdaDocumentTitle>
                 <div className="au-grid wrapper">
                     <div>
                         <AUskipLink
@@ -55,7 +56,7 @@ class AppContainer extends React.Component {
                         </Switch>
                     </div>
 
-                    <Footer footerNavs={footerNavs} />
+                    <Footer />
 
                     {this.props.topNotification.visible ? (
                         <Notification
@@ -78,7 +79,7 @@ class AppContainer extends React.Component {
                         />
                     ) : null}
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
@@ -93,6 +94,7 @@ const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
             requestWhoAmI: requestWhoAmI,
+            fetchContent,
             hideTopNotification
         },
         dispatch

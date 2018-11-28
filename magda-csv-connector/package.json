@@ -21,6 +21,7 @@
     "@types/jsonpath": "^0.1.29",
     "@types/lodash": "^4.14.66",
     "@types/node": "^8.0.14",
+    "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.0.0",
     "@types/urijs": "^1.15.34",
     "@types/xml2js": "0.0.33",
@@ -35,6 +36,7 @@
     "@magda/typescript-common": "^0.0.51-0",
     "escape-html": "^1.0.3",
     "jsonpath": "^0.2.11",
+    "read-pkg-up": "^3.0.0",
     "request": "^2.79.0",
     "string-similarity": "^1.2.1",
     "xlsx": "^0.14.0",
@@ -44,7 +46,7 @@
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-csv-connector",
-      "include": "node_modules aspect-templates dist Dockerfile"
+      "include": "node_modules aspect-templates dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

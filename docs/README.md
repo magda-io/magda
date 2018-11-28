@@ -72,7 +72,7 @@ Magda is currently in development, and we're currently working on adding more fe
 
 ## Want to get it running yourself?
 
-[Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://github.com/magda-io/magda/blob/master/doc/building-and-running.md)
+[Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://magda.io/docs/building-and-running)
 
 ## Latest Release
 

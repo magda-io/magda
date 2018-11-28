@@ -1,6 +1,6 @@
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import * as URI from "urijs";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
 import CswUrlBuilder from "./CswUrlBuilder";
 import retry from "@magda/typescript-common/dist/retry";
@@ -316,10 +316,17 @@ export default class Csw implements ConnectorSource {
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
-        return jsonpath.query(
-            dataset.json,
-            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
-        );
+        return jsonpath
+            .query(
+                dataset.json,
+                "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+            )
+            .concat(
+                jsonpath.query(
+                    dataset.json,
+                    "$.distributionInfo[*].MD_Distribution[*].distributor[*].MD_Distributor[*].distributorTransferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+                )
+            );
     }
 
     private xmlRecordToJsonRecord(recordXml: Element) {

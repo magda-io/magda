@@ -20,7 +20,9 @@ export default function createBaseProxy(): httpProxy {
         if (
             req.method === "GET" &&
             !proxyRes.headers["Cache-Control"] &&
-            !proxyRes.headers["cache-control"]
+            !proxyRes.headers["cache-control"] &&
+            !req.headers["Cache-Control"] &&
+            !req.headers["cache-control"]
         ) {
             proxyRes.headers["Cache-Control"] = "public, max-age=60";
         }

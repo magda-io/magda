@@ -1,14 +1,14 @@
 import { Content } from "../model";
 
-const mockContentData = [
+export const mockContentData = [
     {
         id: "text-1",
-        type: "plain/text",
+        type: "text/plain",
         content: "ass"
     },
     {
         id: "text-2",
-        type: "plain/html",
+        type: "text/html",
         content: ""
     },
     {
@@ -41,6 +41,11 @@ const mockContentData = [
         id: "logo",
         type: "image/gif",
         content: "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+    },
+    {
+        id: "js",
+        type: "application/javascript",
+        content: "var a = 1;"
     }
 ];
 
@@ -78,10 +83,7 @@ const mockContentDataStore = {
     },
 
     getContentSummary() {
-        return runtimeContentDataStore.map(record => {
-            const { id, type } = record;
-            return { id, type };
-        });
+        return runtimeContentDataStore.map(x => ({ ...x }));
     },
 
     deleteContentById(id: string) {

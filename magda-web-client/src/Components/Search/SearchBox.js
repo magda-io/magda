@@ -2,7 +2,6 @@ import "./SearchBox.css";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import propTypes from "prop-types";
-import { config } from "../../config";
 import debounce from "lodash.debounce";
 import defined from "../../helpers/defined";
 import React, { Component } from "react";
@@ -16,6 +15,7 @@ import SearchSuggestionBox from "./SearchSuggestionBox";
 import { Small, Medium } from "../../UI/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
 import { withRouter } from "react-router-dom";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -166,37 +166,41 @@ class SearchBox extends Component {
 
         const icon = this.props.isHome ? searchDark : searchLight;
         return (
-            <div className="searchBox">
-                <label htmlFor="search">
-                    <span className="sr-only">
-                        {"Search " + config.appName}
-                    </span>
-                    <Medium>
-                        <div style={{ position: "relative" }}>
-                            {this.inputBox(true)}
-                            {suggestionBox}
-                        </div>
-                    </Medium>
-                    <Small>{this.inputBox(false)}</Small>
-                    <span className="search-input__highlight">
-                        {this.getSearchBoxValue()}
-                    </span>
-                    <button
-                        onClick={this.onClickSearch}
-                        className={`search-btn ${
-                            this.getSearchBoxValue().length > 0
-                                ? "not-empty"
-                                : "empty"
-                        }`}
-                        type="button"
-                    >
-                        <img src={icon} alt="search button" />
-                        <span className="sr-only">submit search</span>
-                    </button>
-                </label>
+            <MagdaNamespacesConsumer ns={["global"]}>
+                {translate => (
+                    <div className="searchBox">
+                        <label htmlFor="search">
+                            <span className="sr-only">
+                                {"Search " + translate(["appName", ""])}
+                            </span>
+                            <Medium>
+                                <div style={{ position: "relative" }}>
+                                    {this.inputBox(true)}
+                                    {suggestionBox}
+                                </div>
+                            </Medium>
+                            <Small>{this.inputBox(false)}</Small>
+                            <span className="search-input__highlight">
+                                {this.getSearchBoxValue()}
+                            </span>
+                            <button
+                                onClick={this.onClickSearch}
+                                className={`search-btn ${
+                                    this.getSearchBoxValue().length > 0
+                                        ? "not-empty"
+                                        : "empty"
+                                }`}
+                                type="button"
+                            >
+                                <img src={icon} alt="search button" />
+                                <span className="sr-only">submit search</span>
+                            </button>
+                        </label>
 
-                <Small>{suggestionBox}</Small>
-            </div>
+                        <Small>{suggestionBox}</Small>
+                    </div>
+                )}
+            </MagdaNamespacesConsumer>
         );
     }
 }
@@ -208,7 +212,8 @@ SearchBox.contextTypes = {
 const mapStateToProps = (state, ownProps) => {
     let { datasetSearch } = state;
     return {
-        freeText: datasetSearch.freeText
+        freeText: datasetSearch.freeText,
+        strings: state.content.strings
     };
 };
 

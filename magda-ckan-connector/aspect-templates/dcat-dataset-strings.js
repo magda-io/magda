@@ -13,7 +13,7 @@ return {
     languages: dataset.language ? [dataset.language] : [],
     publisher: (dataset.organization || {}).title,
     accrualPeriodicity: dataset.update_freq,
-    spatial: dataset.spatial_coverage,
+    spatial: dataset.spatial_coverage || dataset.spatial,
     temporal: {
         start: dataset.temporal_coverage_from,
         end: dataset.temporal_coverage_to

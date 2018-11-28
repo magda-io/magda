@@ -24,6 +24,7 @@
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.14",
+    "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.0.0",
     "@types/sinon": "^2.3.3",
     "@types/urijs": "^1.15.34",
@@ -42,6 +43,7 @@
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
     "lru-cache": "4.0.2",
+    "read-pkg-up": "^3.0.0",
     "request": "^2.79.0",
     "urijs": "^1.18.12"
   },
@@ -49,7 +51,7 @@
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
       "name": "data61/magda-minion-broken-link",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

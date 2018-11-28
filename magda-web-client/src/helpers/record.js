@@ -287,6 +287,7 @@ export function parseDistribution(
     const format = getFormatString(aspects);
     const downloadURL = info.downloadURL || null;
     const accessURL = info.accessURL || null;
+    const accessNotes = info.accessNotes || null;
     const updatedDate = info.modified ? getDateString(info.modified) : null;
     const license = info.license || "License restrictions unknown";
     const description = info.description || "No description provided";
@@ -319,6 +320,7 @@ export function parseDistribution(
         format,
         downloadURL,
         accessURL,
+        accessNotes,
         updatedDate,
         license,
         linkStatusAvailable,
@@ -356,9 +358,10 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? aspects["dataset-publisher"]["publisher"]
         : defaultPublisher;
     const contactPoint: string = aspects["dcat-dataset-strings"].contactPoint;
-
     const source: string = aspects["source"]
-        ? aspects["source"]["name"]
+        ? aspects["source"]["type"] !== "csv-dataset"
+            ? aspects["source"]["name"]
+            : undefined
         : defaultDatasetAspects["source"]["name"];
 
     function calcQuality(qualityAspect) {
@@ -371,6 +374,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const linkedDataRating: number = aspects["dataset-quality-rating"]
         ? calcQuality(aspects["dataset-quality-rating"])
         : 0;
+    const hasQuality: boolean = aspects["dataset-quality-rating"]
+        ? true
+        : false;
 
     const distributions = distribution["distributions"].map(d => {
         const distributionAspects = Object.assign(
@@ -436,6 +442,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         temporalCoverage,
         publisher,
         error,
-        linkedDataRating
+        linkedDataRating,
+        hasQuality
     };
 }

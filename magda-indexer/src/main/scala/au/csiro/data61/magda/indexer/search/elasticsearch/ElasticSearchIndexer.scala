@@ -512,7 +512,9 @@ class ElasticSearchIndexer(
         .id(publisherName.toLowerCase)
         .source(Map(
           "identifier" -> publisher.identifier.toJson,
+          "jurisdiction" -> publisher.jurisdiction.toJson,
           "acronym" -> publisher.acronym.toJson,
+          "aggKeywords" -> publisher.aggKeywords.toJson,
           "value" -> publisherName.toJson,
           "description" -> publisher.description.toJson,
           "imageUrl" -> publisher.imageUrl.toJson,

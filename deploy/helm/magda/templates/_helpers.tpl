@@ -216,3 +216,16 @@ spec:
               - key: "{{ .jobConfig.id }}.json"
                 path: "connector.json"
 {{- end }}
+
+
+{{- define "magda.antiPreemptibleAffinity" }}
+        {{- if .Values.antiPreemptibleAffinity }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: cloud.google.com/gke-preemptible
+                operator: DoesNotExist
+            weight: {{ .Values.antiPreemptibleAffinity }}
+        {{- end }}
+{{- end }}
