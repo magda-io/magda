@@ -46,6 +46,10 @@ describe("getCommonFormat", function(this: Mocha.ISuiteCallbackContext) {
         ).to.eql("CSIRO OPEN APP");
     });
 
+    it("should classify MS EXCEL as xlsx", () => {
+        expect(getCommonFormat("MS excel", synonymObject)).to.eql("XLSX");
+    });
+
     it("should classify WWW:DOWNLOAD-1.0-http--downloaddata links without synonyms as 'HTML'", function() {
         expect(
             getCommonFormat(

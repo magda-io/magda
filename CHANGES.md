@@ -1,3 +1,64 @@
+## 0.0.50
+
+-   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
+-   Make datasetSearchSuggestionScoreThreshold and searchResultsPerPage runtime configurable
+-   Hide dataset source for csv datasets
+-   Make sure MS Excel format does not break into two.
+-   Make home page items come from content api
+-   Make header menu items come from content api
+-   Remove all global references to config.appName and allow getting this configuration item from content api
+-   Changed some existing content ids to group things better
+-   Reorganised content api to require less number of requests to get small JSON content items
+-   Email Templates are configurable from content API
+-   Allow a CKAN non-root path to be used for redirects
+-   Allow CKAN resource downloads to pass through to CKAN to maintain links
+-   Add something to mock admin interface to make users admins and not
+-   Take CSW connector distribution access url and format from distributor field under distributionInfo as well as from transfer options (previous.)
+-   Delete registry API /records/{recordId}/aspects endpoint
+-   Hook actors will report its status to its parent actor when changes
+-   Updated external links on About page to open in new window
+-   Fixed some WA source spatial data are not indexed properly
+-   Boost the score weighting of name & acronym field during org seaching
+-   Sort by relevence unless keyword is "\*" (in this case sort by Alphabetical order) during org search
+-   Removed search.data.gov.au-specific third party javascript
+-   Added ability to include arbitrary HTML in `index.html` through the content api
+-   Fixed: added added vendor prefix to `au-select` component CSS
+-   Fixed content-api test case logic
+-   Migrate static pages to a json structure and make it editable.
+-   Hide "Download" button for distributions without downloadUrl
+-   Fixed content-api migrator script version conflict issue
+-   Make footer area configurable
+-   Fixed broken document link in docs/README.md
+-   Show quality rating only if present
+-   Fixed: cached auth api response causing login problems
+-   Upgraded java version for `magda-scala-builder` docker image to fix `unsatisfiable constraints` error
+-   Make jurisdiction field available from registry api
+-   Fixed an issue of scss-compiler not updated all variables
+-   Added more configurable scss variables
+-   Added internationalisation library to frontend
+-   Adjusted content-api to prevent SQL injection
+-   Made occurrences of "organisation" in the front-end configurable through internationalisation.
+-   Make jurisdiction information available from search api
+-   Organisation search result from search api will be aggregated based on jurisdiction and name
+-   Updated helm config to allow for statefulsets to be kept off GKE preemptible nodes.
+-   Switched `<a>` element in `HeaderNav` to be `<Link>` from `react-router-dom` to maintain router history
+-   Fixed: minion crawler may go into an endless loop
+-   Fixed an issue caused search Panel option filter stop working
+-   The CkanTransformer will remove generic organisation descriptions.
+-   Fixed non-RC versions not being released to docker hub.
+-   Fixed DAP connector not automatically being released to docker hub.
+-   Fixed an issue that `create-secrets` didn't handle `cloudsql-instance-credentials` & `storage-account-credentials` probably
+-   `create-secrets` will load ENV vars according to question data types
+-   Include Magda user agent in external HTTP resource accesses
+-   Made admin UI create CSV connector with internal URL
+-   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
+-   Fixed an issue that DAP connector not handle access error correctly
+-   Stopped caching anything requested through the admin ui.
+-   Removed old admin ui code
+-   Made access notes show up on distribution page with configurable text
+-   Added contact point to distribution page, made title configurable
+-   When `match-part` search strategy is used, a message is shown on UI
+
 ## 0.0.49
 
 -   In web dataset page, made facet search reset when user clicks on facet button so that it does not show result from last time.
@@ -28,6 +89,7 @@
 -   Made gateway nominate its container port to fix it working with a password and also the GCE ingress
 -   Stopped the helm chart from assuming that the `postgres` user password and the `proxyuser` password are the same in GKE deploys
 -   Fixed the storage account credentials being created incorrectly through the secrets tool
+-   Allows gateway to redirect trailing slash for APIDocs module
 
 ## 0.0.48
 

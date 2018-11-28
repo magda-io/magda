@@ -88,7 +88,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 36,
+    version = 38,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
@@ -106,6 +106,11 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("publisher").fields(
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+              magdaTextField("jurisdiction"),
+              // --- the field used to merge org records by jurisdiction
+              // --- if jurisdiction is not null, its value is jurisdiction + org name
+              // --- if null, its value is org record identifier (thus, avoid merging)
+              textField("aggregation_keywords").analyzer("keyword"),
               magdaTextField("description"),
               keywordField("imageUrl"),
               keywordField("phone"),
@@ -132,6 +137,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             magdaTextField("keywords"),
             magdaSynonymTextField("themes"),
             doubleField("quality"),
+            booleanField("hasQuality"),
             keywordField("catalog"),
             keywordField("years"),
             /*
@@ -232,7 +238,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 2,
+      version = 3,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
         createIndex(indices.getIndex(config, Indices.PublishersIndex))
@@ -242,6 +248,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             mapping(indices.getType(Indices.PublisherIndexType)).fields(
               keywordField("identifier"),
               textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+              magdaTextField("jurisdiction"),
+              textField("aggregation_keywords").analyzer("keyword"),
               magdaTextField("value"),
               magdaTextField("description"),
               keywordField("imageUrl"),

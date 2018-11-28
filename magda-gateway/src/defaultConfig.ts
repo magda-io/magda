@@ -9,7 +9,6 @@ export default {
         },
         auth: {
             to: "http://localhost:6104/v0/public",
-            methods: ["GET"],
             auth: true
         },
         web: {

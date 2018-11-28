@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, Route, Switch, Redirect } from "react-router-dom";
 import ProgressBar from "../UI/ProgressBar";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { bindActionCreators } from "redux";
 import {
@@ -10,9 +10,8 @@ import {
     fetchDistributionFromRegistry,
     resetFetchRecord
 } from "../actions/recordActions";
-import { config } from "../config";
 import defined from "../helpers/defined";
-import ga from "../analytics/googleAnalytics";
+import { gapi } from "../analytics/ga";
 import ErrorHandler from "./ErrorHandler";
 import RouteNotFound from "./RouteNotFound";
 import DatasetDetails from "./Dataset/DatasetDetails";
@@ -121,19 +120,17 @@ class RecordHandler extends React.Component {
             props.dataset.identifier !== this.props.dataset.identifier
         ) {
             if (this.props.dataset.source !== "") {
-                ga("send", {
-                    hitType: "event",
-                    eventCategory: "Dataset view by Source",
-                    eventAction: this.props.dataset.source,
-                    eventLabel: this.props.dataset.title
+                gapi.event({
+                    category: "Dataset view by Source",
+                    action: this.props.dataset.source,
+                    label: this.props.dataset.title
                 });
             }
             if (this.props.dataset.publisher.name !== "") {
-                ga("send", {
-                    hitType: "event",
-                    eventCategory: "Dataset view by Publisher",
-                    eventAction: this.props.dataset.publisher.name,
-                    eventLabel: this.props.dataset.title
+                gapi.event({
+                    category: "Dataset view by Publisher",
+                    action: this.props.dataset.publisher.name,
+                    label: this.props.dataset.title
                 });
             }
         }
@@ -220,48 +217,45 @@ class RecordHandler extends React.Component {
                             </span>
                         )}
                         <br />
-                        <a
-                            className="au-btn distribution-download-button"
-                            href={this.props.distribution.downloadURL}
-                            alt="distribution download button"
-                            onClick={() => {
-                                // google analytics download tracking
-                                const resource_url = encodeURIComponent(
-                                    this.props.distribution.downloadURL
-                                );
-                                if (resource_url) {
-                                    // legacy support
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Resource",
-                                        eventAction: "Download",
-                                        eventLabel: resource_url
-                                    });
-                                    // new events
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Dataset",
-                                        eventAction: this.props.dataset.title,
-                                        eventLabel: resource_url
-                                    });
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Source",
-                                        eventAction: this.props.dataset.source,
-                                        eventLabel: resource_url
-                                    });
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Publisher",
-                                        eventAction: this.props.dataset
-                                            .publisher.name,
-                                        eventLabel: resource_url
-                                    });
-                                }
-                            }}
-                        >
-                            Download
-                        </a>{" "}
+                        {this.props.distribution.downloadURL ? (
+                            <a
+                                className="au-btn distribution-download-button"
+                                href={this.props.distribution.downloadURL}
+                                alt="distribution download button"
+                                onClick={() => {
+                                    // google analytics download tracking
+                                    const resource_url = encodeURIComponent(
+                                        this.props.distribution.downloadURL
+                                    );
+                                    if (resource_url) {
+                                        // legacy support
+                                        gapi.event({
+                                            category: "Resource",
+                                            action: "Download",
+                                            label: resource_url
+                                        });
+                                        // new events
+                                        gapi.event({
+                                            category: "Download by Dataset",
+                                            action: this.props.dataset.title,
+                                            label: resource_url
+                                        });
+                                        gapi.event({
+                                            category: "Download by Source",
+                                            action: this.props.dataset.source,
+                                            label: resource_url
+                                        });
+                                        gapi.event({
+                                            category: "Download by Publisher",
+                                            action: this.props.dataset,
+                                            label: resource_url
+                                        });
+                                    }
+                                }}
+                            >
+                                Download
+                            </a>
+                        ) : null}{" "}
                         <Small>
                             <DescriptionBox
                                 content={this.props.distribution.description}
@@ -369,7 +363,8 @@ class RecordHandler extends React.Component {
                                             Created{" "}
                                             <span itemProp="dateCreated">
                                                 {this.props.dataset.issuedDate}
-                                            </span>&nbsp;
+                                            </span>
+                                            &nbsp;
                                         </span>
                                     )}
 
@@ -406,14 +401,16 @@ class RecordHandler extends React.Component {
                                             />
                                         </Medium>
                                     </div>
-                                    <div className="quality-rating-box">
-                                        <QualityIndicator
-                                            quality={
-                                                this.props.dataset
-                                                    .linkedDataRating
-                                            }
-                                        />
-                                    </div>
+                                    {this.props.dataset.hasQuality ? (
+                                        <div className="quality-rating-box">
+                                            <QualityIndicator
+                                                quality={
+                                                    this.props.dataset
+                                                        .linkedDataRating
+                                                }
+                                            />
+                                        </div>
+                                    ) : null}
                                     {this.props.dataset.contactPoint && (
                                         <ContactPoint
                                             contactPoint={
@@ -523,11 +520,9 @@ class RecordHandler extends React.Component {
             : "Datasets";
 
         return (
-            <ReactDocumentTitle
-                title={`${title} | ${type} | ${config.appName}`}
-            >
+            <MagdaDocumentTitle prefixes={[title, type]}>
                 <div>{this.renderByState()}</div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
@@ -547,7 +542,8 @@ function mapStateToProps(state) {
         datasetIsFetching,
         distributionIsFetching,
         distributionFetchError,
-        datasetFetchError
+        datasetFetchError,
+        strings: state.content.strings
     };
 }
 

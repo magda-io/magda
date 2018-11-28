@@ -17,7 +17,7 @@ class AccountNavbar extends React.Component {
                     [
                         <li key="/account">
                             <NavLink to={`/account`}>
-                                {this.props.user.displayName}
+                                <span>{this.props.user.displayName}</span>
                             </NavLink>
                         </li>,
                         <li key="/signOut">

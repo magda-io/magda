@@ -1,45 +1,69 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import AccountNavbar from "../Account/AccountNavbar";
 import { config } from "../../config.js";
+import isExternalURL from "is-url-external";
 
-const headerNavs = config.headerNavigation;
-
-const HeaderNav = props => {
-    return (
-        <nav className="navigation header-nav" id="nav">
-            <ul
-                className={`au-link-list ${
-                    props.isMobile ? "" : "au-link-list--inline"
-                }`}
-            >
-                {headerNavs.map(
-                    (nav, i) =>
-                        nav[0] === "Community" ? (
-                            <li key={i}>
-                                <a
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    href={nav[1]}
-                                >
-                                    <span>{nav[0]}</span>
-                                </a>
-                            </li>
-                        ) : (
-                            <li key={i}>
-                                <NavLink
-                                    to={`/${encodeURI(nav[1])}`}
-                                    activeClassName="active"
-                                >
-                                    <span>{nav[0]}</span>
-                                </NavLink>
-                            </li>
-                        )
+const headerNavigationPlugins = {
+    default: function(nav, i) {
+        const { href, target, rel } = nav;
+        const opts = { href, target, rel };
+        if (href === window.location.pathname) {
+            opts["className"] = "active";
+            opts["aria-active"] = "page";
+        }
+        return (
+            <li key={i}>
+                {isExternalURL(opts.href) ? (
+                    <a {...opts} title={`Go to ${nav.label}`}>
+                        <span>{nav.label}</span>
+                    </a>
+                ) : (
+                    <Link
+                        to={opts.href}
+                        target={opts.target}
+                        rel={opts.rel}
+                        title={`Go to ${nav.label}`}
+                    >
+                        <span>{nav.label}</span>
+                    </Link>
                 )}
-                {config.disableAuthenticationFeatures || <AccountNavbar />}
-            </ul>
-        </nav>
-    );
+            </li>
+        );
+    },
+    auth: (nav, i) =>
+        config.disableAuthenticationFeatures ? (
+            <span key={i} />
+        ) : (
+            <AccountNavbar key={i} />
+        )
 };
+
+function invokeHeaderNavigationPlugin(nav, i) {
+    for (const [type, callback] of Object.entries(headerNavigationPlugins)) {
+        if (nav[type]) {
+            return callback(nav[type], i);
+        }
+    }
+}
+
+class HeaderNav extends Component {
+    render() {
+        return (
+            <nav className="navigation header-nav" id="nav">
+                <ul
+                    className={`au-link-list ${
+                        this.props.isMobile ? "" : "au-link-list--inline"
+                    }`}
+                >
+                    {this.props.headerNavigation &&
+                        this.props.headerNavigation.map((nav, i) =>
+                            invokeHeaderNavigationPlugin(nav, i)
+                        )}
+                </ul>
+            </nav>
+        );
+    }
+}
 
 export default HeaderNav;

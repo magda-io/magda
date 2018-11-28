@@ -11,8 +11,10 @@ import { sendMail } from "./mail";
 import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
+import EmailTemplateRender from "./EmailTemplateRender";
 export interface ApiRouterOptions {
     registry: RegistryClient;
+    templateRender: EmailTemplateRender;
     defaultRecipient: string;
     smtpMailer: SMTPMailer;
     externalUrl: string;
@@ -93,6 +95,7 @@ export default function createApiRouter(
         const body: DatasetMessage = req.body;
         const subject = `Data Request from ${body.senderName}`;
         const html = renderTemplate(
+            options.templateRender,
             Templates.Request,
             body,
             subject,
@@ -100,14 +103,17 @@ export default function createApiRouter(
         );
 
         handlePromise(
-            sendMail(
-                options.smtpMailer,
-                options.defaultRecipient,
-                body,
-                html,
-                subject,
-                options.defaultRecipient
-            ),
+            html.then(({ renderedContent, attachments }) => {
+                return sendMail(
+                    options.smtpMailer,
+                    options.defaultRecipient,
+                    body,
+                    renderedContent,
+                    attachments,
+                    subject,
+                    options.defaultRecipient
+                );
+            }),
             res
         );
     });
@@ -160,6 +166,7 @@ export default function createApiRouter(
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
+                    options.templateRender,
                     Templates.Question,
                     body,
                     subject,
@@ -167,15 +174,18 @@ export default function createApiRouter(
                     dataset
                 );
 
-                return sendMail(
-                    options.smtpMailer,
-                    options.defaultRecipient,
-                    body,
-                    html,
-                    subject,
-                    recipient,
-                    options.alwaysSendToDefaultRecipient
-                );
+                return html.then(({ renderedContent, attachments }) => {
+                    return sendMail(
+                        options.smtpMailer,
+                        options.defaultRecipient,
+                        body,
+                        renderedContent,
+                        attachments,
+                        subject,
+                        recipient,
+                        options.alwaysSendToDefaultRecipient
+                    );
+                });
             });
 
             handlePromise(promise, res, req.params.datasetId);

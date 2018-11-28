@@ -180,6 +180,7 @@ baseSpec(
                             200,
                             {
                                 totalCount: this.registryRecords.length,
+                                hasMore: false,
                                 records: new Array()
                             }
                         ];
@@ -187,14 +188,22 @@ baseSpec(
                         pageIdx,
                         pageIdx + limit - 1
                     );
-                    return [
-                        200,
-                        {
-                            totalCount: this.registryRecords.length,
-                            nextPageToken: String(pageIdx + recordPage.length),
-                            records: recordPage
-                        }
-                    ];
+
+                    const resData: any = {
+                        totalCount: this.registryRecords.length,
+                        hasMore: true,
+                        records: recordPage
+                    };
+
+                    const nextPageToken = pageIdx + recordPage.length;
+
+                    if (nextPageToken < this.registryRecords.length) {
+                        resData.nextPageToken = String(nextPageToken);
+                    } else {
+                        resData.hasMore = false;
+                    }
+
+                    return [200, resData];
                 },
                 function(this: any) {
                     //---propertyCheckingFunc
@@ -211,19 +220,6 @@ baseSpec(
             return basePropertyTest(
                 function(this: any) {
                     //---envInit
-                    const crawlingProgressHistory: {
-                        recordIds: number[];
-                        isCrawling: boolean;
-                        crawlingPageToken: string;
-                        crawledRecordNumber: number;
-                    }[] = [
-                        {
-                            recordIds: [],
-                            isCrawling: false,
-                            crawlingPageToken: "",
-                            crawledRecordNumber: 0
-                        }
-                    ];
                     const totalCrawledRecordsNumber = 0;
 
                     const registryRecords: Record[] = new Array(
@@ -237,7 +233,6 @@ baseSpec(
                             sourceTag: ""
                         }));
                     return {
-                        crawlingProgressHistory,
                         totalCrawledRecordsNumber,
                         registryRecords
                     };
@@ -248,16 +243,6 @@ baseSpec(
                     foundRecord: Record,
                     registry: Registry
                 ) {
-                    const progress = this.crawler.getProgress();
-                    const id = parseInt(foundRecord.id, 10);
-                    const foundProgressIdx = this.crawlingProgressHistory.findIndex(
-                        (item: any) => item.recordIds.indexOf(id) !== -1
-                    );
-                    const foundProgress = {
-                        ...this.crawlingProgressHistory[foundProgressIdx]
-                    };
-                    delete foundProgress.recordIds;
-                    expect(progress).to.deep.equal(foundProgress);
                     return Promise.resolve();
                 },
                 function(this: any, uri: string, requestBody: string) {
@@ -274,6 +259,7 @@ baseSpec(
                             200,
                             {
                                 totalCount: this.registryRecords.length,
+                                hasMore: false,
                                 records: []
                             }
                         ];
@@ -285,18 +271,17 @@ baseSpec(
                     const crawlingPageTokenValue = pageIdx + recordPage.length;
                     const crawlingPageToken = String(crawlingPageTokenValue);
                     this.totalCrawledRecordsNumber += recordPage.length;
-                    this.crawlingProgressHistory.push({
-                        recordIds: recordPage.map((item: any) =>
-                            parseInt(item.id, 10)
-                        ),
+                    const progress = this.crawler.getProgress();
+                    expect(progress).to.deep.equal({
                         isCrawling: true,
-                        crawlingPageToken: crawlingPageToken,
-                        crawledRecordNumber: this.totalCrawledRecordsNumber
+                        crawlingPageToken: String(pageIdx ? pageIdx : ""),
+                        crawledRecordNumber: pageIdx
                     });
                     return [
                         200,
                         {
                             totalCount: this.registryRecords.length,
+                            hasMore: true,
                             nextPageToken: crawlingPageToken,
                             records: recordPage
                         }

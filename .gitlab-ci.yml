@@ -453,7 +453,6 @@ Stop Preview: &stopPreview
   when: manual
   only:
     - branches
-    - tags
   except:
     - master
     - /^v.*RC.*$/
@@ -494,7 +493,7 @@ Deploy Master To Dev:
 Release Tags To Docker Hub:
   stage: release
   only:
-    - /^v.*RC.*$/
+    - /^v.*\..*\..*$/
   except:
     - branches
     - triggers
@@ -541,34 +540,3 @@ Publish Helm Chart:
     - helm package magda -d chart-repo
     - helm repo index chart-repo
     - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
-
-# Deploy Released Tags As Staging:
-#   <<: *runAsPreview
-#   stage: deploy-staging
-#   when: on_success
-#   only:
-#     - /^v.*RC.*$/
-#   except:
-#     - master
-#     - branches
-#   environment:
-#     name: staging/$CI_COMMIT_REF_NAME
-#     url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
-#     on_stop: Stop Staging
-#   script:
-#     # Get version from lerna json
-#     - apk add --update jq
-#     - TAG=$(jq -r ".version" lerna.json)
-#     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=data61,global.image.tag=$TAG,ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io --timeout 3600 --wait
-
-Stop Staging:
-  <<: *stopPreview
-  stage: deploy-staging
-  only:
-    - /^v.*RC.*$/
-  environment:
-    name: staging/$CI_COMMIT_REF_NAME
-    action: stop
-  except:
-    - master
-    - branches

@@ -34,8 +34,6 @@ routes:
     auth: true
   auth:
     to: http://authorization-api/v0/public
-    methods:
-    - GET
     auth: true
   admin:
     to: http://admin-api/v0
@@ -46,6 +44,7 @@ routes:
     to: http://correspondence-api/v0/public
   apidocs:
     to: http://apidocs-server/
+    redirectTrailingSlash: true
 helmet: {}
 
 csp:

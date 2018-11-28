@@ -19,6 +19,7 @@ import * as resCkanResource from "./sampleRegistryResponses/ckanResource.json";
 
 describe("ckanRedirectionRouter router", () => {
     const ckanRedirectionDomain = "ckan.data.gov.au";
+    const ckanRedirectionPath = "";
 
     let app: express.Application;
     const registryUrl = "http://registry.example.com";
@@ -36,6 +37,7 @@ describe("ckanRedirectionRouter router", () => {
     beforeEach(() => {
         const router = createCkanRedirectionRouter({
             ckanRedirectionDomain,
+            ckanRedirectionPath,
             registryApiBaseUrlInternal: registryUrl
         });
         app = express();
@@ -206,6 +208,19 @@ describe("ckanRedirectionRouter router", () => {
                 .expect(
                     checkRedirectionDetails(
                         "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        });
+
+        it("should redirect /dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/download/filename.zip to https://ckan.data.gov.au/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/download/filename.zip ", () => {
+            return supertest(app)
+                .get(
+                    "/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/download/filename.zip"
+                )
+                .expect(301)
+                .expect(
+                    checkRedirectionDetails(
+                        "https://ckan.data.gov.au/dataset/pg_skafsd0_f___00120141210_11a/resource/af618603-e529-4998-b977-e8751f291e6e/download/filename.zip"
                     )
                 );
         });

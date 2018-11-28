@@ -8,7 +8,7 @@ import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
-import ga from "../analytics/googleAnalytics";
+import { gapi } from "../analytics/ga";
 
 const formatIcons = {
     default: defaultFormatIcon
@@ -175,9 +175,12 @@ class DistributionRow extends Component {
                                             {this.renderDistributionLink(
                                                 distribution.title
                                             )}
-                                        </span>(<span itemProp="fileFormat">
+                                        </span>
+                                        (
+                                        <span itemProp="fileFormat">
                                             {distribution.format}
-                                        </span>)
+                                        </span>
+                                        )
                                     </div>
                                 ) : (
                                     <Link to={distributionLink}>
@@ -185,9 +188,12 @@ class DistributionRow extends Component {
                                             {this.renderDistributionLink(
                                                 distribution.title
                                             )}
-                                        </span>(<span itemProp="fileFormat">
+                                        </span>
+                                        (
+                                        <span itemProp="fileFormat">
                                             {distribution.format}
-                                        </span>)
+                                        </span>
+                                        )
                                     </Link>
                                 )}
                                 <a
@@ -228,30 +234,26 @@ class DistributionRow extends Component {
                                 );
                                 if (resource_url) {
                                     // legacy support
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Resource",
-                                        eventAction: "Download",
-                                        eventLabel: resource_url
+                                    gapi.event({
+                                        category: "Resource",
+                                        action: "Download",
+                                        label: resource_url
                                     });
                                     // new events
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Dataset",
-                                        eventAction: dataset.title,
-                                        eventLabel: resource_url
+                                    gapi.event({
+                                        category: "Download by Dataset",
+                                        action: dataset.title,
+                                        label: resource_url
                                     });
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Source",
-                                        eventAction: dataset.source,
-                                        eventLabel: resource_url
+                                    gapi.event({
+                                        category: "Download by Source",
+                                        action: dataset.source,
+                                        label: resource_url
                                     });
-                                    ga("send", {
-                                        hitType: "event",
-                                        eventCategory: "Download by Publisher",
-                                        eventAction: dataset.publisher.name,
-                                        eventLabel: resource_url
+                                    gapi.event({
+                                        category: "Download by Publisher",
+                                        action: dataset.publisher.name,
+                                        label: resource_url
                                     });
                                 }
                             }}

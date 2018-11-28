@@ -1,6 +1,10 @@
 // eslint-disable-next-line
 import "es6-shim";
 import "raf/polyfill";
+import "core-js/fn/symbol/iterator";
+import "core-js/es6/symbol";
+import "core-js/fn/object/entries";
+import "core-js/fn/object/values";
 import logger from "redux-logger";
 import "./index.css";
 import { BrowserRouter, Route } from "react-router-dom";
@@ -8,14 +12,15 @@ import { BrowserRouter, Route } from "react-router-dom";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
+import { gapi } from "./analytics/ga";
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
 import { createStore, applyMiddleware } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
-import ga from "./analytics/googleAnalytics";
 import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
+import "./i18n";
 
 const store = createStore(
     reducer,
@@ -38,8 +43,8 @@ class GAListener extends React.Component {
     }
 
     sendPageView(location) {
-        ga("set", "location", location.pathname);
-        ga("send", "pageview");
+        // Send pageview event to the initialised tracker(s).
+        gapi.pageview(location.pathname);
     }
 
     render() {

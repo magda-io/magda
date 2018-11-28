@@ -25,6 +25,21 @@ export default class Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
+    getUsers(): Promise<User[]> {
+        return this.pool
+            .query(
+                `SELECT id, "displayName", email, "photoURL", source, "isAdmin" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
+            )
+            .then(res => res.rows);
+    }
+
+    async updateUser(userId: string, update: any): Promise<void> {
+        await this.pool.query(`UPDATE users SET "isAdmin" = $1 WHERE id = $2`, [
+            update.isAdmin || false,
+            userId
+        ]);
+    }
+
     getUserByExternalDetails(
         source: string,
         sourceId: string

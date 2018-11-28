@@ -20,12 +20,17 @@
  */
 
 const bodyParser = require("body-parser");
+const djv = require("djv");
+const env = djv();
+const schemas = require("./schemas");
+const wildcard = require("wildcard");
 
 /**
  * Any encoding we perform on the content.
  */
 export enum ContentEncoding {
-    base64 // binary content are stored as base64 in the db
+    base64, // binary content are stored as base64 in the db
+    json
 }
 
 export interface ContentItem {
@@ -33,47 +38,180 @@ export interface ContentItem {
     body?: any; // <-- express middleware can go here
     encode?: ContentEncoding;
     contentType?: string;
-    /**
-     * TODO: if needed, add a schema property for json validation
-     * TODO: if needed, add a custom validation callback function
-     */
+    private?: boolean;
+    verify?: any; // <-- express middleware can go here
 }
 
-const IMAGE_ITEM = {
-    body: bodyParser.raw({
-        type: [
-            "image/png",
-            "image/gif",
-            "image/jpeg",
-            "image/webp",
-            "image/svg+xml"
-        ]
+export const content: { [s: string]: ContentItem } = {
+    "header/logo": makeImageItem(),
+    "header/logo-mobile": makeImageItem(),
+    "header/navigation/*": makeJsonItem(
+        {},
+        { schema: schemas.headerNavigation }
+    ),
+    "footer/navigation/small/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/medium/category/*": makeJsonItem(
+        {},
+        { schema: schemas.footerCategory }
+    ),
+    "footer/navigation/small/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/navigation/medium/category-links/*": makeJsonItem(
+        {},
+        { schema: schemas.footerLink }
+    ),
+    "footer/copyright/*": makeJsonItem({}, { schema: schemas.footerCopyright }),
+    "home/tagline/desktop": makeJsonItem({}, { schema: schemas.homeTagLine }),
+    "home/tagline/mobile": makeJsonItem({}, { schema: schemas.homeTagLine }),
+    "home/highlights/*": makeJsonItem({}, { schema: schemas.homeHighlight }),
+    "home/highlight-images/*": makeImageItem(),
+    "home/stories/*": makeJsonItem({}, { schema: schemas.homeStory }),
+    "home/story-images/*": makeImageItem(),
+    stylesheet: makeCssItem(),
+    "page/*": makeJsonItem({}, { schema: schemas.page }),
+    // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
+    "csv/*": makeSpreadsheetItem({
+        route: /\/csv\-[a-z][\w\-]*[a-z]/,
+        private: true
     }),
-    encode: ContentEncoding.base64
+    // END TEMPORARY UNTIL STORAGE API GETS HERE
+    // BEGIN EMAIL TEMPLATE STUFF
+    emailTemplates: makeHtmlItem({
+        route: /\/emailTemplates\/\w+\.html/
+    }),
+    "emailTemplates/assets/*": makeImageItem(),
+    // END EMAIL TEMPLATE STUFF
+    "lang/*": makeTextItem({}),
+    "config/datasetSearchSuggestionScoreThreshold": makeJsonItem(
+        {},
+        { schema: schemas.configDatasetSearchSuggestionScoreThreshold }
+    ),
+    "config/searchResultsPerPage": makeJsonItem(
+        {},
+        { schema: schemas.configSearchResultsPerPage }
+    )
 };
 
-export const content: { [s: string]: ContentItem } = {
-    logo: IMAGE_ITEM,
-    "logo-mobile": IMAGE_ITEM,
-    stylesheet: {
-        body: bodyParser.text({
-            type: "text/*",
-            limit: "5mb"
-        }),
-        contentType: "text/css"
-    },
-    // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
-    csv: {
-        route: /^\/(csv-).+$/,
-        body: bodyParser.raw({
-            type: [
-                "text/csv",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            ],
-            limit: "10mb"
-        }),
-        encode: ContentEncoding.base64
+function makeImageItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.raw({
+                type: [
+                    "image/png",
+                    "image/gif",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/svg+xml"
+                ],
+                inflate: true,
+                limit: "10mb"
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}
+
+function makeCssItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/css",
+                limit: "5mb"
+            })
+        },
+        extra
+    );
+}
+
+function makeHtmlItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/html",
+                limit: "1mb"
+            })
+        },
+        extra
+    );
+}
+
+function makeSpreadsheetItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.raw({
+                type: [
+                    "text/csv",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                limit: "10mb"
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}
+
+function makeJsonItem(extra: any = {}, options: any = {}) {
+    const schemaId = `schema${(env.schemaCount = env.schemaCount || 1)}`;
+    env.schemaCount++;
+    env.addSchema(schemaId, options.schema || { type: "object" });
+    return Object.assign(
+        {
+            body: bodyParser.json({
+                inflate: true,
+                strict: false
+            }),
+            encode: ContentEncoding.json,
+            verify: function(req: any, res: any, next: any) {
+                const invalid = env.validate(schemaId, req.body);
+                if (!invalid) {
+                    next();
+                } else {
+                    res.status(500).json({
+                        result: "FAILED",
+                        invalid,
+                        schema: options.schema,
+                        content: req.body
+                    });
+                }
+            }
+        },
+        extra
+    );
+}
+function makeTextItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.text({
+                type: "text/plain",
+                limit: "1mb"
+            })
+        },
+        extra
+    );
+}
+
+const contentEntries = Object.entries(content);
+export function findContentItemById(contentId: string): ContentItem {
+    const contentItemById = content[contentId];
+
+    if (contentItemById) {
+        return contentItemById;
     }
-    // END TEMPORARY UNTIL STORAGE API GETS HERE
-};
+
+    const contentItemByProperties = contentEntries.find(([key, item]) => {
+        return (
+            (item.route && item.route.test(`/${contentId}`)) || // has custom route
+            wildcard(key, contentId) // wildcard item
+        );
+    });
+
+    return contentItemByProperties && contentItemByProperties[1];
+}

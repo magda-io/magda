@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-import { config } from "../config.js";
 import "./HomePage.css";
 
 import TagLine from "./HomePageComponents/TagLine";
@@ -13,26 +12,22 @@ import { Small, Medium } from "../UI/Responsive";
 
 import MediaQuery from "react-responsive";
 
-const getBgImg = () => {
+const getBgImg = backgroundImageUrls => {
     let imageMap = {};
-    if (!config.homePageConfig || !config.homePageConfig.backgroundImageUrls)
-        return null;
-    const backgroundImageUrls = config.homePageConfig.backgroundImageUrls;
-    if (!backgroundImageUrls.length) return null;
-    const baseUrl = config.homePageConfig.baseUrl
-        ? config.homePageConfig.baseUrl
-        : "";
 
     backgroundImageUrls.forEach(item => {
         let width;
         try {
-            width = parseInt(item.replace(/[^\d]/g, ""), 10);
+            width = parseInt(
+                item.substr(item.lastIndexOf("/") + 1).replace(/[^\d]/g, ""),
+                10
+            );
             if (isNaN(width)) width = 0;
         } catch (e) {
             width = 0;
         }
 
-        imageMap = Object.assign(imageMap, { [width]: baseUrl + item });
+        imageMap = Object.assign(imageMap, { [width]: item });
     });
 
     const screenSizes = Object.keys(imageMap);
@@ -67,50 +62,62 @@ const getBgImg = () => {
     );
 };
 
-const getTagLine = () => {
-    const homePageConfig = config.homePageConfig;
-    return {
-        desktop:
-            config && homePageConfig.tagLineTextDesktop
-                ? homePageConfig.tagLineTextDesktop
-                : "",
-        mobile:
-            config && homePageConfig.tagLineTextMobile
-                ? homePageConfig.tagLineTextMobile
-                : ""
-    };
-};
-
-const HomePage = withRouter(({ location, isTopBannerShown }) => {
-    return (
-        <div className="homepage-app-container">
-            {getBgImg()}
-            <Header />
-            <Small>
-                <div className="homepage-background" />
-            </Small>
-            <div className="container app-container" id="content">
+class HomePage extends React.Component {
+    render() {
+        return (
+            <div className="homepage-app-container">
+                {getBgImg(this.props.backgroundImageUrls)}
+                <Header />
                 <Small>
-                    <TagLine taglineText={getTagLine().mobile} />
+                    <div className="homepage-background" />
                 </Small>
-                <SearchBoxSwitcher location={location} theme="home" />
-                <Medium>
-                    <TagLine taglineText={getTagLine().desktop} />
-                    <Lozenge />
-                </Medium>
-                <Stories />
+                <div className="container app-container" id="content">
+                    {this.props.mobileTagLine && (
+                        <Small>
+                            <TagLine taglineText={this.props.mobileTagLine} />
+                        </Small>
+                    )}
+                    <SearchBoxSwitcher
+                        location={this.props.location}
+                        theme="home"
+                    />
+                    {this.props.desktopTagLine && (
+                        <Medium>
+                            <TagLine taglineText={this.props.desktopTagLine} />
+                            <Lozenge content={this.props.lozenge} />
+                        </Medium>
+                    )}
+                    {(this.props.stories &&
+                        this.props.stories.length && (
+                            <Stories stories={this.props.stories} />
+                        )) ||
+                        ""}
+                </div>
             </div>
-        </div>
-    );
-});
+        );
+    }
+}
 
 function mapStateToProps(state) {
+    const {
+        desktopTagLine,
+        mobileTagLine,
+        lozenge,
+        backgroundImageUrls,
+        stories
+    } = state.content;
+
     return {
-        isTopBannerShown: state.topBanner.isShown
+        isTopBannerShown: state.topBanner.isShown,
+        desktopTagLine,
+        mobileTagLine,
+        lozenge,
+        backgroundImageUrls,
+        stories
     };
 }
 
 export default connect(
     mapStateToProps,
     null
-)(HomePage);
+)(withRouter(HomePage));

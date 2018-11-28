@@ -8,8 +8,9 @@ import SignInRedirect from "../Components/Account/SignInRedirect";
 import RecordHandler from "../Components/RecordHandler";
 import PublishersViewer from "../Components/Publisher/PublishersViewer";
 import PublisherDetails from "../Components/Publisher/PublisherDetails";
-import { staticPageRegister } from "../content/register";
+import StaticPage from "../Components/StaticPage";
 import RouteNotFound from "../Components/RouteNotFound";
+import Loading from "../Components/Loading";
 import ErrorPage from "../Components/ErrorPage/index";
 import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
@@ -17,7 +18,7 @@ import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
 
 import "./OtherPages.css";
 
-const renderBody = () => {
+const renderBody = (loading, pages) => {
     return (
         <Switch>
             <Route exact path="/search" component={Search} />
@@ -48,16 +49,14 @@ const renderBody = () => {
                 path="/organisations/:publisherId"
                 component={PublisherDetails}
             />
-            {staticPageRegister.map(item => (
-                <Route
-                    path={`/page/:id`}
-                    key={item.path}
-                    component={item.component}
-                />
-            ))}
+            <Route path="/page/:pageId" component={StaticPage} />
             <Route exact path="/404" component={RouteNotFound} />
             <Route exact path="/error" component={ErrorPage} />
-            <Route path="/*" component={RouteNotFound} />
+            {loading ? (
+                <Loading />
+            ) : (
+                <Route path="/*" component={RouteNotFound} />
+            )}
         </Switch>
     );
 };
@@ -78,7 +77,7 @@ const OtherPages = props => {
                 }`}
                 id="content"
             >
-                {renderBody()}
+                {renderBody(props.loading, props.pages)}
             </div>
         </div>
     );
@@ -90,13 +89,17 @@ const mapStateToProps = (state, ownProps) => {
     const publishersAreFetching = state.publisher.isFetchingPublishers;
     const datasetSearchIsFetching = state.datasetSearch.isFetching;
     const publisherIsFetching = state.publisher.isFetchingPublisher;
+    const pages = state.content.pages;
+    const loading = !state.content.isFetched;
     return {
         finishedFetching:
             !datasetIsFetching &&
             !publishersAreFetching &&
             !datasetSearchIsFetching &&
             !distributionIsFetching &&
-            !publisherIsFetching
+            !publisherIsFetching,
+        pages,
+        loading
     };
 };
 

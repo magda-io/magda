@@ -5,3 +5,4 @@ resources:
     memory: 30Mi
   limits:
     cpu: 50m
+scssVars: '{}'
