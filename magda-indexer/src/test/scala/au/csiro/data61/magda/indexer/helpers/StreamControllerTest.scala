@@ -18,7 +18,7 @@ import org.scalatest.{Assertion, AsyncFlatSpec, BeforeAndAfterEach, Matchers}
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
-class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAfterEach {
+class StreamControllerTest extends AsyncFlatSpec with Matchers {
 
   implicit val system: ActorSystem = ActorSystem("StreamControllerTest")
   implicit val ec: ExecutionContextExecutor = system.dispatcher
@@ -27,11 +27,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAft
 
   private var sc: StreamController = None.orNull
   private var dataSets: Seq[DataSet] = Seq()
-
-  override def afterEach(): Unit = {
-    super.afterEach()
-    sc.getActorRef ! PoisonPill
-  }
 
   class MockRegistryInterface extends RegistryInterface {
     private val nextIndex = new AtomicInteger(0)

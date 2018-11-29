@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer.helpers
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.NotUsed
-import akka.actor.{Actor, ActorRef, ActorSystem, Props, Scheduler}
+import akka.actor.{ActorRef, ActorSystem, PoisonPill, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -13,8 +13,17 @@ import au.csiro.data61.magda.util.ErrorHandling
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
+/**
+  * This class controls the life cycle of dataset stream.
+  *
+  * @param interface interface to registry
+  * @param bufferSize stream source buffer size
+  * @param system implicit akka actor system
+  * @param config implicit akka config
+  * @param materializer implicit akka materializer
+  */
 class StreamController(interface: RegistryInterface, bufferSize: Int)
                       (implicit val system: ActorSystem,
                        implicit val config: Config,
@@ -64,20 +73,32 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)
       })
   }
 
+  /**
+    * The returned source is used to construct a dataset stream.
+    *
+    * @return the stream source
+    */
   def getSource: Source[DataSet, NotUsed] = {
     source
   }
 
-  def getActorRef: ActorRef = {
-    actorRef
-  }
-
+  /**
+    * Get the first batch datasets from registry and fill the stream source.
+    *
+    * @return future optional token. If nonempty, indicate more datasets are available.
+    */
   def start(): Future[Option[String]] = {
     val firstPageF = () => interface.getDataSetsReturnToken(start = 0, size = bufferSize)
     tokenOptionF = fillStreamSource(firstPageF, isFirst = true)
     tokenOptionF
   }
 
+  /**
+    * Get the next batch datasets from registry and fill the stream source.
+    *
+    * @param nextSize the max size of the batch
+    * @return future optional token. If nonempty, indicate more datasets are available.
+    */
   def next(nextSize: Int): Future[Option[String]] = {
     tokenOptionF.flatMap(tokenOption => {
       if (tokenOption.isEmpty){

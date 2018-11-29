@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer.helpers
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.NotUsed
-import akka.actor.{ActorRef, ActorSystem, Scheduler}
+import akka.actor.{ActorRef, ActorSystem, PoisonPill, Scheduler}
 import akka.event.Logging
 import akka.stream._
 import akka.stream.impl.Stages.DefaultAttributes
@@ -18,10 +18,10 @@ import scala.concurrent.ExecutionContextExecutor
 
 /**
   * This class creates a stream source of type Source[DataSet, NotUsed]. The source can be filled
-  * with DataSet object any time after the creation.
+  * with DataSet objects any time after the creation.
   *
   * The class can also controls the life cycle of the related stream when the argument
-  * @param streamController 
+  * streamController is defined.
   *
   * @param bufferSize the maximal number of datasets to fill the stream source
   * @param streamController control the data registry crawling
@@ -44,18 +44,21 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
   private val (ref, source) = createStreamSource()
 
   /**
+    * A stage that acts upon control messages (either getting more datasets or completing the stream).
     *
-    * @tparam Object
+    * @tparam Object a generic type for either DataSet or String types.
     */
-  final case class MessageChecker[Object]() extends SimpleLinearGraphStage[Object] {
+  private final case class MessageChecker[Object]() extends SimpleLinearGraphStage[Object] {
     override def initialAttributes: Attributes = DefaultAttributes.take
 
     override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
       new GraphStageLogic(shape) with InHandler with OutHandler {
         override def onPush(): Unit = {
           val message = grab(in)
-          if (message == NO_MORE_DATASETS)
+          if (message == NO_MORE_DATASETS) {
             completeStage()
+            ref ! PoisonPill
+          }
           else if (message == GET_MORE_DATASETS) {
             if (streamController != None.orNull)
               streamController.next(bufferSize / 2)
@@ -88,6 +91,13 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
     (ref, source2)
   }
 
+  /**
+    * Fill the source with given datasets
+    *
+    * @param dataSets a batch of datasets to fill the source.
+    * @param hasNext indicating if there are more datasets available
+    * @param isFirst indicating if this is the first batch of datasets
+    */
   def fillSource(dataSets: Seq[DataSet], hasNext: Boolean, isFirst: Boolean): Unit = {
     if (isFirst){
       dataSets foreach (dataSet => {
@@ -110,6 +120,9 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
       ref ! NO_MORE_DATASETS
   }
 
+  /**
+    * @return Source actor reference and stream source itself
+    */
   def refAndSource: (ActorRef, Source[DataSet, NotUsed]) = {
     (ref, source)
   }
