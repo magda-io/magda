@@ -1,7 +1,4 @@
 import * as _ from "lodash";
-import request from "@magda/typescript-common/dist/request";
-import * as http from "http";
-
 import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -9,10 +6,9 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";
+import { headRequest, getRequest, BadHttpResponseError } from "./HttpRequests";
 import getUrlWaitTime from "./getUrlWaitTime";
 import wait from "./wait";
-
-const DevNull = require("dev-null");
 
 export default async function onRecordFound(
     record: Record,
@@ -266,71 +262,6 @@ function retrieveFtp(
 }
 
 /**
- * Depends on statusCode, determine a request is failed or not
- * @param response http.IncomingMessage
- */
-function processResponse(response: http.IncomingMessage) {
-    if (
-        (response.statusCode >= 200 && response.statusCode <= 299) ||
-        response.statusCode === 429
-    ) {
-        return response.statusCode;
-    } else {
-        throw new BadHttpResponseError(
-            response.statusMessage,
-            response,
-            response.statusCode
-        );
-    }
-}
-
-/**
- * Send head request to the URL
- * Received data will be discarded
- * @param url String: url to be tested
- */
-function headRequest(url: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        request
-            .head(url)
-            .on("error", err => reject(err))
-            .on("response", (response: http.IncomingMessage) => {
-                try {
-                    resolve(processResponse(response));
-                } catch (e) {
-                    reject(e);
-                }
-            })
-            .pipe(DevNull());
-    });
-}
-
-/**
- * Send head request to the URL
- * Received data will be discarded
- * @param url String: url to be tested
- */
-function getRequest(url: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        request
-            .get(url, {
-                headers: {
-                    Range: "bytes=0-50"
-                }
-            })
-            .on("error", err => reject(err))
-            .on("response", (response: http.IncomingMessage) => {
-                try {
-                    resolve(processResponse(response));
-                } catch (e) {
-                    reject(e);
-                }
-            })
-            .pipe(DevNull());
-    });
-}
-
-/**
  * Retrieves an HTTP/HTTPS url
  *
  * @param url The url to retrieve
@@ -397,23 +328,6 @@ async function retrieveHttp(
         errorDetails: err,
         httpStatusCode: 429
     }));
-}
-
-class BadHttpResponseError extends Error {
-    public response: http.IncomingMessage;
-    public httpStatusCode: number;
-
-    constructor(
-        message?: string,
-        response?: http.IncomingMessage,
-        httpStatusCode?: number
-    ) {
-        super(message);
-        this.message = message;
-        this.response = response;
-        this.httpStatusCode = httpStatusCode;
-        this.stack = new Error().stack;
-    }
 }
 
 interface BrokenLinkSleuthingResult {

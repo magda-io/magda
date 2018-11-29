@@ -140,18 +140,14 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      */
     it("Should correctly record link statuses", function() {
         return jsc.assert(
-            jsc.forall(recordArbWithSuccesses, function({
-                record,
-                successLookup,
-                disallowHead
-            }) {
+            jsc.forall(recordArbWithSuccesses, jsc.integer(250, 1000), function(
+                { record, successLookup, disallowHead },
+                streamWaitTime
+            ) {
                 beforeEachProperty();
 
                 /** Endless stream of nonsense, similar to what you'd get if you tried to download a massive file */
-                const randomStream = RandomStream({
-                    min: 250, // in milliseconds
-                    max: 1000 // in milliseconds
-                });
+                const randomStream = new RandomStream(streamWaitTime);
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
@@ -207,10 +203,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                                 if (success) {
                                     scopeGet.reply(200, () => {
-                                        return RandomStream({
-                                            min: 250, // in milliseconds
-                                            max: 1000 // in milliseconds
-                                        });
+                                        return new RandomStream(streamWaitTime);
                                     });
                                 } else {
                                     scopeGet.reply(404);
