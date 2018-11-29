@@ -9,56 +9,10 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";
-import * as URI from "urijs";
+import getUrlWaitTime from "./getUrlWaitTime";
+import wait from "./wait";
 
 const DevNull = require("dev-null");
-
-// --- for domain without specified wait time,
-// --- this default value (in second) will be used.
-const defaultDomainWaitTime = 1;
-// --- record next access time (i.e. no request can be made before the time)
-// --- for all domains (only create entries on domain access)
-const domainAccessTimeStore: any = {};
-
-function getHostWaitTime(host: string, domainWaitTimeConfig: any) {
-    if (
-        domainWaitTimeConfig[host] &&
-        typeof domainWaitTimeConfig[host] === "number"
-    ) {
-        return domainWaitTimeConfig[host];
-    }
-    return defaultDomainWaitTime;
-}
-
-/**
- * For given url, return the required waitTime (in milliseconds) from now before the request can be sent.
- * This value can be used to set a timer to trigger the request at the later time.
- *
- * @param url String: the url that to be tested
- * @param domainWaitTimeConfig object: domainWaitTimeConfig
- */
-function getUrlWaitTime(url: string, domainWaitTimeConfig: any) {
-    const uri = new URI(url);
-    const host = uri.hostname();
-    const hostWaitTime = getHostWaitTime(host, domainWaitTimeConfig);
-    const now = new Date().getTime();
-    if (domainAccessTimeStore[host]) {
-        if (domainAccessTimeStore[host] < now) {
-            // --- allow to request now & need to set the new wait time
-            domainAccessTimeStore[host] = now + hostWaitTime * 1000;
-            return 0; //--- no need to wait
-        } else {
-            // --- need to wait
-            domainAccessTimeStore[host] += hostWaitTime * 1000;
-            // --- wait time should be counted from now
-            return domainAccessTimeStore[host] - now;
-        }
-    } else {
-        // --- first request && allow to request now
-        domainAccessTimeStore[host] = now + hostWaitTime * 1000;
-        return 0; //--- no need to wait
-    }
-}
 
 export default async function onRecordFound(
     record: Record,
@@ -308,15 +262,6 @@ function retrieveFtp(
                 }
             });
         });
-    });
-}
-
-/**
- * Wait for `waitMilliSeconds` before resolve the promise
- */
-function wait(waitMilliSeconds: number) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => resolve(), waitMilliSeconds);
     });
 }
 
