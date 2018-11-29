@@ -9,12 +9,6 @@ import wait from "../wait";
 import * as URI from "urijs";
 import { expect } from "chai";
 import { distUrlArb } from "@magda/typescript-common/dist/test/arbitraries";
-import * as sinon from "sinon";
-
-before(() => {
-    sinon.stub(console, "info");
-    sinon.stub(console, "error");
-});
 
 describe("getHostWaitTime", () => {
     it("should return waitTime set for a domain if available", () => {
