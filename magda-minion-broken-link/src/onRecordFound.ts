@@ -401,8 +401,12 @@ async function retrieveHttp(
             await wait(getUrlWaitTime(url));
             return await headRequest(url);
         } catch (e) {
-            await wait(getUrlWaitTime(url));
-            return await getRequest(url);
+            if (e.httpStatusCode && e.httpStatusCode === 405) {
+                // --- HEAD Method not allowed
+                await wait(getUrlWaitTime(url));
+                return await getRequest(url);
+            }
+            throw e;
         }
     }
 
