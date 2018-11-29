@@ -40,8 +40,12 @@ export const recordArbWithSuccesses = arbFlatMap(
                     },
                     {} as { [a: string]: CheckResult }
                 );
+                // some server configurations will disallow HEAD
+                // method requests. When that fails, we try
+                // to make a get request to verify the link
+                const disallowHead = jsc.bool.generator(0);
 
-                return { record, successLookup };
+                return { record, successLookup, disallowHead };
             },
             ({ record, successLookup }) => {
                 return getKnownProtocolUrls(record).map(

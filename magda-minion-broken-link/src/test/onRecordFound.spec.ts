@@ -142,7 +142,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, function({
                 record,
-                successLookup
+                successLookup,
+                disallowHead
             }) {
                 beforeEachProperty();
 
@@ -184,19 +185,39 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             reqheaders: { "User-Agent": /@magda.*/ }
                         });
 
+                        const intercept = scope.head(
+                            url.endsWith("/") ? "/" : ""
+                        );
+
                         if (success !== "error") {
-                            scope
-                                .get(url.endsWith("/") ? "/" : "")
-                                .reply(
-                                    success === "success" ? 200 : 404,
-                                    () => {
-                                        return randomStream;
-                                    }
+                            if (!disallowHead) {
+                                intercept.reply(
+                                    success === "success" ? 200 : 404
                                 );
+                                if (success !== "success") {
+                                    scope
+                                        .get(url.endsWith("/") ? "/" : "")
+                                        .reply(404);
+                                }
+                            } else {
+                                intercept.reply(405);
+                                const scopeGet = scope.get(
+                                    url.endsWith("/") ? "/" : ""
+                                );
+
+                                if (success) {
+                                    scopeGet.reply(200, () => {
+                                        return RandomStream({
+                                            min: 250, // in milliseconds
+                                            max: 1000 // in milliseconds
+                                        });
+                                    });
+                                } else {
+                                    scopeGet.reply(404);
+                                }
+                            }
                         } else {
-                            scope
-                                .get(url.endsWith("/") ? "/" : "")
-                                .replyWithError("fail");
+                            intercept.replyWithError("fail");
                         }
 
                         return scope;
@@ -449,6 +470,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     allResults.forEach((failureCodes, i) => {
                                         failureCodes.forEach(failureCode => {
                                             scope
+                                                .head(
+                                                    url.endsWith("/") ? "/" : ""
+                                                )
+                                                .reply(failureCode);
+                                            scope
                                                 .get(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
@@ -459,7 +485,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                             result === "fail429"
                                         ) {
                                             scope
-                                                .get(
+                                                .head(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
                                                 .reply(429);
@@ -468,7 +494,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                                     if (result === "success") {
                                         scope
-                                            .get(url.endsWith("/") ? "/" : "")
+                                            .head(url.endsWith("/") ? "/" : "")
                                             .reply(200);
                                     }
 
@@ -597,13 +623,17 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                             failures.forEach(failureCode => {
                                 scope
+                                    .head(uri.path())
+                                    .delay(delayMs)
+                                    .reply(failureCode);
+                                scope
                                     .get(uri.path())
                                     .delay(delayMs)
                                     .reply(failureCode);
                             });
 
                             scope
-                                .get(uri.path())
+                                .head(uri.path())
                                 .delay(delayMs)
                                 .reply(200);
                             return scopeLookup;
