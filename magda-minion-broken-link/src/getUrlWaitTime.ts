@@ -40,9 +40,10 @@ export default function getUrlWaitTime(url: string, domainWaitTimeConfig: any) {
             return 0; //--- no need to wait
         } else {
             // --- need to wait
+            const waitTime = domainAccessTimeStore[host] - now;
+            // --- extends wait time for next possible request
             domainAccessTimeStore[host] += hostWaitTime * 1000;
-            // --- wait time should be counted from now
-            return domainAccessTimeStore[host] - now;
+            return waitTime;
         }
     } else {
         // --- first request && allow to request now
