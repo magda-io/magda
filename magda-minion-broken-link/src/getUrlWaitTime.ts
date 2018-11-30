@@ -2,7 +2,7 @@ import * as URI from "urijs";
 
 // --- for domain without specified wait time,
 // --- this default value (in second) will be used.
-export const defaultDomainWaitTime = 7;
+export const defaultDomainWaitTime = 0;
 // --- record next access time (i.e. no request can be made before the time)
 // --- for all domains (only create entries on domain access)
 export let domainAccessTimeStore: any = {};
