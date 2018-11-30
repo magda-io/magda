@@ -437,7 +437,11 @@ function imageConfig(body, name) {
 
 function request(method, url, body = null, contentType = undefined) {
     console.log(method, url, body);
-    const headers = {};
+    const headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0"
+    };
     if (contentType) {
         headers["Content-Type"] = contentType;
     }

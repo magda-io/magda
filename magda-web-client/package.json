@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "0.0.50-0",
+  "version": "0.0.51-0",
   "license": "Apache-2.0",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
@@ -50,7 +50,7 @@
     "urijs": "^1.19.1"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.50-0",
+    "@magda/scripts": "^0.0.51-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",
@@ -74,7 +74,7 @@
     "draft-js-mention-plugin": "TerriaJS/draft-js-mention-plugin#v2.1.0",
     "draft-js-plugins-editor": "2.0.0-rc2",
     "echarts": "^4.1.0",
-    "echarts-for-react": "^2.0.8",
+    "echarts-for-react": "^2.0.14",
     "email-validator": "^2.0.3",
     "es6-promise": "^4.2.4",
     "es6-shim": "^0.35.3",
@@ -129,9 +129,9 @@
     "react-redux": "^5.0.7",
     "react-responsive": "^4.1.0",
     "react-router-dom": "^4.2.2",
+    "react-scripts": "^1.0.10",
     "react-table": "^6.5.1",
     "react-transition-group": "^2.3.1",
-    "react-scripts": "^1.0.10",
     "redux": "^4.0.0",
     "redux-devtools-extension": "^2.13.2",
     "redux-logger": "^3.0.6",
