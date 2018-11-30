@@ -53,6 +53,7 @@ class ElasticSearchIndexer(
 
   override def ready: Future[Unit] = setupFuture.map(_ => Unit)
 
+  // TODO: Remove the indexQueue after index2() method is changed.
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue: SourceQueue[(DataSet, Promise[Unit])] =
     Source.queue[(DataSet, Promise[Unit])](indexingQueueBufferSize, OverflowStrategy.backpressure)
@@ -186,6 +187,7 @@ class ElasticSearchIndexer(
     if (geoFail) {
       logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
+      // TODO: Make one indexing request only so that we can remove the source queue completely.
       index2(dataSetWithoutSpatial, promise)
     } else {
       promise.failure(new Exception(s"Had failures other than geoJson parse: ${result.error}"))
@@ -367,7 +369,8 @@ class ElasticSearchIndexer(
     }
   }
 
-  def index2(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
+  // TODO: Instead of using indexQueue that performs bulk indexing, make single indexing request.
+  private def index2(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
 
     indexQueue.offer((dataSet, promise))
       .flatMap {
