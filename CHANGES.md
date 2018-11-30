@@ -1,6 +1,8 @@
 ## 0.0.51
 
 -   Fixed chart won't displayed correctly under IE11
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
 
 ## 0.0.50
 
@@ -55,7 +57,7 @@
 -   `create-secrets` will load ENV vars according to question data types
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
--   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
+-   Fixed magda-apidocs-server incorrectly builds into \$PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
 -   Stopped caching anything requested through the admin ui.
 -   Removed old admin ui code
