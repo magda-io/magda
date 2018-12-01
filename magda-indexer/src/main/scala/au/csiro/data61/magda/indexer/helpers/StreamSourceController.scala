@@ -111,7 +111,7 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
       dataSets foreach (dataSet => {
         dataSet.copy(publisher = dataSet.publisher)
         ref ! dataSet
-        if (dataSetCount.incrementAndGet() % (bufferSize / 2) == 0)
+        if (dataSetCount.incrementAndGet() % (bufferSize / 2) == 0 && hasNext)
           ref ! GET_MORE_DATASETS
       })
     }
