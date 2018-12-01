@@ -33,7 +33,7 @@
     "jsverify": "^0.8.2",
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
-    "sinon": "^3.0.0",
+    "sinon": "^7.0.0",
     "typescript": "~2.5.0"
   },
   "dependencies": {

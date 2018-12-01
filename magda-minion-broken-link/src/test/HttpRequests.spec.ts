@@ -1,5 +1,4 @@
 import {} from "mocha";
-//import * as _ from "lodash";
 import * as nock from "nock";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
 import { expect } from "chai";
