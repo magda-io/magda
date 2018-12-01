@@ -48,27 +48,28 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
       .flatMap { result =>
         log.info("Indexed {} datasets with {} failures", result.successes, result.failures.length)
 
-        val futureOpt: Option[Future[Unit]] = if (result.failures.isEmpty) { // does this need to be tunable?
-          // By default ElasticSearch index is refreshed every second. Let the trimming operation
-          // (delete by query) be delayed by some time interval. Otherwise the operation will report failure.
-          //
-          // index.refresh_interval:
-          // How often to perform a refresh operation, which makes recent changes to the index visible to search.
-          // Defaults to 1s. Can be set to -1 to disable refresh.
-          // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/6.5/index-modules.html#dynamic-index-settings
-
-          Some(Future {
-            val delay = 1000
-            Thread.sleep(delay)
+        // By default ElasticSearch index is refreshed every second. Let the trimming operation
+        // (delete by query) be delayed by some time interval. Otherwise the operation might report
+        // failures.
+        //
+        // index.refresh_interval:
+        // How often to perform a refresh operation, which makes recent changes to the index
+        // visible to search. Defaults to 1s. Can be set to -1 to disable refresh.
+        // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/6.5/index-modules.html#dynamic-index-settings
+        Future {
+          val delay = 1000
+          Thread.sleep(delay)
+        }.flatMap(_ => {
+          val futureOpt: Option[Future[Unit]] = if (result.failures.isEmpty) { // does this need to be tunable?
             log.info("Trimming datasets indexed before {}", startInstant)
             Some(indexer.trim(startInstant))
-          })
-        } else {
-          log.warning("Encountered too many failures to trim old datasets")
-          None
-        }
+          } else {
+            log.warning("Encountered too many failures to trim old datasets")
+            None
+          }
 
-        futureOpt.map(_.map(_ => result)).getOrElse(Future(result))
+          futureOpt.map(_.map(_ => result)).getOrElse(Future(result))
+        })
       }
       .recover {
         case e: Throwable =>
