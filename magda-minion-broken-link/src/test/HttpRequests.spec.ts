@@ -7,7 +7,7 @@ import { headRequest, getRequest, BadHttpResponseError } from "../HttpRequests";
 import RandomStream from "./RandomStream";
 
 const onMatchFail = (req: any) => {
-    console.error("Match failure: " + JSON.stringify(req.path));
+    console.error(`Match failure: ${req.method} ${req.host}${req.path}`);
 };
 
 describe("Test HttpRequests.ts", () => {
@@ -18,10 +18,6 @@ describe("Test HttpRequests.ts", () => {
 
     after(() => {
         nock.emitter.removeListener("no match", onMatchFail);
-        nock.cleanAll();
-    });
-
-    afterEach(() => {
         nock.cleanAll();
     });
 
@@ -38,8 +34,7 @@ describe("Test HttpRequests.ts", () => {
                     const resStatusCode = await headRequest(`${url}${path}`);
                     expect(resStatusCode).to.equal(statusCode);
                     return true;
-                }),
-                { tests: 3 }
+                })
             );
         });
 
