@@ -7,6 +7,7 @@
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Download unknown project open data license URLs to extract human readable licence
 
 ## 0.0.50
 
