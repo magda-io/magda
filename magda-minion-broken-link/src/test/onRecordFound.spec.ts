@@ -481,11 +481,16 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                                     url.endsWith("/") ? "/" : ""
                                                 )
                                                 .reply(failureCode);
-                                            scope
-                                                .get(
-                                                    url.endsWith("/") ? "/" : ""
-                                                )
-                                                .reply(failureCode);
+
+                                            if (failureCode === 405) {
+                                                scope
+                                                    .get(
+                                                        url.endsWith("/")
+                                                            ? "/"
+                                                            : ""
+                                                    )
+                                                    .reply(failureCode);
+                                            }
                                         });
                                         if (
                                             i < allResults.length - 1 ||
