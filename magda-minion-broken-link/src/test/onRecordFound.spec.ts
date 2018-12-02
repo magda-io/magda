@@ -161,7 +161,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 streamWaitTime
             ) {
                 beforeEachProperty();
-                clock = sinon.useFakeTimers(new Date().getTime());
+                clock = sinon.useFakeTimers();
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can

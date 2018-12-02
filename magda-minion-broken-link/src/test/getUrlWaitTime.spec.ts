@@ -59,7 +59,7 @@ describe("Test getUrlWaitTime.ts", () => {
         );
 
         before(() => {
-            clock = sinon.useFakeTimers(new Date().getTime());
+            clock = sinon.useFakeTimers();
         });
 
         after(() => {
