@@ -5,8 +5,12 @@ import { expect } from "chai";
 import { headRequest, getRequest, BadHttpResponseError } from "../HttpRequests";
 import RandomStream from "./RandomStream";
 
-const onMatchFail = (req: any) => {
-    console.error(`Match failure: ${req.method} ${req.host}${req.path}`);
+const onMatchFail = (req: any, interceptor: any) => {
+    console.error(
+        `Match failure: ${req.method ? req.method : interceptor.method} ${
+            req.host ? req.host : interceptor.host
+        }${req.path}`
+    );
 };
 
 describe("Test HttpRequests.ts", () => {

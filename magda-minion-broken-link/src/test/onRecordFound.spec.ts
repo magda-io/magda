@@ -31,6 +31,10 @@ import FtpHandler from "../FtpHandler";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
 import RandomStream from "./RandomStream";
+import {
+    setDefaultDomainWaitTime,
+    getDefaultDomainWaitTime
+} from "../getUrlWaitTime";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -45,22 +49,38 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };
     let ftpSuccesses: { [url: string]: CheckResult };
+    const orignalDefaultDomainWaitTime: number = getDefaultDomainWaitTime();
+    let clock: sinon.SinonFakeTimers;
 
     before(() => {
+        clock = sinon.useFakeTimers(new Date().getTime());
+        // --- set default domain wait time to 0 second (i.e. for any domains that has no specific setting)
+        // --- Otherwise, it will take too long to complete property tests
+        setDefaultDomainWaitTime(0);
+
         sinon.stub(console, "info");
         nock.disableNetConnect();
 
         nock.emitter.on("no match", onMatchFail);
     });
 
-    const onMatchFail = (req: any) => {
-        console.error("Match failure: " + JSON.stringify(req.path));
+    const onMatchFail = (req: any, interceptor: any) => {
+        console.error(
+            `Match failure: ${req.method ? req.method : interceptor.method} ${
+                req.host ? req.host : interceptor.host
+            }${req.path}`
+        );
     };
 
     after(() => {
+        setDefaultDomainWaitTime(orignalDefaultDomainWaitTime);
+
         (console.info as any).restore();
 
         nock.emitter.removeListener("no match", onMatchFail);
+
+        clock.reset();
+        clock.restore();
     });
 
     const beforeEachProperty = () => {
@@ -146,9 +166,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
             ) {
                 beforeEachProperty();
 
-                /** Endless stream of nonsense, similar to what you'd get if you tried to download a massive file */
-                const randomStream = new RandomStream(streamWaitTime);
-
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
                 // only see paths and not host, we only send it the path of the req.
@@ -190,20 +207,20 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                 intercept.reply(
                                     success === "success" ? 200 : 404
                                 );
-                                if (success !== "success") {
-                                    scope
-                                        .get(url.endsWith("/") ? "/" : "")
-                                        .reply(404);
-                                }
                             } else {
                                 intercept.reply(405);
                                 const scopeGet = scope.get(
                                     url.endsWith("/") ? "/" : ""
                                 );
 
-                                if (success) {
+                                if (success === "success") {
                                     scopeGet.reply(200, () => {
-                                        return new RandomStream(streamWaitTime);
+                                        const s = new RandomStream(
+                                            streamWaitTime
+                                        );
+                                        // --- simualate remote server had spent streamWaitTime to complete the response
+                                        clock.tick(streamWaitTime + 1);
+                                        return s;
                                     });
                                 } else {
                                     scopeGet.reply(404);
@@ -341,12 +358,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     })
                     .then(() => {
                         afterEachProperty();
-                        randomStream.destroy();
                         return true;
                     })
                     .catch(e => {
                         afterEachProperty();
-                        randomStream.destroy();
                         throw e;
                     });
             }),

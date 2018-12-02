@@ -11,6 +11,10 @@ export function setDefaultDomainWaitTime(waitSeconds: number) {
     defaultDomainWaitTime = waitSeconds;
 }
 
+export function getDefaultDomainWaitTime() {
+    return defaultDomainWaitTime;
+}
+
 export function clearDomainAccessTimeStore() {
     domainAccessTimeStore = {};
 }
