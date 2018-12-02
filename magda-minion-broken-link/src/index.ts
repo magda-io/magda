@@ -5,6 +5,8 @@ import commonYargs from "@magda/minion-framework/dist/commonYargs";
 
 const ID = "minion-broken-link";
 
+const coerceJson = (path?: string) => path && require(path);
+
 const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
     argv
         .option("externalRetries", {
@@ -17,7 +19,8 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
             describe:
                 "A object that defines wait time for each of domain. " +
                 "Echo property name of the object would be the domain name and property value is the wait time in seconds",
-            type: "object",
+            type: "string",
+            coerce: coerceJson,
             default: {}
         })
 );
