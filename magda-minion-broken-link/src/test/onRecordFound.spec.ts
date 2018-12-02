@@ -53,7 +53,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     let clock: sinon.SinonFakeTimers;
 
     before(() => {
-        clock = sinon.useFakeTimers(new Date().getTime());
         // --- set default domain wait time to 0 second (i.e. for any domains that has no specific setting)
         // --- Otherwise, it will take too long to complete property tests
         setDefaultDomainWaitTime(0);
@@ -78,9 +77,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         (console.info as any).restore();
 
         nock.emitter.removeListener("no match", onMatchFail);
-
-        clock.reset();
-        clock.restore();
     });
 
     const beforeEachProperty = () => {
@@ -165,6 +161,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 streamWaitTime
             ) {
                 beforeEachProperty();
+                clock = sinon.useFakeTimers(new Date().getTime());
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
@@ -355,6 +352,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
+                        clock.reset();
+                        clock.restore();
                     })
                     .then(() => {
                         afterEachProperty();
@@ -634,10 +633,13 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     .head(uri.path())
                                     .delay(delayMs)
                                     .reply(failureCode);
-                                scope
-                                    .get(uri.path())
-                                    .delay(delayMs)
-                                    .reply(failureCode);
+
+                                if (failureCode === 405) {
+                                    scope
+                                        .get(uri.path())
+                                        .delay(delayMs)
+                                        .reply(failureCode);
+                                }
                             });
 
                             scope
