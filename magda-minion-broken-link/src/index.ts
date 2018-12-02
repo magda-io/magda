@@ -5,7 +5,14 @@ import commonYargs from "@magda/minion-framework/dist/commonYargs";
 
 const ID = "minion-broken-link";
 
-const coerceJson = (path?: string) => path && require(path);
+const coerceJson = (json?: string) => {
+    try {
+        const data = JSON.parse(json);
+        return data ? data : {};
+    } catch (e) {
+        return {};
+    }
+};
 
 const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
     argv
@@ -21,9 +28,11 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
                 "Echo property name of the object would be the domain name and property value is the wait time in seconds",
             type: "string",
             coerce: coerceJson,
-            default: {}
+            default: process.env.DOMAIN_WAIT_TIME_CONFIG || {}
         })
 );
+
+console.log("domainWaitTimeConfig: ", argv.domainWaitTimeConfig);
 
 function sleuthBrokenLinks() {
     return minion({
@@ -38,7 +47,7 @@ function sleuthBrokenLinks() {
                 record,
                 registry,
                 argv.externalRetries,
-                argv.domainWaitTimeConfigs
+                argv.domainWaitTimeConfig
             )
     });
 }
