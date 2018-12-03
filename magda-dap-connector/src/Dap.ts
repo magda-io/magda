@@ -116,7 +116,7 @@ export default class Dap implements ConnectorSource {
     public getJsonDataset(id: string): Promise<any> {
         const url = this.urlBuilder.getPackageShowUrl(id);
         return new Promise<any>((resolve, reject) => {
-            request(url, { json: true }, (error, response, body) => {
+            request(url, { json: true, timeout: 60000, pool: { maxSockets: 1000} }, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
@@ -249,7 +249,7 @@ export default class Dap implements ConnectorSource {
                 // console.log("Requesting " + requestUrl);
                 request(
                     requestUrl,
-                    { json: true },
+                    { json: true, timeout: 60000, pool: { maxSockets: 1000} },
                     async (error, response, body) => {
                         if (error) {
                             reject(error);
@@ -278,7 +278,7 @@ export default class Dap implements ConnectorSource {
                                 return new Promise<any>((resolve2, reject2) => {
                                     request(
                                         url,
-                                        { json: true },
+                                        { json: true, timeout: 60000,pool: { maxSockets: 1000} },
                                         (error, response, detail) => {
                                             console.log(
                                                 ">> request detail of " + url
@@ -317,7 +317,7 @@ export default class Dap implements ConnectorSource {
                                             (resolve3, reject3) => {
                                                 request(
                                                     simpleData.data,
-                                                    { json: true },
+                                                    { json: true, timeout: 60000, pool: { maxSockets: 1000} },
                                                     (
                                                         error,
                                                         response,

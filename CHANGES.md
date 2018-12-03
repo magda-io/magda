@@ -1,6 +1,7 @@
 ## 0.0.51
 
 -   Redirect HTTP requests to HTTPS URLs
+-   Fixed chart won't displayed correctly under IE11
 
 ## 0.0.50
 
