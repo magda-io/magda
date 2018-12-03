@@ -42,6 +42,9 @@ spec:
 {{- if .Values.enableWebAccessControl }}
             "--enableWebAccessControl", {{ .Values.enableWebAccessControl | quote }},
 {{- end }}
+{{- if .Values.enableHttpsRedirection }}
+            "--enableHttpsRedirection", {{ .Values.enableHttpsRedirection | quote }},
+{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
