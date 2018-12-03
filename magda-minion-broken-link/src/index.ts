@@ -6,12 +6,11 @@ import commonYargs from "@magda/minion-framework/dist/commonYargs";
 const ID = "minion-broken-link";
 
 const coerceJson = (json?: string) => {
-    try {
-        const data = JSON.parse(json);
-        return data ? data : {};
-    } catch (e) {
-        return {};
+    const data = JSON.parse(json);
+    if (!data || typeof data !== "object") {
+        throw new Error("Invalid `domainWaitTimeConfig` parameter.");
     }
+    return data;
 };
 
 const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>

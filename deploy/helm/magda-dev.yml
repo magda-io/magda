@@ -99,7 +99,10 @@ correspondence-api:
   smtpPort: 2525
 
 minion-broken-link:
-  domainWaitTimeConfig: '{"data.csiro.au":60,"data.gov.au":60,"data.act.gov.au":30}'
+  domainWaitTimeConfig:
+    data.csiro.au: 60
+    data.gov.au: 60
+    data.act.gov.au: 30
 
 connectors:
   config:

@@ -38,7 +38,7 @@ spec:
           value: "http://minion-broken-link"
 {{- if .Values.domainWaitTimeConfig }}
         - name: DOMAIN_WAIT_TIME_CONFIG
-          value: {{ .Values.domainWaitTimeConfig | quote }}
+          value: '{{ toJson .Values.domainWaitTimeConfig | indent 2 }}'
 {{- end }}
         - name: JWT_SECRET
           valueFrom:
