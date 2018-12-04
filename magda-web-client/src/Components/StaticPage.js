@@ -9,14 +9,49 @@ import "./StaticPage.css";
 
 import { fetchStaticPage } from "../actions/staticPagesActions";
 import { bindActionCreators } from "redux";
+import * as URI from "urijs";
 
 class StaticPage extends Component {
-    componentDidMount() {
-        // check if we are on distribution page:
-        if (this.props.match.params.pageId) {
-            this.props.fetchStaticPage(this.props.match.params.pageId);
+    constructor(props) {
+        super(props);
+        this.historyListener = props.history.listen(location => {
+            this.loadPageContent(location);
+        });
+    }
+
+    loadPageContent(location) {
+        /**
+         * this.props.match.params.pageId not always available or up to date
+         * We use `location` instead
+         */
+        const uri = new URI(location.pathname);
+        const pathItems = uri.segmentCoded();
+        if (pathItems.length < 2) {
+            return;
         }
+        // --- remove first segment 'page'
+        const firstSegment = pathItems.shift();
+        if (firstSegment !== "page") {
+            console.error(location);
+            return;
+        }
+        const pageId = pathItems.join("/");
+        this.props.fetchStaticPage(pageId);
+    }
+
+    componentDidMount() {
+        this.loadPageContent(this.props.location);
         // this.updateGAEvent(this.props);
+    }
+
+    componentWillUnmount() {
+        // --- unregister listener
+        if (
+            this.historyListener &&
+            typeof this.historyListener === "function"
+        ) {
+            this.historyListener();
+        }
     }
 
     render() {
