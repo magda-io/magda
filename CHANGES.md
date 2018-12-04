@@ -59,6 +59,7 @@
 -   Added contact point to distribution page, made title configurable
 -   When `match-part` search strategy is used, a message is shown on UI
 -   Fixed mobile menu not show-up properly
+-   Fixed an issue that static page content won't be loaded if switch between static pages
 
 ## 0.0.49
 
