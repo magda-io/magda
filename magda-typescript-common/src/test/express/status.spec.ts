@@ -76,6 +76,15 @@ setup(
                     .end(done);
             });
         });
+
+        it("should be ready with probes", function(done) {
+            sleep(100).then(function() {
+                agent
+                    .get("/status/readySync")
+                    .expect(200)
+                    .end(done);
+            });
+        });
     }
 );
 
@@ -142,7 +151,7 @@ describe("request", function() {
         assert.deepEqual(return_.ready, true);
         return_ = await createServiceProbe(
             `http://127.0.0.1:${port}`,
-            "/healthz"
+            "/status/ready"
         )();
         assert.deepEqual(return_.ready, true);
     });

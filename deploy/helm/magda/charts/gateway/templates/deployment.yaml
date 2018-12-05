@@ -65,13 +65,6 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /status/ready
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}

@@ -15,6 +15,7 @@ export interface OptionsIO {
     // outputs
     ready?: boolean;
     _installed?: any;
+    _probes?: any;
     since?: string;
     last?: string;
     details?: any;
@@ -30,6 +31,8 @@ export interface State {
     latencyMs?: number;
 }
 
+// In case anyone is confused, this does not duplicate or replace kubernetes functionality
+// It just makes service and dependency status visible to everyone
 export function createStatusRouter(options: OptionsIO = {}): Router {
     const router = Router();
 
@@ -58,6 +61,18 @@ export function createStatusRouter(options: OptionsIO = {}): Router {
         });
     });
 
+    // added this for diagnosing service state based on latency in kubernetes
+    router.get("/readySync", async function(req, res) {
+        await Promise.all(Object.values(options._probes).map(x => x()));
+        res.status(options.ready ? 200 : 500).json({
+            ready: options.ready,
+            since: options.since,
+            last: options.last,
+            details: options.details,
+            now: new Date().toISOString()
+        });
+    });
+
     return router;
 }
 
@@ -70,6 +85,7 @@ function installUpdater(options: OptionsIO) {
         options.details = {};
         options.since = new Date().toISOString();
         options._installed = {};
+        options._probes = {};
     }
     if (!options.probes) {
         return;
@@ -79,7 +95,7 @@ function installUpdater(options: OptionsIO) {
     Object.entries(options.probes).forEach(probe => {
         const [id, callback] = probe;
         if (!options._installed[id]) {
-            async function update() {
+            async function update(dontUpdate?: boolean) {
                 try {
                     const startMs = Date.now();
                     let previousState: any = options.details[id];
@@ -99,6 +115,11 @@ function installUpdater(options: OptionsIO) {
                             console.error("ERROR", id, e.stack);
                             nextState.error = e.message;
                         }
+                    }
+                    if (typeof nextState !== "object") {
+                        nextState = {
+                            ready: false
+                        };
                     }
                     nextState.latencyMs = Date.now() - startMs;
                     options.last = nextState.last = new Date().toISOString();
@@ -133,13 +154,16 @@ function installUpdater(options: OptionsIO) {
                 } catch (e) {
                     console.error("ERROR", id, e.stack);
                 }
-                setTimeout(update, options.probeUpdateMs).unref();
+                if (!dontUpdate) {
+                    setTimeout(update, options.probeUpdateMs).unref();
+                }
             }
             // let's not bother running this inside test cases
             const isInTest = typeof it === "function";
             if (!isInTest || options.forceRun) {
                 update();
             }
+            options._probes[id] = update.bind(null, true);
             options._installed[id] = true;
         }
     });
@@ -155,10 +179,6 @@ export function installStatusRouter(
     options: OptionsIO = {},
     routePrefix: string = ""
 ) {
-    // leagy google standard
-    app.use(routePrefix + "/healthz", function(req: any, res: any, next: any) {
-        res.redirect(routePrefix + "/status/ready");
-    });
     app.use(routePrefix + "/status", createStatusRouter(options));
 }
 

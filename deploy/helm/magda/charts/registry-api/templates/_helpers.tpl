@@ -53,9 +53,9 @@ spec:
           httpGet:
             path: /v0/status/live
             port: 80
-          initialDelaySeconds: 10
+          initialDelaySeconds: 60
           periodSeconds: 10
-          timeoutSeconds: 10
+          timeoutSeconds: {{ .root.Values.livenessProbe.timeoutSeconds | default 10 }}
         readinessProbe:
           httpGet:
             path: /v0/status/ready
