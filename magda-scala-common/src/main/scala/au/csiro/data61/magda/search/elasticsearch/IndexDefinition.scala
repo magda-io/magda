@@ -221,7 +221,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("regionType"),
               keywordField("regionId"),
               magdaTextField("regionName"),
-              textField("regionNameComplete"),
               magdaTextField("regionShortName"),
               geoshapeField("boundingBox"),
               geoshapeField("geometry"),
