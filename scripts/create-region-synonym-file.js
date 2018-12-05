@@ -120,6 +120,10 @@ async function createFile(outputFile, regionSources) {
     for (const regionType in regionSources) {
         console.log(`Processing region ${regionType}...`);
         const regionConfig = { ...regionSources[regionType], type: regionType };
+        targetFileStream.write(
+            `\n\n# Region Type: ${regionType}\n# From: ${regionConfig.url}\n\n`,
+            "utf-8"
+        );
         await processRegionDataPipeline(regionConfig, targetFileStream);
     }
     targetFileStream.end();
