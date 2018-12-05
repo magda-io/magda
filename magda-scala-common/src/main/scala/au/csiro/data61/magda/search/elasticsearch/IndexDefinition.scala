@@ -206,11 +206,18 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
     })
 
+  val MagdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
+    "search_region_synonym_graph_filter",
+    Some("analysis/regionSynonyms.txt"),
+    Set.empty,
+    None
+  )
+
   val REGION_LANGUAGE_FIELDS = Seq("regionName")
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 21,
+      version = 22,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         createIndex(indices.getIndex(config, Indices.RegionsIndex))
@@ -231,7 +238,16 @@ object IndexDefinition extends DefaultJsonProtocol {
             CustomAnalyzerDefinition(
               "quote",
               KeywordTokenizer,
-              LowercaseTokenFilter)),
+              LowercaseTokenFilter),
+            CustomAnalyzerDefinition(
+              "region_synonym_graph_for_search",
+              WhitespaceTokenizer,
+              List(
+                LowercaseTokenFilter,
+                MagdaRegionSynonymTokenFilter
+              )
+            )
+          ),
       create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem)))
 
 
