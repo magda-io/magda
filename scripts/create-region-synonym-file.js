@@ -46,6 +46,10 @@ function createLineFromRegionData(regionConfig, item) {
         regionConfig.idField
     ].toLowerCase()}`;
     const regionName = data[regionConfig.nameField].trim().toLowerCase();
+    // --- skip pure number region name
+    if (!regionName.match(/[a-z]/)) {
+        return "";
+    }
     const regionShortName =
         regionConfig.shortNameField && data[regionConfig.shortNameField]
             ? data[regionConfig.shortNameField].trim().toLowerCase()
@@ -91,6 +95,9 @@ async function processRegionDataPipeline(regionConfig, targetStream) {
         remoteDataStream.on("data", data => {
             try {
                 const line = createLineFromRegionData(regionConfig, data);
+                if (!line) {
+                    return;
+                }
                 console.log(`writing ${line}`);
                 targetStream.write(line + "\n", "utf-8");
             } catch (e) {
@@ -101,13 +108,6 @@ async function processRegionDataPipeline(regionConfig, targetStream) {
             reject(e);
         });
         remoteDataStream.on("end", resolve);
-    });
-}
-
-function waitForPipeEnd(pipeline) {
-    return new Promise((resolve, reject) => {
-        pipeline.on("error", e => reject(e));
-        pipeline.on("end", resolve);
     });
 }
 
@@ -133,9 +133,7 @@ try {
     createFile(argv.outputFile, argv.regionSources)
         .then(() => {
             console.error(
-                `Successfully created region synonym file: ${
-                    argv.regionSources
-                }.`
+                `Successfully created region synonym file: ${argv.outputFile}.`
             );
             process.exit(0);
         })
