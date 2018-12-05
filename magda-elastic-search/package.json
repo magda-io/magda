@@ -6,7 +6,8 @@
     "dev": "create-pod-and-forward --configuration ../deploy/kubernetes/local/base/elasticsearch.yml --selector component=elasticsearch --port 9300",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "retag-and-push": "retag-and-push"
+    "retag-and-push": "retag-and-push",
+    "create-region-file": "create-region-synonym-file"
   },
   "author": "",
   "license": "Apache-2.0",

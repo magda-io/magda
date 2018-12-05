@@ -12,9 +12,11 @@
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
     "create-secrets": "create-secrets/index.js",
-    "set-scss-vars": "set-scss-vars.js"
+    "set-scss-vars": "set-scss-vars.js",
+    "create-region-synonym-file": "create-region-synonym-file.js"
   },
   "devDependencies": {
+    "@types/request": "^2.48.1",
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
     "chalk": "^2.4.1",
@@ -47,5 +49,9 @@
     "categories": {
       "library": true
     }
+  },
+  "dependencies": {
+    "request": "^2.88.0",
+    "stream-json": "^1.1.3"
   }
 }
