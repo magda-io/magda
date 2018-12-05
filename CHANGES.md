@@ -2,6 +2,7 @@
 
 -   Redirect HTTP requests to HTTPS URLs
 -   Fixed chart won't displayed correctly under IE11
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
 
 ## 0.0.50
 
@@ -104,7 +105,6 @@
 -   Whitelist KMZ.
 -   Rename sleuthers to minions
 -   Add ability to change content (logo).
--   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
 -   CSW connector will exit with code 1 if error happens
 -   Fixed an issue of format enhancer processing MIME
 -   Fixed an issue that format enhancer may exit when dcat-string not available
