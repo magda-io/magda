@@ -149,7 +149,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def augmentWithBoostRegions(query: Query)(implicit client: HttpClient): Future[Query] = {
     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-        query { boolQuery().should(matchQuery("regionShortName", freeText), matchQuery("regionName", freeText)) }
+        query(matchQuery("_id", freeText).operator("or").analyzer("region_synonym_graph_for_search"))
         limit 50
       ).map {
         case Left(ESGenericException(e)) => throw e
