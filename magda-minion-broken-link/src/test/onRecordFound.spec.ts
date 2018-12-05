@@ -44,7 +44,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     const registry = new AuthorizedRegistryClient({
         baseUrl: registryUrl,
         jwtSecret: secret,
-        userId: "1"
+        userId: "1",
+        maxRetries: 0
     });
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };
@@ -200,12 +201,13 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         );
 
                         if (success !== "error") {
-                            if (!disallowHead) {
-                                intercept.reply(
-                                    success === "success" ? 200 : 404
-                                );
+                            if (!disallowHead && success === "success") {
+                                intercept.reply(200);
                             } else {
-                                intercept.reply(405);
+                                // Not everything returns a 405 for HEAD not allowed :()
+                                intercept.reply(
+                                    success === "success" ? 400 : 405
+                                );
                                 const scopeGet = scope.get(
                                     url.endsWith("/") ? "/" : ""
                                 );
@@ -348,7 +350,15 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         .reply(201);
                 });
 
-                return onRecordFound(record, registry, 0, 0, fakeFtpHandler)
+                return onRecordFound(
+                    record,
+                    registry,
+                    0,
+                    0,
+                    {},
+                    {},
+                    fakeFtpHandler
+                )
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
@@ -482,15 +492,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                                 )
                                                 .reply(failureCode);
 
-                                            if (failureCode === 405) {
-                                                scope
-                                                    .get(
-                                                        url.endsWith("/")
-                                                            ? "/"
-                                                            : ""
-                                                    )
-                                                    .reply(failureCode);
-                                            }
+                                            scope
+                                                .get(
+                                                    url.endsWith("/") ? "/" : ""
+                                                )
+                                                .reply(failureCode);
                                         });
                                         if (
                                             i < allResults.length - 1 ||
@@ -639,12 +645,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     .delay(delayMs)
                                     .reply(failureCode);
 
-                                if (failureCode === 405) {
-                                    scope
-                                        .get(uri.path())
-                                        .delay(delayMs)
-                                        .reply(failureCode);
-                                }
+                                scope
+                                    .get(uri.path())
+                                    .delay(delayMs)
+                                    .reply(failureCode);
                             });
 
                             scope

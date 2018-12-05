@@ -1,4 +1,6 @@
 import * as _ from "lodash";
+import { CoreOptions } from "request";
+
 import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -15,8 +17,9 @@ export default async function onRecordFound(
     registry: Registry,
     retries: number = 1,
     baseRetryDelaySeconds: number = 1,
-    ftpHandler: FTPHandler = new FTPHandler(),
-    domainWaitTimeConfig: object = {}
+    domainWaitTimeConfig: { [domain: string]: number } = {},
+    requestOpts: CoreOptions = {},
+    ftpHandler: FTPHandler = new FTPHandler()
 ) {
     const distributions: Record[] =
         record.aspects["dataset-distributions"] &&
@@ -36,7 +39,8 @@ export default async function onRecordFound(
                 baseRetryDelaySeconds,
                 retries,
                 ftpHandler,
-                _.partialRight(getUrlWaitTime, domainWaitTimeConfig)
+                _.partialRight(getUrlWaitTime, domainWaitTimeConfig),
+                requestOpts
             )
     );
 
@@ -130,6 +134,8 @@ type DistributionLinkCheck = {
  * @param baseRetryDelay The first amount of time that will be waited between retries - it increases exponentially on subsequent retries
  * @param retries Number of retries before giving up
  * @param ftpHandler The FTP handler to use for FTP addresses
+ * @param getUrlWaitTime The function to use to get the wait time before the next request can be made for a URL
+ * @param requestOpts The base options to use for the request library (e.g. timeouts, headers etc)
  */
 function checkDistributionLink(
     distribution: Record,
@@ -137,7 +143,8 @@ function checkDistributionLink(
     baseRetryDelay: number,
     retries: number,
     ftpHandler: FTPHandler,
-    getUrlWaitTime: (url: string) => number
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): DistributionLinkCheck[] {
     type DistURL = {
         url?: uri.URI;
@@ -186,7 +193,8 @@ function checkDistributionLink(
                     baseRetryDelay,
                     retries,
                     ftpHandler,
-                    getUrlWaitTime
+                    getUrlWaitTime,
+                    requestOpts
                 )
                     .then(aspect => {
                         console.info("Finished retrieving  " + parsedURL);
@@ -215,14 +223,16 @@ function retrieve(
     baseRetryDelay: number,
     retries: number,
     ftpHandler: FTPHandler,
-    getUrlWaitTime: (url: string) => number
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): Promise<BrokenLinkAspect> {
     if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
         return retrieveHttp(
             parsedURL.toString(),
             baseRetryDelay,
             retries,
-            getUrlWaitTime
+            getUrlWaitTime,
+            requestOpts
         );
     } else if (parsedURL.protocol() === "ftp") {
         return retrieveFtp(parsedURL, ftpHandler);
@@ -270,19 +280,17 @@ async function retrieveHttp(
     url: string,
     baseRetryDelay: number,
     retries: number,
-    getUrlWaitTime: (url: string) => number
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): Promise<BrokenLinkAspect> {
     async function operation() {
         try {
             await wait(getUrlWaitTime(url));
-            return await headRequest(url);
+            return await headRequest(url, requestOpts);
         } catch (e) {
-            if (e.httpStatusCode && e.httpStatusCode === 405) {
-                // --- HEAD Method not allowed
-                await wait(getUrlWaitTime(url));
-                return await getRequest(url);
-            }
-            throw e;
+            // --- HEAD Method not allowed
+            await wait(getUrlWaitTime(url));
+            return await getRequest(url, requestOpts);
         }
     }
 
@@ -291,6 +299,9 @@ async function retrieveHttp(
             `Downloading ${url} failed: ${err.httpStatusCode ||
                 err} (${retries} retries remaining)`
         );
+        if (!err.httpStatusCode) {
+            console.error(err);
+        }
     };
 
     const innerOp = () =>

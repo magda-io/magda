@@ -1,4 +1,8 @@
 image: {}
+domainWaitTimeConfig:
+  data.csiro.au: 60
+  data.gov.au: 60
+  data.act.gov.au: 30
 resources:
   requests:
     cpu: 50m

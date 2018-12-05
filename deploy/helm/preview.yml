@@ -10,6 +10,8 @@ tags:
   all: true
   ingress: true
 
+  minion-broken-link: true
+
 ingress:
   ingressClass: nginx
   enableTls: true
@@ -98,3 +100,12 @@ correspondence-api:
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
+
+connectors:
+  config:
+    - image:
+        name: magda-dap-connector
+      id: dap
+      name: CSIRO
+      sourceUrl: https://data.csiro.au/dap/ws/v2/
+      pageSize: 100
