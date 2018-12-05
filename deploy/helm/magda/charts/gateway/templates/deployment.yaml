@@ -15,6 +15,8 @@ spec:
       - name: gateway
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.internalPort }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
@@ -22,6 +24,9 @@ spec:
             "--externalUrl", {{ .Values.global.externalUrl | quote }},
             {{- if .Values.ckanRedirectionDomain }}
             "--ckanRedirectionDomain", {{ .Values.ckanRedirectionDomain | quote }},
+            {{- end }}
+            {{- if .Values.ckanRedirectionPath }}
+            "--ckanRedirectionPath", {{ .Values.ckanRedirectionPath | quote }},
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
@@ -36,6 +41,9 @@ spec:
 {{- end }}
 {{- if .Values.enableWebAccessControl }}
             "--enableWebAccessControl", {{ .Values.enableWebAccessControl | quote }},
+{{- end }}
+{{- if .Values.enableHttpsRedirection }}
+            "--enableHttpsRedirection", {{ .Values.enableHttpsRedirection | quote }},
 {{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",

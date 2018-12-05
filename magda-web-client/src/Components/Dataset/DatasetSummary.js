@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import uniq from "lodash.uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";
 import Divider from "../../UI/Divider";
-import ga from "../../analytics/googleAnalytics";
+import { gapi } from "../../analytics/ga";
 
 export default class DatasetSummary extends Component {
     constructor(props) {
@@ -22,12 +22,12 @@ export default class DatasetSummary extends Component {
                 .filter(dis => defined(dis.format))
                 .map(dis => dis.format)
         );
-        return (
+        return formats.length ? (
             <div className="dataset-summary-downloads">
                 <img src={fileIcon} alt="File icon" />{" "}
                 {formats.map((f, i) => <span key={i}>{f}</span>)}
             </div>
-        );
+        ) : null;
     }
 
     render() {
@@ -53,13 +53,10 @@ export default class DatasetSummary extends Component {
                         )}?q=${searchText}`}
                         onClick={() => {
                             if (searchResultNumber) {
-                                ga("send", {
-                                    hitType: "event",
-                                    eventCategory: "Search and Result Clicked",
-                                    eventAction: this.props.searchText,
-                                    eventLabel: (
-                                        searchResultNumber + 1
-                                    ).toString()
+                                gapi.event({
+                                    category: "Search and Result Clicked",
+                                    action: this.props.searchText,
+                                    label: (searchResultNumber + 1).toString()
                                 });
                             }
                         }}
@@ -89,12 +86,13 @@ export default class DatasetSummary extends Component {
                             <Divider />
                         </span>
                     )}
-                    {defined(dataset.quality) && (
-                        <div className="dataset-summary-quality">
-                            <QualityIndicator quality={dataset.quality} />
-                            <Divider />
-                        </div>
-                    )}
+                    {dataset.hasQuality &&
+                        defined(dataset.quality) && (
+                            <div className="dataset-summary-quality">
+                                <QualityIndicator quality={dataset.quality} />
+                                <Divider />
+                            </div>
+                        )}
                     {defined(
                         dataset.distributions &&
                             dataset.distributions.length > 0

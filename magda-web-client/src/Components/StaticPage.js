@@ -1,42 +1,81 @@
-import React from "react";
-import { contents } from "../content/register";
-import { config } from "../config";
+import React, { Component } from "react";
 import Breadcrumbs from "../UI/Breadcrumbs";
 import { Medium } from "../UI/Responsive";
-import ReactDocumentTitle from "react-document-title";
-import { Redirect } from "react-router-dom";
+import MagdaDocumentTitle from "../Components/i18n/MagdaDocumentTitle";
+import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
+import { connect } from "react-redux";
+import { markdownToHtml } from "../UI/MarkdownViewer";
 import "./StaticPage.css";
 
-export default function StaticPage(props) {
-    const id = props.match.params.id;
-    const content = contents.get(id);
+import { fetchStaticPage } from "../actions/staticPagesActions";
+import { bindActionCreators } from "redux";
 
-    const breadcrumb = [
-        <li>
-            <span>{content.title}</span>
-        </li>
-    ];
-    if (content) {
+class StaticPage extends Component {
+    componentDidMount() {
+        // check if we are on distribution page:
+        if (this.props.match.params.pageId) {
+            this.props.fetchStaticPage(this.props.match.params.pageId);
+        }
+        // this.updateGAEvent(this.props);
+    }
+
+    render() {
+        const title = this.props.page.title;
+        const contentRaw = this.props.page.content;
+
+        const content = safeLoadFront(contentRaw);
+        const bodyContent = content.__content;
+
+        const breadcrumb = [
+            <li key={0}>
+                <span>{title}</span>
+            </li>
+        ];
         return (
-            <ReactDocumentTitle
-                title={`${content.title ? content.title : id} | ${
-                    config.appName
-                }`}
-            >
-                <div className={`static-page-container container page-${id}`}>
+            <MagdaDocumentTitle prefixes={[title]}>
+                <div
+                    className={`static-page-container container page-${
+                        this.props.path
+                    }`}
+                >
                     <Medium>
                         <Breadcrumbs breadcrumbs={breadcrumb} />
                     </Medium>
-                    <h1> {content.title && content.title} </h1>
+                    <h1> {title} </h1>
                     <div
                         className="markdown-body"
                         dangerouslySetInnerHTML={{
-                            __html: content.__content
+                            __html: markdownToHtml(bodyContent)
                         }}
                     />
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
-    return <Redirect to={"/404"} />;
 }
+
+function mapStateToProps(state, old) {
+    const path = old.match.params.pageId;
+    return {
+        strings: state.content.strings,
+        path,
+        page: state.staticPages[path] || {
+            title: "Loading...",
+            content: "Loading..."
+        }
+    };
+}
+
+const mapDispatchToProps = dispatch => {
+    return bindActionCreators(
+        {
+            fetchStaticPage
+        },
+        dispatch
+    );
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(StaticPage);

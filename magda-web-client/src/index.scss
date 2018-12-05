@@ -80,8 +80,7 @@ a.au-btn:hover:not(:disabled) {
     border: 0;
 }
 
-.au-body.au-body--dark,
-.au-footer.au-footer--dark {
+.au-body.au-body--dark {
     border-color: $AU-colordark-foreground-focus !important;
     background: $AU-colordark-background !important;
     color: $AU-colordark-foreground-text !important;
@@ -91,6 +90,20 @@ a.au-btn:hover:not(:disabled) {
         &:hover,
         &:focus {
             color: $AU-colordark-foreground-focus !important;
+        }
+    }
+}
+
+.au-footer.au-footer--dark {
+    border-color: $footer-color-border !important;
+    background: $footer-color-background !important;
+    color: $footer-color-text !important;
+    a,
+    button {
+        color: $footer-color-action !important;
+        &:hover,
+        &:focus {
+            color: $footer-color-focus !important;
         }
     }
 }

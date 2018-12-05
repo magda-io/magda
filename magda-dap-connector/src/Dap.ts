@@ -3,7 +3,7 @@ import DapUrlBuilder from "./DapUrlBuilder";
 import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import * as URI from "urijs";
 
 export interface DapThing {
@@ -116,13 +116,17 @@ export default class Dap implements ConnectorSource {
     public getJsonDataset(id: string): Promise<any> {
         const url = this.urlBuilder.getPackageShowUrl(id);
         return new Promise<any>((resolve, reject) => {
-            request(url, { json: true }, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                    return;
+            request(
+                url,
+                { json: true, timeout: 60000, pool: { maxSockets: 1000 } },
+                (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    resolve(body);
                 }
-                resolve(body);
-            });
+            );
         });
     }
     public getJsonDistributions(dataset: any): AsyncPage<object[]> {
@@ -249,7 +253,7 @@ export default class Dap implements ConnectorSource {
                 // console.log("Requesting " + requestUrl);
                 request(
                     requestUrl,
-                    { json: true },
+                    { json: true, timeout: 60000, pool: { maxSockets: 1000 } },
                     async (error, response, body) => {
                         if (error) {
                             reject(error);
@@ -278,7 +282,11 @@ export default class Dap implements ConnectorSource {
                                 return new Promise<any>((resolve2, reject2) => {
                                     request(
                                         url,
-                                        { json: true },
+                                        {
+                                            json: true,
+                                            timeout: 60000,
+                                            pool: { maxSockets: 1000 }
+                                        },
                                         (error, response, detail) => {
                                             console.log(
                                                 ">> request detail of " + url
@@ -286,6 +294,14 @@ export default class Dap implements ConnectorSource {
                                             if (error) {
                                                 reject2(error);
                                                 return;
+                                            }
+                                            if (detail.access) {
+                                                // --- added access info to description
+                                                // --- so that we know why the dataset has no distribution
+                                                // --- and when the distribution will be available for public
+                                                detail.description = `${
+                                                    detail.description
+                                                }\n\n${detail.access}\n\n`;
                                             }
                                             resolve2(detail);
                                         }
@@ -309,12 +325,45 @@ export default class Dap implements ConnectorSource {
                                             (resolve3, reject3) => {
                                                 request(
                                                     simpleData.data,
-                                                    { json: true },
+                                                    {
+                                                        json: true,
+                                                        timeout: 60000,
+                                                        pool: {
+                                                            maxSockets: 1000
+                                                        }
+                                                    },
                                                     (
                                                         error,
                                                         response,
                                                         detail
                                                     ) => {
+                                                        if (
+                                                            detail &&
+                                                            detail.errors &&
+                                                            detail.errors.length
+                                                        ) {
+                                                            // --- handle access error
+                                                            const id =
+                                                                simpleData.id
+                                                                    .identifier;
+                                                            console.log(
+                                                                `** Unable to fetch files for collection: ${id}; url: ${
+                                                                    simpleData.data
+                                                                }`
+                                                            );
+                                                            console.log(
+                                                                `** Reason: ${
+                                                                    detail
+                                                                        .errors[0]
+                                                                        .defaultMessage
+                                                                }`
+                                                            );
+                                                            resolve3({
+                                                                identifier: id,
+                                                                distributions: []
+                                                            });
+                                                            return;
+                                                        }
                                                         console.log(
                                                             ">> request distribution of " +
                                                                 simpleData.data,

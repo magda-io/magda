@@ -16,9 +16,6 @@
             padding: 0.6rem;
             &.isActive {
                 background: $AU-color-foreground-action;
-                img {
-                    filter: grayscale(1) brightness(10);
-                }
             }
             &:hover {
                 outline: $AU-colordark-foreground-focus auto 5px;

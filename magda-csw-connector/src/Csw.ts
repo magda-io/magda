@@ -1,6 +1,6 @@
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import * as URI from "urijs";
-import * as request from "request";
+import request from "@magda/typescript-common/dist/request";
 import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
 import CswUrlBuilder from "./CswUrlBuilder";
 import retry from "@magda/typescript-common/dist/retry";

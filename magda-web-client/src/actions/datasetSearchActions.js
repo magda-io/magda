@@ -88,9 +88,13 @@ export function shouldFetchSearchResults(
 }
 
 export function fetchSearchResultsIfNeeded(urlQueryObject: Object): Store {
-    const apiQuery = buildSearchQueryString(urlQueryObject);
     return (dispatch, getState) => {
-        if (shouldFetchSearchResults(getState(), urlQueryObject.q, apiQuery)) {
+        const state = getState();
+        const apiQuery = buildSearchQueryString(
+            urlQueryObject,
+            state.content.configuration.searchResultsPerPage
+        );
+        if (shouldFetchSearchResults(state, urlQueryObject.q, apiQuery)) {
             return dispatch(fetchSearchResults(apiQuery, urlQueryObject));
         }
     };

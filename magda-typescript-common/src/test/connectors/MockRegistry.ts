@@ -31,7 +31,7 @@ export class MockRegistry extends MockExpressServer {
                 )) {
                     try {
                         let invalid = this.env.validate(
-                            `${aspect}#`,
+                            `${aspect}`,
                             aspectBody
                         );
                         if (invalid) {

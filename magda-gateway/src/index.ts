@@ -15,6 +15,7 @@ import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
+import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -144,6 +145,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "ckan.data.gov.au"
         })
+        .option("ckanRedirectionPath", {
+            describe:
+                "The target path for redirecting ckan Urls. If not specified, default value `` will be used.",
+            type: "string",
+            default: ""
+        })
         .option("enableWebAccessControl", {
             describe:
                 "Whether users are required to enter a username & password to access the magda web interface",
@@ -161,6 +168,11 @@ const argv = addJwtSecretFromEnvVar(
                 "The web access password required for all users to access Magda web interface if `enableWebAccessControl` is true.",
             type: "string",
             default: process.env.WEB_ACCESS_PASSWORD
+        })
+        .option("enableHttpsRedirection", {
+            describe: "Whether redirect any http requests to https URLs",
+            type: "boolean",
+            default: false
         })
         .option("userId", {
             describe:
@@ -180,6 +192,10 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+
+// Redirect http url to https
+app.set("trust proxy", true);
+app.use(createHttpsRedirectionMiddleware(argv.enableHttpsRedirection));
 
 // GZIP responses where appropriate
 app.use(compression());
@@ -253,6 +269,7 @@ app.use("/preview-map", createGenericProxy(argv.previewMap));
 app.use(
     createCkanRedirectionRouter({
         ckanRedirectionDomain: argv.ckanRedirectionDomain,
+        ckanRedirectionPath: argv.ckanRedirectionPath,
         registryApiBaseUrlInternal: routes.registry.to
     })
 );

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getUserIdHandling } from "../session/GetUserId";
+import { getUserId, getUserIdHandling } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 
 export const mustBeLoggedIn = (jwtSecret: string) =>
@@ -10,43 +10,44 @@ export const mustBeLoggedIn = (jwtSecret: string) =>
         });
     };
 
-export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => (
+/**
+ * Find the user making the request. Assign it to req passport style.
+ */
+export const getUser = (baseAuthUrl: string, jwtSecret: string) => (
     req: Request,
     res: Response,
     next: () => void
 ) => {
-    const rejectNoAuth = () => res.status(401).send("Not authorized.");
-
-    getUserIdHandling(req, res, jwtSecret, (userId: string) => {
-        const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
-
-        apiClient
-            .getUser(userId)
-            .then(maybeUser => {
-                maybeUser.caseOf({
-                    just: user => {
-                        if (user.isAdmin) {
+    getUserId(req, jwtSecret).caseOf({
+        just: userId => {
+            const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
+            apiClient
+                .getUser(userId)
+                .then(maybeUser => {
+                    maybeUser.caseOf({
+                        just: user => {
+                            req.user = user;
                             next();
-                        } else {
-                            console.warn(
-                                "Rejecting because user is not an admin"
-                            );
-                            rejectNoAuth();
-                        }
-                    },
-                    nothing: () => {
-                        console.warn(
-                            "Rejecting because no user or user is not an admin"
-                        );
-                        rejectNoAuth();
-                    }
-                });
-            })
-            .catch(function(error) {
-                console.warn(
-                    "Rejecting because no user or user is not an admin"
-                );
-                rejectNoAuth();
-            });
+                        },
+                        nothing: next
+                    });
+                })
+                .catch(() => next());
+        },
+        nothing: next
     });
+};
+
+export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
+    const getUserInstance = getUser(baseAuthUrl, jwtSecret);
+    return (req: Request, res: Response, next: () => void) => {
+        getUserInstance(req, res, () => {
+            if (req.user && req.user.isAdmin) {
+                next();
+            } else {
+                console.warn("Rejecting because user is not an admin");
+                res.status(401).send("Not authorized.");
+            }
+        });
+    };
 };

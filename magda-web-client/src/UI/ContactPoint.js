@@ -2,8 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import MarkdownViewer from "../UI/MarkdownViewer";
+import MagdaNamespacesConsumer from "../Components/i18n/MagdaNamespacesConsumer";
 import ToggleButton from "./ToggleButton";
-import ga from "../analytics/googleAnalytics";
+import { gapi } from "../analytics/ga";
 
 import "./ContactPoint.css";
 
@@ -11,13 +12,11 @@ class ContactPoint extends React.Component {
     state = { reveal: false };
 
     onRevealButtonClick = () => {
-        ga("send", {
-            hitType: "event",
-            eventCategory: "User Engagement",
-            eventAction: "Dataset Contact Point Reveal",
-            eventLabel: this.props.contactPoint
+        gapi.event({
+            category: "User Engagement",
+            action: "Dataset Contact Point Reveal",
+            label: this.props.contactPoint
         });
-
         this.setState({
             reveal: true
         });
@@ -25,16 +24,24 @@ class ContactPoint extends React.Component {
 
     render() {
         return (
-            <div className="dataset-contact-point">
-                <div className="heading">Contact Point: </div>
-                {this.state.reveal ? (
-                    <MarkdownViewer markdown={this.props.contactPoint} />
-                ) : (
-                    <ToggleButton onClick={this.onRevealButtonClick}>
-                        <span>Click to reveal</span>
-                    </ToggleButton>
+            <MagdaNamespacesConsumer ns={["datasetPage"]}>
+                {translate => (
+                    <div className="dataset-contact-point">
+                        <div className="heading">
+                            {translate(["contactPointTitle", "Contact Point"])}:
+                        </div>
+                        {this.state.reveal ? (
+                            <MarkdownViewer
+                                markdown={this.props.contactPoint}
+                            />
+                        ) : (
+                            <ToggleButton onClick={this.onRevealButtonClick}>
+                                <span>Click to reveal</span>
+                            </ToggleButton>
+                        )}
+                    </div>
                 )}
-            </div>
+            </MagdaNamespacesConsumer>
         );
     }
 }

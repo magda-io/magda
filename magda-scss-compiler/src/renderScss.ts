@@ -1,8 +1,9 @@
 import * as sass from "node-sass";
 import * as cleancss from "clean-css";
-import * as tempy from "tempy";
 import * as fse from "fs-extra";
 import * as escapeStringRegexp from "escape-string-regexp";
+import * as postcss from "postcss";
+import * as autoprefixer from "autoprefixer";
 
 export const renderScssData = (clientRoot: string, data: string) => {
     return new Promise((resolve, reject) => {
@@ -46,8 +47,22 @@ export const renderScssData = (clientRoot: string, data: string) => {
         );
     })
         .then((result: sass.Result) => {
+            return postcss([autoprefixer])
+                .process(result.css.toString("utf-8"), {
+                    //--- from & to are name only used for sourcemap
+                    from: "node-sass-raw.css",
+                    to: "stylesheet.css"
+                })
+                .then(function(result) {
+                    result.warnings().forEach(function(warn) {
+                        console.warn(warn.toString());
+                    });
+                    return result.css;
+                });
+        })
+        .then((css: string) => {
             const cssOption: any = { returnPromise: true };
-            return new cleancss(cssOption).minify(result.css);
+            return new cleancss(cssOption).minify(css);
         })
         .then(cssResult => cssResult.styles);
 };
@@ -83,19 +98,12 @@ export const renderScssFilesExtra = async (
     const varFileContent: string = await fse.readFile(orgVarFile, {
         encoding: "utf-8"
     });
-    const varFile = tempy.file();
-    await fse.writeFile(varFile, replaceParamsFromScss(varFileContent, params));
-    const idxFileContent: string = await fse.readFile(orgIdxfile, {
-        encoding: "utf-8"
-    });
-    const indexFile = tempy.file();
     await fse.writeFile(
-        indexFile,
-        idxFileContent.replace(`@import "variables";`, "")
+        orgVarFile,
+        replaceParamsFromScss(varFileContent, params)
     );
 
-    otherfiles.unshift(indexFile);
-    otherfiles.unshift(varFile);
+    otherfiles.unshift(orgIdxfile);
     return await renderScssData(
         clientRoot,
         otherfiles.map((file: string) => `@import "${file}";`).join("")

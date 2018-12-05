@@ -96,7 +96,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 namespace,
                 "cloudsql-instance-credentials",
                 "credentials.json",
-                configData["cloudsql-instance-credentials"]
+                configData["cloudsql-instance-credentials"]["data"]
             );
         }
 
@@ -106,7 +106,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 namespace,
                 "storage-account-credentials",
                 "db-service-account-private-key.json",
-                configData["storage-account-credentials"]
+                configData["storage-account-credentials"]["data"]
             );
         }
 
@@ -242,7 +242,20 @@ function overrideSettingWithEnvVars(env, configData) {
     getEnvVarInfo().forEach(item => {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
-        configData[item.settingName] = envVal;
+        if (item.dataType === "boolean") {
+            const value = envVal.toLowerCase().trim();
+            if (value === "false" || value === "0") {
+                configData[item.settingName] = false;
+            } else {
+                configData[item.settingName] = true;
+            }
+        } else if (item.dataType === "jsonfile") {
+            configData[item.settingName] = {
+                data: JSON.parse(envVal)
+            };
+        } else {
+            configData[item.settingName] = envVal;
+        }
     });
 
     return configData;

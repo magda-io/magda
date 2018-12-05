@@ -1,11 +1,10 @@
 import "./Search.css";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import { config } from "../../config";
 import defined from "../../helpers/defined";
 import Pagination from "../../UI/Pagination";
 import Notification from "../../UI/Notification";
-import ReactDocumentTitle from "react-document-title";
+import MagdaDocumentTitle from "../../Components/i18n/MagdaDocumentTitle";
 import React, { Component } from "react";
 import SearchFacets from "../../Components/SearchFacets/SearchFacets";
 import SearchResults from "../SearchResults/SearchResults";
@@ -163,12 +162,15 @@ class Search extends Component {
         const currentPage =
             +queryString.parse(this.props.location.search).page || 1;
         const isBlankSearch = searchText === "*" || searchText === "";
+        const searchResultsPerPage = this.props.configuration
+            .searchResultsPerPage;
 
         return (
-            <ReactDocumentTitle
-                title={`Datasets search: ${searchText} | Page ${currentPage} | ${
-                    config.appName
-                }`}
+            <MagdaDocumentTitle
+                prefixes={[
+                    `Datasets search: ${searchText}`,
+                    `Page ${currentPage}`
+                ]}
             >
                 <div>
                     {this.props.isFetching && <ProgressBar />}
@@ -182,21 +184,17 @@ class Search extends Component {
                                 !this.props.error && (
                                     <div className="sub-heading">
                                         {" "}
-                                        results {this.filterCount()} ({
-                                            this.props.hitCount
-                                        }
-                                        )
+                                        results {this.filterCount()} (
+                                        {this.props.hitCount})
                                     </div>
                                 )}
                             {!this.props.isFetching &&
                                 !this.props.error && (
                                     <div>
-                                        {!this.searchBoxEmpty() && (
-                                            <MatchingStatus
-                                                datasets={this.props.datasets}
-                                                strategy={this.props.strategy}
-                                            />
-                                        )}
+                                        <MatchingStatus
+                                            datasets={this.props.datasets}
+                                            strategy={this.props.strategy}
+                                        />
 
                                         {// redirect if we came from a 404 error and there is only one result
                                         queryString.parse(
@@ -228,12 +226,12 @@ class Search extends Component {
                                             suggestionBoxAtEnd={isBlankSearch}
                                         />
                                         {this.props.hitCount >
-                                            config.resultsPerPage && (
+                                            searchResultsPerPage && (
                                             <Pagination
                                                 currentPage={currentPage}
                                                 maxPage={Math.ceil(
                                                     this.props.hitCount /
-                                                        config.resultsPerPage
+                                                        searchResultsPerPage
                                                 )}
                                                 onPageChange={this.onPageChange}
                                                 totalItems={this.props.hitCount}
@@ -252,7 +250,7 @@ class Search extends Component {
                         </div>
                     </div>
                 </div>
-            </ReactDocumentTitle>
+            </MagdaDocumentTitle>
         );
     }
 }
@@ -283,7 +281,9 @@ function mapStateToProps(state, ownProps) {
         isFetching: datasetSearch.isFetching,
         strategy: datasetSearch.strategy,
         error: datasetSearch.error,
-        freeText: datasetSearch.freeText
+        freeText: datasetSearch.freeText,
+        strings: state.content.strings,
+        configuration: state.content.configuration
     };
 }
 

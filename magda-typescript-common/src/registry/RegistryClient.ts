@@ -24,6 +24,7 @@ export interface PutResult {
 
 export interface RecordsPage<I extends Record> {
     totalCount: number;
+    hasMore: boolean;
     nextPageToken?: string;
     records: I[];
 }

@@ -3,6 +3,7 @@ const cleanOrgTitle = libraries.cleanOrgTitle;
 let phone = undefined;
 let website = undefined;
 let email = undefined;
+let jurisdiction = undefined;
 
 if (organization && organization.extras && organization.extras.length) {
     organization.extras.forEach(item => {
@@ -16,6 +17,9 @@ if (organization && organization.extras && organization.extras.length) {
             case "website":
                 website = item["value"];
                 break;
+            case "jurisdiction":
+                jurisdiction = item["value"];
+                break;
         }
     });
 }
@@ -23,6 +27,7 @@ if (organization && organization.extras && organization.extras.length) {
 const data = {
     name: organization.name,
     title: cleanOrgTitle(organization.title),
+    jurisdiction,
     description: organization.description,
     imageUrl: organization.image_display_url || organization.image_url,
     phone,

@@ -56,6 +56,11 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           publisher = dataSet.publisher.map(publisher =>
             Agent(
               identifier = publisher.identifier,
+              aggKeywords =
+                if (publisher.jurisdiction.isEmpty)
+                  Some(publisher.name.getOrElse(publisher.identifier.get).toLowerCase)
+                else
+                  publisher.jurisdiction.map(publisher.name.getOrElse(publisher.identifier.get) + ":" + _).map(_.toLowerCase),
               name = publisher.name,
               acronym = getAcronymFromPublisherName(publisher.name),
               imageUrl = publisher.imageUrl)),
@@ -375,7 +380,9 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                     "title" -> publisher.name.toJson,
                     "imageUrl" -> publisher.imageUrl.toJson)))))).toJson,
             "dataset-quality-rating" -> {
-              if (dataSet.quality == 1) {
+              if (!dataSet.hasQuality) {
+                JsObject()
+              } else if (dataSet.quality == 1) {
                 JsObject()
               } else if (quality.isEmpty) {
                 JsObject("x" -> JsObject("score" -> dataSet.quality.toJson, "weighting" -> 1.toJson))

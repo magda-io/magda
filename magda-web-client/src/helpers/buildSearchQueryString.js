@@ -1,7 +1,7 @@
 // @flow
 import defined from "./defined";
-import { config } from "../config";
 import flatten from "lodash.flatten";
+import { defaultConfiguration } from "../config.js";
 
 type Query = {
     q: string,
@@ -14,7 +14,10 @@ type Query = {
     page: number
 };
 
-export default function buildSearchQueryString(query: Query) {
+export default function buildSearchQueryString(
+    query: Query,
+    searchResultsPerPage
+) {
     let keywords = queryToString("query", query.q);
     let dateFroms = queryToString("dateFrom", query.dateFrom);
     let dateTos = queryToString("dateTo", query.dateTo);
@@ -27,8 +30,15 @@ export default function buildSearchQueryString(query: Query) {
         "region",
         queryToLocation(query.regionId, query.regionType)
     );
+
+    searchResultsPerPage = defined(searchResultsPerPage)
+        ? searchResultsPerPage
+        : defined(query.limit)
+            ? query.limit
+            : defaultConfiguration.searchResultsPerPage;
+
     let startIndex = defined(query.page)
-        ? (query.page - 1) * config.resultsPerPage
+        ? (query.page - 1) * searchResultsPerPage
         : 0;
 
     let queryArr = flatten([
@@ -39,7 +49,7 @@ export default function buildSearchQueryString(query: Query) {
         formats,
         locations,
         "start=" + startIndex,
-        "limit=" + (config.resultsPerPage + 1) // we get one more than we need so we can see what the score of the item at the top of the next page is
+        "limit=" + (searchResultsPerPage + 1) // we get one more than we need so we can see what the score of the item at the top of the next page is
     ]);
 
     return queryArr.join("&");

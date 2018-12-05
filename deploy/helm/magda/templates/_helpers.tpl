@@ -44,7 +44,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
           valueFrom:
             secretKeyRef:
               name: cloudsql-db-credentials
-              key: password
+              key: postgres-password
         {{- else if not .Values.global.noDbAuth }}
         - name: PGPASSWORD
           valueFrom:
@@ -215,4 +215,17 @@ spec:
             items:
               - key: "{{ .jobConfig.id }}.json"
                 path: "connector.json"
+{{- end }}
+
+
+{{- define "magda.antiPreemptibleAffinity" }}
+        {{- if .Values.antiPreemptibleAffinity }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: cloud.google.com/gke-preemptible
+                operator: DoesNotExist
+            weight: {{ .Values.antiPreemptibleAffinity }}
+        {{- end }}
 {{- end }}

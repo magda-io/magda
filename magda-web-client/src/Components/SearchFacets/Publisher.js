@@ -7,6 +7,7 @@ import { fetchPublisherSearchResults } from "../../actions/facetPublisherSearchA
 import React, { Component } from "react";
 import FacetBasic from "./FacetBasic";
 import queryString from "query-string";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 class Publisher extends Component {
     constructor(props) {
@@ -60,23 +61,27 @@ class Publisher extends Component {
 
     render() {
         return (
-            <FacetBasic
-                title="organisation"
-                id="publisher"
-                hasQuery={Boolean(this.props.activePublishers.length)}
-                options={
-                    this.props.publisherSearchResults ||
-                    this.props.publisherOptions
-                }
-                activeOptions={this.props.activePublishers}
-                onToggleOption={this.onTogglePublisherOption}
-                onResetFacet={this.onResetPublisherFacet}
-                searchFacet={this.onSearchPublisherFacet}
-                toggleFacet={this.props.toggleFacet}
-                isOpen={this.props.isOpen}
-                closeFacet={this.props.closeFacet}
-                resetFilterEvent={this.resetFilterEvent}
-            />
+            <MagdaNamespacesConsumer ns={["searchDatasetsPage"]}>
+                {translate => (
+                    <FacetBasic
+                        title={translate(["publisherFilterTitle", "Publisher"])}
+                        id="publisher"
+                        hasQuery={Boolean(this.props.activePublishers.length)}
+                        options={
+                            this.props.publisherSearchResults ||
+                            this.props.publisherOptions
+                        }
+                        activeOptions={this.props.activePublishers}
+                        onToggleOption={this.onTogglePublisherOption}
+                        onResetFacet={this.onResetPublisherFacet}
+                        searchFacet={this.onSearchPublisherFacet}
+                        toggleFacet={this.props.toggleFacet}
+                        isOpen={this.props.isOpen}
+                        closeFacet={this.props.closeFacet}
+                        resetFilterEvent={this.resetFilterEvent}
+                    />
+                )}
+            </MagdaNamespacesConsumer>
         );
     }
 }

@@ -72,15 +72,19 @@ baseSpec(
                     .reply(404, "");
 
                 registryScope
-                    .post(`/hooks`, hook, {
-                        reqheaders: reqHeaders(jwtSecret, userId)
-                    })
+                    .put(
+                        `/hooks/${encodeURIComponentWithApost(hook.id)}`,
+                        hook,
+                        {
+                            reqheaders: reqHeaders(jwtSecret, userId)
+                        }
+                    )
                     .reply(201, hook);
 
                 registryScope
                     .get("/records")
                     .query(true)
-                    .reply(200, { records: [] });
+                    .reply(200, { totalCount: 0, records: [], hasMore: false });
             }
         );
 
