@@ -82,6 +82,8 @@ export async function doRequest(
     const req = request[method](url, requestOpts)
         .on("error", err => rejectResponse(err))
         .on("response", (response: http.IncomingMessage) => {
+            req.abort();
+
             try {
                 console.info(
                     `Got ${response.statusCode} from ${method} ${url}`
@@ -92,14 +94,12 @@ export async function doRequest(
                 rejectResponse(e);
             }
         })
-        .on("complete", () => {
-            console.log("Finished");
+        .on("end", () => {
             resolveStreamEnd();
         });
 
     req.pipe(devnull).on("error", rejectStreamEnd);
-    // .on("finish", () => {
-    // });
+    req.on("error", rejectStreamEnd);
 
     const [responseCode] = await Promise.all([reqPromise, streamPromise]);
 

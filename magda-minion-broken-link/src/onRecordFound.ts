@@ -299,9 +299,6 @@ async function retrieveHttp(
             `Downloading ${url} failed: ${err.httpStatusCode ||
                 err} (${retries} retries remaining)`
         );
-        if (!err.httpStatusCode) {
-            console.error(err);
-        }
     };
 
     const innerOp = () =>
@@ -311,7 +308,7 @@ async function retrieveHttp(
         innerOp().then(
             code => {
                 if (code === 429) {
-                    throw new Error("429 encountered");
+                    throw { message: "429 encountered", httpStatusCode: 429 };
                 } else {
                     return {
                         status: "active" as "active",

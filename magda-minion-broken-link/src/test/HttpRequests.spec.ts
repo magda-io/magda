@@ -83,7 +83,7 @@ describe("Test HttpRequests.ts", () => {
             return jsc.assert(
                 jsc.forall(
                     jsc.integer(200, 299),
-                    jsc.integer(100, 1000),
+                    jsc.integer(50, 100),
                     async function(statusCode, streamWaitTime) {
                         const url = "http://example.com";
                         const path = "/xx";
@@ -103,12 +103,12 @@ describe("Test HttpRequests.ts", () => {
             );
         });
 
-        it("should wait untill stream completes", async function(this: Mocha.ISuiteCallbackContext) {
-            this.timeout(10000);
+        it("should wait until stream completes", async function(this: Mocha.ISuiteCallbackContext) {
+            this.timeout(30000);
             return jsc.assert(
                 jsc.forall(
                     jsc.integer(200, 299),
-                    jsc.integer(1000, 3000),
+                    jsc.integer(1500, 3000),
                     async function(statusCode, streamWaitTime) {
                         const url = "http://example.com";
                         const path = "/xx";

@@ -37,7 +37,7 @@ import {
 } from "../getUrlWaitTime";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-    this.timeout(20000);
+    this.timeout(1200000);
     nock.disableNetConnect();
     const registryUrl = "http://example.com";
     const secret = "secret!";
@@ -157,7 +157,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      */
     it("Should correctly record link statuses", function() {
         return jsc.assert(
-            jsc.forall(recordArbWithSuccesses, jsc.integer(250, 1000), function(
+            jsc.forall(recordArbWithSuccesses, jsc.integer(0, 200), function(
                 { record, successLookup, disallowHead },
                 streamWaitTime
             ) {
@@ -196,21 +196,25 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             reqheaders: { "User-Agent": /@magda.*/ }
                         });
 
-                        const intercept = scope.head(
+                        const scopeHead = scope.head(
+                            url.endsWith("/") ? "/" : ""
+                        );
+                        const scopeGet = scope.get(
                             url.endsWith("/") ? "/" : ""
                         );
 
                         if (success !== "error") {
                             if (!disallowHead && success === "success") {
-                                intercept.reply(200);
+                                scopeHead.reply(200);
                             } else {
-                                // Not everything returns a 405 for HEAD not allowed :()
-                                intercept.reply(
-                                    success === "success" ? 400 : 405
-                                );
-                                const scopeGet = scope.get(
-                                    url.endsWith("/") ? "/" : ""
-                                );
+                                if (disallowHead) {
+                                    // Not everything returns a 405 for HEAD not allowed :()
+                                    scopeHead.reply(
+                                        success === "success" ? 405 : 400
+                                    );
+                                } else {
+                                    scopeHead.replyWithError("fail");
+                                }
 
                                 if (success === "success") {
                                     scopeGet.reply(200, () => {
@@ -226,7 +230,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                 }
                             }
                         } else {
-                            intercept.replyWithError("fail");
+                            scopeHead.replyWithError("fail");
+                            scopeGet.replyWithError("fail");
                         }
 
                         return scope;

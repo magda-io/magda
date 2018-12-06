@@ -100,8 +100,8 @@ correspondence-api:
 
 minion-broken-link:
   domainWaitTimeConfig:
-    data.csiro.au: 60
-    data.gov.au: 60
+    data.csiro.au: 5
+    data.gov.au: 5
     data.act.gov.au: 30
 
 connectors:

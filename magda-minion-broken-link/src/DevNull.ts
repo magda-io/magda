@@ -6,7 +6,6 @@ export default class DevNull extends Writable {
         encoding: string,
         callback: (err?: Error) => void
     ): void {
-        console.info("Dropping " + chunk);
-        setTimeout(callback, 0);
+        callback();
     }
 }
