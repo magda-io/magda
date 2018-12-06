@@ -36,6 +36,10 @@ spec:
           value: {{ .Values.global.defaultAdminUserId }}
         - name: INTERNAL_URL
           value: "http://minion-broken-link"
+{{- if .Values.domainWaitTimeConfig }}
+        - name: DOMAIN_WAIT_TIME_CONFIG
+          value: '{{ toJson .Values.domainWaitTimeConfig | indent 2 }}'
+{{- end }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:

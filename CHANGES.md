@@ -58,6 +58,7 @@
 -   Made access notes show up on distribution page with configurable text
 -   Added contact point to distribution page, made title configurable
 -   When `match-part` search strategy is used, a message is shown on UI
+-   Made broken link minion per domain request wait time configurable
 -   Fixed mobile menu not show-up properly
 
 ## 0.0.49

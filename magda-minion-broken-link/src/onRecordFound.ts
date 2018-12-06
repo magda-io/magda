@@ -1,6 +1,5 @@
 import * as _ from "lodash";
-import request from "@magda/typescript-common/dist/request";
-import * as http from "http";
+import { CoreOptions } from "request";
 
 import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
@@ -9,12 +8,17 @@ import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowabl
 import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";
+import { headRequest, getRequest, BadHttpResponseError } from "./HttpRequests";
+import getUrlWaitTime from "./getUrlWaitTime";
+import wait from "./wait";
 
 export default async function onRecordFound(
     record: Record,
     registry: Registry,
     retries: number = 1,
     baseRetryDelaySeconds: number = 1,
+    domainWaitTimeConfig: { [domain: string]: number } = {},
+    requestOpts: CoreOptions = {},
     ftpHandler: FTPHandler = new FTPHandler()
 ) {
     const distributions: Record[] =
@@ -34,7 +38,9 @@ export default async function onRecordFound(
                 distribution.aspects["dcat-distribution-strings"],
                 baseRetryDelaySeconds,
                 retries,
-                ftpHandler
+                ftpHandler,
+                _.partialRight(getUrlWaitTime, domainWaitTimeConfig),
+                requestOpts
             )
     );
 
@@ -128,13 +134,17 @@ type DistributionLinkCheck = {
  * @param baseRetryDelay The first amount of time that will be waited between retries - it increases exponentially on subsequent retries
  * @param retries Number of retries before giving up
  * @param ftpHandler The FTP handler to use for FTP addresses
+ * @param getUrlWaitTime The function to use to get the wait time before the next request can be made for a URL
+ * @param requestOpts The base options to use for the request library (e.g. timeouts, headers etc)
  */
 function checkDistributionLink(
     distribution: Record,
     distStringsAspect: any,
     baseRetryDelay: number,
     retries: number,
-    ftpHandler: FTPHandler
+    ftpHandler: FTPHandler,
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): DistributionLinkCheck[] {
     type DistURL = {
         url?: uri.URI;
@@ -178,7 +188,14 @@ function checkDistributionLink(
             op: () => {
                 console.info("Retrieving " + parsedURL);
 
-                return retrieve(parsedURL, baseRetryDelay, retries, ftpHandler)
+                return retrieve(
+                    parsedURL,
+                    baseRetryDelay,
+                    retries,
+                    ftpHandler,
+                    getUrlWaitTime,
+                    requestOpts
+                )
                     .then(aspect => {
                         console.info("Finished retrieving  " + parsedURL);
                         return aspect;
@@ -205,10 +222,18 @@ function retrieve(
     parsedURL: uri.URI,
     baseRetryDelay: number,
     retries: number,
-    ftpHandler: FTPHandler
+    ftpHandler: FTPHandler,
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): Promise<BrokenLinkAspect> {
     if (parsedURL.protocol() === "http" || parsedURL.protocol() === "https") {
-        return retrieveHttp(parsedURL.toString(), baseRetryDelay, retries);
+        return retrieveHttp(
+            parsedURL.toString(),
+            baseRetryDelay,
+            retries,
+            getUrlWaitTime,
+            requestOpts
+        );
     } else if (parsedURL.protocol() === "ftp") {
         return retrieveFtp(parsedURL, ftpHandler);
     } else {
@@ -251,43 +276,23 @@ function retrieveFtp(
  *
  * @param url The url to retrieve
  */
-function retrieveHttp(
+async function retrieveHttp(
     url: string,
     baseRetryDelay: number,
-    retries: number
+    retries: number,
+    getUrlWaitTime: (url: string) => number,
+    requestOpts: CoreOptions
 ): Promise<BrokenLinkAspect> {
-    const operation: () => Promise<number> = () => {
-        return new Promise((resolve, reject) => {
-            const thisReq = request
-                .get(url, {
-                    headers: {
-                        Range: "bytes=0-50"
-                    }
-                })
-                .on("error", err => {
-                    thisReq.abort();
-                    reject(err);
-                })
-                .on("response", (response: http.IncomingMessage) => {
-                    thisReq.abort();
-                    if (
-                        (response.statusCode >= 200 &&
-                            response.statusCode <= 299) ||
-                        response.statusCode === 429
-                    ) {
-                        resolve(response.statusCode);
-                    } else {
-                        reject(
-                            new BadHttpResponseError(
-                                response.statusMessage,
-                                response,
-                                response.statusCode
-                            )
-                        );
-                    }
-                });
-        });
-    };
+    async function operation() {
+        try {
+            await wait(getUrlWaitTime(url));
+            return await headRequest(url, requestOpts);
+        } catch (e) {
+            // --- HEAD Method not allowed
+            await wait(getUrlWaitTime(url));
+            return await getRequest(url, requestOpts);
+        }
+    }
 
     const onRetry = (err: BadHttpResponseError, retries: number) => {
         console.info(
@@ -303,7 +308,7 @@ function retrieveHttp(
         innerOp().then(
             code => {
                 if (code === 429) {
-                    throw new Error("429 encountered");
+                    throw { message: "429 encountered", httpStatusCode: 429 };
                 } else {
                     return {
                         status: "active" as "active",
@@ -331,23 +336,6 @@ function retrieveHttp(
         errorDetails: err,
         httpStatusCode: 429
     }));
-}
-
-class BadHttpResponseError extends Error {
-    public response: http.IncomingMessage;
-    public httpStatusCode: number;
-
-    constructor(
-        message?: string,
-        response?: http.IncomingMessage,
-        httpStatusCode?: number
-    ) {
-        super(message);
-        this.message = message;
-        this.response = response;
-        this.httpStatusCode = httpStatusCode;
-        this.stack = new Error().stack;
-    }
 }
 
 interface BrokenLinkSleuthingResult {
