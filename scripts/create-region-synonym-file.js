@@ -40,6 +40,13 @@ const argv = yargs
         default: process.env.REGION_SOURCES || getDefaultRegionSourceConfig()
     }).argv;
 
+function escapeSolrSpecialChar(str) {
+    return str
+        .replace(",", "\\,")
+        .replace("=", "\\=")
+        .replace(">", "\\>");
+}
+
 // --- convert region name from: campbelltown (nsw)
 // --- to: campbelltown (nsw), campbelltown
 function expandRegionWithSurfix(regionName) {
@@ -65,16 +72,18 @@ function createLineFromRegionData(regionConfig, item) {
     if (!regionName.match(/[a-z]/)) {
         return "";
     }
-    regionName = expandRegionWithSurfix(regionName);
+    regionName = expandRegionWithSurfix(escapeSolrSpecialChar(regionName));
     const regionShortName =
         regionConfig.shortNameField && data[regionConfig.shortNameField]
             ? data[regionConfig.shortNameField].trim().toLowerCase()
             : "";
     const regionNames = [regionName];
     if (regionShortName) {
-        regionNames.push(regionShortName);
+        regionNames.push(escapeSolrSpecialChar(regionShortName));
     }
-    const line = `${regionNames.join(", ")} => ${regionId}`;
+    const line = `${regionNames.join(", ")} => ${escapeSolrSpecialChar(
+        regionId
+    )}`;
     return line;
 }
 
