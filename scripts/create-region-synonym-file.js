@@ -40,16 +40,32 @@ const argv = yargs
         default: process.env.REGION_SOURCES || getDefaultRegionSourceConfig()
     }).argv;
 
+// --- convert region name from: campbelltown (nsw)
+// --- to: campbelltown (nsw), campbelltown
+function expandRegionWithSurfix(regionName) {
+    const r = /\([^(]+\)$/;
+    const matches = regionName.match(r);
+    if (!matches) {
+        return regionName;
+    }
+    const regionNameWithoutSurfix = regionName.replace(r, "").trim();
+    if (!regionNameWithoutSurfix) {
+        return regionName;
+    }
+    return [regionName, regionNameWithoutSurfix].join(", ");
+}
+
 function createLineFromRegionData(regionConfig, item) {
     const data = item.value.properties;
     const regionId = `${regionConfig.type.toLowerCase()}/${data[
         regionConfig.idField
     ].toLowerCase()}`;
-    const regionName = data[regionConfig.nameField].trim().toLowerCase();
+    let regionName = data[regionConfig.nameField].trim().toLowerCase();
     // --- skip pure number region name
     if (!regionName.match(/[a-z]/)) {
         return "";
     }
+    regionName = expandRegionWithSurfix(regionName);
     const regionShortName =
         regionConfig.shortNameField && data[regionConfig.shortNameField]
             ? data[regionConfig.shortNameField].trim().toLowerCase()
