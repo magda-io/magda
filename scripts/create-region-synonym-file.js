@@ -152,6 +152,11 @@ async function createFile(outputFile, regionSources) {
         await processRegionDataPipeline(regionConfig, targetFileStream);
     }
     targetFileStream.end();
+    // --- wait until all data goes into underlying system
+    return new Promise((resolve, reject) => {
+        targetFileStream.on("error", e => reject(e));
+        targetFileStream.on("finish", resolve);
+    });
 }
 
 try {

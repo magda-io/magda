@@ -3437,3 +3437,5 @@ south australia, sa => ste/4
 western australia, wa => ste/5
 tasmania, tas => ste/6
 northern territory, nt => ste/7
+australian capital territory, act => ste/8
+other territories, ot => ste/9
