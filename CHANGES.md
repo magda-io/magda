@@ -1,11 +1,11 @@
 ## 0.0.51
 
+-   Add readiness and liveness probes to all services
 -   Redirect HTTP requests to HTTPS URLs
 -   Fixed chart won't displayed correctly under IE11
 
 ## 0.0.50
 
--   Add readiness and liveness probes to all services
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
 -   Make datasetSearchSuggestionScoreThreshold and searchResultsPerPage runtime configurable
 -   Hide dataset source for csv datasets
