@@ -53,8 +53,8 @@ object MagdaClassloaderLocalNodeProvider {
       throw new Exception("Cannot locate sample WordNet synonym lib.")
     }
 
-    val regionSynonymFilePath = if (Files.exists(cwdPath.resolve("magda-elastic-search/regionSynonyms.txt"))) {
-      cwdPath.resolve("magda-elastic-search/regionSynonyms.txt")
+    val regionSynonymFilePath = if (Files.exists(cwdPath.resolve("magda-elastic-search/regionSynonyms.test.txt"))) {
+      cwdPath.resolve("magda-elastic-search/regionSynonyms.test.txt")
     } else {
       throw new Exception("Cannot locate region synonym data file.")
     }
@@ -70,7 +70,7 @@ object MagdaClassloaderLocalNodeProvider {
     if (!Files.exists(analysisFolderPath.resolve("regionSynonyms.txt"))) {
       println("**** Region Synonym data file not exists. Copying...****")
       copy(regionSynonymFilePath, analysisFolderPath.resolve("regionSynonyms.txt"), REPLACE_EXISTING)
-      println("**** Region Synonym data file creation completed! ****")
+      println("**** Test Region Synonym data file creation completed! ****")
     } else {
       println("**** Region Synonym data file exists before creation****")
     }

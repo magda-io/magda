@@ -270,13 +270,15 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         description=Some("Wildlife density as measured by the state survey"),
         catalog=Some("region-in-query-test-catalog"),
         spatial=Some(Location(geoJson=qldGeometry)),
-        quality = 0.6)
+        quality = 0.6,
+        score = None)
     val nationalDataset = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
-      quality = 0.6)
+      quality = 0.6,
+      score = None)
 
     val datasets = List(nationalDataset, qldDataset)
 
@@ -318,13 +320,15 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
       spatial=Some(Location(geoJson=saGeometry)),
-      quality = 0.6)
+      quality = 0.6,
+      score = None)
     val nationalDataset = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
-      quality = 0.6)
+      quality = 0.6,
+      score = None)
 
     val datasets = List(nationalDataset, saDataset)
 
@@ -380,13 +384,15 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
       spatial=Some(Location(geoJson=alfGeometry)),
-      quality = 0.6)
+      quality = 0.6,
+      score = None)
     val nationalDataset = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
-      quality = 0.6)
+      quality = 0.6,
+      score = None)
 
     val datasets = List(nationalDataset, alfDataset)
 
