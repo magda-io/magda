@@ -12,11 +12,15 @@ import { bindActionCreators } from "redux";
 
 class StaticPage extends Component {
     componentDidMount() {
-        // check if we are on distribution page:
         if (this.props.match.params.pageId) {
             this.props.fetchStaticPage(this.props.match.params.pageId);
         }
-        // this.updateGAEvent(this.props);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.match.params.pageId !== this.props.match.params.pageId) {
+            this.props.fetchStaticPage(this.props.match.params.pageId);
+        }
     }
 
     render() {
