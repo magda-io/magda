@@ -1,34 +1,28 @@
 package au.csiro.data61.magda.indexer.external.registry
 
-import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.api.BaseMagdaApi
-import au.csiro.data61.magda.util.ErrorHandling.CausedBy
-import au.csiro.data61.magda.model.Registry.WebHookPayload
-import akka.event.LoggingAdapter
-import akka.http.scaladsl.server.Directives._
-import scala.util.Failure
-import scala.util.Success
-import akka.http.scaladsl.model.StatusCodes.{ Accepted, Conflict, OK, BadRequest }
-import akka.actor.ActorSystem
-import scala.concurrent.Future
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import spray.json._
-import au.csiro.data61.magda.model.Registry.RegistryConverters
-import au.csiro.data61.magda.indexer.crawler.Crawler
-import au.csiro.data61.magda.indexer.crawler.CrawlerApi
-import au.csiro.data61.magda.model.Registry.EventType
-import com.typesafe.config.Config
-import akka.stream.scaladsl.Source
 import java.time.ZoneOffset
-import scala.util.Try
+
+import akka.actor.ActorSystem
+import akka.event.LoggingAdapter
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes.Accepted
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
+import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.api.BaseMagdaApi
+import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.model.Registry.{EventType, RegistryConverters, WebHookPayload}
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.util.ErrorHandling.CausedBy
+import com.typesafe.config.Config
+
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
-  implicit val ec = system.dispatcher
-  override def getLogger = system.log
+  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  override def getLogger: LoggingAdapter = system.log
 
-  implicit val defaultOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
+  implicit val defaultOffset: ZoneOffset = ZoneOffset.of(config.getString("time.defaultOffset"))
 
   /**
   * @apiGroup Indexer
@@ -41,13 +35,19 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
   * @apiSuccess (Success 202) {String} Response (blank)
   * @apiUse GenericError
   */
-  val routes =
+  val routes: Route =
     magdaRoute {
       post {
+        // In the current implementation, the magda registry will post max of 100 events at a time
+        // (au.csiro.data61.magda.registry.WebHookActor.SingleWebHookActor.MAX_EVENTS). It is
+        // possible that the payload length exceeds the default max of 8388608 bytes, causing an
+        // EntityStreamSizeException to occur. If that is the case, either uncomment the following
+        // line or reduce the max number of post events.
+
 //        withoutSizeLimit
+
         entity(as[WebHookPayload]) { payload =>
           val events = payload.events.getOrElse(List())
-          getLogger.info(s"Payload size of ${events.size}")
           val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
             .map(event => event.data.getFields("recordId").head.convertTo[String])
             .map(DataSet.registryIdToIdentifier)
@@ -55,7 +55,6 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
           val deleteOp = () => idsToDelete match {
             case Nil  => Future.successful(Unit)
             case list =>
-              getLogger.info(s"Deleting index size of ${list.size}")
               indexer.delete(list)
           }
 
@@ -69,8 +68,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
                   system.log.error(e, "When converting {}", record.id)
                   None
               })
-
-              getLogger.info(s"Indexing source size of ${dataSets.size}")
+              
               indexer.index(Source(dataSets.flatten))
           }
 
@@ -78,7 +76,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
 
           // The registry should never pass us a deleted record, so we can insert and delete
           // concurrently without the risk of inserting something we just deleted.
-          onSuccess(future) { x =>
+          onSuccess(future) { _ =>
             complete(Accepted)
           }
         }

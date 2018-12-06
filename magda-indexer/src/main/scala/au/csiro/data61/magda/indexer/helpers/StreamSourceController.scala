@@ -40,6 +40,9 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
 
   private val GET_MORE_DATASETS: String = "Get more datasets"
   private val NO_MORE_DATASETS: String = "No more datasets"
+  /**
+    * It is used to count the total datasets that have been filled into the buffer so far.
+    */
   private val dataSetCount = new AtomicLong(0)
   private val (ref, source) = createStreamSource()
 
@@ -73,7 +76,7 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
           pull(in)
         }
 
-       setHandlers(in, out, this)
+        setHandlers(in, out, this)
       }
 
     override def toString: String = "MessageChecker"
@@ -101,7 +104,6 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
   def fillSource(dataSets: Seq[DataSet], hasNext: Boolean, isFirst: Boolean): Unit = {
     if (isFirst){
       dataSets foreach (dataSet => {
-        dataSet.copy(publisher = dataSet.publisher)
         ref ! dataSet
         if (dataSetCount.incrementAndGet() == bufferSize / 2 && hasNext)
           ref ! GET_MORE_DATASETS
@@ -109,7 +111,6 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
     }
     else {
       dataSets foreach (dataSet => {
-        dataSet.copy(publisher = dataSet.publisher)
         ref ! dataSet
         if (dataSetCount.incrementAndGet() % (bufferSize / 2) == 0 && hasNext)
           ref ! GET_MORE_DATASETS

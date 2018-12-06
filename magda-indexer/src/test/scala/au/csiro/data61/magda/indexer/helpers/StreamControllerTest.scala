@@ -4,16 +4,16 @@ import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.NotUsed
-import akka.actor.{ActorSystem, PoisonPill}
-import akka.stream.{ActorMaterializer, OverflowStrategy}
+import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{Assertion, AsyncFlatSpec, BeforeAndAfterEach, Matchers}
+import org.scalatest.{Assertion, AsyncFlatSpec, Matchers}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
@@ -163,53 +163,58 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
       indexResult shouldEqual IndexResult(dataSets.size, List()))
   }
 
-  "The stream controller" should "support the indexer stream 1" in {
+  "The stream controller" should "support the indexer stream when the dataset number is 1"  in {
+    val numOfDataSets = 1
+    run(numOfDataSets)
+  }
+
+  it should "support the indexer stream when the dataset number is 0"  in {
+    val numOfDataSets = 0
+    run(numOfDataSets)
+  }
+
+  it should "support the indexer stream when the dataset number is 10 * bufferSize - 1" in {
     val numOfDataSets = 10 * bufferSize - 1
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 2" in {
+  it should "support the indexer stream when the dataset number is 10 * bufferSize"  in {
     val numOfDataSets = 10 * bufferSize
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 3" in {
+  it should "support the indexer stream when the dataset number is 10 * bufferSize + 1" in {
     val numOfDataSets = 10 * bufferSize + 1
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 4" in {
+  it should "support the indexer stream when the dataset number is bufferSize - 1" in {
     val numOfDataSets = bufferSize - 1
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 5" in {
+  it should "support the indexer stream when the dataset number is bufferSize"  in {
     val numOfDataSets = bufferSize
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 6" in {
+  it should "support the indexer stream when the dataset number is bufferSize + 1"  in {
     val numOfDataSets = bufferSize + 1
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 7" in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2 - 1"  in {
     val numOfDataSets = bufferSize / 2 - 1
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 8" in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2"  in {
     val numOfDataSets = bufferSize / 2
     run(numOfDataSets)
   }
 
-  "The stream controller" should "support the indexer stream 9" in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2 + 1"  in {
     val numOfDataSets = bufferSize / 2 + 1
-    run(numOfDataSets)
-  }
-
-  "The stream controller" should "support the indexer stream 10" in {
-    val numOfDataSets = 1
     run(numOfDataSets)
   }
 }

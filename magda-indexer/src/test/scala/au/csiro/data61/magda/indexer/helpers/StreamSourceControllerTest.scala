@@ -48,13 +48,11 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
   "The stream source controller" should "fill the source after the stream starts" in {
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     ssc.fillSource(dataSets, false, true)
-//    ssc.terminate()
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
 
   it should "fill the source before the stream starts" in {
     ssc.fillSource(dataSets, false, true)
-//    ssc.terminate()
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
   }
@@ -63,7 +61,6 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
     ssc.fillSource(dataSets, true, true)
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     ssc.fillSource(dataSets, false, false)
-//    ssc.terminate()
     actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
   }
 }
