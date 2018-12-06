@@ -1,3 +1,5 @@
+
+
 # Region Type: SA4
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/SA4.geojson
 
@@ -107,6 +109,8 @@ special purpose codes sa4 (act) => sa4/899
 other territories => sa4/901
 migratory - offshore - shipping (ot) => sa4/997
 special purpose codes sa4 (ot) => sa4/999
+
+
 # Region Type: SA3
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/SA3.geojson
 
@@ -461,6 +465,8 @@ cocos (keeling) islands => sa3/90102
 jervis bay => sa3/90103
 migratory - offshore - shipping (ot) => sa3/99797
 special purpose codes sa3 (ot) => sa3/99999
+
+
 # Region Type: SA2
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/SA2.geojson
 
@@ -2678,8 +2684,7 @@ cocos (keeling) islands => sa2/901021002
 jervis bay => sa2/901031003
 migratory - offshore - shipping (ot) => sa2/997979799
 no usual address (ot) => sa2/999999499
-# Region Type: SA1
-# From: https://s3-ap-southeast-2.amazonaws.com/magda-files/SA1.geojson
+
 
 # Region Type: LGA
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/LGA.geojson
@@ -3265,20 +3270,8 @@ unincorporated act => lga/89399
 no usual address (act) => lga/89499
 unincorp. other territories => lga/99399
 no usual address (ot) => lga/99499
-# Region Type: POA
-# From: https://s3-ap-southeast-2.amazonaws.com/magda-files/POA.geojson
 
-0872 crosses nt/sa/wa => poa/0872
-2540 crosses nsw/ot => poa/2540
-2618 crosses nsw/act => poa/2618
-2620 crosses nsw/act => poa/2620
-3585 crosses vic./nsw => poa/3585
-3644 crosses vic./nsw => poa/3644
-4383 crosses qld/nsw => poa/4383
-4825 crosses qld/nt => poa/4825
-unclassified (aust.) => poa/9191
-no usual address (aust.) => poa/9494
-migratory - offshore - shipping (aust.) => poa/9797
+
 # Region Type: COM_ELB_ID_2016
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/COM_ELB_ID_2016.geojson
 
@@ -3432,6 +3425,8 @@ perth => com_elb_id_2016/245
 stirling => com_elb_id_2016/246
 swan => com_elb_id_2016/247
 tangney => com_elb_id_2016/248
+
+
 # Region Type: STE
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/STE.geojson
 
