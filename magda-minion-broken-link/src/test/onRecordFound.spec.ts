@@ -37,7 +37,7 @@ import {
 } from "../getUrlWaitTime";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
-    this.timeout(1200000);
+    this.timeout(20000);
     nock.disableNetConnect();
     const registryUrl = "http://example.com";
     const secret = "secret!";
@@ -51,7 +51,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     let clients: { [s: string]: Client[] };
     let ftpSuccesses: { [url: string]: CheckResult };
     const orignalDefaultDomainWaitTime: number = getDefaultDomainWaitTime();
-    let clock: sinon.SinonFakeTimers;
 
     before(() => {
         // --- set default domain wait time to 0 second (i.e. for any domains that has no specific setting)
@@ -157,12 +156,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      */
     it("Should correctly record link statuses", function() {
         return jsc.assert(
-            jsc.forall(recordArbWithSuccesses, jsc.integer(0, 200), function(
+            jsc.forall(recordArbWithSuccesses, jsc.integer(1, 100), function(
                 { record, successLookup, disallowHead },
                 streamWaitTime
             ) {
                 beforeEachProperty();
-                clock = sinon.useFakeTimers();
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
@@ -221,8 +219,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                         const s = new RandomStream(
                                             streamWaitTime
                                         );
-                                        // --- simualate remote server had spent streamWaitTime to complete the response
-                                        clock.tick(streamWaitTime + 1);
+
                                         return s;
                                     });
                                 } else {
@@ -367,8 +364,6 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
-                        clock.reset();
-                        clock.restore();
                     })
                     .then(() => {
                         afterEachProperty();

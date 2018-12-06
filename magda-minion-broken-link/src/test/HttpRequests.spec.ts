@@ -13,6 +13,8 @@ const onMatchFail = (req: any, interceptor: any) => {
     );
 };
 
+const errorCodeArb = jsc.oneof([jsc.integer(300, 428), jsc.integer(430, 600)]);
+
 describe("Test HttpRequests.ts", () => {
     before(() => {
         nock.disableNetConnect();
@@ -55,7 +57,7 @@ describe("Test HttpRequests.ts", () => {
 
         it("should throw `BadHttpResponseError` when response status is not between 200 to 299 or 429", async function() {
             return jsc.assert(
-                jsc.forall(jsc.integer(300, 600), async function(statusCode) {
+                jsc.forall(errorCodeArb, async function(statusCode) {
                     const url = "http://example.com";
                     const path = "/xx";
                     nock(url)
@@ -71,8 +73,7 @@ describe("Test HttpRequests.ts", () => {
                     expect(error).to.be.an.instanceof(BadHttpResponseError);
                     expect(error.httpStatusCode).to.equal(statusCode);
                     return true;
-                }),
-                { tests: 3 }
+                })
             );
         });
     });
@@ -83,7 +84,7 @@ describe("Test HttpRequests.ts", () => {
             return jsc.assert(
                 jsc.forall(
                     jsc.integer(200, 299),
-                    jsc.integer(50, 100),
+                    jsc.integer(0, 10),
                     async function(statusCode, streamWaitTime) {
                         const url = "http://example.com";
                         const path = "/xx";
@@ -98,36 +99,41 @@ describe("Test HttpRequests.ts", () => {
                         expect(resStatusCode).to.equal(statusCode);
                         return true;
                     }
-                ),
-                { tests: 3 }
+                )
             );
         });
 
         it("should wait until stream completes", async function(this: Mocha.ISuiteCallbackContext) {
             this.timeout(30000);
-            return jsc.assert(
-                jsc.forall(
-                    jsc.integer(200, 299),
-                    jsc.integer(1500, 3000),
-                    async function(statusCode, streamWaitTime) {
-                        const url = "http://example.com";
-                        const path = "/xx";
-                        nock(url)
-                            .get(path)
-                            .reply(statusCode, () => {
-                                return new RandomStream(streamWaitTime);
-                            });
+            return (
+                jsc.assert(
+                    jsc.forall(
+                        jsc.integer(200, 299),
+                        jsc.integer(1500, 3000),
+                        async function(statusCode, streamWaitTime) {
+                            const url = "http://example.com";
+                            const path = "/xx";
+                            nock(url)
+                                .get(path)
+                                .reply(statusCode, () => {
+                                    return new RandomStream(streamWaitTime);
+                                });
 
-                        const now = new Date().getTime();
-                        const resStatusCode = await getRequest(`${url}${path}`);
-                        const newTime = new Date().getTime();
-                        const diff = newTime - now;
-                        expect(resStatusCode).to.equal(statusCode);
-                        expect(diff).to.closeTo(streamWaitTime, 50);
-                        return true;
-                    }
+                            const now = new Date().getTime();
+                            const resStatusCode = await getRequest(
+                                `${url}${path}`
+                            );
+                            const newTime = new Date().getTime();
+                            const diff = newTime - now;
+                            expect(resStatusCode).to.equal(statusCode);
+                            expect(diff).to.closeTo(streamWaitTime, 50);
+                            return true;
+                        }
+                    )
                 ),
-                { tests: 3 }
+                {
+                    times: 3
+                }
             );
         });
 
@@ -145,7 +151,7 @@ describe("Test HttpRequests.ts", () => {
 
         it("should throw `BadHttpResponseError` when response status is not between 200 to 299 or 429", async function() {
             return jsc.assert(
-                jsc.forall(jsc.integer(300, 600), async function(statusCode) {
+                jsc.forall(errorCodeArb, async function(statusCode) {
                     const url = "http://example.com";
                     const path = "/xx";
                     nock(url)
@@ -161,8 +167,7 @@ describe("Test HttpRequests.ts", () => {
                     expect(error).to.be.an.instanceof(BadHttpResponseError);
                     expect(error.httpStatusCode).to.equal(statusCode);
                     return true;
-                }),
-                { tests: 3 }
+                })
             );
         });
     });

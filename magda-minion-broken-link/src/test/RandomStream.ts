@@ -5,35 +5,18 @@
  */
 import { Readable } from "stream";
 
-const sizeGen = randIntGenerator(100, 200);
+// const sizeGen = randIntGenerator(1000, 2000);
 export default class RandomStream extends Readable {
     private now: number;
 
     constructor(waitMilliseconds: number) {
         super({
-            read: maxSize => {
-                const size = Math.min(sizeGen(), maxSize);
-
-                let array = Array(size);
-                for (let i = 0; i < size; i++) {
-                    array.push(randChar());
-                }
-                const bytes = array.join("");
-
+            read: () => {
                 const newTime = this.getTime();
                 const timeDiff = Math.max(0, newTime - this.now);
 
-                if (timeDiff < waitMilliseconds) {
-                    const timeUntilWaitOver = timeDiff - waitMilliseconds;
-                    const waitTime = Math.max(
-                        0,
-                        randIntGenerator(
-                            timeUntilWaitOver / 4,
-                            (timeUntilWaitOver / 4) * 3
-                        )()
-                    );
-                    // console.log("pushing " + bytes);
-                    setTimeout(() => this.push(bytes), waitTime);
+                if (timeDiff <= waitMilliseconds) {
+                    setTimeout(() => this.push(randChar()));
                 } else {
                     this.push(null);
                 }

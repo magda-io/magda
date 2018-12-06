@@ -82,8 +82,6 @@ export async function doRequest(
     const req = request[method](url, requestOpts)
         .on("error", err => rejectResponse(err))
         .on("response", (response: http.IncomingMessage) => {
-            req.abort();
-
             try {
                 console.info(
                     `Got ${response.statusCode} from ${method} ${url}`
