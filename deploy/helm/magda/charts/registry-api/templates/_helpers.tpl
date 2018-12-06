@@ -15,6 +15,7 @@ spec:
       labels:
         service: {{ .name }}
     spec:
+      priorityClassName: magda-8
       containers:
       - name: {{ .name }}
         env:

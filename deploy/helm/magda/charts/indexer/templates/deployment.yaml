@@ -12,6 +12,7 @@ spec:
       labels:
         service: indexer
     spec:
+      priorityClassName: magda-8
       containers:
       - name: indexer
         env:

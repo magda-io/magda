@@ -12,6 +12,7 @@ spec:
       labels:
         service: web
     spec:
+      priorityClassName: magda-7
       containers:
       - name: web
         command: [
