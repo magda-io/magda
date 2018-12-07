@@ -4,6 +4,7 @@
 -   Fixed chart won't displayed correctly under IE11
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 
 ## 0.0.50
 
