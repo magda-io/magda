@@ -385,14 +385,17 @@ object IndexDefinition extends DefaultJsonProtocol {
             case _ => None
           }
 
+          val uniqueRegionId = generateRegionId(regionSource.name, id)
+
           geometryOpt.map(geometry =>
             indexInto(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-              .id(generateRegionId(regionSource.name, id))
+              .id(uniqueRegionId)
               .source(JsObject(
                 "regionType" -> JsString(regionSource.name),
                 "regionId" -> JsString(id),
                 "regionName" -> name,
                 "regionShortName" -> shortName.map(JsString(_)).getOrElse(JsNull),
+                "regionSearchId" -> JsString(uniqueRegionId),
                 "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
                 "geometry" -> geometry.toJson,
                 "order" -> JsNumber(regionSource.order)).toJson))
