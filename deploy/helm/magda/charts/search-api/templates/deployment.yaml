@@ -30,7 +30,7 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /v0/datasets
+            path: /v0/status/live
             port: 80
           initialDelaySeconds: 60
           periodSeconds: 10
