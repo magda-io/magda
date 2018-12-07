@@ -149,7 +149,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def augmentWithBoostRegions(query: Query)(implicit client: HttpClient): Future[Query] = {
     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-        query(matchQuery("_id", freeText).operator("or").analyzer("region_synonym_graph_for_search"))
+        query(matchQuery("regionSearchId", freeText).operator("or"))
         limit 50
       ).map {
         case Left(ESGenericException(e)) => throw e
@@ -458,7 +458,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
   private def buildEsQuery(query: Query, strategy: SearchStrategy) : QueryDefinition = {
-    val stateGeomScorer = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))).boost(2))
+    val stateGeomScorer = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))).boost(50))
     val scorer: Option[ScoreFunctionDefinition] = stateGeomScorer.map(weightScore(100.0).filter(_))
     functionScoreQuery().query(queryToQueryDef(query, strategy)).functions(fieldFactorScore("quality").missing(0), scorer.toSeq: _*)
   }

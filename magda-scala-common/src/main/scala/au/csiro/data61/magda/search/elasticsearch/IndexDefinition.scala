@@ -229,6 +229,9 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("regionId"),
               magdaTextField("regionName"),
               magdaTextField("regionShortName"),
+              textField("regionSearchId")
+                .analyzer("regionSearchIdIndex")
+                .searchAnalyzer("regionSearchIdInput"),
               geoshapeField("boundingBox"),
               geoshapeField("geometry"),
               intField("order")
@@ -240,11 +243,18 @@ object IndexDefinition extends DefaultJsonProtocol {
               KeywordTokenizer,
               LowercaseTokenFilter),
             CustomAnalyzerDefinition(
-              "region_synonym_graph_for_search",
+              "regionSearchIdInput",
               WhitespaceTokenizer,
               List(
                 LowercaseTokenFilter,
                 MagdaRegionSynonymTokenFilter
+              )
+            ),
+            CustomAnalyzerDefinition(
+              "regionSearchIdIndex",
+              KeywordTokenizer,
+              List(
+                LowercaseTokenFilter
               )
             )
           ),
