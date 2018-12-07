@@ -16,8 +16,10 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
 
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import java.time.format.DateTimeFormatter
+
+import akka.event.LoggingAdapter
 import au.csiro.data61.magda.util.DateParser
 
 object Registry {
@@ -216,7 +218,7 @@ object Registry {
       }
     }
 
-    def convertRegistryDataSet(hit: Record)(implicit defaultOffset: ZoneOffset): DataSet = {
+    def convertRegistryDataSet(hit: Record, logger: Option[LoggingAdapter] = None)(implicit defaultOffset: ZoneOffset): DataSet = {
       val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
       val source = hit.aspects("source")
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
@@ -252,6 +254,15 @@ object Registry {
         case (start, end)                           => Some(PeriodOfTime(Some(start), Some(end)))
       }
 
+      val spatialData = Try(dcatStrings.extract[String]('spatial.?).map(Location(_))) match {
+        case Success(location) => location
+        case Failure(e) =>
+          if(logger.isDefined) {
+            logger.get.error(s"Failed to parse spatial data for dataset ${hit.id}: ${e.getMessage}")
+          }
+          None
+      }
+
       DataSet(
         identifier = hit.id,
         title = dcatStrings.extract[String]('title.?),
@@ -262,7 +273,7 @@ object Registry {
         languages = dcatStrings.extract[String]('languages.? / *).toSet,
         publisher = publisher.map(convertPublisher),
         accrualPeriodicity = dcatStrings.extract[String]('accrualPeriodicity.?).map(Periodicity.fromString(_)),
-        spatial = dcatStrings.extract[String]('spatial.?).map(Location(_)), // TODO: move this to the CKAN Connector
+        spatial = spatialData, // TODO: move this to the CKAN Connector
         temporal = temporal,
         themes = dcatStrings.extract[String]('themes.? / *),
         keywords = dcatStrings.extract[String]('keywords.? / *),

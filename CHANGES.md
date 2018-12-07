@@ -3,6 +3,9 @@
 -   Redirect HTTP requests to HTTPS URLs
 -   Fixed chart won't displayed correctly under IE11
 -   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 
 ## 0.0.50
 
@@ -57,7 +60,7 @@
 -   `create-secrets` will load ENV vars according to question data types
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
--   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
+-   Fixed magda-apidocs-server incorrectly builds into \$PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
 -   Stopped caching anything requested through the admin ui.
 -   Removed old admin ui code

@@ -24,7 +24,17 @@ import com.auth0.jwt.JWT
 import au.csiro.data61.magda.Authentication
 import akka.http.scaladsl.model.headers.RawHeader
 
-class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends RegistryConverters {
+trait RegistryInterface {
+  def getDataSetsReturnToken(start: Long, size: Int): Future[(Option[String], List[DataSet])]
+  def getDataSetsToken(token: String, size: Int): Future[(Option[String], List[DataSet])]
+}
+
+class RegistryExternalInterface(httpFetcher: HttpFetcher)
+                               (implicit val config: Config,
+                                implicit val system: ActorSystem,
+                                implicit val executor: ExecutionContext,
+                                implicit val materializer: Materializer)
+  extends RegistryConverters with RegistryInterface{
   def this()(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer) = {
     this(HttpFetcher(new URL(config.getString("registry.baseUrl"))))(config, system, executor, materializer)
   }
@@ -51,7 +61,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
-            { hit => convertRegistryDataSet(hit) },
+            { hit => convertRegistryDataSet(hit, Some(logger)) },
             { (e, item) => logger.error(e, "Could not parse item: {}", item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -64,7 +74,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(implicit val config: C
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
-            { hit => convertRegistryDataSet(hit) },
+            { hit => convertRegistryDataSet(hit, Some(logger)) },
             { (e, item) => logger.error(e, "Could not parse item: {}", item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
