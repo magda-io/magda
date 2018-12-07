@@ -156,9 +156,17 @@ export default class RequestFormTemplate extends React.Component {
                     onChange={this.handleInputChange}
                     type="text"
                     placeholder={this.props.textAreaPlaceHolder}
+                    {...(this.state.messageValid
+                        ? {}
+                        : {
+                              "aria-describedby": "messageFieldDescription"
+                          })}
                 />
                 {!this.state.messageValid && (
-                    <label className="correspondence-field-error">
+                    <label
+                        id="messageFieldDescription"
+                        className="correspondence-field-error"
+                    >
                         Please enter a valid message
                     </label>
                 )}
@@ -177,9 +185,17 @@ export default class RequestFormTemplate extends React.Component {
                             : "au-text-input--invalid")
                     }
                     placeholder={this.props.namePlaceHolder}
+                    {...(this.state.senderNameValid
+                        ? {}
+                        : {
+                              "aria-describedby": "senderNameFieldDescription"
+                          })}
                 />
                 {!this.state.senderNameValid && (
-                    <label className="correspondence-field-error">
+                    <label
+                        id="senderNameFieldDescription"
+                        className="correspondence-field-error"
+                    >
                         Please enter a name
                     </label>
                 )}
@@ -197,9 +213,18 @@ export default class RequestFormTemplate extends React.Component {
                             : "au-text-input--invalid")
                     }
                     placeholder={this.props.emailPlaceHolder}
+                    {...(this.state.senderEmailValid
+                        ? {}
+                        : {
+                              "aria-describedby": "senderEmailFieldDescription"
+                          })}
                 />
                 {!this.state.senderEmailValid && (
-                    <label className="correspondence-field-error">
+                    <label
+                        id="senderEmailFieldDescription"
+                        className="correspondence-field-error"
+                        aria-describedby="senderEmail"
+                    >
                         Email is invalid
                     </label>
                 )}
