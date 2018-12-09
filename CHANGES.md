@@ -1,5 +1,6 @@
 ## 0.0.51
 
+-   Add readiness and liveness probes to all services
 -   Redirect HTTP requests to HTTPS URLs
 -   Fixed chart won't displayed correctly under IE11
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
