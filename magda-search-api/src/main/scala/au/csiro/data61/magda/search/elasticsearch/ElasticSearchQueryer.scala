@@ -486,7 +486,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategy: SearchStrategy,
     isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
-      case MatchAll => "and"
+      case MatchAll =>
+        if (query.boostRegions.isEmpty) {
+          "and"
+        } else {
+          // --- when boostRegions have been identified from user input
+          // --- we shouldn't use `and` for `simple_string_query`. Otherwise, user input `water in hurstville`
+          // --- will exclude datasets that don't include `hurstville` keywords but their spatial data covers `hurstville` region
+          // --- those datasets are more likely what users want
+          "or"
+        }
       case MatchPart => "or"
     }
 
