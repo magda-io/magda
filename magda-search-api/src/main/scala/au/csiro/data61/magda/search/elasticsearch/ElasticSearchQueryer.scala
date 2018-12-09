@@ -458,9 +458,26 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
   private def buildEsQuery(query: Query, strategy: SearchStrategy) : QueryDefinition = {
-    val stateGeomScorer = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))).boost(50))
-    val scorer: Option[ScoreFunctionDefinition] = stateGeomScorer.map(weightScore(100.0).filter(_))
-    functionScoreQuery().query(queryToQueryDef(query, strategy)).functions(fieldFactorScore("quality").missing(0), scorer.toSeq: _*)
+    val stateGeomScorer = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
+    val regionScorer: Option[ScoreFunctionDefinition] = stateGeomScorer.map(weightScore(1).filter(_))
+    val qualityScorers = Seq(fieldFactorScore("quality")
+                        .filter(termQuery("hasQuality", true))
+                        .missing(1))
+    /**
+      * The overall score method is:
+      * [Document Score] x SUM(1, [possible quality scorer result (range from 0~1) when hasQuality = true], [possible region scorer result (0 or 1) when boostRegions have been found])
+      * This will guarantee the overall score never be 0 even when quality scorer or / and region scorer is missing
+      * If both `quality` & `region` scorer are missing, overall score will be [Document Score] x 1
+      *
+      * The overall score method was:
+      * [Document Score] x [possible quality scorer result (range from 0~1)]
+      * When quality is 0 or missing, the overall score will be 0
+      */
+    val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ regionScorer.toSeq
+
+    functionScoreQuery()
+      .query(queryToQueryDef(query, strategy))
+      .functions(allScorers).scoreMode("sum")
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
