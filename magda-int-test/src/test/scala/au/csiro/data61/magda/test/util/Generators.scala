@@ -286,16 +286,20 @@ object Generators {
     geoJson <- someBiasedOption(geometryGen)
     shouldGenerateInvalidDecimals <- arbitrary[Boolean]
   } yield {
-    val text = geoJson.map(_.toJson.toString).map { jsonString =>
-      if (!shouldGenerateInvalidDecimals) {
-        jsonString
-      } else {
-        /**
-          * Add extra invalid decimal places to simulate the possible poor geoJson data
-          * e.g. 123.34.22
-          * */
-        jsonString.replaceAll("(\\d+\\.\\d)(\\d+)", "$1.$2")
-      }
+    val text = geoJson.map(_.toJson.toString)
+      .map { jsonString =>
+        if (!shouldGenerateInvalidDecimals) {
+          jsonString
+        } else {
+          /**
+            * Add extra invalid decimal places to simulate the possible poor geoJson data
+            * e.g. 123.34.22
+            * */
+          jsonString
+            // --- add extra decimal places
+            // --- please note: this will not be valid json anymore
+            .replaceAll("(\\d+\\.\\d)(\\d+)", "$1.$2")
+        }
     }
     new Location(text, geoJson)
   }
