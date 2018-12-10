@@ -1,5 +1,7 @@
 ## 0.0.51
 
+-   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
+
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
