@@ -283,9 +283,22 @@ object Generators {
     }
 
   def locationGen(geometryGen: Gen[Geometry]) = for {
-    text <- someBiasedOption(textGen)
     geoJson <- someBiasedOption(geometryGen)
-  } yield new Location(text, geoJson)
+    shouldGenerateInvalidDecimals <- arbitrary[Boolean]
+  } yield {
+    val text = geoJson.map(_.toJson.toString).map { jsonString =>
+      if (!shouldGenerateInvalidDecimals) {
+        jsonString
+      } else {
+        /**
+          * Add extra invalid decimal places to simulate the possible poor geoJson data
+          * e.g. 123.34.22
+          * */
+        jsonString.replaceAll("(\\d+\\.\\d)(\\d+)", "$1.$2")
+      }
+    }
+    new Location(text, geoJson)
+  }
 
   def descWordGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("descWord", nonEmptyTextGen.map(_.take(50).mkString.trim), 200)(inputCache)
   def publisherAgentGen(inputCache: mutable.Map[String, List[_]]) =
