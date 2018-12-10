@@ -3,7 +3,7 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import "./StoryBox.css";
 
 class StoryBox extends Component {
-    getClickableElement(el, url) {
+    getClickableElement(el, url, label) {
         if (!url) return el;
         return (
             <a
@@ -11,6 +11,7 @@ class StoryBox extends Component {
                 rel="noopener noreferrer"
                 href={url}
                 className="story-title-link"
+                aria-label={label}
             >
                 {el}
             </a>
@@ -26,21 +27,27 @@ class StoryBox extends Component {
             <div className="story-box-body">
                 {image
                     ? this.getClickableElement(
-                          <img
-                              className="story-title-image"
-                              src={`${image}`}
-                              alt="title"
-                          />,
-                          content.titleUrl
+                          <div>
+                              <img
+                                  className="story-title-image"
+                                  src={`${image}`}
+                                  alt=""
+                                  aria-hidden="true"
+                              />
+                              {content.title ? (
+                                  <h2
+                                      className="story-title"
+                                      aria-hidden="true"
+                                  >
+                                      {content.title}
+                                  </h2>
+                              ) : null}
+                          </div>,
+                          content.titleUrl,
+                          content.title || `Link to ${content.titleUrl}`
                       )
                     : null}
                 <div className="story-box-text">
-                    {content.title
-                        ? this.getClickableElement(
-                              <h2 className="story-title">{content.title}</h2>,
-                              content.titleUrl
-                          )
-                        : null}
                     <MarkdownViewer markdown={content.content} />
                 </div>
             </div>
