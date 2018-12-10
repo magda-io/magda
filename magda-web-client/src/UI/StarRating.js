@@ -8,14 +8,16 @@ function StarRating(props) {
     const stars = Array(5)
         .fill(emptyStarIcon)
         .fill(starIcon, 0, props.stars);
+    const ratingText = `${props.stars} out of 5 stars`;
     return (
-        <div className="star-rating-box">
+        <div className="star-rating-box" aria-label={ratingText}>
             {stars.map((icon, i) => (
                 <span
                     key={i}
                     className={
                         icon === starIcon ? "full-star-icon" : "empty-star-icon"
                     }
+                    aria-hidden="true"
                 >
                     <img key={i} src={icon} alt="star rating" />
                 </span>
