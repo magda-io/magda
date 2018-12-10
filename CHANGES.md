@@ -5,6 +5,7 @@
 -   Fixed chart won't displayed correctly under IE11
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
+-   Fixed: Error messages are not associated with their form fields on suggest dataset form
 
 ## 0.0.50
 
