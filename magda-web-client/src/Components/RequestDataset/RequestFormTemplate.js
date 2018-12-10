@@ -159,12 +159,12 @@ export default class RequestFormTemplate extends React.Component {
                     {...(this.state.messageValid
                         ? {}
                         : {
-                              "aria-describedby": "messageFieldDescription"
+                              "aria-describedby": "messageFieldError"
                           })}
                 />
                 {!this.state.messageValid && (
                     <label
-                        id="messageFieldDescription"
+                        id="messageFieldError"
                         className="correspondence-field-error"
                     >
                         Please enter a valid message
@@ -188,12 +188,12 @@ export default class RequestFormTemplate extends React.Component {
                     {...(this.state.senderNameValid
                         ? {}
                         : {
-                              "aria-describedby": "senderNameFieldDescription"
+                              "aria-describedby": "senderNameFieldError"
                           })}
                 />
                 {!this.state.senderNameValid && (
                     <label
-                        id="senderNameFieldDescription"
+                        id="senderNameFieldError"
                         className="correspondence-field-error"
                     >
                         Please enter a name
@@ -216,12 +216,12 @@ export default class RequestFormTemplate extends React.Component {
                     {...(this.state.senderEmailValid
                         ? {}
                         : {
-                              "aria-describedby": "senderEmailFieldDescription"
+                              "aria-describedby": "senderEmailFieldError"
                           })}
                 />
                 {!this.state.senderEmailValid && (
                     <label
-                        id="senderEmailFieldDescription"
+                        id="senderEmailFieldError"
                         className="correspondence-field-error"
                         aria-describedby="senderEmail"
                     >
