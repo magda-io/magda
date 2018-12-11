@@ -109,7 +109,7 @@ describe("send dataset request mail", () => {
         registryScope.done();
     });
 
-    describe("/healthz", () => {
+    describe("/status/ready", () => {
         let checkConnectivityStub: sinon.SinonStub;
 
         beforeEach(() => {
@@ -123,14 +123,6 @@ describe("send dataset request mail", () => {
             checkConnectivityStub.restore();
         });
 
-        it("should return 200 if connection works", () => {
-            checkConnectivityStub.returns(Promise.resolve());
-
-            return supertest(app)
-                .get("/healthz")
-                .expect(200);
-        });
-
         withStubbedConsoleError(stubbedError => {
             it("should return 500 if connection fails", () => {
                 checkConnectivityStub.returns(
@@ -138,7 +130,7 @@ describe("send dataset request mail", () => {
                 );
 
                 return supertest(app)
-                    .get("/healthz")
+                    .get("/status/ready")
                     .expect(500)
                     .then(() => {
                         expect(stubbedError().called).to.be.true;

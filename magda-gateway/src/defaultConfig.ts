@@ -11,18 +11,9 @@ export default {
             to: "http://localhost:6104/v0/public",
             auth: true
         },
-        web: {
-            to: "http://localhost:6108"
-        },
-        "preview-map": {
-            to: "http://localhost:6110"
-        },
         admin: {
             to: "http://localhost:6112/v0",
             auth: true
-        },
-        feedback: {
-            to: "http://localhost:6116/v0"
         },
         apidocs: {
             to: "http://localhost:6118"

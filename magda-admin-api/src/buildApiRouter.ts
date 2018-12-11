@@ -5,6 +5,11 @@ import * as _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
 import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
+import {
+    installStatusRouter,
+    createServiceProbe
+} from "@magda/typescript-common/dist/express/status";
+
 export interface Options {
     dockerRepo: string;
     authApiUrl: string;
@@ -23,14 +28,18 @@ export default function buildApiRouter(options: Options) {
 
     const k8sApi = new K8SApi(options.kubernetesApiType, options.namespace);
 
-    router.get("/healthz", (req, res) => {
-        k8sApi
-            .getJobs()
-            .then(() => {
-                res.status(200).send("OK");
-            })
-            .catch(() => res.status(500).send("Error"));
-    });
+    const status = {
+        probes: {
+            k8s: async () => {
+                await k8sApi.getJobs();
+                return {
+                    ready: true
+                };
+            },
+            auth: createServiceProbe(options.authApiUrl)
+        }
+    };
+    installStatusRouter(router, status);
 
     router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 

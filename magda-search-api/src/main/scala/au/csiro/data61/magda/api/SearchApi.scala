@@ -297,6 +297,10 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
             (get & parameters('query?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
               complete(searchQueryer.searchRegions(query, start, limit))
             }
+          } ~
+          pathPrefix("status") {
+            path("live") { complete("OK") } ~
+            path("ready") { complete(ReadyStatus(true)) }
           }
       }
     }

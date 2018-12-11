@@ -45,6 +45,13 @@ export default class PostgresDatabase implements Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
+    async check(): Promise<any> {
+        await this.pool.query("SELECT id FROM content LIMIT 1");
+        return {
+            ready: true
+        };
+    }
+
     getContentSummary(
         queries: Query[],
         inlineContentIfType: string[]
