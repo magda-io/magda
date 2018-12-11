@@ -6522,7 +6522,7 @@ escodegen@1.10.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-escodegen@^1.6.1:
+escodegen@^1.6.1, escodegen@^1.8.1:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/escodegen/-/escodegen-1.11.0.tgz#b27a9389481d5bfd5bec76f7bb1eb3f8f4556589"
   integrity sha512-IeMV45ReixHS53K/OmfKAIztN/igDHzTJUhZM3k1jMhIZWjk45SMwAtBsEXiJp3vSPmTcu6CXn7mDvFHRN66fw==
@@ -10515,6 +10515,16 @@ jsonpath@^0.2.11:
     esprima "1.2.2"
     jison "0.4.13"
     static-eval "0.2.3"
+    underscore "1.7.0"
+
+jsonpath@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-1.0.0.tgz#45cd9d4c4d0d6825d90bd7e40f83f1182b13dd07"
+  integrity sha1-Rc2dTE0NaCXZC9fkD4PxGCsT3Qc=
+  dependencies:
+    esprima "1.2.2"
+    jison "0.4.13"
+    static-eval "2.0.0"
     underscore "1.7.0"
 
 jsonpointer@^4.0.0:
@@ -16734,6 +16744,13 @@ static-eval@0.2.3:
   integrity sha1-Aj8XrJ/uQm6niMEuo5IG3Bdfiyo=
   dependencies:
     escodegen "~0.0.24"
+
+static-eval@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/static-eval/-/static-eval-2.0.0.tgz#0e821f8926847def7b4b50cda5d55c04a9b13864"
+  integrity sha512-6flshd3F1Gwm+Ksxq463LtFd1liC77N/PX1FVVc3OzL3hAmo2fwHFbuArkcfi7s9rTNsLEhcRmXGFZhlgy40uw==
+  dependencies:
+    escodegen "^1.8.1"
 
 static-extend@^0.1.1:
   version "0.1.2"
