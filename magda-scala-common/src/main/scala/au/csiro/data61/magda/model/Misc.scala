@@ -49,6 +49,9 @@ package misc {
     lowerBound: Option[Int] = None,
     matched: Boolean = false)
 
+
+  final case class ReadyStatus(ready: Boolean = false)
+
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
@@ -297,6 +300,7 @@ package misc {
 
   case class License(name: Option[String] = None, url: Option[String] = None)
 
+
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
     implicit val licenseFormat = jsonFormat2(License.apply)
@@ -413,9 +417,10 @@ package misc {
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
+
+    implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
   }
 
   object Protocols extends Protocols {
   }
-
 }

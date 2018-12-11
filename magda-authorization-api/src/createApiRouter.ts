@@ -10,6 +10,8 @@ import {
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
+import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
@@ -23,6 +25,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
 
     const router: express.Router = express.Router();
+
+    const status = {
+        probes: {
+            database: database.check.bind(database)
+        }
+    };
+    installStatusRouter(router, status);
+    installStatusRouter(router, status, "/private");
+    installStatusRouter(router, status, "/public");
 
     function handlePromise<T>(
         res: express.Response,

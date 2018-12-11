@@ -8,6 +8,11 @@ import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
 
+import {
+    installStatusRouter,
+    createServiceProbe
+} from "@magda/typescript-common/dist/express/status";
+
 export interface ProxyTarget {
     to: string;
     methods?: string[];
@@ -30,6 +35,14 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
     const jwtSecret = options.jwtSecret;
 
     const router: Router = express.Router();
+
+    const probes: any = {};
+
+    _.forEach(options.routes, (value: ProxyTarget, key: string) => {
+        probes[key] = createServiceProbe(value.to);
+    });
+
+    installStatusRouter(router, { probes });
 
     proxy.on("proxyReq", (proxyReq, req: any, res, options) => {
         if (jwtSecret && req.user) {

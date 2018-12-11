@@ -31,9 +31,16 @@ spec:
         ]
         livenessProbe:
           httpGet:
-            path: /v0/healthz
+            path: /v0/status/live
             port: 80
-          initialDelaySeconds: 60
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /v0/status/ready
+            port: 80
+          initialDelaySeconds: 10
           periodSeconds: 60
           timeoutSeconds: 30
         resources:
