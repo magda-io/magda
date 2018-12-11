@@ -23,7 +23,9 @@ type searchDataType = {
 };
 
 const keyCodeArrowDown = 40;
+const keyCodeArrowLeft = 37;
 const keyCodeArrowUp = 38;
+const keyCodeArrowRight = 39;
 const keyCodeEnter = 13;
 
 /**
@@ -255,10 +257,27 @@ class SearchSuggestionBox extends Component {
             );
             return;
         }
-        if (keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null)
+        if (keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null) {
             e.preventDefault(); //--- stop cursor from moving to the beginning of the input text
-        if (keyCode === keyCodeArrowDown) this.selectNextItem();
-        else this.selectPrevItem();
+        }
+        switch (keyCode) {
+            case keyCodeArrowDown:
+                this.selectNextItem();
+                break;
+            case keyCodeArrowUp:
+                this.selectPrevItem();
+                break;
+            case keyCodeArrowLeft():
+                this.setState({
+                    deleteSelected: false
+                });
+                break;
+            case keyCodeArrowRight:
+                this.setState({
+                    deleteSelected: true
+                });
+                break;
+        }
     }
 
     selectNextItem() {
@@ -267,24 +286,32 @@ class SearchSuggestionBox extends Component {
         let newIdx;
         if (this.state.selectedItemIdx === null) newIdx = 0;
         else newIdx = (this.state.selectedItemIdx + 1) % maxNumber;
-        this.setState({
-            selectedItemIdx: newIdx
-        });
+        this.selectItem(newIdx);
     }
 
     selectPrevItem() {
         if (this.state.selectedItemIdx === null) return;
         let newIdx = this.state.selectedItemIdx - 1;
         if (newIdx < 0) newIdx = null;
+        this.selectItem(newIdx);
+    }
+
+    selectItem(index) {
         this.setState({
-            selectedItemIdx: newIdx
+            selectedItemIdx: index
         });
+        this.props.onSelectedIdChange &&
+            this.props.onSelectedIdChange(this.buildOptionId(index));
     }
 
     getSavedSearchItemsNumber() {
         const recentSearchItems = this.state.recentSearches;
         if (!recentSearchItems) return 0;
         return recentSearchItems.length;
+    }
+
+    buildOptionId(idx) {
+        return `search-history-item-${idx}`;
     }
 
     render() {
@@ -294,7 +321,6 @@ class SearchSuggestionBox extends Component {
             <div
                 className="search-suggestion-box"
                 ref={el => (this.containerRef = el)}
-                tabIndex={999}
             >
                 <div className="search-suggestion-box-position-adjust" />
                 <div
@@ -307,46 +333,59 @@ class SearchSuggestionBox extends Component {
                             Recent Searches
                         </h5>
                     </Medium>
-                    {recentSearchItems.map((item, idx) => (
-                        <div
-                            key={idx}
-                            className={`search-item-container ${
-                                this.state.selectedItemIdx === idx
-                                    ? "selected"
-                                    : ""
-                            }`}
-                        >
-                            <img
-                                className="recent-item-icon"
-                                src={recentSearchIcon}
-                                alt="recent search item"
-                            />
-                            <button
-                                className="au-btn au-btn--tertiary search-item-main-button"
-                                onClick={e => this.onSearchItemClick(e, item)}
+                    <ul id="search-history-items" role="listbox">
+                        {recentSearchItems.map((item, idx) => (
+                            <li
+                                key={idx}
+                                className={`search-item-container ${
+                                    this.state.selectedItemIdx === idx
+                                        ? "selected"
+                                        : ""
+                                }`}
                             >
-                                <Medium>
-                                    <MarkdownViewer
-                                        markdown={this.createSearchItemLabelText(
-                                            item
-                                        )}
-                                        truncate={false}
+                                <img
+                                    className="recent-item-icon"
+                                    src={recentSearchIcon}
+                                    alt="recent search item"
+                                />
+                                <button
+                                    role="option"
+                                    id={this.buildOptionId(idx)}
+                                    className="au-btn au-btn--tertiary search-item-main-button"
+                                    onClick={e =>
+                                        this.onSearchItemClick(e, item)
+                                    }
+                                >
+                                    <Medium>
+                                        <MarkdownViewer
+                                            markdown={this.createSearchItemLabelText(
+                                                item
+                                            )}
+                                            truncate={false}
+                                        />
+                                    </Medium>
+                                    <Small>
+                                        <div className="recent-item-content">
+                                            {item.data.q
+                                                ? item.data.q.trim()
+                                                : ""}
+                                        </div>
+                                    </Small>
+                                </button>
+                                <button
+                                    className="au-btn au-btn--tertiary search-item-delete-button"
+                                    onClick={e =>
+                                        this.onDeleteItemClick(e, idx)
+                                    }
+                                >
+                                    <img
+                                        alt="delete search item"
+                                        src={closeIcon}
                                     />
-                                </Medium>
-                                <Small>
-                                    <div className="recent-item-content">
-                                        {item.data.q ? item.data.q.trim() : ""}
-                                    </div>
-                                </Small>
-                            </button>
-                            <button
-                                className="au-btn au-btn--tertiary search-item-delete-button"
-                                onClick={e => this.onDeleteItemClick(e, idx)}
-                            >
-                                <img alt="delete search item" src={closeIcon} />
-                            </button>
-                        </div>
-                    ))}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </div>
         );
@@ -366,25 +405,9 @@ SearchSuggestionBox.defaultProps = {
     searchText: null
 };
 
-const SearchSuggestionBoxWithRouter = withRouter(
-    ({
-        history,
-        location,
-        datasetSearch,
-        searchText,
-        isSearchInputFocus,
-        inputRef
-    }) => (
-        <SearchSuggestionBox
-            history={history}
-            location={location}
-            datasetSearch={datasetSearch}
-            searchText={searchText}
-            isSearchInputFocus={isSearchInputFocus}
-            inputRef={inputRef}
-        />
-    )
-);
+const SearchSuggestionBoxWithRouter = withRouter(props => (
+    <SearchSuggestionBox {...props} />
+));
 
 const mapStateToProps = state => {
     return {

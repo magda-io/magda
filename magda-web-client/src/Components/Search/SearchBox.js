@@ -36,7 +36,8 @@ class SearchBox extends Component {
             searchText: null,
             width: 0,
             height: 0,
-            isFocus: false
+            isFocus: false,
+            selectedId: null
         };
         this.searchInputFieldRef = null;
         props.history.listen(location => {
@@ -151,9 +152,19 @@ class SearchBox extends Component {
                         isFocus: false
                     })
                 }
+                role="combobox"
+                aria-autocomplete="list"
+                aria-owns="search-history-items"
+                aria-activedescendant={this.state.selectedId}
             />
         );
     }
+
+    onSelectedIdChange = newId => {
+        this.setState({
+            selectedId: newId
+        });
+    };
 
     render() {
         const suggestionBox = (
@@ -161,6 +172,7 @@ class SearchBox extends Component {
                 searchText={this.getSearchBoxValue()}
                 isSearchInputFocus={this.state.isFocus}
                 inputRef={this.searchInputFieldRef}
+                onSelectedIdChange={this.onSelectedIdChange}
             />
         );
 
@@ -171,7 +183,9 @@ class SearchBox extends Component {
                     <div className="searchBox">
                         <label htmlFor="search">
                             <span className="sr-only">
-                                {"Search " + translate(["appName", ""])}
+                                {"Search " +
+                                    translate(["appName", ""]) +
+                                    ", use arrow keys to browse search history"}
                             </span>
                             <Medium>
                                 <div style={{ position: "relative" }}>
