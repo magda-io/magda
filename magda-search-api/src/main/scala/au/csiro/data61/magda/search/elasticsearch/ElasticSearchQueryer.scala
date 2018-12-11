@@ -128,7 +128,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 .zip(fullRegions)
                 .filter(_._2.isDefined)
                 .map(_._2.get)
-                .map(Specified.apply).toSet ++ queryWithBoostRegions.regions.filter(_.isEmpty)
+                .map(Specified.apply)
+                .toSet ++ inputQuery.regions.filter(_.isEmpty)
 
             val outputQuery = queryWithBoostRegions.copy(regions = newQueryRegions)
             buildSearchResult(outputQuery, response, strategy, requestedFacetSize)
@@ -458,8 +459,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
   private def buildEsQuery(query: Query, strategy: SearchStrategy) : QueryDefinition = {
-    val stateGeomScorer = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
-    val regionScorer: Option[ScoreFunctionDefinition] = stateGeomScorer.map(weightScore(1).filter(_))
+    val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
+    val geomScorer: Option[ScoreFunctionDefinition] = geomScorerQuery.map(weightScore(1).filter(_))
     val qualityScorers = Seq(fieldFactorScore("quality")
                         .filter(termQuery("hasQuality", true))
                         .missing(1))
@@ -473,7 +474,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       * [Document Score] x [possible quality scorer result (range from 0~1)]
       * When quality is 0 or missing, the overall score will be 0
       */
-    val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ regionScorer.toSeq
+    val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ geomScorer.toSeq
 
     functionScoreQuery()
       .query(queryToQueryDef(query, strategy))
