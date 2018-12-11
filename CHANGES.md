@@ -7,6 +7,7 @@
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Added shortcut to build create secrets script for magda-config repo
 
 ## 0.0.50
 

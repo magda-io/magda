@@ -12,7 +12,8 @@
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
     "create-secrets": "create-secrets/index.js",
-    "set-scss-vars": "set-scss-vars.js"
+    "set-scss-vars": "set-scss-vars.js",
+    "pkg-create-secrets-script": "pkg create-secrets/index.js --out-path create-secrets/build"
   },
   "devDependencies": {
     "ansi-styles": "^3.2.1",
