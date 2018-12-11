@@ -284,10 +284,30 @@ object Generators {
 
   def locationGen(geometryGen: Gen[Geometry]) = for {
     geoJson <- someBiasedOption(geometryGen)
+    shouldGenerateWKTString <- arbitrary[Boolean]
     shouldGenerateInvalidDecimals <- arbitrary[Boolean]
   } yield {
-    val text = geoJson.map(_.toJson.toString)
-      .map { jsonString =>
+    val text = geoJson.map { geoJsonObj =>
+      if (shouldGenerateWKTString && geoJsonObj.isInstanceOf[Polygon] && geoJsonObj.asInstanceOf[Polygon].coordinates.size < 2) {
+        // --- we only support WKT format for `Polygon`
+        // --- convert geoJson to WKT format
+        // --- We do not support Polygon in WKT format with holes yet
+        // --- Thus, only generate WKT text when generated Polygon has no holes
+        // --- i.e geoJsonObj.asInstanceOf[Polygon].coordinates.size < 2
+        val cordsStr = geoJsonObj
+                        .asInstanceOf[Polygon]
+                        .coordinates
+                        .toJson
+                        .toString
+                        .replaceAll("\\[([\\d-.]+).([\\d-.]+)\\]", "$1 $2")
+                        .replace("[", "(")
+                        .replace("]", ")")
+
+        s"POLYGON ${cordsStr}"
+      } else {
+        geoJsonObj.toJson.toString
+      }
+    }.map { jsonString =>
         if (!shouldGenerateInvalidDecimals) {
           jsonString
         } else {
@@ -298,6 +318,7 @@ object Generators {
           jsonString
             // --- add extra decimal places
             // --- please note: this will not be valid json anymore
+            // --- But still a valid WKT String (as per our pattern match)
             .replaceAll("(\\d+\\.\\d)(\\d+)", "$1.$2")
         }
     }
