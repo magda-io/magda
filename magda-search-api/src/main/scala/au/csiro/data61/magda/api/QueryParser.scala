@@ -34,10 +34,11 @@ case class Query(
   dateFrom: Option[FilterValue[OffsetDateTime]] = None,
   dateTo: Option[FilterValue[OffsetDateTime]] = None,
   regions: Set[FilterValue[Region]] = Set(),
+  boostRegions: Set[Region] = Set(),
   formats: Set[FilterValue[String]] = Set())
 
 object Query {
-  val quoteRegex = """"(.*)"""".r
+  val quoteRegex = """"(.*)""".r
 
   def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String])(implicit config: Config): Query = {
     Query(
@@ -46,6 +47,7 @@ object Query {
       dateFrom = dateFilterValueFromString(dateFrom),
       dateTo = dateFilterValueFromString(dateTo),
       regions = regions.map(regionValueFromString).flatten.toSet,
+      boostRegions = Set(),
       formats = formats.map(x => filterValueFromString(Some(x))).flatten.toSet)
   }
 

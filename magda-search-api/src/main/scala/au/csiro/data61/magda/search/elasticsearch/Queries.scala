@@ -54,8 +54,7 @@ object Queries {
     }
   }
 
-  def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
-    def normal(region: Region) = new GeoShapeQueryDefinition(
+  def regionToGeoShapeQuery(region: Region, indices: Indices)(implicit config: Config) = new GeoShapeQueryDefinition(
       "spatial.geoJson",
       PreindexedShape(
         generateRegionId(region.queryRegion.regionType, region.queryRegion.regionId),
@@ -66,7 +65,8 @@ object Queries {
       Some(ShapeRelation.INTERSECTS)
     )
 
-    handleFilterValue(regionValue, normal, "spatial.geoJson")
+  def regionIdQuery(regionValue: FilterValue[Region], indices: Indices)(implicit config: Config) = {
+    handleFilterValue(regionValue, (region: Region) => regionToGeoShapeQuery(region, indices), "spatial.geoJson")
   }
   def dateQueries(dateFrom: Option[FilterValue[OffsetDateTime]], dateTo: Option[FilterValue[OffsetDateTime]]) = {
     Seq(

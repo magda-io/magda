@@ -146,10 +146,16 @@ package misc {
         case polygonPattern(polygonCoords, _) =>
           val coords = polygonCoords.split(",")
             .map { stringCoords =>
-              val Array(x, y) = stringCoords
-                                  .trim
-                                  .split("\\s")
-                                  .map(str => CoordinateFormat.convertStringToBigDecimal(str))
+              val Array(x, y) = stringCoords.trim.split("\\s").map { str =>
+                // --- remove possible redundant dot in number string
+                val parts = str.split("\\.")
+                if (parts.length > 2) {
+                  // --- drop all dots except the first one
+                  parts.take(2).mkString(".") + parts.drop(2).mkString
+                } else {
+                  str
+                }
+              }.map(_.toDouble)
               Coordinate(x, y)
             }.toSeq
 
