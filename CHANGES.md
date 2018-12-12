@@ -1,6 +1,7 @@
 ## 0.0.51
 
 -   Add readiness and liveness probes to all services
+-   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
 -   Redirect HTTP requests to HTTPS URLs
 -   Fixed chart won't displayed correctly under IE11
 -   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
