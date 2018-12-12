@@ -67,6 +67,12 @@ export default class RequestFormTemplate extends React.Component {
         return null;
     }
 
+    isFormValid = () => {
+        const { senderEmailValid, senderNameValid, messageValid } = this.state;
+
+        return senderEmailValid && senderNameValid && messageValid;
+    };
+
     /**
      * If valid this form is submitted.
      */
@@ -98,6 +104,14 @@ export default class RequestFormTemplate extends React.Component {
         );
     };
 
+    isFormBlank = () => {
+        return !(
+            (this.state.message && this.state.message !== "") ||
+            (this.state.senderName && this.state.senderName !== "") ||
+            (this.state.senderEmail && this.state.senderEmail !== "")
+        );
+    };
+
     /**
      * Handles change event when typed into any of the form inputs.
      * Sets the state according to which input is being typed in
@@ -115,11 +129,7 @@ export default class RequestFormTemplate extends React.Component {
                 // put this in a callback since setState is async
                 this.props.handleChange(this.state);
                 //the below toggles the disabled state of the clear
-                if (
-                    (this.state.message && this.state.message !== "") ||
-                    (this.state.senderName && this.state.senderName !== "") ||
-                    (this.state.senderEmail && this.state.senderEmail !== "")
-                ) {
+                if (this.isFormBlank()) {
                     this.setState(() => {
                         return {
                             clearButtonDisabled: false
@@ -143,7 +153,11 @@ export default class RequestFormTemplate extends React.Component {
                 <label htmlFor="message" className="field-label">
                     {this.props.textAreaLabel}
                     {!this.state.messageValid && (
-                        <span className="field-error">
+                        <span
+                            className="correspondence-field-error"
+                            id="messageFieldError"
+                            aria-live="assertive"
+                        >
                             Please enter a valid message
                             <span className="sr-only">.</span>
                         </span>
@@ -162,12 +176,18 @@ export default class RequestFormTemplate extends React.Component {
                     onChange={this.handleInputChange}
                     type="text"
                     placeholder={this.props.textAreaPlaceHolder}
+                    aria-describedby="messageFieldError"
                 />
+
                 <label htmlFor="senderName" className="field-label">
                     Your Name
                     <span className="sr-only">:</span>
                     {!this.state.senderNameValid && (
-                        <span className="field-error">
+                        <span
+                            className="correspondence-field-error"
+                            id="senderNameFieldError"
+                            aria-live="assertive"
+                        >
                             Please enter a name
                             <span className="sr-only">.</span>
                         </span>
@@ -186,12 +206,18 @@ export default class RequestFormTemplate extends React.Component {
                             : "au-text-input--invalid")
                     }
                     placeholder={this.props.namePlaceHolder}
+                    aria-describedby="senderNameFieldError"
                 />
+
                 <label htmlFor="senderEmail" className={"field-label"}>
                     Email
                     <span className="sr-only">:</span>
                     {!this.state.senderEmailValid && (
-                        <span className="field-error">
+                        <span
+                            className="correspondence-field-error"
+                            id="senderEmailFieldError"
+                            aria-live="assertive"
+                        >
                             Email is invalid
                             <span className="sr-only">.</span>
                         </span>
@@ -209,11 +235,17 @@ export default class RequestFormTemplate extends React.Component {
                             : "au-text-input--invalid")
                     }
                     placeholder={this.props.emailPlaceHolder}
+                    aria-describedby="senderEmailFieldError"
                 />
                 <AUbutton
                     onClick={this.handleSubmit}
                     className="correspondence-submit-button"
                     type="submit"
+                    aria-description={
+                        !this.isFormValid()
+                            ? "Form entries are invalid, please check the error messages above"
+                            : "Send"
+                    }
                     disabled={this.props.isSending}
                 >
                     {this.props.isSending ? "Sending..." : "Send"}

@@ -61,7 +61,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
-            { hit => convertRegistryDataSet(hit) },
+            { hit => convertRegistryDataSet(hit, Some(logger)) },
             { (e, item) => logger.error(e, "Could not parse item: {}", item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -74,7 +74,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
-            { hit => convertRegistryDataSet(hit) },
+            { hit => convertRegistryDataSet(hit, Some(logger)) },
             { (e, item) => logger.error(e, "Could not parse item: {}", item.toString) }))
         }
         case _ => Unmarshal(response.entity).to[String].flatMap(onError(response))

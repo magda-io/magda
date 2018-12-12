@@ -46,6 +46,12 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
   blockUntilNotRed()
 
+  def convertSpatialDataUsingGeoJsonField(spatialData:Option[Location]) = spatialData match {
+    case Some(Location(_, None)) => None
+    case Some(Location(_, Some(geoJsonData))) => Some(Location(Some(geoJsonData.toJson.toString)))
+    case _ => None
+  }
+
   describe("when webhook received") {
     it("should index new datasets") {
       loadDatasetsThroughEvents() { (allDataSets: List[DataSet], response: SearchResult) =>
@@ -77,12 +83,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           // Contact points only look for name at the moment
           contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
 
-          // Registry doesn't know how to do spatial extent yet, so just keep the text, no text == None
-          spatial = dataSet.spatial match {
-            case Some(Location(None, _)) => None
-            case Some(spatial)           => Some(Location(spatial.text))
-            case other                   => other
-          },
+          // Registry doesn't know how to do spatial extent yet, so just keep the text and produce text from geoJson
+          spatial = convertSpatialDataUsingGeoJsonField(dataSet.spatial),
 
           temporal = dataSet.temporal match {
             // The registry -> dataset converter rightly does this conversion.
@@ -101,6 +103,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           indexed = None,
           quality = 0,
           score = None,
+          spatial = convertSpatialDataUsingGeoJsonField(dataSet.spatial),
 
           distributions = dataSet.distributions.map(distribution => distribution.copy(
             // This will be derived from the format so might not match the input
