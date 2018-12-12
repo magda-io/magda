@@ -10,6 +10,7 @@ import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
 import spray.json._
 import scala.runtime.ScalaRunTime
+import scala.util.{ Failure, Success, Try }
 
 package misc {
   sealed trait FacetType {
@@ -131,16 +132,24 @@ package misc {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
         case geoJsonPattern() => {
-          Some(Protocols.GeometryFormat.read(string.parseJson))
+          val json = Try(string.parseJson) match {
+            case Success(json) => json
+            case Failure(e) =>
+              CoordinateFormat.quoteNumbersInJson(string).parseJson
+          }
+          Some(Protocols.GeometryFormat.read(json))
         }
         case emptyPolygonPattern() => None
         case csvPattern(a) =>
-          val latLongs = string.split(",").map(BigDecimal.apply)
+          val latLongs = string.split(",").map(str => CoordinateFormat.convertStringToBigDecimal(str))
           fromBoundingBox(Seq(BoundingBox(latLongs(0), latLongs(1), latLongs(2), latLongs(3))))
         case polygonPattern(polygonCoords, _) =>
           val coords = polygonCoords.split(",")
             .map { stringCoords =>
-              val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
+              val Array(x, y) = stringCoords
+                                  .trim
+                                  .split("\\s")
+                                  .map(str => CoordinateFormat.convertStringToBigDecimal(str))
               Coordinate(x, y)
             }.toSeq
 
