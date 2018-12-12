@@ -2,10 +2,16 @@
 
 -   Add readiness and liveness probes to all services
 -   Redirect HTTP requests to HTTPS URLs
+-   Fixed chart won't displayed correctly under IE11
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Made the image and the text wrapped in a single link and the set image alt value to null.
 -   Fixed the image and the text should be wrapped in a single link and the image alt text should have a null value.chart won't displayed correctly under IE11
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
 -   Added shortcut to build create secrets script for magda-config repo
 

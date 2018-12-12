@@ -206,11 +206,18 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
     })
 
+  val MagdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
+    "search_region_synonym_graph_filter",
+    Some("analysis/regionSynonyms.txt"),
+    Set.empty,
+    None
+  )
+
   val REGION_LANGUAGE_FIELDS = Seq("regionName")
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 21,
+      version = 22,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
         createIndex(indices.getIndex(config, Indices.RegionsIndex))
@@ -222,6 +229,9 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("regionId"),
               magdaTextField("regionName"),
               magdaTextField("regionShortName"),
+              textField("regionSearchId")
+                .analyzer("regionSearchIdIndex")
+                .searchAnalyzer("regionSearchIdInput"),
               geoshapeField("boundingBox"),
               geoshapeField("geometry"),
               intField("order")
@@ -231,7 +241,23 @@ object IndexDefinition extends DefaultJsonProtocol {
             CustomAnalyzerDefinition(
               "quote",
               KeywordTokenizer,
-              LowercaseTokenFilter)),
+              LowercaseTokenFilter),
+            CustomAnalyzerDefinition(
+              "regionSearchIdInput",
+              WhitespaceTokenizer,
+              List(
+                LowercaseTokenFilter,
+                MagdaRegionSynonymTokenFilter
+              )
+            ),
+            CustomAnalyzerDefinition(
+              "regionSearchIdIndex",
+              KeywordTokenizer,
+              List(
+                LowercaseTokenFilter
+              )
+            )
+          ),
       create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem)))
 
 
@@ -359,14 +385,17 @@ object IndexDefinition extends DefaultJsonProtocol {
             case _ => None
           }
 
+          val uniqueRegionId = generateRegionId(regionSource.name, id)
+
           geometryOpt.map(geometry =>
             indexInto(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-              .id(generateRegionId(regionSource.name, id))
+              .id(uniqueRegionId)
               .source(JsObject(
                 "regionType" -> JsString(regionSource.name),
                 "regionId" -> JsString(id),
                 "regionName" -> name,
                 "regionShortName" -> shortName.map(JsString(_)).getOrElse(JsNull),
+                "regionSearchId" -> JsString(uniqueRegionId),
                 "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
                 "geometry" -> geometry.toJson,
                 "order" -> JsNumber(regionSource.order)).toJson))
