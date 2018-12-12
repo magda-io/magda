@@ -17,7 +17,6 @@ function StarRating(props) {
                     className={
                         icon === starIcon ? "full-star-icon" : "empty-star-icon"
                     }
-                    aria-hidden="true"
                 >
                     <img key={i} src={icon} alt="star rating" />
                 </span>
