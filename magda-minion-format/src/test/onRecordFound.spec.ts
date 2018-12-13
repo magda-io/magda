@@ -105,13 +105,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     /**
      * This test simply takes a bunch of formats that were previously causing the minion to use all its CPU and be
-     * killed by a liveness check and ensures that they all are able to execute in less than 1 second.
+     * killed by a liveness check and ensures that they all are able to execute in less than 5 seconds.
      */
     describe("should process formats in a timely manner", () => {
         for (const failingDoc of (failingDocs as any) as any[]) {
             it(`for ${failingDoc.description}`, () => {
-                this.timeout(1000);
-
                 const registry = sinon.createStubInstance(Registry);
                 registry.putRecordAspect.callsFake(
                     (disId: any, aType: any, aspect: any) => {
@@ -130,7 +128,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                 const promise = onRecordFound(input, registry);
 
                 return promise;
-            });
+            }).timeout(5000);
         }
     });
 });
