@@ -67,12 +67,6 @@ export default class RequestFormTemplate extends React.Component {
         return null;
     }
 
-    isFormValid = () => {
-        const { senderEmailValid, senderNameValid, messageValid } = this.state;
-
-        return senderEmailValid && senderNameValid && messageValid;
-    };
-
     /**
      * If valid this form is submitted.
      */
@@ -241,11 +235,6 @@ export default class RequestFormTemplate extends React.Component {
                     onClick={this.handleSubmit}
                     className="correspondence-submit-button"
                     type="submit"
-                    aria-description={
-                        !this.isFormValid()
-                            ? "Form entries are invalid, please check the error messages above"
-                            : "Send"
-                    }
                     disabled={this.props.isSending}
                 >
                     {this.props.isSending ? "Sending..." : "Send"}
