@@ -1,34 +1,36 @@
 package au.csiro.data61.magda.indexer.crawler
 
+import java.time.OffsetDateTime
+
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Scheduler}
 import akka.event.Logging
-import akka.stream.{ Materializer, ThrottleMode }
-import akka.stream.scaladsl.{ Merge, Sink, Source }
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.model.misc.DataSet
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.helpers.StreamController
 import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.model.misc.DataSet
 import com.typesafe.config.Config
 
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import au.csiro.data61.magda.model.misc.Agent
-import java.time.Instant
-import java.time.OffsetDateTime
-import au.csiro.data61.magda.util.ErrorHandling
-import au.csiro.data61.magda.client.RegistryExternalInterface
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndexer)(implicit val system: ActorSystem, implicit val config: Config, implicit val materializer: Materializer) extends Crawler {
+class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndexer)
+                     (implicit val system: ActorSystem,
+                      implicit val config: Config,
+                      implicit val materializer: Materializer) extends Crawler {
   val log = Logging(system, getClass)
-  implicit val ec = system.dispatcher
-  implicit val scheduler = system.scheduler
+  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val scheduler: Scheduler = system.scheduler
 
   var lastCrawl: Option[Future[Unit]] = None
+  private val streamControllerSourceBufferSize =
+    config.getInt("crawler.streamControllerSourceBufferSize")
 
-  def crawlInProgress: Boolean = lastCrawl.map(!_.isCompleted).getOrElse(false)
+  def crawlInProgress(): Boolean = lastCrawl.exists(!_.isCompleted)
 
   def crawl(): Future[Unit] = {
-    if (crawlInProgress) lastCrawl.get
+    if (crawlInProgress()) lastCrawl.get
     else {
       lastCrawl = Some(newCrawl())
       lastCrawl.get
@@ -46,15 +48,28 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
       .flatMap { result =>
         log.info("Indexed {} datasets with {} failures", result.successes, result.failures.length)
 
-        val futureOpt = if (result.failures.length == 0) { // does this need to be tunable?
-          log.info("Trimming datasets indexed before {}", startInstant)
-          Some(indexer.trim(startInstant))
-        } else {
-          log.warning("Encountered too many failures to trim old datasets")
-          None
-        }
+        // By default ElasticSearch index is refreshed every second. Let the trimming operation
+        // (delete by query) be delayed by some time interval. Otherwise the operation might report
+        // failures.
+        //
+        // index.refresh_interval:
+        // How often to perform a refresh operation, which makes recent changes to the index
+        // visible to search. Defaults to 1s. Can be set to -1 to disable refresh.
+        // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/6.5/index-modules.html#dynamic-index-settings
+        Future {
+          val delay = 1000
+          Thread.sleep(delay)
+        }.flatMap(_ => {
+          val futureOpt: Option[Future[Unit]] = if (result.failures.isEmpty) { // does this need to be tunable?
+            log.info("Trimming datasets indexed before {}", startInstant)
+            Some(indexer.trim(startInstant))
+          } else {
+            log.warning("Encountered too many failures to trim old datasets")
+            None
+          }
 
-        futureOpt.map(_.map(_ => result)).getOrElse(Future(result))
+          futureOpt.map(_.map(_ => result)).getOrElse(Future(result))
+        })
       }
       .recover {
         case e: Throwable =>
@@ -83,44 +98,14 @@ class RegistryCrawler(interface: RegistryExternalInterface, indexer: SearchIndex
       }
   }
 
-  private def tokenCrawl(nextFuture: () => Future[(Option[String], List[DataSet])], batchSize: Int): Source[DataSet, NotUsed] = {
-    val onRetry = (retryCount: Int, e: Throwable) => log.error(e, "Failed while fetching from registry, retries left: {}", retryCount + 1)
-
-    val safeFuture = ErrorHandling.retry(nextFuture, 30 seconds, 30, onRetry)
-      .recover {
-        case e: Throwable =>
-          log.error(e, "Failed completely while fetching from registry. This means we can't go any further!!")
-          (None, Nil)
-      }
-
-    Source.fromFuture(safeFuture).flatMapConcat {
-      case (tokenOption, dataSets) =>
-        val dataSetSource = Source.fromIterator(() => dataSets.toIterator)
-
-        tokenOption match {
-          case Some(token) => dataSetSource.concat(tokenCrawl(() => interface.getDataSetsToken(token, batchSize), batchSize))
-          case None        => dataSetSource
-        }
-    }
-  }
-
+  /**
+    * Provide a dataset source for a stream.
+    *
+    * @return the stream source
+    */
   private def streamForInterface(): Source[DataSet, NotUsed] = {
-    val firstPageFuture = () => interface.getDataSetsReturnToken(0, 50)
-
-    val crawlSource = tokenCrawl(firstPageFuture, 100)
-      .map(dataSet => dataSet.copy(publisher =
-        dataSet.publisher))
-      .alsoTo(Sink.fold(0) {
-        case (count, y) =>
-          val newCount = count + 1
-
-          if ((newCount % 1000) == 0) {
-            log.info("Crawled {} datasets from registry", newCount)
-          }
-
-          newCount
-      })
-
-    crawlSource
+    val streamController = new StreamController(interface, streamControllerSourceBufferSize)
+    streamController.start()
+    streamController.getSource
   }
 }

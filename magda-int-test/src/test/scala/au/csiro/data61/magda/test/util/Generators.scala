@@ -283,9 +283,47 @@ object Generators {
     }
 
   def locationGen(geometryGen: Gen[Geometry]) = for {
-    text <- someBiasedOption(textGen)
     geoJson <- someBiasedOption(geometryGen)
-  } yield new Location(text, geoJson)
+    shouldGenerateWKTString <- arbitrary[Boolean]
+    shouldGenerateInvalidDecimals <- arbitrary[Boolean]
+  } yield {
+    val text = geoJson.map { geoJsonObj =>
+      if (shouldGenerateWKTString && geoJsonObj.isInstanceOf[Polygon] && geoJsonObj.asInstanceOf[Polygon].coordinates.size < 2) {
+        // --- we only support WKT format for `Polygon`
+        // --- convert geoJson to WKT format
+        // --- We do not support Polygon in WKT format with holes yet
+        // --- Thus, only generate WKT text when generated Polygon has no holes
+        // --- i.e geoJsonObj.asInstanceOf[Polygon].coordinates.size < 2
+        val cordsStr = geoJsonObj
+                        .asInstanceOf[Polygon]
+                        .coordinates
+                        .toJson
+                        .toString
+                        .replaceAll("\\[([\\d-.]+).([\\d-.]+)\\]", "$1 $2")
+                        .replace("[", "(")
+                        .replace("]", ")")
+
+        s"POLYGON ${cordsStr}"
+      } else {
+        geoJsonObj.toJson.toString
+      }
+    }.map { jsonString =>
+        if (!shouldGenerateInvalidDecimals) {
+          jsonString
+        } else {
+          /**
+            * Add extra invalid decimal places to simulate the possible poor geoJson data
+            * e.g. 123.34.22
+            * */
+          jsonString
+            // --- add extra decimal places
+            // --- please note: this will not be valid json anymore
+            // --- But still a valid WKT String (as per our pattern match)
+            .replaceAll("(\\d+\\.\\d)(\\d+)", "$1.$2")
+        }
+    }
+    new Location(text, geoJson)
+  }
 
   def descWordGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("descWord", nonEmptyTextGen.map(_.take(50).mkString.trim), 200)(inputCache)
   def publisherAgentGen(inputCache: mutable.Map[String, List[_]]) =

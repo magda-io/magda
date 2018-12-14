@@ -5,6 +5,7 @@ metadata:
 spec:
   replicas: {{ .Values.replicas | default 1 }}
   strategy:
+    type: RollingUpdate
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   template:
@@ -27,7 +28,14 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /v0/healthz
+            path: /v0/status/live
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /v0/status/ready
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10

@@ -6,6 +6,8 @@ import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClien
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 
+import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+
 import { Router } from "express";
 import { sendMail } from "./mail";
 import { SMTPMailer } from "./SMTPMailer";
@@ -48,20 +50,18 @@ export default function createApiRouter(
 ): express.Router {
     const router: Router = express.Router();
 
-    router.get("/healthz", (req, res) =>
-        options.smtpMailer
-            .checkConnectivity()
-            .then(() => {
-                res.status(200).json({
-                    status: "OK"
-                });
-            })
-            .catch(e => {
-                res.status(500).json({
-                    status: "Failure"
-                });
-            })
-    );
+    const status = {
+        probes: {
+            k8s: async () => {
+                await options.smtpMailer.checkConnectivity();
+                return {
+                    ready: true
+                };
+            }
+        }
+    };
+    installStatusRouter(router, status);
+    installStatusRouter(router, status, "/public");
 
     /**
      * @apiGroup Correspondence API

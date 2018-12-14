@@ -21,6 +21,7 @@ gateway:
   autoscaler:
     enabled: false
   enableAuthEndpoint: true
+  enableHttpsRedirection: true
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
   helmet:

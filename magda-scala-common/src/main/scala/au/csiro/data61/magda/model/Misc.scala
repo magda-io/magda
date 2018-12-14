@@ -10,6 +10,7 @@ import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
 import spray.json._
 import scala.runtime.ScalaRunTime
+import scala.util.{ Failure, Success, Try }
 
 package misc {
   sealed trait FacetType {
@@ -47,6 +48,9 @@ package misc {
     upperBound: Option[Int] = None,
     lowerBound: Option[Int] = None,
     matched: Boolean = false)
+
+
+  final case class ReadyStatus(ready: Boolean = false)
 
   case class DataSet(
       identifier: String,
@@ -128,16 +132,30 @@ package misc {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
         case geoJsonPattern() => {
-          Some(Protocols.GeometryFormat.read(string.parseJson))
+          val json = Try(string.parseJson) match {
+            case Success(json) => json
+            case Failure(e) =>
+              CoordinateFormat.quoteNumbersInJson(string).parseJson
+          }
+          Some(Protocols.GeometryFormat.read(json))
         }
         case emptyPolygonPattern() => None
         case csvPattern(a) =>
-          val latLongs = string.split(",").map(BigDecimal.apply)
+          val latLongs = string.split(",").map(str => CoordinateFormat.convertStringToBigDecimal(str))
           fromBoundingBox(Seq(BoundingBox(latLongs(0), latLongs(1), latLongs(2), latLongs(3))))
         case polygonPattern(polygonCoords, _) =>
           val coords = polygonCoords.split(",")
             .map { stringCoords =>
-              val Array(x, y) = stringCoords.trim.split("\\s").map(_.toDouble)
+              val Array(x, y) = stringCoords.trim.split("\\s").map { str =>
+                // --- remove possible redundant dot in number string
+                val parts = str.split("\\.")
+                if (parts.length > 2) {
+                  // --- drop all dots except the first one
+                  parts.take(2).mkString(".") + parts.drop(2).mkString
+                } else {
+                  str
+                }
+              }.map(_.toDouble)
               Coordinate(x, y)
             }.toSeq
 
@@ -288,6 +306,7 @@ package misc {
 
   case class License(name: Option[String] = None, url: Option[String] = None)
 
+
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
     implicit val licenseFormat = jsonFormat2(License.apply)
@@ -404,9 +423,10 @@ package misc {
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
+
+    implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
   }
 
   object Protocols extends Protocols {
   }
-
 }

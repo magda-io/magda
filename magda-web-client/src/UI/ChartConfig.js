@@ -5,6 +5,10 @@ import bar from "../assets/chart-bar.svg";
 import pie from "../assets/chart-pie.svg";
 import line from "../assets/chart-line.svg";
 import scatter from "../assets/chart-dot.svg";
+import barWhite from "../assets/chart-bar-white.svg";
+import pieWhite from "../assets/chart-pie-white.svg";
+import lineWhite from "../assets/chart-line-white.svg";
+import scatterWhite from "../assets/chart-dot-white.svg";
 import ChartDatasetEncoder from "../helpers/ChartDatasetEncoder";
 import findIndex from "lodash/findIndex";
 
@@ -13,6 +17,13 @@ const chartIcons = {
     pie,
     line,
     scatter
+};
+
+const chartWhiteIcons = {
+    bar: barWhite,
+    pie: pieWhite,
+    line: lineWhite,
+    scatter: scatterWhite
 };
 
 const chartTitles = {
@@ -78,7 +89,14 @@ export default class ChartConfig extends Component {
                             key={v}
                             title={chartTitles[v]}
                         >
-                            <img alt={v} src={chartIcons[v]} />
+                            <img
+                                alt={v}
+                                src={
+                                    this.props.chartType === v
+                                        ? chartWhiteIcons[v]
+                                        : chartIcons[v]
+                                }
+                            />
                         </button>
                     ))}
                 </div>

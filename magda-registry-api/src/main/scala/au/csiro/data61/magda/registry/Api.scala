@@ -71,7 +71,11 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
 
   val routes = handleExceptions(myExceptionHandler) {
       pathPrefix("v0") {
-        path("ping") { complete("OK") } ~ roleDependentRoutes
+        path("ping") { complete("OK") } ~
+        pathPrefix("status") {
+          path("live") { complete("OK") } ~
+          path("ready") { complete(ReadyStatus(true)) }
+        } ~ roleDependentRoutes
       }
     }
 }

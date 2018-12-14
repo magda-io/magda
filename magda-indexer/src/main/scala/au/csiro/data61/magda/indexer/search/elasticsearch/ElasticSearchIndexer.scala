@@ -2,48 +2,30 @@ package au.csiro.data61.magda.indexer.search.elasticsearch
 
 import java.time.{Instant, OffsetDateTime}
 
-import akka.actor.ActorSystem
-import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
+import akka.NotUsed
+import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
-import au.csiro.data61.magda.model.misc.{DataSet, Format, Publisher}
+import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.util.ErrorHandling.{RootCause, retry}
-import org.elasticsearch.rest.RestStatus
-import org.elasticsearch.transport.RemoteTransportException
-import spray.json._
+import au.csiro.data61.magda.search.elasticsearch.Exceptions._
+import au.csiro.data61.magda.search.elasticsearch._
+import au.csiro.data61.magda.util.ErrorHandling.retry
 import com.sksamuel.elastic4s.bulk.BulkDefinition
-import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{HttpClient, RequestFailure, RequestSuccess}
-import com.sksamuel.elastic4s.http.bulk._
+import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
+import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
+import com.sksamuel.elastic4s.http.snapshots.Snapshot
+import com.sksamuel.elastic4s.http.{ElasticDsl, HttpClient}
+import com.sksamuel.elastic4s.indexes.{IndexDefinition => ESIndexDefinition}
 import com.sksamuel.elastic4s.snapshots._
+import com.typesafe.config.Config
+import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
-import com.typesafe.config.Config
-import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.http.bulk.BulkResponseItem
-import akka.NotUsed
-import com.sksamuel.elastic4s.indexes.{IndexDefinition => ESIndexDefinition}
-
-import scala.util.Try
-import au.csiro.data61.magda.search.elasticsearch._
-import org.elasticsearch.index.query.QueryBuilders
-import com.sksamuel.elastic4s.searches.queries.RawQueryDefinition
-import com.sksamuel.elastic4s.http.index.IndexResponse
-import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
-import com.sksamuel.elastic4s.http.snapshots._
-import au.csiro.data61.magda.search.elasticsearch.Exceptions._
-import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, Snapshot}
-import com.sksamuel.elastic4s.mappings.GetMappingDefinition
-
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.client.RegistryExternalInterface
-import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -52,8 +34,14 @@ class ElasticSearchIndexer(
         implicit val system: ActorSystem,
         implicit val ec: ExecutionContext,
         implicit val materializer: Materializer) extends SearchIndexer {
-  val logger = system.log
-  val SNAPSHOT_REPO_NAME = "snapshots"
+  private val logger = system.log
+  private val SNAPSHOT_REPO_NAME = "snapshots"
+
+  private val indexingBufferSize = config.getInt("indexer.indexingBufferSize")
+  private val indexingQueueBufferSize = Int.MaxValue
+  private val indexingMaxBatchSize = config.getInt("indexer.indexingMaxBatchSize")
+  private val indexingInitialBatchDelayMs =
+    config.getInt("indexer.indexingInitialBatchDelayMs").milliseconds
 
   /**
    * Returns an initialised HttpClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
@@ -61,19 +49,21 @@ class ElasticSearchIndexer(
    */
   private val setupFuture = setup()
 
-  implicit val scheduler = system.scheduler
+  implicit val scheduler: Scheduler = system.scheduler
 
-  override def ready = setupFuture.map(_ => Unit)
+  override def ready: Future[Unit] = setupFuture.map(_ => Unit)
 
+  // TODO: Remove the indexQueue after index2() method is changed.
   // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
   private lazy val indexQueue: SourceQueue[(DataSet, Promise[Unit])] =
-    Source.queue[(DataSet, Promise[Unit])](Int.MaxValue, OverflowStrategy.backpressure)
+    Source.queue[(DataSet, Promise[Unit])](indexingQueueBufferSize, OverflowStrategy.backpressure)
       .map {
         case (dataSet, promise) => (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
       }
-      .batch(1000, Seq(_))(_ :+ _)
-      .initialDelay(500 milliseconds)
+      .batch(indexingMaxBatchSize, Seq(_))(_ :+ _)
+      .initialDelay(indexingInitialBatchDelayMs)
       .mapAsync(1) { batch =>
+
         val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records with {}, retrying", batch.length, e.getMessage)
 
         // Combine all the ES inserts into one bulk statement
@@ -82,7 +72,7 @@ class ElasticSearchIndexer(
         // Get out the source of each ES insert along with how many inserts it made (for publishers/formats etc)
         val sources = batch.map { case (indexDefs, (dataSet, promise)) => (dataSet, promise, indexDefs.size) }
 
-        retry(() => bulkIndex(bulkDef), 30 seconds, 4, onRetry)
+        retry(() => bulkIndex(bulkDef), 30.seconds, 4, onRetry)
           .map(result => (result, sources))
           .recover {
             case e: Throwable =>
@@ -119,8 +109,11 @@ class ElasticSearchIndexer(
               }
           }
 
-          if (!successes.isEmpty) {
+          if (successes.nonEmpty) {
             logger.info("Successfully indexed {} datasets", successes.size)
+          }
+          else{
+            logger.info("Failed to index this batch", failures.size)
           }
 
           successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
@@ -134,7 +127,7 @@ class ElasticSearchIndexer(
       .run()
 
   private lazy val restoreQueue: SourceQueue[(HttpClient, IndexDefinition, Snapshot, Promise[RestoreResult])] =
-    Source.queue[(HttpClient, IndexDefinition, Snapshot, Promise[RestoreResult])](Int.MaxValue, OverflowStrategy.backpressure)
+    Source.queue[(HttpClient, IndexDefinition, Snapshot, Promise[RestoreResult])](indexingQueueBufferSize, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
           logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshot, definition.name, definition.version)
@@ -148,7 +141,7 @@ class ElasticSearchIndexer(
           logger.info("Restoring snapshot into {}", definition.name)
 
           client.execute {
-            new RestoreSnapshot(
+            RestoreSnapshot(
               snapshotName = snapshot.snapshot,
               repositoryName = SNAPSHOT_REPO_NAME,
               indices = indices.getIndex(config, definition.indicesIndex),
@@ -194,7 +187,8 @@ class ElasticSearchIndexer(
     if (geoFail) {
       logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
-      index(dataSetWithoutSpatial, promise)
+      // TODO: Make one indexing request only so that we can remove the source queue completely.
+      index2(dataSetWithoutSpatial, promise)
     } else {
       promise.failure(new Exception(s"Had failures other than geoJson parse: ${result.error}"))
     }
@@ -248,7 +242,7 @@ class ElasticSearchIndexer(
     }
 
     def processingDefinitionCreateHandler()= {
-      (definition.create) match {
+      definition.create match {
         case Some(createFunc) => createFunc(client, indices, config)(materializer, system)
           .flatMap(_ => {
             createSnapshot(client, definition)
@@ -303,10 +297,10 @@ class ElasticSearchIndexer(
     for {
         client <- setupFuture
         result <- client.execute(ElasticDsl.search(indices.getIndex(config, index)))
-      } yield (result match{
+      } yield result match{
         case Right(r) => r.result.isEmpty
         case Left(ESGenericException(e)) => throw e
-      })
+      }
   }
 
   sealed trait RestoreResult
@@ -330,7 +324,7 @@ class ElasticSearchIndexer(
 
   private def getLatestSnapshot(client: HttpClient, index: IndexDefinition): Future[Option[Snapshot]] = {
     def getSnapshot() = client.execute {
-      new GetSnapshots(Seq("_all"), SNAPSHOT_REPO_NAME)
+      GetSnapshots(Seq("_all"), SNAPSHOT_REPO_NAME)
     }
 
     getSnapshot()
@@ -359,7 +353,7 @@ class ElasticSearchIndexer(
     val settings = repoConfig.getConfig("types." + repoType).entrySet().map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
     client.execute(
-      new CreateRepository(SNAPSHOT_REPO_NAME, repoType, None, settings)
+      CreateRepository(SNAPSHOT_REPO_NAME, repoType, None, settings)
     )
   }
 
@@ -375,27 +369,9 @@ class ElasticSearchIndexer(
     }
   }
 
-  override def index(dataSetStream: Source[DataSet, NotUsed]) = {
-    val indexResults = dataSetStream
-      // Queue every dataSet for indexing and keep the future along with the dataset's identifier
-      .map(dataSet => (dataSet.uniqueId, index(dataSet)))
-      // Combine all of these operations into one future
-      .runWith(Sink.fold(Future(new SearchIndexer.IndexResult(0, Seq()))) {
-        case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
-          combinedResultFuture.flatMap { combinedResult =>
-            thisResultFuture.map { _ =>
-              combinedResult.copy(successes = combinedResult.successes + 1)
-            }.recover {
-              case (e: Throwable) =>
-                combinedResult.copy(failures = combinedResult.failures :+ thisResultIdentifier)
-            }
-          }
-      })
+  // TODO: Instead of using indexQueue that performs bulk indexing, make single indexing request.
+  private def index2(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
 
-    indexResults.flatMap(identity)
-  }
-
-  def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
     indexQueue.offer((dataSet, promise))
       .flatMap {
         case QueueOfferResult.Enqueued    => promise.future
@@ -404,6 +380,7 @@ class ElasticSearchIndexer(
         case QueueOfferResult.Failure(e)  => throw e
       }
   }
+
 
   def snapshot(): Future[Unit] = {
     List(
@@ -542,6 +519,95 @@ class ElasticSearchIndexer(
 
     List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
   }
+
+  override def index(dataSetStream: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
+    val indexResults = dataSetStream
+      .buffer(indexingBufferSize, OverflowStrategy.backpressure)
+      .map(dataSet => (dataSet, Promise[Unit]))
+      .map {
+        case (dataSet, promise) => (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
+      }
+      .batch(indexingMaxBatchSize, Seq(_))(_ :+ _)
+      .initialDelay(indexingInitialBatchDelayMs)
+      .mapAsync(1) { batch =>
+
+        val onRetry = (retryCount: Int, e: Throwable) => logger.error("Failed to index {} records with {}, retrying", batch.length, e.getMessage)
+
+        // Combine all the ES inserts into one bulk statement
+        val bulkDef = bulk(batch.flatMap { case (esIndexDefs, _) => esIndexDefs })
+
+        // Get out the source of each ES insert along with how many inserts it made (for publishers/formats etc)
+        val sources = batch.map { case (indexDefs, (dataSet, promise)) => (dataSet, promise, indexDefs.size) }
+
+        retry(() => bulkIndex(bulkDef), 30.seconds, 4, onRetry)
+          .map(result => (result, sources))
+          .recover {
+            case e: Throwable =>
+              val promises = sources.map(_._2)
+              promises.foreach(_.failure(e))
+              throw e
+          }
+      }
+      .map {
+        case (results, sources) =>
+
+          val groupedResults = sources.map(_._3).foldLeft((0, Seq[Seq[BulkResponseItem]]())) {
+            case ((currentIndex, listSoFar), current) =>
+              val group = results.items.slice(currentIndex, currentIndex + current)
+              (currentIndex + group.size, listSoFar :+ group)
+          }._2
+
+          val resultTuples = groupedResults.zip(sources)
+
+          val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
+          val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
+
+          failures.foreach {
+            case (theResults, (dataSet, promise, _)) =>
+              theResults.filter(_.error.isDefined).foreach { failure =>
+                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
+              }
+
+              // The dataset result is always the first
+              if (theResults.head.error.isDefined) {
+                tryReindexSpatialFail(dataSet, theResults.head, promise)
+              } else {
+                promise.failure(new Exception("Failed to index supplementary field"))
+              }
+          }
+
+          if (successes.nonEmpty) {
+            logger.info("Successfully indexed {} datasets", successes.size)
+          }
+          else {
+            logger.info("Failed to index this batch", failures.size)
+          }
+
+          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
+
+          (failures.toList.toString(), Future.successful(successes.size))
+
+      }
+      .recover {
+        case e: Throwable =>
+          logger.error(e, "Error when indexing: {}", e.getMessage)
+          throw e
+      }
+      .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
+        case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
+          combinedResultFuture.flatMap { combinedResult =>
+            thisResultFuture.map { thisResult =>
+              combinedResult.copy(successes = combinedResult.successes + thisResult)
+            }.recover {
+              case e: Throwable =>
+                combinedResult.copy(failures = combinedResult.failures :+ thisResultIdentifier)
+            }
+          }
+      })
+
+      indexResults.flatMap(identity)
+    }
+
 }
 
 object ElasticSearchIndexer {
