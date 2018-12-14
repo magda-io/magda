@@ -1,5 +1,6 @@
 ## 0.0.51
 
+-   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
 -   Add readiness and liveness probes to all services
 -   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
 -   Redirect HTTP requests to HTTPS URLs
