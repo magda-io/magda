@@ -52,4 +52,6 @@ export default class MockDatabase {
             resolve(mockUserDataStore.createRecord(user));
         });
     }
+
+    check() {}
 }

@@ -16,6 +16,11 @@ import {
     findContentItemById
 } from "./content";
 
+import {
+    installStatusRouter,
+    createServiceProbe
+} from "@magda/typescript-common/dist/express/status";
+
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
@@ -27,12 +32,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
+    const status = {
+        probes: {
+            database: database.check.bind(database),
+            auth: createServiceProbe(options.authApiUrl)
+        }
+    };
+    installStatusRouter(router, status);
+
     const USER = getUser(options.authApiUrl, options.jwtSecret);
     const ADMIN = mustBeAdmin(options.authApiUrl, options.jwtSecret);
-
-    router.get("/healthz", function(req, res, next) {
-        res.status(200).send("OK");
-    });
 
     /**
      * @apiGroup Content

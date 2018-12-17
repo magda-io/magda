@@ -5,7 +5,7 @@ import spray.json.DefaultJsonProtocol
 
 /**
  * Spray json marshallers for GeoJSON spec: http://geojson.org/geojson-spec.html
- * 
+ *
  * This is copy-pasted from mwundo because it hits a version conflict with spray json and causes the JVM to crash.
  */
 // scalastyle:off number.of.types
@@ -14,6 +14,32 @@ object GeoJsonFormats extends DefaultJsonProtocol {
   import spray.json._
 
   implicit object CoordinateFormat extends JsonFormat[Coordinate] {
+
+    private def cleanNumberString(str:String):String = {
+      val cleanedStr = str.replaceAll("\"","").trim
+      val parts = cleanedStr.split("\\.")
+      if (parts.length > 2) {
+        // --- drop all dots except the first one
+        parts.take(2).mkString(".") + parts.drop(2).mkString
+      } else {
+        cleanedStr
+      }
+    }
+
+    /**
+      * We sometimes call json.parse to convert the geoJson string to a json
+      * This will throw an exception for json data with invalid number data (e.g.  123.23)
+      * Quote all number in Json will avoid this exception and we will have the chance to convert it to
+      * BigDecimal
+      * */
+    def quoteNumbersInJson(str:String):String = {
+      str.replaceAll("([\\d-+.]+)", "\"$1\"")
+    }
+
+    def convertStringToBigDecimal(str:String):BigDecimal = {
+      BigDecimal(cleanNumberString(str))
+    }
+
     def write(obj: Coordinate): JsValue = JsArray(
       JsNumber(obj.x),
       JsNumber(obj.y)
@@ -21,7 +47,7 @@ object GeoJsonFormats extends DefaultJsonProtocol {
 
     def read(json: JsValue): Coordinate = json match {
       case JsArray(is) =>
-        Coordinate(is(0).convertTo[BigDecimal], is(1).convertTo[BigDecimal])
+        Coordinate(convertStringToBigDecimal(is(0).toJson.toString), convertStringToBigDecimal(is(1).toJson.toString))
       case _ => deserializationError(s"'$json' is not a valid Coordinate")
     }
   }

@@ -4,6 +4,9 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry.{ RegistryProtocols => CommonRegistryProtocols, Record, RecordSummary, RecordType }
 
+
+final case class ReadyStatus(ready: Boolean = false)
+
 trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val badRequestFormat = jsonFormat1(BadRequest.apply)
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply[Record])
@@ -22,4 +25,5 @@ trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val eventsPageFormat = jsonFormat3(EventsPage.apply)
   implicit val webHookResponseFormat = jsonFormat1(WebHookResponse.apply)
   implicit val countResponseFormat = jsonFormat1(CountResponse.apply)
+  implicit val readyState = jsonFormat1(ReadyStatus.apply)
 }

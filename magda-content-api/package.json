@@ -7,7 +7,7 @@
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push"
@@ -38,12 +38,15 @@
     "@types/supertest": "^2.0.4",
     "@types/urijs": "^1.15.38",
     "@types/yargs": "^8.0.2",
+    "@types/mime-types": "^2.1.0",
+    "@types/urijs": "^1.15.38",
     "chai": "^4.1.2",
     "mocha": "^3.5.3",
     "nock": "^9.1.6",
     "sinon": "^4.2.1",
     "supertest": "^3.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "~2.5.0",
+    "nyc": "^13.1.0"
   },
   "config": {
     "docker": {
@@ -58,5 +61,13 @@
     "categories": {
       "api": true
     }
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "src/test/**"
+    ]
   }
 }

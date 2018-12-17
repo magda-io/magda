@@ -1,3 +1,23 @@
+## 0.0.51
+
+-   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
+-   Add readiness and liveness probes to all services
+-   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
+-   Redirect HTTP requests to HTTPS URLs
+-   Fixed chart won't displayed correctly under IE11
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed form error message not being heard in order by screen readers and also when field is in focus by putting them in the same label element.
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
+-   Made the image and the text wrapped in a single link and the set image alt value to null.
+-   Fixed the image and the text should be wrapped in a single link and the image alt text should have a null value.chart won't displayed correctly under IE11
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
+-   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Added shortcut to build create secrets script for magda-config repo
+
 ## 0.0.50
 
 -   Added configurable argument to `magda-web-server` module to accept Google Analytics IDs
@@ -51,7 +71,7 @@
 -   `create-secrets` will load ENV vars according to question data types
 -   Include Magda user agent in external HTTP resource accesses
 -   Made admin UI create CSV connector with internal URL
--   Fixed magda-apidocs-server incorrectly builds into $PWD directory on windows
+-   Fixed magda-apidocs-server incorrectly builds into \$PWD directory on windows
 -   Fixed an issue that DAP connector not handle access error correctly
 -   Stopped caching anything requested through the admin ui.
 -   Removed old admin ui code

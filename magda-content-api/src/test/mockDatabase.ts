@@ -54,4 +54,6 @@ export default class MockDatabase implements Database {
     async deleteContentById(id: string): Promise<any> {
         return mockContentDataStore.deleteContentById(id);
     }
+
+    check() {}
 }

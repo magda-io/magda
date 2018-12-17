@@ -8,7 +8,7 @@
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "dev": "yarn run watch"
   },
   "devDependencies": {
@@ -35,7 +35,8 @@
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
     "sinon": "^4.2.1",
-    "typescript": "~2.5.0"
+    "typescript": "~2.5.0",
+    "nyc": "^13.1.0"
   },
   "dependencies": {
     "@types/request": "^2.0.0",
@@ -64,5 +65,13 @@
     "categories": {
       "library": true
     }
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "src/test/**"
+    ]
   }
 }
