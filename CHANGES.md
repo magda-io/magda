@@ -61,6 +61,7 @@
 -   Made broken link minion per domain request wait time configurable
 -   Fixed mobile menu not show-up properly
 -   Made the events page size and the webhook timeout configurable in the registry.
+-   Stopped the format minion from stalling on long URLs
 
 ## 0.0.49
 
