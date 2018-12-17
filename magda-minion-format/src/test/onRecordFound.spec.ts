@@ -20,6 +20,8 @@ import * as dapDist28 from "./sampleDataFiles/dap-dist-28.json";
 import * as dgaDistSpss from "./sampleDataFiles/dga-dist-spss.json";
 import * as dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
 
+import * as failingDocs from "./sampleDataFiles/failing-docs.json";
+
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
@@ -99,5 +101,34 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     it("Should a dataset with the format '.csv' correctly even if the file doesn't have a csv extension", () => {
         return testDistReturnsFormat(dsaDistCsv, "CSV");
+    });
+
+    /**
+     * This test simply takes a bunch of formats that were previously causing the minion to use all its CPU and be
+     * killed by a liveness check and ensures that they all are able to execute in less than 5 seconds.
+     */
+    describe("should process formats in a timely manner", () => {
+        for (const failingDoc of (failingDocs as any) as any[]) {
+            it(`for ${failingDoc.description}`, () => {
+                const registry = sinon.createStubInstance(Registry);
+                registry.putRecordAspect.callsFake(
+                    (disId: any, aType: any, aspect: any) => {
+                        return new Promise((resolve, reject) => resolve());
+                    }
+                );
+
+                const input = {
+                    id: failingDoc.description,
+                    name: failingDoc.description,
+                    aspects: {
+                        "dcat-distribution-strings": failingDoc
+                    }
+                } as any;
+
+                const promise = onRecordFound(input, registry);
+
+                return promise;
+            }).timeout(5000);
+        }
     });
 });
