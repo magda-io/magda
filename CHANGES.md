@@ -17,6 +17,7 @@
 -   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
 -   Added shortcut to build create secrets script for magda-config repo
+-   Added preemption priority classes
 
 ## 0.0.50
 

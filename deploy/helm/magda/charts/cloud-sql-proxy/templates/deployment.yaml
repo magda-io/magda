@@ -13,6 +13,7 @@ spec:
       labels:
         service: cloud-sql-proxy
     spec:
+      priorityClassName: magda-9
       containers:
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11

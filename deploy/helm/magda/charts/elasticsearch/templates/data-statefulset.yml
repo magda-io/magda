@@ -18,6 +18,7 @@ spec:
         component: elasticsearch
         role: data
     spec:
+      priorityClassName: magda-9
       terminationGracePeriodSeconds: 10
       affinity:
         {{ include "magda.antiPreemptibleAffinity" . }}
