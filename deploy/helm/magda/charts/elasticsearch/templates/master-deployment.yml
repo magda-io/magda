@@ -17,6 +17,7 @@ spec:
         component: elasticsearch
         role: master
     spec:
+      priorityClassName: magda-9
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

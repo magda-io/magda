@@ -14,7 +14,7 @@ spec:
       labels:
         service: session-db
     spec:
-      priorityClassName: magda-10
+      priorityClassName: magda-9
       terminationGracePeriodSeconds: 60
       affinity:
         {{ include "magda.antiPreemptibleAffinity" . }}
