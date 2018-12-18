@@ -59,7 +59,8 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       |akka.loglevel = INFO
       |authApi.baseUrl = "http://localhost:6104"
       |authorization.skip=false
-      |webhookActorTickRate=0
+      |webhooks.actorTickRate=0
+      |webhooks.eventPageSize=10
       |akka.test.timefactor=20.0
       |trimBySourceTagTimeoutThreshold=500
     """.stripMargin

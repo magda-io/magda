@@ -163,14 +163,13 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "minion-broken-link test",
-            "program":
-                "${workspaceRoot}/magda-minion-broken-link/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-minion-broken-link",
             "args": [
                 "--compilers",
-                "ts:@magda/scripts/node_modules/ts-node/register",
+                "ts:${workspaceRoot}/node_modules/ts-node/register",
                 "--require",
-                "@magda/scripts/node_modules/tsconfig-paths/register",
+                "${workspaceRoot}/node_modules/tsconfig-paths/register",
                 "src/test/**/*.spec.ts"
             ]
         },
