@@ -3,7 +3,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
-import * as toMarkdown from "to-markdown";
+import TurndownService = require("turndown");
 
 export default class ProjectOpenData implements ConnectorSource {
     public readonly id: string;
@@ -13,6 +13,7 @@ export default class ProjectOpenData implements ConnectorSource {
     private secondsBetweenRetries: number;
     private maxRetries: number;
     private dataPromise: Promise<object>;
+    private turndownService = new TurndownService();
 
     // project open data spec allows URLs for licences
     // ArcGIS creates custom URLs rather than using https://project-open-data.cio.gov/open-licenses/ lookup table
@@ -60,7 +61,7 @@ export default class ProjectOpenData implements ConnectorSource {
                                                 });
                                         }
                                         if (!foundLink) {
-                                            dataset.license = toMarkdown(
+                                            dataset.license = this.turndownService.turndown(
                                                 body.description
                                             );
                                         }
