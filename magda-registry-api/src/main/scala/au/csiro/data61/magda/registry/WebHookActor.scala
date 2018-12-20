@@ -181,6 +181,25 @@ object WebHookActor {
       }
     }
 
+    private def sendProcess(ignoreWaitingForResponse: Boolean = false,
+                            aspectIds: Option[List[String]] = None,
+                            webHookId: Option[String] = None): Unit ={
+      webHookId match {
+        case Some(id) =>
+          val actorRef = webHookActors.getOrDefault(id, None)
+          if (actorRef.isDefined) {
+            log.debug(s"    Send $aspectIds to actor ${actorRef.get.hashCode()}")
+            actorRef.get ! Process(ignoreWaitingForResponse, aspectIds)
+          }
+          else{
+            log.warning(s"    Web hook actor of $id not found.")
+            throw new RuntimeException(s"Web hook actor of $id not found.")
+          }
+        case None =>
+          sendProcessToAllActors(ignoreWaitingForResponse, aspectIds)
+      }
+    }
+
     def receive: PartialFunction[Any, Unit] = {
       case RetryInactiveHooks =>
         log.debug(s"Received RetryInactiveHooks")
@@ -192,30 +211,12 @@ object WebHookActor {
         setupF()
       case Process(ignoreWaitingForResponse, aspectIds, webHookId) =>
         log.debug(s"Received Process, $ignoreWaitingForResponse, $aspectIds, $webHookId")
-        webHookId match {
-          case None =>
-            sendProcessToAllActors(ignoreWaitingForResponse, aspectIds)
-          case Some(id) => log.warning(s" *** Are you sure you want to send aspectIds $aspectIds to actor $id?")
+        Future{
+          sendProcess(ignoreWaitingForResponse, aspectIds, webHookId)
         }
       case InvalidateWebHookCacheThenProcess(ignoreWaitingForResponse, aspectIds, webHookId) =>
         log.debug(s"Received InvalidateWebHookCacheThenProcess, $ignoreWaitingForResponse, $aspectIds, $webHookId")
-        setupF().map(_ => {
-          webHookId match {
-            case Some(id) =>
-              val actorRef = webHookActors.getOrDefault(id, None)
-              if (actorRef.isDefined) {
-                log.debug(s"    Send $aspectIds to actor ${actorRef.get.hashCode()}")
-                actorRef.get ! Process(ignoreWaitingForResponse, aspectIds)
-              }
-              else{
-                log.warning(s"    Web hook actor of $id not found.")
-                throw new RuntimeException(s"Web hook actor of $id not found.")
-              }
-            case None =>
-              sendProcessToAllActors(ignoreWaitingForResponse, aspectIds)
-          }
-        })
-
+        setupF().map(_ => sendProcess(ignoreWaitingForResponse, aspectIds, webHookId))
       case UpdateHookStatus(webHookId, isRunning, isProcessing) =>
         log.debug(s"Received UpdateHookStatus, $webHookId, $isRunning, $isProcessing")
         webHooks.get(webHookId) match {
