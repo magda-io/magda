@@ -26,7 +26,7 @@ class SearchBox extends Component {
         );
         self.updateQuery = this.updateQuery.bind(this);
         self.updateSearchText = this.updateSearchText.bind(this);
-        self.onClickSearch = this.onClickSearch.bind(this);
+        self.onClickSearch = this.doSearchNow.bind(this);
         self.onSearchTextChange = this.onSearchTextChange.bind(this);
         self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
 
@@ -59,14 +59,24 @@ class SearchBox extends Component {
         this.setState({
             searchText: text
         });
-        this.debounceUpdateSearchQuery(text, keepFilters);
+        this.debounceUpdateSearchQuery(text, keepFilters, true);
     }
 
     /**
      * update only the search text
      */
-    updateSearchText(text, keepFilters) {
-        if (text === "") text = "*";
+    updateSearchText(text, keepFilters, fromTextChange = false) {
+        if (fromTextChange && this.state.selectedId) {
+            return;
+        }
+
+        if (text === "") {
+            if (fromTextChange) {
+                return;
+            } else {
+                text = "*";
+            }
+        }
         // dismiss keyboard on mobile when new search initiates
         if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
 
@@ -95,8 +105,9 @@ class SearchBox extends Component {
     /**
      * If the search button is clicked, we do the search immediately
      */
-    onClickSearch() {
-        this.debounceUpdateSearchQuery.flush();
+    doSearchNow(keepFilters) {
+        this.debounceUpdateSearchQuery.cancel();
+        this.updateSearchText(this.state.searchText, true);
     }
 
     /**
@@ -156,6 +167,7 @@ class SearchBox extends Component {
                 aria-autocomplete="list"
                 aria-owns="search-history-items"
                 aria-activedescendant={this.state.selectedId}
+                aria-expanded={this.state.isFocus}
             />
         );
     }
@@ -180,39 +192,48 @@ class SearchBox extends Component {
         return (
             <MagdaNamespacesConsumer ns={["global"]}>
                 {translate => (
-                    <div className="searchBox">
-                        <label htmlFor="search">
-                            <span className="sr-only">
-                                {"Search " +
-                                    translate(["appName", ""]) +
-                                    ", use arrow keys to browse search history"}
-                            </span>
-                            <Medium>
-                                <div style={{ position: "relative" }}>
-                                    {this.inputBox(true)}
-                                    {suggestionBox}
-                                </div>
-                            </Medium>
-                            <Small>{this.inputBox(false)}</Small>
-                            <span className="search-input__highlight">
-                                {this.getSearchBoxValue()}
-                            </span>
-                            <button
-                                onClick={this.onClickSearch}
-                                className={`search-btn ${
-                                    this.getSearchBoxValue().length > 0
-                                        ? "not-empty"
-                                        : "empty"
-                                }`}
-                                type="button"
-                            >
-                                <img src={icon} alt="search button" />
-                                <span className="sr-only">submit search</span>
-                            </button>
-                        </label>
+                    <Small>
+                        {isSmall => (
+                            <div className="searchBox">
+                                <label htmlFor="search">
+                                    <span className="sr-only">
+                                        {"Search " +
+                                            translate(["appName", ""]) +
+                                            ", use arrow keys to browse search history"}
+                                    </span>
+                                    {isSmall ? (
+                                        this.inputBox(false)
+                                    ) : (
+                                        <div style={{ position: "relative" }}>
+                                            {this.inputBox(true)}
+                                            {suggestionBox}
+                                        </div>
+                                    )}
+                                    <span className="search-input__highlight">
+                                        {this.getSearchBoxValue()}
+                                    </span>
+                                    <button
+                                        onClick={() =>
+                                            this.doSearchNow(!isSmall)
+                                        }
+                                        className={`search-btn ${
+                                            this.getSearchBoxValue().length > 0
+                                                ? "not-empty"
+                                                : "empty"
+                                        }`}
+                                        type="button"
+                                    >
+                                        <img src={icon} alt="search button" />
+                                        <span className="sr-only">
+                                            submit search
+                                        </span>
+                                    </button>
+                                </label>
 
-                        <Small>{suggestionBox}</Small>
-                    </div>
+                                {isSmall && suggestionBox}
+                            </div>
+                        )}
+                    </Small>
                 )}
             </MagdaNamespacesConsumer>
         );

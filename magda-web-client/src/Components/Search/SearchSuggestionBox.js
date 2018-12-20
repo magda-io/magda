@@ -22,11 +22,12 @@ type searchDataType = {
     data: object
 };
 
-const keyCodeArrowDown = 40;
-const keyCodeArrowLeft = 37;
-const keyCodeArrowUp = 38;
-const keyCodeArrowRight = 39;
-const keyCodeEnter = 13;
+const KEY_CODE_ARROW_DOWN = 40;
+const KEY_CODE_ARROW_LEFT = 37;
+const KEY_CODE_ARROW_UP = 38;
+const KEY_CODE_ARROW_RIGHT = 39;
+const KEY_CODE_ENTER = 13;
+const KEY_CODE_ESC = 27;
 
 /**
  * when no user input, the first `maxDefaultListItemNumber` items will be returned
@@ -53,7 +54,8 @@ class SearchSuggestionBox extends Component {
         this.state = {
             isMouseOver: false,
             recentSearches: getRecentSearches(),
-            selectedItemIdx: null
+            selectedItemIdx: null,
+            manuallyHidden: false
         };
         this.cacheImgs();
         this.createSearchDataFromProps(this.props);
@@ -73,6 +75,7 @@ class SearchSuggestionBox extends Component {
         cacheImg(recentSearchIcon);
         cacheImg(closeIcon);
     }
+
     createSearchDataFromProps(props): searchDataType {
         if (!props || !props.location || !props.location.search) return null;
         const data = queryString.parse(props.location.search);
@@ -147,9 +150,24 @@ class SearchSuggestionBox extends Component {
         this.setState({ recentSearches });
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         this.saveRecentSearch(this.props, prevProps);
         this.setupSearchInputListener(this.props);
+
+        if (
+            prevState.selectedItemIdx !== this.state.selectedItemIdx ||
+            prevState.deleteSelected !== this.state.deleteSelected
+        ) {
+            this.props.onSelectedIdChange &&
+                this.props.onSelectedIdChange(
+                    this.state.selectedItemIdx
+                        ? this.buildOptionId(
+                              this.state.selectedItemIdx,
+                              this.state.deleteSelected
+                          )
+                        : null
+                );
+        }
     }
 
     executeSearchItem(item: searchDataType) {
@@ -171,6 +189,10 @@ class SearchSuggestionBox extends Component {
 
     onDeleteItemClick(e, idx) {
         e.preventDefault();
+        this.deleteItem(idx);
+    }
+
+    deleteItem(idx) {
         const recentSearches = deleteFromLocalStorageArray(
             "recentSearches",
             idx,
@@ -214,8 +236,12 @@ class SearchSuggestionBox extends Component {
     }
 
     shouldShow() {
-        if (!this.props.isSearchInputFocus && !this.state.isMouseOver)
+        if (!this.props.isSearchInputFocus && !this.state.isMouseOver) {
             return false;
+        }
+        if (this.state.manuallyHidden) {
+            return false;
+        }
         const filteredRecentSearches = this.state.recentSearches;
         if (!filteredRecentSearches || !filteredRecentSearches.length)
             return false;
@@ -242,39 +268,50 @@ class SearchSuggestionBox extends Component {
 
     onSearchInputKeyDown(e) {
         const keyCode = e.which || e.keyCode || 0;
-        if (
-            keyCode !== keyCodeArrowDown &&
-            keyCode !== keyCodeArrowUp &&
-            keyCode !== keyCodeEnter
-        )
-            return;
+
+        this.setState({
+            manuallyHidden: false
+        });
+
         if (!this.shouldShow()) return;
-        if (keyCode === keyCodeEnter && this.state.selectedItemIdx !== null) {
+        if (keyCode === KEY_CODE_ENTER && this.state.selectedItemIdx !== null) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            this.executeSearchItem(
-                this.state.recentSearches[this.state.selectedItemIdx]
-            );
+            if (this.state.deleteSelected) {
+                this.deleteItem(this.state.selectedItemIdx);
+            } else {
+                this.executeSearchItem(
+                    this.state.recentSearches[this.state.selectedItemIdx]
+                );
+            }
             return;
         }
-        if (keyCode === keyCodeArrowUp && this.state.selectedItemIdx !== null) {
+        if (
+            keyCode === KEY_CODE_ARROW_UP &&
+            this.state.selectedItemIdx !== null
+        ) {
             e.preventDefault(); //--- stop cursor from moving to the beginning of the input text
         }
         switch (keyCode) {
-            case keyCodeArrowDown:
+            case KEY_CODE_ARROW_DOWN:
                 this.selectNextItem();
                 break;
-            case keyCodeArrowUp:
+            case KEY_CODE_ARROW_UP:
                 this.selectPrevItem();
                 break;
-            case keyCodeArrowLeft():
+            case KEY_CODE_ARROW_LEFT:
                 this.setState({
                     deleteSelected: false
                 });
                 break;
-            case keyCodeArrowRight:
+            case KEY_CODE_ARROW_RIGHT:
                 this.setState({
                     deleteSelected: true
+                });
+                break;
+            case KEY_CODE_ESC:
+                this.setState({
+                    manuallyHidden: true
                 });
                 break;
         }
@@ -300,8 +337,6 @@ class SearchSuggestionBox extends Component {
         this.setState({
             selectedItemIdx: index
         });
-        this.props.onSelectedIdChange &&
-            this.props.onSelectedIdChange(this.buildOptionId(index));
     }
 
     getSavedSearchItemsNumber() {
@@ -310,8 +345,10 @@ class SearchSuggestionBox extends Component {
         return recentSearchItems.length;
     }
 
-    buildOptionId(idx) {
-        return `search-history-item-${idx}`;
+    buildOptionId(idx, deleteSelected = false) {
+        return `search-history-item-${idx}${
+            deleteSelected ? "-delete-button" : ""
+        }`;
     }
 
     render() {
@@ -338,7 +375,8 @@ class SearchSuggestionBox extends Component {
                             <li
                                 key={idx}
                                 className={`search-item-container ${
-                                    this.state.selectedItemIdx === idx
+                                    this.state.selectedItemIdx === idx &&
+                                    !this.state.deleteSelected
                                         ? "selected"
                                         : ""
                                 }`}
@@ -373,7 +411,13 @@ class SearchSuggestionBox extends Component {
                                     </Small>
                                 </button>
                                 <button
-                                    className="au-btn au-btn--tertiary search-item-delete-button"
+                                    id={this.buildOptionId(idx, true)}
+                                    className={`au-btn au-btn--tertiary search-item-delete-button ${
+                                        this.state.deleteSelected &&
+                                        this.state.selectedItemIdx === idx
+                                            ? "search-item-delete-button--selected"
+                                            : ""
+                                    }`}
                                     onClick={e =>
                                         this.onDeleteItemClick(e, idx)
                                     }
