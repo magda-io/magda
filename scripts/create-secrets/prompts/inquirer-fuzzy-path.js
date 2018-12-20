@@ -53,11 +53,11 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
             const choice = this.currentChoices.getChoice(this.selected);
             if (!choice) {
                 this.render(
-                    "You need to select a file. Make sure the json file is in current directory or its sub-directory"
+                    "You need to select a file. Make sure the json file is in the current directory or its sub-directory"
                 );
                 return;
             }
-            var validationResult = this.opt.validate(
+            const validationResult = this.opt.validate(
                 this.currentChoices.getChoice(this.selected)
             );
             if (validationResult !== true) {
