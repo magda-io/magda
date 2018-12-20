@@ -86,6 +86,11 @@ dependencies:
     tags:
       - minion-visualization
 
+# K8s misc
+  - name: priorities
+    tags:
+      - all
+      - priorities
   - name: ingress
     tags:
       - ingress

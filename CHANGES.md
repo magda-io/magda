@@ -18,6 +18,7 @@
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
+-   Added ability to add fully customised affinity to statefulsets in helm
 
 ## 0.0.50
 

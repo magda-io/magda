@@ -17,7 +17,7 @@ spec:
       priorityClassName: magda-9
       terminationGracePeriodSeconds: 10
       affinity:
-        {{ include "magda.antiPreemptibleAffinity" . }}
+{{ toYaml .Values.affinity | indent 8 }}
       containers:
       - name: registry-db
         resources:
