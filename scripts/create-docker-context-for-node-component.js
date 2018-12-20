@@ -360,24 +360,22 @@ function getPackageList(
         const dependencyName = getNameFromPackageListing(
             dependencyDetails.name
         );
+        const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
 
-        let dependencyDir = path.join(
-            basePath,
-            dependencyName.replace(/\//g, path.sep)
-        );
+        let dependencyDir = path.join(basePath, dependencyNamePath);
 
         // Does this directory exist?  If not, imitate node's module resolution by walking
         // up the directory tree.
         while (!fse.existsSync(dependencyDir)) {
             let upOne;
-            if (dependencyName.indexOf(path.sep) === -1) {
+            if (dependencyName.indexOf("/") === -1) {
                 upOne = path.resolve(
                     dependencyDir,
                     "..",
                     "..",
                     "..",
                     "node_modules",
-                    dependencyName
+                    dependencyNamePath
                 );
             } else {
                 upOne = path.resolve(
@@ -387,7 +385,7 @@ function getPackageList(
                     "..",
                     "..",
                     "node_modules",
-                    dependencyName
+                    dependencyNamePath
                 );
             }
 
