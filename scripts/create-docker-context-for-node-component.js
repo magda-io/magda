@@ -6,6 +6,7 @@ const path = require("path");
 const process = require("process");
 const yargs = require("yargs");
 const _ = require("lodash");
+const isSubDir = require("is-subdir");
 const {
     getVersions,
     getTags,
@@ -287,8 +288,9 @@ function preparePackage(packageDir, destDir) {
                         null,
                         jsonYarnList.data.trees,
                         packageJson.name,
-                        path.resolve(packageDir, "node_modules"),
-                        []
+                        path.resolve(packageDir),
+                        [],
+                        path.resolve(packageDir, "..")
                     ),
                     package => package.path
                 );
@@ -342,7 +344,8 @@ function getPackageList(
     rootPackages,
     packageName,
     basePath,
-    result
+    result,
+    packageSearchRoot
 ) {
     // If the package that we're finding subpackages for doesn't have its own local children, find it in the root and see if that version of it has any children.
     const childrenToUse =
@@ -362,47 +365,41 @@ function getPackageList(
         );
         const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
 
-        let dependencyDir = path.join(basePath, dependencyNamePath);
+        let currentBaseDir = basePath;
+        let dependencyDir;
 
         // Does this directory exist?  If not, imitate node's module resolution by walking
         // up the directory tree.
-        while (!fse.existsSync(dependencyDir)) {
-            let upOne;
-            if (dependencyName.indexOf("/") === -1) {
-                upOne = path.resolve(
-                    dependencyDir,
-                    "..",
-                    "..",
-                    "..",
-                    "node_modules",
-                    dependencyNamePath
-                );
-            } else {
-                upOne = path.resolve(
-                    dependencyDir,
-                    "..",
-                    "..",
-                    "..",
-                    "..",
-                    "node_modules",
-                    dependencyNamePath
-                );
-            }
+        do {
+            dependencyDir = path.join(
+                currentBaseDir,
+                "node_modules",
+                dependencyNamePath
+            );
 
-            if (upOne === dependencyDir) {
+            if (
+                currentBaseDir === packageSearchRoot ||
+                isSubDir(currentBaseDir, packageSearchRoot)
+            ) {
+                // --- will not look for packages outside project root directory
                 break;
             }
 
-            dependencyDir = upOne;
-        }
+            // --- we only up one level for one loop
+            // --- packages with different version may not be hoisted
+            currentBaseDir = path.resolve(currentBaseDir, "..");
+        } while (!fse.existsSync(dependencyDir));
 
         if (!fse.existsSync(dependencyDir)) {
-            if (dependencyName === "fsevents") {
-                // --- ignore `fsevents` module
-                // --- as it's not availble on linux
+            if (!isRuntimeDependencyOf(dependencyName, basePath)) {
+                console.log(
+                    `Ignore non runtime dependency package \`${dependencyName}\` @ \`${basePath}\``
+                );
                 return;
             }
-            throw new Error("Could not find path for " + dependencyName);
+            throw new Error(
+                "Could not find path for " + dependencyName + " @ " + basePath
+            );
         }
 
         result.push({ name: dependencyName, path: dependencyDir });
@@ -412,12 +409,32 @@ function getPackageList(
             dependencyDetails.children,
             rootPackages,
             dependencyName,
-            path.resolve(dependencyDir, "node_modules"),
-            result
+            path.resolve(dependencyDir),
+            result,
+            packageSearchRoot
         );
     });
 
     return result;
+}
+
+function isRuntimeDependencyOf(pkg1Name, pkg2Path) {
+    try {
+        const pkg2Data = fse.readJSONSync(path.join(pkg2Path, "package.json"));
+        if (!pkg2Data || !pkg2Data.dependencies) {
+            return false;
+        }
+        if (
+            Object.keys(pkg2Data.dependencies).findIndex(
+                pkgName => pkgName.toLowerCase() === pkg1Name.toLowerCase()
+            ) === -1
+        ) {
+            return false;
+        }
+        return true;
+    } catch (e) {
+        throw new Error("Error @ isRuntimeDependencyOf: " + e);
+    }
 }
 
 function wrapConsoleOutput(process) {
