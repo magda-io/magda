@@ -1,39 +1,30 @@
 package au.csiro.data61.magda.registry
 
-import java.util.Timer
-
-import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
-import akka.pattern.ask
 import akka.util.Timeout
-import au.csiro.data61.magda.model.Registry.{ EventType, WebHook, WebHookConfig }
+import au.csiro.data61.magda.model.Registry.{EventType, WebHook, WebHookConfig}
+import org.scalatest.BeforeAndAfterEach
+import spray.json.RootJsonFormat
 
-import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration._
-import akka.http.scaladsl.model.headers.RawHeader
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 
-class WebHookActorSpec extends ApiSpec {
-  implicit val timeout = Timeout(5 seconds)
+class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach{
+  implicit val timeout: Timeout = Timeout(5 seconds)
+  private val hookId = "abc"
 
-  private def processAndWaitUntilDone(actor: ActorRef) = {
-    actor ! WebHookActor.Process()
-
-    Util.waitUntilDone(actor, "abc")
+  override def afterEach(): Unit = {
+    Util.clearWebHookActorsCache()
   }
 
-  it("initially is not processing") { param =>
-    val actor = param.webHookActor
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+  it("initially no processor exists") { _ =>
+    Util.getWebHookActor(hookId) shouldBe None
   }
 
   it("creates a processor for newly-created web hooks") { param =>
-    val actor = param.webHookActor
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+    Util.getWebHookActor("abc") shouldBe None
 
     val hook = WebHook(
-      id = Some("abc"),
+      id = Some(hookId),
       userId = None,
       name = "abc",
       active = true,
@@ -50,19 +41,20 @@ class WebHookActorSpec extends ApiSpec {
 
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
+      responseAs[WebHook].enabled shouldBe true
     }
 
-    processAndWaitUntilDone(actor)
-
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
+    // Because of asynchronous processing, it takes some time for the newly created hook
+    // to appear in the cache.
+    Util.waitUntilWebHookActorIsInCache(hookId)
+    Util.getWebHookActor(hookId) should not be None
   }
 
   it("Will not creates a processor for newly-created disabled web hooks") { param =>
-    val actor = param.webHookActor
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+    Util.getWebHookActor(hookId) shouldBe None
 
     val hook = WebHook(
-      id = Some("abc"),
+      id = Some(hookId),
       userId = None,
       name = "abc",
       active = true,
@@ -80,17 +72,19 @@ class WebHookActorSpec extends ApiSpec {
 
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
+      responseAs[WebHook].enabled shouldBe false
     }
 
-    processAndWaitUntilDone(actor)
-
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+    // Wait for longer time than usual to ensure the hook's processor is not created.
+    Util.waitUntilAllDone(2000)
+    Util.getWebHookActor(hookId) shouldBe None
   }
 
   it("removes the processor for removed web hooks") { param =>
-    val actor = param.webHookActor
+    Util.getWebHookActor(hookId) shouldBe None
+
     val hook = WebHook(
-      id = Some("abc"),
+      id = Some(hookId),
       userId = None,
       name = "abc",
       active = true,
@@ -107,21 +101,20 @@ class WebHookActorSpec extends ApiSpec {
 
     param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
+      responseAs[WebHook].enabled shouldBe true
     }
 
-    processAndWaitUntilDone(actor)
+    Util.waitUntilWebHookActorIsInCache(hookId)
+    Util.getWebHookActor("abc") should not be None
 
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should not be (None)
-
-    param.asAdmin(Delete("/v0/hooks/abc")) ~> param.api(Full).routes ~> check {
+    case class DeleteProcessor(deleted: Boolean)
+    implicit val DeleteProcessorFormat: RootJsonFormat[DeleteProcessor] = jsonFormat1(DeleteProcessor.apply)
+    param.asAdmin(Delete(s"/v0/hooks/$hookId")) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
+      responseAs[DeleteProcessor].deleted shouldBe true
     }
 
-    Util.blockUntil("2") { () =>
-      Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing == None
-    }
-
-    Await.result(actor ? WebHookActor.GetStatus("abc"), 5 seconds).asInstanceOf[WebHookActor.Status].isProcessing should be(None)
+    Util.waitUntilWebHookActorIsNotInCache(hookId)
+    Util.getWebHookActor(hookId) shouldBe None
   }
-
 }

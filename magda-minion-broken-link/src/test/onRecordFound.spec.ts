@@ -263,8 +263,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         success === "success"
                             ? "active"
                             : downloadUnknown || accessUnknown
-                                ? "unknown"
-                                : "broken";
+                            ? "unknown"
+                            : "broken";
 
                     registryScope
                         .put(

@@ -1,24 +1,25 @@
 package au.csiro.data61.magda.registry
 
 import javax.ws.rs.Path
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
 import akka.pattern.ask
 import scalikejdbc.DB
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import io.swagger.annotations._
-import au.csiro.data61.magda.model.Registry.{ WebHook, WebHookAcknowledgement, WebHookAcknowledgementResponse }
+import au.csiro.data61.magda.model.Registry.{WebHook, WebHookAcknowledgement, WebHookAcknowledgementResponse}
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.AuthApiClient
 
 import scala.concurrent.duration._
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
@@ -165,12 +166,11 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
       entity(as[WebHook]) { hook =>
         val result = DB localTx { session =>
           HookPersistence.create(session, hook) match {
-            case Success(result) =>
-              complete(result)
+            case Success(theResult) => complete(theResult)
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
-        webHookActor ! WebHookActor.InvalidateWebhookCache
+        webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
         result
       }
     }
@@ -312,18 +312,17 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "hook", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHook", paramType = "body", value = "The web hook to save."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def putById = put {
-    path(Segment) { (id: String) =>
+  def putById: Route = put {
+    path(Segment) { id: String =>
       {
         entity(as[WebHook]) { hook =>
           val result = DB localTx { session =>
             HookPersistence.putById(session, id, hook) match {
-              case Success(result) =>
-                complete(result)
+              case Success(theResult) => complete(theResult)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.InvalidateWebhookCache
+          webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
           result
         }
       }
@@ -393,23 +392,23 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the web hook to be acknowledged."),
     new ApiImplicitParam(name = "acknowledgement", required = true, dataType = "au.csiro.data61.magda.model.Registry$WebHookAcknowledgement", paramType = "body", value = "The details of the acknowledgement."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def ack = post {
-    path(Segment / "ack") { (id: String) =>
+  def ack: Route = post {
+    path(Segment / "ack") { id: String =>
       entity(as[WebHookAcknowledgement]) { acknowledgement =>
         val result = DB localTx { session =>
           HookPersistence.acknowledgeRaisedHook(session, id, acknowledgement) match {
-            case Success(result)    => complete(result)
+            case Success(theResult) => complete(theResult)
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
-        webHookActor ! WebHookActor.InvalidateWebhookCache
-        webHookActor ! WebHookActor.Process(webHookId = Some(id))
+        
+        webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
         result
       }
     }
   }
 
-  def route =
+  def route: Route =
     requireIsAdmin(authClient)(system, config) { _ =>
       getAll ~
         create ~
