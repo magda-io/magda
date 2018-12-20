@@ -87,7 +87,7 @@ object WebHookActor {
     private def getRegisteredWebHooksF: Future[List[WebHook]] = {
       retry(
         () => Future {
-          log.info("    queryForAllWebHooks()")
+          log.debug("    queryForAllWebHooks()")
           queryForAllWebHooks()
         },
         30 seconds,
@@ -106,7 +106,7 @@ object WebHookActor {
     }
 
     private def updateWebHooksCacheF(webHooks: List[WebHook]): Future[String] = {
-      log.info(s"    setupF() started with webHooks size of ${webHooks.size}.")
+      log.debug(s"    setupF() started with webHooks size of ${webHooks.size}.")
       // Create a child actor for each WebHook that doesn't already have one.
       val currentHooks: Set[String] = webHooks.filter(_.active).filter(_.enabled).map(_.id.get).toSet
 
@@ -123,7 +123,7 @@ object WebHookActor {
 
       // Create actors (therefore web hook processors) for new WebHooks if they are active and enabled.
       webHooks.filter(_.active).filter(_.enabled).foreach(hook => {
-        log.info(s"    handle hook ${hook.id}")
+        log.debug(s"    handle hook ${hook.id}")
         val id = hook.id.get
         webHookActors.getOrDefault(id, None) match {
           case None =>
@@ -141,7 +141,7 @@ object WebHookActor {
         }
       })
 
-      log.info("    webHooks filtering done.")
+      log.debug("    webHooks filtering done.")
       Future.successful("ok")
     }
 
@@ -150,7 +150,7 @@ object WebHookActor {
         hooks  <- getRegisteredWebHooksF
         result <- updateWebHooksCacheF(hooks)
       } yield {
-        log.info(s"    setupF() ended with $result.")
+        log.debug(s"    setupF() ended with $result.")
         result
       }
     }
@@ -176,35 +176,35 @@ object WebHookActor {
       while(iterator.hasNext){
         val entry: util.Map.Entry[String, Option[ActorRef]] = iterator.next()
         val actorRef = entry.getValue.get
-        log.info(s"    Received Process; Send aspectIds $aspectIds to actor ${actorRef.hashCode()}")
+        log.debug(s"    Received Process; Send aspectIds $aspectIds to actor ${actorRef.hashCode()}")
         actorRef ! Process(ignoreWaitingForResponse, aspectIds)
       }
     }
 
     def receive: PartialFunction[Any, Unit] = {
       case RetryInactiveHooks =>
-        log.info(s"Received RetryInactiveHooks")
+        log.debug(s"Received RetryInactiveHooks")
         Future{
           retryAllInactiveHooks(webHooksRetryInterval)
         }
       case InvalidateWebhookCache =>
-        log.info("Received InvalidateWebhookCache")
+        log.debug("Received InvalidateWebhookCache")
         setupF()
       case Process(ignoreWaitingForResponse, aspectIds, webHookId) =>
-        log.info(s"Received Process, $ignoreWaitingForResponse, $aspectIds, $webHookId")
+        log.debug(s"Received Process, $ignoreWaitingForResponse, $aspectIds, $webHookId")
         webHookId match {
           case None =>
             sendProcessToAllActors(ignoreWaitingForResponse, aspectIds)
           case Some(id) => log.warning(s" *** Are you sure you want to send aspectIds $aspectIds to actor $id?")
         }
       case InvalidateWebHookCacheThenProcess(ignoreWaitingForResponse, aspectIds, webHookId) =>
-        log.info(s"Received InvalidateWebHookCacheThenProcess, $ignoreWaitingForResponse, $aspectIds, $webHookId")
+        log.debug(s"Received InvalidateWebHookCacheThenProcess, $ignoreWaitingForResponse, $aspectIds, $webHookId")
         setupF().map(_ => {
           webHookId match {
             case Some(id) =>
               val actorRef = webHookActors.getOrDefault(id, None)
               if (actorRef.isDefined) {
-                log.info(s"    Send $aspectIds to actor ${actorRef.get.hashCode()}")
+                log.debug(s"    Send $aspectIds to actor ${actorRef.get.hashCode()}")
                 actorRef.get ! Process(ignoreWaitingForResponse, aspectIds)
               }
               else{
@@ -217,7 +217,7 @@ object WebHookActor {
         })
 
       case UpdateHookStatus(webHookId, isRunning, isProcessing) =>
-        log.info(s"Received UpdateHookStatus, $webHookId, $isRunning, $isProcessing")
+        log.debug(s"Received UpdateHookStatus, $webHookId, $isRunning, $isProcessing")
         webHooks.get(webHookId) match {
           case Some(hook: WebHook) =>
             webHooks.put(webHookId,
@@ -227,7 +227,7 @@ object WebHookActor {
       case GetStatus(webHookId) =>
         val status = getStatus(webHookId)
         if (status.isProcessing.nonEmpty && status.isProcessing.get)
-          log.info(s"Received GetStatus $status for $webHookId")
+          log.debug(s"Received GetStatus $status for $webHookId")
 
         sender() ! getStatus(webHookId)
     }
@@ -292,7 +292,7 @@ object WebHookActor {
           if (result != "ok")
             throw new RuntimeException("Failed in setupF()")
           else{
-            log.info(s"    Cache webHookActors size: ${webHookActors.size()}")
+            log.debug(s"    Cache webHookActors size: ${webHookActors.size()}")
             val actors: util.Set[util.Map.Entry[String, Option[ActorRef]]] = webHookActors.entrySet()
             val iterator: util.Iterator[util.Map.Entry[String, Option[ActorRef]]] = actors.iterator()
             while(iterator.hasNext){
@@ -455,7 +455,7 @@ object WebHookActor {
         }
         .map { x =>
           currentQueueLength -= 1
-          log.info(s"*** ${self.hashCode()} DONE. ${processCount.decrementAndGet()}")
+          log.debug(s"*** ${self.hashCode()} DONE. ${processCount.decrementAndGet()}")
           notifyHookStatus()
           x
         }
@@ -471,17 +471,17 @@ object WebHookActor {
 
     def receive: PartialFunction[Any, Unit] = {
       case Process(ignoreWaitingForResponse, _, _) =>
-        log.info(s"SingleWebHookActor received Process, queueing $ignoreWaitingForResponse")
-        log.info(s"*** ${self.hashCode()} Will process ${processCount.incrementAndGet()}")
+        log.debug(s"SingleWebHookActor received Process, queueing $ignoreWaitingForResponse")
+        log.debug(s"*** ${self.hashCode()} Will process ${processCount.incrementAndGet()}")
         indexQueue.offer(ignoreWaitingForResponse)
       case WakeUp =>
-        log.info(s"SingleWebHookActor received $WakeUp")
+        log.debug(s"SingleWebHookActor received $WakeUp")
         if (currentQueueLength == 0) {
           log.info("Force to wake up idle WebHook {}...", this.id)
           indexQueue.offer(true)
         }
       case GetStatus =>
-        log.info("SingleWebHookActor received GetStatus")
+        log.debug("SingleWebHookActor received GetStatus")
         sender() ! Status(Some(currentQueueLength != 0))
     }
   }
