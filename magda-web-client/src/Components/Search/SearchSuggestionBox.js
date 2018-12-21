@@ -160,7 +160,8 @@ class SearchSuggestionBox extends Component {
         ) {
             this.props.onSelectedIdChange &&
                 this.props.onSelectedIdChange(
-                    this.state.selectedItemIdx
+                    this.state.selectedItemIdx ||
+                    this.state.selectedItemIdx === 0
                         ? this.buildOptionId(
                               this.state.selectedItemIdx,
                               this.state.deleteSelected
@@ -314,6 +315,8 @@ class SearchSuggestionBox extends Component {
                     manuallyHidden: true
                 });
                 break;
+            default:
+                break;
         }
     }
 
@@ -358,6 +361,7 @@ class SearchSuggestionBox extends Component {
             <div
                 className="search-suggestion-box"
                 ref={el => (this.containerRef = el)}
+                id="search-suggestion-box"
             >
                 <div className="search-suggestion-box-position-adjust" />
                 <div
@@ -370,7 +374,11 @@ class SearchSuggestionBox extends Component {
                             Recent Searches
                         </h5>
                     </Medium>
-                    <ul id="search-history-items" role="listbox">
+                    <ul
+                        id="search-history-items"
+                        role="listbox"
+                        className="search-history-items"
+                    >
                         {recentSearchItems.map((item, idx) => (
                             <li
                                 key={idx}
@@ -388,12 +396,19 @@ class SearchSuggestionBox extends Component {
                                 />
                                 <button
                                     role="option"
+                                    aria-selected={
+                                        this.state.selectedItemIdx === idx &&
+                                        !this.state.deleteSelected
+                                    }
                                     id={this.buildOptionId(idx)}
                                     className="au-btn au-btn--tertiary search-item-main-button"
                                     onClick={e =>
                                         this.onSearchItemClick(e, item)
                                     }
                                 >
+                                    <span className="sr-only">
+                                        Recent search item
+                                    </span>
                                     <Medium>
                                         <MarkdownViewer
                                             markdown={this.createSearchItemLabelText(
@@ -412,6 +427,11 @@ class SearchSuggestionBox extends Component {
                                 </button>
                                 <button
                                     id={this.buildOptionId(idx, true)}
+                                    role="option"
+                                    aria-selected={
+                                        this.state.deleteSelected &&
+                                        this.state.selectedItemIdx === idx
+                                    }
                                     className={`au-btn au-btn--tertiary search-item-delete-button ${
                                         this.state.deleteSelected &&
                                         this.state.selectedItemIdx === idx
@@ -423,7 +443,9 @@ class SearchSuggestionBox extends Component {
                                     }
                                 >
                                     <img
-                                        alt="delete search item"
+                                        alt={`delete recent search item ${this.createSearchItemLabelText(
+                                            item
+                                        )}`}
                                         src={closeIcon}
                                     />
                                 </button>

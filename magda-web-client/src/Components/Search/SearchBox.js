@@ -12,7 +12,7 @@ import searchDark from "../../assets/search-purple.svg";
 import PropTypes from "prop-types";
 import queryString from "query-string";
 import SearchSuggestionBox from "./SearchSuggestionBox";
-import { Small, Medium } from "../../UI/Responsive";
+import { Small } from "../../UI/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
 import { withRouter } from "react-router-dom";
 import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
@@ -168,6 +168,7 @@ class SearchBox extends Component {
                 aria-owns="search-history-items"
                 aria-activedescendant={this.state.selectedId}
                 aria-expanded={this.state.isFocus}
+                aria-controls="search-suggestion-box"
             />
         );
     }
