@@ -40,4 +40,4 @@ tags:
   web-server: false
   ingress: false
   connectors: false
-  priorities: true
+  priorities: false

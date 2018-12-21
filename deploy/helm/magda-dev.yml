@@ -71,7 +71,12 @@ combined-db:
       fileName: TerriaJS-5e042b649f8a.json
   data:
     storage: 250Gi
-  antiPreemptibleAffinity: 100
+  affinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: cloud.google.com/gke-preemptible
+            operator: DoesNotExist
 
 elasticsearch:
   data:
@@ -80,7 +85,12 @@ elasticsearch:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: db-service-account-private-key.json
-  antiPreemptibleAffinity: 99
+  affinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: cloud.google.com/gke-preemptible
+            operator: DoesNotExist
 
 indexer:
   readSnapshots: false

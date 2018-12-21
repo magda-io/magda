@@ -1,3 +1,4 @@
+{{- if .Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1" }}
 apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
@@ -5,3 +6,4 @@ metadata:
 value: 80000000
 globalDefault: false
 description: "Ordered importance class 1-10"
+{{- end }}
