@@ -22,6 +22,8 @@
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
 -   Improve registry performance by moving long blocking tasks into a dedicated execution pool.
+-   Added `cloudsql-db-credentials` to create-secrets tool
+-   Fixed an file selector error when current directory & non of its sub directory has \*.json file
 
 ## 0.0.50
 
