@@ -28,7 +28,6 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
-    "isomorphic-fetch": "^2.2.1",
     "ts-loader": "^2.3.7",
     "typescript": "~2.5.0",
     "webpack": "^3.6.0"
@@ -42,7 +41,8 @@
     "read-pkg-up": "^3.0.0",
     "request": "^2.79.0",
     "urijs": "^1.18.12",
-    "yargs": "^8.0.1"
+    "yargs": "^8.0.1",
+    "isomorphic-fetch": "^2.2.1"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",
