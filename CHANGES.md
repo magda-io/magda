@@ -19,6 +19,8 @@
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
 -   Added ability to add fully customised affinity to statefulsets in helm
+-   Fixed docker image build script failed on windows platform
+-   Only runtime dependencies will be included by docker image build script
 
 ## 0.0.50
 
