@@ -36,6 +36,9 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
                     this.currentChoices,
                     choiceIndex
                 );
+                if (!choice) {
+                    return null;
+                }
                 return {
                     value: stripAnsi(choice.value),
                     name: stripAnsi(choice.name),
@@ -47,13 +50,18 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
 
     onSubmit(line) {
         if (typeof this.opt.validate === "function") {
-            var validationResult = this.opt.validate(
+            const choice = this.currentChoices.getChoice(this.selected);
+            if (!choice) {
+                this.render(
+                    "You need to select a file. Make sure the json file is in the current directory or its sub-directory"
+                );
+                return;
+            }
+            const validationResult = this.opt.validate(
                 this.currentChoices.getChoice(this.selected)
             );
             if (validationResult !== true) {
-                this.render(
-                    validationResult || "Enter something, tab to autocomplete!"
-                );
+                this.render(validationResult || "You need to select a file");
                 return;
             }
         }
