@@ -21,8 +21,8 @@ spec:
       priorityClassName: magda-9
       terminationGracePeriodSeconds: 10
       affinity:
-{{- if .Values.affinity }}
-{{ toYaml .Values.affinity | indent 8 }}
+{{- if .Values.data.affinity }}
+{{ toYaml .Values.data.affinity | indent 8 }}
 {{- end }}
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

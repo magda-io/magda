@@ -6,12 +6,16 @@ const path = require("path");
 const process = require("process");
 const yargs = require("yargs");
 const _ = require("lodash");
+const isSubDir = require("is-subdir");
 const {
     getVersions,
     getTags,
     getName,
     getRepository
 } = require("./docker-util");
+
+// --- cache dependencies data from package.json
+const packageDependencyDataCache = {};
 
 const argv = yargs
     .options({
@@ -269,27 +273,8 @@ function preparePackage(packageDir, destDir) {
                 const env = Object.create(process.env);
                 env.NODE_ENV = "production";
 
-                // Get the list of production packages required by this package.
-                const rawYarnList = childProcess.spawnSync(
-                    "yarn",
-                    ["list", "--json"],
-                    {
-                        encoding: "utf8",
-                        cwd: packageDir,
-                        shell: true,
-                        env
-                    }
-                ).stdout;
-                const jsonYarnList = JSON.parse(rawYarnList);
-
                 const productionPackages = _.uniqBy(
-                    getPackageList(
-                        null,
-                        jsonYarnList.data.trees,
-                        packageJson.name,
-                        path.resolve(packageDir, "node_modules"),
-                        []
-                    ),
+                    getPackageList(packageDir, path.resolve(packageDir, "..")),
                     package => package.path
                 );
 
@@ -329,97 +314,77 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
     });
 }
 
-function getNameFromPackageListing(listing) {
-    // Split the name to get the version (after @)
-    const splitName = listing.split("@");
+function getPackageList(packagePath, packageSearchRoot) {
+    const dependencies = getPackageDependencies(packagePath);
+    const result = [];
 
-    // Some packages (particularly @magda) start with an @ - in this case we want the middle part
-    return splitName.length === 2 ? splitName[0] : "@" + splitName[1];
-}
-
-function getPackageList(
-    localChildren,
-    rootPackages,
-    packageName,
-    basePath,
-    result
-) {
-    // If the package that we're finding subpackages for doesn't have its own local children, find it in the root and see if that version of it has any children.
-    const childrenToUse =
-        localChildren ||
-        (depFromRoot = rootPackages
-            .filter(tree => !tree.shadow)
-            .find(tree => getNameFromPackageListing(tree.name) === packageName))
-            .children;
-
-    if (!childrenToUse) {
+    if (!dependencies || !dependencies.length) {
         return result;
     }
 
-    childrenToUse.forEach(function(dependencyDetails) {
-        const dependencyName = getNameFromPackageListing(
-            dependencyDetails.name
-        );
+    dependencies.forEach(function(dependencyName) {
+        const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
 
-        let dependencyDir = path.join(
-            basePath,
-            dependencyName.replace(/\//g, path.sep)
-        );
+        let currentBaseDir = packagePath;
+        let dependencyDir;
 
-        // Does this directory exist?  If not, imitate node's module resolution by walking
-        // up the directory tree.
-        while (!fse.existsSync(dependencyDir)) {
-            let upOne;
-            if (dependencyName.indexOf(path.sep) === -1) {
-                upOne = path.resolve(
-                    dependencyDir,
-                    "..",
-                    "..",
-                    "..",
-                    "node_modules",
-                    dependencyName
-                );
-            } else {
-                upOne = path.resolve(
-                    dependencyDir,
-                    "..",
-                    "..",
-                    "..",
-                    "..",
-                    "node_modules",
-                    dependencyName
-                );
-            }
+        do {
+            dependencyDir = path.resolve(
+                currentBaseDir,
+                "node_modules",
+                dependencyNamePath
+            );
 
-            if (upOne === dependencyDir) {
+            if (
+                currentBaseDir === packageSearchRoot ||
+                isSubDir(currentBaseDir, packageSearchRoot)
+            ) {
+                // --- will not look for packages outside project root directory
                 break;
             }
 
-            dependencyDir = upOne;
-        }
+            // Does this directory exist?  If not, imitate node's module resolution by walking
+            // up the directory tree.
+            currentBaseDir = path.resolve(currentBaseDir, "..");
+        } while (!fse.existsSync(dependencyDir));
 
         if (!fse.existsSync(dependencyDir)) {
-            if (dependencyName === "fsevents") {
-                // --- ignore `fsevents` module
-                // --- as it's not availble on linux
-                return;
-            }
-            throw new Error("Could not find path for " + dependencyName);
+            throw new Error(
+                "Could not find path for " +
+                    dependencyName +
+                    " @ " +
+                    packagePath
+            );
         }
 
         result.push({ name: dependencyName, path: dependencyDir });
 
         // Now that we've added this package to the list to resolve, add all its children.
-        getPackageList(
-            dependencyDetails.children,
-            rootPackages,
-            dependencyName,
-            path.resolve(dependencyDir, "node_modules"),
-            result
+        const childPackageResult = getPackageList(
+            dependencyDir,
+            packageSearchRoot
         );
+
+        Array.prototype.push.apply(result, childPackageResult);
     });
 
     return result;
+}
+
+function getPackageDependencies(packagePath) {
+    const packageJsonPath = path.resolve(packagePath, "package.json");
+
+    if (packageDependencyDataCache[packageJsonPath]) {
+        return packageDependencyDataCache[packageJsonPath];
+    }
+    const pkgData = fse.readJSONSync(packageJsonPath);
+    const depData = pkgData["dependencies"];
+    if (!depData) {
+        packageDependencyDataCache[packageJsonPath] = [];
+    } else {
+        packageDependencyDataCache[packageJsonPath] = Object.keys(depData);
+    }
+    return packageDependencyDataCache[packageJsonPath];
 }
 
 function wrapConsoleOutput(process) {
