@@ -23,6 +23,7 @@
 -   Only runtime dependencies will be included by docker image build script
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Fixed an file selector error when current directory & non of its sub directory has \*.json file
+-   Removed the .bin extension from the logo
 
 ## 0.0.50
 
