@@ -27,7 +27,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
   /**
   * @apiGroup Indexer
   * @api {post} http://indexer/v0/registry-hook Hook endpoint (internal)
-  * 
+  *
   * @apiDescription Registry webhook endpoint - accepts webhook payloads from the registry.
   *   This generally means datasets from the registry as they're updated. This shouldn't
   *   be called manually, it's purely for registry use.
@@ -62,13 +62,13 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
             case None | Some(Nil) => Future.successful(Unit)
             case Some(list) =>
               val dataSets = list.map(record => try {
-                Some(convertRegistryDataSet(record))
+                Some(convertRegistryDataSet(record, Some(system.log)))
               } catch {
                 case CausedBy(e: spray.json.DeserializationException) =>
                   system.log.error(e, "When converting {}", record.id)
                   None
               })
-              
+
               indexer.index(Source(dataSets.flatten))
           }
 

@@ -63,6 +63,8 @@ import com.sksamuel.elastic4s.http.search.{
   SearchResponse
 }
 
+import com.sksamuel.elastic4s.searches.queries.funcscorer.ScoreFunctionDefinition
+
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit
   val config: Config,
@@ -105,51 +107,34 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
-      val query = buildQueryWithAggregations(
-        inputQuery,
-        start,
-        limit,
-        MatchAll,
-        requestedFacetSize)
+      augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
+        val query = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
+        Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
+          case Right(results) =>
+            if (results.result.totalHits > 0)
+              Future.successful((results.result, MatchAll))
+            else
+              client.execute(buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchPart, requestedFacetSize)).map {
+                case Right(results) => (results.result, MatchPart)
+                case Left(IllegalArgumentException(e)) => throw e
+                case Left(ESGenericException(e)) => throw e
+              }
+          case Left(IllegalArgumentException(e)) => throw e
+          case Left(ESGenericException(e)) => throw e
+        })).map {
+          case Seq(fullRegions: List[Option[Region]], (response: SearchResponse, strategy: SearchStrategy)) =>
+            val newQueryRegions =
+              inputRegionsList
+                .zip(fullRegions)
+                .filter(_._2.isDefined)
+                .map(_._2.get)
+                .map(Specified.apply)
+                .toSet ++ inputQuery.regions.filter(_.isEmpty)
 
-      Future.sequence(
-        Seq(
-          fullRegionsFuture,
-          client.execute(query).flatMap {
-            case Right(results) =>
-              if (results.result.totalHits > 0)
-                Future.successful((results.result, MatchAll))
-              else
-                client
-                  .execute(
-                    buildQueryWithAggregations(
-                      inputQuery,
-                      start,
-                      limit,
-                      MatchPart,
-                      requestedFacetSize))
-                  .map {
-                    case Right(results) => (results.result, MatchPart)
-                    case Left(IllegalArgumentException(e)) => throw e
-                    case Left(ESGenericException(e)) => throw e
-                  }
-            case Left(IllegalArgumentException(e)) => throw e
-            case Left(ESGenericException(e)) => throw e
-          }))
-    } map {
-      case Seq(fullRegions: List[Option[Region]],
-        (response: SearchResponse, strategy: SearchStrategy)) =>
-        val newQueryRegions =
-          inputRegionsList
-            .zip(fullRegions)
-            .filter(_._2.isDefined)
-            .map(_._2.get)
-            .map(Specified.apply)
-            .toSet ++ inputQuery.regions.filter(_.isEmpty)
-
-        val outputQuery = inputQuery.copy(regions = newQueryRegions)
-
-        buildSearchResult(outputQuery, response, strategy, requestedFacetSize)
+            val outputQuery = queryWithBoostRegions.copy(regions = newQueryRegions)
+            buildSearchResult(outputQuery, response, strategy, requestedFacetSize)
+        }
+      }
     } recover {
       case RootCause(illegalArgument: IllegalArgumentException) =>
         logger.error(illegalArgument, "Exception when searching")
@@ -160,6 +145,24 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         logger.error(e, "Exception when searching")
         failureSearchResult(inputQuery, "Unknown error")
     }
+  }
+
+  def augmentWithBoostRegions(query: Query)(implicit client: HttpClient): Future[Query] = {
+    val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
+      ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+        query(matchQuery("regionSearchId", freeText).operator("or"))
+        limit 50
+      ).map {
+        case Left(ESGenericException(e)) => throw e
+        case Right(results) => {
+          results.result.totalHits match {
+            case 0 => Set[Region]() // If there's no hits, no need to do anything more
+            case _ => results.result.to[Region].toSet
+          }
+        }
+      }
+    ).getOrElse(Future(Set[Region]()))
+    regionsFuture.map(regions => query.copy(boostRegions = regions))
   }
 
   /**
@@ -454,12 +457,28 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case SetExtractor() => None
       case x => Some(fn(x))
     }
-  private def buildEsQuery(
-    query: Query,
-    strategy: SearchStrategy): QueryDefinition = {
+
+  private def buildEsQuery(query: Query, strategy: SearchStrategy) : QueryDefinition = {
+    val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
+    val geomScorer: Option[ScoreFunctionDefinition] = geomScorerQuery.map(weightScore(1).filter(_))
+    val qualityScorers = Seq(fieldFactorScore("quality")
+                        .filter(termQuery("hasQuality", true))
+                        .missing(1))
+    /**
+      * The overall score method is:
+      * [Document Score] x SUM(1, [possible quality scorer result (range from 0~1) when hasQuality = true], [possible region scorer result (0 or 1) when boostRegions have been found])
+      * This will guarantee the overall score never be 0 even when quality scorer or / and region scorer is missing
+      * If both `quality` & `region` scorer are missing, overall score will be [Document Score] x 1
+      *
+      * The overall score method was:
+      * [Document Score] x [possible quality scorer result (range from 0~1)]
+      * When quality is 0 or missing, the overall score will be 0
+      */
+    val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ geomScorer.toSeq
+
     functionScoreQuery()
       .query(queryToQueryDef(query, strategy))
-      .scorers(fieldFactorScore("quality").missing(0))
+      .functions(allScorers).scoreMode("sum")
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
@@ -468,7 +487,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategy: SearchStrategy,
     isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
-      case MatchAll => "and"
+      case MatchAll =>
+        if (query.boostRegions.isEmpty) {
+          "and"
+        } else {
+          // --- when boostRegions have been identified from user input
+          // --- we shouldn't use `and` for `simple_string_query`. Otherwise, user input `water in hurstville`
+          // --- will exclude datasets that don't include `hurstville` keywords but their spatial data covers `hurstville` region
+          // --- those datasets are more likely what users want
+          "or"
+        }
       case MatchPart => "or"
     }
 

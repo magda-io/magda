@@ -11,6 +11,7 @@ spec:
       labels:
         service: gateway
     spec:
+      priorityClassName: magda-10
       containers:
       - name: gateway
         image: {{ template "dockerimage" . }}

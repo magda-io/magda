@@ -1,6 +1,26 @@
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 
+const URL_REGEXES: Array<[RegExp, string]> = [
+    [new RegExp(".*\\.geojson$", "i"), "GEOJSON"],
+    [new RegExp(".*\\?.*service=wms.*", "i"), "WMS"],
+    [new RegExp(".*\\?.*service=wfs.*", "i"), "WFS"],
+    [new RegExp("\\W+MapServer\\W*|\\W+FeatureServer\\W*", "i"), "ESRI REST"],
+    [new RegExp(".*\\.(shp|shz|dbf)(\\.zip)?$", "i"), "SHP"],
+    [new RegExp(".*\\.(pdf)(\\.zip)?$", "i"), "PDF"],
+    [new RegExp(".*\\.(json)(\\.zip)?$", "i"), "JSON"],
+    [new RegExp(".*\\.(xml)(\\.zip)?$", "i"), "XML"],
+    [new RegExp(".*\\.(doc)(\\.zip)?$", "i"), "DOC"],
+    [new RegExp(".*\\.(docs)(\\.zip)?$", "i"), "DOCS"],
+    [new RegExp(".*\\.(xlsx)(\\.zip)?$", "i"), "XLSX"],
+    [new RegExp(".*\\.(xls)(\\.zip)?$", "i"), "XLS"],
+    [new RegExp(".*\\.(tif)(\\.zip)?$", "i"), "TIFF"],
+    [new RegExp(".*\\.(zip)$", "i"), "ZIP"],
+    [new RegExp(".*\\.(sav)$", "i"), "SPSS"],
+    [new RegExp(".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "i"), "HTML"],
+    [new RegExp(".*\\/$", "i"), "HTML"]
+];
+
 /*
 * Tries to determine the format by parsing the downloadURL string and looking at the extension
 */
@@ -8,47 +28,20 @@ export default function getMeasureResults(
     relatedDistribution: any,
     synonymObject: any
 ): MeasureResult {
-    let { downloadURL } = relatedDistribution.aspects[
-        "dcat-distribution-strings"
-    ];
+    const dcatDistributionStrings =
+        relatedDistribution.aspects["dcat-distribution-strings"];
 
+    let { downloadURL } = dcatDistributionStrings;
     if (!downloadURL || downloadURL === "") {
-        downloadURL =
-            relatedDistribution.aspects["dcat-distribution-strings"][
-                "accessURL"
-            ];
-        if (!downloadURL || downloadURL === "") return null;
+        downloadURL = dcatDistributionStrings.accessURL;
+        if (!downloadURL || downloadURL.trim() === "") return null;
     }
 
-    let downloadURLString: string = downloadURL;
+    const formatFromURL: [RegExp, string] = URL_REGEXES.find(
+        ([regex]) => (downloadURL.match(regex) ? true : false)
+    );
 
-    const urlRegexes: Array<Array<string>> = [
-        [".*\\.geojson$", "GEOJSON"],
-        [".*?.*service=wms.*", "WMS"],
-        [".*?.*service=wfs.*", "WFS"],
-        ["\\W+MapServer\\W*|\\W+FeatureServer\\W*", "ESRI REST"],
-        [".*\\.(shp|shz|dbf)(\\.zip)?$", "SHP"],
-        [".*\\.(pdf)(\\.zip)?$", "PDF"],
-        [".*\\.(json)(\\.zip)?$", "JSON"],
-        [".*\\.(xml)(\\.zip)?$", "XML"],
-        [".*\\.(doc)(\\.zip)?$", "DOC"],
-        [".*\\.(docs)(\\.zip)?$", "DOCS"],
-        [".*\\.(xlsx)(\\.zip)?$", "XLSX"],
-        [".*\\.(xls)(\\.zip)?$", "XLS"],
-        [".*\\.(tif)(\\.zip)?$", "TIFF"],
-        [".*\\.(zip)$", "ZIP"],
-        [".*\\.(sav)$", "SPSS"],
-        [".*\\.(html|xhtml|php|asp|aspx|jsp|htm)(\\?.*)?", "HTML"],
-        [".*\\/$", "HTML"]
-    ];
-
-    let formatFromURL: Array<string> = urlRegexes.find(regexCombo => {
-        return downloadURLString.match(new RegExp(regexCombo[0], "i"))
-            ? true
-            : false;
-    });
-
-    if (formatFromURL && formatFromURL.length > 0) {
+    if (formatFromURL) {
         return {
             formats: [
                 {

@@ -98,6 +98,9 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 "credentials.json",
                 configData["cloudsql-instance-credentials"]["data"]
             );
+            createSecret(env, namespace, "cloudsql-db-credentials", {
+                password: configData["cloudsql-db-credentials"]
+            });
         }
 
         if (configData["use-storage-account-credentials"] === true) {

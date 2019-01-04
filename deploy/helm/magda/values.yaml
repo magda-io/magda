@@ -16,6 +16,7 @@ global:
   gapiIds: []
 
 tags:
+  priorities: true
   all: true
   apidocs-server: false
   admin-api: false

@@ -5,23 +5,32 @@
  */
 import { Readable } from "stream";
 
-export default function RandomStream(options: any) {
-    options = options || {};
-    var stream = new Readable();
+// const sizeGen = randIntGenerator(1000, 2000);
+export default class RandomStream extends Readable {
+    private now: number;
 
-    var randInt = randIntGenerator(options.min, options.max);
+    constructor(waitMilliseconds: number) {
+        super({
+            read: () => {
+                const newTime = this.getTime();
+                const timeDiff = Math.max(0, newTime - this.now);
 
-    stream._read = function(n) {
-        var self = this;
-        setTimeout(function() {
-            self.push(randChar());
-        }, randInt());
-    };
+                if (timeDiff <= waitMilliseconds) {
+                    setTimeout(() => this.push(randChar()));
+                } else {
+                    this.push(null);
+                }
+            }
+        });
+        this.now = this.getTime();
+    }
 
-    return stream;
+    getTime() {
+        return new Date().getTime();
+    }
 }
 
-var randAscii = randIntGenerator(33, 126);
+const randAscii = randIntGenerator(33, 126);
 
 function randChar() {
     return String.fromCharCode(randAscii());

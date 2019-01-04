@@ -71,16 +71,28 @@ combined-db:
       fileName: TerriaJS-5e042b649f8a.json
   data:
     storage: 250Gi
-  antiPreemptibleAffinity: 100
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: cloud.google.com/gke-preemptible
+              operator: DoesNotExist
 
 elasticsearch:
   data:
     heapSize: 500m
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-preemptible
+                operator: DoesNotExist
   backup:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: db-service-account-private-key.json
-  antiPreemptibleAffinity: 99
 
 indexer:
   readSnapshots: false
@@ -98,6 +110,12 @@ correspondence-api:
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
+
+minion-broken-link:
+  domainWaitTimeConfig:
+    data.csiro.au: 5
+    data.gov.au: 5
+    data.act.gov.au: 30
 
 connectors:
   config:

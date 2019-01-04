@@ -14,9 +14,12 @@ spec:
       labels:
         service: content-db
     spec:
+      priorityClassName: magda-9
       terminationGracePeriodSeconds: 60
       affinity:
-        {{ include "magda.antiPreemptibleAffinity" . }}
+{{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
       containers:
       - name: content-db
         resources:

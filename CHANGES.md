@@ -1,13 +1,31 @@
 ## 0.0.51
 
+-   Change search selection color for non-home pages
+-   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
+-   Made navigation items screen readable by removing unnecessary aria-hidden label from menu
 -   Add readiness and liveness probes to all services
+-   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
 -   Redirect HTTP requests to HTTPS URLs
+-   Fixed chart won't displayed correctly under IE11
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed form error message not being heard in order by screen readers and also when field is in focus by putting them in the same label element.
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Made the image and the text wrapped in a single link and the set image alt value to null.
 -   Fixed the image and the text should be wrapped in a single link and the image alt text should have a null value.chart won't displayed correctly under IE11
 -   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
 -   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
 -   Download unknown project open data license URLs to extract human readable licence
+-   Added shortcut to build create secrets script for magda-config repo
+-   Added preemption priority classes
+-   Added ability to add fully customised affinity to statefulsets in helm
+-   Fixed docker image build script failed on windows platform
+-   Only runtime dependencies will be included by docker image build script
+-   Added `cloudsql-db-credentials` to create-secrets tool
+-   Fixed an file selector error when current directory & non of its sub directory has \*.json file
 
 ## 0.0.50
 
@@ -69,6 +87,10 @@
 -   Made access notes show up on distribution page with configurable text
 -   Added contact point to distribution page, made title configurable
 -   When `match-part` search strategy is used, a message is shown on UI
+-   Made broken link minion per domain request wait time configurable
+-   Fixed mobile menu not show-up properly
+-   Made the events page size and the webhook timeout configurable in the registry.
+-   Stopped the format minion from stalling on long URLs
 
 ## 0.0.49
 

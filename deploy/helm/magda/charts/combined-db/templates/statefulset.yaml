@@ -14,9 +14,12 @@ spec:
       labels:
         service: combined-db
     spec:
+      priorityClassName: magda-9
       terminationGracePeriodSeconds: 10
       affinity:
-        {{ include "magda.antiPreemptibleAffinity" . }}
+{{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
       containers:
       - name: combined-db
         resources:

@@ -12,6 +12,7 @@ spec:
       labels:
         service: authorization-api
     spec:
+      priorityClassName: magda-8
       containers:
       - name: authorization-api
         image: {{ template "dockerimage" . }}

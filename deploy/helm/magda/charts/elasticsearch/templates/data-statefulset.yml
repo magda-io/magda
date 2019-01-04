@@ -18,9 +18,12 @@ spec:
         component: elasticsearch
         role: data
     spec:
+      priorityClassName: magda-9
       terminationGracePeriodSeconds: 10
       affinity:
-        {{ include "magda.antiPreemptibleAffinity" . }}
+{{- if .Values.data.affinity }}
+{{ toYaml .Values.data.affinity | indent 8 }}
+{{- end }}
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 50

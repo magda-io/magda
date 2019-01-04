@@ -52,6 +52,14 @@ const questions = [
         when: onlyAvailableForGoogleCloud
     },
     {
+        type: "input",
+        name: "cloudsql-db-credentials",
+        message: "Please provide default google cloud SQL service DB password:",
+        when: onlyWhenQuestion("use-cloudsql-instance-credentials", true),
+        validate: input =>
+            trim(input).length ? true : "Default password cannot be empty!"
+    },
+    {
         type: "list",
         dataType: "boolean",
         name: "reselect-cloudsql-instance-credentials",

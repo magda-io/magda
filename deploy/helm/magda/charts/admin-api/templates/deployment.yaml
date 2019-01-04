@@ -11,6 +11,7 @@ spec:
       labels:
         service: admin-api
     spec:
+      priorityClassName: magda-7
       containers:
       - name: admin-api
         image: {{ template "dockerimage" . }}

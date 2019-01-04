@@ -31,6 +31,10 @@ import FtpHandler from "../FtpHandler";
 import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
 import RandomStream from "./RandomStream";
+import {
+    setDefaultDomainWaitTime,
+    getDefaultDomainWaitTime
+} from "../getUrlWaitTime";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -40,24 +44,36 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     const registry = new AuthorizedRegistryClient({
         baseUrl: registryUrl,
         jwtSecret: secret,
-        userId: "1"
+        userId: "1",
+        maxRetries: 0
     });
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };
     let ftpSuccesses: { [url: string]: CheckResult };
+    const orignalDefaultDomainWaitTime: number = getDefaultDomainWaitTime();
 
     before(() => {
+        // --- set default domain wait time to 0 second (i.e. for any domains that has no specific setting)
+        // --- Otherwise, it will take too long to complete property tests
+        setDefaultDomainWaitTime(0);
+
         sinon.stub(console, "info");
         nock.disableNetConnect();
 
         nock.emitter.on("no match", onMatchFail);
     });
 
-    const onMatchFail = (req: any) => {
-        console.error("Match failure: " + JSON.stringify(req.path));
+    const onMatchFail = (req: any, interceptor: any) => {
+        console.error(
+            `Match failure: ${req.method ? req.method : interceptor.method} ${
+                req.host ? req.host : interceptor.host
+            }${req.path}`
+        );
     };
 
     after(() => {
+        setDefaultDomainWaitTime(orignalDefaultDomainWaitTime);
+
         (console.info as any).restore();
 
         nock.emitter.removeListener("no match", onMatchFail);
@@ -140,17 +156,11 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      */
     it("Should correctly record link statuses", function() {
         return jsc.assert(
-            jsc.forall(recordArbWithSuccesses, function({
-                record,
-                successLookup
-            }) {
+            jsc.forall(recordArbWithSuccesses, jsc.integer(1, 100), function(
+                { record, successLookup, disallowHead },
+                streamWaitTime
+            ) {
                 beforeEachProperty();
-
-                /** Endless stream of nonsense, similar to what you'd get if you tried to download a massive file */
-                const randomStream = RandomStream({
-                    min: 250, // in milliseconds
-                    max: 1000 // in milliseconds
-                });
 
                 // Tell the FTP server to return success/failure for the various FTP
                 // paths with this dodgy method. Note that because the FTP server can
@@ -184,19 +194,41 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                             reqheaders: { "User-Agent": /@magda.*/ }
                         });
 
+                        const scopeHead = scope.head(
+                            url.endsWith("/") ? "/" : ""
+                        );
+                        const scopeGet = scope.get(
+                            url.endsWith("/") ? "/" : ""
+                        );
+
                         if (success !== "error") {
-                            scope
-                                .get(url.endsWith("/") ? "/" : "")
-                                .reply(
-                                    success === "success" ? 200 : 404,
-                                    () => {
-                                        return randomStream;
-                                    }
-                                );
+                            if (!disallowHead && success === "success") {
+                                scopeHead.reply(200);
+                            } else {
+                                if (disallowHead) {
+                                    // Not everything returns a 405 for HEAD not allowed :()
+                                    scopeHead.reply(
+                                        success === "success" ? 405 : 400
+                                    );
+                                } else {
+                                    scopeHead.replyWithError("fail");
+                                }
+
+                                if (success === "success") {
+                                    scopeGet.reply(200, () => {
+                                        const s = new RandomStream(
+                                            streamWaitTime
+                                        );
+
+                                        return s;
+                                    });
+                                } else {
+                                    scopeGet.reply(404);
+                                }
+                            }
                         } else {
-                            scope
-                                .get(url.endsWith("/") ? "/" : "")
-                                .replyWithError("fail");
+                            scopeHead.replyWithError("fail");
+                            scopeGet.replyWithError("fail");
                         }
 
                         return scope;
@@ -320,19 +352,25 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         .reply(201);
                 });
 
-                return onRecordFound(record, registry, 0, 0, fakeFtpHandler)
+                return onRecordFound(
+                    record,
+                    registry,
+                    0,
+                    0,
+                    {},
+                    {},
+                    fakeFtpHandler
+                )
                     .then(() => {
                         distScopes.forEach(scope => scope.done());
                         registryScope.done();
                     })
                     .then(() => {
                         afterEachProperty();
-                        randomStream.destroy();
                         return true;
                     })
                     .catch(e => {
                         afterEachProperty();
-                        randomStream.destroy();
                         throw e;
                     });
             }),
@@ -449,6 +487,12 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                     allResults.forEach((failureCodes, i) => {
                                         failureCodes.forEach(failureCode => {
                                             scope
+                                                .head(
+                                                    url.endsWith("/") ? "/" : ""
+                                                )
+                                                .reply(failureCode);
+
+                                            scope
                                                 .get(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
@@ -459,7 +503,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                             result === "fail429"
                                         ) {
                                             scope
-                                                .get(
+                                                .head(
                                                     url.endsWith("/") ? "/" : ""
                                                 )
                                                 .reply(429);
@@ -468,7 +512,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                                     if (result === "success") {
                                         scope
-                                            .get(url.endsWith("/") ? "/" : "")
+                                            .head(url.endsWith("/") ? "/" : "")
                                             .reply(200);
                                     }
 
@@ -597,13 +641,18 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
                             failures.forEach(failureCode => {
                                 scope
+                                    .head(uri.path())
+                                    .delay(delayMs)
+                                    .reply(failureCode);
+
+                                scope
                                     .get(uri.path())
                                     .delay(delayMs)
                                     .reply(failureCode);
                             });
 
                             scope
-                                .get(uri.path())
+                                .head(uri.path())
                                 .delay(delayMs)
                                 .reply(200);
                             return scopeLookup;
