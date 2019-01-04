@@ -294,7 +294,6 @@ class SearchSuggestionBox extends Component {
             <div
                 className="search-suggestion-box"
                 ref={el => (this.containerRef = el)}
-                tabIndex={999}
             >
                 <div className="search-suggestion-box-position-adjust" />
                 <div
@@ -324,6 +323,7 @@ class SearchSuggestionBox extends Component {
                             <button
                                 className="au-btn au-btn--tertiary search-item-main-button"
                                 onClick={e => this.onSearchItemClick(e, item)}
+                                tabIndex={-1}
                             >
                                 <Medium>
                                     <MarkdownViewer
@@ -342,6 +342,7 @@ class SearchSuggestionBox extends Component {
                             <button
                                 className="au-btn au-btn--tertiary search-item-delete-button"
                                 onClick={e => this.onDeleteItemClick(e, idx)}
+                                tabIndex={-1}
                             >
                                 <img alt="delete search item" src={closeIcon} />
                             </button>
