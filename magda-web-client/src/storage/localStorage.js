@@ -87,7 +87,7 @@ export function prependToLocalStorageArray(
  * @param {*} defaultValue Returned if localStorage isn't available on window
  */
 export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
-    if (!noLocalStorage) return defaultValue;
+    if (noLocalStorage) return defaultValue;
     let items = retrieveLocalData(key);
     items.splice(index, 1);
     try {

@@ -84,17 +84,19 @@ class Header extends Component {
                                             </button>
                                         </div>
                                         <div className="col-md-8 col-xs-12">
-                                            <div
-                                                className={`au-accordion__body au-accordion--${
-                                                    this.state.isMobileMenuOpen
-                                                        ? "open"
-                                                        : "closed"
-                                                } menu`}
-                                                aria-hidden={
-                                                    !this.state.isMobileMenuOpen
-                                                }
-                                            >
-                                                <Small>
+                                            <Small>
+                                                <div
+                                                    className={`au-accordion__body au-accordion--${
+                                                        this.state
+                                                            .isMobileMenuOpen
+                                                            ? "open"
+                                                            : "closed"
+                                                    } menu`}
+                                                    aria-hidden={
+                                                        !this.state
+                                                            .isMobileMenuOpen
+                                                    }
+                                                >
                                                     <div className="mobile-nav">
                                                         <HeaderNav
                                                             isMobile={true}
@@ -104,16 +106,20 @@ class Header extends Component {
                                                             }
                                                         />
                                                     </div>
-                                                </Small>
-                                                <Medium>
+                                                </div>
+                                            </Small>
+                                            <Medium>
+                                                <div
+                                                    className={`au-accordion__body au-accordion--closed menu`}
+                                                >
                                                     <HeaderNav
                                                         headerNavigation={
                                                             this.props
                                                                 .headerNavigation
                                                         }
                                                     />
-                                                </Medium>
-                                            </div>
+                                                </div>
+                                            </Medium>
                                         </div>
                                     </div>
                                 </div>
