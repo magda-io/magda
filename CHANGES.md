@@ -18,6 +18,7 @@
 -   Fixed index trimming failure issue when re-indexing
 -   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Download unknown project open data license URLs to extract human readable licence
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
 -   Added ability to add fully customised affinity to statefulsets in helm
