@@ -1,6 +1,8 @@
 ## 0.0.51
 
+-   Change search selection color for non-home pages
 -   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
+-   Made navigation items screen readable by removing unnecessary aria-hidden label from menu
 -   Add readiness and liveness probes to all services
 -   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
 -   Redirect HTTP requests to HTTPS URLs
@@ -16,6 +18,7 @@
 -   Fixed index trimming failure issue when re-indexing
 -   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Download unknown project open data license URLs to extract human readable licence
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
 -   Added ability to add fully customised affinity to statefulsets in helm

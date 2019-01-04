@@ -12,7 +12,7 @@ import searchDark from "../../assets/search-purple.svg";
 import PropTypes from "prop-types";
 import queryString from "query-string";
 import SearchSuggestionBox from "./SearchSuggestionBox";
-import { Small, Medium } from "../../UI/Responsive";
+import { Small } from "../../UI/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
 import { withRouter } from "react-router-dom";
 import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
@@ -26,7 +26,7 @@ class SearchBox extends Component {
         );
         self.updateQuery = this.updateQuery.bind(this);
         self.updateSearchText = this.updateSearchText.bind(this);
-        self.onClickSearch = this.onClickSearch.bind(this);
+        self.onClickSearch = this.doSearchNow.bind(this);
         self.onSearchTextChange = this.onSearchTextChange.bind(this);
         self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
 
@@ -36,7 +36,8 @@ class SearchBox extends Component {
             searchText: null,
             width: 0,
             height: 0,
-            isFocus: false
+            isFocus: false,
+            selectedId: null
         };
         this.searchInputFieldRef = null;
         props.history.listen(location => {
@@ -58,14 +59,24 @@ class SearchBox extends Component {
         this.setState({
             searchText: text
         });
-        this.debounceUpdateSearchQuery(text, keepFilters);
+        this.debounceUpdateSearchQuery(text, keepFilters, true);
     }
 
     /**
      * update only the search text
      */
-    updateSearchText(text, keepFilters) {
-        if (text === "") text = "*";
+    updateSearchText(text, keepFilters, fromTextChange = false) {
+        if (fromTextChange && this.state.selectedId) {
+            return;
+        }
+
+        if (text === "") {
+            if (fromTextChange) {
+                return;
+            } else {
+                text = "*";
+            }
+        }
         // dismiss keyboard on mobile when new search initiates
         if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
 
@@ -94,8 +105,9 @@ class SearchBox extends Component {
     /**
      * If the search button is clicked, we do the search immediately
      */
-    onClickSearch() {
-        this.debounceUpdateSearchQuery.flush();
+    doSearchNow(keepFilters) {
+        this.debounceUpdateSearchQuery.cancel();
+        this.updateSearchText(this.state.searchText, true);
     }
 
     /**
@@ -151,9 +163,21 @@ class SearchBox extends Component {
                         isFocus: false
                     })
                 }
+                role="combobox"
+                aria-autocomplete="list"
+                aria-owns="search-history-items"
+                aria-activedescendant={this.state.selectedId}
+                aria-expanded={this.state.isFocus}
+                aria-controls="search-suggestion-box"
             />
         );
     }
+
+    onSelectedIdChange = newId => {
+        this.setState({
+            selectedId: newId
+        });
+    };
 
     render() {
         const suggestionBox = (
@@ -161,6 +185,7 @@ class SearchBox extends Component {
                 searchText={this.getSearchBoxValue()}
                 isSearchInputFocus={this.state.isFocus}
                 inputRef={this.searchInputFieldRef}
+                onSelectedIdChange={this.onSelectedIdChange}
             />
         );
 
@@ -168,37 +193,48 @@ class SearchBox extends Component {
         return (
             <MagdaNamespacesConsumer ns={["global"]}>
                 {translate => (
-                    <div className="searchBox">
-                        <label htmlFor="search">
-                            <span className="sr-only">
-                                {"Search " + translate(["appName", ""])}
-                            </span>
-                            <Medium>
-                                <div style={{ position: "relative" }}>
-                                    {this.inputBox(true)}
-                                    {suggestionBox}
-                                </div>
-                            </Medium>
-                            <Small>{this.inputBox(false)}</Small>
-                            <span className="search-input__highlight">
-                                {this.getSearchBoxValue()}
-                            </span>
-                            <button
-                                onClick={this.onClickSearch}
-                                className={`search-btn ${
-                                    this.getSearchBoxValue().length > 0
-                                        ? "not-empty"
-                                        : "empty"
-                                }`}
-                                type="button"
-                            >
-                                <img src={icon} alt="search button" />
-                                <span className="sr-only">submit search</span>
-                            </button>
-                        </label>
+                    <Small>
+                        {isSmall => (
+                            <div className="searchBox">
+                                <label htmlFor="search">
+                                    <span className="sr-only">
+                                        {"Search " +
+                                            translate(["appName", ""]) +
+                                            ", use arrow keys to browse search history"}
+                                    </span>
+                                    {isSmall ? (
+                                        this.inputBox(false)
+                                    ) : (
+                                        <div style={{ position: "relative" }}>
+                                            {this.inputBox(true)}
+                                            {suggestionBox}
+                                        </div>
+                                    )}
+                                    <span className="search-input__highlight">
+                                        {this.getSearchBoxValue()}
+                                    </span>
+                                    <button
+                                        onClick={() =>
+                                            this.doSearchNow(!isSmall)
+                                        }
+                                        className={`search-btn ${
+                                            this.getSearchBoxValue().length > 0
+                                                ? "not-empty"
+                                                : "empty"
+                                        }`}
+                                        type="button"
+                                    >
+                                        <img src={icon} alt="search button" />
+                                        <span className="sr-only">
+                                            submit search
+                                        </span>
+                                    </button>
+                                </label>
 
-                        <Small>{suggestionBox}</Small>
-                    </div>
+                                {isSmall && suggestionBox}
+                            </div>
+                        )}
+                    </Small>
                 )}
             </MagdaNamespacesConsumer>
         );

@@ -190,3 +190,12 @@
         color: rgba($AU-color-foreground-action, 0.6);
     }
 }
+
+.other-page {
+    .searchBox {
+        ::selection {
+            background: rgba(#ffffff, 0.4) !important;
+            color: #ffffff !important;
+        }
+    }
+}
