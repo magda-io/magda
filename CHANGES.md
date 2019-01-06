@@ -23,6 +23,7 @@
 -   Only runtime dependencies will be included by docker image build script
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Fixed an file selector error when current directory & non of its sub directory has \*.json file
+-   Made the "Skip to Navigation" skip link go to the first navigation item rather than trying to target the wrapping `<div>`
 
 ## 0.0.50
 

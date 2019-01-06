@@ -24,6 +24,7 @@ const headerNavigationPlugins = {
                         target={opts.target}
                         rel={opts.rel}
                         title={`Go to ${nav.label}`}
+                        id={i === 0 && "nav"}
                     >
                         <span>{nav.label}</span>
                     </Link>
@@ -35,7 +36,7 @@ const headerNavigationPlugins = {
         config.disableAuthenticationFeatures ? (
             <span key={i} />
         ) : (
-            <AccountNavbar key={i} />
+            <AccountNavbar key={i} skipLink={i === 0} />
         )
 };
 
@@ -50,7 +51,7 @@ function invokeHeaderNavigationPlugin(nav, i) {
 class HeaderNav extends Component {
     render() {
         return (
-            <nav className="navigation header-nav" id="nav">
+            <nav className="navigation header-nav">
                 <ul
                     className={`au-link-list ${
                         this.props.isMobile ? "" : "au-link-list--inline"
