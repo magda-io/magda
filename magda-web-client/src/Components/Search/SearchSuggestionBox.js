@@ -405,6 +405,7 @@ class SearchSuggestionBox extends Component {
                                     onClick={e =>
                                         this.onSearchItemClick(e, item)
                                     }
+                                    tabIndex={-1}
                                 >
                                     <span className="sr-only">
                                         Recent search item
@@ -441,6 +442,7 @@ class SearchSuggestionBox extends Component {
                                     onClick={e =>
                                         this.onDeleteItemClick(e, idx)
                                     }
+                                    tabIndex={-1}
                                 >
                                     <img
                                         alt={`delete recent search item ${this.createSearchItemLabelText(
