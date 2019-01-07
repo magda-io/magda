@@ -4,6 +4,5 @@ kind: PriorityClass
 metadata:
   name: magda-0
 value: 0
-globalDefault: true
 description: "Ordered importance class 1-10"
 {{- end }}
