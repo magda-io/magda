@@ -238,10 +238,14 @@ object Registry {
           }
           val totalWeighting = ratings.map(_.weighting).reduce(_ + _)
 
-          if (totalWeighting > 0) {
+          val score = if (totalWeighting > 0) {
             ratings.map(rating =>
               (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
           } else 0d
+
+          // Make scores > 0 sit between 0.2 and 1, and 0 === 0.2 so that multiplication by quality doesn't result in
+          // scores being 0 regardless of relevance at search time
+          score * 0.8 + 0.2
         case _ => 1d
       }
 
