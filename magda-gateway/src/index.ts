@@ -112,23 +112,48 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("facebookClientId", {
             describe: "The client ID to use for Facebook OAuth.",
-            type: "string"
+            type: "string",
+            default:
+                process.env.FACEBOOK_CLIENT_ID ||
+                process.env.npm_package_config_facebookClientId
         })
         .option("facebookClientSecret", {
             describe:
                 "The secret to use for Facebook OAuth.  This can also be specified with the FACEBOOK_CLIENT_SECRET environment variable.",
             type: "string",
-            default: process.env.FACEBOOK_CLIENT_SECRET
+            default:
+                process.env.FACEBOOK_CLIENT_SECRET ||
+                process.env.npm_package_config_facebookClientSecret
         })
         .option("googleClientId", {
             describe: "The client ID to use for Google OAuth.",
-            type: "string"
+            type: "string",
+            default:
+                process.env.GOOGLE_CLIENT_ID ||
+                process.env.npm_package_config_googleClientId
         })
         .option("googleClientSecret", {
             describe:
                 "The secret to use for Google OAuth.  This can also be specified with the GOOGLE_CLIENT_SECRET environment variable.",
             type: "string",
-            default: process.env.GOOGLE_CLIENT_SECRET
+            default:
+                process.env.GOOGLE_CLIENT_SECRET ||
+                process.env.npm_package_config_googleClientSecret
+        })
+        .option("aafClientUri", {
+            describe: "The aaf client Uri to use for AAF Auth.",
+            type: "string",
+            default:
+                process.env.AAF_CLIENT_URI ||
+                process.env.npm_package_config_aafClientUri
+        })
+        .option("aafClientSecret", {
+            describe:
+                "The secret to use for AAF Auth.  This can also be specified with the AAF_CLIENT_SECRET environment variable.",
+            type: "string",
+            default:
+                process.env.AAF_CLIENT_SECRET ||
+                process.env.npm_package_config_aafClientSecret
         })
         .options("ckanUrl", {
             describe: "The URL of a CKAN server to use for authentication.",
@@ -246,6 +271,8 @@ if (argv.enableAuthEndpoint) {
             facebookClientSecret: argv.facebookClientSecret,
             googleClientId: argv.googleClientId,
             googleClientSecret: argv.googleClientSecret,
+            aafClientUri: argv.aafClientUri,
+            aafClientSecret: argv.aafClientSecret,
             ckanUrl: argv.ckanUrl,
             authorizationApi: argv.authorizationApi,
             externalUrl: argv.externalUrl,
