@@ -27,6 +27,7 @@
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Fixed an file selector error when current directory & non of its sub directory has \*.json file
 -   Made the "Skip to Navigation" skip link go to the first navigation item rather than trying to target the wrapping `<div>`
+-   Made the data quality tooltip read its contents out, and link to the data quality page.
 -   Stopped tab order reverting to body after tabbing through the search box
 -   Removed the .bin extension from the logo
 -   Added google analytics event when chart fails to load
