@@ -243,9 +243,9 @@ object Registry {
               (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
           } else 0d
 
-          // Make scores > 0 sit between 0.2 and 1, and 0 === 0.2 so that multiplication by quality doesn't result in
-          // scores being 0 regardless of relevance at search time
-          score * 0.8 + 0.2
+          // Make sure no quality score is set to zero, otherwise it results in relevance being * by 0 which makes
+          // results come back in a random order
+          if (score > 0) score else 0.01
         case _ => 1d
       }
 
