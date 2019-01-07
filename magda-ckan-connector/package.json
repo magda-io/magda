@@ -1,7 +1,7 @@
 {
   "name": "@magda/ckan-connector",
   "description": "MAGDA CKAN Connector",
-  "version": "0.0.51-0",
+  "version": "0.0.51-RC1",
   "scripts": {
     "build": "yarn run compile",
     "compile": "yarn run compile-node && yarn run compile-browser",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.51-0",
+    "@magda/scripts": "^0.0.51-RC1",
     "@types/express": "^4.0.37",
     "@types/node": "^8.0.14",
     "@types/read-pkg-up": "^3.0.1",
@@ -33,16 +33,16 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^0.0.51-0",
-    "@magda/typescript-common": "^0.0.51-0",
+    "@magda/registry-aspects": "^0.0.51-RC1",
+    "@magda/typescript-common": "^0.0.51-RC1",
     "body-parser": "^1.18.1",
     "express": "^4.15.4",
+    "isomorphic-fetch": "^2.2.1",
     "moment": "^2.17.1",
     "read-pkg-up": "^3.0.0",
     "request": "^2.79.0",
     "urijs": "^1.18.12",
-    "yargs": "^8.0.1",
-    "isomorphic-fetch": "^2.2.1"
+    "yargs": "^8.0.1"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",

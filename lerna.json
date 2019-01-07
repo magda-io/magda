@@ -3,7 +3,7 @@
   "npmClient": "yarn",
   "useWorkspaces": true,
   "packages": ["deploy/", "magda-*", "scripts/"],
-  "version": "0.0.51-0",
+  "version": "0.0.51-RC1",
   "hoist": [
     "tsmonad",
     "urijs",
@@ -22,7 +22,7 @@
     "eslint-config-react-app",
     "babel-eslint"
   ],
-  "commands": {
+  "command": {
     "docker-build-prod": {
       "ignore": ["magda-authorization-db", "magda-authorization-api"]
     }
