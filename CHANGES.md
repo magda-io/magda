@@ -1,3 +1,5 @@
+## 0.0.52
+
 ## 0.0.51
 
 -   Change search selection color for non-home pages
