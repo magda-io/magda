@@ -1,6 +1,6 @@
 {
   "name": "@magda/registry-api",
-  "version": "0.0.51-RC1",
+  "version": "0.0.51-RC2",
   "description": "The registry API.",
   "license": "Apache-2.0",
   "scripts": {
