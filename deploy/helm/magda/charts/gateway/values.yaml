@@ -13,6 +13,7 @@ autoscaler:
 
 enableAuthEndpoint: false
 enableWebAccessControl: false
+enableCkanRedirection: false
 
 helmet:
   frameguard: false

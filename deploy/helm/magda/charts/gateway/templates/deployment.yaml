@@ -49,6 +49,9 @@ spec:
 {{- if .Values.enableHttpsRedirection }}
             "--enableHttpsRedirection", {{ .Values.enableHttpsRedirection | quote }},
 {{- end }}
+{{- if .Values.enableCkanRedirection }}
+            "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
+{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",

@@ -164,6 +164,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
+        .option("enableCkanRedirection", {
+            describe: "Whether or not to turn on the CKan Redirection feature",
+            type: "boolean",
+            default: false
+        })
         .option("ckanRedirectionDomain", {
             describe:
                 "The target domain for redirecting ckan Urls. If not specified, default value `ckan.data.gov.au` will be used.",
@@ -281,7 +286,11 @@ if (argv.enableAuthEndpoint) {
     );
 }
 
-const routes = _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson);
+const routes = _.omitBy(
+    _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson),
+    route =>
+        !route || _.isEmpty(route) || !_.isPlainObject(route) || route.disabled
+);
 
 app.use(
     "/api/v0",
@@ -293,13 +302,19 @@ app.use(
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
 
-app.use(
-    createCkanRedirectionRouter({
-        ckanRedirectionDomain: argv.ckanRedirectionDomain,
-        ckanRedirectionPath: argv.ckanRedirectionPath,
-        registryApiBaseUrlInternal: routes.registry.to
-    })
-);
+if (argv.enableCkanRedirection) {
+    if (!routes.registry) {
+        console.error("Cannot locate routes.registry for ckan redirection!");
+    } else {
+        app.use(
+            createCkanRedirectionRouter({
+                ckanRedirectionDomain: argv.ckanRedirectionDomain,
+                ckanRedirectionPath: argv.ckanRedirectionPath,
+                registryApiBaseUrlInternal: routes.registry.to
+            })
+        );
+    }
+}
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
