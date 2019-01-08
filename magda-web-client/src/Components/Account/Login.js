@@ -1,6 +1,7 @@
 import React from "react";
 import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
+import aafLogo from "./aaf-logo.png";
 import AUctaLink from "../../pancake/react/cta-link";
 import "./Login.css";
 import { config } from "../../config";
@@ -56,6 +57,18 @@ export default function Login(props) {
                                     alt="logo"
                                 />
                                 Google
+                            </a>
+                        </li>
+                    )}
+                    {props.providers.indexOf("aaf") !== -1 && (
+                        <li className="login__provider">
+                            <a href={makeLoginUrl("aaf")}>
+                                <img
+                                    src={aafLogo}
+                                    className="login__logo"
+                                    alt="logo"
+                                />
+                                AAF
                             </a>
                         </li>
                     )}
