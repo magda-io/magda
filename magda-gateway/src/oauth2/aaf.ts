@@ -108,7 +108,7 @@ export default function aaf(options: aafOptions) {
             res: express.Response,
             next: express.NextFunction
         ): any => {
-            console.log("error redirect");
+            console.log("error redirect: " + err);
             redirectOnError(err, aafFailRedirect, req, res);
         }
     );
