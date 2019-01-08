@@ -197,6 +197,9 @@ const authenticator = new Authenticator({
 // Create a new Express application.
 var app = express();
 
+// Log everything
+app.use(require("morgan")("combined"));
+
 const probes: any = {};
 
 _.forEach(argv.routes, (value, key) => {
@@ -228,7 +231,6 @@ app.use(configuredCors);
 app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
 app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
-app.use(require("morgan")("combined"));
 
 // --- enable http basic authentication for all users
 if (argv.enableWebAccessControl) {
