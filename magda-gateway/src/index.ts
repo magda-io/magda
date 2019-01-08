@@ -218,6 +218,10 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
+const routes = _.isEmpty(argv.proxyRoutesJson)
+    ? defaultConfig.proxyRoutes
+    : argv.proxyRoutesJson;
+
 const authenticator = new Authenticator({
     sessionSecret: argv.sessionSecret,
     dbHost: argv.dbHost,
@@ -232,6 +236,10 @@ app.use(require("morgan")("combined"));
 
 const probes: any = {};
 
+/**
+ * Should use argv.routes to setup probes
+ * so that no prob will be setup when run locally for testing
+ */
 _.forEach(argv.routes, (value, key) => {
     probes[key] = createServiceProbe(value.to);
 });
@@ -294,12 +302,6 @@ if (argv.enableAuthEndpoint) {
         })
     );
 }
-
-const routes = _.omitBy(
-    _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson),
-    route =>
-        !route || _.isEmpty(route) || !_.isPlainObject(route) || route.disabled
-);
 
 app.use(
     "/api/v0",

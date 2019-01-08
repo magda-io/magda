@@ -25,7 +25,7 @@ resources:
   limits:
     cpu: 200m
 
-routes:
+defaultRoutes:
   search:
     to: http://search-api/v0
   registry:
