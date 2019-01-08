@@ -52,7 +52,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: http
-          initialDelaySeconds: 20
+          initialDelaySeconds: 120
           timeoutSeconds: 5
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
