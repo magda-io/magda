@@ -119,30 +119,4 @@ describe("Test createHttpsRedirectionMiddleware", () => {
             });
         });
     });
-
-    describe("should forward request to next request handler if request url is `/v0/healthz`", () => {
-        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` = 'http'", () => {
-            const testRequest = setupTest(true, "http", "/v0/healthz");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-
-        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` = 'https'", () => {
-            const testRequest = setupTest(true, "https", "/v0/healthz");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-
-        it("when `enableHttpsRedirection` parameter is true and `X-Forwarded-Proto` not set", () => {
-            const testRequest = setupTest(true, null, "/v0/healthz");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-    });
 });

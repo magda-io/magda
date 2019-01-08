@@ -9,6 +9,10 @@ import * as compression from "compression";
 import * as basicAuth from "express-basic-auth";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import {
+    installStatusRouter,
+    createServiceProbe
+} from "@magda/typescript-common/dist/express/status";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
@@ -193,6 +197,13 @@ const authenticator = new Authenticator({
 // Create a new Express application.
 var app = express();
 
+const probes: any = {};
+
+_.forEach(argv.routes, (value, key) => {
+    probes[key] = createServiceProbe(value.to);
+});
+installStatusRouter(app, { probes });
+
 // Redirect http url to https
 app.set("trust proxy", true);
 app.use(createHttpsRedirectionMiddleware(argv.enableHttpsRedirection));
@@ -218,10 +229,6 @@ app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
 app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 app.use(require("morgan")("combined"));
-
-app.get("/v0/healthz", function(req, res) {
-    res.status(200).send("OK");
-});
 
 // --- enable http basic authentication for all users
 if (argv.enableWebAccessControl) {

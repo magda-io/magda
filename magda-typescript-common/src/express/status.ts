@@ -15,7 +15,7 @@ export interface OptionsIO {
     // outputs
     ready?: boolean;
     _installed?: any;
-    _probes?: any;
+    _probes?: { [key: string]: () => any };
     since?: string;
     last?: string;
     details?: any;
