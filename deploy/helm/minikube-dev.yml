@@ -16,7 +16,6 @@ gateway:
   ckanRedirectionPath: ""
   enableCkanRedirection: true
   enableAuthEndpoint: true
-  enableAuthEndpoint: true
   cors:
     credentials: true
     origin: true
