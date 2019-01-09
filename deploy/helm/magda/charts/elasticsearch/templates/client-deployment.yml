@@ -34,10 +34,10 @@ spec:
 {{- end }}
         readinessProbe:
           httpGet:
-            path: /_cluster/health
+            path: /_search?size=0
             port: http
           timeoutSeconds: 5
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
         resources:
 {{ toYaml .Values.client.resources | indent 10 }}
         env:

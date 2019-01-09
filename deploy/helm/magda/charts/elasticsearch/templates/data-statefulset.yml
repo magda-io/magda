@@ -50,10 +50,10 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         readinessProbe:
           httpGet:
-            path: /_cluster/health
+            path: /_cluster/health?wait_for_no_initializing_shards=true&wait_for_no_relocating_shards=true&wait_for_status=yellow&timeout=10s
             port: http
-          initialDelaySeconds: 120
-          timeoutSeconds: 5
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:
