@@ -1,5 +1,13 @@
 ## 0.0.52
 
+Authentication:
+
+-   Added `Australian Access Federation` Rapid Connect Single-Sign-On‎ Support
+
+Ops:
+
+-   `create-secrets` tool can create secret for `Australian Access Federation` Rapid Connect
+
 ## 0.0.51
 
 Accessibility:
