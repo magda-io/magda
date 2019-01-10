@@ -252,4 +252,10 @@ describe("when distributions have a license as a custom URL", function(this: Moc
             );
         });
     });
+
+    it("should not fail if the response returns no datasets", async () => {
+        dataJson.dataset = undefined;
+
+        await connector.run();
+    });
 });
