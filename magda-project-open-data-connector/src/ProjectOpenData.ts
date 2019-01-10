@@ -35,7 +35,7 @@ export default class ProjectOpenData implements ConnectorSource {
                                     console.log(error);
                                     return resolve(dataset);
                                 } else {
-                                    if (body.description) {
+                                    if (body && body.description) {
                                         let foundLink = false;
                                         if (
                                             body.description.match(
