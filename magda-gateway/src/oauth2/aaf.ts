@@ -1,7 +1,7 @@
 import * as express from "express";
 const CustomStrategy = require("passport-custom").Strategy;
 import { Authenticator, Profile } from "passport";
-var jwt = require("jwt-simple");
+const jwt = require("jwt-simple");
 import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
@@ -48,15 +48,14 @@ export default function aaf(options: aafOptions) {
 
     passport.use(
         new CustomStrategy(function(req: any, done: any) {
-            var verified_jwt = jwt.decode(
+            const verified_jwt = jwt.decode(
                 req.body["assertion"],
                 aafClientSecret
             );
-            console.log(verified_jwt);
-            var attribute = verified_jwt["https://aaf.edu.au/attributes"];
+            const attribute = verified_jwt["https://aaf.edu.au/attributes"];
             // Use mail as id because AAF return identites will change for every request though the user is the same
             // DB will use this unique mail address to hash and to get an unique id in db
-            var profile: Profile = {
+            const profile: Profile = {
                 id: attribute["mail"],
                 displayName: attribute["displayname"],
                 name: {
@@ -89,6 +88,7 @@ export default function aaf(options: aafOptions) {
             res.redirect(aafClientUri);
         }
     );
+
     router.get(
         "/success",
         (
