@@ -1,5 +1,15 @@
 ## 0.0.52
 
+Authentication:
+
+-   Added `Australian Access Federation` Rapid Connect Single-Sign-On‎ Support
+
+Ops:
+
+-   `create-secrets` tool can create secret for `Australian Access Federation` Rapid Connect
+-   Allows gateway routes to be overiden from top level values file
+-   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
+
 ## 0.0.51
 
 Accessibility:
