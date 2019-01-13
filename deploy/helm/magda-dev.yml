@@ -24,6 +24,7 @@ ingress:
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
+  enableCkanRedirection: true
   enableAuthEndpoint: true
   enableHttpsRedirection: true
   auth:
