@@ -1,5 +1,3 @@
-"use strict";
-
 import { runConnectorTest } from "@magda/typescript-common/dist/test/connectors/runConnectorTest";
 
 import { MockOpenDataCatalog } from "./MockOpenDataCatalog";
