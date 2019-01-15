@@ -3,7 +3,8 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "dist",
-        "baseUrl": "."
+        "baseUrl": ".",
+        "lib": ["es2017", "dom"]
     },
     "include": ["src"]
 }

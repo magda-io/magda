@@ -52,6 +52,10 @@
                 height: 13px;
                 opacity: 0.5;
             }
+
+            &--selected.search-item-delete-button {
+                background: #f2f2f2 !important;
+            }
         }
         .search-item-container {
             position: relative;
@@ -63,6 +67,11 @@
 
         .recent-item-icon {
             padding: 8px;
+        }
+
+        .search-history-items {
+            list-style: none;
+            padding: 0;
         }
     }
 

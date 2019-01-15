@@ -9,6 +9,10 @@ import * as compression from "compression";
 import * as basicAuth from "express-basic-auth";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import {
+    installStatusRouter,
+    createServiceProbe
+} from "@magda/typescript-common/dist/express/status";
 
 import Authenticator from "./Authenticator";
 import createApiRouter from "./createApiRouter";
@@ -112,23 +116,48 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("facebookClientId", {
             describe: "The client ID to use for Facebook OAuth.",
-            type: "string"
+            type: "string",
+            default:
+                process.env.FACEBOOK_CLIENT_ID ||
+                process.env.npm_package_config_facebookClientId
         })
         .option("facebookClientSecret", {
             describe:
                 "The secret to use for Facebook OAuth.  This can also be specified with the FACEBOOK_CLIENT_SECRET environment variable.",
             type: "string",
-            default: process.env.FACEBOOK_CLIENT_SECRET
+            default:
+                process.env.FACEBOOK_CLIENT_SECRET ||
+                process.env.npm_package_config_facebookClientSecret
         })
         .option("googleClientId", {
             describe: "The client ID to use for Google OAuth.",
-            type: "string"
+            type: "string",
+            default:
+                process.env.GOOGLE_CLIENT_ID ||
+                process.env.npm_package_config_googleClientId
         })
         .option("googleClientSecret", {
             describe:
                 "The secret to use for Google OAuth.  This can also be specified with the GOOGLE_CLIENT_SECRET environment variable.",
             type: "string",
-            default: process.env.GOOGLE_CLIENT_SECRET
+            default:
+                process.env.GOOGLE_CLIENT_SECRET ||
+                process.env.npm_package_config_googleClientSecret
+        })
+        .option("aafClientUri", {
+            describe: "The aaf client Uri to use for AAF Auth.",
+            type: "string",
+            default:
+                process.env.AAF_CLIENT_URI ||
+                process.env.npm_package_config_aafClientUri
+        })
+        .option("aafClientSecret", {
+            describe:
+                "The secret to use for AAF Auth.  This can also be specified with the AAF_CLIENT_SECRET environment variable.",
+            type: "string",
+            default:
+                process.env.AAF_CLIENT_SECRET ||
+                process.env.npm_package_config_aafClientSecret
         })
         .options("ckanUrl", {
             describe: "The URL of a CKAN server to use for authentication.",
@@ -136,6 +165,11 @@ const argv = addJwtSecretFromEnvVar(
         })
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
+            type: "boolean",
+            default: false
+        })
+        .option("enableCkanRedirection", {
+            describe: "Whether or not to turn on the CKan Redirection feature",
             type: "boolean",
             default: false
         })
@@ -184,6 +218,10 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
+const routes = _.isEmpty(argv.proxyRoutesJson)
+    ? defaultConfig.proxyRoutes
+    : argv.proxyRoutesJson;
+
 const authenticator = new Authenticator({
     sessionSecret: argv.sessionSecret,
     dbHost: argv.dbHost,
@@ -192,6 +230,20 @@ const authenticator = new Authenticator({
 
 // Create a new Express application.
 var app = express();
+
+// Log everything
+app.use(require("morgan")("combined"));
+
+const probes: any = {};
+
+/**
+ * Should use argv.routes to setup probes
+ * so that no prob will be setup when run locally for testing
+ */
+_.forEach(argv.routes, (value, key) => {
+    probes[key] = createServiceProbe(value.to);
+});
+installStatusRouter(app, { probes });
 
 // Redirect http url to https
 app.set("trust proxy", true);
@@ -217,11 +269,6 @@ app.use(configuredCors);
 app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
 app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
-app.use(require("morgan")("combined"));
-
-app.get("/v0/healthz", function(req, res) {
-    res.status(200).send("OK");
-});
 
 // --- enable http basic authentication for all users
 if (argv.enableWebAccessControl) {
@@ -246,6 +293,8 @@ if (argv.enableAuthEndpoint) {
             facebookClientSecret: argv.facebookClientSecret,
             googleClientId: argv.googleClientId,
             googleClientSecret: argv.googleClientSecret,
+            aafClientUri: argv.aafClientUri,
+            aafClientSecret: argv.aafClientSecret,
             ckanUrl: argv.ckanUrl,
             authorizationApi: argv.authorizationApi,
             externalUrl: argv.externalUrl,
@@ -253,8 +302,6 @@ if (argv.enableAuthEndpoint) {
         })
     );
 }
-
-const routes = _.merge({}, defaultConfig.proxyRoutes, argv.proxyRoutesJson);
 
 app.use(
     "/api/v0",
@@ -266,13 +313,19 @@ app.use(
 );
 app.use("/preview-map", createGenericProxy(argv.previewMap));
 
-app.use(
-    createCkanRedirectionRouter({
-        ckanRedirectionDomain: argv.ckanRedirectionDomain,
-        ckanRedirectionPath: argv.ckanRedirectionPath,
-        registryApiBaseUrlInternal: routes.registry.to
-    })
-);
+if (argv.enableCkanRedirection) {
+    if (!routes.registry) {
+        console.error("Cannot locate routes.registry for ckan redirection!");
+    } else {
+        app.use(
+            createCkanRedirectionRouter({
+                ckanRedirectionDomain: argv.ckanRedirectionDomain,
+                ckanRedirectionPath: argv.ckanRedirectionPath,
+                registryApiBaseUrlInternal: routes.registry.to
+            })
+        );
+    }
+}
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));

@@ -1,29 +1,66 @@
+## 0.0.52
+
+Authentication:
+
+-   Added `Australian Access Federation` Rapid Connect Single-Sign-On‎ Support
+
+Ops:
+
+-   `create-secrets` tool can create secret for `Australian Access Federation` Rapid Connect
+-   Allows gateway routes to be overiden from top level values file
+-   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
+
+Search:
+
+-   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
+
 ## 0.0.51
 
--   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
--   Add readiness and liveness probes to all services
+Accessibility:
+
+-   Made the image and the text wrapped in a single link and the set image alt value to null for stories on the home page
+-   Made navigation items screen readable by removing unnecessary aria-hidden label from menu
 -   Got screen reader to say "Open Data Quality: 3/5 stars" instead of repeating star rating text
--   Redirect HTTP requests to HTTPS URLs
--   Fixed chart won't displayed correctly under IE11
--   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
--   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
--   Fixed index trimming failure issue when re-indexing
+-   Stopped tab order reverting to body after tabbing through the search box
+-   Made the "Skip to Navigation" skip link go to the first navigation item rather than trying to target the wrapping `<div>`
+-   Change search selection color for non-home pages
 -   Fixed form error message not being heard in order by screen readers and also when field is in focus by putting them in the same label element.
--   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
--   Made the image and the text wrapped in a single link and the set image alt value to null.
--   Fixed the image and the text should be wrapped in a single link and the image alt text should have a null value.chart won't displayed correctly under IE11
--   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
--   Fixed index trimming failure issue when re-indexing
--   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
 -   Fixed: Error messages are not associated with their form fields on suggest dataset form
+-   Made the data quality tooltip read its contents out, and link to the data quality page.
+
+Charts:
+
+-   Fixed chart won't displayed correctly under IE11
+-   Added google analytics event when chart fails to load
+
+Ops:
+
+-   Add readiness and liveness probes to all services
+-   Changed the migrators to look for "password" instead of "postgres-password" in the cloudsql-db-credentials secret.
 -   Added shortcut to build create secrets script for magda-config repo
 -   Added preemption priority classes
 -   Added ability to add fully customised affinity to statefulsets in helm
 -   Fixed docker image build script failed on windows platform
--   Only runtime dependencies will be included by docker image build script
 -   Added `cloudsql-db-credentials` to create-secrets tool
--   Fixed an file selector error when current directory & non of its sub directory has \*.json file
--   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
+-   Only runtime dependencies will be included by docker image build script
+-   Fixed an file selector error in create-secrets script when current directory & non of its sub directory has \*.json file
+
+Security:
+
+-   Redirect HTTP requests to HTTPS URLs
+
+Search:
+
+-   Added boosting to results which have location information that overlaps a known region whose name/shortname appears in query text.
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+-   Fixed index trimming failure issue when re-indexing
+-   Fixed: indexer throws an error when processes spatial data number with more than one decimal places
+-   Fixed stream processing issue when re-indexing, mitigating out-of-memory risk too
+
+Others:
+
+-   Download unknown project open data license URLs to extract human readable licence
+-   Removed the .bin extension from the logo
 
 ## 0.0.50
 
