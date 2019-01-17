@@ -10,6 +10,10 @@ Ops:
 -   Allows gateway routes to be overiden from top level values file
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 
+Others:
+
+-   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
 ## 0.0.51
 
 Accessibility:

@@ -22,6 +22,18 @@ const renderBody = (loading, pages) => {
     return (
         <Switch>
             <Route exact path="/search" component={Search} />
+            <Route
+                exact
+                path="/dataset"
+                render={({ location }) => (
+                    <Redirect
+                        to={{
+                            pathname: "/search",
+                            search: location.search
+                        }}
+                    />
+                )}
+            />
             <Route exact path="/account" component={Account} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/sign-in-redirect" component={SignInRedirect} />
