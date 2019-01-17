@@ -781,7 +781,6 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def aspectQueryToWhereClause(query: AspectQuery) = {
-    val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
-    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
+    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }
