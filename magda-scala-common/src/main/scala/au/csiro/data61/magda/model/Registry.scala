@@ -238,11 +238,15 @@ object Registry {
           }
           val totalWeighting = ratings.map(_.weighting).reduce(_ + _)
 
-          if (totalWeighting > 0) {
+          val score = if (totalWeighting > 0) {
             ratings.map(rating =>
               (rating.score) * (rating.weighting / totalWeighting)).reduce(_ + _)
           } else 0d
-        case _ => 0d
+
+          // Make sure no quality score is set to zero, otherwise it results in relevance being * by 0 which makes
+          // results come back in a random order
+          if (score > 0) score else 0.01
+        case _ => 1d
       }
 
       val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))

@@ -10,7 +10,10 @@ Ops:
 -   Allows gateway routes to be overiden from top level values file
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 
-Others:
+Search:
+
+-   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
+    Others:
 
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
 
