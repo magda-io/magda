@@ -13,6 +13,9 @@ Ops:
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
+    Others:
+
+-   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
 
 ## 0.0.51
 
