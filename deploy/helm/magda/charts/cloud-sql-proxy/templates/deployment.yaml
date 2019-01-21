@@ -13,7 +13,9 @@ spec:
       labels:
         service: cloud-sql-proxy
     spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
+{{- end }}
       containers:
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11

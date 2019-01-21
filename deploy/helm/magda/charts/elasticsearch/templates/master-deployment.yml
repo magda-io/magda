@@ -17,7 +17,9 @@ spec:
         component: elasticsearch
         role: master
     spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
+{{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
