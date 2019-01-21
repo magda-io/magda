@@ -10,6 +10,7 @@ global:
 tags:
   all: true
   ingress: true
+  priorities: false
 
 ingress:
   ingressClass: nginx
