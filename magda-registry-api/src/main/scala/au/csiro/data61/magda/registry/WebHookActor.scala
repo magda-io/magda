@@ -5,7 +5,7 @@ import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, Props, Scheduler}
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, PoisonPill, Props, Scheduler, Terminated}
 import akka.stream.scaladsl.{Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, Attributes, OverflowStrategy}
 import au.csiro.data61.magda.model.Registry._
@@ -110,12 +110,16 @@ object WebHookActor {
       // Create a child actor for each WebHook that doesn't already have one.
       val currentHooks: Set[String] = webHooks.filter(_.active).filter(_.enabled).map(_.id.get).toSet
 
-      // Shut down actors for WebHooks that no longer exist
+      // Shut down actors for WebHooks that no longer exist.
       val exitingKeys: util.Enumeration[String] = webHookActors.keys()
       while (exitingKeys.hasMoreElements) {
         val k = exitingKeys.nextElement()
         if (!currentHooks.contains(k)) {
-          webHookActors.get(k).get ! "kill"
+          val theActor = webHookActors.get(k).get
+          // When theActor is terminated, its parent (WebHookActor) will receive Terminated message.
+          context.watch(theActor)
+          log.debug(s"*** WebHookActor will terminate actor ${theActor.hashCode()}.")
+          theActor ! PoisonPill
           webHookActors.remove(k)
           WebHookActor.webHooks.remove(k)
         }
@@ -231,6 +235,8 @@ object WebHookActor {
           log.debug(s"Received GetStatus $status for $webHookId")
 
         sender() ! getStatus(webHookId)
+      case Terminated(a) ⇒
+        log.debug(s"*** Actor ${a.hashCode()} has been terminated.")
     }
 
     private def retryAllInactiveHooks(retryInterval: Long): Unit = {
