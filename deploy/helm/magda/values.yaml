@@ -17,7 +17,7 @@ global:
   enablePriorityClass: false
 
 tags:
-  priorities: false
+  priorities: true
   all: true
   apidocs-server: false
   admin-api: false
