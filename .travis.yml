@@ -24,7 +24,7 @@ matrix:
           - REACT_APP_SHA1=$TRAVIS_COMMIT
       addons:
         postgresql: "9.6"
-      script: travis_retry travis_wait 30 sbt test
+      script: travis_wait 30 sbt test
     - language: node_js
       node_js: "8"
       cache:
