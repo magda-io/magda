@@ -13,7 +13,7 @@ function QualityIndicator(props) {
 
     return (
         <div className="quality-indicator">
-            <span className="title">Open Data Quality:&nbsp;</span>
+            <span className="title">Linked Data Rating:&nbsp;</span>
             <StarRating stars={rating} />
             <DataQualityTooltip />
         </div>
