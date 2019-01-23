@@ -1,0 +1,67 @@
+{
+    "id": "terria-tenant-demo",
+    "name": "Demo terria tenant",
+    "aspects": {
+        "terria-config": {
+            "parameters": {
+                "disclaimer": {
+                    "text":
+                        "Disclaimer: This map must not be used for navigation or precise spatial analysis",
+                    "url": "Some http link."
+                },
+                "appName": "Default Terria Map",
+                "brandBarElements": [
+                    "",
+                    "<a target=\"_blank\" href=\"https://terria.io\"><img src=\"images/terria_logo.png\" height=\"52\" title=\"Version: {{version}}\" /></a>",
+                    ""
+                ],
+                "supportEmail": "help@example.com",
+                "proj4ServiceBaseUrl": "proj4def/",
+                "feedbackUrl": "feedback",
+                "mobileDefaultViewerMode": "2d",
+                "experimentalFeatures": true
+            },
+            "initializationUrls": [
+                "http://localhost:6100/api/v0/registry/records/terria-tenant-demo/aspects/terria-catalog.json"
+            ]
+        },
+        "terria-catalog.json": {
+            "homeCamera": {
+                "north": -8,
+                "east": 158,
+                "south": -45,
+                "west": 109
+            },
+            "catalog": [
+                {
+                    "name": "Small glTF 3D Models",
+                    "description":
+                        "Demonstrations of adding 3D building data to the map using glTF.",
+                    "type": "group",
+                    "items": [
+                        {
+                            "name": "Smooth Geelong Buildings glTF Mini Demo",
+                            "description":
+                                "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using data made available from the [City of Greater Geelong](mailto:gis@geelongcity.vic.gov.au) under a Creative Commons license. The data used to create this demo was originally obtained via email in .skp format (> 100MB so not suitable for inclusion in this repo), however there is also a lower quality dataset of the same region available on data.gov.au in .kml/.dae format (this dataset does not seem to contain building textures).\n\nSee [readme.txt](test/3d/geelong/readme.txt) for more information.",
+                            "attribution":
+                                "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using a dataset obtained from the City of Greater Geelong. The original dataset is licensed under the CC BY 3.0 AU.",
+                            "type": "czml",
+                            "url": "test/3d/geelong/smooth.czml",
+                            "rectangle": [144.354, -38.147, 144.358, -38.15]
+                        },
+                        {
+                            "name": "Terrain Geelong Buildings glTF Mini Demo",
+                            "description":
+                                "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using data made available from the [City of Greater Geelong](mailto:gis@geelongcity.vic.gov.au) under a Creative Commons license. The data used to create this demo was originally obtained via email in .skp format (> 100MB so not suitable for inclusion in this repo), however there is also a lower quality dataset of the same region available on data.gov.au in .kml/.dae format (this dataset does not seem to contain building textures).\n\nSee [readme.txt](test/3d/geelong/readme.txt) for more information.",
+                            "attribution":
+                                "geelong_mini_demo_bin_linux_v1.0-draft_x64.gltf was created using a dataset obtained from the City of Greater Geelong. The original dataset is licensed under the CC BY 3.0 AU.",
+                            "type": "czml",
+                            "url": "test/3d/geelong/terrain.czml",
+                            "rectangle": [144.354, -38.147, 144.358, -38.15]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
