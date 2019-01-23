@@ -8,7 +8,7 @@
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
-    "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au",
+    "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au --web localhost:3001",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
