@@ -1,0 +1,29 @@
+{
+    "id": "terria-map-config-default",
+    "name": "Default Terria Map Config",
+    "aspects": {
+        "terria-config": {
+            "parameters": {
+                "disclaimer": {
+                    "text":
+                        "Disclaimer: This map must not be used for navigation or precise spatial analysis",
+                    "url": "Some http link."
+                },
+                "appName": "Default Terria Map",
+                "brandBarElements": [
+                    "",
+                    "<a target=\"_blank\" href=\"https://terria.io\"><img src=\"images/terria_logo.png\" height=\"52\" title=\"Version: {{version}}\" /></a>",
+                    ""
+                ],
+                "supportEmail": "help@example.com",
+                "proj4ServiceBaseUrl": "proj4def/",
+                "feedbackUrl": "feedback",
+                "mobileDefaultViewerMode": "2d",
+                "experimentalFeatures": true
+            },
+            "initializationUrls": [
+                "http://localhost:6100/api/v0/registry/records/terria-catalog-default/aspects/terria-catalog.json"
+            ]
+        }
+    }
+}

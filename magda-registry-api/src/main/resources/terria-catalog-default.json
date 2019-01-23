@@ -1,0 +1,66 @@
+{
+    "id": "terria-catalog-default",
+    "name": "Default terria catalog",
+    "aspects": {
+        "terria-catalog.json": {
+            "homeCamera": {
+                "north": -8,
+                "east": 158,
+                "south": -45,
+                "west": 109
+            },
+            "catalog": [
+                {
+                    "name": "Example Datasets",
+                    "type": "group",
+                    "preserveOrder": true,
+                    "isOpen": true,
+                    "items": [
+                        {
+                            "name": "Data.gov.au",
+                            "type": "ckan",
+                            "url": "http://www.data.gov.au",
+                            "description":
+                                "![CKAN Logo](https://ckan.org/files/2017/03/Logo_438x144.png)\n\nThis demonstrates populating a catalog group by doing a live query to a [CKAN](https://ckan.org) server. When you expand this group the first time, CKAN is automatically queried via its `package_search` API and the compatible datasets are shown grouped by publishing organization.",
+                            "blacklist": {
+                                "Rainforests (EVC_2005)": true
+                            },
+                            "groupBy": "organization",
+                            "minimumMaxScaleDenominator": 10000000000,
+                            "filterByWmsGetCapabilities": false,
+                            "filterQuery": [
+                                {
+                                    "fq":
+                                        "+(res_format:(geojson OR GeoJSON OR kml OR KML OR kmz OR KMZ OR wms OR WMS OR CSV-GEO-AU OR csv-geo-au OR aus-geo-csv OR \"Esri REST\")) -(organization:alpine-shire-council OR organization:brimbank-city-council OR organization:brisbane-city-council OR organization:cairns-regional-council OR organization:cardinia-shire-council OR organization:central-goldfields-shire-council OR organization:city-of-ballarat OR organization:city-of-boroondara OR organization:city-of-casey OR organization:city-of-darwin OR organization:city-of-gold-coast OR organization:city-of-greater-bendigo OR organization:city-of-greater-dandenong OR organization:city-of-greater-geelong OR organization:city-of-hobart OR organization:city-of-ipswich OR organization:city-of-launceston OR organization:cityofmelbourne OR organization:city-of-monash OR organization:city-of-palmerston OR organization:city-of-port-phillip OR organization:city-of-stonnington OR organization:city-of-whittlesea OR organization:city-of-yarra OR organization:colac-otway-shire OR organization:corangamite-shire-council OR organization:frankston-city-council OR organization:fraser-coast-regional-council OR organization:gcc OR organization:glen-eira-city-council OR organization:glenelg-shire-council OR organization:golden-plains-shire-council OR organization:greater-shepparton-city-council OR organization:hindmarsh-shire-council OR organization:hobsons-bay-city-council OR organization:horsham-rural-city-council OR organization:lake-macquarie-city-council OR organization:loddon-shire-council OR organization:logan-city-council OR organization:macedon-ranges-shire-council OR organization:manningham-city-council OR organization:mansfield-shire-council OR organization:maribyrnong-city-council OR organization:melton-city-council OR organization:moreton-bay-regional-council OR organization:mosmanmunicipalcouncil OR organization:nillumbik-shire-council OR organization:noosa-shire-council OR organization:northern-grampians-shire-council OR organization:southern-grampians-shire-council OR organization:strathbogie-shire-council OR organization:surf-coast-shire-council OR organization:swan-hill-rural-city-council OR organization:warrnambool-city-council OR organization:west-wimmera-shire-council OR organization:wodonga-city-council OR organization:www-mitchellshirecouncil-vic-gov-au OR organization:wyndham-city-council OR organization:yarra-ranges-council OR organization:yarriambiack-shire-council) -(organization:australian-institute-of-marine-science OR organization:geoscienceaustralia OR organization:csiro-oceans-and-atmosphere-information-and-data-centre OR organization:csiro-marine-and-amospheric-research OR organization:state-of-the-environment OR organization:new-south-wales-datasets OR organization:south-australian-governments)"
+                                }
+                            ],
+                            "includeCsv": true,
+                            "includeGeoJson": true,
+                            "includeKml": true,
+                            "includeWms": true,
+                            "includeWfs": true,
+                            "includeEsriMapServer": true,
+                            "includeEsriFeatureServer": true
+                        },
+                        {
+                            "name": "ABC Photo Stories (2009-2014)",
+                            "description":
+                                "Australia Broadcasting Company stories from 2009-2014 with accompanying photos.\n\nThis dataset demonstrates the ability to show users a custom feature info panel when they click on a feature on the map.",
+                            "type": "csv",
+                            "url":
+                                "http://localhost/abc-photo-stories-20092014.csv",
+                            "featureInfoTemplate": {
+                                "template":
+                                    "<div class='abc'><small>{{Date}}</small>{{#Primary image}}<figure><img src='{{Primary image}}'/><figcaption>{{Primary image caption}}</figcaption></figure>{{/Primary image}}<p><a target='_blank' href={{URL}}>Read More</a></div>"
+                            },
+                            "tableStyle": {
+                                "dataVariable": "State",
+                                "timeColumn": null
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
