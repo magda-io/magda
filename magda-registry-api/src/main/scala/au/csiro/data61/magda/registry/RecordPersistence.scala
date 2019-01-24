@@ -408,6 +408,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
         case anythingElse => anythingElse
       }
+
       hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
         case _                => Success(record)
