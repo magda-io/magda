@@ -10,6 +10,7 @@ import temporal_active from "../../assets/temporal-active.svg";
 import region_active from "../../assets/region-active.svg";
 import remove_light from "../../assets/remove-light.svg";
 import { config } from "../../config";
+import upperFirst from "lodash/upperFirst";
 
 const IconList = {
     publisher_passive,
@@ -62,6 +63,7 @@ class FacetHeader extends Component {
             new Date(date).getUTCFullYear()
         );
     }
+
     calculateTitle() {
         if (this.props.title === "date range") {
             if (!this.hasFilter()) {
@@ -118,6 +120,49 @@ class FacetHeader extends Component {
         }
     }
 
+    calculateAlt() {
+        // --- this.props.name can be used for the filter name except date filter
+        const filterName = this.props.title;
+        if (this.props.id === "temporal") {
+            if (!this.hasFilter()) {
+                return "Date filter: any date";
+            } else if (
+                this.props.activeOptions[0] &&
+                !this.props.activeOptions[1]
+            ) {
+                return `Date filter: since ${this.displayMonth(
+                    this.props.activeOptions[0]
+                )}`;
+            } else if (
+                this.props.activeOptions[1] &&
+                !this.props.activeOptions[0]
+            ) {
+                return `Date filter: before ${this.displayMonth(
+                    this.props.activeOptions[1]
+                )}`;
+            }
+            return `Date filter: from ${this.displayMonth(
+                this.props.activeOptions[0]
+            )} - ${this.displayMonth(this.props.activeOptions[1])}`;
+        } else {
+            if (!this.hasFilter()) {
+                return `${upperFirst(filterName)} filter: any ${filterName}`;
+            } else if (this.props.activeOptions.length === 1) {
+                return `${upperFirst(filterName)} filter: ${this.props
+                    .activeOptions[0].value ||
+                    this.props.activeOptions[0].regionType +
+                        ": " +
+                        this.props.activeOptions[0].regionName}`;
+            } else {
+                return `${upperFirst(
+                    filterName
+                )} filter: ${this.props.activeOptions
+                    .map(option => option.value)
+                    .join(", ")}`;
+            }
+        }
+    }
+
     hasFilter() {
         let hasFilter = true;
         if (this.props.title === "date range") {
@@ -151,6 +196,7 @@ class FacetHeader extends Component {
                         this.props.title
                     } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
+                    alt={this.calculateAlt()}
                 >
                     <img
                         className="facet-icon"
