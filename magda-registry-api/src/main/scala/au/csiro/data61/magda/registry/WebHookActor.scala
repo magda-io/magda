@@ -1,36 +1,28 @@
 package au.csiro.data61.magda.registry
 
 import java.time.OffsetDateTime
+import java.util
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, PoisonPill, Props, Scheduler, Terminated}
+import akka.stream.scaladsl.{Sink, Source, SourceQueueWithComplete}
+import akka.stream.{ActorMaterializer, Attributes, OverflowStrategy}
 import au.csiro.data61.magda.model.Registry._
-import akka.pattern.pipe
-import akka.pattern.ask
+import com.typesafe.config.Config
 import scalikejdbc.DB
 
-import scala.concurrent.Future
-import scala.concurrent.Await
 import scala.concurrent.duration._
-import au.csiro.data61.magda.util.ErrorHandling
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.SourceQueue
-import akka.stream.scaladsl.Sink
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.SourceQueueWithComplete
-import akka.stream.DelayOverflowStrategy
-import akka.stream.Attributes
-import com.typesafe.config.Config
-import akka.actor.ActorContext
-import akka.util.Timeout
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 object WebHookActor {
-  case class Process(
-    ignoreWaitingForResponse: Boolean = false,
-    aspectIds: Option[List[String]] = None,
-    webHookId: Option[String] = None
-  )
+  case class Process(ignoreWaitingForResponse: Boolean = false,
+                     aspectIds: Option[List[String]] = None,
+                     webHookId: Option[String] = None)
+  case class InvalidateWebHookCacheThenProcess(ignoreWaitingForResponse: Boolean = false,
+                                               aspectIds: Option[List[String]] = None,
+                                               webHookId: Option[String] = None)
   case class GetStatus(webHookId: String)
   case class UpdateHookStatus(
     webHookId: String,
@@ -39,160 +31,212 @@ object WebHookActor {
   )
   case object InvalidateWebhookCache
   case object RetryInactiveHooks
-
   case class Status(isProcessing: Option[Boolean])
 
-  def props(registryApiBaseUrl: String)(
-    implicit
-    config: Config
-  ) =
-    Props(new AllWebHooksActor(registryApiBaseUrl, config.getLong("webhooks.retryInterval")))
+  val webHookActors = new ConcurrentHashMap[String, Option[ActorRef]]
+  var webHooks = new ConcurrentHashMap[String, Option[WebHook]]
+  /**
+    * As there is no easy way to perform asynchronous FuncSpec tests,
+    * this value and its related calls come to help.
+    */
+  val processCount: AtomicInteger = new AtomicInteger(0)
 
-  private def createWebHookActor(
-    context: ActorContext,
-    registryApiBaseUrl: String,
-    hook: WebHook,
-    forceWakeUpInterval: Long
-  )(implicit config: Config): ActorRef = {
+  def props(registryApiBaseUrl: String)
+           (implicit config: Config): Props = {
+    Props(AllWebHooksActor(registryApiBaseUrl, config.getLong("webhooks.retryInterval")))
+  }
+
+  private def queryForAllWebHooks(): List[WebHook] = {
+    DB readOnly { implicit session =>
+      HookPersistence.getAll(session)
+    }
+  }
+
+  private def createWebHookActor(context: ActorContext,
+                                 registryApiBaseUrl: String,
+                                 hook: WebHook,
+                                 forceWakeUpInterval: Long)(implicit config: Config): ActorRef = {
     context.actorOf(
-      Props(
-        new SingleWebHookActor(
-          hook.id.get,
-          registryApiBaseUrl,
-          forceWakeUpInterval
-        )
-      ),
+      Props(new SingleWebHookActor(hook.id.get, registryApiBaseUrl, forceWakeUpInterval)),
+
       name = "WebHookActor-" + java.net.URLEncoder
         .encode(hook.id.get, "UTF-8") + "-" + java.util.UUID.randomUUID.toString
     )
   }
 
-  private case class GotAllWebHooks(webHooks: List[WebHook], startup: Boolean)
-  private case class DoneProcessing(
-    result: Option[WebHookProcessingResult],
-    exception: Option[Throwable] = None
-  )
+  private case class AllWebHooksActor(registryApiBaseUrl: String, webHooksRetryInterval: Long)
+                          (implicit val config: Config) extends Actor with ActorLogging {
 
-  private class AllWebHooksActor(
-    val registryApiBaseUrl: String,
-    val webHooksRetryInterval: Long
-  )(implicit val config: Config)
-    extends Actor
-    with ActorLogging {
-    import context.dispatcher
+    // The message processing in "receive" has blocking code. Use a dedicate dispatcher.
+    // See https://doc.akka.io/docs/akka/2.5/dispatchers.html
+    implicit val executionContext: ExecutionContext = context.system.dispatchers.lookup("webhooks.AllWebHooksActor-dispatcher")
+    private implicit val scheduler: Scheduler = this.context.system.scheduler
 
-    private var webHookActors = Map[String, ActorRef]()
-    var webHooks = Map[String, WebHook]()
-    private implicit val scheduler = this.context.system.scheduler
+    import akka.pattern.after
+    private def retry[T](op: () => Future[T],
+                         delay: FiniteDuration,
+                         retries: Int,
+                         onRetry: (Int, Throwable) => Unit = (_, _) => {}): Future[T] =
+      Future { op() } flatMap (x => x) recoverWith {
+        case e: Throwable if retries > 0 => after(delay, scheduler)({
+          onRetry(retries - 1, e)
+          retry(op, delay, retries - 1, onRetry)
+        })
+      }
 
-    def setup =
-      Await.result(
-        ErrorHandling
-          .retry(
-            () => Future { queryForAllWebHooks() },
-            30 seconds,
-            10,
-            (retryCount, e) =>
-              log.error(
-                e,
-                "Failed to get webhooks, {} retries left until I crash",
-                retryCount
-              )
-          )
-          .recover {
-            case (e: Throwable) =>
-              log.error(e, "Failed to get webhooks for processing")
-              // This is a massive deal. Let it crash and let kubernetes deal with it.
-              System.exit(1)
-              throw e
-          }
-          .map { webHooks =>
-            // Create a child actor for each WebHook that doesn't already have one.
-            // Send a `Process` message to all existing and new WebHook actors.
-            val currentHooks =
-              webHooks.filter(_.active).filter(_.enabled).map(_.id.get).toSet
-            val existingHooks = webHookActors.keySet
+    private def getRegisteredWebHooksF: Future[List[WebHook]] = {
+      retry(
+        () => Future {
+          log.debug("    queryForAllWebHooks()")
+          queryForAllWebHooks()
+        },
+        30 seconds,
+        10,
+        (retryCount, e) =>
+          log.error(e,
+            "Failed to get webhooks, {} retries left until I crash",
+            retryCount))
+        .recover {
+          case e: Throwable =>
+            log.error(e, "Failed to get webhooks for processing")
+            // This is a massive deal. Let it crash and let kubernetes deal with it.
+            System.exit(1)
+            throw e
+        }
+    }
 
-            // Shut down actors for WebHooks that no longer exist
-            val obsoleteHooks = existingHooks.diff(currentHooks)
-            obsoleteHooks.foreach { id =>
-              log.info("Removing old web hook actor for {}.", id)
-              this.webHookActors.get(id).get ! "kill"
-              this.webHookActors -= id
-              this.webHooks -= id
-            } // Create actors for new WebHooks and post to all actors (new and old).
-            webHooks.filter(_.active).filter(_.enabled).foreach {
-              hook =>
-                val id = hook.id.get
-                val actorRef = this.webHookActors.get(id) match {
-                  case Some(actorRef) => actorRef
-                  case None => {
-                    log.info("Creating new web hook actor for {}.", id)
-                    val actorRef =
-                      WebHookActor.createWebHookActor(
-                        context,
-                        registryApiBaseUrl,
-                        hook,
-                        webHooksRetryInterval
-                      )
-                    this.webHookActors += (id -> actorRef)
-                    this.webHooks += (id -> hook.copy(
-                      isRunning = Some(true),
-                      isProcessing = Some(false)
-                    ))
-                    actorRef
-                  }
-                }
-            }
-          },
-        10 minutes
-      )
+    private def updateWebHooksCacheF(webHooks: List[WebHook]): Future[String] = {
+      log.debug(s"    setupF() started with webHooks size of ${webHooks.size}.")
+      // Create a child actor for each WebHook that doesn't already have one.
+      val currentHooks: Set[String] = webHooks.filter(_.active).filter(_.enabled).map(_.id.get).toSet
 
-    setup
+      // Shut down actors for WebHooks that no longer exist.
+      val exitingKeys: util.Enumeration[String] = webHookActors.keys()
+      while (exitingKeys.hasMoreElements) {
+        val k = exitingKeys.nextElement()
+        if (!currentHooks.contains(k)) {
+          val theActor = webHookActors.get(k).get
+          // When theActor is terminated, its parent (WebHookActor) will receive Terminated message.
+          context.watch(theActor)
+          log.debug(s"*** WebHookActor will terminate actor ${theActor.hashCode()}.")
+          theActor ! PoisonPill
+          webHookActors.remove(k)
+          WebHookActor.webHooks.remove(k)
+        }
+      }
 
-    scheduler.schedule(
-      500 milliseconds,
-      webHooksRetryInterval milliseconds,
-      self,
-      RetryInactiveHooks
-    )
+      // Create actors (therefore web hook processors) for new WebHooks if they are active and enabled.
+      webHooks.filter(_.active).filter(_.enabled).foreach(hook => {
+        log.debug(s"    handle hook ${hook.id}")
+        val id = hook.id.get
+        webHookActors.getOrDefault(id, None) match {
+          case None =>
+            log.info("    Creating new web hook actor for {}.", id)
+            val actorRef =
+              WebHookActor.createWebHookActor(context,
+                registryApiBaseUrl,
+                hook,
+                webHooksRetryInterval)
 
-    def getStatus(webHookId: String): WebHookActor.Status = {
-      webHooks.get(webHookId) match {
-        case None                => WebHookActor.Status(None)
-        case Some(hook: WebHook) => WebHookActor.Status(hook.isProcessing)
+            webHookActors.put(id, Some(actorRef))
+            WebHookActor.webHooks.put(id,
+              Some(hook.copy(isRunning = Some(true), isProcessing = Some(false))))
+          case _ =>
+        }
+      })
+
+      log.debug("    webHooks filtering done.")
+      Future.successful("ok")
+    }
+
+    private def setupF(): Future[String] = {
+      for {
+        hooks  <- getRegisteredWebHooksF
+        result <- updateWebHooksCacheF(hooks)
+      } yield {
+        log.debug(s"    setupF() ended with $result.")
+        result
       }
     }
 
-    def receive = {
+    // Set the initial delay to a large value so that it
+    // will not interfere with scala test on message of RetryInactiveHooks.
+    scheduler.schedule(5000 milliseconds,
+      webHooksRetryInterval milliseconds,
+      self,
+      RetryInactiveHooks)
 
-      case RetryInactiveHooks =>
-        retryAllInactiveHooks(webHooksRetryInterval)
-
-      case InvalidateWebhookCache =>
-        log.info("Invalidated webhook cache")
-        setup
-      case Process(ignoreWaitingForResponse, aspectIds, webHookId) => {
-        val actors = webHookId match {
-          case None                 => webHookActors.values
-          case Some(webHookIdInner) => webHookActors.get(webHookIdInner).toList
-        }
-
-        actors.foreach(actorRef =>
-          actorRef ! Process(ignoreWaitingForResponse, aspectIds))
+    def getStatus(webHookId: String): WebHookActor.Status = {
+      webHooks.getOrDefault(webHookId, None) match {
+        case None                => WebHookActor.Status(None)
+        case Some(hook: WebHook) =>
+          Status(hook.isProcessing)
       }
-      case UpdateHookStatus(webHookId, isRunning, isProcessing) => {
+    }
+
+    private def sendProcessToAllActors(ignoreWaitingForResponse: Boolean, aspectIds: Option[List[String]]): Unit = {
+      val actors: util.Set[util.Map.Entry[String, Option[ActorRef]]] = webHookActors.entrySet()
+      val iterator: util.Iterator[util.Map.Entry[String, Option[ActorRef]]] = actors.iterator()
+      while(iterator.hasNext){
+        val entry: util.Map.Entry[String, Option[ActorRef]] = iterator.next()
+        val actorRef = entry.getValue.get
+        log.debug(s"    Received Process; Send aspectIds $aspectIds to actor ${actorRef.hashCode()}")
+        actorRef ! Process(ignoreWaitingForResponse, aspectIds)
+      }
+    }
+
+    private def sendProcess(ignoreWaitingForResponse: Boolean = false,
+                            aspectIds: Option[List[String]] = None,
+                            webHookId: Option[String] = None): Unit ={
+      webHookId match {
+        case Some(id) =>
+          val actorRef = webHookActors.getOrDefault(id, None)
+          if (actorRef.isDefined) {
+            log.debug(s"    Send $aspectIds to actor ${actorRef.get.hashCode()}")
+            actorRef.get ! Process(ignoreWaitingForResponse, aspectIds)
+          }
+          else{
+            log.warning(s"    Web hook actor of $id not found.")
+            throw new RuntimeException(s"Web hook actor of $id not found.")
+          }
+        case None =>
+          sendProcessToAllActors(ignoreWaitingForResponse, aspectIds)
+      }
+    }
+
+    def receive: PartialFunction[Any, Unit] = {
+      case RetryInactiveHooks =>
+        log.debug(s"Received RetryInactiveHooks")
+        Future{
+          retryAllInactiveHooks(webHooksRetryInterval)
+        }
+      case InvalidateWebhookCache =>
+        log.debug("Received InvalidateWebhookCache")
+        setupF()
+      case Process(ignoreWaitingForResponse, aspectIds, webHookId) =>
+        log.debug(s"Received Process, $ignoreWaitingForResponse, $aspectIds, $webHookId")
+        Future{
+          sendProcess(ignoreWaitingForResponse, aspectIds, webHookId)
+        }
+      case InvalidateWebHookCacheThenProcess(ignoreWaitingForResponse, aspectIds, webHookId) =>
+        log.debug(s"Received InvalidateWebHookCacheThenProcess, $ignoreWaitingForResponse, $aspectIds, $webHookId")
+        setupF().map(_ => sendProcess(ignoreWaitingForResponse, aspectIds, webHookId))
+      case UpdateHookStatus(webHookId, isRunning, isProcessing) =>
+        log.debug(s"Received UpdateHookStatus, $webHookId, $isRunning, $isProcessing")
         webHooks.get(webHookId) match {
           case Some(hook: WebHook) =>
-            webHooks += (webHookId -> hook.copy(
-              isRunning = Some(isRunning),
-              isProcessing = Some(isProcessing)
-            ))
+            webHooks.put(webHookId,
+              Some(hook.copy(isRunning = Some(isRunning), isProcessing = Some(isProcessing))))
           case _ => Nil
         }
-      }
-      case GetStatus(webHookId) => sender() ! getStatus(webHookId)
+      case GetStatus(webHookId) =>
+        val status = getStatus(webHookId)
+        if (status.isProcessing.nonEmpty && status.isProcessing.get)
+          log.debug(s"Received GetStatus $status for $webHookId")
 
+        sender() ! getStatus(webHookId)
+      case Terminated(a) ⇒
+        log.debug(s"*** Actor ${a.hashCode()} has been terminated.")
     }
 
     private def retryAllInactiveHooks(retryInterval: Long): Unit = {
@@ -213,7 +257,7 @@ object WebHookActor {
           } else {
             val status = getStatus(hook.id.get)
             hook.copy(
-              isRunning = Some(!status.isProcessing.isEmpty),
+              isRunning = Some(status.isProcessing.nonEmpty),
               isProcessing = Some(status.isProcessing.getOrElse(false))
             )
           }
@@ -239,77 +283,73 @@ object WebHookActor {
         }
         .flatMap(_.id.toList)
 
-      if (hookIds.size > 0) {
-        log.info(
-          s"Invalidate Webhook Cache for retry ${hookIds.size} inactive hooks..."
-        )
+      if (hookIds.nonEmpty) {
+        log.info(s"Invalidate Webhook Cache for retry $hookIds inactive hooks...")
+
         DB localTx { implicit session =>
-          hookIds.foreach(hookId => HookPersistence.retry(session, hookId))
+          hookIds.foreach(hookId => {
+            HookPersistence.retry(session, hookId)
+            log.info(s"   Added new hook $hookId to DB.")
+          })
         }
-        setup
-        log.info("Sending Process message...")
-        self ! Process(true)
-        log.info("Completed retry all inactive webhooks.")
+
+        for {
+          result <- setupF()
+        } yield {
+          if (result != "ok")
+            throw new RuntimeException("Failed in setupF()")
+          else{
+            log.debug(s"    Cache webHookActors size: ${webHookActors.size()}")
+            val actors: util.Set[util.Map.Entry[String, Option[ActorRef]]] = webHookActors.entrySet()
+            val iterator: util.Iterator[util.Map.Entry[String, Option[ActorRef]]] = actors.iterator()
+            while(iterator.hasNext){
+              val entry: util.Map.Entry[String, Option[ActorRef]] = iterator.next()
+              entry.getValue.get ! Process(ignoreWaitingForResponse = true)
+            }
+            log.info("Completed retry all inactive webhooks.")
+          }
+        }
+
       } else {
         log.info(
           "Completed retry all inactive webhooks: No inactive webhook need to be restarted..."
         )
       }
-
-    }
-
-    private def queryForAllWebHooks(): List[WebHook] = {
-      DB readOnly { implicit session =>
-        HookPersistence.getAll(session)
-      }
     }
   }
 
-  private class SingleWebHookActor(
-    val id: String,
-    val registryApiBaseUrl: String,
-    forceWakeUpInterval: Long
-  )(
-    implicit
-    val config: Config
-  )
-    extends Actor
-    with ActorLogging {
-
+  private class SingleWebHookActor(val id: String,
+                                   val registryApiBaseUrl: String,
+                                   forceWakeUpInterval: Long)
+                                  (implicit val config: Config) extends Actor with ActorLogging {
     case object WakeUp
-
     import context.dispatcher
-
-    private val processor = new WebHookProcessor(
-      context.system,
-      registryApiBaseUrl,
-      context.dispatcher
-    )
-    implicit val materializer = ActorMaterializer()
-
+    private val SOURCE_QUEUE_BUFFER_SIZE = config.getInt("webhooks.SingleWebHookActorSourceQueueSize")
+    private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
     private var isProcessing: Boolean = false
     private var currentQueueLength = 0
 
-    def getWebhook() =
+    def getWebhook: WebHook =
       DB readOnly { implicit session =>
         HookPersistence.getById(session, id) match {
           case None =>
-            throw new RuntimeException(s"No WebHook with ID ${id} was found.")
+            throw new RuntimeException(s"No WebHook with ID $id was found.")
           case Some(webHook) => webHook
         }
       }
 
-    def notifyHookStatus() = {
-      val currentlyIsProcessing = (currentQueueLength != 0)
+    def notifyHookStatus(): Unit = {
+      val currentlyIsProcessing = currentQueueLength != 0
       if (isProcessing != currentlyIsProcessing) {
         isProcessing = currentlyIsProcessing
-        context.parent ! UpdateHookStatus(id, true, isProcessing)
+        context.parent ! UpdateHookStatus(id, isRunning = true, isProcessing = isProcessing)
       }
     }
 
     private val indexQueue: SourceQueueWithComplete[Boolean] =
       Source
-        .queue[Boolean](0, OverflowStrategy.dropNew)
+        .queue[Boolean](SOURCE_QUEUE_BUFFER_SIZE, OverflowStrategy.backpressure)
         .map { x =>
           currentQueueLength += 1
           notifyHookStatus()
@@ -322,7 +362,7 @@ object WebHookActor {
         .withAttributes(Attributes.inputBuffer(1, 1)) // Make sure we only execute once per webhookActorTickRate to prevent sending an individual post for every event.
         .mapAsync(1) { ignoreWaitingForResponse =>
           try {
-            val webHook = getWebhook()
+            val webHook = getWebhook
 
             if (!ignoreWaitingForResponse && webHook.isWaitingForResponse
               .getOrElse(false)) {
@@ -332,8 +372,6 @@ object WebHookActor {
               )
               Future.successful(false)
             } else {
-              val aspects = webHook.config.aspects ++ webHook.config.optionalAspects
-
               val eventPage = DB readOnly { implicit session =>
                 EventPersistence.getEvents(
                   session,
@@ -419,13 +457,12 @@ object WebHookActor {
           } catch {
             // --- make only capture nonFatal error
             // --- So that fatal error can still terminate JVM
-            case NonFatal(e) =>
-              log.error(e, "Failed to process webhooks")
-              Future.successful(false)
+            case NonFatal(_) => Future.successful(false)
           }
         }
         .map { x =>
           currentQueueLength -= 1
+          log.debug(s"*** ${self.hashCode()} DONE. ${processCount.decrementAndGet()}")
           notifyHookStatus()
           x
         }
@@ -439,17 +476,21 @@ object WebHookActor {
       WakeUp
     )
 
-    def receive = {
-      case Process(ignoreWaitingForResponse, _, _) => {
+    def receive: PartialFunction[Any, Unit] = {
+      case Process(ignoreWaitingForResponse, _, _) =>
+        log.debug(s"SingleWebHookActor received Process, queueing $ignoreWaitingForResponse")
+        log.debug(s"*** ${self.hashCode()} Will process ${processCount.incrementAndGet()}")
         indexQueue.offer(ignoreWaitingForResponse)
-      }
       case WakeUp =>
+        log.debug(s"SingleWebHookActor received $WakeUp")
         if (currentQueueLength == 0) {
           log.info("Force to wake up idle WebHook {}...", this.id)
           indexQueue.offer(true)
         }
       case GetStatus =>
+        log.debug("SingleWebHookActor received GetStatus")
         sender() ! Status(Some(currentQueueLength != 0))
     }
   }
 }
+
