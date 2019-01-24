@@ -196,7 +196,8 @@ class FacetHeader extends Component {
                         this.props.title
                     } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
-                    alt={this.calculateAlt()}
+                    alt=""
+                    aria-label={this.calculateAlt()}
                 >
                     <img
                         className="facet-icon"
