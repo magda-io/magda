@@ -1,6 +1,6 @@
 {
-    "id": "terria-tenant-demo",
-    "name": "Demo terria tenant",
+    "id": "demo2.terria.magda",
+    "name": "Demo2 terria tenant",
     "aspects": {
         "terria-config": {
             "parameters": {
@@ -22,7 +22,7 @@
                 "experimentalFeatures": true
             },
             "initializationUrls": [
-                "http://localhost:6100/api/v0/registry/records/terria-tenant-demo/aspects/terria-catalog.json"
+                "http://localhost:6100/api/v0/registry/records/demo2.terria.magda/aspects/terria-catalog.json"
             ]
         },
         "terria-catalog.json": {
