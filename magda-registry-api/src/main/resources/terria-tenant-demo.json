@@ -27,10 +27,10 @@
         },
         "terria-catalog.json": {
             "homeCamera": {
-                "north": -8,
-                "east": 158,
-                "south": -45,
-                "west": 109
+                "north": -36,
+                "east": 148,
+                "south": -39,
+                "west": 142
             },
             "catalog": [
                 {
