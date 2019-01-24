@@ -24,6 +24,7 @@ ingress:
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
+  enableCkanRedirection: true
   enableAuthEndpoint: true
   enableHttpsRedirection: true
   auth:
@@ -71,16 +72,28 @@ combined-db:
       fileName: TerriaJS-5e042b649f8a.json
   data:
     storage: 250Gi
-  antiPreemptibleAffinity: 100
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: cloud.google.com/gke-preemptible
+              operator: DoesNotExist
 
 elasticsearch:
   data:
     heapSize: 500m
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-preemptible
+                operator: DoesNotExist
   backup:
     googleApplicationCreds:
       secretName: storage-account-credentials
       fileName: db-service-account-private-key.json
-  antiPreemptibleAffinity: 99
 
 indexer:
   readSnapshots: false
@@ -203,7 +216,7 @@ connectors:
         name: magda-project-open-data-connector
       id: moretonbay
       name: Moreton Bay Regional Council Data Portal
-      sourceUrl: http://data.moretonbay.qld.gov.au/data.json
+      sourceUrl: http://datahub.moretonbay.qld.gov.au/data.json
     - image:
         name: magda-csw-connector
       id: metoc

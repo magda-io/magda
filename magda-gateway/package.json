@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.51-0",
+  "version": "0.0.52-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -15,7 +15,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.51-0",
+    "@magda/typescript-common": "^0.0.52-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -34,21 +34,24 @@
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
     "jsonwebtoken": "^7.4.1",
+    "jwt-simple": "^0.5.1",
     "lodash": "^4.17.4",
     "morgan": "^1.6.1",
     "node-http-proxy": "^0.2.3",
     "passport": "^0.2.2",
+    "passport-custom": "^1.0.5",
     "passport-facebook": "^2.0.0",
     "passport-google-oauth20": "^1.0.0",
     "passport-local": "^1.0.0",
     "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",
+    "request": "^2.79.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.51-0",
+    "@magda/scripts": "^0.0.52-0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cors": "^2.8.1",
@@ -75,7 +78,6 @@
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
     "randomstring": "^1.1.5",
-    "request": "^2.79.0",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "typescript": "~2.5.0"

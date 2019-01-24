@@ -3,6 +3,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
+import TurndownService = require("turndown");
 
 export default class ProjectOpenData implements ConnectorSource {
     public readonly id: string;
@@ -12,6 +13,76 @@ export default class ProjectOpenData implements ConnectorSource {
     private secondsBetweenRetries: number;
     private maxRetries: number;
     private dataPromise: Promise<object>;
+    private turndownService = new TurndownService();
+
+    // project open data spec allows URLs for licences
+    // ArcGIS creates custom URLs rather than using https://project-open-data.cio.gov/open-licenses/ lookup table
+    getDatasetLicence(data: any): Promise<any> {
+        if (data.dataset) {
+            data.dataset = Promise.all(
+                data.dataset.map((dataset: any) => {
+                    return new Promise(resolve => {
+                        // don't bother visiting creativecommons urls
+                        if (
+                            dataset.license &&
+                            dataset.license.startsWith("http") &&
+                            !dataset.license.includes("creativecommons")
+                        ) {
+                            request(
+                                dataset.license,
+                                { json: true },
+                                (error, response, body) => {
+                                    if (error) {
+                                        console.log(error);
+                                        return resolve(dataset);
+                                    } else {
+                                        if (body && body.description) {
+                                            let foundLink = false;
+                                            if (
+                                                body.description.match(
+                                                    /https?:\/\/[^ "<]*/g
+                                                )
+                                            ) {
+                                                foundLink = body.description
+                                                    .match(
+                                                        /https?:\/\/[^ "<]*/g
+                                                    )
+                                                    .some((link: String) => {
+                                                        if (
+                                                            link.includes(
+                                                                "creativecommons.org/licenses"
+                                                            ) ||
+                                                            link.includes(
+                                                                "opendefinition.org/licenses/"
+                                                            )
+                                                        ) {
+                                                            foundLink = true;
+                                                            dataset.license = link;
+                                                            return true;
+                                                        }
+                                                        return false;
+                                                    });
+                                            }
+                                            if (!foundLink) {
+                                                dataset.license = this.turndownService.turndown(
+                                                    body.description
+                                                );
+                                            }
+                                            return resolve(dataset);
+                                        }
+                                        return resolve(dataset);
+                                    }
+                                }
+                            );
+                        } else {
+                            return resolve(dataset);
+                        }
+                    });
+                })
+            );
+        }
+        return data;
+    }
 
     constructor(options: ProjectOpenDataOptions) {
         this.id = options.id;
@@ -43,12 +114,12 @@ export default class ProjectOpenData implements ConnectorSource {
                         retriesLeft
                     )
                 )
-        );
+        ).then(data => this.getDatasetLicence(data));
     }
 
     public getJsonDatasets(): AsyncPage<any[]> {
         return AsyncPage.singlePromise<object[]>(
-            this.dataPromise.then((response: any) => response.dataset)
+            this.dataPromise.then((response: any) => response.dataset || [])
         );
     }
 

@@ -15,7 +15,7 @@ class AccountNavbar extends React.Component {
             <React.Fragment>
                 {this.props.user ? (
                     [
-                        <li key="/account">
+                        <li key="/account" id={this.props.skipLink && "nav"}>
                             <NavLink to={`/account`}>
                                 <span>{this.props.user.displayName}</span>
                             </NavLink>
@@ -28,7 +28,10 @@ class AccountNavbar extends React.Component {
                     ]
                 ) : (
                     <li key="/account">
-                        <NavLink to={`/account`}>
+                        <NavLink
+                            to={`/account`}
+                            id={this.props.skipLink && "nav"}
+                        >
                             <span>Sign In</span>
                         </NavLink>
                     </li>

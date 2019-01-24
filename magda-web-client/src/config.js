@@ -87,8 +87,8 @@ export const config = {
         { id: "temporal", component: Temporal },
         { id: "format", component: Format }
     ],
-    headerLogoUrl: `${contentApiURL}header/logo.bin`,
-    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile.bin`,
+    headerLogoUrl: `${contentApiURL}header/logo`,
+    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile`,
     contentUrl: `${contentApiURL}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
     fallbackUrl: serverConfig.fallbackUrl,
     months: [
