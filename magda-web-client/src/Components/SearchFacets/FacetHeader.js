@@ -120,7 +120,7 @@ class FacetHeader extends Component {
         }
     }
 
-    calculateAlt() {
+    calculateAltText() {
         // --- this.props.name can be used for the filter name except date filter
         const filterName = this.props.title;
         if (this.props.id === "temporal") {
@@ -163,6 +163,14 @@ class FacetHeader extends Component {
         }
     }
 
+    calculateRemoveAltText() {
+        if (this.props.id === "temporal") {
+            return "Remove date filter";
+        }
+        const filterName = this.props.title;
+        return `Remove ${filterName} filter`;
+    }
+
     hasFilter() {
         let hasFilter = true;
         if (this.props.title === "date range") {
@@ -196,7 +204,7 @@ class FacetHeader extends Component {
                         this.props.title
                     } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
-                    aria-label={this.calculateAlt()}
+                    aria-label={this.calculateAltText()}
                 >
                     <img
                         className="facet-icon"
@@ -205,7 +213,6 @@ class FacetHeader extends Component {
                                 ? IconList[`${this.props.id}_active`]
                                 : IconList[`${this.props.id}_passive`]
                         }
-                        alt={this.props.title}
                     />
                     {this.calculateTitle()}
                 </button>
@@ -213,8 +220,9 @@ class FacetHeader extends Component {
                     <button
                         onClick={this.props.onResetFacet}
                         className="btn-remove au-btn"
+                        aria-label={this.calculateRemoveAltText()}
                     >
-                        <img alt="remove" src={remove_light} />
+                        <img src={remove_light} />
                     </button>
                 )}
             </div>
