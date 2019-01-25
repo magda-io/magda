@@ -20,6 +20,7 @@ export function runConnectorTest(
 
         function run(done: any) {
             const command = [
+                "--require=tsconfig-paths/register",
                 "src",
                 "--id=connector",
                 "--name=Connector",
