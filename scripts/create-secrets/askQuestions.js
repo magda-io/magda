@@ -349,6 +349,31 @@ const questions = [
     {
         type: "list",
         dataType: "boolean",
+        name: "use-oauth-secrets-aaf",
+        message:
+            "Do you want to create aaf-client-secret for AAF Rapid Connect SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "oauth-secrets-aaf",
+        message: "Please provide AAF secret for AAF Rapid Connect SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-aaf", true),
+        validate: input =>
+            trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        dataType: "boolean",
         name: "use-web-access-secret",
         message: "Do you want to setup HTTP Basic authentication?",
         choices: [

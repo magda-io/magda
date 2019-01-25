@@ -18,10 +18,14 @@ spec:
         component: elasticsearch
         role: data
     spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
+{{- end }}
       terminationGracePeriodSeconds: 10
       affinity:
-        {{ include "magda.antiPreemptibleAffinity" . }}
+{{- if .Values.data.affinity }}
+{{ toYaml .Values.data.affinity | indent 8 }}
+{{- end }}
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 50
@@ -50,7 +54,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: http
-          initialDelaySeconds: 20
+          initialDelaySeconds: 120
           timeoutSeconds: 5
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

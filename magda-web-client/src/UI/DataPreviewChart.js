@@ -7,6 +7,8 @@ import downArrowIcon from "../assets/downArrow.svg";
 import upArrowIcon from "../assets/upArrow.svg";
 import AUpageAlert from "../pancake/react/page-alerts";
 import memoize from "memoize-one";
+import { gapi } from "../analytics/ga";
+
 import "./DataPreviewChart.css";
 
 let ReactEcharts = null;
@@ -113,6 +115,16 @@ class DataPreviewChart extends Component {
                         error: e
                     })
                 );
+
+                gapi.event({
+                    category: "Error",
+                    action: `Failed to display chart for ${
+                        window.location.href
+                    }: ${e.message}`,
+                    label: "Chart Display Failure",
+                    nonInteraction: true
+                });
+
                 // if there is error, automatically switch to table view
                 switchTabOnFirstGo(this.props);
             }

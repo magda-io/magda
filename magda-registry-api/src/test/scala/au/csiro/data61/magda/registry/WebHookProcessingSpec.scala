@@ -1177,8 +1177,9 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         * This function will perform the following common tasks:
         * 1) Create a test hook processor, no events to process yet.
         * 2) Change the hook to an invalid url.
-        * 3) Add a new dataset in the registry and the hook will fail in the processing.
-        * 4) Change the hook back to a valid url and the hook will succeed in the processing.
+        * 3) Add a new dataset in the registry and the hook will fail in the event processing.
+        * 4) Change the hook back to a valid url and make update hook request.
+        * 5) Make resume web hook request and the hook will succeed in the event processing.
         *
         * Once all the common tasks are completed, the callback function "resumeHook" will start.
         * @param param fixture parameters
@@ -1191,7 +1192,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             responseAs[WebHook].url
           }
 
-          // Set the test hook to an invalid url to simulate some network errors.
+          // Set the test hook to an invalid url to simulate some network errors, such as the
+          // subscriber service goes offline. For example, an indexer pod is deleted.
           param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = "aerga://bargoiaergoi.aerg"))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
@@ -1205,10 +1207,22 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           // As the hook url is invalid, the subscriber will not receive event with id of 2.
           payloads.length shouldEqual 0
 
-          // Set the test hook back to a valid url, which will cause the last event to be re-sent.
-          // That is, process event with ID of 2.
+          // Set the test hook back to a valid url to simulates the subscriber goes online again.
+          // For example, a re-created indexer will register itself by making a put request
+          // to update its web hook, which will not cause any event processing.
           param.asAdmin(Put("/v0/hooks/test", defaultWebHook.copy(url = url))) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilAllDone()
+          payloads.length shouldEqual 0
+
+          // Simulate a subscriber making request to resume its web hook, which will cause some
+          // event processing. That is, process event with ID of 2.
+          val lastEventId = 1
+          param.asAdmin(Post("/v0/hooks/test/ack", WebHookAcknowledgement(succeeded = true, Some(lastEventId)))) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(lastEventId)
           }
 
           val expectedEventIds = List(2)
@@ -1219,13 +1233,15 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         }
       }
 
-      // With sync processing, the subscriber should never post any ack.
-      // If it does post an ack, nothing will be processed.
-      it("when subscriber posts /ack") { param =>
+      it("when subscriber posts /ack with up-to-date last event id") { param =>
         doTestSync(param) { () =>
+          // Make request to resume a subscriber's web hook, with lastEventId = 2, which will
+          // not cause event processing.
+          // This is to simulate when an indexer is re-created, its event processing is up-to-date.
+          val lastEventId = 2
           param.asAdmin(Post("/v0/hooks/" + defaultWebHook.id.get + "/ack",
-            WebHookAcknowledgement(succeeded = false))) ~> param.api(Full).routes ~> check {
-            responseAs[Registry.WebHookAcknowledgementResponse].lastEventIdReceived shouldBe 2
+            WebHookAcknowledgement(succeeded = true, Some(lastEventId)))) ~> param.api(Full).routes ~> check {
+            responseAs[Registry.WebHookAcknowledgementResponse].lastEventIdReceived shouldBe lastEventId
             status shouldEqual StatusCodes.OK
           }
 

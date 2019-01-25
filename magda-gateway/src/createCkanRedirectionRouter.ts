@@ -27,6 +27,8 @@ export const genericUrlRedirectConfigs: genericUrlRedirectConfig[] = [
     },
     "/dataset/edit",
     "/dataset/new",
+    "/datastore",
+    "/dashboard",
     {
         path: "/fanstatic",
         requireExtraSeqment: true

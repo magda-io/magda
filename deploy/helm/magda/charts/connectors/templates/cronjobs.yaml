@@ -8,6 +8,7 @@ metadata:
   name: connector-{{ .id }}
 spec:
   schedule: {{ .schedule | default "0 14 * * 6" }} # default = 12am Sydney time on Sunday"
+  concurrencyPolicy: Forbid
   jobTemplate:
 {{ include "magda.connectorJobSpec" $params | indent 4 }}
 ...

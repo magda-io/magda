@@ -5,7 +5,7 @@ import StarRating from "./StarRating";
 import DataQualityTooltip from "./DataQualityTooltip";
 
 function QualityIndicator(props) {
-    let rating = Math.ceil((parseFloat(props.quality).toFixed(2) * 10) / 2);
+    let rating = Math.floor((parseFloat(props.quality).toFixed(2) * 10) / 2);
 
     if (rating < 0) {
         rating = 0;
@@ -13,7 +13,7 @@ function QualityIndicator(props) {
 
     return (
         <div className="quality-indicator">
-            <span className="title">Open Data Quality:&nbsp;</span>
+            <span className="title">Linked Data Rating:&nbsp;</span>
             <StarRating stars={rating} />
             <DataQualityTooltip />
         </div>

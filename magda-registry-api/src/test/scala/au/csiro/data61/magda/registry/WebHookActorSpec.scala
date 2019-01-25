@@ -8,7 +8,7 @@ import spray.json.RootJsonFormat
 
 import scala.concurrent.duration._
 
-class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach{
+class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
   implicit val timeout: Timeout = Timeout(5 seconds)
   private val hookId = "abc"
 
@@ -105,7 +105,9 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach{
     }
 
     Util.waitUntilWebHookActorIsInCache(hookId)
-    Util.getWebHookActor("abc") should not be None
+    Util.getWebHookActor(hookId) should not be None
+
+    Util.waitUntilAllDone(minWaitTimeMs = 2000)
 
     case class DeleteProcessor(deleted: Boolean)
     implicit val DeleteProcessorFormat: RootJsonFormat[DeleteProcessor] = jsonFormat1(DeleteProcessor.apply)
@@ -115,6 +117,16 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach{
     }
 
     Util.waitUntilWebHookActorIsNotInCache(hookId)
+
+    // For debugging only.
+    // When a processor needs to be deleted, it will receive a PoisonPill message from its parent,
+    // WebHookActor, that will print a debug message similar to "*** WebHookActor will terminate
+    // actor 42554220." in the log. Once the processor is terminated, the system will send a
+    // Terminated message to WebHookActor and the WebHookActor will print a debug message similar to
+    // "*** Actor 42554220 has been terminated." in the log.
+    // The line below will ensure the above debug message is shown in the log for this test.
+    Util.waitUntilAllDone(minWaitTimeMs = 2000)
+
     Util.getWebHookActor(hookId) shouldBe None
   }
 }

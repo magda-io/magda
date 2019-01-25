@@ -322,7 +322,23 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
+
+          // The current restart logic for a subscriber has two steps:
+          // 1) It will first update its web hook in the registry by making a PUT request
+          //    to the registry, which is handled by putById function (this function) of this class.
+          //    By sending message WebHookActor.InvalidateWebhookCache to the WebHookActor, it will
+          //    not trigger any event processing.
+          // 2) The subscriber will then make a POST request to the endpoint hooks/{hookid}/ack,
+          //    which will be handled by the ack function of this class. However, the act function
+          //    will send message WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
+          //    to the WebHookActor, which may trigger event processing.
+          //
+          // TODO: If the following message WebHookActor.InvalidateWebhookCache is replaced by
+          // WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id)), a subscriber
+          // restart logic can be simplified: The above step 2) can be removed.
+          // However, if replacing the message without changing a subscriber's restart logic, it
+          // may trigger duplicate event processing.
+          webHookActor ! WebHookActor.InvalidateWebhookCache
           result
         }
       }

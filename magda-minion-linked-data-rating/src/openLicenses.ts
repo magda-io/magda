@@ -4,7 +4,9 @@
 export default [
     "CC",
     "Creative Commons",
+    "creativecommons",
     "Open Data Commons",
+    "opendatacommons",
     "PDDL",
     "ODC",
     "ODbL",
