@@ -8,20 +8,21 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Success
-
 import com.typesafe.config.Config
-
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.event.Logging
+
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import java.util.concurrent.TimeoutException
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
@@ -180,7 +181,9 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
               recordPersistence.putRecordById(session, id, record) match {
-                case Success(aspect) =>
+                case Success(_) =>
+                  // TODO: Check if this is really what we want!
+                  // A scala test expects this though.
                   complete(record)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
@@ -277,17 +280,17 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
-  def create = post {
+  def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
       pathEnd {
         entity(as[Record]) { record =>
           val result = DB localTx { session =>
             recordPersistence.createRecord(session, record) match {
-              case Success(result)    => complete(result)
+              case Success(theResult)    => complete(theResult)
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
-          webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
+          webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
           result
         }
       }

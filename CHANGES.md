@@ -10,12 +10,14 @@ Ops:
 -   Allows gateway routes to be overiden from top level values file
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
+-   Improved responsiveness of registry-api when it's under load
 
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
     Others:
 
+Interoperability
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
 
 ## 0.0.51
