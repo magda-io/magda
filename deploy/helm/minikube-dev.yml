@@ -10,6 +10,7 @@ global:
   noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
+  enablePriorityClass: false
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"

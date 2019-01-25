@@ -6,6 +6,7 @@ global:
     pullPolicy: Always
   rollingUpdate:
     maxUnavailable: 1
+  enablePriorityClass: true
 
 tags:
   all: true
