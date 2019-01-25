@@ -391,7 +391,8 @@ export default class Dap implements ConnectorSource {
                                                                 ];
                                                             distributionObj[
                                                                 "accessURL"
-                                                            ] = detail["self"];
+                                                            ] =
+                                                                detail["self"];
                                                             distributionObj[
                                                                 "downloadURL"
                                                             ] =
@@ -400,7 +401,8 @@ export default class Dap implements ConnectorSource {
                                                                 ];
                                                             distributionObj[
                                                                 "id"
-                                                            ] = file["id"];
+                                                            ] =
+                                                                file["id"];
                                                             distributionObj[
                                                                 "mediaType"
                                                             ] = mediaType;

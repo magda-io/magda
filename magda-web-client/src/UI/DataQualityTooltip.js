@@ -12,11 +12,11 @@ export default function DataQualityTooltip(props) {
         <Tooltip
             className="data-quality-tooltip"
             launcher={() => (
-                <Link to="/page/dataset-quality">
+                <Link to="/page/linked-data-rating">
                     <img
                         className="data-quality-tooltip-launcher"
                         src={helpIcon}
-                        alt="Calculated using the open data scale, click for more information"
+                        alt="Calculated using the Linked Data Rating, click for more information"
                     />
                 </Link>
             )}
@@ -25,7 +25,9 @@ export default function DataQualityTooltip(props) {
             {() => (
                 <React.Fragment>
                     Calculated using the{" "}
-                    <Link to="/page/dataset-quality">Open data scale</Link>
+                    <Link to="/page/linked-data-rating">
+                        Linked Data Rating
+                    </Link>
                 </React.Fragment>
             )}
         </Tooltip>
