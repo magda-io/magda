@@ -1,0 +1,559 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<csw:GetRecordByIdResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2">
+  <gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <gmd:fileIdentifier>
+      <gco:CharacterString>45e488c7-38ad-40a8-97e7-ad16a9c1c8f9</gco:CharacterString>
+    </gmd:fileIdentifier>
+    <gmd:language>
+      <gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+    </gmd:language>
+    <gmd:characterSet>
+      <gmd:MD_CharacterSetCode codeListValue="utf8" codeList="http://www.isotc211.org/namespace/resources/codeList.xml#MD_CharacterSetCode" />
+    </gmd:characterSet>
+    <gmd:hierarchyLevel>
+      <gmd:MD_ScopeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode" codeListValue="service" />
+    </gmd:hierarchyLevel>
+    <gmd:hierarchyLevelName>
+      <gco:CharacterString>TERN OzFlux Dry River Tower Data Service</gco:CharacterString>
+    </gmd:hierarchyLevelName>
+    <gmd:contact>
+      <gmd:CI_ResponsibleParty>
+        <gmd:organisationName>
+          <gco:CharacterString>Terrestrial Ecosystem Research Network (TERN)</gco:CharacterString>
+        </gmd:organisationName>
+        <gmd:contactInfo>
+          <gmd:CI_Contact>
+            <gmd:phone>
+              <gmd:CI_Telephone>
+                <gmd:voice>
+                  <gco:CharacterString>+61 7 3365 9097</gco:CharacterString>
+                </gmd:voice>
+              </gmd:CI_Telephone>
+            </gmd:phone>
+            <gmd:address>
+              <gmd:CI_Address>
+                <gmd:deliveryPoint>
+                  <gco:CharacterString>Building 8, University of Queensland</gco:CharacterString>
+                </gmd:deliveryPoint>
+                <gmd:city>
+                  <gco:CharacterString>Brisbane</gco:CharacterString>
+                </gmd:city>
+                <gmd:administrativeArea>
+                  <gco:CharacterString>QLD</gco:CharacterString>
+                </gmd:administrativeArea>
+                <gmd:postalCode>
+                  <gco:CharacterString>4072</gco:CharacterString>
+                </gmd:postalCode>
+                <gmd:country>
+                  <gco:CharacterString>Australia</gco:CharacterString>
+                </gmd:country>
+                <gmd:electronicMailAddress>
+                  <gco:CharacterString>esupport@tern.org.au</gco:CharacterString>
+                </gmd:electronicMailAddress>
+              </gmd:CI_Address>
+            </gmd:address>
+          </gmd:CI_Contact>
+        </gmd:contactInfo>
+        <gmd:role>
+          <gmd:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+        </gmd:role>
+      </gmd:CI_ResponsibleParty>
+    </gmd:contact>
+    <gmd:dateStamp>
+      <gco:DateTime>2018-12-06T06:33:03</gco:DateTime>
+    </gmd:dateStamp>
+    <gmd:metadataStandardName>
+      <gco:CharacterString>ISO 19115.1:2015 Geographic information - Metadata – Fundamentals</gco:CharacterString>
+    </gmd:metadataStandardName>
+    <gmd:metadataStandardVersion>
+      <gco:CharacterString>1.0</gco:CharacterString>
+    </gmd:metadataStandardVersion>
+    <gmd:metadataStandardName>
+      <gco:CharacterString>ISO 19115-3:2016</gco:CharacterString>
+    </gmd:metadataStandardName>
+    <gmd:metadataStandardVersion>
+      <gco:CharacterString>1.0</gco:CharacterString>
+    </gmd:metadataStandardVersion>
+    <gmd:referenceSystemInfo>
+      <gmd:MD_ReferenceSystem>
+        <gmd:referenceSystemIdentifier>
+          <gmd:RS_Identifier>
+            <gmd:authority>
+              <gmd:CI_Citation>
+                <gmd:title>
+                  <gco:CharacterString>European Petroleum Survey Group (EPSG) Geodetic Parameter Registry</gco:CharacterString>
+                </gmd:title>
+                <gmd:date>
+                  <gmd:CI_Date>
+                    <gmd:date>
+                      <gco:DateTime>2008-11-12T00:00:00</gco:DateTime>
+                    </gmd:date>
+                    <gmd:dateType>
+                      <gmd:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                    </gmd:dateType>
+                  </gmd:CI_Date>
+                </gmd:date>
+                <gmd:citedResponsibleParty>
+                  <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                      <gco:CharacterString>European Petroleum Survey Group</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                      <gmd:CI_Contact>
+                        <gmd:onlineResource>
+                          <gmd:CI_OnlineResource>
+                            <gmd:linkage>
+                              <gmd:URL>http://www.epsg-registry.org/</gmd:URL>
+                            </gmd:linkage>
+                          </gmd:CI_OnlineResource>
+                        </gmd:onlineResource>
+                      </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role gco:nilReason="missing" />
+                  </gmd:CI_ResponsibleParty>
+                </gmd:citedResponsibleParty>
+              </gmd:CI_Citation>
+            </gmd:authority>
+            <gmd:code>
+              <gco:CharacterString>WGS84 (EPSG:4326)</gco:CharacterString>
+            </gmd:code>
+            <gmd:codeSpace>
+              <gco:CharacterString>EPSG</gco:CharacterString>
+            </gmd:codeSpace>
+            <gmd:version>
+              <gco:CharacterString>7.9</gco:CharacterString>
+            </gmd:version>
+          </gmd:RS_Identifier>
+        </gmd:referenceSystemIdentifier>
+      </gmd:MD_ReferenceSystem>
+    </gmd:referenceSystemInfo>
+    <gmd:identificationInfo>
+      <srv:SV_ServiceIdentification>
+        <srv:citation>
+          <gmd:CI_Citation>
+            <gmd:title>
+              <gco:CharacterString>TERN OzFlux Dry River Tower Data Service</gco:CharacterString>
+            </gmd:title>
+            <gmd:date>
+              <gmd:CI_Date>
+                <gmd:date>
+                  <gco:DateTime>2016-01-06T09:00:00</gco:DateTime>
+                </gmd:date>
+                <gmd:dateType>
+                  <gmd:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                </gmd:dateType>
+              </gmd:CI_Date>
+            </gmd:date>
+            <gmd:date>
+              <gmd:CI_Date>
+                <gmd:date>
+                  <gco:DateTime>2018-03-23T09:00:00</gco:DateTime>
+                </gmd:date>
+                <gmd:dateType>
+                  <gmd:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                </gmd:dateType>
+              </gmd:CI_Date>
+            </gmd:date>
+            <gmd:identifier>
+              <gmd:RS_Identifier>
+                <gmd:code>
+                  <gco:CharacterString>TERN OzFlux Dry River Tower Data Service</gco:CharacterString>
+                </gmd:code>
+              </gmd:RS_Identifier>
+            </gmd:identifier>
+          </gmd:CI_Citation>
+        </srv:citation>
+        <gmd:abstract>
+          <gco:CharacterString>This service provides access to ecosystem flux data from the Dry River site, 89 km south of Katherine in the Northern Territory. The site is open forest savanna.</gco:CharacterString>
+        </gmd:abstract>
+        <srv:pointOfContact>
+          <gmd:CI_ResponsibleParty>
+            <gmd:organisationName>
+              <gco:CharacterString>Terrestrial Ecosystem Research Network (TERN)</gco:CharacterString>
+            </gmd:organisationName>
+            <gmd:contactInfo>
+              <srv:CI_Contact>
+                <gmd:phone>
+                  <gmd:CI_Telephone>
+                    <gmd:voice>
+                      <gco:CharacterString>+61 7 3365 9097</gco:CharacterString>
+                    </gmd:voice>
+                  </gmd:CI_Telephone>
+                </gmd:phone>
+                <srv:address>
+                  <srv:CI_Address>
+                    <srv:deliveryPoint>
+                      <gco:CharacterString>Building 8, University of Queensland</gco:CharacterString>
+                    </srv:deliveryPoint>
+                    <srv:city>
+                      <gco:CharacterString>Brisbane</gco:CharacterString>
+                    </srv:city>
+                    <srv:administrativeArea>
+                      <gco:CharacterString>QLD</gco:CharacterString>
+                    </srv:administrativeArea>
+                    <srv:postalCode>
+                      <gco:CharacterString>4072</gco:CharacterString>
+                    </srv:postalCode>
+                    <srv:country>
+                      <gco:CharacterString>Australia</gco:CharacterString>
+                    </srv:country>
+                    <srv:electronicMailAddress>
+                      <gco:CharacterString>esupport@tern.org.au</gco:CharacterString>
+                    </srv:electronicMailAddress>
+                  </srv:CI_Address>
+                </srv:address>
+              </srv:CI_Contact>
+            </gmd:contactInfo>
+            <gmd:role>
+              <gmd:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="publisher">publisher</gmd:CI_RoleCode>
+            </gmd:role>
+          </gmd:CI_ResponsibleParty>
+        </srv:pointOfContact>
+        <srv:resourceMaintenance>
+          <gmd:MD_MaintenanceInformation />
+        </srv:resourceMaintenance>
+        <srv:descriptiveKeywords>
+          <srv:MD_Keywords>
+            <srv:keyword>
+              <gco:CharacterString>Environmental Monitoring</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>Ecosystem Function</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>SOIL SCIENCES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>ATMOSPHERIC SCIENCES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>EARTH SCIENCES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>ENVIRONMENTAL SCIENCES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>ECOLOGICAL APPLICATIONS</gco:CharacterString>
+            </srv:keyword>
+            <srv:type>
+              <srv:MD_KeywordTypeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="discipline" />
+            </srv:type>
+            <srv:thesaurusName>
+              <gmd:CI_Citation>
+                <gmd:title>
+                  <gco:CharacterString>discipline.ands-curated_anzsrc-for_2008.rdf</gco:CharacterString>
+                </gmd:title>
+                <gmd:date>
+                  <gmd:CI_Date>
+                    <gmd:date>
+                      <gco:Date>2018-08-25</gco:Date>
+                    </gmd:date>
+                    <gmd:dateType>
+                      <gmd:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                    </gmd:dateType>
+                  </gmd:CI_Date>
+                </gmd:date>
+                <gmd:identifier>
+                  <gmd:RS_Identifier>
+                    <gmd:code>
+                      <gmx:Anchor xlink:href="http://localhost:8080/geonetwork/srv/eng/thesaurus.download?ref=external.discipline.ands-curated_anzsrc-for_2008">geonetwork.thesaurus.external.discipline.ands-curated_anzsrc-for_2008</gmx:Anchor>
+                    </gmd:code>
+                  </gmd:RS_Identifier>
+                </gmd:identifier>
+              </gmd:CI_Citation>
+            </srv:thesaurusName>
+          </srv:MD_Keywords>
+        </srv:descriptiveKeywords>
+        <srv:descriptiveKeywords>
+          <srv:MD_Keywords>
+            <srv:keyword>
+              <gco:CharacterString>OpenDAP</gco:CharacterString>
+            </srv:keyword>
+            <srv:type>
+              <srv:MD_KeywordTypeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="service" />
+            </srv:type>
+          </srv:MD_Keywords>
+        </srv:descriptiveKeywords>
+        <srv:descriptiveKeywords>
+          <srv:MD_Keywords>
+            <srv:keyword>
+              <gco:CharacterString>HEAT FLUX</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>LAND PRODUCTIVITY</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>AIR TEMPERATURE</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>SHORTWAVE RADIATION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>PHOTOSYNTHETICALLY ACTIVE RADIATION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>LONGWAVE RADIATION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>SOIL MOISTURE/WATER CONTENT</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>BIOGEOCHEMICAL PROCESSES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>TRACE GASES/TRACE SPECIES</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>SOIL TEMPERATURE</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>PRECIPITATION AMOUNT</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>CARBON DIOXIDE</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>ATMOSPHERIC PRESSURE MEASUREMENTS</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>INCOMING SOLAR RADIATION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>TURBULENCE</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>CARBON</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>HUMIDITY</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>WIND SPEED/WIND DIRECTION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>EVAPOTRANSPIRATION</gco:CharacterString>
+            </srv:keyword>
+            <srv:keyword>
+              <gco:CharacterString>TERRESTRIAL ECOSYSTEMS</gco:CharacterString>
+            </srv:keyword>
+            <srv:type>
+              <srv:MD_KeywordTypeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" />
+            </srv:type>
+            <srv:thesaurusName>
+              <gmd:CI_Citation>
+                <gmd:title>
+                  <gco:CharacterString>theme.sciencekeywords-8.1_.rdf</gco:CharacterString>
+                </gmd:title>
+                <gmd:date>
+                  <gmd:CI_Date>
+                    <gmd:date>
+                      <gco:Date>2018-11-07</gco:Date>
+                    </gmd:date>
+                    <gmd:dateType>
+                      <gmd:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                    </gmd:dateType>
+                  </gmd:CI_Date>
+                </gmd:date>
+                <gmd:identifier>
+                  <gmd:RS_Identifier>
+                    <gmd:code>
+                      <gmx:Anchor xlink:href="https://geonetwork-test.tern.org.au:80/geonetwork/srv/eng/thesaurus.download?ref=external.theme.sciencekeywords-8.1_">geonetwork.thesaurus.external.theme.sciencekeywords-8.1_</gmx:Anchor>
+                    </gmd:code>
+                  </gmd:RS_Identifier>
+                </gmd:identifier>
+              </gmd:CI_Citation>
+            </srv:thesaurusName>
+          </srv:MD_Keywords>
+        </srv:descriptiveKeywords>
+        <srv:resourceConstraints>
+          <gmd:MD_LegalConstraints>
+            <gmd:reference>
+              <gmd:CI_Citation>
+                <gmd:title>
+                  <gco:CharacterString>Creative Commons Attribution 4.0 International Licence</gco:CharacterString>
+                </gmd:title>
+                <gmd:alternateTitle>
+                  <gco:CharacterString>CC-BY</gco:CharacterString>
+                </gmd:alternateTitle>
+                <gmd:edition>
+                  <gco:CharacterString>4.0</gco:CharacterString>
+                </gmd:edition>
+              </gmd:CI_Citation>
+            </gmd:reference>
+            <gmd:accessConstraints>
+              <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode" codeListValue="license" />
+            </gmd:accessConstraints>
+            <gmd:useConstraints>
+              <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode" codeListValue="license" />
+            </gmd:useConstraints>
+          </gmd:MD_LegalConstraints>
+        </srv:resourceConstraints>
+        <srv:resourceConstraints>
+          <gmd:MD_SecurityConstraints>
+            <gmd:classification>
+              <gmd:MD_ClassificationCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ClassificationCode" codeListValue="unclassified" />
+            </gmd:classification>
+          </gmd:MD_SecurityConstraints>
+        </srv:resourceConstraints>
+        <srv:topicCategory>
+          <srv:MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</srv:MD_TopicCategoryCode>
+        </srv:topicCategory>
+        <srv:topicCategory />
+        <srv:serviceType>
+          <gco:LocalName>W3C:HTML:LINK</gco:LocalName>
+        </srv:serviceType>
+        <srv:serviceTypeVersion />
+        <srv:extent>
+          <gmd:EX_Extent>
+            <gmd:description>
+              <gco:CharacterString>Dry River Site, Northern Territory</gco:CharacterString>
+            </gmd:description>
+            <gmd:geographicElement>
+              <gmd:EX_GeographicBoundingBox>
+                <gmd:westBoundLongitude>
+                  <gco:Decimal>132.3706</gco:Decimal>
+                </gmd:westBoundLongitude>
+                <gmd:eastBoundLongitude>
+                  <gco:Decimal>132.3706</gco:Decimal>
+                </gmd:eastBoundLongitude>
+                <gmd:southBoundLatitude>
+                  <gco:Decimal>-15.2588</gco:Decimal>
+                </gmd:southBoundLatitude>
+                <gmd:northBoundLatitude>
+                  <gco:Decimal>-15.2588</gco:Decimal>
+                </gmd:northBoundLatitude>
+              </gmd:EX_GeographicBoundingBox>
+            </gmd:geographicElement>
+            <gmd:temporalElement>
+              <gmd:EX_TemporalExtent>
+                <gmd:extent>
+                  <gml:TimePeriod gml:id="bcf969df-6213-4e5c-86d4-64e3b53de64a">
+                    <gml:beginPosition>2008-08-31</gml:beginPosition>
+                    <gml:endPosition>2017-06-19</gml:endPosition>
+                  </gml:TimePeriod>
+                </gmd:extent>
+              </gmd:EX_TemporalExtent>
+            </gmd:temporalElement>
+          </gmd:EX_Extent>
+        </srv:extent>
+        <srv:couplingType>
+          <srv:SV_CouplingType codeList="codeListLocation#SV_CouplingType" codeListValue="tight">tight</srv:SV_CouplingType>
+        </srv:couplingType>
+        <srv:containsOperations>
+          <srv:SV_OperationMetadata>
+            <srv:operationName>
+              <gco:CharacterString>Open THREDDS Catalog</gco:CharacterString>
+            </srv:operationName>
+            <srv:DCP>
+              <srv:DCPList codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#DCPList" codeListValue="HTTP" />
+            </srv:DCP>
+            <srv:connectPoint>
+              <gmd:CI_OnlineResource>
+                <gmd:linkage>
+                  <gmd:URL>https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/DryRiver/catalog.html</gmd:URL>
+                </gmd:linkage>
+                <gmd:protocol>
+                  <gco:CharacterString>WWW:LINK-1.0-http--opendap</gco:CharacterString>
+                </gmd:protocol>
+              </gmd:CI_OnlineResource>
+            </srv:connectPoint>
+          </srv:SV_OperationMetadata>
+        </srv:containsOperations>
+        <srv:operatesOn uuidref="92cf70bd-f88a-4806-8f73-be0c2a1e7861" xlink:href="http://geonetwork-test.tern.org.au:8080/geonetwork/srv/eng/csw?service=CSW&amp;request=GetRecordById&amp;version=2.0.2&amp;outputSchema=http://standards.iso.org/iso/19115/-3/gmd&amp;elementSetName=full&amp;id=92cf70bd-f88a-4806-8f73-be0c2a1e7861" />
+      </srv:SV_ServiceIdentification>
+    </gmd:identificationInfo>
+    <gmd:distributionInfo>
+      <gmd:MD_Distribution>
+        <gmd:distributionFormat>
+          <gmd:MD_Format>
+            <gmd:name>
+              <gco:CharacterString>NetCDF4</gco:CharacterString>
+            </gmd:name>
+            <gmd:version>
+              <gco:CharacterString>CF 1.7</gco:CharacterString>
+            </gmd:version>
+            <gmd:formatDistributor>
+              <gmd:MD_Distributor>
+                <gmd:distributorContact>
+                  <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                      <gco:CharacterString>Terrestrial Ecosystem Research Network (TERN)</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                      <gmd:CI_Contact>
+                        <gmd:phone>
+                          <gmd:CI_Telephone>
+                            <gmd:voice>
+                              <gco:CharacterString>+61 7 3365 9097</gco:CharacterString>
+                            </gmd:voice>
+                          </gmd:CI_Telephone>
+                        </gmd:phone>
+                        <gmd:address>
+                          <gmd:CI_Address>
+                            <gmd:deliveryPoint>
+                              <gco:CharacterString>Building 8, University of Queensland</gco:CharacterString>
+                            </gmd:deliveryPoint>
+                            <gmd:city>
+                              <gco:CharacterString>Brisbane</gco:CharacterString>
+                            </gmd:city>
+                            <gmd:administrativeArea>
+                              <gco:CharacterString>QLD</gco:CharacterString>
+                            </gmd:administrativeArea>
+                            <gmd:postalCode>
+                              <gco:CharacterString>4072</gco:CharacterString>
+                            </gmd:postalCode>
+                            <gmd:country>
+                              <gco:CharacterString>Australia</gco:CharacterString>
+                            </gmd:country>
+                            <gmd:electronicMailAddress>
+                              <gco:CharacterString>esupport@tern.org.au</gco:CharacterString>
+                            </gmd:electronicMailAddress>
+                          </gmd:CI_Address>
+                        </gmd:address>
+                      </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                      <gmd:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                    </gmd:role>
+                  </gmd:CI_ResponsibleParty>
+                </gmd:distributorContact>
+                <gmd:distributorTransferOptions>
+                  <gmd:MD_DigitalTransferOptions>
+                    <gmd:onLine>
+                      <gmd:CI_OnlineResource>
+                        <gmd:linkage>
+                          <gmd:URL>https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/DryRiver/catalog.html</gmd:URL>
+                        </gmd:linkage>
+                        <gmd:protocol>
+                          <gco:CharacterString>WWW:LINK-1.0-http--opendap</gco:CharacterString>
+                        </gmd:protocol>
+                        <gmd:name>
+                          <gco:CharacterString>Display all levels</gco:CharacterString>
+                        </gmd:name>
+                        <gmd:description>
+                          <gco:CharacterString>Catalog via OpenDAP URL</gco:CharacterString>
+                        </gmd:description>
+                      </gmd:CI_OnlineResource>
+                    </gmd:onLine>
+                  </gmd:MD_DigitalTransferOptions>
+                </gmd:distributorTransferOptions>
+                <gmd:distributorTransferOptions>
+                  <gmd:MD_DigitalTransferOptions />
+                </gmd:distributorTransferOptions>
+              </gmd:MD_Distributor>
+            </gmd:formatDistributor>
+          </gmd:MD_Format>
+        </gmd:distributionFormat>
+      </gmd:MD_Distribution>
+    </gmd:distributionInfo>
+    <gmd:metadataConstraints>
+      <gmd:MD_SecurityConstraints>
+        <gmd:classification>
+          <gmd:MD_ClassificationCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ClassificationCode" codeListValue="unclassified" />
+        </gmd:classification>
+      </gmd:MD_SecurityConstraints>
+    </gmd:metadataConstraints>
+  </gmd:MD_Metadata>
+</csw:GetRecordByIdResponse>
+
