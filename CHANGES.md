@@ -11,6 +11,7 @@ Ops:
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
+-   Lowered the resource requirements for the apidocs-server based on data.gov.au usage.
 
 Search:
 
