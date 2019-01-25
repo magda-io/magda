@@ -39,6 +39,10 @@ import scala.concurrent.duration._
 import akka.pattern.gracefulStop
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
+  override def beforeAll(): Unit = {
+    Util.clearWebHookActorsCache()
+  }
+
   case class FixtureParam(api: Role => Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher, authClient: AuthApiClient)
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
@@ -56,7 +60,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     s"""
       |db.default.url = "${databaseUrl}?currentSchema=test"
       |authorization.skip = true
-      |akka.loglevel = INFO
+      |akka.loglevel = debug
       |authApi.baseUrl = "http://localhost:6104"
       |authorization.skip=false
       |webhooks.actorTickRate=0

@@ -14,6 +14,7 @@ global:
   noDbAuth: false
   namespace: default
   gapiIds: []
+  enablePriorityClass: false
 
 tags:
   priorities: true

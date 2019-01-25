@@ -20,7 +20,7 @@ import akka.http.scaladsl.model.StatusCode
 class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit val executionContext: ExecutionContext) extends Protocols {
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
-  val recordPersistence = DefaultRecordPersistence
+  val recordPersistence: DefaultRecordPersistence.type = DefaultRecordPersistence
 
   def sendSomeNotificationsForOneWebHook(id: String, webHook: WebHook, eventPage: EventsPage): Future[WebHookProcessor.SendResult] = {
     val events = eventPage.events
@@ -60,7 +60,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         val directRecordIds = directRecordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
 
         // Get records directly modified by these events.
-        val directRecords = if (directRecordIds.isEmpty) RecordsPage(false, None, List()) else recordPersistence.getByIdsWithAspects(
+        val directRecords = if (directRecordIds.isEmpty) RecordsPage(hasMore = false, None, List()) else recordPersistence.getByIdsWithAspects(
           session,
           directRecordIds,
           webHook.config.aspects.getOrElse(List()),
@@ -71,7 +71,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         // changed records from aspects that we're including.
         val recordsFromDereference = webHook.config.dereference match {
           case Some(false) | None => List[Record]()
-          case Some(true) => {
+          case Some(true) =>
             val allRecordIds = recordChangeEvents.map(_.data.fields("recordId").asInstanceOf[JsString].value).toSet
             if (allRecordIds.isEmpty) {
               List()
@@ -84,7 +84,6 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
                 webHook.config.optionalAspects.getOrElse(List()),
                 webHook.config.dereference).records
             }
-          }
         }
 
         Some(directRecords.records ++ recordsFromDereference)
@@ -110,58 +109,54 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         method = HttpMethods.POST,
         entity = entity))
       val responseStream = singleRequestStream.map((_, 1)).via(http.superPool())
-      val resultStream = responseStream.mapAsync(1) { response =>
-        response match {
-          case (Success(response), _) => {
-            if (response.status.isFailure()) {
-              response.discardEntityBytes()
+      val resultStream = responseStream.mapAsync(1) {
+        case (Success(response), _) =>
+          if (response.status.isFailure()) {
+            response.discardEntityBytes()
 
-              DB localTx { session =>
-                HookPersistence.setActive(session, webHook.id.get, false)
-              }
+            DB localTx { session =>
+              HookPersistence.setActive(session, webHook.id.get, active = false)
+            }
 
-              Future(WebHookProcessor.HttpError(response.status))
-            } else {
-              // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
-              Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
-                if (webHookResponse.deferResponse) {
-                  DB localTx { session =>
-                    HookPersistence.setIsWaitingForResponse(session, webHook.id.get, true)
-                    if(webHook.retryCount>0) {
-                      HookPersistence.resetRetryCount(session, webHook.id.get)
-                    }
+            Future(WebHookProcessor.HttpError(response.status))
+          } else {
+            // Try to deserialize the success response as a WebHook response.  It's ok if this fails.
+            Unmarshal(response.entity).to[WebHookResponse].map { webHookResponse =>
+              if (webHookResponse.deferResponse) {
+                DB localTx { session =>
+                  HookPersistence.setIsWaitingForResponse(session, webHook.id.get, isWaitingForResponse = true)
+                  if (webHook.retryCount > 0) {
+                    HookPersistence.resetRetryCount(session, webHook.id.get)
                   }
-                  WebHookProcessor.Deferred
-                } else {
-                  DB localTx { session =>
-                    HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
-                    if(webHook.retryCount>0) {
-                      HookPersistence.resetRetryCount(session, webHook.id.get)
-                    }
-                  }
-                  WebHookProcessor.NotDeferred
                 }
-              }.recover {
-                case _: Throwable => {
-                  // Success response that can't be unmarshalled to a WebHookResponse.  This is fine!
-                  // It just means the webhook was handled successfully.
-                  DB localTx { session =>
-                    HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
-                    if(webHook.retryCount>0) {
-                      HookPersistence.resetRetryCount(session, webHook.id.get)
-                    }
+                WebHookProcessor.Deferred
+              } else {
+                DB localTx { session =>
+                  HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                  if (webHook.retryCount > 0) {
+                    HookPersistence.resetRetryCount(session, webHook.id.get)
                   }
-                  WebHookProcessor.NotDeferred
                 }
+                WebHookProcessor.NotDeferred
               }
+            }.recover {
+              case _: Throwable =>
+                // Success response that can't be unmarshalled to a WebHookResponse.  This is fine!
+                // It just means the webhook was handled successfully.
+                DB localTx { session =>
+                  HookPersistence.setLastEvent(session, webHook.id.get, payload.lastEventId)
+                  if (webHook.retryCount > 0) {
+                    HookPersistence.resetRetryCount(session, webHook.id.get)
+                  }
+                }
+                WebHookProcessor.NotDeferred
             }
           }
-          case (Failure(error), _) =>
-            DB localTx { session =>
-              HookPersistence.setActive(session, webHook.id.get, false)
-            }
-            Future.failed(error)
-        }
+        case (Failure(error), _) =>
+          DB localTx { session =>
+            HookPersistence.setActive(session, webHook.id.get, active = false)
+          }
+          Future.failed(error)
       }
       resultStream.completionTimeout(60 seconds).runWith(Sink.head)
     })

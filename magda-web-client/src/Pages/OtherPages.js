@@ -61,6 +61,10 @@ const renderBody = (loading, pages) => {
                 path="/organisations/:publisherId"
                 component={PublisherDetails}
             />
+            <Redirect
+                from="/page/dataset-quality"
+                to="/page/linked-data-rating"
+            />
             <Route path="/page/:pageId" component={StaticPage} />
             <Route exact path="/404" component={RouteNotFound} />
             <Route exact path="/error" component={ErrorPage} />
