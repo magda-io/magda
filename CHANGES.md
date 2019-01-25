@@ -20,7 +20,7 @@ Search:
 
 Accessibility:
 
--   Added `alt` field to Facet buttons to reflect the current filter selection
+-   Added `aria-label` field to Facet buttons to reflect the current filter selection
 
 Interoperability
 
