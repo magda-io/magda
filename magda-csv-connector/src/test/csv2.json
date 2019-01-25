@@ -9,7 +9,8 @@
                 "accessURL": "LOCATION 3",
                 "accessNotes": "PATH/2",
                 "downloadURL": "http://internal-1",
-                "format": "CSV"
+                "format": "CSV",
+                "description": "DATASET\n\nDESCRIPTION 1"
             },
             "source": {
                 "type": "csv-distribution",
@@ -30,7 +31,8 @@
                 "accessURL": "LOCATION 3",
                 "accessNotes": "PATH/2",
                 "downloadURL": "http://internal-1",
-                "format": "JSON"
+                "format": "JSON",
+                "description": "DATASET\n\nDESCRIPTION 1"
             },
             "source": {
                 "type": "csv-distribution",
@@ -51,7 +53,8 @@
                 "accessURL": "LOCATION 3",
                 "accessNotes": "PATH/2",
                 "downloadURL": "http://internal-1",
-                "format": "Excel"
+                "format": "Excel",
+                "description": "DATASET\n\nDESCRIPTION 1"
             },
             "source": {
                 "type": "csv-distribution",
@@ -72,7 +75,8 @@
                 "accessURL": "LOCATION 3",
                 "accessNotes": "PATH/2",
                 "downloadURL": "http://internal-1",
-                "format": "Other"
+                "format": "Other",
+                "description": "DATASET\n\nDESCRIPTION 1"
             },
             "source": {
                 "type": "csv-distribution",
@@ -154,7 +158,9 @@
                 "accessURL": "LOCATION 2",
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
-                "format": "Shape File"
+                "format": "Shape File",
+                "description":
+                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -175,7 +181,9 @@
                 "accessURL": "LOCATION 2",
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
-                "format": "Other"
+                "format": "Other",
+                "description":
+                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -257,7 +265,8 @@
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
                 "downloadURL": "file://external-3",
-                "format": "CSV"
+                "format": "CSV",
+                "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3"
             },
             "source": {
                 "type": "csv-distribution",
@@ -280,7 +289,8 @@
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
                 "downloadURL": "file://external-3",
-                "format": "Other"
+                "format": "Other",
+                "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3"
             },
             "source": {
                 "type": "csv-distribution",

@@ -8,7 +8,8 @@
                 "license": "Copyright",
                 "rights": "RFC",
                 "accessNotes": "LOCATION1",
-                "format": "MS Access"
+                "format": "MS Access",
+                "description": "D1"
             },
             "source": {
                 "type": "csv-distribution",
@@ -90,7 +91,8 @@
                 "title": "T2",
                 "rights": "Internal",
                 "accessNotes": "METADATA LOCATION",
-                "format": "PDF"
+                "format": "PDF",
+                "description": "D2"
             },
             "source": {
                 "type": "csv-distribution",
@@ -164,7 +166,8 @@
             "dcat-distribution-strings": {
                 "title": "T3",
                 "license": "Copyright",
-                "accessNotes": "LOCATION3"
+                "accessNotes": "LOCATION3",
+                "description": "D3"
             },
             "source": {
                 "type": "csv-distribution",
