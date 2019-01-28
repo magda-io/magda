@@ -208,6 +208,7 @@ class FacetHeader extends Component {
                 >
                     <img
                         className="facet-icon"
+                        alt=""
                         src={
                             this.state.buttonActive
                                 ? IconList[`${this.props.id}_active`]
@@ -222,7 +223,7 @@ class FacetHeader extends Component {
                         className="btn-remove au-btn"
                         aria-label={this.calculateRemoveAltText()}
                     >
-                        <img src={remove_light} />
+                        <img alt="" src={remove_light} />
                     </button>
                 )}
             </div>
