@@ -22,8 +22,8 @@ const URL_REGEXES: Array<[RegExp, string]> = [
 ];
 
 /*
-* Tries to determine the format by parsing the downloadURL string and looking at the extension
-*/
+ * Tries to determine the format by parsing the downloadURL string and looking at the extension
+ */
 export default function getMeasureResults(
     relatedDistribution: any,
     synonymObject: any
