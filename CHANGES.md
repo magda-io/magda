@@ -17,7 +17,12 @@ Search:
     Others:
 
 Interoperability
+
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Connectors:
+
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
 
 ## 0.0.51
 
