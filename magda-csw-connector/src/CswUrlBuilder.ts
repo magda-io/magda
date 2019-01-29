@@ -5,6 +5,8 @@ export interface CswUrlBuilderOptions {
     name?: string;
     baseUrl: string;
     apiBaseUrl?: string;
+    outputSchema?: string;
+    typeNames?: string;
 }
 
 export default class CswUrlBuilder {
@@ -12,7 +14,7 @@ export default class CswUrlBuilder {
     public readonly name: string;
     public readonly baseUrl: uri.URI;
 
-    public readonly GetRecordsParameters = {
+    public GetRecordsParameters = {
         service: "CSW",
         version: "2.0.2",
         request: "GetRecords",
@@ -24,7 +26,7 @@ export default class CswUrlBuilder {
         typeNames: "gmd:MD_Metadata"
     };
 
-    public readonly GetRecordByIdParameters = {
+    public GetRecordByIdParameters = {
         service: "CSW",
         version: "2.0.2",
         request: "GetRecordById",
@@ -37,6 +39,14 @@ export default class CswUrlBuilder {
         this.id = options.id;
         this.name = options.name || options.id;
         this.baseUrl = new URI(options.baseUrl);
+        this.GetRecordByIdParameters.outputschema =
+            options.outputSchema || "http://www.isotc211.org/2005/gmd";
+        this.GetRecordsParameters.outputschema =
+            options.outputSchema || "http://www.isotc211.org/2005/gmd";
+        this.GetRecordByIdParameters.typeNames =
+            options.typeNames || "gmd:MD_Metadata";
+        this.GetRecordsParameters.typeNames =
+            options.typeNames || "gmd:MD_Metadata";
     }
 
     public getRecordsUrl(constraint?: string): string {
@@ -48,6 +58,9 @@ export default class CswUrlBuilder {
     }
 
     public getRecordByIdUrl(id: string): string {
+        if (id === undefined || !id) {
+            return undefined;
+        }
         return this.baseUrl
             .clone()
             .addSearch(this.GetRecordByIdParameters)

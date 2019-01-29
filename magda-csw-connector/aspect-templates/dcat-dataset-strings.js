@@ -41,7 +41,9 @@ const modifiedDate =
 const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 
 const datasetContactPoint = getContactPoint(
-    jsonpath.query(dataset.json, "$.contact[*].CI_ResponsibleParty[*]"),
+    jsonpath
+        .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
+        .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]")),
     true
 );
 const identificationContactPoint = getContactPoint(
@@ -67,12 +69,12 @@ const pointOfTruth = distNodes.filter(
         "Point of truth URL of this metadata record"
 );
 
-const responsibleParties = jsonpath.query(
-    dataset.json,
-    "$..CI_ResponsibleParty[*]"
-);
+const responsibleParties = jsonpath
+    .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
+    .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"));
+
 const byRole = libraries.lodash.groupBy(responsibleParties, party =>
-    jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value')
+    jsonpath.value(party, '$..role[*].CI_RoleCode[*]["$"].codeListValue.value')
 );
 const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
 const publisher = getContactPoint(datasetOrgs, false);
@@ -211,29 +213,30 @@ function getContactPoint(responsibleParties, preferIndividual) {
 
     const contactInfo = jsonpath.query(
         responsibleParties,
-        "$[*].contactInfo[*].CI_Contact[*]"
+        "$..contactInfo[*].CI_Contact[*]"
     );
     const individual = jsonpath.value(
         responsibleParties,
         "$[*].individualName[*].CharacterString[*]._"
     );
-    const organisation = jsonpath.value(
-        responsibleParties,
-        "$[*].organisationName[*].CharacterString[*]._"
-    );
+    const organisation =
+        jsonpath.value(
+            responsibleParties,
+            "$[*].organisationName[*].CharacterString[*]._"
+        ) ||
+        jsonpath.value(
+            responsibleParties,
+            "$..CI_Organisation[*].name[*].CharacterString[*]._"
+        );
     const homepage = jsonpath.value(
         contactInfo,
         "$[*].onlineResource[*].CI_OnlineResource[*].linkage[*].URL[*]._"
     );
-    const address = jsonpath.query(
-        contactInfo,
-        "$[*].address[*].CI_Address[*]"
-    );
+    const address = jsonpath.query(contactInfo, "$..address[*].CI_Address[*]");
     const emailAddress = jsonpath.value(
         address,
         "$[*].electronicMailAddress[*].CharacterString[*]._"
     );
-
     const name = preferIndividual
         ? individual || organisation
         : organisation || individual;

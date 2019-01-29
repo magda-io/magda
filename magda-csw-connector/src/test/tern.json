@@ -10,6 +10,8 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "format": "WWW:LINK-1.0-http--link"
             },
             "source": {
@@ -33,7 +35,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -162,7 +166,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/Gingin/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -264,6 +270,8 @@
             "dcat-distribution-strings": {
                 "title":
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
                 "format": "WWW:LINK-1.0-http--link"
@@ -289,7 +297,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -394,6 +404,8 @@
                 "title":
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
                 "format": "WWW:LINK-1.0-http--link"
             },
@@ -418,7 +430,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -523,7 +537,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/SturtPlains/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -627,7 +643,10 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -650,7 +669,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -756,7 +777,9 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -779,7 +802,10 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -885,7 +911,9 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -908,7 +936,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -1013,7 +1043,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/GreatWesternWoodlands/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -1117,7 +1149,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/Whroo/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",

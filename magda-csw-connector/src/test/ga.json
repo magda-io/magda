@@ -1,0 +1,430 @@
+{
+    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0": {
+        "id": "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
+        "name": "Digital Object Identifier",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Digital Object Identifier",
+                "description": "Dataset DOI",
+                "license":
+                    "GeoScience Victoria - Digital Data Access Licence Agreement",
+                "accessURL": "http://dx.doi.org/10.4225/25/56258BE56A4B0",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/84119/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1": {
+        "id": "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1",
+        "name": "1dc9935c-0d2a-84ff-e053-12a3070ae941-1",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "license":
+                    "GeoScience Victoria - Digital Data Access Licence Agreement",
+                "accessURL": "None"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/84119/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941": {
+        "id": "ds-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941",
+        "name": "1dc9935c-0d2a-84ff-e053-12a3070ae941",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title": "Tallangatta, Vic, 1994 -1995",
+                "description":
+                    "Survey conducted by the Commonwealth Government or State/Territory Geological Survey (or equivalent) collecting airborne geophysical data",
+                "issued": "1995-01-01T00:00:00",
+                "modified": "1995-01-01T00:00:00",
+                "languages": [],
+                "publisher": "Geoscience Australia",
+                "accrualPeriodicity": "notPlanned",
+                "spatial":
+                    "POLYGON((146.98 -37.0, 148.72 -37.0, 148.72 -35.98, 146.98 -35.98, 146.98 -37.0))",
+                "temporal": {
+                    "start": "1994-11-01",
+                    "end": "1995-03-01"
+                },
+                "themes": ["geoscientificInformation"],
+                "keywords": [
+                    "Airborne Digital Data",
+                    "NCI",
+                    "Magnetic data",
+                    "Radiometric data, 4-channel",
+                    "Elevation data",
+                    "AIR",
+                    "VIC",
+                    "Geophysics",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/84119/",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "temporal-coverage": {
+                "intervals": [
+                    {
+                        "start": "1994-11-01",
+                        "end": "1995-03-01"
+                    }
+                ]
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
+                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0": {
+        "id": "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0",
+        "name": "Download the Record (pdf)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the Record (pdf)",
+                "description": "Download the Record (pdf)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/14161/Rec1987_033.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1": {
+        "id": "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "file://prod.lan/active/ops/cds/records/Rec1987_033/Rec1987_033.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-a05f7892-9588-7506-e044-00144fdd4fa6": {
+        "id": "ds-connector-a05f7892-9588-7506-e044-00144fdd4fa6",
+        "name": "a05f7892-9588-7506-e044-00144fdd4fa6",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title":
+                    "Structural setting of the McNamara Group in the Yaringa Creek- Big Toby Creek area, Mt Isa, Queensland, Australia",
+                "description": "Legacy product - no abstract available",
+                "issued": "1987-01-01T00:00:00",
+                "modified": "1987-01-01T00:00:00",
+                "languages": [],
+                "publisher":
+                    "Bureau of Mineral Resources, Geology and Geophysics",
+                "accrualPeriodicity": "unknown",
+                "spatial":
+                    "POLYGON((139.0 -21.0, 139.5 -21.0, 139.5 -20.5, 139.0 -20.5, 139.0 -21.0))",
+                "themes": ["geoscientificInformation"],
+                "keywords": [
+                    "GA Publication",
+                    "Record",
+                    "geology",
+                    "structural geology",
+                    "AU-QLD",
+                    "Earth Sciences",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0",
+                    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0": {
+        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0",
+        "name": "Purchase this product",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Purchase this product",
+                "description": "Purchase this product",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "http://geoscienceaustr.neto.com.au/4263-4-idle-hole-topographic-map-50k-scale",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1": {
+        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1",
+        "name": "Download the map (jpg)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the map (jpg)",
+                "description": "Download the map (jpg)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/56541/4263_4_Idle_Hole.jpg",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2": {
+        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "description": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "file://prod.lan/active/ops/cds/maps/topo_thematic/50/56541",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6": {
+        "id": "ds-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6",
+        "name": "a05f7892-e0a7-7506-e044-00144fdd4fa6",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title": "Idle Hole 1:50 000 topographic map",
+                "description":
+                    "Product Specifications Coverage: Partial coverage, predominantly in northern Australia, along major transport routes, and other selected areas. About 1000 maps have been published to date. Currency: Ranges from 1968 to 2006. Coordinates: Geographical and UTM. Datum: AGD66, new edition WGS84; AHD. Projection: Universal Transverse Mercator UTM. Medium: Paper, flat copies only.",
+                "issued": "1998-01-01T00:00:00",
+                "modified": "1998-01-01T00:00:00",
+                "languages": [],
+                "publisher":
+                    "Commonwealth of Australia (Australian Geospatial-Intelligence Organisation)",
+                "accrualPeriodicity": "unknown",
+                "spatial":
+                    "POLYGON((126.5 -17.25, 126.75 -17.25, 126.75 -17.0, 126.5 -17.0, 126.5 -17.25))",
+                "themes": ["imageryBaseMapsEarthCover"],
+                "keywords": [
+                    "Topographic Map",
+                    "50K scale",
+                    "topography",
+                    "AU-WA",
+                    "Topology",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0",
+                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1",
+                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0": {
+        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0",
+        "name": "Download the Record (pdf)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the Record (pdf)",
+                "description": "Download the Record (pdf)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/71844/Rec2011_042.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1": {
+        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "file://prod.lan/active/ops/cds/records/Rec2011_042/Rec2011_042_Print.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2": {
+        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "file://prod.lan/active/ops/cds/records/Rec2011_042/Rec2011_042_Web.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6": {
+        "id": "ds-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6",
+        "name": "a35e32b2-d94e-1db0-e044-00144fdd4fa6",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title":
+                    "Depth to Magnetic Basement of the Capel and Faust Basins, Lord Howe Rise",
+                "description":
+                    "We have analysed the shipborne magnetic data interms of depth to magnetic basement and tried to find out the basement structure independently from the magnetic and reconcile with the seismic interpretation.  Our result indicates a possible depocentre at the northwest part of the study area, which is in agreement with the resimic result. The depocenter is about 6 km deep and extending NNW-ESE direction and the study also suggests the presence of a ridge at the centre of the study area and trending along N-S direction. The structures derived from the magnetic are broadly matching with the seismic results. So, the technique may be useful for delineating the sediment pocket inside the basin, thus help in shoring out the zone of interest inside the basin for further detail survey.",
+                "issued": "2011-01-01T00:00:00",
+                "modified": "2011-01-01T00:00:00",
+                "languages": [],
+                "publisher": "Geoscience Australia",
+                "accrualPeriodicity": "unknown",
+                "spatial":
+                    "POLYGON((159.5 -29.5, 163.5 -29.5, 163.5 -25.5, 159.5 -25.5, 159.5 -29.5))",
+                "themes": ["geoscientificInformation"],
+                "keywords": [
+                    "GA Publication",
+                    "Record",
+                    "magnetics",
+                    "Earth Sciences",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0",
+                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1",
+                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    }
+}

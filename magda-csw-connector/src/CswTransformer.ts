@@ -103,10 +103,17 @@ export default class CswTransformer extends JsonTransformer {
     }
 
     private getRawDatasetId(jsonDataset: any): string {
-        return jsonpath.value(
+        const urnIdentifier = jsonpath.value(
+            jsonDataset.json,
+            "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='urn:uuid')].code.._"
+        );
+
+        const fileIdentifier = jsonpath.value(
             jsonDataset.json,
             "$.fileIdentifier[*].CharacterString[*]._"
         );
+
+        return fileIdentifier || urnIdentifier;
     }
 
     private getRawDistributionId(

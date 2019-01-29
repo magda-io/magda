@@ -1,4 +1,4 @@
-const child = require("child_process");
+const spawn = require("cross-spawn");
 const assert = require("assert");
 import { MockRegistry } from "./MockRegistry";
 import { MockExpressServer } from "./MockExpressServer";
@@ -29,7 +29,7 @@ export function runConnectorTest(
                     "--jwtSecret=nerdgasm",
                     "--userId=user"
                 ];
-                const proc = child.spawn("ts-node", command, {
+                const proc = spawn("ts-node", command, {
                     stdio: "inherit"
                 });
                 proc.on("error", (err: any) => {
@@ -67,7 +67,11 @@ export function runConnectorTest(
                     return run().then(() => {
                         Object.values(registry.records).forEach(record => {
                             record.sourceTag = "stag";
-                            if (record.aspects && record.aspects.source) {
+                            if (
+                                record.aspects &&
+                                record.aspects.source &&
+                                record.aspects.source.url
+                            ) {
                                 record.aspects.source.url = record.aspects.source.url.replace(
                                     `http://localhost:${catalogPort}`,
                                     "SOURCE"
@@ -77,7 +81,10 @@ export function runConnectorTest(
                         if (options.cleanRegistry) {
                             options.cleanRegistry(registry);
                         }
-                        assert.deepEqual(registry.records, testCase.output);
+                        assert.deepStrictEqual(
+                            registry.records,
+                            testCase.output
+                        );
                     });
                 });
             });
