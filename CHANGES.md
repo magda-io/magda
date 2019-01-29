@@ -12,6 +12,7 @@ Ops:
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
 -   Made the content-api accept authentication by default
+-   Lowered the resource requirements for the apidocs-server based on data.gov.au usage.
 
 Search:
 
