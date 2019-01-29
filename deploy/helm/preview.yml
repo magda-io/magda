@@ -5,10 +5,12 @@ global:
     imagePullSecret: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
+  enablePriorityClass: true
 
 tags:
   all: true
   ingress: true
+  priorities: false
 
 ingress:
   ingressClass: nginx
