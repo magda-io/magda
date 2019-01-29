@@ -71,8 +71,12 @@ export function runConnectorTest(
                         }
 
                         // console.log(JSON.stringify(registry.records, null, 2))
-
+                        try{
                         assert.deepEqual(registry.records, testCase.output);
+                        }catch(e){
+                            done(e);
+                        }
+                        
                         if (code === 0) {
                             done();
                         } else {

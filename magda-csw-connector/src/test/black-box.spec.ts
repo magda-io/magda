@@ -10,6 +10,10 @@ const TEST_CASES = [
     {
         input: fs.readFileSync(path.join(__dirname, "csw1.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "csw1.json")))
+    },
+    {
+        input: fs.readFileSync(path.join(__dirname, "tern.xml")),
+        output: JSON.parse(fs.readFileSync(path.join(__dirname, "tern.json")))
     }
 ];
 
