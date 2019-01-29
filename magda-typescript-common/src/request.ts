@@ -5,6 +5,10 @@ const pkg = readPkgUp.sync().pkg;
 // include user agent derived from package.json in all http requests
 export default request.defaults({
     headers: {
-        "User-Agent": "".concat(pkg.name.replace("/", "-"), "/", pkg.version)
+        "User-Agent": "".concat(
+            pkg.name.replace("/", "-").replace("@", ""),
+            "/",
+            pkg.version
+        )
     }
 });

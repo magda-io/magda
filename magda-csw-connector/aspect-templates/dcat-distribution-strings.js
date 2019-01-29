@@ -20,10 +20,55 @@ const constraints = jsonpath.query(
 );
 const licenseName = jsonpath.value(constraints, "$[*].licenseName[*]._");
 const licenseUrl = jsonpath.value(constraints, "$[*].licenseLink[*]._");
-const license =
+let license =
     licenseName || licenseUrl
         ? [licenseName, licenseUrl].filter(item => item !== undefined).join(" ")
         : undefined;
+if (!license) {
+    const legalConstraints = jsonpath
+        .nodes(dataset.json, "$..MD_LegalConstraints[*]")
+        .map(node => {
+            return {
+                ...node,
+                title:
+                    jsonpath.value(node, "$..title[*].CharacterString[*]._") ||
+                    jsonpath.value(
+                        node,
+                        "$..otherConstraints[*].CharacterString[*]._"
+                    ),
+                codeListValue: jsonpath.value(node, "$..MD_RestrictionCode[0]")
+                    ? jsonpath.value(node, "$..MD_RestrictionCode[0]").$
+                          .codeListValue.value
+                    : undefined
+            };
+        });
+    // try looking for just creative commons licences
+    license = legalConstraints
+        .filter(
+            lc =>
+                lc.codeListValue == "license" &&
+                lc.title &&
+                lc.title.search(
+                    /Creative Commons|CC |BY|Attribution|creativecommons/
+                )
+        )
+        .map(lc => {
+            return lc.title;
+        })
+        .join(" ");
+
+    if (!license) {
+        license = legalConstraints
+            .filter(lc => lc.codeListValue == "license" && lc.title)
+            .map(lc => {
+                return lc.title;
+            })
+            .join(" ");
+    }
+    if (license.length === 0) {
+        license = undefined;
+    }
+}
 const rights = jsonpath.value(
     constraints,
     "$[*].MD_LegalConstraints[*].useLimitation[*].CharacterString[*]._"
@@ -34,7 +79,10 @@ const description = jsonpath.value(
     distribution,
     "$.description[*].CharacterString[*]._"
 );
-const url = jsonpath.value(distribution, "$.linkage[*].URL[*]._");
+const url =
+    jsonpath.value(distribution, "$.linkage[" + "*].URL[*]._") ||
+    jsonpath.value(distribution, "$.linkage[" + "*].CharacterString[*]._");
+
 let format = jsonpath.value(distribution, "$.protocol[*].CharacterString[*]._");
 
 if (!format) {

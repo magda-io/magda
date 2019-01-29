@@ -8,6 +8,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import * as xmldom from "xmldom";
 import * as xml2js from "xml2js";
 import * as jsonpath from "jsonpath";
+import * as fs from "fs";
 import { groupBy } from "lodash";
 
 export default class Csw implements ConnectorSource {
@@ -21,6 +22,7 @@ export default class Csw implements ConnectorSource {
 
     private readonly xmlParser = new xmldom.DOMParser();
     private readonly xmlSerializer = new xmldom.XMLSerializer();
+    private readonly saveXMLFolder: string;
 
     constructor(options: CswOptions) {
         this.baseUrl = new URI(options.baseUrl);
@@ -29,10 +31,13 @@ export default class Csw implements ConnectorSource {
         this.pageSize = options.pageSize || 10;
         this.maxRetries = options.maxRetries || 10;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
+        this.saveXMLFolder = options.saveXMLFolder;
         this.urlBuilder = new CswUrlBuilder({
             id: options.id,
             name: options.name,
-            baseUrl: options.baseUrl
+            baseUrl: options.baseUrl,
+            outputSchema: options.outputSchema,
+            typeNames: options.typeNames
         });
     }
 
@@ -108,7 +113,7 @@ export default class Csw implements ConnectorSource {
             )[0];
             const records = searchResults.getElementsByTagNameNS(
                 "*",
-                "MD_Metadata"
+                this.urlBuilder.GetRecordsParameters.typeNames.split(":")[1]
             );
 
             const result = [];
@@ -131,6 +136,23 @@ export default class Csw implements ConnectorSource {
                     reject(error);
                     return;
                 }
+                if (this.saveXMLFolder) {
+                    const xmlFilename =
+                        this.saveXMLFolder +
+                        "/" +
+                        "getrecord-" +
+                        this.id +
+                        "-" +
+                        id +
+                        ".xml";
+                    fs.writeFile(xmlFilename, body, function(err: any) {
+                        if (err) {
+                            return console.log(err);
+                        }
+
+                        console.log("The file " + xmlFilename + " was saved!");
+                    });
+                }
                 resolve(this.xmlParser.parseFromString(body));
             });
         });
@@ -138,7 +160,7 @@ export default class Csw implements ConnectorSource {
         return xmlPromise.then(xml => {
             const recordXml = xml.documentElement.getElementsByTagNameNS(
                 "*",
-                "MD_Metadata"
+                this.urlBuilder.GetRecordByIdParameters.typeNames.split(":")[1]
             )[0];
             return this.xmlRecordToJsonRecord(recordXml);
         });
@@ -191,6 +213,7 @@ export default class Csw implements ConnectorSource {
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
         const responsibleParties = jsonpath
             .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
+            .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
             .map(node => {
                 return {
                     ...node,
@@ -370,6 +393,26 @@ export default class Csw implements ConnectorSource {
                         return;
                     }
                     try {
+                        if (this.saveXMLFolder) {
+                            const xmlFilename =
+                                this.saveXMLFolder +
+                                "/" +
+                                "getrecords-" +
+                                this.id +
+                                "-" +
+                                startIndex +
+                                ".xml";
+                            fs.writeFile(xmlFilename, body, function(err: any) {
+                                if (err) {
+                                    return console.log(err);
+                                }
+
+                                console.log(
+                                    "The file " + xmlFilename + " was saved!"
+                                );
+                            });
+                        }
+
                         const data = this.xmlParser.parseFromString(body);
                         if (
                             data.documentElement.getElementsByTagNameNS(
@@ -411,4 +454,7 @@ export interface CswOptions {
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    outputSchema?: string;
+    typeNames?: string;
+    saveXMLFolder?: string;
 }
