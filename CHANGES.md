@@ -11,15 +11,23 @@ Ops:
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
+-   Made the content-api accept authentication by default
 
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
-    Others:
 
-Interoperability
+Connectors:
+
+-   Made the CSV connector put the description column in the distribution description, not just the dataset one
+
+Interoperability:
 
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Development:
+
+-   Made connector tests use the typescript of the code under test through ts-node, instead of the `/dist` directory.
 
 Others:
 

@@ -5,7 +5,7 @@ global:
     imagePullSecret: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
-  enablePriorityClass: true
+  enablePriorityClass: false
 
 tags:
   all: true
