@@ -47,6 +47,7 @@ export interface CkanOptions {
     maxRetries?: number;
     secondsBetweenRetries?: number;
     ignoreHarvestSources?: string[];
+    allowedOrganisationName?: string;
 }
 
 export default class Ckan implements ConnectorSource {
@@ -57,6 +58,7 @@ export default class Ckan implements ConnectorSource {
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: CkanUrlBuilder;
     private ignoreHarvestSources: string[];
+    private allowedOrganisationName: string;
 
     constructor({
         baseUrl,
@@ -66,7 +68,8 @@ export default class Ckan implements ConnectorSource {
         pageSize = 1000,
         maxRetries = 10,
         secondsBetweenRetries = 10,
-        ignoreHarvestSources = []
+        ignoreHarvestSources = [],
+        allowedOrganisationName = null
     }: CkanOptions) {
         this.id = id;
         this.name = name;
@@ -74,6 +77,7 @@ export default class Ckan implements ConnectorSource {
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.ignoreHarvestSources = ignoreHarvestSources;
+        this.allowedOrganisationName = allowedOrganisationName;
         this.urlBuilder = new CkanUrlBuilder({
             id: id,
             name: name,
@@ -83,6 +87,7 @@ export default class Ckan implements ConnectorSource {
     }
 
     public packageSearch(options?: {
+        allowedOrganisationName?: string;
         ignoreHarvestSources?: string[];
         title?: string;
         sort?: string;
@@ -92,6 +97,18 @@ export default class Ckan implements ConnectorSource {
         const url = new URI(this.urlBuilder.getPackageSearchUrl());
 
         const solrQueries = [];
+
+        if (
+            options &&
+            options.allowedOrganisationName &&
+            typeof options.allowedOrganisationName === "string"
+        ) {
+            solrQueries.push(
+                `+organization:${encodeURIComponent(
+                    `"${options.allowedOrganisationName}"`
+                )}`
+            );
+        }
 
         if (
             options &&
@@ -117,7 +134,7 @@ export default class Ckan implements ConnectorSource {
         let fqComponent = "";
 
         if (solrQueries.length > 0) {
-            fqComponent = "&fq=" + solrQueries.join("+");
+            fqComponent = "&fq=" + solrQueries.join("%20");
         }
 
         if (options && options.sort) {
