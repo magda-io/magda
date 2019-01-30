@@ -21,6 +21,7 @@ Search:
 Connectors:
 
 -   Made the CSV connector put the description column in the distribution description, not just the dataset one
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
 
 Interoperability:
 

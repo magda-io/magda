@@ -69,6 +69,21 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "CSW Connector Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-csw-connector",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Minion Format",
             "runtimeExecutable":
                 "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
