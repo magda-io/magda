@@ -34,6 +34,7 @@ Development:
 Others:
 
 -   Changed terminology for data rating to `Linked Data Rating`
+-   Fixed: Empty source link shows as a working link on dataset page
 
 ## 0.0.51
 
