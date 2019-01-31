@@ -11,6 +11,8 @@ Ops:
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
+-   Made the content-api accept authentication by default
+-   Lowered the resource requirements for the apidocs-server based on data.gov.au usage.
 
 Search:
 
@@ -22,13 +24,23 @@ Accessibility:
 
 -   Added `aria-label` field to Facet buttons to reflect the current filter selection
 
-Interoperability
+Connectors:
+
+-   Made the CSV connector put the description column in the distribution description, not just the dataset one
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
+
+Interoperability:
 
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Development:
+
+-   Made connector tests use the typescript of the code under test through ts-node, instead of the `/dist` directory.
 
 Others:
 
 -   Changed terminology for data rating to `Linked Data Rating`
+-   Fixed: Empty source link shows as a working link on dataset page
 
 ## 0.0.51
 

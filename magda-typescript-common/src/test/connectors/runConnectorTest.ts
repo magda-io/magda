@@ -18,24 +18,32 @@ export function runConnectorTest(
         const registryPort = 5000 + Math.round(5000 * Math.random());
         const catalogPort = registryPort + 1;
 
-        function run(done: any) {
-            const command = [
-                "src",
-                "--id=connector",
-                "--name=Connector",
-                `--sourceUrl=http://localhost:${catalogPort}`,
-                `--registryUrl=http://localhost:${registryPort}`,
-                "--jwtSecret=nerdgasm",
-                "--userId=user"
-            ];
-            // console.log(command.join(" "));
-            const proc = child.spawn("ts-node", command, {
-                stdio: "inherit"
+        function run() {
+            return new Promise((resolve, reject) => {
+                const command = [
+                    "src",
+                    "--id=connector",
+                    "--name=Connector",
+                    `--sourceUrl=http://localhost:${catalogPort}`,
+                    `--registryUrl=http://localhost:${registryPort}`,
+                    "--jwtSecret=nerdgasm",
+                    "--userId=user"
+                ];
+                const proc = child.spawn("ts-node", command, {
+                    stdio: "inherit"
+                });
+                proc.on("error", (err: any) => {
+                    console.log("Failed to start subprocess.", err);
+                    reject(err);
+                });
+                proc.on("close", (code: number) => {
+                    if (code === 0) {
+                        resolve();
+                    } else {
+                        reject(new Error(`error exit code nonzero: ${code}`));
+                    }
+                });
             });
-            proc.on("error", (err: any) => {
-                console.log("Failed to start subprocess.", err);
-            });
-            proc.on("close", done);
         }
 
         let servers: any[] = [];
@@ -52,11 +60,11 @@ export function runConnectorTest(
         });
 
         TEST_CASES.forEach(function(testCase: any, index: number) {
-            it(`should run ${index}`, function(done) {
+            it(`should run ${index}`, async function() {
                 const catalog: MockExpressServer = new Catalog(testCase.input);
-                catalog.run(catalogPort).then((catalog: any) => {
+                await catalog.run(catalogPort).then((catalog: any) => {
                     servers.push(catalog);
-                    run((code: number) => {
+                    return run().then(() => {
                         Object.values(registry.records).forEach(record => {
                             record.sourceTag = "stag";
                             if (record.aspects && record.aspects.source) {
@@ -69,15 +77,7 @@ export function runConnectorTest(
                         if (options.cleanRegistry) {
                             options.cleanRegistry(registry);
                         }
-
-                        // console.log(JSON.stringify(registry.records, null, 2))
-
                         assert.deepEqual(registry.records, testCase.output);
-                        if (code === 0) {
-                            done();
-                        } else {
-                            done(`error exit code nonzero: ${code}`);
-                        }
                     });
                 });
             });
