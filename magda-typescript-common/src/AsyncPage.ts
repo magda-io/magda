@@ -75,6 +75,19 @@ export default class AsyncPage<T> {
         );
     }
 
+    reduce<TResult>(
+        reducer: (reducedData: TResult, currentPageData: T) => TResult,
+        initialData?: TResult
+    ): AsyncPage<TResult> {
+        return new AsyncPage<TResult>(undefined, false, async () => {
+            let reducedData = initialData;
+            await this.forEach(data => {
+                reducedData = reducer(reducedData, data);
+            });
+            return new AsyncPage(reducedData, true, undefined);
+        });
+    }
+
     async forEach(callback: (data: T) => void): Promise<void> {
         let current: AsyncPage<T> = this;
         while (current) {

@@ -192,6 +192,7 @@ export default class Ckan implements ConnectorSource {
     public getJsonDatasets(): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
+            allowedOrganisationName: this.allowedOrganisationName,
             sort: "metadata_created asc"
         });
         return packagePages.map(packagePage => packagePage.result.results);
@@ -217,6 +218,7 @@ export default class Ckan implements ConnectorSource {
     ): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
+            allowedOrganisationName: this.allowedOrganisationName,
             title: title,
             maxResults: maxResults
         });
@@ -230,10 +232,30 @@ export default class Ckan implements ConnectorSource {
     public readonly hasFirstClassOrganizations = true;
 
     public getJsonFirstClassOrganizations(): AsyncPage<object[]> {
-        const organizationPages = this.organizationList();
-        return organizationPages.map(
+        const organizationPages = this.organizationList().map(
             organizationPage => organizationPage.result
         );
+        if (
+            this.allowedOrganisationName &&
+            typeof this.allowedOrganisationName === "string"
+        ) {
+            return organizationPages.reduce(
+                (reducedData: CkanOrganization[], currentPageData) => {
+                    if (currentPageData && currentPageData.length) {
+                        return reducedData.concat(
+                            currentPageData.filter(
+                                orgData =>
+                                    orgData.name ===
+                                    this.allowedOrganisationName
+                            )
+                        );
+                    }
+                    return reducedData;
+                },
+                []
+            );
+        }
+        return organizationPages;
     }
 
     public getJsonFirstClassOrganization(id: string): Promise<object> {
