@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect for capturing config data of a connector",
+    "type": "object",
+    "required": ["id", "name"],
+    "properties": {
+        "id": {
+            "title": "Connector ID.",
+            "type": "string"
+        },
+        "name": {
+            "title": "The connector name",
+            "type": "string"
+        },
+        "sourceUrl": {
+            "title": "Connector data crawling URL",
+            "type": "string"
+        },
+        "pageSize": {
+            "title":
+                "The page size when retieve records from remote data source.",
+            "type": "number"
+        },
+        "schedule": {
+            "title": "Connector Cron job schedule",
+            "type": "string"
+        },
+        "ignoreHarvestSources": {
+            "title": "A list of harvester names to be ignored from source",
+            "type": "array",
+            "items": {
+                "title": "The harvester name to be ignored from source.",
+                "type": "string"
+            }
+        },
+        "allowedOrganisationName": {
+            "title":
+                "If specified, the connector will only capture the data from this organisation",
+            "type": "string"
+        },
+        "extras": {
+            "title": "Extra metadata a connector may have",
+            "type": "object"
+        },
+        "presetRecordAspects": {
+            "title":
+                "Predefined aspects that will set to all records (except this connector record) that created by this connector",
+            "type": "object",
+            "required": ["aspectName", "aspectData"],
+            "properties": {
+                "aspectName": {
+                    "title": "Aspect name",
+                    "type": "string"
+                },
+                "aspectData": {
+                    "title": "Aspect data",
+                    "type": "object"
+                }
+            }
+        }
+    }
+}

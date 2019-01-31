@@ -19,6 +19,17 @@
             "title": "The human-friendly name of this source.",
             "type": "string"
         },
+        "connector": {
+            "title":
+                "The ID of the record representing the connector that captured this record.",
+            "type": "string",
+            "links": [
+                {
+                    "href": "/api/v0/registry/records/{$}",
+                    "rel": "item"
+                }
+            ]
+        },
         "problems": {
             "title":
                 "Problems encountered while creating this record from the source.",

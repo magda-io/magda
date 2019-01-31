@@ -29,7 +29,8 @@ export default class JsonConnector {
         transformer,
         registry,
         maxConcurrency = 1,
-        sourceTag = uuid.v4()
+        sourceTag = uuid.v4(),
+        connectorData = {}
     }: JsonConnectorOptions) {
         this.source = source;
         this.transformer = transformer;
@@ -93,6 +94,50 @@ export default class JsonConnector {
                 datasetJson
             )
         );
+    }
+
+    async createConnector(): Promise<ConnectionResult> {
+        const result = new ConnectionResult();
+
+        try {
+            await this.putRecord({
+                id: `con-${this.sourceTag}`,
+                name: "sss",
+                aspects: {
+                    "connector-details": {}
+                },
+                sourceTag: this.sourceTag
+            });
+        } catch (e) {}
+
+        if (this.source.hasFirstClassOrganizations) {
+            const organizations = this.source.getJsonFirstClassOrganizations();
+            await forEachAsync(
+                organizations,
+                this.maxConcurrency,
+                async organization => {
+                    const recordOrError = await this.createOrganization(
+                        organization
+                    );
+                    if (recordOrError instanceof Error) {
+                        result.organizationFailures.push(
+                            new RecordCreationFailure(
+                                this.transformer.getIdFromJsonOrganization(
+                                    organization,
+                                    this.source.id
+                                ),
+                                undefined,
+                                recordOrError
+                            )
+                        );
+                    } else {
+                        ++result.organizationsConnected;
+                    }
+                }
+            );
+        }
+
+        return result;
     }
 
     async createOrganizations(): Promise<ConnectionResult> {
@@ -266,12 +311,14 @@ export default class JsonConnector {
      */
     async run(): Promise<ConnectionResult> {
         const aspectResult = await this.createAspectDefinitions();
+        const connectResult = await this.createConnector();
         const organizationResult = await this.createOrganizations();
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
         const recordsTrimmedResult = await this.trimRecords();
 
         return ConnectionResult.combine(
             aspectResult,
+            connectResult,
             organizationResult,
             datasetAndDistributionResult,
             recordsTrimmedResult
