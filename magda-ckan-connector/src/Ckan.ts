@@ -232,30 +232,26 @@ export default class Ckan implements ConnectorSource {
     public readonly hasFirstClassOrganizations = true;
 
     public getJsonFirstClassOrganizations(): AsyncPage<object[]> {
-        const organizationPages = this.organizationList().map(
-            organizationPage => organizationPage.result
-        );
         if (
             this.allowedOrganisationName &&
             typeof this.allowedOrganisationName === "string"
         ) {
-            return organizationPages.reduce(
-                (reducedData: CkanOrganization[], currentPageData) => {
-                    if (currentPageData && currentPageData.length) {
-                        return reducedData.concat(
-                            currentPageData.filter(
-                                orgData =>
-                                    orgData.name ===
-                                    this.allowedOrganisationName
-                            )
-                        );
-                    }
-                    return reducedData;
-                },
-                []
-            );
+            return new AsyncPage(undefined, false, async () => {
+                return new AsyncPage(
+                    [
+                        await this.getJsonFirstClassOrganization(
+                            this.allowedOrganisationName
+                        )
+                    ],
+                    true,
+                    undefined
+                );
+            });
         }
-        return organizationPages;
+        const organizationPages = this.organizationList();
+        return organizationPages.map(
+            organizationPage => organizationPage.result
+        );
     }
 
     public getJsonFirstClassOrganization(id: string): Promise<object> {
