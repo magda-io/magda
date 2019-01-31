@@ -23,20 +23,47 @@ export default class JsonConnector {
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
     public readonly sourceTag?: string;
+    public readonly configData?: any;
+    public readonly connectorRecordId: string;
 
     constructor({
         source,
         transformer,
         registry,
         maxConcurrency = 1,
-        sourceTag = uuid.v4(),
-        connectorData = {}
+        sourceTag = uuid.v4()
     }: JsonConnectorOptions) {
         this.source = source;
         this.transformer = transformer;
         this.registry = registry;
         this.maxConcurrency = maxConcurrency;
         this.sourceTag = sourceTag;
+        this.configData = this.readConfigData();
+        this.connectorRecordId = `con-${this.sourceTag}`;
+    }
+
+    readConfigData() {
+        try {
+            const argv = process.argv;
+            if (!argv || !argv.length) {
+                throw new Error("failed to locate --config parameter!");
+            }
+            let configFilePath = null;
+            for (let i = 0; i < argv.length - 1; i++) {
+                if (argv[i].replace("-", "") === "config") {
+                    configFilePath = argv[i + 1];
+                    break;
+                }
+            }
+            if (!configFilePath) {
+                throw new Error("failed to locate --config parameter!");
+            }
+            return JSON.parse(
+                fs.readFileSync(configFilePath, { encoding: "utf-8" })
+            );
+        } catch (e) {
+            throw new Error(`Can't read connector config data: ${e}`);
+        }
     }
 
     async createAspectDefinitions(): Promise<ConnectionResult> {
@@ -98,42 +125,20 @@ export default class JsonConnector {
 
     async createConnector(): Promise<ConnectionResult> {
         const result = new ConnectionResult();
-
         try {
             await this.putRecord({
-                id: `con-${this.sourceTag}`,
-                name: "sss",
+                id: this.connectorRecordId,
+                name: this.configData.name,
                 aspects: {
-                    "connector-details": {}
+                    "connector-details": this.configData
                 },
                 sourceTag: this.sourceTag
             });
-        } catch (e) {}
-
-        if (this.source.hasFirstClassOrganizations) {
-            const organizations = this.source.getJsonFirstClassOrganizations();
-            await forEachAsync(
-                organizations,
-                this.maxConcurrency,
-                async organization => {
-                    const recordOrError = await this.createOrganization(
-                        organization
-                    );
-                    if (recordOrError instanceof Error) {
-                        result.organizationFailures.push(
-                            new RecordCreationFailure(
-                                this.transformer.getIdFromJsonOrganization(
-                                    organization,
-                                    this.source.id
-                                ),
-                                undefined,
-                                recordOrError
-                            )
-                        );
-                    } else {
-                        ++result.organizationsConnected;
-                    }
-                }
+        } catch (e) {
+            throw new Error(
+                `Failed to create connector record for connector ${
+                    this.configData.name
+                } with ID: ${this.connectorRecordId}`
             );
         }
 
@@ -312,6 +317,16 @@ export default class JsonConnector {
     async run(): Promise<ConnectionResult> {
         const aspectResult = await this.createAspectDefinitions();
         const connectResult = await this.createConnector();
+        if (connectResult.connectorFailures.length) {
+            // --- if connector record fails to create, shouldn't go futher
+            return ConnectionResult.combine(
+                aspectResult,
+                connectResult,
+                new ConnectionResult(),
+                new ConnectionResult(),
+                new ConnectionResult()
+            );
+        }
         const organizationResult = await this.createOrganizations();
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
         const recordsTrimmedResult = await this.trimRecords();
