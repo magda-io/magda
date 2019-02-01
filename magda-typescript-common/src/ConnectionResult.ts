@@ -10,7 +10,6 @@ export default class ConnectionResult {
     public trimStillProcessing = false;
 
     public aspectDefinitionFailures = Array<AspectCreationFailure>();
-    public connectorFailures = Array<Error>();
     public organizationFailures = Array<RecordCreationFailure>();
     public datasetFailures = Array<RecordCreationFailure>();
     public distributionFailures = Array<RecordCreationFailure>();
@@ -36,12 +35,6 @@ export default class ConnectionResult {
             result +=
                 "Aspect Definition Failures:\n" +
                 JSON.stringify(this.aspectDefinitionFailures, undefined, "  ") +
-                "\n";
-        }
-        if (this.connectorFailures.length > 0) {
-            result +=
-                "Organization Failures:\n" +
-                JSON.stringify(this.connectorFailures, undefined, "  ") +
                 "\n";
         }
         if (this.organizationFailures.length > 0) {

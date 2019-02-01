@@ -146,11 +146,6 @@ export default abstract class JsonTransformer {
                 id: "dataset-publisher",
                 name: "Dataset Publisher",
                 jsonSchema: require("@magda/registry-aspects/dataset-publisher.schema.json")
-            },
-            {
-                id: "connector-details",
-                name: "Connector Details",
-                jsonSchema: require("@magda/registry-aspects/connector-details.schema.json")
             }
         ]);
     }

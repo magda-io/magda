@@ -24,7 +24,6 @@ export default class JsonConnector {
     public readonly maxConcurrency: number;
     public readonly sourceTag?: string;
     public readonly configData?: JsonConnectorConfig;
-    public readonly connectorRecordId: string;
 
     constructor({
         source,
@@ -39,7 +38,6 @@ export default class JsonConnector {
         this.maxConcurrency = maxConcurrency;
         this.sourceTag = sourceTag;
         this.configData = this.readConfigData();
-        this.connectorRecordId = `con-${this.sourceTag}`;
     }
 
     readConfigData(): JsonConnectorConfig {
@@ -142,28 +140,6 @@ export default class JsonConnector {
                 datasetJson
             )
         );
-    }
-
-    async createConnector(): Promise<ConnectionResult> {
-        const result = new ConnectionResult();
-        try {
-            await this.putRecord({
-                id: this.connectorRecordId,
-                name: this.configData.name,
-                aspects: {
-                    "connector-details": this.configData
-                },
-                sourceTag: this.sourceTag
-            });
-        } catch (e) {
-            throw new Error(
-                `Failed to create connector record for connector ${
-                    this.configData.name
-                } with ID: ${this.connectorRecordId}`
-            );
-        }
-
-        return result;
     }
 
     async createOrganizations(): Promise<ConnectionResult> {
@@ -337,24 +313,12 @@ export default class JsonConnector {
      */
     async run(): Promise<ConnectionResult> {
         const aspectResult = await this.createAspectDefinitions();
-        const connectResult = await this.createConnector();
-        if (connectResult.connectorFailures.length) {
-            // --- if connector record fails to create, shouldn't go futher
-            return ConnectionResult.combine(
-                aspectResult,
-                connectResult,
-                new ConnectionResult(),
-                new ConnectionResult(),
-                new ConnectionResult()
-            );
-        }
         const organizationResult = await this.createOrganizations();
         const datasetAndDistributionResult = await this.createDatasetsAndDistributions();
         const recordsTrimmedResult = await this.trimRecords();
 
         return ConnectionResult.combine(
             aspectResult,
-            connectResult,
             organizationResult,
             datasetAndDistributionResult,
             recordsTrimmedResult
@@ -500,10 +464,15 @@ export default class JsonConnector {
      * so that connector is linked to all records it generates
      */
     private attachConnectorDataToSource(record: Record) {
-        if (!record || !record.aspects || !record.aspects.source) {
+        if (
+            !record ||
+            !record.aspects ||
+            !record.aspects.source ||
+            !this.configData.extras
+        ) {
             return record;
         }
-        record.aspects.source["connector"] = this.connectorRecordId;
+        record.aspects.source["extras"] = this.configData.extras;
         return record;
     }
 

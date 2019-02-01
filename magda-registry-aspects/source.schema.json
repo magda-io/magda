@@ -19,16 +19,11 @@
             "title": "The human-friendly name of this source.",
             "type": "string"
         },
-        "connector": {
-            "title":
-                "The ID of the record representing the connector that captured this record.",
-            "type": "string",
-            "links": [
-                {
-                    "href": "/api/v0/registry/records/{$}",
-                    "rel": "item"
-                }
-            ]
+        "extras": {
+            "title": "Extra Metadata",
+            "description":
+                "Any extra metadata a connector may have. \nThis field is auto copied from connector configData.extras.",
+            "type": "object"
         },
         "problems": {
             "title":
