@@ -30,7 +30,7 @@ libraryDependencies ++= {
 
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
-       "com.github.swagger-akka-http" %% "swagger-akka-http" % "2.0.1",
+       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.14.1",
        "com.auth0" % "java-jwt" % "3.7.0",
        "net.virtual-void" %%  "json-lenses" % "0.6.2"
      )
