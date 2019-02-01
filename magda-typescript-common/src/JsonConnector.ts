@@ -13,6 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";
 import * as uuid from "uuid";
+import * as _ from "lodash";
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -151,6 +152,9 @@ export default class JsonConnector {
                 organizations,
                 this.maxConcurrency,
                 async organization => {
+                    if (!organization) {
+                        return;
+                    }
                     const recordOrError = await this.createOrganization(
                         organization
                     );
@@ -460,8 +464,8 @@ export default class JsonConnector {
     }
 
     /**
-     * Add connector details record ref to source aspect
-     * so that connector is linked to all records it generates
+     * Copy `extras` from connector config data to
+     * records `source` aspect
      */
     private attachConnectorDataToSource(record: Record) {
         if (
@@ -509,7 +513,7 @@ export default class JsonConnector {
                 return;
             } else {
                 // --- merge should be default operation
-                record.aspects[id] = { ...record.aspects[id], ...data };
+                record.aspects[id] = _.merge(record.aspects[id], data);
                 return;
             }
         });
@@ -639,9 +643,16 @@ export interface JsonConnectorConfig {
     schedule?: string;
     ignoreHarvestSources?: string[];
     allowedOrganisationName?: string;
+    /**
+     * Connector extra metadata
+     * Will be copied to records' source aspect automatically
+     */
     extras?: {
         [k: string]: any;
     };
+    /**
+     * Any aspects that will be `preset` on any records created by the connector
+     */
     presetRecordAspects?: {
         id: string;
         opType?: "MERGE" | "REPLACE" | "FILL";

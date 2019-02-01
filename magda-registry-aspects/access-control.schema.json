@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect for defining the access control of the an record",
+    "type": "object",
+    "definitions": {
+        "operationTypes": {
+            "type": "string",
+            "enum": ["READ", "WRITE", "ADMIN"]
+        },
+        "permissionDef": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 3,
+            "items": {
+                "$ref": "#/definitions/operationTypes"
+            }
+        }
+    },
+    "properties": {
+        "ownerIds": {
+            "type": "array",
+            "title": "Owner IDs",
+            "description": "A list of owner IDs (user ID)",
+            "items": {
+                "type": "string"
+            }
+        },
+        "groupIds": {
+            "type": "array",
+            "title": "Group IDs",
+            "description": "A list of Group (who owns the record) IDs",
+            "items": {
+                "type": "string"
+            }
+        },
+        "permission": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "$ref": "#/definitions/permissionDef"
+                },
+                "group": {
+                    "$ref": "#/definitions/permissionDef"
+                },
+                "other": {
+                    "$ref": "#/definitions/permissionDef"
+                }
+            }
+        }
+    }
+}
