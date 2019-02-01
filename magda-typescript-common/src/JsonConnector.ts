@@ -1,4 +1,4 @@
-import { AspectDefinition, Record } from "./generated/registry/api";
+import { AspectDefinition, Record, RecordsApi } from "./generated/registry/api";
 import AspectCreationFailure from "./AspectCreationFailure";
 import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
 import ConnectorRecordId from "./ConnectorRecordId";
@@ -23,7 +23,7 @@ export default class JsonConnector {
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
     public readonly sourceTag?: string;
-    public readonly configData?: any;
+    public readonly configData?: JsonConnectorConfig;
     public readonly connectorRecordId: string;
 
     constructor({
@@ -42,12 +42,13 @@ export default class JsonConnector {
         this.connectorRecordId = `con-${this.sourceTag}`;
     }
 
-    readConfigData() {
+    readConfigData(): JsonConnectorConfig {
         try {
             const argv = process.argv;
             if (!argv || !argv.length) {
                 throw new Error("failed to locate --config parameter!");
             }
+
             let configFilePath = null;
             for (let i = 0; i < argv.length - 1; i++) {
                 if (argv[i].replace("-", "") === "config") {
@@ -55,12 +56,32 @@ export default class JsonConnector {
                     break;
                 }
             }
+
             if (!configFilePath) {
                 throw new Error("failed to locate --config parameter!");
             }
-            return JSON.parse(
+
+            const configData = JSON.parse(
                 fs.readFileSync(configFilePath, { encoding: "utf-8" })
             );
+
+            if (!configData) {
+                throw new Error("invalid empty config data.");
+            }
+
+            if (!configData.id) {
+                throw new Error(
+                    "invalid config data, missing compulsory `id`."
+                );
+            }
+
+            if (!configData.name) {
+                throw new Error(
+                    "invalid config data, missing compulsory `name`."
+                );
+            }
+
+            return configData;
         } catch (e) {
             throw new Error(`Can't read connector config data: ${e}`);
         }
@@ -467,9 +488,63 @@ export default class JsonConnector {
         }
 
         return this.registry.putRecord({
-            ...record,
+            ...this.attachConnectorDataToSource(
+                this.attachConnectorPresetAspects(record)
+            ),
             sourceTag: this.sourceTag
         });
+    }
+
+    /**
+     * Add connector details record ref to source aspect
+     * so that connector is linked to all records it generates
+     */
+    private attachConnectorDataToSource(record: Record) {
+        if (!record || !record.aspects || !record.aspects.source) {
+            return record;
+        }
+        record.aspects.source["connector"] = this.connectorRecordId;
+        return record;
+    }
+
+    private attachConnectorPresetAspects(record: Record) {
+        if (
+            !this.configData.presetRecordAspects ||
+            !this.configData.presetRecordAspects.length
+        ) {
+            // --- no `presetRecordAspects` config, do nothing
+            return record;
+        }
+        if (!record.aspects) {
+            record.aspects = {};
+        }
+        this.configData.presetRecordAspects.forEach(presetRecordAspect => {
+            if (typeof presetRecordAspect !== "object") {
+                return;
+            }
+
+            const { id, opType, data } = presetRecordAspect;
+            if (!id || !data) {
+                return;
+            }
+
+            if (!record.aspects[id]) {
+                record.aspects[id] = data;
+                return;
+            }
+
+            if (opType === "FILL") {
+                return;
+            } else if (opType === "REPLACE") {
+                record.aspects[id] = data;
+                return;
+            } else {
+                // --- merge should be default operation
+                record.aspects[id] = { ...record.aspects[id], ...data };
+                return;
+            }
+        });
+        return record;
     }
 }
 
@@ -585,4 +660,24 @@ export interface JsonConnectorRunInteractiveOptions {
     timeoutSeconds: number;
     listenPort: number;
     transformerOptions: any;
+}
+
+export interface JsonConnectorConfig {
+    id: string;
+    name: string;
+    sourceUrl?: string;
+    pageSize?: number;
+    schedule?: string;
+    ignoreHarvestSources?: string[];
+    allowedOrganisationName?: string;
+    extras?: {
+        [k: string]: any;
+    };
+    presetRecordAspects?: {
+        id: string;
+        opType?: "MERGE" | "REPLACE" | "FILL";
+        data: {
+            [k: string]: any;
+        };
+    }[];
 }
