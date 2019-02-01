@@ -272,6 +272,23 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     return compatiblePreviews;
 }
 
+function parseAccessControl(aspects) {
+    const accessControl = aspects["access-control"];
+    let isPublic = null;
+    if (
+        !accessControl ||
+        !accessControl.permission ||
+        !accessControl.permission.other ||
+        !accessControl.permission.other.length ||
+        accessControl.permission.other.indexOf("READ") === -1
+    ) {
+        isPublic = false;
+    } else {
+        isPublic = true;
+    }
+    return { isPublic, accessControl };
+}
+
 export function parseDistribution(
     record?: RawDistribution
 ): ParsedDistribution {
@@ -313,6 +330,7 @@ export function parseDistribution(
             numeric: numericFields
         };
     }
+
     return {
         identifier,
         title,
@@ -330,7 +348,9 @@ export function parseDistribution(
         visualizationInfo: aspects["visualization-info"]
             ? aspects["visualization-info"]
             : null,
-        compatiblePreviews
+        compatiblePreviews,
+        sourceDetails: aspects["source"],
+        ...parseAccessControl(aspects)
     };
 }
 
@@ -425,7 +445,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             isTimeSeries: visualizationInfo["timeseries"],
             chartFields,
             compatiblePreviews,
-            visualizationInfo: visualizationInfo ? visualizationInfo : null
+            visualizationInfo: visualizationInfo ? visualizationInfo : null,
+            sourceDetails: distributionAspects["source"],
+            ...parseAccessControl(distributionAspects)
         };
     });
     return {
@@ -443,6 +465,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         publisher,
         error,
         linkedDataRating,
-        hasQuality
+        hasQuality,
+        sourceDetails: aspects["source"],
+        ...parseAccessControl(aspects)
     };
 }

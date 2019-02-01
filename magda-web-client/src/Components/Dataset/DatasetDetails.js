@@ -62,6 +62,16 @@ class DatasetDetails extends Component {
                                 >
                                     {dataset.landingPage}
                                 </a>
+                                {dataset.isPublic !== null ? (
+                                    <h3 className="section-heading">
+                                        Visibility:{" "}
+                                        {dataset.isPublic
+                                            ? "Public"
+                                            : dataset.isPublic === false
+                                                ? "Private"
+                                                : "Unspecified"}
+                                    </h3>
+                                ) : null}
                             </div>
                         )}
                         <div

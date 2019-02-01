@@ -58,7 +58,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
         let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating";
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=access-control";
         const url =
             config.registryApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
@@ -104,7 +104,7 @@ export function fetchDistributionFromRegistry(id: string): Object {
             config.registryApiUrl +
             `records/${encodeURIComponent(
                 id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
+            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format&optionalAspect=access-control`;
         return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {

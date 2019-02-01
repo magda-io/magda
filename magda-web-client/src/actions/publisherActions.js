@@ -115,7 +115,7 @@ function fetchPublisher(id) {
         dispatch(requestPublisher());
         const url = `${
             config.registryApiUrl
-        }records/${id}?aspect=organization-details`;
+        }records/${id}?aspect=organization-details&optionalAspect=access-control`;
 
         return fetch(url, config.fetchOptions)
             .then(response => {
