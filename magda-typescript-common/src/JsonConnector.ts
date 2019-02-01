@@ -1,4 +1,4 @@
-import { AspectDefinition, Record, RecordsApi } from "./generated/registry/api";
+import { AspectDefinition, Record } from "./generated/registry/api";
 import AspectCreationFailure from "./AspectCreationFailure";
 import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
 import ConnectorRecordId from "./ConnectorRecordId";
