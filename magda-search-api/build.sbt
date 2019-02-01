@@ -4,7 +4,7 @@ name := "magda-search-api"
 
 libraryDependencies ++= {
   val akkaV       = "2.4.18"
-  val akkaHttpV   = "10.0.7"
+  val akkaHttpV   = "10.1.7"
   val scalaTestV  = "3.0.1"
   Seq(
        "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,

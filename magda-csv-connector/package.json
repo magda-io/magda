@@ -22,11 +22,11 @@
     "@types/lodash": "^4.14.66",
     "@types/node": "^8.0.14",
     "@types/read-pkg-up": "^3.0.1",
-    "@types/request": "^2.0.0",
+    "@types/request": "^2.48.1",
     "@types/urijs": "^1.15.34",
     "@types/xml2js": "0.0.33",
     "@types/xmldom": "^0.1.29",
-    "@types/yargs": "^6.6.0",
+    "@types/yargs": "^12.0.8",
     "ts-loader": "^2.3.7",
     "typescript": "~2.5.0",
     "webpack": "^3.6.0"
@@ -35,12 +35,12 @@
     "@magda/registry-aspects": "^0.0.52-0",
     "@magda/typescript-common": "^0.0.52-0",
     "escape-html": "^1.0.3",
-    "jsonpath": "^0.2.11",
+    "jsonpath": "^1.0.0",
     "read-pkg-up": "^3.0.0",
-    "request": "^2.79.0",
+    "request": "^2.88.0",
     "string-similarity": "^1.2.1",
     "xlsx": "^0.14.0",
-    "yargs": "^8.0.1"
+    "yargs": "^12.0.5"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",

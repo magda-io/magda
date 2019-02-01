@@ -1207,15 +1207,15 @@
   resolved "https://registry.yarnpkg.com/@types/xmldom/-/xmldom-0.1.29.tgz#c4428b0ca86d3b881475726fd94980b38a27c381"
   integrity sha1-xEKLDKhtO4gUdXJv2UmAs4onw4E=
 
+"@types/yargs@^12.0.5":
+  version "12.0.8"
+  resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-12.0.8.tgz#0b45bf0607a5509b921335658d87489c12955176"
+  integrity sha512-OMSKUmZ09gbzITzx4nxnJqhprWC7JqsmlrEsVtb+cv3GXHNpv0kktqxhboKX52FnMggkQvT5ezt8pxTWyKpJHA==
+
 "@types/yargs@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-6.6.0.tgz#91f8e2580a8083049f78311c059aa57d6949df6b"
   integrity sha1-kfjiWAqAgwSfeDEcBZqlfWlJ32s=
-
-"@types/yargs@^8.0.2":
-  version "8.0.3"
-  resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-8.0.3.tgz#6f0ad77792762fc69d209716dbab3201dcba56fb"
-  integrity sha512-YdxO7zGQf2qJeMgR0fNO8QTlj88L2zCP5GOddovoTyetgLiNDOUXcWzhWKb4EdZZlOjLQUA0JM8lW7VcKQL+9w==
 
 JSONSelect@0.4.0:
   version "0.4.0"
@@ -7130,6 +7130,14 @@ express-basic-auth@^1.1.5:
   dependencies:
     basic-auth "^1.1.0"
 
+express-brute@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/express-brute/-/express-brute-1.0.1.tgz#9f36d107fe34e40a682593e39bffcc53102b5335"
+  integrity sha1-nzbRB/405ApoJZPjm//MUxArUzU=
+  dependencies:
+    long-timeout "~0.1.1"
+    underscore "~1.8.3"
+
 express-session@^1.11.3:
   version "1.15.6"
   resolved "https://registry.yarnpkg.com/express-session/-/express-session-1.15.6.tgz#47b4160c88f42ab70fe8a508e31cbff76757ab0a"
@@ -10762,6 +10770,11 @@ jws@^3.1.4:
     jwa "^1.1.5"
     safe-buffer "^5.0.1"
 
+jwt-simple@^0.5.1:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/jwt-simple/-/jwt-simple-0.5.5.tgz#53f60ceab266708450a22cafa6fd93cfa2ccfa3a"
+  integrity sha512-KEyanRIDHooo8KuBxY3CC019NbwHtxdsxzRJUfaGqcxMrvBPBkosN+RUxx1nZFI6yrErq3KTW8HI/qrNIxHe0g==
+
 jxLoader@*:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jxLoader/-/jxLoader-0.1.1.tgz#0134ea5144e533b594fc1ff25ff194e235c53ecd"
@@ -11482,6 +11495,11 @@ lolex@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lolex/-/lolex-3.0.0.tgz#f04ee1a8aa13f60f1abd7b0e8f4213ec72ec193e"
   integrity sha512-hcnW80h3j2lbUfFdMArd5UPA/vxZJ+G8vobd+wg3nVEQA0EigStbYcrG030FJxL6xiDDPEkoMatV9xIh5OecQQ==
+
+long-timeout@~0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/long-timeout/-/long-timeout-0.1.1.tgz#9721d788b47e0bcb5a24c2e2bee1a0da55dab514"
+  integrity sha1-lyHXiLR+C8taJMLivuGg2lXatRQ=
 
 longest@^1.0.1:
   version "1.0.1"
@@ -12937,17 +12955,6 @@ obuf@^1.0.0, obuf@^1.1.1:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-ogr2ogr@^1.0.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/ogr2ogr/-/ogr2ogr-1.2.1.tgz#096c4c6fdf91bb41d695a7456bad6db54855b111"
-  integrity sha512-9/21BRQNFofLF8E5jPqeuy9+LfmjMCG+kg0fPYTzUiiNzcTeCgwKzcDwbBxoJA+oY02Wa9z0USd6GQY5HTC8VQ==
-  dependencies:
-    archiver "^1.1.0"
-    comma-separated-values "^3.6.0"
-    decompress-zip "^0.3.0"
-    findit "^2.0.0"
-    rimraf "^2.2.8"
-
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -13306,6 +13313,13 @@ pascalcase@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/pascalcase/-/pascalcase-0.1.1.tgz#b363e55e8006ca6fe21784d2db22bd15d7917f14"
   integrity sha1-s2PlXoAGym/iF4TS2yK9FdeRfxQ=
+
+passport-custom@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/passport-custom/-/passport-custom-1.0.5.tgz#2d1d9c174a6a4685bf0289bce61091cd5ec7b0f4"
+  integrity sha1-LR2cF0pqRoW/Aom85hCRzV7HsPQ=
+  dependencies:
+    passport-strategy "1.x.x"
 
 passport-facebook@^2.0.0:
   version "2.1.1"
@@ -17661,6 +17675,17 @@ terriajs-html2canvas@1.0.0-alpha.12-terriajs-1:
   dependencies:
     css-line-break "1.0.1"
 
+terriajs-ogr2ogr@^1.0.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/terriajs-ogr2ogr/-/terriajs-ogr2ogr-1.3.0.tgz#a0f9ba88e81a7229ef092d88da59dddd5af53bae"
+  integrity sha512-scEN4eZ4gE7jfhvOkfz97PsRjBpndumK2WI32BTcJ9CS8k1OQG5UhbzeCAVHwQrFzxR/KEzcGffmMQcMgZ3WVw==
+  dependencies:
+    archiver "^1.1.0"
+    comma-separated-values "^3.6.0"
+    decompress-zip "^0.3.0"
+    findit "^2.0.0"
+    rimraf "^2.2.8"
+
 terriajs-schema@latest:
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/terriajs-schema/-/terriajs-schema-0.4.3.tgz#70ec29e110ab9f64297181980be269f0f446db74"
@@ -17670,10 +17695,10 @@ terriajs-schema@latest:
     when "^3.7.7"
     yargs "^3.32.0"
 
-terriajs-server@^2.7.4:
-  version "2.7.4"
-  resolved "https://registry.yarnpkg.com/terriajs-server/-/terriajs-server-2.7.4.tgz#17c0e0f3375a8de41eb8d693c514f12217bb80ad"
-  integrity sha512-bJz6QZrt5arnETW7kFl7Ccbd+VpEKAK9L/5MGLq9xrYAIaaDC27tMsPzknFFTSqYI0adO5t3cT5zYuWH3poK3g==
+terriajs-server@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/terriajs-server/-/terriajs-server-2.9.1.tgz#08c3a9a3ec1bcc523375b5ff0b47eb98613b22e5"
+  integrity sha512-ibfHG7Jz9zig5N6ge3SnFeDhdW07UNqfcCpgvrca/bm1I0aXWv9q/x+ItLDO1TdP3J9JNXTgZS4vzTrWO++juw==
   dependencies:
     aws-sdk "^2.4.4"
     base-x "^2.0.4"
@@ -17682,15 +17707,16 @@ terriajs-server@^2.7.4:
     compression "^1.6.0"
     cors "^2.7.1"
     express "^4.8.0"
+    express-brute "^1.0.1"
     formidable "^1.0.17"
     json5 "^0.5.0"
     morgan "^1.7.0"
-    ogr2ogr "^1.0.0"
     proj4 "^2.3.12"
     proj4js-defs "0.0.1"
     range_check "^1.4.0"
     request "^2.67.0"
     request-promise "^4.0.1"
+    terriajs-ogr2ogr "^1.0.0"
     when "^3.7.7"
     yargs "^6.0.0"
 

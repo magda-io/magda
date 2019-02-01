@@ -8,7 +8,7 @@ resolvers += Resolver.bintrayRepo("monsanto", "maven")
 
 libraryDependencies ++= {
   val akkaV       = "2.4.18"
-  val akkaHttpV   = "10.0.7"
+  val akkaHttpV   = "10.1.7"
   val scalaTestV  = "2.2.6"
   val akkaTestKitV = "2.4.18"
   val akkaStreamTestKitV = "2.4.18"
