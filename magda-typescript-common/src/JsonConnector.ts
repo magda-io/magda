@@ -51,7 +51,7 @@ export default class JsonConnector {
 
             let configFilePath = null;
             for (let i = 0; i < argv.length - 1; i++) {
-                if (argv[i].replace("-", "") === "config") {
+                if (argv[i].replace(/^\s*-*/g, "") === "config") {
                     configFilePath = argv[i + 1];
                     break;
                 }
