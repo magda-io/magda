@@ -504,6 +504,7 @@ class ElasticSearchIndexer(
           "addrCountry" -> publisher.addrCountry.toJson,
           "website" -> publisher.website.toJson,
           "accessControl" -> publisher.accessControl.toJson,
+          "source" -> publisher.source.toJson,
           "indexed" -> OffsetDateTime.now.toString.toJson).toJson)
     ))
 

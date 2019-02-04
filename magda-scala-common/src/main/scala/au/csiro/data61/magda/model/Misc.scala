@@ -65,6 +65,8 @@ package misc {
     def isPublic():Option[Boolean] = permission.flatMap(_.other).map(_.contains(AccessType.READ))
   }
 
+  case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]])
+
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
@@ -87,6 +89,7 @@ package misc {
       quality: Double,
       hasQuality: Boolean = false,
       accessControl: Option[AccessControl] = None,
+      source: Option[DataSouce] = None,
       score: Option[Float]) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
@@ -117,6 +120,7 @@ package misc {
     addrCountry: Option[String] = None,
     website: Option[String] = None,
     accessControl: Option[AccessControl] = None,
+    source: Option[DataSouce] = None,
     datasetCount: Option[Long] = None)
 
   case class Location(
@@ -242,6 +246,7 @@ package misc {
     byteSize: Option[Int] = None,
     mediaType: Option[MediaType] = None,
     accessControl: Option[AccessControl] = None,
+    source: Option[DataSouce] = None,
     format: Option[String] = None)
 
   object Distribution {
@@ -369,6 +374,8 @@ package misc {
 
     implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
 
+    implicit val dataSouceFormat = jsonFormat3(DataSouce.apply)
+
     implicit val licenseFormat = jsonFormat2(License.apply)
 
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
@@ -476,15 +483,75 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat = jsonFormat13(Distribution.apply)
+    implicit val distributionFormat = jsonFormat14(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat17(Agent.apply)
-    implicit val dataSetFormat = jsonFormat22(DataSet.apply)
+    implicit val agentFormat = jsonFormat18(Agent.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
 
     implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
+
+    implicit object dataSetFormat extends RootJsonFormat[DataSet] {
+      override def write(dataSet: DataSet):JsValue =
+        JsObject(
+          "identifier" -> dataSet.identifier.toJson,
+          "title" -> dataSet.title.toJson,
+          "catalog" -> dataSet.catalog.toJson,
+          "description" -> dataSet.description.toJson,
+          "issued" -> dataSet.issued.toJson,
+          "modified" -> dataSet.modified.toJson,
+          "languages" -> dataSet.languages.toJson,
+          "publisher" -> dataSet.publisher.toJson,
+          "accrualPeriodicity" -> dataSet.accrualPeriodicity.toJson,
+          "spatial" -> dataSet.spatial.toJson,
+          "temporal" -> dataSet.temporal.toJson,
+          "themes" -> dataSet.themes.toJson,
+          "keywords" -> dataSet.keywords.toJson,
+          "contactPoint" -> dataSet.contactPoint.toJson,
+          "distributions" -> dataSet.distributions.toJson,
+          "landingPage" -> dataSet.landingPage.toJson,
+          "years" -> dataSet.years.toJson,
+          "indexed" -> dataSet.indexed.toJson,
+          "quality" -> dataSet.quality.toJson,
+          "hasQuality" -> dataSet.hasQuality.toJson,
+          "accessControl" -> dataSet.accessControl.toJson,
+          "source" -> dataSet.source.toJson,
+          "score" -> dataSet.score.toJson
+        )
+
+      override def read(json: JsValue): DataSet= {
+
+        val jsObject = json.asJsObject
+
+        DataSet(
+          identifier = jsObject.getFields("identifier").head.convertTo[String],
+          title = jsObject.getFields("title").headOption.map(_.convertTo[String]),
+          catalog = jsObject.getFields("catalog").headOption.map(_.convertTo[String]),
+          description = jsObject.getFields("description").headOption.map(_.convertTo[String]),
+          issued = jsObject.getFields("issued").headOption.map(_.convertTo[OffsetDateTime]),
+          modified = jsObject.getFields("modified").headOption.map(_.convertTo[OffsetDateTime]),
+          languages = jsObject.getFields("languages").head.convertTo[Set[String]],
+          publisher = jsObject.getFields("publisher").headOption.map(_.convertTo[Agent]),
+          accrualPeriodicity = jsObject.getFields("accrualPeriodicity").headOption.map(_.convertTo[Periodicity]),
+          spatial = jsObject.getFields("spatial").headOption.map(_.convertTo[Location]),
+          temporal = jsObject.getFields("temporal").headOption.map(_.convertTo[PeriodOfTime]),
+          themes = jsObject.getFields("themes").head.convertTo[Seq[String]],
+          keywords = jsObject.getFields("keywords").head.convertTo[Seq[String]],
+          contactPoint = jsObject.getFields("contactPoint").headOption.map(_.convertTo[Agent]),
+          distributions = jsObject.getFields("distributions").head.convertTo[Seq[Distribution]],
+          landingPage = jsObject.getFields("landingPage").headOption.map(_.convertTo[String]),
+          years = jsObject.getFields("years").headOption.map(_.convertTo[String]),
+          indexed = jsObject.getFields("indexed").headOption.map(_.convertTo[OffsetDateTime]),
+          quality = jsObject.getFields("quality").head.convertTo[Double],
+          hasQuality = jsObject.getFields("hasQuality").head.convertTo[Boolean],
+          accessControl = jsObject.getFields("accessControl").headOption.map(_.convertTo[AccessControl]),
+          source = jsObject.getFields("source").headOption.map(_.convertTo[DataSouce]),
+          score = jsObject.getFields("score").headOption.map(_.convertTo[Float])
+        )
+      }
+    }
+
   }
 
   object Protocols extends Protocols {

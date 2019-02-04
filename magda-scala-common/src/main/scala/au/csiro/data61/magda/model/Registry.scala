@@ -207,7 +207,8 @@ object Registry {
         addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
         addrCountry = organizationDetails.extract[String]('addrCountry.?),
         website = organizationDetails.extract[String]('website.?),
-        accessControl = publisher.aspects.get("access-control").map(_.convertTo[AccessControl]))
+        accessControl = publisher.aspects.get("access-control").map(_.convertTo[AccessControl]),
+        source = publisher.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
     def getNullableStringField(data:JsObject, field:String):Option[String] = {
@@ -288,7 +289,8 @@ object Registry {
         quality = quality,
         hasQuality = hasQuality,
         score = None,
-        accessControl = hit.aspects.get("access-control").map(_.convertTo[AccessControl]))
+        accessControl = hit.aspects.get("access-control").map(_.convertTo[AccessControl]),
+        source = hit.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
@@ -318,7 +320,8 @@ object Registry {
           case Some(format) => Some(format)
           case None         => formatString
         },
-        accessControl = distributionRecord.aspects.get("access-control").map(_.convertTo[AccessControl]))
+        accessControl = distributionRecord.aspects.get("access-control").map(_.convertTo[AccessControl]),
+        source = distributionRecord.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
     private def tryParseDate(dateString: Option[String])(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
