@@ -52,6 +52,19 @@ package misc {
 
   final case class ReadyStatus(ready: Boolean = false)
 
+  sealed trait AccessType
+  object AccessType {
+    case object WRITE extends AccessType
+    case object READ extends AccessType
+    case object ADMIN extends AccessType
+  }
+
+  case class Permission(owner: Option[List[AccessType]], group: Option[List[AccessType]], other: Option[List[AccessType]])
+
+  case class AccessControl(userIds: Option[Seq[String]], groupIds: Option[Seq[String]], permission: Option[Permission]){
+    def isPublic():Option[Boolean] = permission.flatMap(_.other).map(_.contains(AccessType.READ))
+  }
+
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
@@ -73,6 +86,7 @@ package misc {
       indexed: Option[OffsetDateTime] = None,
       quality: Double,
       hasQuality: Boolean = false,
+      accessControl: Option[AccessControl] = None,
       score: Option[Float]) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
@@ -102,6 +116,7 @@ package misc {
     addrPostCode: Option[String] = None,
     addrCountry: Option[String] = None,
     website: Option[String] = None,
+    accessControl: Option[AccessControl] = None,
     datasetCount: Option[Long] = None)
 
   case class Location(
@@ -226,6 +241,7 @@ package misc {
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
     mediaType: Option[MediaType] = None,
+    accessControl: Option[AccessControl] = None,
     format: Option[String] = None)
 
   object Distribution {
@@ -308,6 +324,50 @@ package misc {
 
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
+
+    implicit object AccessTypeFormat extends JsonFormat[AccessType] {
+      override def write(accessType: AccessType): JsValue = accessType match {
+        case AccessType.WRITE => JsString("WRITE")
+        case AccessType.READ => JsString("READ")
+        case AccessType.ADMIN => JsString("ADMIN")
+        case _ => serializationError(s"'$accessType' is not a valid access type")
+      }
+
+      override def read(json: JsValue): AccessType = json match {
+        case JsString("WRITE") => AccessType.WRITE
+        case JsString("READ") => AccessType.READ
+        case JsString("ADMIN") => AccessType.ADMIN
+        case _ => deserializationError(s"'$json' is not a valid access type")
+      }
+    }
+
+    implicit object AccessListFormat extends JsonFormat[List[AccessType]] {
+      def write(accessList:List[AccessType]): JsValue = JsArray(accessList.map(_.toJson).toVector)
+
+      def read(json: JsValue): List[AccessType] = json match {
+        case JsArray(accessList: Vector[JsValue]) => accessList.map(_.convertTo[AccessType]).toList
+        case _ => deserializationError(s"'$json' is not a valid list type: JsArray")
+      }
+    }
+
+    implicit object PermissionFormat extends JsonFormat[Permission] {
+      def write(permission:Permission): JsValue = JsObject(
+        "owner"-> permission.owner.map(_.toJson).toJson,
+        "group"-> permission.group.map(_.toJson).toJson,
+        "other"-> permission.other.map(_.toJson).toJson
+      )
+
+      def read(jsonRaw: JsValue): Permission = {
+        val json = jsonRaw.asJsObject
+        Permission(
+          owner = json.getFields("owner").headOption.map(_.convertTo[List[AccessType]]),
+          group = json.getFields("group").headOption.map(_.convertTo[List[AccessType]]),
+          other = json.getFields("other").headOption.map(_.convertTo[List[AccessType]])
+        )
+      }
+    }
+
+    implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
 
     implicit val licenseFormat = jsonFormat2(License.apply)
 
@@ -416,10 +476,10 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat = jsonFormat12(Distribution.apply)
+    implicit val distributionFormat = jsonFormat13(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat16(Agent.apply)
-    implicit val dataSetFormat = jsonFormat21(DataSet.apply)
+    implicit val agentFormat = jsonFormat17(Agent.apply)
+    implicit val dataSetFormat = jsonFormat22(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)

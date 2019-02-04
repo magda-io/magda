@@ -129,7 +129,6 @@ object IndexDefinition extends DefaultJsonProtocol {
                 .analyzer("keyword")
                 .searchAnalyzer("uppercase"),
               magdaTextField("jurisdiction"),
-              booleanField("isPublic"),
               accessControlField,
               // --- the field used to merge org records by jurisdiction
               // --- if jurisdiction is not null, its value is jurisdiction + org name
@@ -157,7 +156,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("identifier"),
               magdaTextField("title"),
               magdaSynonymTextField("description"),
-              booleanField("isPublic"),
               accessControlField,
               magdaTextField(
                 "format",
@@ -179,7 +177,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("name"),
               objectField("extras").dynamic(true)
             ),
-            booleanField("isPublic"),
             accessControlField,
             keywordField("years"),
             /*
@@ -328,7 +325,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 3,
+      version = 4,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
       createIndex(indices.getIndex(config, Indices.PublishersIndex))
@@ -352,6 +349,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           keywordField("addrPostCode"),
           keywordField("addrCountry"),
           keywordField("website"),
+          accessControlField,
           dateField("indexed")
         ))
         .analysis(
