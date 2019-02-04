@@ -272,7 +272,7 @@ function guessCompatiblePreviews(format, isTimeSeries): CompatiblePreviews {
     return compatiblePreviews;
 }
 
-function parseAccessControl(aspects) {
+export function parseAccessControl(aspects) {
     const accessControl = aspects["access-control"];
     let isPublic = null;
     if (

@@ -34,7 +34,8 @@ export default class DatasetSummary extends Component {
         const dataset = this.props.dataset;
         const parsed = parseDataset({
             aspects: {
-                "dcat-dataset-strings": dataset
+                "dcat-dataset-strings": dataset,
+                "access-control": dataset.accessControl
             }
         });
         const publisher = dataset.publisher && dataset.publisher.name;
@@ -97,6 +98,12 @@ export default class DatasetSummary extends Component {
                         dataset.distributions &&
                             dataset.distributions.length > 0
                     ) && this.renderDownloads(dataset)}
+                    {defined(parsed.accessControl) && (
+                        <div className="dataset-summary-visibility">
+                            <Divider />
+                            {parsed.isPublic ? "Public" : "Private"}
+                        </div>
+                    )}
                 </div>
             </div>
         );
