@@ -19,6 +19,7 @@ import {
     fetchSearchResultsIfNeeded,
     resetDatasetSearch
 } from "../../actions/datasetSearchActions";
+import { parseAccessControl } from "../../helpers/record";
 import "./PublisherDetails.css";
 
 class PublisherDetails extends Component {
@@ -52,6 +53,9 @@ class PublisherDetails extends Component {
     renderContent(translate) {
         const publisher = this.props.publisher;
         const details = publisher.aspects["organization-details"];
+        const { isPublic, accessControl } = parseAccessControl(
+            publisher.aspects
+        );
         const description =
             details.description && details.description.length > 0
                 ? details.description
@@ -143,6 +147,18 @@ class PublisherDetails extends Component {
                                     )}
                                 </div>
                             )}
+
+                            {accessControl && (
+                                <div className="publisher-details-visibility">
+                                    <br />
+                                    <h3 className="section-heading">
+                                        Visibility:{" "}
+                                        {isPublic ? "Public" : "Private"}
+                                    </h3>
+                                </div>
+                            )}
+
+                            <div />
 
                             <br />
                             <div>
