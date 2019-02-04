@@ -43,7 +43,8 @@ const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 const datasetContactPoint = getContactPoint(
     jsonpath
         .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-        .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]")),
+        .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+        .map(x => x.value),
     true
 );
 const identificationContactPoint = getContactPoint(
@@ -69,15 +70,20 @@ const pointOfTruth = distNodes.filter(
         "Point of truth URL of this metadata record"
 );
 
+const responsibleParties1 = jsonpath.query(
+    dataset.json,
+    "$..CI_ResponsibleParty[*]"
+);
 const responsibleParties = jsonpath
     .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-    .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"));
+    .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+    .map(obj => obj.value);
 
 const byRole = libraries.lodash.groupBy(responsibleParties, party =>
-    jsonpath.value(party, '$..role[*].CI_RoleCode[*]["$"].codeListValue.value')
+    jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value')
 );
 const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
-const publisher = getContactPoint(datasetOrgs, false);
+const publisher = getOrganisationFromResponsibleParties(datasetOrgs) || "";
 
 return {
     title: jsonpath.value(citation, "$[*].title[*].CharacterString[*]._"),
@@ -219,15 +225,9 @@ function getContactPoint(responsibleParties, preferIndividual) {
         responsibleParties,
         "$[*].individualName[*].CharacterString[*]._"
     );
-    const organisation =
-        jsonpath.value(
-            responsibleParties,
-            "$[*].organisationName[*].CharacterString[*]._"
-        ) ||
-        jsonpath.value(
-            responsibleParties,
-            "$..CI_Organisation[*].name[*].CharacterString[*]._"
-        );
+    const organisation = getOrganisationFromResponsibleParties(
+        responsibleParties
+    );
     const homepage = jsonpath.value(
         contactInfo,
         "$[*].onlineResource[*].CI_OnlineResource[*].linkage[*].URL[*]._"
@@ -243,4 +243,18 @@ function getContactPoint(responsibleParties, preferIndividual) {
     return [name, homepage, emailAddress]
         .filter(element => element !== undefined)
         .join(", ");
+}
+
+function getOrganisationFromResponsibleParties(responsibleParties) {
+    const organisation =
+        jsonpath.value(
+            responsibleParties,
+            "$[*].organisationName[*].CharacterString[*]._"
+        ) ||
+        jsonpath.value(
+            responsibleParties,
+            "$..CI_Organisation[*].name[*].CharacterString[*]._"
+        );
+
+    return organisation;
 }
