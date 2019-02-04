@@ -192,8 +192,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((115.65 -31.375, 115.65 -31.375, 115.65 -31.375, 115.65 -31.375, 115.65 -31.375))",
                 "temporal": {
@@ -563,8 +562,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507))",
                 "temporal": {
@@ -1070,8 +1068,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914))",
                 "temporal": {
@@ -1175,8 +1172,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732))",
                 "temporal": {
