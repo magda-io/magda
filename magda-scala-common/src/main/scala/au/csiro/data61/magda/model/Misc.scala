@@ -356,18 +356,24 @@ package misc {
     }
 
     implicit object PermissionFormat extends JsonFormat[Permission] {
-      def write(permission:Permission): JsValue = JsObject(
+      override def write(permission:Permission): JsValue = JsObject(
         "owner"-> permission.owner.map(_.toJson).toJson,
         "group"-> permission.group.map(_.toJson).toJson,
         "other"-> permission.other.map(_.toJson).toJson
       )
 
-      def read(jsonRaw: JsValue): Permission = {
+      def convertAccesslist(accessListData: Option[JsValue]) = accessListData.flatMap((accessList:JsValue) => accessList match {
+        case JsNull => None
+        case _ => Some(accessList.convertTo[List[AccessType]])
+      })
+
+      override def read(jsonRaw: JsValue): Permission = {
+
         val json = jsonRaw.asJsObject
         Permission(
-          owner = json.getFields("owner").headOption.map(_.convertTo[List[AccessType]]),
-          group = json.getFields("group").headOption.map(_.convertTo[List[AccessType]]),
-          other = json.getFields("other").headOption.map(_.convertTo[List[AccessType]])
+          owner = convertAccesslist(json.getFields("owner").headOption),
+          group = convertAccesslist(json.getFields("group").headOption),
+          other = convertAccesslist(json.getFields("other").headOption)
         )
       }
     }
@@ -520,34 +526,42 @@ package misc {
           "score" -> dataSet.score.toJson
         )
 
+      def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
+        val jsObject = jsData.asJsObject
+        jsObject.getFields(fieldName).headOption.flatMap(fieldData => fieldData match {
+          case JsNull => None
+          case _ => Some(fieldData.convertTo[T])
+        })
+      }
+
+      def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
+
       override def read(json: JsValue): DataSet= {
 
-        val jsObject = json.asJsObject
-
         DataSet(
-          identifier = jsObject.getFields("identifier").head.convertTo[String],
-          title = jsObject.getFields("title").headOption.map(_.convertTo[String]),
-          catalog = jsObject.getFields("catalog").headOption.map(_.convertTo[String]),
-          description = jsObject.getFields("description").headOption.map(_.convertTo[String]),
-          issued = jsObject.getFields("issued").headOption.map(_.convertTo[OffsetDateTime]),
-          modified = jsObject.getFields("modified").headOption.map(_.convertTo[OffsetDateTime]),
-          languages = jsObject.getFields("languages").head.convertTo[Set[String]],
-          publisher = jsObject.getFields("publisher").headOption.map(_.convertTo[Agent]),
-          accrualPeriodicity = jsObject.getFields("accrualPeriodicity").headOption.map(_.convertTo[Periodicity]),
-          spatial = jsObject.getFields("spatial").headOption.map(_.convertTo[Location]),
-          temporal = jsObject.getFields("temporal").headOption.map(_.convertTo[PeriodOfTime]),
-          themes = jsObject.getFields("themes").head.convertTo[Seq[String]],
-          keywords = jsObject.getFields("keywords").head.convertTo[Seq[String]],
-          contactPoint = jsObject.getFields("contactPoint").headOption.map(_.convertTo[Agent]),
-          distributions = jsObject.getFields("distributions").head.convertTo[Seq[Distribution]],
-          landingPage = jsObject.getFields("landingPage").headOption.map(_.convertTo[String]),
-          years = jsObject.getFields("years").headOption.map(_.convertTo[String]),
-          indexed = jsObject.getFields("indexed").headOption.map(_.convertTo[OffsetDateTime]),
-          quality = jsObject.getFields("quality").head.convertTo[Double],
-          hasQuality = jsObject.getFields("hasQuality").head.convertTo[Boolean],
-          accessControl = jsObject.getFields("accessControl").headOption.map(_.convertTo[AccessControl]),
-          source = jsObject.getFields("source").headOption.map(_.convertTo[DataSouce]),
-          score = jsObject.getFields("score").headOption.map(_.convertTo[Float])
+          identifier = convertField[String]("identifier", json),
+          title = convertOptionField[String]("title", json),
+          catalog = convertOptionField[String]("catalog", json),
+          description = convertOptionField[String]("description", json),
+          issued = convertOptionField[OffsetDateTime]("issued", json),
+          modified = convertOptionField[OffsetDateTime]("modified", json),
+          languages = convertField[Set[String]]("languages", json),
+          publisher = convertOptionField[Agent]("publisher", json),
+          accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
+          spatial = convertOptionField[Location]("spatial", json),
+          temporal = convertOptionField[PeriodOfTime]("temporal", json),
+          themes = convertField[Seq[String]]("themes", json),
+          keywords = convertField[Seq[String]]("keywords", json),
+          contactPoint = convertOptionField[Agent]("contactPoint", json),
+          distributions = convertField[Seq[Distribution]]("distributions", json),
+          landingPage = convertOptionField[String]("landingPage", json),
+          years = convertOptionField[String]("years", json),
+          indexed = convertOptionField[OffsetDateTime]("indexed", json),
+          quality = convertField[Double]("quality", json),
+          hasQuality = convertField[Boolean]("hasQuality", json),
+          accessControl = convertOptionField[AccessControl]("accessControl", json),
+          source = convertOptionField[DataSouce]("source", json),
+          score = convertOptionField[Float]("score", json)
         )
       }
     }
