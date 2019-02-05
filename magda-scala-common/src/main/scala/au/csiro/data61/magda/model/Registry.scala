@@ -207,7 +207,6 @@ object Registry {
         addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
         addrCountry = organizationDetails.extract[String]('addrCountry.?),
         website = organizationDetails.extract[String]('website.?),
-        accessControl = publisher.aspects.get("access-control").map(_.convertTo[AccessControl]),
         source = publisher.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
@@ -289,7 +288,6 @@ object Registry {
         quality = quality,
         hasQuality = hasQuality,
         score = None,
-        accessControl = hit.aspects.get("access-control").map(_.convertTo[AccessControl]),
         source = hit.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
@@ -320,7 +318,6 @@ object Registry {
           case Some(format) => Some(format)
           case None         => formatString
         },
-        accessControl = distributionRecord.aspects.get("access-control").map(_.convertTo[AccessControl]),
         source = distributionRecord.aspects.get("source").map(_.convertTo[DataSouce]))
     }
 
@@ -349,7 +346,6 @@ object Registry {
       "temporal-coverage",
       "dataset-publisher",
       "dataset-quality-rating",
-      "access-control",
       "dataset-format")
   }
 }

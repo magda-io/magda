@@ -92,16 +92,6 @@ object IndexDefinition extends DefaultJsonProtocol {
     Some("wordnet")
   )
 
-  val accessControlField = objectField("accessControl").fields(
-    keywordField("userIds"),
-    keywordField("groupIds"),
-    objectField("permission").fields(
-      keywordField("owner"),
-      keywordField("group"),
-      keywordField("other")
-    )
-  )
-
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
     version = 39,
@@ -129,7 +119,6 @@ object IndexDefinition extends DefaultJsonProtocol {
                 .analyzer("keyword")
                 .searchAnalyzer("uppercase"),
               magdaTextField("jurisdiction"),
-              accessControlField,
               // --- the field used to merge org records by jurisdiction
               // --- if jurisdiction is not null, its value is jurisdiction + org name
               // --- if null, its value is org record identifier (thus, avoid merging)
@@ -156,7 +145,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("identifier"),
               magdaTextField("title"),
               magdaSynonymTextField("description"),
-              accessControlField,
               magdaTextField(
                 "format",
                 textField("keyword_lowercase")
@@ -177,7 +165,6 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("name"),
               objectField("extras").dynamic(true)
             ),
-            accessControlField,
             keywordField("years"),
             /*
                * not sure whether is Elasticsearch or elastic4s
@@ -349,7 +336,6 @@ object IndexDefinition extends DefaultJsonProtocol {
           keywordField("addrPostCode"),
           keywordField("addrCountry"),
           keywordField("website"),
-          accessControlField,
           dateField("indexed")
         ))
         .analysis(

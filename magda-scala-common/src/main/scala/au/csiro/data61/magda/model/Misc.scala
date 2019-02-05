@@ -52,19 +52,6 @@ package misc {
 
   final case class ReadyStatus(ready: Boolean = false)
 
-  sealed trait AccessType
-  object AccessType {
-    case object WRITE extends AccessType
-    case object READ extends AccessType
-    case object ADMIN extends AccessType
-  }
-
-  case class Permission(owner: Option[List[AccessType]], group: Option[List[AccessType]], other: Option[List[AccessType]])
-
-  case class AccessControl(userIds: Option[Seq[String]], groupIds: Option[Seq[String]], permission: Option[Permission]){
-    def isPublic():Option[Boolean] = permission.flatMap(_.other).map(_.contains(AccessType.READ))
-  }
-
   case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]])
 
   case class DataSet(
@@ -88,7 +75,6 @@ package misc {
       indexed: Option[OffsetDateTime] = None,
       quality: Double,
       hasQuality: Boolean = false,
-      accessControl: Option[AccessControl] = None,
       source: Option[DataSouce] = None,
       score: Option[Float]) {
 
@@ -119,7 +105,6 @@ package misc {
     addrPostCode: Option[String] = None,
     addrCountry: Option[String] = None,
     website: Option[String] = None,
-    accessControl: Option[AccessControl] = None,
     source: Option[DataSouce] = None,
     datasetCount: Option[Long] = None)
 
@@ -245,7 +230,6 @@ package misc {
     downloadURL: Option[String] = None,
     byteSize: Option[Int] = None,
     mediaType: Option[MediaType] = None,
-    accessControl: Option[AccessControl] = None,
     source: Option[DataSouce] = None,
     format: Option[String] = None)
 
@@ -329,56 +313,6 @@ package misc {
 
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
-
-    implicit object AccessTypeFormat extends JsonFormat[AccessType] {
-      override def write(accessType: AccessType): JsValue = accessType match {
-        case AccessType.WRITE => JsString("WRITE")
-        case AccessType.READ => JsString("READ")
-        case AccessType.ADMIN => JsString("ADMIN")
-        case _ => serializationError(s"'$accessType' is not a valid access type")
-      }
-
-      override def read(json: JsValue): AccessType = json match {
-        case JsString("WRITE") => AccessType.WRITE
-        case JsString("READ") => AccessType.READ
-        case JsString("ADMIN") => AccessType.ADMIN
-        case _ => deserializationError(s"'$json' is not a valid access type")
-      }
-    }
-
-    implicit object AccessListFormat extends JsonFormat[List[AccessType]] {
-      def write(accessList:List[AccessType]): JsValue = JsArray(accessList.map(_.toJson).toVector)
-
-      def read(json: JsValue): List[AccessType] = json match {
-        case JsArray(accessList: Vector[JsValue]) => accessList.map(_.convertTo[AccessType]).toList
-        case _ => deserializationError(s"'$json' is not a valid list type: JsArray")
-      }
-    }
-
-    implicit object PermissionFormat extends JsonFormat[Permission] {
-      override def write(permission:Permission): JsValue = JsObject(
-        "owner"-> permission.owner.map(_.toJson).toJson,
-        "group"-> permission.group.map(_.toJson).toJson,
-        "other"-> permission.other.map(_.toJson).toJson
-      )
-
-      def convertAccesslist(accessListData: Option[JsValue]) = accessListData.flatMap((accessList:JsValue) => accessList match {
-        case JsNull => None
-        case _ => Some(accessList.convertTo[List[AccessType]])
-      })
-
-      override def read(jsonRaw: JsValue): Permission = {
-
-        val json = jsonRaw.asJsObject
-        Permission(
-          owner = convertAccesslist(json.getFields("owner").headOption),
-          group = convertAccesslist(json.getFields("group").headOption),
-          other = convertAccesslist(json.getFields("other").headOption)
-        )
-      }
-    }
-
-    implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
 
     implicit val dataSouceFormat = jsonFormat3(DataSouce.apply)
 
@@ -489,82 +423,15 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat = jsonFormat14(Distribution.apply)
+    implicit val distributionFormat = jsonFormat13(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat18(Agent.apply)
+    implicit val agentFormat = jsonFormat17(Agent.apply)
+    implicit val dataSetFormat = jsonFormat22(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
 
     implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
-
-    implicit object dataSetFormat extends RootJsonFormat[DataSet] {
-      override def write(dataSet: DataSet):JsValue =
-        JsObject(
-          "identifier" -> dataSet.identifier.toJson,
-          "title" -> dataSet.title.toJson,
-          "catalog" -> dataSet.catalog.toJson,
-          "description" -> dataSet.description.toJson,
-          "issued" -> dataSet.issued.toJson,
-          "modified" -> dataSet.modified.toJson,
-          "languages" -> dataSet.languages.toJson,
-          "publisher" -> dataSet.publisher.toJson,
-          "accrualPeriodicity" -> dataSet.accrualPeriodicity.toJson,
-          "spatial" -> dataSet.spatial.toJson,
-          "temporal" -> dataSet.temporal.toJson,
-          "themes" -> dataSet.themes.toJson,
-          "keywords" -> dataSet.keywords.toJson,
-          "contactPoint" -> dataSet.contactPoint.toJson,
-          "distributions" -> dataSet.distributions.toJson,
-          "landingPage" -> dataSet.landingPage.toJson,
-          "years" -> dataSet.years.toJson,
-          "indexed" -> dataSet.indexed.toJson,
-          "quality" -> dataSet.quality.toJson,
-          "hasQuality" -> dataSet.hasQuality.toJson,
-          "accessControl" -> dataSet.accessControl.toJson,
-          "source" -> dataSet.source.toJson,
-          "score" -> dataSet.score.toJson
-        )
-
-      def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
-        val jsObject = jsData.asJsObject
-        jsObject.getFields(fieldName).headOption.flatMap(fieldData => fieldData match {
-          case JsNull => None
-          case _ => Some(fieldData.convertTo[T])
-        })
-      }
-
-      def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
-
-      override def read(json: JsValue): DataSet= {
-
-        DataSet(
-          identifier = convertField[String]("identifier", json),
-          title = convertOptionField[String]("title", json),
-          catalog = convertOptionField[String]("catalog", json),
-          description = convertOptionField[String]("description", json),
-          issued = convertOptionField[OffsetDateTime]("issued", json),
-          modified = convertOptionField[OffsetDateTime]("modified", json),
-          languages = convertField[Set[String]]("languages", json),
-          publisher = convertOptionField[Agent]("publisher", json),
-          accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
-          spatial = convertOptionField[Location]("spatial", json),
-          temporal = convertOptionField[PeriodOfTime]("temporal", json),
-          themes = convertField[Seq[String]]("themes", json),
-          keywords = convertField[Seq[String]]("keywords", json),
-          contactPoint = convertOptionField[Agent]("contactPoint", json),
-          distributions = convertField[Seq[Distribution]]("distributions", json),
-          landingPage = convertOptionField[String]("landingPage", json),
-          years = convertOptionField[String]("years", json),
-          indexed = convertOptionField[OffsetDateTime]("indexed", json),
-          quality = convertField[Double]("quality", json),
-          hasQuality = convertField[Boolean]("hasQuality", json),
-          accessControl = convertOptionField[AccessControl]("accessControl", json),
-          source = convertOptionField[DataSouce]("source", json),
-          score = convertOptionField[Float]("score", json)
-        )
-      }
-    }
 
   }
 
