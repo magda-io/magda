@@ -522,10 +522,12 @@ export default class JsonConnector {
                 return;
             }
 
-            const { id, opType, data } = presetRecordAspect;
+            const { id, data } = presetRecordAspect;
             if (!id || !data) {
                 return;
             }
+
+            const opType = String(presetRecordAspect.opType).toUpperCase();
 
             if (!record.aspects[id]) {
                 record.aspects[id] = data;
@@ -537,9 +539,12 @@ export default class JsonConnector {
             } else if (opType === "REPLACE") {
                 record.aspects[id] = data;
                 return;
-            } else {
-                // --- merge should be default operation
+            } else if (opType === "MERGE_RIGHT") {
                 record.aspects[id] = _.merge(record.aspects[id], data);
+                return;
+            } else {
+                // --- MERGE_LEFT should be default operation
+                record.aspects[id] = _.merge(data, record.aspects[id]);
                 return;
             }
         });
@@ -678,15 +683,26 @@ export interface JsonConnectorConfig {
     };
     /**
      * Any aspects that will be `preset` on any records created by the connector
+     *
      * opType: operation type; Describe how to add the aspect to the record
-     * recordType: Describe which type of records this aspect will be added to;
+     * - MERGE_LEFT: merge `presetAspect` with records aspects.
+     *   i.e. `presetAspect` will be overwritten by records aspects data if any
+     * - MEREG_RIGHT: merge records aspects with `presetAspect`.
+     *   i.e. records aspects data (if any) will be overwritten by `presetAspect`
+     * - REPLACE: `presetAspect` will replace any existing records aspect
+     * - FILL: `presetAspect` will be added if no existing aspect
+     * Default value (If not specified) will be `MERGE_LEFT`
+     *
+     * recordType:
+     * Describes which type of records this aspect will be added to;
      * If this field is omitted, the aspect will be added to every records.
+     *
      * data: Object; aspect data
      */
     presetRecordAspects?: {
         id: string;
         recordType?: RecordType;
-        opType?: "MERGE" | "REPLACE" | "FILL";
+        opType?: "MERGE_LEFT" | "REPLACE" | "FILL" | "MERGE_RIGHT";
         data: {
             [k: string]: any;
         };
