@@ -66,10 +66,12 @@ export class MockRegistry extends MockExpressServer {
         registry.delete("/records", (req: any, res: any) => {
             let count = 0;
             for (const [recordId, record] of Object.entries(this.records)) {
-                if (record.sourceTag === req.query.sourceTagToPreserve) {
+                if (
+                    (record as any).sourceTag === req.query.sourceTagToPreserve
+                ) {
                     continue;
                 }
-                if (record.aspects.source.id === req.query.sourceId) {
+                if ((record as any).aspects.source.id === req.query.sourceId) {
                     delete this.records[recordId];
                     count++;
                 }

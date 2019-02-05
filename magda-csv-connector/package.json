@@ -28,7 +28,7 @@
     "@types/xmldom": "^0.1.29",
     "@types/yargs": "^12.0.8",
     "ts-loader": "^2.3.7",
-    "typescript": "^2.7.2",
+    "typescript": "^3.2.0",
     "webpack": "^3.6.0"
   },
   "dependencies": {

@@ -12,13 +12,16 @@ export default function addJwtSecretFromEnvVar<T>(
     argv: { [key in keyof Arguments<T>]: Arguments<T>[key] },
     required = true
 ): { [key in keyof Arguments<T>]: Arguments<T>[key] } {
-    const newArgv = {
-        ...argv,
+    const newArgv = Object.assign({}, argv, {
         jwtSecret:
             argv.jwtSecret ||
             process.env.JWT_SECRET ||
             process.env.npm_package_config_jwtSecret
-    };
+    });
+
+    // const newArgv = {
+    //     ...argv,
+    // };
 
     if (required && !newArgv.jwtSecret) {
         throw new Error(
