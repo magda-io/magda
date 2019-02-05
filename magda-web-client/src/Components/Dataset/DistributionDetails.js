@@ -108,16 +108,6 @@ class DistributionDetails extends Component {
                                 {" "}
                                 <h3 className="section-heading">Source</h3>
                                 {sourceText}
-                                {distribution.isPublic !== null ? (
-                                    <h3 className="section-heading">
-                                        Visibility:{" "}
-                                        {distribution.isPublic
-                                            ? "Public"
-                                            : distribution.isPublic === false
-                                                ? "Private"
-                                                : "Unspecified"}
-                                    </h3>
-                                ) : null}
                             </div>
                         )}
                     </div>
