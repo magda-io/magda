@@ -40,7 +40,7 @@
     "nyc": "^13.1.0",
     "sinon": "^4.2.1",
     "supertest": "^3.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "^2.7.2"
   },
   "config": {
     "docker": {

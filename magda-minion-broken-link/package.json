@@ -34,7 +34,7 @@
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^7.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "^2.7.2"
   },
   "dependencies": {
     "@magda/minion-framework": "^0.0.52-0",

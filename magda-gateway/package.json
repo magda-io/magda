@@ -79,7 +79,7 @@
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "^2.7.2"
   },
   "config": {
     "docker": {

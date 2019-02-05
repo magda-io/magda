@@ -8,10 +8,10 @@ import { Arguments } from "yargs";
  * If it can't find one and required is true (or unprovided), this will
  * throw an Error.
  */
-export default function addJwtSecretFromEnvVar(
-    argv: Arguments,
+export default function addJwtSecretFromEnvVar<T>(
+    argv: { [key in keyof Arguments<T>]: Arguments<T>[key] },
     required = true
-): Arguments {
+): { [key in keyof Arguments<T>]: Arguments<T>[key] } {
     const newArgv = {
         ...argv,
         jwtSecret:
