@@ -1,7 +1,7 @@
 import { AspectDefinition, Record } from "./generated/registry/api";
 import AspectCreationFailure from "./AspectCreationFailure";
 import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
-import ConnectorRecordId from "./ConnectorRecordId";
+import ConnectorRecordId, { RecordType } from "./ConnectorRecordId";
 import ConnectionResult from "./ConnectionResult";
 import RecordCreationFailure from "./RecordCreationFailure";
 import JsonTransformer from "./JsonTransformer";
@@ -121,13 +121,15 @@ export default class JsonConnector {
         organizationJson: object
     ): Promise<Record | Error> {
         return this.putRecord(
-            this.transformer.organizationJsonToRecord(organizationJson)
+            this.transformer.organizationJsonToRecord(organizationJson),
+            "Organization"
         );
     }
 
     async createDataset(datasetJson: object): Promise<Record | Error> {
         return this.putRecord(
-            this.transformer.datasetJsonToRecord(datasetJson)
+            this.transformer.datasetJsonToRecord(datasetJson),
+            "Dataset"
         );
     }
 
@@ -139,7 +141,8 @@ export default class JsonConnector {
             this.transformer.distributionJsonToRecord(
                 distributionJson,
                 datasetJson
-            )
+            ),
+            "Distribution"
         );
     }
 
@@ -271,7 +274,7 @@ export default class JsonConnector {
                 }
             }
 
-            const recordOrError = await this.putRecord(record);
+            const recordOrError = await this.putRecord(record, "Dataset");
             if (recordOrError instanceof Error) {
                 result.datasetFailures.push(
                     new RecordCreationFailure(
@@ -444,7 +447,10 @@ export default class JsonConnector {
         resetTimeout();
     }
 
-    private async putRecord(record: Record): Promise<Record | Error> {
+    private async putRecord(
+        record: Record,
+        recordType: RecordType
+    ): Promise<Record | Error> {
         if (!record.id) {
             const noIdMessage = `Tried to put record with no id: ${JSON.stringify(
                 record
@@ -457,7 +463,7 @@ export default class JsonConnector {
 
         return this.registry.putRecord({
             ...this.attachConnectorDataToSource(
-                this.attachConnectorPresetAspects(record)
+                this.attachConnectorPresetAspects(record, recordType)
             ),
             sourceTag: this.sourceTag
         });
@@ -480,7 +486,10 @@ export default class JsonConnector {
         return record;
     }
 
-    private attachConnectorPresetAspects(record: Record) {
+    private attachConnectorPresetAspects(
+        record: Record,
+        recordType: RecordType
+    ) {
         if (
             !this.configData.presetRecordAspects ||
             !this.configData.presetRecordAspects.length
@@ -488,10 +497,27 @@ export default class JsonConnector {
             // --- no `presetRecordAspects` config, do nothing
             return record;
         }
+        const presetRecordAspects = this.configData.presetRecordAspects.filter(
+            presetAspect => {
+                if (!presetAspect.recordType) {
+                    // --- if not specified, apply to all records
+                    return true;
+                }
+                return (
+                    presetAspect.recordType.toUpperCase() ===
+                    recordType.toUpperCase()
+                );
+            }
+        );
+
+        if (!presetRecordAspects.length) {
+            return record;
+        }
+
         if (!record.aspects) {
             record.aspects = {};
         }
-        this.configData.presetRecordAspects.forEach(presetRecordAspect => {
+        presetRecordAspects.forEach(presetRecordAspect => {
             if (typeof presetRecordAspect !== "object") {
                 return;
             }
@@ -652,9 +678,14 @@ export interface JsonConnectorConfig {
     };
     /**
      * Any aspects that will be `preset` on any records created by the connector
+     * opType: operation type; Describe how to add the aspect to the record
+     * recordType: Describe which type of records this aspect will be added to;
+     * If this field is omitted, the aspect will be added to every records.
+     * data: Object; aspect data
      */
     presetRecordAspects?: {
         id: string;
+        recordType?: RecordType;
         opType?: "MERGE" | "REPLACE" | "FILL";
         data: {
             [k: string]: any;
