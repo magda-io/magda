@@ -70,10 +70,6 @@ const pointOfTruth = distNodes.filter(
         "Point of truth URL of this metadata record"
 );
 
-const responsibleParties1 = jsonpath.query(
-    dataset.json,
-    "$..CI_ResponsibleParty[*]"
-);
 const responsibleParties = jsonpath
     .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
     .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
