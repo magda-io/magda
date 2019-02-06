@@ -40,6 +40,8 @@ const modifiedDate =
 
 const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 
+const responsibleParties = libraries.cswFuncs.getResponsibleParties(dataset);
+
 const datasetContactPoint = getContactPoint(
     jsonpath
         .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
@@ -70,16 +72,9 @@ const pointOfTruth = distNodes.filter(
         "Point of truth URL of this metadata record"
 );
 
-const responsibleParties = jsonpath
-    .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-    .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
-    .map(obj => obj.value);
-
-const byRole = libraries.lodash.groupBy(responsibleParties, party =>
-    jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value')
+const publisher = libraries.cswFuncs.getOrganisationNameFromResponsibleParties(
+    libraries.cswFuncs.getPublishersFromResponsibleParties(responsibleParties)
 );
-const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
-const publisher = getOrganisationFromResponsibleParties(datasetOrgs) || "";
 
 return {
     title: jsonpath.value(citation, "$[*].title[*].CharacterString[*]._"),
@@ -239,18 +234,4 @@ function getContactPoint(responsibleParties, preferIndividual) {
     return [name, homepage, emailAddress]
         .filter(element => element !== undefined)
         .join(", ");
-}
-
-function getOrganisationFromResponsibleParties(responsibleParties) {
-    const organisation =
-        jsonpath.value(
-            responsibleParties,
-            "$[*].organisationName[*].CharacterString[*]._"
-        ) ||
-        jsonpath.value(
-            responsibleParties,
-            "$..CI_Organisation[*].name[*].CharacterString[*]._"
-        );
-
-    return organisation;
 }
