@@ -9,10 +9,13 @@ import AuthRegistryClient from "../registry/AuthorizedRegistryClient";
 
 import JsonConnector, {
     JsonConnectorOptions,
-    ConnectorSource
+    ConnectorSource,
+    JsonConnectorConfigExtraMetaData,
+    JsonConnectorConfigPresetAspect
 } from "../JsonConnector";
 import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
 import ConnectorRecordId from "src/ConnectorRecordId";
+import { Record } from "src/generated/registry/api";
 // ConnectorSource,
 
 describe("JsonConnector", () => {
@@ -101,7 +104,78 @@ describe("JsonConnector", () => {
             });
         });
 
-        function setupCrawlTest() {
+        it("Will add aspect to all records according to `presetAspects` config", () => {
+            const randomValue = Math.random();
+            const { scope, connector } = setupCrawlTest({
+                presetRecordAspects: [
+                    {
+                        id: "test-aspect-id",
+                        data: {
+                            "test-aspect-data": randomValue
+                        }
+                    }
+                ]
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    expect(record.aspects).to.have.deep.property(
+                        "test-aspect-id",
+                        {
+                            "test-aspect-data": randomValue
+                        }
+                    );
+                });
+            });
+        });
+
+        it("Will only add aspect to all dataset records if the `presetAspects` config specifies `recordType`", () => {
+            const randomValue = Math.random();
+            const { scope, connector } = setupCrawlTest({
+                presetRecordAspects: [
+                    {
+                        id: "test-aspect-id",
+                        recordType: "Dataset",
+                        data: {
+                            "test-aspect-data": randomValue
+                        }
+                    }
+                ]
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    expect(record.aspects).to.have.deep.property(
+                        "test-aspect-id",
+                        {
+                            "test-aspect-data": randomValue
+                        }
+                    );
+                });
+            });
+        });
+
+        function setupCrawlTest(config: FakeConnectorSourceConfig = {}) {
             const scope = nock("http://example.com");
 
             const registry = new AuthRegistryClient({
@@ -111,7 +185,7 @@ describe("JsonConnector", () => {
                 maxRetries: 0
             });
 
-            const source = new FakeConnectorSource();
+            const source = new FakeConnectorSource(config);
 
             const transformer: JsonTransformer = new FakeJsonTransformer(
                 {} as JsonTransformerOptions
@@ -163,10 +237,26 @@ class FakeJsonTransformer extends JsonTransformer {
     }
 }
 
+type FakeConnectorSourceConfig = {
+    extras?: JsonConnectorConfigExtraMetaData;
+    presetRecordAspects?: JsonConnectorConfigPresetAspect[];
+};
+
 class FakeConnectorSource implements ConnectorSource {
     readonly id: string = "id";
     readonly name: string = "name";
     readonly hasFirstClassOrganizations: boolean = false;
+    presetRecordAspects: JsonConnectorConfigPresetAspect[] = null;
+    extras: JsonConnectorConfigExtraMetaData = null;
+
+    constructor(config: FakeConnectorSourceConfig = {}) {
+        if (config.extras) {
+            this.extras = config.extras;
+        }
+        if (config.presetRecordAspects) {
+            this.presetRecordAspects = config.presetRecordAspects;
+        }
+    }
 
     getJsonDataset(id: string): Promise<any> {
         return Promise.resolve();

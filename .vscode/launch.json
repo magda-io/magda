@@ -109,7 +109,13 @@
             "name": "magda-typescript-common tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-typescript-common",
-            "args": ["${workspaceRoot}/magda-typescript-common/dist/test"]
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
         },
         {
             "type": "node",

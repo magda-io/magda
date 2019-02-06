@@ -53,17 +53,17 @@ export default class JsonConnector {
 
             if (!argv.config) {
                 if (!argv.id) {
-                    console.log(
-                        "failed to locate --config parameter, loading config from source..."
-                    );
                     configData = {
                         id: this.source.id,
                         name: this.source.name
                     };
+                    if (this.source.extras) {
+                        configData.extras = this.source.extras;
+                    }
+                    if (this.source.presetRecordAspects) {
+                        configData.presetRecordAspects = this.source.presetRecordAspects;
+                    }
                 } else {
-                    console.log(
-                        "failed to locate --config parameter, loading config from commandline parameters..."
-                    );
                     configData = {
                         id: argv.id,
                         name: argv.name
@@ -583,6 +583,18 @@ export interface ConnectorSource {
     readonly name: string;
 
     /**
+     * This field is not compulsory and JsonConnector will try to locate its value from commandline parameters
+     * before use ConnectorSource.extras as backup --- more for test cases
+     */
+    readonly extras?: JsonConnectorConfigExtraMetaData;
+
+    /**
+     * This field is not compulsory and JsonConnector will try to locate its value from commandline parameters
+     * before use ConnectorSource.presetRecordAspects as backup --- more for test cases
+     */
+    readonly presetRecordAspects?: JsonConnectorConfigPresetAspect[];
+
+    /**
      * Get all of the datasets as pages of objects.
      *
      * @returns {AsyncPage<any[]>} A page of datasets.
@@ -684,6 +696,41 @@ export interface JsonConnectorRunInteractiveOptions {
     transformerOptions: any;
 }
 
+/**
+ * Connector extra metadata
+ * Will be copied to records' source aspect automatically
+ */
+export type JsonConnectorConfigExtraMetaData = {
+    [k: string]: any;
+};
+
+/**
+ * Any aspects that will be `preset` on any records created by the connector
+ *
+ * opType: operation type; Describe how to add the aspect to the record
+ * - MERGE_LEFT: merge `presetAspect` with records aspects.
+ *   i.e. `presetAspect` will be overwritten by records aspects data if any
+ * - MEREG_RIGHT: merge records aspects with `presetAspect`.
+ *   i.e. records aspects data (if any) will be overwritten by `presetAspect`
+ * - REPLACE: `presetAspect` will replace any existing records aspect
+ * - FILL: `presetAspect` will be added if no existing aspect
+ * Default value (If not specified) will be `MERGE_LEFT`
+ *
+ * recordType:
+ * Describes which type of records this aspect will be added to;
+ * If this field is omitted, the aspect will be added to every records.
+ *
+ * data: Object; aspect data
+ */
+export type JsonConnectorConfigPresetAspect = {
+    id: string;
+    recordType?: RecordType;
+    opType?: "MERGE_LEFT" | "REPLACE" | "FILL" | "MERGE_RIGHT";
+    data: {
+        [k: string]: any;
+    };
+};
+
 export interface JsonConnectorConfig {
     id: string;
     name: string;
@@ -692,37 +739,7 @@ export interface JsonConnectorConfig {
     schedule?: string;
     ignoreHarvestSources?: string[];
     allowedOrganisationName?: string;
-    /**
-     * Connector extra metadata
-     * Will be copied to records' source aspect automatically
-     */
-    extras?: {
-        [k: string]: any;
-    };
-    /**
-     * Any aspects that will be `preset` on any records created by the connector
-     *
-     * opType: operation type; Describe how to add the aspect to the record
-     * - MERGE_LEFT: merge `presetAspect` with records aspects.
-     *   i.e. `presetAspect` will be overwritten by records aspects data if any
-     * - MEREG_RIGHT: merge records aspects with `presetAspect`.
-     *   i.e. records aspects data (if any) will be overwritten by `presetAspect`
-     * - REPLACE: `presetAspect` will replace any existing records aspect
-     * - FILL: `presetAspect` will be added if no existing aspect
-     * Default value (If not specified) will be `MERGE_LEFT`
-     *
-     * recordType:
-     * Describes which type of records this aspect will be added to;
-     * If this field is omitted, the aspect will be added to every records.
-     *
-     * data: Object; aspect data
-     */
-    presetRecordAspects?: {
-        id: string;
-        recordType?: RecordType;
-        opType?: "MERGE_LEFT" | "REPLACE" | "FILL" | "MERGE_RIGHT";
-        data: {
-            [k: string]: any;
-        };
-    }[];
+
+    extras?: JsonConnectorConfigExtraMetaData;
+    presetRecordAspects?: JsonConnectorConfigPresetAspect[];
 }
