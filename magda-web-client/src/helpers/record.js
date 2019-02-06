@@ -447,6 +447,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         error,
         linkedDataRating,
         hasQuality,
-        sourceDetails: aspects["source"]
+        sourceDetails: aspects["source"],
+        creation: datasetInfo["creation"]
     };
 }

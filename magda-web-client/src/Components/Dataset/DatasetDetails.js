@@ -66,7 +66,7 @@ class DatasetDetails extends Component {
                                 {defined(dataset.creation) &&
                                 defined(dataset.creation.isOpenData) ? (
                                     <h3 className="section-heading">
-                                        Visibility:{" "}
+                                        Type:{" "}
                                         {dataset.creation.isOpenData
                                             ? "Public"
                                             : "Private"}

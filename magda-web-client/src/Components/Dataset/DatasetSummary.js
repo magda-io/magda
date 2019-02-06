@@ -44,6 +44,10 @@ export default class DatasetSummary extends Component {
             ? this.props.searchText
             : "";
         const searchResultNumber = this.props.searchResultNumber;
+        const showFormatInfo =
+            dataset.distributions &&
+            dataset.distributions.length &&
+            !this.renderDownloads(dataset);
         return (
             <div className="dataset-summary">
                 <h2 className="dataset-summary-title">
@@ -93,18 +97,17 @@ export default class DatasetSummary extends Component {
                                 <Divider />
                             </div>
                         )}
-                    {defined(
-                        dataset.distributions &&
-                            dataset.distributions.length > 0
-                    ) && this.renderDownloads(dataset)}
+                    {defined(dataset.distributions) &&
+                        dataset.distributions.length > 0 &&
+                        this.renderDownloads(dataset)}
                     {defined(dataset.creation) &&
                         defined(dataset.creation.isOpenData) && (
-                            <div className="dataset-summary-visibility">
-                                <Divider />
+                            <span className="dataset-summary-type">
+                                {showFormatInfo ? null : <Divider />}
                                 {dataset.creation.isOpenData
                                     ? "Public"
                                     : "Private"}
-                            </div>
+                            </span>
                         )}
                 </div>
             </div>
