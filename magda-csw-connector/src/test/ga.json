@@ -1,4 +1,360 @@
 {
+    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0": {
+        "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0",
+        "name": "Download the Record (docx)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the Record (docx)",
+                "description": "Download the Record (docx)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/122551/Rec2018_026.docx",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1": {
+        "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1",
+        "name": "Download the Record (pdf)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the Record (pdf)",
+                "description": "Download the Record (pdf)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/122551/Rec2018_026.pdf",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2": {
+        "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2",
+        "name": "Digital Object Identifier",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Digital Object Identifier",
+                "description": "Digital Object Identifier",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL": "http://dx.doi.org/10.11636/Record.2018.026",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3": {
+        "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "description": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "file://prod.lan/active/ops/cds/records/Rec2018_026",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-4fce6238-8d55-499c-bff5-98518552f4b4": {
+        "id": "ds-connector-4fce6238-8d55-499c-bff5-98518552f4b4",
+        "name": "4fce6238-8d55-499c-bff5-98518552f4b4",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title":
+                    "Geoscience Australia Community Metadata Profile of ISO 19115-1:2014",
+                "description":
+                    "The International Standard ISO 19115-1:2014 (Geographic information – Metadata) defines more than 300 metadata elements, with most of these being listed as Optional. The ISO standard states that individual communities may develop a Profile of the International Standard. The conditionality of a select set of metadata elements may be raised but never reduced for a set of users – optional -> conditional or mandatory but never the other way. A community may also want to establish additional metadata elements that are not in the International Standard. A profile should establish domains for all metadata elements. The rules for creating profiles are described in the International Standard Geographic Information – Profiles (ISO 19106:2004). ISO 19106 stipulates particular terminology that must be used when any variation is made to a Standard, namely referring to changes as an Extension.\n                            It should be noted that there are no ‘new’ elements in the GA Metadata Profile when compared to the ISO 19115-1:2014. The obligation levels of 18 elements from ISO 19115-1:2014 have been changed, and according to ISO 19106, they form an ‘extension’ to ISO 19115-1:2014. Codelists for two elements have been extended with additional values, and two elements that are free text in the base ISO 19115-1:2014 standard have been constrained by new codelists.\n                            •\tThis document highlights all mandatory and conditional packages/entities from ISO 19115-1:2014 necessary to fulfil GA business requirements.\n                            •\tAll other entities and packages remain available and can be used as required to describe GA products and datasets.\n                            •\tThe other entities and packages have to be used as defined by ISO 19115-1:2014.",
+                "languages": [],
+                "publisher": "",
+                "accrualPeriodicity": "asNeeded",
+                "spatial":
+                    "POLYGON((112 -44, 154 -44, 154 -9, 112 -9, 112 -44))",
+                "themes": ["geoscientificInformation"],
+                "keywords": ["Data Standard", "Published_External"],
+                "contactPoint":
+                    "Digital Science and Information, clientservices@ga.gov.au",
+                "landingPage": "http://pid.geoscience.gov.au/dataset/ga/122551"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0",
+                    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1",
+                    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2",
+                    "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-0": {
+        "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-0",
+        "name": "Download the 2019 data package (shp)",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Download the 2019 data package (shp)",
+                "description": "Download the 2019 data package (shp)",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "https://d28rz98at9flks.cloudfront.net/116321/116321_Multibeam_Holdings_2019.zip",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/116321",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-1": {
+        "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-1",
+        "name": "CDS data location",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "CDS data location",
+                "description": "CDS data location",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL": "file://nas/cds/open/publications/116321",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/116321",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2": {
+        "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2",
+        "name": "Digital Object Identifier",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "Digital Object Identifier",
+                "description": "Digital Object Identifier",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL": "http://dx.doi.org/10.4225/25/5a837ddc0ee07",
+                "format": "WWW:LINK-1.0-http--link"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/116321",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3": {
+        "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3",
+        "name": "ausseabed_bathymetry",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title": "ausseabed_bathymetry",
+                "description": "AusSeabed Bathymetry Holdings",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL": "http://marine.ga.gov.au/geoserver/marine/wms",
+                "format": "OGC:WMS"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/116321",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2": {
+        "id": "ds-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2",
+        "name": "7846c08a-542d-4ab2-809a-09cca5b76bc2",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title": "AusSeabed Bathymetry Holdings",
+                "description":
+                    "This dataset represents the current extent of bathymetry datasets held by AusSeabed as of January 2019. This dataset is live and will continue to be augmented as coverage is supplied from respective AusSeabed partners. Surveys have been conducted by a wide range of organisations and countries, both inside and outside of Australia's EEZ and for various purposes. Each polygon contains metadata describing the nature of data collection, including details of the survey, as well as the principle investigator of the project. Not all surveys are currently available for download; if available, the Data Access URL attribute will indicate how to access the survey data. Polygons are based on a 500m gridding of the survey data, so may not be representative of the true survey extent when viewed at large scale.",
+                "issued": "2018-02-13T10:00:00",
+                "modified": "2018-10-18T03:51:28",
+                "languages": [],
+                "publisher": "",
+                "accrualPeriodicity": "asNeeded",
+                "spatial":
+                    "POLYGON((21 -78.6, 180 -78.6, 180 43, 21 43, 21 -78.6))",
+                "temporal": {
+                    "start": "1989",
+                    "end": "2019"
+                },
+                "themes": ["geoscientificInformation"],
+                "keywords": [
+                    "GIS Dataset",
+                    "National",
+                    "Bathymetry",
+                    "Marine Survey",
+                    "Marine",
+                    "Multibeam",
+                    "Marine Geoscience",
+                    "Earth Sciences",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "European Petroleum Survey Group, clientservices@ga.gov.au",
+                "landingPage": "http://pid.geoscience.gov.au/dataset/ga/116321"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url": "http://pid.geoscience.gov.au/dataset/ga/116321",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "temporal-coverage": {
+                "intervals": [
+                    {
+                        "start": "1989",
+                        "end": "2019"
+                    }
+                ]
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-0",
+                    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-1",
+                    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2",
+                    "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0": {
+        "id": "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0",
+        "name":
+            "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "title":
+                    "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
+                "description":
+                    "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence",
+                "accessURL":
+                    "http://services.ga.gov.au/gis/rest/services/DEM_SRTM_1Second_Slope/MapServer",
+                "format": "ESRI: Map Service"
+            },
+            "source": {
+                "type": "csw-distribution",
+                "url":
+                    "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=c59c79c9-6ab2-4230-a918-7a48cf547613",
+                "id": "connector",
+                "name": "Connector"
+            }
+        },
+        "sourceTag": "stag"
+    },
+    "ds-connector-c59c79c9-6ab2-4230-a918-7a48cf547613": {
+        "id": "ds-connector-c59c79c9-6ab2-4230-a918-7a48cf547613",
+        "name":
+            "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
+        "aspects": {
+            "csw-dataset": {},
+            "dcat-dataset-strings": {
+                "title":
+                    "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
+                "description":
+                    "This service represents the National Digital Elevation Model (DEM) 1 Second Percentage Slope product, derived from the National DEM SRTM 1 Second. Slope measures the inclination of the land surface from the horizontal. Percent slope represents this inclination as the ratio of change in height to distance.",
+                "issued": "2016-06-01T00:00:00",
+                "modified": "2017-12-07T23:52:09",
+                "languages": [],
+                "publisher": "",
+                "accrualPeriodicity": "annually",
+                "spatial":
+                    "POLYGON((112 -44, 154 -44, 154 -9, 112 -9, 112 -44))",
+                "themes": [],
+                "keywords": [
+                    "Earth Sciences",
+                    "DEM",
+                    "elevation",
+                    "Slope",
+                    "SRTM",
+                    "ECOLOGY Landscape",
+                    "LAND Topography Models",
+                    "Australia",
+                    "web service",
+                    "MapServer",
+                    "Published_External"
+                ],
+                "contactPoint":
+                    "Commonwealth of Australia (Geoscience Australia), clientservices@ga.gov.au"
+            },
+            "source": {
+                "type": "csw-dataset",
+                "url":
+                    "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=c59c79c9-6ab2-4230-a918-7a48cf547613",
+                "id": "connector",
+                "name": "Connector"
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0"
+                ]
+            }
+        },
+        "sourceTag": "stag"
+    },
     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0": {
         "id": "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
         "name": "Digital Object Identifier",
@@ -75,7 +431,9 @@
                     "Published_External"
                 ],
                 "contactPoint":
-                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
+                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au",
+                "landingPage":
+                    "http://www.ga.gov.au/metadata-gateway/metadata/record/84119/"
             },
             "source": {
                 "type": "csw-dataset",
@@ -96,332 +454,6 @@
                 "distributions": [
                     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
                     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1"
-                ]
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0": {
-        "id": "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0",
-        "name": "Download the Record (pdf)",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "Download the Record (pdf)",
-                "description": "Download the Record (pdf)",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "https://d28rz98at9flks.cloudfront.net/14161/Rec1987_033.pdf",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1": {
-        "id": "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1",
-        "name": "CDS data location",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "CDS data location",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "file://prod.lan/active/ops/cds/records/Rec1987_033/Rec1987_033.pdf",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "ds-connector-a05f7892-9588-7506-e044-00144fdd4fa6": {
-        "id": "ds-connector-a05f7892-9588-7506-e044-00144fdd4fa6",
-        "name": "a05f7892-9588-7506-e044-00144fdd4fa6",
-        "aspects": {
-            "csw-dataset": {},
-            "dcat-dataset-strings": {
-                "title":
-                    "Structural setting of the McNamara Group in the Yaringa Creek- Big Toby Creek area, Mt Isa, Queensland, Australia",
-                "description": "Legacy product - no abstract available",
-                "issued": "1987-01-01T00:00:00",
-                "modified": "1987-01-01T00:00:00",
-                "languages": [],
-                "publisher":
-                    "Bureau of Mineral Resources, Geology and Geophysics",
-                "accrualPeriodicity": "unknown",
-                "spatial":
-                    "POLYGON((139.0 -21.0, 139.5 -21.0, 139.5 -20.5, 139.0 -20.5, 139.0 -21.0))",
-                "themes": ["geoscientificInformation"],
-                "keywords": [
-                    "GA Publication",
-                    "Record",
-                    "geology",
-                    "structural geology",
-                    "AU-QLD",
-                    "Earth Sciences",
-                    "Published_External"
-                ],
-                "contactPoint":
-                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
-            },
-            "source": {
-                "type": "csw-dataset",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/14161/",
-                "id": "connector",
-                "name": "Connector"
-            },
-            "dataset-distributions": {
-                "distributions": [
-                    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-0",
-                    "dist-connector-a05f7892-9588-7506-e044-00144fdd4fa6-1"
-                ]
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0": {
-        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0",
-        "name": "Purchase this product",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "Purchase this product",
-                "description": "Purchase this product",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "http://geoscienceaustr.neto.com.au/4263-4-idle-hole-topographic-map-50k-scale",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1": {
-        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1",
-        "name": "Download the map (jpg)",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "Download the map (jpg)",
-                "description": "Download the map (jpg)",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "https://d28rz98at9flks.cloudfront.net/56541/4263_4_Idle_Hole.jpg",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2": {
-        "id": "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2",
-        "name": "CDS data location",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "CDS data location",
-                "description": "CDS data location",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "file://prod.lan/active/ops/cds/maps/topo_thematic/50/56541",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "ds-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6": {
-        "id": "ds-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6",
-        "name": "a05f7892-e0a7-7506-e044-00144fdd4fa6",
-        "aspects": {
-            "csw-dataset": {},
-            "dcat-dataset-strings": {
-                "title": "Idle Hole 1:50 000 topographic map",
-                "description":
-                    "Product Specifications Coverage: Partial coverage, predominantly in northern Australia, along major transport routes, and other selected areas. About 1000 maps have been published to date. Currency: Ranges from 1968 to 2006. Coordinates: Geographical and UTM. Datum: AGD66, new edition WGS84; AHD. Projection: Universal Transverse Mercator UTM. Medium: Paper, flat copies only.",
-                "issued": "1998-01-01T00:00:00",
-                "modified": "1998-01-01T00:00:00",
-                "languages": [],
-                "publisher":
-                    "Commonwealth of Australia (Australian Geospatial-Intelligence Organisation)",
-                "accrualPeriodicity": "unknown",
-                "spatial":
-                    "POLYGON((126.5 -17.25, 126.75 -17.25, 126.75 -17.0, 126.5 -17.0, 126.5 -17.25))",
-                "themes": ["imageryBaseMapsEarthCover"],
-                "keywords": [
-                    "Topographic Map",
-                    "50K scale",
-                    "topography",
-                    "AU-WA",
-                    "Topology",
-                    "Published_External"
-                ],
-                "contactPoint":
-                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
-            },
-            "source": {
-                "type": "csw-dataset",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/56541/",
-                "id": "connector",
-                "name": "Connector"
-            },
-            "dataset-distributions": {
-                "distributions": [
-                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-0",
-                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-1",
-                    "dist-connector-a05f7892-e0a7-7506-e044-00144fdd4fa6-2"
-                ]
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0": {
-        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0",
-        "name": "Download the Record (pdf)",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "Download the Record (pdf)",
-                "description": "Download the Record (pdf)",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "https://d28rz98at9flks.cloudfront.net/71844/Rec2011_042.pdf",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1": {
-        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1",
-        "name": "CDS data location",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "CDS data location",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "file://prod.lan/active/ops/cds/records/Rec2011_042/Rec2011_042_Print.pdf",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2": {
-        "id": "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2",
-        "name": "CDS data location",
-        "aspects": {
-            "csw-distribution": {},
-            "dcat-distribution-strings": {
-                "title": "CDS data location",
-                "license":
-                    "Creative Commons Attribution 4.0 International Licence",
-                "accessURL":
-                    "file://prod.lan/active/ops/cds/records/Rec2011_042/Rec2011_042_Web.pdf",
-                "format": "WWW:LINK-1.0-http--link"
-            },
-            "source": {
-                "type": "csw-distribution",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
-                "id": "connector",
-                "name": "Connector"
-            }
-        },
-        "sourceTag": "stag"
-    },
-    "ds-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6": {
-        "id": "ds-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6",
-        "name": "a35e32b2-d94e-1db0-e044-00144fdd4fa6",
-        "aspects": {
-            "csw-dataset": {},
-            "dcat-dataset-strings": {
-                "title":
-                    "Depth to Magnetic Basement of the Capel and Faust Basins, Lord Howe Rise",
-                "description":
-                    "We have analysed the shipborne magnetic data interms of depth to magnetic basement and tried to find out the basement structure independently from the magnetic and reconcile with the seismic interpretation.  Our result indicates a possible depocentre at the northwest part of the study area, which is in agreement with the resimic result. The depocenter is about 6 km deep and extending NNW-ESE direction and the study also suggests the presence of a ridge at the centre of the study area and trending along N-S direction. The structures derived from the magnetic are broadly matching with the seismic results. So, the technique may be useful for delineating the sediment pocket inside the basin, thus help in shoring out the zone of interest inside the basin for further detail survey.",
-                "issued": "2011-01-01T00:00:00",
-                "modified": "2011-01-01T00:00:00",
-                "languages": [],
-                "publisher": "Geoscience Australia",
-                "accrualPeriodicity": "unknown",
-                "spatial":
-                    "POLYGON((159.5 -29.5, 163.5 -29.5, 163.5 -25.5, 159.5 -25.5, 159.5 -29.5))",
-                "themes": ["geoscientificInformation"],
-                "keywords": [
-                    "GA Publication",
-                    "Record",
-                    "magnetics",
-                    "Earth Sciences",
-                    "Published_External"
-                ],
-                "contactPoint":
-                    "Commonwealth of Australia (Geoscience Australia), sales@ga.gov.au"
-            },
-            "source": {
-                "type": "csw-dataset",
-                "url":
-                    "http://www.ga.gov.au/metadata-gateway/metadata/record/71844/",
-                "id": "connector",
-                "name": "Connector"
-            },
-            "dataset-distributions": {
-                "distributions": [
-                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-0",
-                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-1",
-                    "dist-connector-a35e32b2-d94e-1db0-e044-00144fdd4fa6-2"
                 ]
             }
         },
