@@ -1371,7 +1371,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
   private def assertPayload(expectedEventIds: Seq[Int], payloadsSize: Int = 1) = {
 //    Util.waitUntilPayloadsReady(payloads, payloadsSize)
-    Util.waitUntilAllDone()
+    Util.waitUntilAllDone(200)
     payloads.length shouldBe payloadsSize
     val thePayload: WebHookPayload = payloads.last
     val events = thePayload.events.get
