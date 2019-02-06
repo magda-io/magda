@@ -17,10 +17,17 @@ Ops:
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
+    Others:
+-   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Accessibility:
+
+-   Added `aria-label` field to Facet buttons to reflect the current filter selection
 
 Connectors:
 
 -   Made the CSV connector put the description column in the distribution description, not just the dataset one
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
 
 Interoperability:
 
@@ -33,6 +40,7 @@ Development:
 Others:
 
 -   Changed terminology for data rating to `Linked Data Rating`
+-   Fixed: Empty source link shows as a working link on dataset page
 
 ## 0.0.51
 

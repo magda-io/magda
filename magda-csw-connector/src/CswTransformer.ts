@@ -98,7 +98,7 @@ export default class CswTransformer extends JsonTransformer {
     private getJsonDistributionsArray(dataset: any): any[] {
         return jsonpath.query(
             dataset.json,
-            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+            "$..MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
         );
     }
 
