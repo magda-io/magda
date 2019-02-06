@@ -424,6 +424,7 @@ object Generators {
     hasQuality <- arbitrary[Boolean]
   } yield DataSet(
     identifier = identifier.toString,
+    source = Some(DataSouce(id = "connector-id", name = Some("test-catalog"))),
     catalog = Some("test-catalog"),
     title = title,
     description = description,

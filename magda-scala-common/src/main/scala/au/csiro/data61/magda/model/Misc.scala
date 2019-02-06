@@ -52,15 +52,15 @@ package misc {
 
   final case class ReadyStatus(ready: Boolean = false)
 
-  case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]])
+  case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]] = None)
 
   case class DcatCreation(
-     isInternallyProduced: Option[Boolean],
-     mechanism: Option[String],
-     sourceSystem: Option[String],
-     likelihoodOfRelease: Option[String],
-     isOpenData: Option[Boolean],
-     affiliatedOrganisation: Option[String])
+     isInternallyProduced: Option[Boolean] = None,
+     mechanism: Option[String] = None,
+     sourceSystem: Option[String] = None,
+     likelihoodOfRelease: Option[String] = None,
+     isOpenData: Option[Boolean] = None,
+     affiliatedOrganisation: Option[String] = None)
 
   case class DataSet(
       identifier: String,
