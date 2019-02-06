@@ -213,7 +213,12 @@ export default class Csw implements ConnectorSource {
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
         const responsibleParties = jsonpath
             .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-            .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+            .concat(
+                jsonpath.nodes(
+                    dataset.json,
+                    "$..CI_Responsibility[?(@.party[0].CI_Organisation)]"
+                )
+            )
             .map(node => {
                 return {
                     ...node,
@@ -221,10 +226,18 @@ export default class Csw implements ConnectorSource {
                         node.value,
                         '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
                     ),
-                    orgName: jsonpath.value(
-                        node.value,
-                        "$..organisationName[*].CharacterString[0]._"
-                    )
+                    orgName:
+                        jsonpath.value(
+                            node.value,
+                            "$..organisationName[*].CharacterString[0]._"
+                        ) ||
+                        jsonpath.value(
+                            jsonpath.nodes(
+                                node.value,
+                                "$..CI_Organisation.name[*].CharacterString[*]._"
+                            ),
+                            "$.._"
+                        )
                 };
             });
 
@@ -243,6 +256,7 @@ export default class Csw implements ConnectorSource {
          *
          * We should only use information from this section if we don't have a better choice.
          */
+
         let datasetOrgs = responsibleParties.filter(node => {
             return (
                 node.path.findIndex(

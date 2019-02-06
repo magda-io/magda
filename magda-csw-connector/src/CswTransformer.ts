@@ -42,9 +42,15 @@ export default class CswTransformer extends JsonTransformer {
     }
 
     getNameFromJsonOrganization(jsonOrganization: any): string {
-        return jsonpath.value(
-            jsonOrganization,
-            "$.organisationName[0].CharacterString[0]._"
+        return (
+            jsonpath.value(
+                jsonOrganization,
+                "$.organisationName[0].CharacterString[0]._"
+            ) ||
+            jsonpath.nodes(
+                jsonOrganization,
+                "$..name[*].CharacterString[*]._"
+            )[0].value
         );
     }
 

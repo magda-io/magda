@@ -80,7 +80,23 @@ const byRole = libraries.lodash.groupBy(responsibleParties, party =>
 );
 const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
 const publisher = getOrganisationFromResponsibleParties(datasetOrgs) || "";
+const urnIdentifier = jsonpath.value(
+    dataset.json,
+    "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='urn:uuid')].code.._"
+);
 
+const gaDataSetURI = jsonpath.value(
+    jsonpath.nodes(
+        dataset.json,
+        "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='ga-dataSetURI')]"
+    ),
+    "$.._"
+);
+
+const fileIdentifier = jsonpath.value(
+    dataset.json,
+    "$.fileIdentifier[*].CharacterString[*]._"
+);
 return {
     title: jsonpath.value(citation, "$[*].title[*].CharacterString[*]._"),
     description: jsonpath.value(
@@ -124,7 +140,8 @@ return {
         "$[*].descriptiveKeywords[*].MD_Keywords[*].keyword[*].CharacterString[*]._"
     ),
     contactPoint: contactPoint,
-    landingPage: jsonpath.value(pointOfTruth, "$[*].linkage[*].URL[*]._")
+    landingPage:
+        jsonpath.value(pointOfTruth, "$[*].linkage[*].URL[*]._") || gaDataSetURI
 };
 
 function findDatesWithType(dates, type) {
