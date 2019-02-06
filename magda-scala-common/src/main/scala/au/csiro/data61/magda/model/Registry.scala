@@ -288,7 +288,11 @@ object Registry {
         quality = quality,
         hasQuality = hasQuality,
         score = None,
-        source = hit.aspects.get("source").map(_.convertTo[DataSouce]))
+        source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
+        creation = dcatStrings.getFields("creation").headOption.filter{
+          case JsNull => false
+          case _ => true
+        }.map(_.convertTo[DcatCreation]))
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {

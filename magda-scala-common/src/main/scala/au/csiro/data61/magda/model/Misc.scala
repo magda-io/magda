@@ -54,6 +54,14 @@ package misc {
 
   case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]])
 
+  case class DcatCreation(
+     isInternallyProduced: Option[Boolean],
+     mechanism: Option[String],
+     sourceSystem: Option[String],
+     likelihoodOfRelease: Option[String],
+     isOpenData: Option[Boolean],
+     affiliatedOrganisation: Option[String])
+
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
@@ -76,6 +84,7 @@ package misc {
       quality: Double,
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
+      creation: Option[DcatCreation] = None,
       score: Option[Float]) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
@@ -315,6 +324,7 @@ package misc {
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
     implicit val dataSouceFormat = jsonFormat3(DataSouce.apply)
+    implicit val dcatCreationFormat = jsonFormat6(DcatCreation.apply)
 
     implicit val licenseFormat = jsonFormat2(License.apply)
 
@@ -426,12 +436,82 @@ package misc {
     implicit val distributionFormat = jsonFormat13(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat17(Agent.apply)
-    implicit val dataSetFormat = jsonFormat22(DataSet.apply)
     implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
 
     implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
+
+    /**
+      * Manually implement RootJsonFormat to overcome the limit of 22 parameters
+      */
+    implicit object dataSetFormat extends RootJsonFormat[DataSet] {
+      override def write(dataSet: DataSet):JsValue =
+        JsObject(
+          "identifier" -> dataSet.identifier.toJson,
+          "title" -> dataSet.title.toJson,
+          "catalog" -> dataSet.catalog.toJson,
+          "description" -> dataSet.description.toJson,
+          "issued" -> dataSet.issued.toJson,
+          "modified" -> dataSet.modified.toJson,
+          "languages" -> dataSet.languages.toJson,
+          "publisher" -> dataSet.publisher.toJson,
+          "accrualPeriodicity" -> dataSet.accrualPeriodicity.toJson,
+          "spatial" -> dataSet.spatial.toJson,
+          "temporal" -> dataSet.temporal.toJson,
+          "themes" -> dataSet.themes.toJson,
+          "keywords" -> dataSet.keywords.toJson,
+          "contactPoint" -> dataSet.contactPoint.toJson,
+          "distributions" -> dataSet.distributions.toJson,
+          "landingPage" -> dataSet.landingPage.toJson,
+          "years" -> dataSet.years.toJson,
+          "indexed" -> dataSet.indexed.toJson,
+          "quality" -> dataSet.quality.toJson,
+          "hasQuality" -> dataSet.hasQuality.toJson,
+          "creation" -> dataSet.creation.toJson,
+          "source" -> dataSet.source.toJson,
+          "score" -> dataSet.score.toJson
+        )
+
+      def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
+        val jsObject = jsData.asJsObject
+        jsObject.getFields(fieldName).headOption.flatMap(fieldData => fieldData match {
+          case JsNull => None
+          case _ => Some(fieldData.convertTo[T])
+        })
+      }
+
+      def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
+
+      override def read(json: JsValue): DataSet= {
+
+        DataSet(
+          identifier = convertField[String]("identifier", json),
+          title = convertOptionField[String]("title", json),
+          catalog = convertOptionField[String]("catalog", json),
+          description = convertOptionField[String]("description", json),
+          issued = convertOptionField[OffsetDateTime]("issued", json),
+          modified = convertOptionField[OffsetDateTime]("modified", json),
+          languages = convertField[Set[String]]("languages", json),
+          publisher = convertOptionField[Agent]("publisher", json),
+          accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
+          spatial = convertOptionField[Location]("spatial", json),
+          temporal = convertOptionField[PeriodOfTime]("temporal", json),
+          themes = convertField[Seq[String]]("themes", json),
+          keywords = convertField[Seq[String]]("keywords", json),
+          contactPoint = convertOptionField[Agent]("contactPoint", json),
+          distributions = convertField[Seq[Distribution]]("distributions", json),
+          landingPage = convertOptionField[String]("landingPage", json),
+          years = convertOptionField[String]("years", json),
+          indexed = convertOptionField[OffsetDateTime]("indexed", json),
+          quality = convertField[Double]("quality", json),
+          hasQuality = convertField[Boolean]("hasQuality", json),
+          source = convertOptionField[DataSouce]("source", json),
+          creation = convertOptionField[DcatCreation]("creation", json),
+          score = convertOptionField[Float]("score", json)
+        )
+      }
+    }
 
   }
 

@@ -165,6 +165,14 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("name"),
               objectField("extras").dynamic(true)
             ),
+            objectField("creation").fields(
+              booleanField("isInternallyProduced"),
+              magdaTextField("mechanism"),
+              magdaTextField("sourceSystem"),
+              magdaTextField("likelihoodOfRelease"),
+              booleanField("isOpenData"),
+              magdaTextField("affiliatedOrganisation")
+            ),
             keywordField("years"),
             /*
                * not sure whether is Elasticsearch or elastic4s
