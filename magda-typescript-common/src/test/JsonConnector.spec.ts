@@ -19,12 +19,20 @@ describe("JsonConnector", () => {
     describe("crawlTag", () => {
         it("auto-generates a tag that is distinct between instances by default", () => {
             for (let i: number = 0; i < 100; i++) {
-                const connectorA = new JsonConnector(
-                    {} as JsonConnectorOptions
-                );
-                const connectorB = new JsonConnector(
-                    {} as JsonConnectorOptions
-                );
+                const connectorA = new JsonConnector({
+                    source: {
+                        // --- id & name is compulsory
+                        id: "xxx",
+                        name: "xxx"
+                    }
+                } as JsonConnectorOptions);
+                const connectorB = new JsonConnector({
+                    source: {
+                        // --- id & name is compulsory
+                        id: "xxx",
+                        name: "xxx"
+                    }
+                } as JsonConnectorOptions);
 
                 expect(connectorA.sourceTag).not.to.equal(connectorB.sourceTag);
             }
@@ -33,6 +41,11 @@ describe("JsonConnector", () => {
         it("accepts an overridden tag", () => {
             const tag = "blah";
             const connector = new JsonConnector({
+                source: {
+                    // --- id & name is compulsory
+                    id: "xxx",
+                    name: "xxx"
+                },
                 sourceTag: tag
             } as JsonConnectorOptions);
             expect(connector.sourceTag).to.equal(tag);
