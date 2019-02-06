@@ -7,6 +7,7 @@ import RecordCreationFailure from "./RecordCreationFailure";
 import JsonTransformer from "./JsonTransformer";
 import Registry from "./registry/AuthorizedRegistryClient";
 import unionToThrowable from "./util/unionToThrowable";
+import { parse as parseArgv } from "yargs";
 
 import * as express from "express";
 import * as fs from "fs";
@@ -43,26 +44,43 @@ export default class JsonConnector {
 
     readConfigData(): JsonConnectorConfig {
         try {
-            const argv = process.argv;
-            if (!argv || !argv.length) {
-                throw new Error("failed to locate --config parameter!");
+            const argv = parseArgv(process.argv);
+            if (!argv) {
+                throw new Error("failed to parse commandline parameter!");
             }
 
-            let configFilePath = null;
-            for (let i = 0; i < argv.length - 1; i++) {
-                if (argv[i].replace(/^\s*-*/g, "") === "config") {
-                    configFilePath = argv[i + 1];
-                    break;
+            let configData: JsonConnectorConfig;
+
+            if (!argv.config) {
+                if (!argv.id) {
+                    console.log(
+                        "failed to locate --config parameter, loading config from source..."
+                    );
+                    configData = {
+                        id: this.source.id,
+                        name: this.source.name
+                    };
+                } else {
+                    console.log(
+                        "failed to locate --config parameter, loading config from commandline parameters..."
+                    );
+                    configData = {
+                        id: argv.id,
+                        name: argv.name
+                    };
+                    if (argv.extras) {
+                        configData.extras = argv.extras;
+                    }
+                    if (argv.presetRecordAspects) {
+                        configData.presetRecordAspects =
+                            argv.presetRecordAspects;
+                    }
                 }
+            } else {
+                configData = JSON.parse(
+                    fs.readFileSync(argv.config, { encoding: "utf-8" })
+                );
             }
-
-            if (!configFilePath) {
-                throw new Error("failed to locate --config parameter!");
-            }
-
-            const configData = JSON.parse(
-                fs.readFileSync(configFilePath, { encoding: "utf-8" })
-            );
 
             if (!configData) {
                 throw new Error("invalid empty config data.");
