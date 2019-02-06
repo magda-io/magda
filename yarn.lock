@@ -10762,6 +10762,11 @@ jws@^3.1.4:
     jwa "^1.1.5"
     safe-buffer "^5.0.1"
 
+jwt-simple@^0.5.1:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/jwt-simple/-/jwt-simple-0.5.5.tgz#53f60ceab266708450a22cafa6fd93cfa2ccfa3a"
+  integrity sha512-KEyanRIDHooo8KuBxY3CC019NbwHtxdsxzRJUfaGqcxMrvBPBkosN+RUxx1nZFI6yrErq3KTW8HI/qrNIxHe0g==
+
 jxLoader@*:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jxLoader/-/jxLoader-0.1.1.tgz#0134ea5144e533b594fc1ff25ff194e235c53ecd"
@@ -13306,6 +13311,13 @@ pascalcase@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/pascalcase/-/pascalcase-0.1.1.tgz#b363e55e8006ca6fe21784d2db22bd15d7917f14"
   integrity sha1-s2PlXoAGym/iF4TS2yK9FdeRfxQ=
+
+passport-custom@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/passport-custom/-/passport-custom-1.0.5.tgz#2d1d9c174a6a4685bf0289bce61091cd5ec7b0f4"
+  integrity sha1-LR2cF0pqRoW/Aom85hCRzV7HsPQ=
+  dependencies:
+    passport-strategy "1.x.x"
 
 passport-facebook@^2.0.0:
   version "2.1.1"

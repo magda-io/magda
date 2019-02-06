@@ -54,6 +54,9 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
+{{- if .Values.ckanAuthenticationUrl }}
+            "--ckanUrl", {{ .Values.ckanAuthenticationUrl | quote }},
+{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
@@ -61,7 +64,6 @@ spec:
             "--web", "http://web",
             "--authorizationApi", "http://authorization-api/v0",
             "--previewMap", "http://preview-map:6110",
-            "--ckanUrl", "https://data.gov.au"
         ]
         volumeMounts:
           - name: config
