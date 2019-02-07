@@ -2,7 +2,14 @@ import * as yargs from "yargs";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
-export type MinionArguments = yargs.Arguments;
+export type MinionArguments = {
+    listenPort: string | number;
+    internalUrl: string;
+    jwtSecret: string;
+    userId: string;
+    registryUrl: string;
+    retries: string | number;
+};
 
 /**
  * Builds an argv object that will accept command line arguments used by all common argv minions.
@@ -12,12 +19,14 @@ export type MinionArguments = yargs.Arguments;
  * @param defaultInternalUrl
  * @param additions
  */
-export default function commonYargs(
-    id: string,
+export default function commonYargs<
+    T extends MinionArguments = MinionArguments
+>(
     defaultPort: number,
     defaultInternalUrl: string,
-    additions: (a: yargs.Argv) => yargs.Argv = x => x
-): MinionArguments {
+    additions: (a: yargs.Argv<MinionArguments>) => yargs.Argv<T> = x =>
+        x as yargs.Argv<T>
+): T {
     const yarr = yargs
         .config()
         .help()
@@ -61,5 +70,6 @@ export default function commonYargs(
             default: process.env.RETRIES || 10
         });
 
-    return addJwtSecretFromEnvVar(additions(yarr).argv);
+    const returnValue = addJwtSecretFromEnvVar(additions(yarr).argv);
+    return returnValue;
 }

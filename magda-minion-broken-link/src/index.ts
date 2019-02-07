@@ -14,7 +14,7 @@ const coerceJson = (param: string) => (json?: string) => {
     return data;
 };
 
-const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
+const argv = commonYargs(6111, "http://localhost:6111", argv =>
     argv
         .option("externalRetries", {
             describe:
@@ -26,7 +26,6 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
             describe:
                 "A object that defines wait time for each of domain. " +
                 "Echo property name of the object would be the domain name and property value is the wait time in seconds",
-            type: "string",
             coerce: coerceJson("domainWaitTimeConfig"),
             default: process.env.DOMAIN_WAIT_TIME_CONFIG || JSON.stringify({})
         })
@@ -40,7 +39,10 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
         })
 );
 
-console.log("domainWaitTimeConfig: ", argv.domainWaitTimeConfig);
+console.log(
+    "domainWaitTimeConfig: ",
+    JSON.stringify(argv.domainWaitTimeConfig as any, null, 2)
+);
 
 function sleuthBrokenLinks() {
     return minion({
@@ -56,7 +58,7 @@ function sleuthBrokenLinks() {
                 registry,
                 argv.externalRetries,
                 1,
-                argv.domainWaitTimeConfig,
+                argv.domainWaitTimeConfig as any,
                 argv.requestOpts as CoreOptions
             )
     });

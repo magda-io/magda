@@ -88,8 +88,8 @@ export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
  * distribution, for testing retries.
  */
 export const httpOnlyRecordArb = jsc.suchthat(
-    recordArbWithDistArbs(
-        jsc.oneof([
+    recordArbWithDistArbs({
+        url: jsc.oneof([
             jsc.constant(undefined),
             distUrlArb({
                 schemeArb: jsc.oneof([
@@ -98,7 +98,7 @@ export const httpOnlyRecordArb = jsc.suchthat(
                 ])
             })
         ])
-    ),
+    }),
     record =>
         record.aspects["dataset-distributions"].distributions.length > 1 &&
         record.aspects["dataset-distributions"].distributions.every(
