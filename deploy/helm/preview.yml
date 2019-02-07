@@ -102,3 +102,88 @@ correspondence-api:
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
+
+{
+    "id" : "dga-agriculture",
+    "name" : "agriculture@data.gov.au",
+    "sourceUrl" : "https://data.gov.au/",
+    "pageSize" : 100,
+    "ignoreHarvestSources" : ["*"],
+    "allowedOrganisationName" : "agriculture",
+    "extras": {
+        "a": 122,
+        "b": [1,2,3,4]
+    },
+    "presetRecordAspects": [{
+        "id": "dcat-dataset-strings",
+        "recordType": "dataset",
+        "data": {
+            "creation": {
+                "isOpenData": false
+            }
+        }
+    }]
+}
+
+connectors:
+  includeCronJobs: false
+  config:
+    - image:
+        name: "magda-ckan-connector"
+      id: dga
+      name: "data.gov.au"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 1000
+      schedule: "0 * * * *"
+      ignoreHarvestSources: ["*"]
+
+connectors:
+  config:
+    ## Test Environment data setting isOpenData field to public
+    - image:
+        name: "magda-ckan-connector"
+      id: "dga-doee"
+      name: "Department of Environment @ Ckan DGA"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 100
+      ignoreHarvestSources: ["*"]
+      allowedOrganisationName: "doee"
+      ## Optional extras data
+      extras:
+        a: 122
+        b:
+          - 1
+          - 2
+          - 3
+      ## Set aspects
+      presetRecordAspects:
+        id: "dcat-dataset-strings"
+        recordType: "dataset"
+        data:
+          creation:
+            isOpenData: true
+    ## Test agriculture data without setting isOpenData field
+    - image:
+        name: "magda-ckan-connector"
+      id: "dga-agriculture"
+      name: "Department of Agriculture @ Ckan DGA"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 100
+      ignoreHarvestSources: ["*"]
+      allowedOrganisationName: "agriculture"
+    ## Test attorneygeneralsdepartment data setting isOpenData field to private
+    - image:
+        name: "magda-ckan-connector"
+      id: "dga-attorneygeneralsdepartment"
+      name: "Department of attorneygeneralsdepartment @ Ckan DGA"
+      sourceUrl: "https://data.gov.au/"
+      pageSize: 100
+      ignoreHarvestSources: ["*"]
+      allowedOrganisationName: "attorneygeneralsdepartment"
+      ## Set aspects
+      presetRecordAspects:
+        id: "dcat-dataset-strings"
+        recordType: "dataset"
+        data:
+          creation:
+            isOpenData: false
