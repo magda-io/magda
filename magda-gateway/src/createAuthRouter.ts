@@ -61,7 +61,8 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             authRouter: require("./oauth2/ckan").default({
                 authorizationApi: authApi,
                 passport: passport,
-                externalAuthHome: `${options.externalUrl}/auth`
+                externalAuthHome: `${options.externalUrl}/auth`,
+                ckanUrl: options.ckanUrl
             })
         },
         {
