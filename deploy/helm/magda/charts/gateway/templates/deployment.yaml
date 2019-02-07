@@ -54,8 +54,8 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
-{{- if .Values.ckanAuthenticationUrl }}
-            "--ckanUrl", {{ .Values.ckanAuthenticationUrl | quote }},
+{{- if .Values.auth.ckanAuthenticationUrl }}
+            "--ckanUrl", {{ .Values.auth.ckanAuthenticationUrl | quote }},
 {{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--helmetJson", "/etc/config/helmet.json",
