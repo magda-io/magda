@@ -19,10 +19,6 @@ export default function addJwtSecretFromEnvVar<T>(
             process.env.npm_package_config_jwtSecret
     });
 
-    // const newArgv = {
-    //     ...argv,
-    // };
-
     if (required && !newArgv.jwtSecret) {
         throw new Error(
             "jwtSecret argument or JWT_SECRET environment variable is required"

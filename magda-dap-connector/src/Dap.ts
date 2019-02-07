@@ -430,7 +430,7 @@ export default class Dap implements ConnectorSource {
                                                         // let avgDistSize = Math.ceil(this.distributionSize/distributionMap.size)
                                                         let returnDistribution: any = [];
                                                         for (let [
-                                                            _,
+                                                            ,
                                                             dist
                                                         ] of distributionMap) {
                                                             returnDistribution = returnDistribution.concat(
