@@ -87,6 +87,16 @@ const argv = yargs
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("previewMapBaseUrl", {
+        describe:
+            "The base URL of the Magda preview map.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("correspondenceApiBaseUrl", {
+        describe:
+            "The base URL of the correspondence api.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("fallbackUrl", {
         describe:
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",

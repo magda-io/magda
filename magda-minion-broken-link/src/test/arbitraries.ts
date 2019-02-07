@@ -76,11 +76,11 @@ function getKnownProtocolUrls(record: Record) {
 }
 
 export type CheckResult = "success" | "error" | "notfound";
-export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
-    ["success" as "success", "error" as "error", "notfound" as "notfound"].map(
-        jsc.constant
-    )
-);
+export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof([
+    "success" as "success",
+    "error" as "error",
+    "notfound" as "notfound"
+].map(jsc.constant) as jsc.Arbitrary<CheckResult>[]);
 
 /**
  * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
