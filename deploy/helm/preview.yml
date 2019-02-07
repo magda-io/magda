@@ -103,41 +103,8 @@ correspondence-api:
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
 
-{
-    "id" : "dga-agriculture",
-    "name" : "agriculture@data.gov.au",
-    "sourceUrl" : "https://data.gov.au/",
-    "pageSize" : 100,
-    "ignoreHarvestSources" : ["*"],
-    "allowedOrganisationName" : "agriculture",
-    "extras": {
-        "a": 122,
-        "b": [1,2,3,4]
-    },
-    "presetRecordAspects": [{
-        "id": "dcat-dataset-strings",
-        "recordType": "dataset",
-        "data": {
-            "creation": {
-                "isOpenData": false
-            }
-        }
-    }]
-}
-
 connectors:
   includeCronJobs: false
-  config:
-    - image:
-        name: "magda-ckan-connector"
-      id: dga
-      name: "data.gov.au"
-      sourceUrl: "https://data.gov.au/"
-      pageSize: 1000
-      schedule: "0 * * * *"
-      ignoreHarvestSources: ["*"]
-
-connectors:
   config:
     ## Test Environment data setting isOpenData field to public
     - image:
