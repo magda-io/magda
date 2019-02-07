@@ -1,3 +1,5 @@
+## 0.0.53
+
 ## 0.0.52
 
 Authentication:
@@ -72,6 +74,7 @@ Ops:
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Only runtime dependencies will be included by docker image build script
 -   Fixed an file selector error in create-secrets script when current directory & non of its sub directory has \*.json file
+-   Changed SQL for querying aspects by path/value so that it could take advantage of JSONB indices.
 
 Security:
 
