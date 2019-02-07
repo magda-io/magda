@@ -24,9 +24,7 @@ gateway:
     enabled: false
   enableAuthEndpoint: true
   enableHttpsRedirection: true
-  enableCkanRedirection: true
-  ckanRedirectionDomain: "ckan.data.gov.au"
-  ckanRedirectionPath: ""
+  enableCkanRedirection: false
   helmet:
     frameguard: false
   cors:
@@ -36,11 +34,13 @@ gateway:
     directives:
       scriptSrc:
       - "''self''"
+      - "''unsafe-inline''"
       - browser-update.org
       objectSrc:
       - "''none''"
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
-  ckanAuthenticationUrl: https://data.gov.au/data
+  auth:
+    ckanAuthenticationUrl: https://data.gov.au/data
       
 combined-db:
   waleBackup:
