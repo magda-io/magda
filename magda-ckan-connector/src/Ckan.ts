@@ -104,7 +104,7 @@ export default class Ckan implements ConnectorSource {
             typeof options.allowedOrganisationName === "string"
         ) {
             solrQueries.push(
-                `+organization:${encodeURIComponent(
+                `organization:${encodeURIComponent(
                     `"${options.allowedOrganisationName}"`
                 )}`
             );

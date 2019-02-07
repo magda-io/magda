@@ -19,6 +19,14 @@ import { Record } from "src/generated/registry/api";
 // ConnectorSource,
 
 describe("JsonConnector", () => {
+    before(() => {
+        nock.disableNetConnect();
+    });
+
+    after(() => {
+        nock.enableNetConnect();
+    });
+
     afterEach(() => {
         nock.cleanAll();
     });
@@ -201,8 +209,7 @@ describe("JsonConnector", () => {
             }
         };
 
-        it('By default (`opType` === "MERGE_LEFT"), `presetAspects` should be overwritten by records aspects before added to records', function() {
-            this.timeout(500000);
+        it('By default (`opType` === "MERGE_LEFT"), `presetAspects` should be overwritten by records aspects before added to records', () => {
             const randomValue1 = Math.random().toString();
             const randomValue2 = Math.random().toString();
             const datasetRandomValue1 = Math.random().toString();
