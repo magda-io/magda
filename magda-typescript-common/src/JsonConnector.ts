@@ -500,7 +500,8 @@ export default class JsonConnector {
         ) {
             return record;
         }
-        record.aspects.source["extras"] = this.configData.extras;
+        const deepDataCopy = _.merge({}, this.configData.extras);
+        record.aspects.source["extras"] = deepDataCopy;
         return record;
     }
 
@@ -546,23 +547,25 @@ export default class JsonConnector {
             }
 
             const opType = String(presetRecordAspect.opType).toUpperCase();
+            //--- avoid deep merge from altering data later
+            const deepDataCopy = _.merge({}, data);
 
             if (!record.aspects[id]) {
-                record.aspects[id] = data;
+                record.aspects[id] = deepDataCopy;
                 return;
             }
 
             if (opType === "FILL") {
                 return;
             } else if (opType === "REPLACE") {
-                record.aspects[id] = data;
+                record.aspects[id] = deepDataCopy;
                 return;
             } else if (opType === "MERGE_RIGHT") {
-                record.aspects[id] = _.merge(record.aspects[id], data);
+                record.aspects[id] = _.merge(record.aspects[id], deepDataCopy);
                 return;
             } else {
                 // --- MERGE_LEFT should be default operation
-                record.aspects[id] = _.merge(data, record.aspects[id]);
+                record.aspects[id] = _.merge(deepDataCopy, record.aspects[id]);
                 return;
             }
         });
