@@ -5,7 +5,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.18"
+  val akkaV       = "2.5.20"
   val akkaHttpV   = "10.1.7"
   val scalaTestV  = "3.0.1"
   Seq(

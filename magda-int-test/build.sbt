@@ -6,11 +6,11 @@ resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.18"
+  val akkaV       = "2.5.20"
+  val akkaHttpV   = "10.1.7"
   val scalaTestV  = "2.2.6"
   val LuceneVersion = "7.3.1"
   Seq(
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
 
     "org.elasticsearch.plugin" % "reindex-client" % "6.3.0" % "test",
@@ -21,7 +21,8 @@ libraryDependencies ++= {
 
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
     "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
+    "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
   )
 }
