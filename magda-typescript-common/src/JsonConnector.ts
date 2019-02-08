@@ -1,18 +1,20 @@
 import { AspectDefinition, Record } from "./generated/registry/api";
 import AspectCreationFailure from "./AspectCreationFailure";
 import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
-import ConnectorRecordId from "./ConnectorRecordId";
+import ConnectorRecordId, { RecordType } from "./ConnectorRecordId";
 import ConnectionResult from "./ConnectionResult";
 import RecordCreationFailure from "./RecordCreationFailure";
 import JsonTransformer from "./JsonTransformer";
 import Registry from "./registry/AuthorizedRegistryClient";
 import unionToThrowable from "./util/unionToThrowable";
+import { parse as parseArgv } from "yargs";
 
 import * as express from "express";
 import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";
 import * as uuid from "uuid";
+import * as _ from "lodash";
 
 /**
  * A base class for connectors for most any JSON-based catalog source.
@@ -23,6 +25,7 @@ export default class JsonConnector {
     public readonly registry: Registry;
     public readonly maxConcurrency: number;
     public readonly sourceTag?: string;
+    public readonly configData?: JsonConnectorConfig;
 
     constructor({
         source,
@@ -36,6 +39,78 @@ export default class JsonConnector {
         this.registry = registry;
         this.maxConcurrency = maxConcurrency;
         this.sourceTag = sourceTag;
+        this.configData = this.readConfigData();
+    }
+
+    readConfigData(): JsonConnectorConfig {
+        try {
+            const argv = parseArgv(process.argv);
+            if (!argv) {
+                throw new Error("failed to parse commandline parameter!");
+            }
+
+            let configData: JsonConnectorConfig;
+
+            if (!argv.config) {
+                if (!argv.id) {
+                    configData = {
+                        id: this.source.id,
+                        name: this.source.name
+                    };
+                    if (this.source.extras) {
+                        configData.extras = this.source.extras;
+                    }
+                    if (this.source.presetRecordAspects) {
+                        configData.presetRecordAspects = this.source.presetRecordAspects;
+                    }
+                } else {
+                    configData = {
+                        id: argv.id,
+                        name: argv.name
+                    };
+                    if (argv.extras) {
+                        configData.extras = argv.extras;
+                    }
+                    if (argv.presetRecordAspects) {
+                        configData.presetRecordAspects =
+                            argv.presetRecordAspects;
+                    }
+                }
+            } else {
+                configData = JSON.parse(
+                    fs.readFileSync(argv.config, { encoding: "utf-8" })
+                );
+            }
+
+            if (!configData) {
+                throw new Error("invalid empty config data.");
+            }
+
+            if (!configData.id) {
+                throw new Error(
+                    "invalid config data, missing compulsory `id`."
+                );
+            }
+
+            if (!configData.name) {
+                throw new Error(
+                    "invalid config data, missing compulsory `name`."
+                );
+            }
+
+            if (
+                configData.presetRecordAspects &&
+                !configData.presetRecordAspects.length
+            ) {
+                console.log(
+                    "Warning: `presetRecordAspects` exists but is not an array. It will not be used."
+                );
+            }
+
+            return configData;
+        } catch (e) {
+            throw new Error(`Can't read connector config data: ${e}`);
+        }
     }
 
     async createAspectDefinitions(): Promise<ConnectionResult> {
@@ -73,13 +148,15 @@ export default class JsonConnector {
         organizationJson: object
     ): Promise<Record | Error> {
         return this.putRecord(
-            this.transformer.organizationJsonToRecord(organizationJson)
+            this.transformer.organizationJsonToRecord(organizationJson),
+            "Organization"
         );
     }
 
     async createDataset(datasetJson: object): Promise<Record | Error> {
         return this.putRecord(
-            this.transformer.datasetJsonToRecord(datasetJson)
+            this.transformer.datasetJsonToRecord(datasetJson),
+            "Dataset"
         );
     }
 
@@ -91,7 +168,8 @@ export default class JsonConnector {
             this.transformer.distributionJsonToRecord(
                 distributionJson,
                 datasetJson
-            )
+            ),
+            "Distribution"
         );
     }
 
@@ -104,6 +182,9 @@ export default class JsonConnector {
                 organizations,
                 this.maxConcurrency,
                 async organization => {
+                    if (!organization) {
+                        return;
+                    }
                     const recordOrError = await this.createOrganization(
                         organization
                     );
@@ -220,7 +301,7 @@ export default class JsonConnector {
                 }
             }
 
-            const recordOrError = await this.putRecord(record);
+            const recordOrError = await this.putRecord(record, "Dataset");
             if (recordOrError instanceof Error) {
                 result.datasetFailures.push(
                     new RecordCreationFailure(
@@ -393,7 +474,10 @@ export default class JsonConnector {
         resetTimeout();
     }
 
-    private async putRecord(record: Record): Promise<Record | Error> {
+    private async putRecord(
+        record: Record,
+        recordType: RecordType
+    ): Promise<Record | Error> {
         if (!record.id) {
             const noIdMessage = `Tried to put record with no id: ${JSON.stringify(
                 record
@@ -405,9 +489,101 @@ export default class JsonConnector {
         }
 
         return this.registry.putRecord({
-            ...record,
+            ...this.attachConnectorDataToSource(
+                this.attachConnectorPresetAspects(record, recordType)
+            ),
             sourceTag: this.sourceTag
         });
+    }
+
+    /**
+     * Copy `extras` from connector config data to
+     * records `source` aspect
+     */
+    private attachConnectorDataToSource(record: Record) {
+        if (
+            !record ||
+            !record.aspects ||
+            !record.aspects.source ||
+            !this.configData.extras
+        ) {
+            return record;
+        }
+        const deepDataCopy = _.merge({}, this.configData.extras);
+        record.aspects.source["extras"] = deepDataCopy;
+        return record;
+    }
+
+    private attachConnectorPresetAspects(
+        record: Record,
+        recordType: RecordType
+    ) {
+        if (
+            !this.configData.presetRecordAspects ||
+            !this.configData.presetRecordAspects.length
+        ) {
+            // --- no `presetRecordAspects` config, do nothing
+            return record;
+        }
+        const presetRecordAspects = this.configData.presetRecordAspects.filter(
+            presetAspect => {
+                if (!presetAspect.recordType) {
+                    // --- if not specified, apply to all records
+                    return true;
+                }
+                return (
+                    presetAspect.recordType.toUpperCase() ===
+                    recordType.toUpperCase()
+                );
+            }
+        );
+
+        if (!presetRecordAspects.length) {
+            return record;
+        }
+
+        if (!record.aspects) {
+            record.aspects = {};
+        }
+        presetRecordAspects.forEach(presetRecordAspect => {
+            if (typeof presetRecordAspect !== "object") {
+                return;
+            }
+
+            const { id, data } = presetRecordAspect;
+            if (!id || !data) {
+                return;
+            }
+
+            const opType = String(presetRecordAspect.opType).toUpperCase();
+            //--- avoid deep merge from altering data later
+            const deepDataCopy = _.merge({}, data);
+
+            if (!record.aspects[id]) {
+                record.aspects[id] = deepDataCopy;
+                return;
+            }
+
+            if (opType === "FILL") {
+                return;
+            } else if (opType === "REPLACE") {
+                record.aspects[id] = deepDataCopy;
+                return;
+            } else if (opType === "MERGE_RIGHT") {
+                record.aspects[id] = _.merge(record.aspects[id], deepDataCopy);
+                return;
+            } else {
+                // --- MERGE_LEFT should be default operation
+                record.aspects[id] = _.mergeWith(
+                    deepDataCopy,
+                    record.aspects[id],
+                    // --- if target property is null, it should be overwritten as well
+                    (a, b) => (b === null ? a : undefined)
+                );
+                return;
+            }
+        });
+        return record;
     }
 }
 
@@ -422,6 +598,18 @@ export interface ConnectorSource {
      * The user-friendly name of the source.
      */
     readonly name: string;
+
+    /**
+     * This field is not compulsory and JsonConnector will try to locate its value from commandline parameters
+     * before use ConnectorSource.extras as backup --- more for test cases
+     */
+    readonly extras?: JsonConnectorConfigExtraMetaData;
+
+    /**
+     * This field is not compulsory and JsonConnector will try to locate its value from commandline parameters
+     * before use ConnectorSource.presetRecordAspects as backup --- more for test cases
+     */
+    readonly presetRecordAspects?: JsonConnectorConfigPresetAspect[];
 
     /**
      * Get all of the datasets as pages of objects.
@@ -523,4 +711,52 @@ export interface JsonConnectorRunInteractiveOptions {
     timeoutSeconds: number;
     listenPort: number;
     transformerOptions: any;
+}
+
+/**
+ * Connector extra metadata
+ * Will be copied to records' source aspect automatically
+ */
+export type JsonConnectorConfigExtraMetaData = {
+    [k: string]: any;
+};
+
+/**
+ * Any aspects that will be `preset` on any records created by the connector
+ *
+ * opType: operation type; Describe how to add the aspect to the record
+ * - MERGE_LEFT: merge `presetAspect` with records aspects.
+ *   i.e. `presetAspect` will be overwritten by records aspects data if any
+ * - MEREG_RIGHT: merge records aspects with `presetAspect`.
+ *   i.e. records aspects data (if any) will be overwritten by `presetAspect`
+ * - REPLACE: `presetAspect` will replace any existing records aspect
+ * - FILL: `presetAspect` will be added if no existing aspect
+ * Default value (If not specified) will be `MERGE_LEFT`
+ *
+ * recordType:
+ * Describes which type of records this aspect will be added to;
+ * If this field is omitted, the aspect will be added to every records.
+ *
+ * data: Object; aspect data
+ */
+export type JsonConnectorConfigPresetAspect = {
+    id: string;
+    recordType?: RecordType;
+    opType?: "MERGE_LEFT" | "REPLACE" | "FILL" | "MERGE_RIGHT";
+    data: {
+        [k: string]: any;
+    };
+};
+
+export interface JsonConnectorConfig {
+    id: string;
+    name: string;
+    sourceUrl?: string;
+    pageSize?: number;
+    schedule?: string;
+    ignoreHarvestSources?: string[];
+    allowedOrganisationName?: string;
+
+    extras?: JsonConnectorConfigExtraMetaData;
+    presetRecordAspects?: JsonConnectorConfigPresetAspect[];
 }

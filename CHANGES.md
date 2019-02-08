@@ -1,5 +1,14 @@
 ## 0.0.53
 
+Connectors:
+
+-   Allowed Ckan connector to pull datasets belongs to a specified organisation
+-   Added `presetRecordAspects` & `extra` parameters supports to all connectors
+
+Dataset Page:
+
+-   When `dcat-dataset-strings.creation.isOpenData` is set, show `Public / Private` label accordingly
+
 ## 0.0.52
 
 Authentication:
