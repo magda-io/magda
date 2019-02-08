@@ -574,7 +574,12 @@ export default class JsonConnector {
                 return;
             } else {
                 // --- MERGE_LEFT should be default operation
-                record.aspects[id] = _.merge(deepDataCopy, record.aspects[id]);
+                record.aspects[id] = _.mergeWith(
+                    deepDataCopy,
+                    record.aspects[id],
+                    // --- if target property is null, it should be overwritten as well
+                    (a, b) => (b === null ? a : undefined)
+                );
                 return;
             }
         });

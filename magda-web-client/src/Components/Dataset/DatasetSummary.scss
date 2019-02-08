@@ -1,6 +1,9 @@
 @import "../../variables";
 
 .dataset-summary {
+    .divider {
+        float: left;
+    }
     height: auto;
     clear: both;
     .dataset-summary-title {
