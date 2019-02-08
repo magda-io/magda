@@ -124,11 +124,11 @@ connectors:
           - 3
       ## Set aspects
       presetRecordAspects:
-        id: "dcat-dataset-strings"
-        recordType: "dataset"
-        data:
-          creation:
-            isOpenData: true
+        - id: "dcat-dataset-strings"
+          recordType: "dataset"
+          data:
+            creation:
+              isOpenData: true
     ## Test agriculture data without setting isOpenData field
     - image:
         name: "magda-ckan-connector"
@@ -149,8 +149,8 @@ connectors:
       allowedOrganisationName: "attorneygeneralsdepartment"
       ## Set aspects
       presetRecordAspects:
-        id: "dcat-dataset-strings"
-        recordType: "dataset"
-        data:
-          creation:
-            isOpenData: false
+        - id: "dcat-dataset-strings"
+          recordType: "dataset"
+          data:
+            creation:
+              isOpenData: false
