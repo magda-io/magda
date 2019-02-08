@@ -12,7 +12,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-stream" % akkaV,
     "com.typesafe.akka" %% "akka-http" % akkaHttpV,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV,
     "org.scalikejdbc" %% "scalikejdbc" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-config" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-test" % "3.0.0-RC3" % "test",
@@ -25,6 +24,8 @@ libraryDependencies ++= {
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
     "com.auth0" % "java-jwt" % "3.7.0",
+    "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
   )
