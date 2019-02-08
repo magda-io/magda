@@ -98,6 +98,15 @@ export default class JsonConnector {
                 );
             }
 
+            if (
+                configData.presetRecordAspects &&
+                !configData.presetRecordAspects.length
+            ) {
+                console.log(
+                    "Warning: `presetRecordAspects` exists but is not an array. It will not be used."
+                );
+            }
+
             return configData;
         } catch (e) {
             throw new Error(`Can't read connector config data: ${e}`);
