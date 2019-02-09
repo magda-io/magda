@@ -232,11 +232,8 @@ export default class Csw implements ConnectorSource {
                             "$..organisationName[*].CharacterString[0]._"
                         ) ||
                         jsonpath.value(
-                            jsonpath.nodes(
-                                node.value,
-                                "$..CI_Organisation.name[*].CharacterString[*]._"
-                            ),
-                            "$.._"
+                            node.value,
+                            "$..CI_Organisation[*].name[*].CharacterString[*]._"
                         )
                 };
             });
@@ -265,12 +262,7 @@ export default class Csw implements ConnectorSource {
                             .toLowerCase()
                             .indexOf("pointofcontact") != -1
                 ) != -1 ||
-                String(
-                    jsonpath.value(
-                        node.value,
-                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-                    )
-                ).toLowerCase() === "pointofcontact"
+                (node.role && node.role.toLowerCase() === "pointofcontact")
             );
         });
 
@@ -291,6 +283,11 @@ export default class Csw implements ConnectorSource {
         let orgData = datasetOrgs[0]["value"];
 
         if (datasetOrgs.length == 1) {
+            const byRole = groupBy(responsibleParties, node => node.role);
+            if (byRole["distributor"]) {
+                const firstDistributorNode: any = byRole.distributor[0];
+                orgData = firstDistributorNode.value;
+            }
             return Promise.resolve(orgData);
         }
 

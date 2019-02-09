@@ -95,6 +95,9 @@
         "name": "4fce6238-8d55-499c-bff5-98518552f4b4",
         "aspects": {
             "csw-dataset": {},
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
+            },
             "dcat-dataset-strings": {
                 "title":
                     "Geoscience Australia Community Metadata Profile of ISO 19115-1:2014",
@@ -222,6 +225,9 @@
         "name": "7846c08a-542d-4ab2-809a-09cca5b76bc2",
         "aspects": {
             "csw-dataset": {},
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
+            },
             "dcat-dataset-strings": {
                 "title": "AusSeabed Bathymetry Holdings",
                 "description":
@@ -249,8 +255,7 @@
                     "Earth Sciences",
                     "Published_External"
                 ],
-                "contactPoint":
-                    "European Petroleum Survey Group, clientservices@ga.gov.au",
+                "contactPoint": "EGD, clientservices@ga.gov.au",
                 "landingPage": "http://pid.geoscience.gov.au/dataset/ga/116321"
             },
             "source": {
@@ -284,6 +289,7 @@
             "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
         "aspects": {
             "csw-distribution": {},
+
             "dcat-distribution-strings": {
                 "title":
                     "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
@@ -311,6 +317,9 @@
             "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
         "aspects": {
             "csw-dataset": {},
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
+            },
             "dcat-dataset-strings": {
                 "title":
                     "Digital Elevation Model (DEM) of Australia derived from SRTM with 1 Second Grid - Smoothed Percentage Slope MapServer",
@@ -403,6 +412,10 @@
         "name": "1dc9935c-0d2a-84ff-e053-12a3070ae941",
         "aspects": {
             "csw-dataset": {},
+            "dataset-publisher": {
+                "publisher":
+                    "org-connector-Commonwealth of Australia (Geoscience Australia)"
+            },
             "dcat-dataset-strings": {
                 "title": "Tallangatta, Vic, 1994 -1995",
                 "description":
@@ -457,6 +470,54 @@
                 ]
             }
         },
+        "sourceTag": "stag"
+    },
+    "org-connector-Commonwealth of Australia (Geoscience Australia)": {
+        "aspects": {
+            "organization-details": {
+                "addrCountry": "Australia",
+                "addrPostCode": "2601",
+                "addrState": "ACT",
+                "addrStreet": "Cnr Jerrabomberra Ave and Hindmarsh Dr",
+                "addrSuburb": "Canberra",
+                "email": "sales@ga.gov.au",
+                "name": "Commonwealth of Australia (Geoscience Australia)",
+                "phone": "02 6249 9966",
+                "title": "Commonwealth of Australia (Geoscience Australia)"
+            },
+            "source": {
+                "id": "connector",
+                "name": "Connector",
+                "type": "csw-organization",
+                "url": "SOURCE/"
+            }
+        },
+        "id": "org-connector-Commonwealth of Australia (Geoscience Australia)",
+        "name": "Commonwealth of Australia (Geoscience Australia)",
+        "sourceTag": "stag"
+    },
+    "org-connector-Geoscience Australia": {
+        "aspects": {
+            "organization-details": {
+                "addrCountry": "Australia",
+                "addrPostCode": "2601",
+                "addrState": "ACT",
+                "addrStreet": "GPO Box 378",
+                "addrSuburb": "Canberra",
+                "email": "clientservices@ga.gov.au",
+                "name": "Geoscience Australia",
+                "phone": "+61 2 6249 9966",
+                "title": "Geoscience Australia"
+            },
+            "source": {
+                "id": "connector",
+                "name": "Connector",
+                "type": "csw-organization",
+                "url": "SOURCE/"
+            }
+        },
+        "id": "org-connector-Geoscience Australia",
+        "name": "Geoscience Australia",
         "sourceTag": "stag"
     }
 }

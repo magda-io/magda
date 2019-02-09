@@ -43,7 +43,12 @@ const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 const datasetContactPoint = getContactPoint(
     jsonpath
         .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-        .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+        .concat(
+            jsonpath.nodes(
+                dataset.json,
+                "$..CI_Responsibility[?(@.role[0].CI_RoleCode)]"
+            )
+        )
         .map(x => x.value),
     true
 );
