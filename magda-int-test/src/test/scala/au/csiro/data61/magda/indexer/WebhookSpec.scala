@@ -12,7 +12,7 @@ import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.Accepted
 import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.SearchApi
-import au.csiro.data61.magda.api.model.{ Protocols => ApiProtocols }
+import au.csiro.data61.magda.api.model.{Protocols => ApiProtocols}
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
@@ -20,7 +20,7 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.Registry.RegistryProtocols
 import au.csiro.data61.magda.model.Registry.Record
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
+import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols}
 import au.csiro.data61.magda.model.Temporal.PeriodOfTime
 import au.csiro.data61.magda.model.Temporal.Periodicity
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
@@ -46,10 +46,22 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
   blockUntilNotRed()
 
-  def convertSpatialDataUsingGeoJsonField(spatialData:Option[Location]) = spatialData match {
-    case Some(Location(_, None)) => None
-    case Some(Location(_, Some(geoJsonData))) => Some(Location(Some(geoJsonData.toJson.toString)))
-    case _ => None
+  /**
+   * Cleanses the Location in such a way that it's the same for both input data and output data. In particular
+   * it stops the tests failing because input polygons have bogus multiple-decimal-point coordinates (1.2.3 vs 1.23).
+   */
+  def convertSpatialDataUsingGeoJsonField(spatialData: Option[Location]) = {
+    spatialData match {
+      case Some(Location(Some(text), _)) =>
+        val convertedGeoJsonString = Location.apply(text) match {
+          case Location(_, Some(geoJson)) => geoJson.toJson.toString
+          case _                          => text
+        }
+
+        Some(Location(Some(convertedGeoJsonString), None))
+      case Some(Location(_, Some(geoJson))) => Some(Location(Some(geoJson.toJson.toString), None))
+      case _                                => None
+    }
   }
 
   describe("when webhook received") {
@@ -63,13 +75,14 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             Agent(
               identifier = publisher.identifier,
               aggKeywords =
-                if (publisher.jurisdiction.isEmpty)
-                  Some(publisher.name.getOrElse(publisher.identifier.get).toLowerCase)
-                else
-                  publisher.jurisdiction.map(publisher.name.getOrElse(publisher.identifier.get) + ":" + _).map(_.toLowerCase),
+              if (publisher.jurisdiction.isEmpty)
+                Some(publisher.name.getOrElse(publisher.identifier.get).toLowerCase)
+              else
+                publisher.jurisdiction.map(publisher.name.getOrElse(publisher.identifier.get) + ":" + _).map(_.toLowerCase),
               name = publisher.name,
               acronym = getAcronymFromPublisherName(publisher.name),
-              imageUrl = publisher.imageUrl)),
+              imageUrl = publisher.imageUrl
+            )),
 
           quality = 0,
 
@@ -78,7 +91,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             license = distribution.license.flatMap(_.name).map(name => License(Some(name))),
 
             // Code derives media type from the format rather than reading it directly.
-            mediaType = None)),
+            mediaType = None
+          )),
 
           // Contact points only look for name at the moment
           contactPoint = dataSet.contactPoint.flatMap(_.name).map(name => Agent(Some(name))),
@@ -96,7 +110,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
               case other                    => Some(other)
             }
             case other => other
-          }))
+          }
+        ))
 
         val cleanedOutputDataSets = response.dataSets.map(dataSet => dataSet.copy(
           // We don't care about this.
@@ -107,7 +122,9 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
           distributions = dataSet.distributions.map(distribution => distribution.copy(
             // This will be derived from the format so might not match the input
-            mediaType = None))))
+            mediaType = None
+          ))
+        ))
 
         withClue(cleanedOutputDataSets.toJson.prettyPrint + "\n should equal \n" + cleanedInputDataSets.toJson.prettyPrint) {
           cleanedOutputDataSets.toSet should equal(cleanedInputDataSets.toSet)
@@ -137,7 +154,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           Await.result(builtIndex.indexer.index(Source.fromIterator(() => dataSets.iterator)), 30 seconds)
 
           Await.result(builtIndex.indexer.ready, 120 seconds)
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             refresh(idxName)
           }
           blockUntilExactCount(dataSets.size, builtIndex.indexId)
@@ -148,7 +165,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
               eventTime = None,
               eventType = EventType.DeleteRecord,
               userId = 0,
-              data = JsObject("recordId" -> JsString(dataSet.identifier))))
+              data = JsObject("recordId" -> JsString(dataSet.identifier))
+            ))
 
           val payload = WebHookPayload(
             action = "records.changed",
@@ -156,7 +174,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             events = Some(events.toList),
             records = None,
             aspectDefinitions = None,
-            deferredResponseUrl = None)
+            deferredResponseUrl = None
+          )
 
           Post("/", payload) ~> builtIndex.webhookApi.routes ~> check {
             status shouldBe Accepted
@@ -164,7 +183,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
           val expectedDataSets = dataSets.filter(dataSet => !dataSetsToDelete.contains(dataSet))
 
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             refresh(idxName)
           }
           blockUntilExactCount(expectedDataSets.size, builtIndex.indexId)
@@ -177,7 +196,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             result.dataSets.map(_.identifier).toSet shouldEqual expectedDataSets.map(_.identifier).toSet
           }
 
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             deleteIndex(idxName)
           }
       }
@@ -195,7 +214,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
         case (dataSetsToDelete, deletedDataSetsToSave) =>
           val builtIndex = buildIndex()
           Await.result(builtIndex.indexer.ready, 120 seconds)
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             refresh(idxName)
           }
 
@@ -205,7 +224,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
               eventTime = None,
               eventType = EventType.DeleteRecord,
               userId = 0,
-              data = JsObject("recordId" -> JsString(dataSet.identifier))))
+              data = JsObject("recordId" -> JsString(dataSet.identifier))
+            ))
 
           val payload = WebHookPayload(
             action = "records.changed",
@@ -213,7 +233,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             events = Some(events.toList),
             records = Some(deletedDataSetsToSave.map(x => dataSetToRecord((x, Nil))).toList),
             aspectDefinitions = None,
-            deferredResponseUrl = None)
+            deferredResponseUrl = None
+          )
 
           Post("/", payload) ~> builtIndex.webhookApi.routes ~> check {
             status shouldBe Accepted
@@ -221,7 +242,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
           val expectedDataSets = deletedDataSetsToSave
 
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             refresh(idxName)
           }
           blockUntilExactCount(expectedDataSets.size, builtIndex.indexId)
@@ -234,7 +255,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             result.dataSets.map(_.identifier).toSet shouldEqual expectedDataSets.map(_.identifier).toSet
           }
 
-          builtIndex.indexNames.foreach{ idxName =>
+          builtIndex.indexNames.foreach { idxName =>
             deleteIndex(idxName)
           }
       }
@@ -273,7 +294,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
     indexer.ready.await(60 seconds)
 
-    indexNames.foreach{ idxName =>
+    indexNames.foreach { idxName =>
       blockUntilIndexExists(idxName)
     }
 
@@ -294,7 +315,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           events = None, // Not needed yet - soon?
           records = Some(dataSets.map(dataSetToRecord)),
           aspectDefinitions = None,
-          deferredResponseUrl = None))
+          deferredResponseUrl = None
+        ))
 
       val posts = payloads.map { payload =>
         new RequestBuilder(POST).apply("/", payload)
@@ -307,7 +329,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       }
       val allDataSets = dataSetsBatches.flatten.map(_._1)
 
-      builtIndex.indexNames.foreach{ idxName =>
+      builtIndex.indexNames.foreach { idxName =>
         refresh(idxName)
       }
 
@@ -320,7 +342,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
         fn(allDataSets, response)
       }
 
-      builtIndex.indexNames.foreach{ idxName =>
+      builtIndex.indexNames.foreach { idxName =>
         deleteIndex(idxName)
       }
     }
@@ -350,19 +372,23 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           val aspects: Map[String, JsObject] = Map(
             "dcat-dataset-strings" -> modifyJson(
               dataSet.copy(
-                distributions = Seq(),
-                publisher = None,
-                accrualPeriodicity = None).toJson.asJsObject, Map(
-                "accrualPeriodicity" -> dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => duration.get(ChronoUnit.SECONDS) * 1000 + " ms").toJson,
-                "contactPoint" -> dataSet.contactPoint.flatMap(_.name).map(_.toJson).getOrElse(JsNull),
-                "temporal" -> dataSet.temporal.map {
-                  case PeriodOfTime(None, None) => JsNull
-                  case PeriodOfTime(start, end) =>
-                    removeNulls(JsObject(
-                      "start" -> start.map(_.text).toJson,
-                      "end" -> end.map(_.text).toJson))
-                }.getOrElse(JsNull),
-                "spatial" -> dataSet.spatial.map(_.text).toJson)),
+              distributions = Seq(),
+              publisher = None,
+              accrualPeriodicity = None
+            ).toJson.asJsObject, Map(
+              "accrualPeriodicity" -> dataSet.accrualPeriodicity.flatMap(_.duration).map(duration => duration.get(ChronoUnit.SECONDS) * 1000 + " ms").toJson,
+              "contactPoint" -> dataSet.contactPoint.flatMap(_.name).map(_.toJson).getOrElse(JsNull),
+              "temporal" -> dataSet.temporal.map {
+                case PeriodOfTime(None, None) => JsNull
+                case PeriodOfTime(start, end) =>
+                  removeNulls(JsObject(
+                    "start" -> start.map(_.text).toJson,
+                    "end" -> end.map(_.text).toJson
+                  ))
+              }.getOrElse(JsNull),
+              "spatial" -> dataSet.spatial.map(_.text).toJson
+            )
+            ),
             "dataset-distributions" -> JsObject(
               "distributions" -> dataSet.distributions.map(dist =>
                 JsObject(
@@ -371,9 +397,14 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                   "aspects" -> JsObject(
                     "dcat-distribution-strings" ->
                       modifyJson(dist.toJson.asJsObject, Map(
-                        "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)))))).toJson),
+                        "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)
+                      ))
+                  )
+                )).toJson
+            ),
             "source" -> JsObject(
-              "name" -> dataSet.catalog.toJson),
+              "name" -> dataSet.catalog.toJson
+            ),
             "dataset-publisher" -> dataSet.publisher.map(publisher => JsObject(
               "publisher" -> JsObject(
                 "id" -> publisher.identifier.toJson,
@@ -381,9 +412,12 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                 "aspects" -> JsObject(
                   "organization-details" -> removeNulls(JsObject(
                     "title" -> publisher.name.toJson,
-                    "imageUrl" -> publisher.imageUrl.toJson)))))).toJson,
+                    "imageUrl" -> publisher.imageUrl.toJson
+                  ))
+                )
+              )
+            )).toJson,
             "dataset-quality-rating" -> {
-              println(dataSet.quality)
               if (!dataSet.hasQuality) {
                 JsObject()
               } else if (dataSet.quality == 1) {
@@ -406,13 +440,17 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                     List(
                       name -> JsObject(
                         "score" -> (dataSet.quality + skewPrimary).toJson,
-                        "weighting" -> (weightingPrimary).toJson),
+                        "weighting" -> (weightingPrimary).toJson
+                      ),
                       s"$name-alternate" -> JsObject(
                         "score" -> (dataSet.quality - skewOtherWay).toJson,
-                        "weighting" -> (weightingOtherWay).toJson))
+                        "weighting" -> (weightingOtherWay).toJson
+                      )
+                    )
                 }.toMap.toJson.asJsObject
               }
-            })
+            }
+          )
 
             .filter { case (_, value) => value.isInstanceOf[JsObject] }
             .asInstanceOf[Map[String, JsObject]]
@@ -426,14 +464,18 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                   "intervals" -> Seq(
                     removeNulls(JsObject(
                       "start" -> from.toJson,
-                      "end" -> to.toJson))).toJson))
+                      "end" -> to.toJson
+                    ))
+                  ).toJson
+                ))
             }.map(_.toJson.asJsObject)
 
           temporal match {
             case Some(innerTemporal) => aspects + (("temporal-coverage", innerTemporal))
             case None                => aspects
           }
-        })
+        }
+      )
 
       record
   }
