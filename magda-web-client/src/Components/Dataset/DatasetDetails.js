@@ -5,6 +5,7 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
+import defined from "../../helpers/defined";
 import "./RecordDetails.css";
 import "./DatasetDetails.css";
 
@@ -64,6 +65,15 @@ class DatasetDetails extends Component {
                                 >
                                     {dataset.landingPage}
                                 </a>
+                                {defined(dataset.creation) &&
+                                defined(dataset.creation.isOpenData) ? (
+                                    <h3 className="section-heading">
+                                        Type:{" "}
+                                        {dataset.creation.isOpenData
+                                            ? "Public"
+                                            : "Private"}
+                                    </h3>
+                                ) : null}
                             </div>
                         )}
                         <div

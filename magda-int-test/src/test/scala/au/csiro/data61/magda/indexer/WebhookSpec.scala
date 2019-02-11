@@ -71,6 +71,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
               acronym = getAcronymFromPublisherName(publisher.name),
               imageUrl = publisher.imageUrl)),
 
+          source = dataSet.source,
           quality = 0,
 
           distributions = dataSet.distributions.map(distribution => distribution.copy(
@@ -372,8 +373,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                     "dcat-distribution-strings" ->
                       modifyJson(dist.toJson.asJsObject, Map(
                         "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)))))).toJson),
-            "source" -> JsObject(
-              "name" -> dataSet.catalog.toJson),
+            "source" -> dataSet.source.toJson,
             "dataset-publisher" -> dataSet.publisher.map(publisher => JsObject(
               "publisher" -> JsObject(
                 "id" -> publisher.identifier.toJson,

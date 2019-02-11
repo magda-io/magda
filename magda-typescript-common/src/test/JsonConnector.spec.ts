@@ -9,22 +9,45 @@ import AuthRegistryClient from "../registry/AuthorizedRegistryClient";
 
 import JsonConnector, {
     JsonConnectorOptions,
-    ConnectorSource
+    ConnectorSource,
+    JsonConnectorConfigExtraMetaData,
+    JsonConnectorConfigPresetAspect
 } from "../JsonConnector";
 import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
 import ConnectorRecordId from "src/ConnectorRecordId";
+import { Record } from "src/generated/registry/api";
 // ConnectorSource,
 
 describe("JsonConnector", () => {
+    before(() => {
+        nock.disableNetConnect();
+    });
+
+    after(() => {
+        nock.enableNetConnect();
+    });
+
+    afterEach(() => {
+        nock.cleanAll();
+    });
+
     describe("crawlTag", () => {
         it("auto-generates a tag that is distinct between instances by default", () => {
             for (let i: number = 0; i < 100; i++) {
-                const connectorA = new JsonConnector(
-                    {} as JsonConnectorOptions
-                );
-                const connectorB = new JsonConnector(
-                    {} as JsonConnectorOptions
-                );
+                const connectorA = new JsonConnector({
+                    source: {
+                        // --- id & name is compulsory
+                        id: "xxx",
+                        name: "xxx"
+                    }
+                } as JsonConnectorOptions);
+                const connectorB = new JsonConnector({
+                    source: {
+                        // --- id & name is compulsory
+                        id: "xxx",
+                        name: "xxx"
+                    }
+                } as JsonConnectorOptions);
 
                 expect(connectorA.sourceTag).not.to.equal(connectorB.sourceTag);
             }
@@ -33,6 +56,11 @@ describe("JsonConnector", () => {
         it("accepts an overridden tag", () => {
             const tag = "blah";
             const connector = new JsonConnector({
+                source: {
+                    // --- id & name is compulsory
+                    id: "xxx",
+                    name: "xxx"
+                },
                 sourceTag: tag
             } as JsonConnectorOptions);
             expect(connector.sourceTag).to.equal(tag);
@@ -88,7 +116,199 @@ describe("JsonConnector", () => {
             });
         });
 
-        function setupCrawlTest() {
+        it("Will add aspect to all records according to `presetAspects` config", () => {
+            const randomValue = Math.random().toString();
+            const { scope, connector } = setupCrawlTest({
+                presetRecordAspects: [
+                    {
+                        id: "test-aspect-id",
+                        data: {
+                            "test-aspect-data1": randomValue
+                        }
+                    }
+                ]
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    expect(record.aspects).to.have.deep.property(
+                        "test-aspect-id",
+                        {
+                            "test-aspect-data1": randomValue
+                        }
+                    );
+                });
+            });
+        });
+
+        it("Will only add aspect to all dataset records if the `presetAspects` config specifies `recordType`", () => {
+            const randomValue = Math.random().toString();
+            const { scope, connector } = setupCrawlTest({
+                presetRecordAspects: [
+                    {
+                        id: "test-aspect-id",
+                        recordType: "Dataset",
+                        data: {
+                            "test-aspect-data1": randomValue
+                        }
+                    }
+                ]
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    if (record.id.indexOf("ds-") === 0) {
+                        expect(record.aspects).to.have.deep.property(
+                            "test-aspect-id",
+                            {
+                                "test-aspect-data1": randomValue
+                            }
+                        );
+                    } else {
+                        expect(record.aspects).to.not.have.property(
+                            "test-aspect-id"
+                        );
+                    }
+                });
+            });
+        });
+
+        const testAspectJsonSchema = {
+            $schema: "http://json-schema.org/schema#",
+            title: "Test Json Schema",
+            type: "object",
+            properties: {
+                "test-aspect-data1": {
+                    title: "test-aspect-data1",
+                    type: "string"
+                },
+                "test-aspect-data2": {
+                    title: "test-aspect-data2",
+                    type: "string"
+                }
+            }
+        };
+
+        it('By default (`opType` === "MERGE_LEFT"), `presetAspects` should be overwritten by records aspects before added to records', () => {
+            const randomValue1 = Math.random().toString();
+            const randomValue2 = Math.random().toString();
+            const datasetRandomValue1 = Math.random().toString();
+            const { scope, connector } = setupCrawlTest(
+                {
+                    presetRecordAspects: [
+                        {
+                            id: "test-aspect-id",
+                            data: {
+                                "test-aspect-data1": randomValue1,
+                                "test-aspect-data2": randomValue2
+                            }
+                        }
+                    ]
+                },
+                {
+                    // --- transformer options:
+                    sourceId: "connector-id",
+                    datasetAspectBuilders: [
+                        {
+                            aspectDefinition: {
+                                id: "test-aspect-id",
+                                name: "test-aspect-id",
+                                jsonSchema: testAspectJsonSchema
+                            },
+                            builderFunctionString: `return {"test-aspect-data1":"${datasetRandomValue1}"};`
+                        }
+                    ]
+                }
+            );
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    if (record.id.indexOf("ds-") === 0) {
+                        expect(record.aspects).to.have.deep.property(
+                            "test-aspect-id",
+                            {
+                                // --- Dataset record's value should be kept for the first property:
+                                "test-aspect-data1": datasetRandomValue1,
+                                "test-aspect-data2": randomValue2
+                            }
+                        );
+                    } else {
+                        expect(record.aspects).to.have.deep.property(
+                            "test-aspect-id",
+                            {
+                                "test-aspect-data1": randomValue1,
+                                "test-aspect-data2": randomValue2
+                            }
+                        );
+                    }
+                });
+            });
+        });
+
+        it("Will add extra data to source aspects", () => {
+            const randomValue = Math.random().toString();
+            const { scope, connector } = setupCrawlTest({
+                extras: {
+                    testData: randomValue
+                }
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then(result => {
+                scope.done();
+                receivedRecords.forEach(record => {
+                    expect(record.aspects["source"]).to.have.deep.property(
+                        "extras",
+                        {
+                            testData: randomValue
+                        }
+                    );
+                });
+            });
+        });
+
+        function setupCrawlTest(
+            config: FakeConnectorSourceConfig = {},
+            transformerConfig: JsonTransformerOptions = {} as JsonTransformerOptions
+        ) {
             const scope = nock("http://example.com");
 
             const registry = new AuthRegistryClient({
@@ -98,10 +318,10 @@ describe("JsonConnector", () => {
                 maxRetries: 0
             });
 
-            const source = new FakeConnectorSource();
+            const source = new FakeConnectorSource(config);
 
             const transformer: JsonTransformer = new FakeJsonTransformer(
-                {} as JsonTransformerOptions
+                transformerConfig
             );
 
             const connector = new JsonConnector({
@@ -150,10 +370,26 @@ class FakeJsonTransformer extends JsonTransformer {
     }
 }
 
+type FakeConnectorSourceConfig = {
+    extras?: JsonConnectorConfigExtraMetaData;
+    presetRecordAspects?: JsonConnectorConfigPresetAspect[];
+};
+
 class FakeConnectorSource implements ConnectorSource {
     readonly id: string = "id";
     readonly name: string = "name";
     readonly hasFirstClassOrganizations: boolean = false;
+    presetRecordAspects: JsonConnectorConfigPresetAspect[] = null;
+    extras: JsonConnectorConfigExtraMetaData = null;
+
+    constructor(config: FakeConnectorSourceConfig = {}) {
+        if (config.extras) {
+            this.extras = config.extras;
+        }
+        if (config.presetRecordAspects) {
+            this.presetRecordAspects = config.presetRecordAspects;
+        }
+    }
 
     getJsonDataset(id: string): Promise<any> {
         return Promise.resolve();

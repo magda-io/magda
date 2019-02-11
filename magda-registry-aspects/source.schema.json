@@ -19,6 +19,12 @@
             "title": "The human-friendly name of this source.",
             "type": "string"
         },
+        "extras": {
+            "title": "Extra Metadata",
+            "description":
+                "Any extra metadata a connector may have. \nThis field is auto copied from connector configData.extras.",
+            "type": "object"
+        },
         "problems": {
             "title":
                 "Problems encountered while creating this record from the source.",
