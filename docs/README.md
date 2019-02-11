@@ -1,22 +1,16 @@
 <p class="center">
-    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/3089ulXeH4M?rel=0&amp;showinfo=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/gcwqjD-bnhk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
-# Get the most out of your data
+# Let your data mingle
 
-Government agencies possess a wealth of valuable data, but it often sits hidden inside spreadsheets and on shared drives, making it impossible to discover or navigate through. Data that could improve efficiency, transparency and accountability is trapped in silos, and the opportunity that it offers is lost.
+Government agencies, private companies and research organisations generally do a great job of _seeing_ their data as an asset, but they have to overcome many difficulties to _use_ it as one. Creating quality data and metadata is a difficult, manual and thankless process, and once a dataset is created it's hard for data creators to see how their data is being used, or whether it's being used at all. Using data is no easier - data tends to sit inside silos formed by the teams who collect it, invisible and inaccessible to others in the organisation. Even if datasets are able to be seen and used they're hard to find due to poor metadata and search functionality, and once a dataset is found there's no way to know whether it's reliable or up to date.
 
-Even if data is already opened and published to an open data portal, it’s still difficult to discover. Because current open data portals have been focused around hosting files they possess simplistic search functionality, poor metadata authoring tools and no ability to easily preview datasets before downloading, making even the best datasets difficult to find and use.
+## A platform for every part of the data landscape
 
-## A set of tools for every part of the data landscape
+Magda is an open-source software platform designed to assist in all areas of the data ecosystem, from collection and authoring, through internal discovery and use, all the way to sharing inter-organisation or publishing on an open data portal. Originally developed as an open data aggregator for [data.gov.au](https://data.gov.au), after extensive research how data is used in the publich, research and private sector, it is now being extended into a set of components that can be arranged for many use-cases - internal private data portals, public open-data aggregators, limited data access portals for organisational partners, or any combination, with various users able to access different datasets depending on their permission level.
 
-Magda is an open-source software platform that has been designed to make publishing, searching and using government data easier, for both government agency staff using private data internally and citizens using open data publically. It consists of a set of tools that can be combined into a number of configurations:
-
--   An internal portal for hosting data within agencies, which will eventually have robust mechanisms for controlling which users can see or use which data
--   An internal/external portal that both hosts internal data as above, but also provides workflows for safely sharing datasets between agencies or releasing some datasets as open data, and making those available to the public
--   A public aggregator that takes datasets from many sources and makes it all easily searchable in one place
-
-... or any combination thereof. Its capabilities include:
+## Features
 
 #### Powerful search
 
@@ -28,11 +22,11 @@ The easiest way to find a dataset is by searching for it, and Magda puts its sea
 
 #### Easy federation
 
-Seamlessly combine self-hosted datasets with those from external sources into one, easily-searchable repository.
+Magda was originally developed to power [data.gov.au](https://data.gov.au), which aggregates over twenty different sources, and as a result being able to federate with other data sources is a first-class capability. Magda can be used to seamlessly combine many open data portals into one, easily-searchable repository, or an internal data registry can be enhanced by importing relevant open data sources and having open datasets appear beside private ones.
 
 #### Rich previews
 
-Ensure that your users can quickly determine if a dataset is useful for them with charting, spatial preview with [TerriaJS](https://terria.io) and table previews.
+Ensure that your users can quickly determine if a dataset is useful for them with charting, spatial preview with [TerriaJS](https://terria.io) and automatic charting of tabular data.
 
 <p class="center">
     <img src="./assets/screenshot-preview.png">
@@ -44,7 +38,7 @@ The metadata that describes datasets is often poorly formatted or completely abs
 
 #### Open architecture
 
-Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment with zero downtime and no effect on upgrades of the core product.
+Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment without downtime and no effect on upgrades of the core product.
 
 <p class="center">
     <img src="./docs/magda-basic-architecture.png">
@@ -52,23 +46,37 @@ Magda is designed as a set of microservices that allow extension by simply addin
 
 #### Easy set up and upgrades
 
-Magda uses Kubernetes and Helm to allow for simple installation and zero-downtime upgrades with a single command.
+Magda uses Kubernetes and Helm to allow for simple installation and minimal downtime upgrades with a single command. Deploy it to the cloud, your on-premises setup or even your local machine with the same set of commands.
 
-## Want to run Magda inside your agency?
+## Currently Under Development
 
-We'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
+In the last quarter of 2018 the Magda team was involved in a massive research effort to determine and find out how to solve the biggest pains facing users of data in the public, private and research sectors. As a result, working with our partners in the Australia's Digital Transformation Agency, Department of Agriculture and Department of the Environment, we're expanding the Magda platform with these features:
+
+#### A better way to publish data
+
+Authoring a quality dataset is hard - not only does it involve a lot of manual work, but it also requires a great deal of up-front knowledge and data literacy. We're building a guided, opinionated and heavily automated publishing process into Magda that will result in an easier time for those who publish data, and higher metadata quality to make it easier to search and use datasets for data users downstream.
+
+#### Keeping data users up to date
+
+Confidence in data-driven policy and decision making is compromised if users can't be sure they have the most recent version of a dataset. We're building in features to keep data users notified when datasets that they use are updated, keep track of duplicates, and reduce the need for duplication by enabling more analysis to be done without the need for downloading artifacts directly.
+
+#### See the impact of your data
+
+A common complaint among data publishers is that they don't know how, how much or even if their data is used in order to prioritise their work. This gets worse at an organisational level: managers aren't able to make decisions on how to prioritise investments in data because they don't know how their existing data is being used. Magda will collect analytics on how data is used, at both a fine-grained and high level. Magda will also expand on its existing ability to collect feedback and foster communities around data.
+
+## Be a part of the future
+
+We're currently looking for more co-creation partners, so if you're part of an organisation that uses data and this sounds like something you'd like to be a part of, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
 
 ## See it in action
 
-Magda currently powers the new data.gov.au beta at [search.data.gov.au](https://search.data.gov.au), serving 2000 users per week.
+Magda currently powers Australia's open data portal [data.gov.au](https://data.gov.au), serving tens of thousands of users per week.
 
 <p class="center">
     <img src="./assets/search-screenshot.png">
 </p>
 
-## Current status
-
-Magda is currently in development, and we're currently working on adding more features to make Magda useful as an internal data portal like publishing, dataset hosting and access control. You can see our roadmap and current progress [here](/docs/roadmap).
+Magda is also used by CSIRO Land and Water's [Knowledge Network](https://knowledgenet.co/), as well as the Australian Federal Department of Agriculture and Water Resources and Department of the Environment, in internal-only instances.
 
 ## Want to get it running yourself?
 
@@ -94,4 +102,4 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 -   [Our documentation](/docs)
 -   [Magda API](https://search.data.gov.au/api/v0/apidocs/index.html)
 
-The project was started by CSIRO [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61 and the [Digital Transformation Agency](https://www.dta.gov.au/)
+The project was started by CSIRO [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture and Water Resources](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).

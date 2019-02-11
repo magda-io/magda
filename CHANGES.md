@@ -1,3 +1,14 @@
+## 0.0.53
+
+Connectors:
+
+-   Allowed Ckan connector to pull datasets belongs to a specified organisation
+-   Added `presetRecordAspects` & `extra` parameters supports to all connectors
+
+Dataset Page:
+
+-   When `dcat-dataset-strings.creation.isOpenData` is set, show `Public / Private` label accordingly
+
 ## 0.0.52
 
 Authentication:
@@ -11,19 +22,36 @@ Ops:
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
+-   Made the content-api accept authentication by default
+-   Lowered the resource requirements for the apidocs-server based on data.gov.au usage.
 
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
     Others:
+-   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
 
-Interoperability
+Accessibility:
+
+-   Added `aria-label` field to Facet buttons to reflect the current filter selection
+
+Connectors:
+
+-   Made the CSV connector put the description column in the distribution description, not just the dataset one
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
+
+Interoperability:
 
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Development:
+
+-   Made connector tests use the typescript of the code under test through ts-node, instead of the `/dist` directory.
 
 Others:
 
 -   Changed terminology for data rating to `Linked Data Rating`
+-   Fixed: Empty source link shows as a working link on dataset page
 
 ## 0.0.51
 
@@ -55,6 +83,7 @@ Ops:
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Only runtime dependencies will be included by docker image build script
 -   Fixed an file selector error in create-secrets script when current directory & non of its sub directory has \*.json file
+-   Changed SQL for querying aspects by path/value so that it could take advantage of JSONB indices.
 
 Security:
 

@@ -7,7 +7,7 @@ import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.http.bulk.BulkResponse
 import com.sksamuel.elastic4s.mappings.{Analysis, Nulls, TextFieldDefinition}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ RequestFailure, RequestSuccess }
+import com.sksamuel.elastic4s.http.{RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
@@ -54,28 +54,34 @@ import com.sksamuel.elastic4s.mappings.FieldDefinition
 import scala.collection.JavaConverters._
 
 case class IndexDefinition(
-    name: String,
-    version: Int,
-    indicesIndex: Indices.Index,
-    definition: (Indices, Config) => CreateIndexDefinition,
-    create: Option[(HttpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None) {
-}
+  name: String,
+  version: Int,
+  indicesIndex: Indices.Index,
+  definition: (Indices, Config) => CreateIndexDefinition,
+  create: Option[(HttpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None
+) {}
 
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote"))
+    val fields = extraFields ++ Seq(
+      keywordField("keyword"),
+      textField("quote").analyzer("quote")
+    )
 
     textField(name).analyzer("english").fields(fields)
   }
 
   def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
-    val fields = extraFields ++ Seq(keywordField("keyword"), textField("quote").analyzer("quote_partial_match"))
+    val fields = extraFields ++ Seq(
+      keywordField("keyword"),
+      textField("quote").analyzer("quote_partial_match")
+    )
 
     textField(name)
-        .analyzer("english_with_synonym")
-        .searchAnalyzer("english_without_synonym_for_search")
-        .fields(fields)
+      .analyzer("english_with_synonym")
+      .searchAnalyzer("english_without_synonym_for_search")
+      .fields(fields)
   }
 
   val MagdaSynonymTokenFilter = SynonymTokenFilter(
@@ -88,10 +94,11 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 38,
+    version = 39,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
-      val baseDefinition = createIndex(indices.getIndex(config, Indices.DataSetsIndex))
+    val baseDefinition =
+      createIndex(indices.getIndex(config, Indices.DataSetsIndex))
         .shards(config.getInt("elasticSearch.shardCount"))
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
@@ -99,13 +106,18 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("temporal").fields(
               objectField("start").fields(
                 dateField("date"),
-                textField("text")),
+                textField("text")
+              ),
               objectField("end").fields(
                 dateField("date"),
-                textField("text"))),
+                textField("text")
+              )
+            ),
             objectField("publisher").fields(
               keywordField("identifier"),
-              textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
+              textField("acronym")
+                .analyzer("keyword")
+                .searchAnalyzer("uppercase"),
               magdaTextField("jurisdiction"),
               // --- the field used to merge org records by jurisdiction
               // --- if jurisdiction is not null, its value is jurisdiction + org name
@@ -121,17 +133,26 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("addrPostCode"),
               keywordField("addrCountry"),
               keywordField("website"),
-              magdaTextField("name",
+              magdaTextField(
+                "name",
                 keywordField("keyword"),
-                textField("keyword_lowercase").analyzer("quote").fielddata(true))),
+                textField("keyword_lowercase")
+                  .analyzer("quote")
+                  .fielddata(true)
+              )
+            ),
             nestedField("distributions").fields(
               keywordField("identifier"),
               magdaTextField("title"),
               magdaSynonymTextField("description"),
-              magdaTextField("format",
-                textField("keyword_lowercase").analyzer("quote").fielddata(true))),
-            objectField("spatial").fields(
-              geoshapeField("geoJson")),
+              magdaTextField(
+                "format",
+                textField("keyword_lowercase")
+                  .analyzer("quote")
+                  .fielddata(true)
+              )
+            ),
+            objectField("spatial").fields(geoshapeField("geoJson")),
             magdaTextField("title"),
             magdaSynonymTextField("description"),
             magdaTextField("keywords"),
@@ -139,15 +160,28 @@ object IndexDefinition extends DefaultJsonProtocol {
             doubleField("quality"),
             booleanField("hasQuality"),
             keywordField("catalog"),
+            objectField("source").fields(
+              keywordField("id"),
+              magdaTextField("name"),
+              objectField("extras").dynamic(true)
+            ),
+            objectField("creation").fields(
+              booleanField("isInternallyProduced"),
+              magdaTextField("mechanism"),
+              magdaTextField("sourceSystem"),
+              magdaTextField("likelihoodOfRelease"),
+              booleanField("isOpenData"),
+              magdaTextField("affiliatedOrganisation")
+            ),
             keywordField("years"),
             /*
-            * not sure whether is Elasticsearch or elastic4s
-            * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
-            * */
+               * not sure whether is Elasticsearch or elastic4s
+               * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
+               * */
             keywordField("identifier"),
-            objectField("contactPoint").fields(
-              keywordField("identifier")),
-            dateField("indexed"))
+            objectField("contactPoint").fields(keywordField("identifier")),
+            dateField("indexed")
+          )
         )
         .analysis(
           CustomAnalyzerDefinition(
@@ -158,7 +192,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           /*
             allow quoted query string match a portion of the field content rather than whole field
             the exact form of whole quoted query string still have to be matched exactly in field content
-          */
+             */
           CustomAnalyzerDefinition(
             "quote_partial_match",
             StandardTokenizer,
@@ -172,19 +206,28 @@ object IndexDefinition extends DefaultJsonProtocol {
           /* Customised from new english analyzer as per:
              https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
              In order to apply synonym filter
-           */
+             */
           CustomAnalyzerDefinition(
             "english_with_synonym",
             StandardTokenizer,
             List(
               LowercaseTokenFilter,
-              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
               //Es 6.x doesn't allow `stop` before Synonym
               //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
               MagdaSynonymTokenFilter,
-              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
-              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
+              StopTokenFilter(
+                "english_stop",
+                Some(NamedStopTokenFilter.English)
+              )
             )
           ),
           CustomAnalyzerDefinition(
@@ -192,19 +235,29 @@ object IndexDefinition extends DefaultJsonProtocol {
             StandardTokenizer,
             List(
               LowercaseTokenFilter,
-              StemmerTokenFilter("english_possessive_stemmer", "possessive_english"),
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
               StemmerTokenFilter("light_english_stemmer", "light_english"),
-              StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English))
+              StopTokenFilter(
+                "english_stop",
+                Some(NamedStopTokenFilter.English)
+              )
             )
           )
         )
 
-      if (config.hasPath("indexer.refreshInterval")) {
-        baseDefinition.indexSetting("refresh_interval", config.getString("indexer.refreshInterval"))
-      } else {
-        baseDefinition
-      }
-    })
+    if (config.hasPath("indexer.refreshInterval")) {
+      baseDefinition.indexSetting(
+        "refresh_interval",
+        config.getString("indexer.refreshInterval")
+      )
+    } else {
+      baseDefinition
+    }
+  }
+  )
 
   val MagdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
     "search_region_synonym_graph_filter",
@@ -220,86 +273,91 @@ object IndexDefinition extends DefaultJsonProtocol {
       version = 22,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.RegionsIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.RegionsIndexType)).fields(
-              keywordField("regionType"),
-              keywordField("regionId"),
-              magdaTextField("regionName"),
-              magdaTextField("regionShortName"),
-              textField("regionSearchId")
-                .analyzer("regionSearchIdIndex")
-                .searchAnalyzer("regionSearchIdInput"),
-              geoshapeField("boundingBox"),
-              geoshapeField("geometry"),
-              intField("order")
-            )
+      createIndex(indices.getIndex(config, Indices.RegionsIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(
+          mapping(indices.getType(Indices.RegionsIndexType)).fields(
+            keywordField("regionType"),
+            keywordField("regionId"),
+            magdaTextField("regionName"),
+            magdaTextField("regionShortName"),
+            textField("regionSearchId")
+              .analyzer("regionSearchIdIndex")
+              .searchAnalyzer("regionSearchIdInput"),
+            geoshapeField("boundingBox"),
+            geoshapeField("geometry"),
+            intField("order")
           )
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter),
-            CustomAnalyzerDefinition(
-              "regionSearchIdInput",
-              WhitespaceTokenizer,
-              List(
-                LowercaseTokenFilter,
-                MagdaRegionSynonymTokenFilter
-              )
-            ),
-            CustomAnalyzerDefinition(
-              "regionSearchIdIndex",
-              KeywordTokenizer,
-              List(
-                LowercaseTokenFilter
-              )
+        )
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "regionSearchIdInput",
+            WhitespaceTokenizer,
+            List(
+              LowercaseTokenFilter,
+              MagdaRegionSynonymTokenFilter
             )
           ),
-      create = Some((client, indices, config) => (materializer, actorSystem) => setupRegions(client, indices)(config, materializer, actorSystem)))
-
+          CustomAnalyzerDefinition(
+            "regionSearchIdIndex",
+            KeywordTokenizer,
+            List(
+              LowercaseTokenFilter
+            )
+          )
+        ),
+      create = Some((client, indices, config) =>
+        (materializer, actorSystem) =>
+          setupRegions(client, indices)(config, materializer, actorSystem))
+    )
 
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 3,
+      version = 4,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.PublishersIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.PublisherIndexType)).fields(
-              keywordField("identifier"),
-              textField("acronym").analyzer("keyword").searchAnalyzer("uppercase"),
-              magdaTextField("jurisdiction"),
-              textField("aggregation_keywords").analyzer("keyword"),
-              magdaTextField("value"),
-              magdaTextField("description"),
-              keywordField("imageUrl"),
-              keywordField("phone"),
-              keywordField("email"),
-              magdaTextField("addrStreet", keywordField("keyword")),
-              magdaTextField("addrSuburb", keywordField("keyword")),
-              magdaTextField("addrState", keywordField("keyword")),
-              keywordField("addrPostCode"),
-              keywordField("addrCountry"),
-              keywordField("website"),
-              dateField("indexed")
-            ))
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter),
-            CustomAnalyzerDefinition(
-              "uppercase",
-              KeywordTokenizer,
-              UppercaseTokenFilter
-            )
+      createIndex(indices.getIndex(config, Indices.PublishersIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(mapping(indices.getType(Indices.PublisherIndexType)).fields(
+          keywordField("identifier"),
+          textField("acronym")
+            .analyzer("keyword")
+            .searchAnalyzer("uppercase"),
+          magdaTextField("jurisdiction"),
+          textField("aggregation_keywords").analyzer("keyword"),
+          magdaTextField("value"),
+          magdaTextField("description"),
+          keywordField("imageUrl"),
+          keywordField("phone"),
+          keywordField("email"),
+          magdaTextField("addrStreet", keywordField("keyword")),
+          magdaTextField("addrSuburb", keywordField("keyword")),
+          magdaTextField("addrState", keywordField("keyword")),
+          keywordField("addrPostCode"),
+          keywordField("addrCountry"),
+          keywordField("website"),
+          dateField("indexed")
+        ))
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "uppercase",
+            KeywordTokenizer,
+            UppercaseTokenFilter
           )
+        )
     )
 
   val formats: IndexDefinition =
@@ -308,25 +366,32 @@ object IndexDefinition extends DefaultJsonProtocol {
       version = 1,
       indicesIndex = Indices.FormatsIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.FormatsIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.FormatsIndexType)).fields(
-              magdaTextField("value"),
-              dateField("indexed")
-            ))
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter)
+      createIndex(indices.getIndex(config, Indices.FormatsIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(
+          mapping(indices.getType(Indices.FormatsIndexType)).fields(
+            magdaTextField("value"),
+            dateField("indexed")
           )
+        )
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          )
+        )
     )
 
   val indices = Seq(dataSets, regions, publishers, formats)
 
-  def setupRegions(client: HttpClient, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: HttpClient, indices: Indices)(
+    implicit
+    config: Config,
+    materializer: Materializer,
+    system: ActorSystem
+  ): Future[Any] = {
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
 
@@ -335,9 +400,15 @@ object IndexDefinition extends DefaultJsonProtocol {
     setupRegions(client, loader, indices)
   }
 
-  implicit val geometryFactory = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
+  implicit val geometryFactory =
+    JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: HttpClient, loader: RegionLoader, indices: Indices)(implicit config: Config, materializer: Materializer, system: ActorSystem): Future[Any] = {
+  def setupRegions(client: HttpClient, loader: RegionLoader, indices: Indices)(
+    implicit
+    config: Config,
+    materializer: Materializer,
+    system: ActorSystem
+  ): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
     loader.setupRegions
@@ -346,11 +417,14 @@ object IndexDefinition extends DefaultJsonProtocol {
           val properties = jsonRegion.fields("properties").asJsObject
           val id = properties.fields(regionSource.idProperty).convertTo[String]
           val name = if (regionSource.includeIdInName) {
-            JsString(properties.fields(regionSource.nameProperty).convertTo[String] + " - " + id)
+            JsString(properties
+              .fields(regionSource.nameProperty)
+              .convertTo[String] + " - " + id)
           } else {
             properties.fields(regionSource.nameProperty)
           }
-          val shortName = regionSource.shortNameProperty.map(shortNameProp => properties.fields(shortNameProp).convertTo[String])
+          val shortName = regionSource.shortNameProperty.map(shortNameProp =>
+            properties.fields(shortNameProp).convertTo[String])
 
           val geometryOpt = jsonRegion.fields("geometry") match {
             case (jsGeometry: JsObject) =>
@@ -361,12 +435,20 @@ object IndexDefinition extends DefaultJsonProtocol {
                 val env = jtsGeo.getEnvelopeInternal
                 Math.min(env.getWidth, env.getHeight)
               }
-              val simplified = TopologyPreservingSimplifier.simplify(jtsGeo, shortestSide / 100)
+              val simplified =
+                TopologyPreservingSimplifier.simplify(
+                  jtsGeo,
+                  shortestSide / 100
+                )
 
               def removeInvalidHoles(polygon: Polygon): Polygon = {
                 val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
                 val filteredHoles = holes.filter(_.within(simplified))
-                new Polygon(polygon.getExteriorRing.asInstanceOf[LinearRing], filteredHoles.toArray, geometryFactory)
+                new Polygon(
+                  polygon.getExteriorRing.asInstanceOf[LinearRing],
+                  filteredHoles.toArray,
+                  geometryFactory
+                )
               }
 
               // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
@@ -387,21 +469,30 @@ object IndexDefinition extends DefaultJsonProtocol {
 
           val uniqueRegionId = generateRegionId(regionSource.name, id)
 
-          geometryOpt.map(geometry =>
-            indexInto(indices.getIndex(config, Indices.RegionsIndex) / indices.getType(Indices.RegionsIndexType))
-              .id(uniqueRegionId)
-              .source(JsObject(
-                "regionType" -> JsString(regionSource.name),
-                "regionId" -> JsString(id),
-                "regionName" -> name,
-                "regionShortName" -> shortName.map(JsString(_)).getOrElse(JsNull),
-                "regionSearchId" -> JsString(uniqueRegionId),
-                "boundingBox" -> createEnvelope(geometry).toJson(EsBoundingBoxFormat),
-                "geometry" -> geometry.toJson,
-                "order" -> JsNumber(regionSource.order)).toJson))
+          geometryOpt.map(
+            geometry =>
+              indexInto(indices.getIndex(config, Indices.RegionsIndex) / indices
+                .getType(Indices.RegionsIndexType))
+                .id(uniqueRegionId)
+                .source(JsObject(
+                  "regionType" -> JsString(regionSource.name),
+                  "regionId" -> JsString(id),
+                  "regionName" -> name,
+                  "regionShortName" -> shortName
+                    .map(JsString(_))
+                    .getOrElse(JsNull),
+                  "regionSearchId" -> JsString(uniqueRegionId),
+                  "boundingBox" -> createEnvelope(geometry).toJson(
+                    EsBoundingBoxFormat
+                  ),
+                  "geometry" -> geometry.toJson,
+                  "order" -> JsNumber(regionSource.order)
+                ).toJson)
+          )
 
       }
-      .filter(_.isDefined).map(_.get)
+      .filter(_.isDefined)
+      .map(_.get)
       // Limit to max 2000 region to bulk index
       // ES recommended 1000 ~ 5000 actions in one bulk request and previous buffer could lead to over 6K actions in one request
       .batch(1000, Seq(_))(_ :+ _)
@@ -416,7 +507,10 @@ object IndexDefinition extends DefaultJsonProtocol {
         result match {
           case Left(failure) => logger.error("Failure: {}", failure.error)
           case Right(results) =>
-            logger.debug("Took {} seconds to execute request.", results.result.took)
+            logger.debug(
+              "Took {} seconds to execute request.",
+              results.result.took
+            )
             results.result.items.length
         }
       }
@@ -425,14 +519,23 @@ object IndexDefinition extends DefaultJsonProtocol {
           logger.error(e, "Encountered error while indexing regions")
           throw e
       }
-      .runWith(Sink.reduce((oldLength: AnyVal, latestValuesLength: AnyVal) => oldLength.asInstanceOf[Int] + latestValuesLength.asInstanceOf[Int]))
-      .map { count => logger.info("Successfully indexed {} regions", count) }
+      .runWith(Sink.reduce((oldLength: AnyVal, latestValuesLength: AnyVal) =>
+        oldLength.asInstanceOf[Int] + latestValuesLength.asInstanceOf[Int]))
+      .map { count =>
+        logger.info("Successfully indexed {} regions", count)
+      }
   }
 
   val geoFactory = new GeometryFactory()
   def createEnvelope(geometry: GeoJson.Geometry): BoundingBox = {
-    val indexedEnvelope = GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
+    val indexedEnvelope =
+      GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
 
-    BoundingBox(indexedEnvelope.getMaxY, indexedEnvelope.getMinX, indexedEnvelope.getMinY, indexedEnvelope.getMaxX)
+    BoundingBox(
+      indexedEnvelope.getMaxY,
+      indexedEnvelope.getMinX,
+      indexedEnvelope.getMinY,
+      indexedEnvelope.getMaxX
+    )
   }
 }

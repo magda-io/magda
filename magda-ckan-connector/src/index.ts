@@ -8,7 +8,8 @@ const ckan = new Ckan({
     id: argv.id,
     name: argv.name,
     pageSize: argv.pageSize,
-    ignoreHarvestSources: argv.ignoreHarvestSources
+    ignoreHarvestSources: argv.ignoreHarvestSources,
+    allowedOrganisationName: argv.allowedOrganisationName
 });
 
 const registry = new Registry({

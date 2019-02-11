@@ -1,6 +1,9 @@
 @import "../../variables";
 
 .dataset-summary {
+    .divider {
+        float: left;
+    }
     height: auto;
     clear: both;
     .dataset-summary-title {
@@ -71,7 +74,8 @@
 
     .dataset-summary-downloads,
     .dataset-summary-updated,
-    .dataset-summary-quality {
+    .dataset-summary-quality,
+    .dataset-summary-type {
         float: left;
         line-height: 1.5rem;
     }

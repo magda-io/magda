@@ -144,6 +144,8 @@ class PublisherDetails extends Component {
                                 </div>
                             )}
 
+                            <div />
+
                             <br />
                             <div>
                                 <Link
