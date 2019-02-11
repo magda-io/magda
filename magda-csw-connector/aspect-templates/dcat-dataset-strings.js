@@ -110,7 +110,7 @@ return {
             )
         )
         .filter((item, index, array) => array.indexOf(item) === index),
-    publisher: publisher,
+    publisher: publisher ? publisher : "",
     accrualPeriodicity: jsonpath.value(
         identification,
         '$[*].resourceMaintenance[*].MD_MaintenanceInformation[*].maintenanceAndUpdateFrequency[*].MD_MaintenanceFrequencyCode[*]["$"].codeListValue.value'
@@ -234,7 +234,7 @@ function getContactPoint(responsibleParties, preferIndividual) {
         responsibleParties,
         "$[*].individualName[*].CharacterString[*]._"
     );
-    const organisation = getOrganisationFromResponsibleParties(
+    const organisation = libraries.cswFuncs.getOrganisationNameFromResponsibleParties(
         responsibleParties
     );
     const homepage = jsonpath.value(

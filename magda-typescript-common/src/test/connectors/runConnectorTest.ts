@@ -65,19 +65,21 @@ export function runConnectorTest(
                 await catalog.run(catalogPort).then((catalog: any) => {
                     servers.push(catalog);
                     return run().then(() => {
-                        Object.values(registry.records).forEach(record => {
-                            record.sourceTag = "stag";
-                            if (
-                                record.aspects &&
-                                record.aspects.source &&
-                                record.aspects.source.url
-                            ) {
-                                record.aspects.source.url = record.aspects.source.url.replace(
-                                    `http://localhost:${catalogPort}`,
-                                    "SOURCE"
-                                );
+                        Object.values(registry.records).forEach(
+                            (record: any) => {
+                                record.sourceTag = "stag";
+                                if (
+                                    record.aspects &&
+                                    record.aspects.source &&
+                                    record.aspects.source.url
+                                ) {
+                                    record.aspects.source.url = record.aspects.source.url.replace(
+                                        `http://localhost:${catalogPort}`,
+                                        "SOURCE"
+                                    );
+                                }
                             }
-                        });
+                        );
                         if (options.cleanRegistry) {
                             options.cleanRegistry(registry);
                         }

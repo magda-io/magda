@@ -9,7 +9,9 @@ import * as xmldom from "xmldom";
 import * as xml2js from "xml2js";
 import * as jsonpath from "jsonpath";
 import * as fs from "fs";
-import { groupBy } from "lodash";
+import { merge } from "lodash";
+
+import cswFuncs from "./cswFuncs";
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -211,145 +213,32 @@ export default class Csw implements ConnectorSource {
     }
 
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
-        const responsibleParties = jsonpath
-            .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-            .concat(
-                jsonpath.nodes(
-                    dataset.json,
-                    "$..CI_Responsibility[?(@.party.CI_Organisation)]"
-                )
-            )
-            .map(node => {
-                return {
-                    ...node,
-                    role: jsonpath.value(
-                        node.value,
-                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-                    ),
-                    orgName:
-                        jsonpath.value(
-                            node.value,
-                            "$..organisationName[*].CharacterString[0]._"
-                        ) ||
-                        jsonpath.value(
-                            jsonpath.nodes(
-                                node.value,
-                                "$..CI_Organisation.name[*].CharacterString[*]._"
-                            ),
-                            "$.._"
-                        )
-                };
-            });
+        const responsibleParties = cswFuncs.getResponsibleParties(dataset);
 
-        /**
-         * Filter ResponsibleParty by roles is not a good idea as there are too many possible roles.
-         * Besides, the urls to list of role types returns 404
-         * Different type of people may ends up being the contact point of this dataset (publisher).
-         * So they could be on:
-         * - contact path
-         * - pointOfContact path
-         * - identificationInfo path (list of entities that are related to this data) with role `pointOfContact`
-         *
-         * The last scenario indicates the dataset doesn't have proper `publisher` info.
-         * All `pointOfContact` in this section are likely to be authors or any party related to the data.
-         * But they may not be the actual publisher.
-         *
-         * We should only use information from this section if we don't have a better choice.
-         */
+        const publishers = cswFuncs.getPublishersFromResponsibleParties(
+            responsibleParties
+        );
 
-        let datasetOrgs = responsibleParties.filter(node => {
-            return (
-                node.path.findIndex(
-                    pathItem =>
-                        String(pathItem)
-                            .toLowerCase()
-                            .indexOf("pointofcontact") != -1
-                ) != -1 ||
-                String(
-                    jsonpath.value(
-                        node.value,
-                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-                    )
-                ).toLowerCase() === "pointofcontact"
-            );
-        });
-
-        if (!datasetOrgs || datasetOrgs.length === 0) {
-            if (!responsibleParties || responsibleParties.length === 0) {
-                return Promise.resolve(undefined);
-            } else {
-                /**
-                 * it's possible to reach here
-                 * i.e. the dataset has no any point of contact info
-                 * No need to look at further
-                 * Just pick the first one
-                 */
-                return Promise.resolve(responsibleParties[0]["value"]);
-            }
+        if (!publishers || publishers.length === 0) {
+            return Promise.resolve(undefined);
         }
 
-        let orgData = datasetOrgs[0]["value"];
+        const publisherName = cswFuncs.getOrganisationNameFromResponsibleParties(
+            publishers
+        );
 
-        if (datasetOrgs.length == 1) {
-            return Promise.resolve(orgData);
-        }
+        const withSameName = responsibleParties.filter(
+            (party: any) =>
+                cswFuncs.getOrganisationNameFromResponsibleParties(party) ===
+                publisherName
+        );
 
-        /**
-         * More than one pointOfContact found
-         * Try to avoid identificationInfo section as it contains mixture of all relevent parties
-         */
-        const altOrgs = datasetOrgs.filter(node => {
-            return (
-                node.path.findIndex(
-                    pathItem =>
-                        String(pathItem)
-                            .toLowerCase()
-                            .indexOf("identificationinfo") != -1
-                ) == -1
-            );
-        });
+        const mergedPublisher = withSameName.reduce(
+            (soFar, current) => merge({}, current, soFar),
+            publishers[0]
+        );
 
-        if (altOrgs.length != 0) {
-            orgData = altOrgs[0]["value"];
-        } else {
-            /**
-             * This means there ISN'T a proper pointOfContact section.
-             * This probably should be considered as a mistake
-             * and only very small amount of data like this can be found during my tests.
-             * We should now try pick one fron a list relevant entities.
-             */
-            const byRole = groupBy(datasetOrgs, node => node.role);
-            if (byRole["pointOfContact"]) {
-                const firstPointOfContactNode: any = byRole.pointOfContact[0];
-                orgData = firstPointOfContactNode.value;
-            } else {
-                /**
-                 * Some dataset was set a non `pointOfContact` role
-                 * But it's on `pointOfContact` path
-                 */
-                const pocNodes = datasetOrgs.filter(node => {
-                    return (
-                        node.path.findIndex(
-                            pathItem =>
-                                String(pathItem)
-                                    .toLowerCase()
-                                    .indexOf("pointofcontact") != -1
-                        ) != -1
-                    );
-                });
-                if (pocNodes.length) {
-                    orgData = pocNodes[0]["value"];
-                }
-            }
-            /**
-             * Otherwise, don't touch orgData --- use the first one from the initial shorter list would be the best
-             * Main contributor usually will be listed as the first.
-             * We can be more accurate if we drill down into all possible roles.
-             * But it probably won't be necessary as dataset reaches here should be lower than 1%~2% based on my tests.
-             */
-        }
-
-        return Promise.resolve(orgData);
+        return Promise.resolve(mergedPublisher);
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {

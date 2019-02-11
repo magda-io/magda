@@ -5,6 +5,12 @@ function getResponsibleParties(dataset: any) {
     return jsonpath
         .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
         .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+        .concat(
+            jsonpath.nodes(
+                dataset.json,
+                "$..CI_Responsibility[?(@.party.CI_Organisation)]"
+            )
+        )
         .map(obj => obj.value);
 }
 
@@ -19,11 +25,18 @@ function groupResponsiblePartiesByRole(responsibleParties: any[]) {
 
 function getPublishersFromResponsibleParties(responsibleParties: any[]) {
     const byRole = groupResponsiblePartiesByRole(responsibleParties);
-    return byRole.publisher || byRole.owner || byRole.custodian || [];
+    return (
+        byRole.publisher ||
+        byRole.owner ||
+        byRole.distributor ||
+        byRole.pointOfContact ||
+        byRole.custodian ||
+        []
+    );
 }
 
 function getOrganisationNameFromResponsibleParties(
-    responsibleParties: any[]
+    responsibleParties: any
 ): string {
     const organisation =
         jsonpath.value(

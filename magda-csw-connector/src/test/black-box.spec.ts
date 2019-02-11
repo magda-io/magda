@@ -41,7 +41,7 @@ const TEST_CASES = [
 
 runConnectorTest(TEST_CASES, MockCSWCatalog, {
     cleanRegistry: function(registry: any) {
-        Object.values(registry.records).forEach(record => {
+        Object.values(registry.records).forEach((record: any) => {
             if (record.aspects && record.aspects["csw-dataset"]) {
                 delete record.aspects["csw-dataset"].xml;
             }

@@ -1,29 +1,29 @@
 {
-    "org-ga-Geoscience Australia": {
-        "publisher": {
-            "id": "org-ga-Geoscience Australia",
-            "name": "Geoscience Australia",
-            "aspects": {
-                "source": {
-                    "id": "ga",
-                    "url": "http://www.ga.gov.au/geonetwork/srv/en/csw",
-                    "name": "Geoscience Australia",
-                    "type": "csw-organization",
-                    "organization-details": {
-                        "name": "Geoscience Australia",
-                        "email": "sales@ga.gov.au",
-                        "addrState": "ACT",
-                        "addrSuburb": "Canberra",
-                        "addrStreet": "GPO Box 378",
-                        "title": "Geoscience Australia",
-                        "addrPostCode": "2601",
-                        "phone": "+61 2 6249 9966",
-                        "addrCountry": "Australia"
-                    }
-                }
+    "org-connector-Geoscience Australia": {
+        "aspects": {
+            "organization-details": {
+                "addrCountry": "Australia",
+                "addrPostCode": "2601",
+                "addrState": "ACT",
+                "addrStreet": "GPO Box 378",
+                "addrSuburb": "Canberra",
+                "email": "clientservices@ga.gov.au",
+                "name": "Geoscience Australia",
+                "phone": "+61 2 6249 9966",
+                "title": "Geoscience Australia"
+            },
+            "source": {
+                "id": "connector",
+                "name": "Connector",
+                "type": "csw-organization",
+                "url": "SOURCE/"
             }
-        }
+        },
+        "id": "org-connector-Geoscience Australia",
+        "name": "Geoscience Australia",
+        "sourceTag": "stag"
     },
+
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0",
         "name": "Download the Record (docx)",
@@ -66,23 +66,6 @@
                 "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
                 "id": "connector",
                 "name": "Connector"
-            },
-            "temporal-coverage": {
-                "intervals": [
-                    {
-                        "start": "1994-11-01",
-                        "end": "1995-03-01"
-                    }
-                ]
-            },
-            "dataset-distributions": {
-                "distributions": [
-                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
-                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1"
-                ]
-            },
-            "dataset-publisher": {
-                "title": "org-ga-Geoscience Australia"
             }
         },
         "sourceTag": "stag"
@@ -143,7 +126,7 @@
                 "description":
                     "The International Standard ISO 19115-1:2014 (Geographic information – Metadata) defines more than 300 metadata elements, with most of these being listed as Optional. The ISO standard states that individual communities may develop a Profile of the International Standard. The conditionality of a select set of metadata elements may be raised but never reduced for a set of users – optional -> conditional or mandatory but never the other way. A community may also want to establish additional metadata elements that are not in the International Standard. A profile should establish domains for all metadata elements. The rules for creating profiles are described in the International Standard Geographic Information – Profiles (ISO 19106:2004). ISO 19106 stipulates particular terminology that must be used when any variation is made to a Standard, namely referring to changes as an Extension.\n                            It should be noted that there are no ‘new’ elements in the GA Metadata Profile when compared to the ISO 19115-1:2014. The obligation levels of 18 elements from ISO 19115-1:2014 have been changed, and according to ISO 19106, they form an ‘extension’ to ISO 19115-1:2014. Codelists for two elements have been extended with additional values, and two elements that are free text in the base ISO 19115-1:2014 standard have been constrained by new codelists.\n                            •\tThis document highlights all mandatory and conditional packages/entities from ISO 19115-1:2014 necessary to fulfil GA business requirements.\n                            •\tAll other entities and packages remain available and can be used as required to describe GA products and datasets.\n                            •\tThe other entities and packages have to be used as defined by ISO 19115-1:2014.",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Geoscience Australia",
                 "accrualPeriodicity": "asNeeded",
                 "spatial":
                     "POLYGON((112 -44, 154 -44, 154 -9, 112 -9, 112 -44))",
@@ -166,6 +149,9 @@
                     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2",
                     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3"
                 ]
+            },
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
             }
         },
         "sourceTag": "stag"
@@ -271,7 +257,7 @@
                 "issued": "2018-02-13T10:00:00",
                 "modified": "2018-10-18T03:51:28",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Geoscience Australia",
                 "accrualPeriodicity": "asNeeded",
                 "spatial":
                     "POLYGON((21 -78.6, 180 -78.6, 180 43, 21 43, 21 -78.6))",
@@ -316,6 +302,9 @@
                     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2",
                     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3"
                 ]
+            },
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
             }
         },
         "sourceTag": "stag"
@@ -361,7 +350,7 @@
                 "issued": "2016-06-01T00:00:00",
                 "modified": "2017-12-07T23:52:09",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Geoscience Australia",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((112 -44, 154 -44, 154 -9, 112 -9, 112 -44))",
@@ -393,6 +382,9 @@
                 "distributions": [
                     "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0"
                 ]
+            },
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
             }
         },
         "sourceTag": "stag"
@@ -497,6 +489,9 @@
                     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
                     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1"
                 ]
+            },
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
             }
         },
         "sourceTag": "stag"

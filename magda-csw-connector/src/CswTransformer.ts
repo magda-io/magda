@@ -47,10 +47,10 @@ export default class CswTransformer extends JsonTransformer {
                 jsonOrganization,
                 "$.organisationName[0].CharacterString[0]._"
             ) ||
-            jsonpath.nodes(
+            jsonpath.value(
                 jsonOrganization,
-                "$..name[*].CharacterString[*]._"
-            )[0].value
+                "$..CI_Organisation[*].name[*].CharacterString[*]._"
+            )
         );
     }
 
