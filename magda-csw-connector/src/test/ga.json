@@ -1,4 +1,29 @@
 {
+    "org-ga-Geoscience Australia": {
+        "publisher": {
+            "id": "org-ga-Geoscience Australia",
+            "name": "Geoscience Australia",
+            "aspects": {
+                "source": {
+                    "id": "ga",
+                    "url": "http://www.ga.gov.au/geonetwork/srv/en/csw",
+                    "name": "Geoscience Australia",
+                    "type": "csw-organization",
+                    "organization-details": {
+                        "name": "Geoscience Australia",
+                        "email": "sales@ga.gov.au",
+                        "addrState": "ACT",
+                        "addrSuburb": "Canberra",
+                        "addrStreet": "GPO Box 378",
+                        "title": "Geoscience Australia",
+                        "addrPostCode": "2601",
+                        "phone": "+61 2 6249 9966",
+                        "addrCountry": "Australia"
+                    }
+                }
+            }
+        }
+    },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-0",
         "name": "Download the Record (docx)",
@@ -41,6 +66,23 @@
                 "url": "http://pid.geoscience.gov.au/dataset/ga/122551",
                 "id": "connector",
                 "name": "Connector"
+            },
+            "temporal-coverage": {
+                "intervals": [
+                    {
+                        "start": "1994-11-01",
+                        "end": "1995-03-01"
+                    }
+                ]
+            },
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
+                    "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1"
+                ]
+            },
+            "dataset-publisher": {
+                "title": "org-ga-Geoscience Australia"
             }
         },
         "sourceTag": "stag"
