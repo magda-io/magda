@@ -65,20 +65,21 @@ export default class JsonConnector {
                     }
                 } else {
                     configData = {
-                        id: argv.id,
-                        name: argv.name
+                        id: argv.id as string,
+                        name: argv.name as string
                     };
                     if (argv.extras) {
-                        configData.extras = argv.extras;
+                        configData.extras = argv.extras as JsonConnectorConfigExtraMetaData;
                     }
                     if (argv.presetRecordAspects) {
-                        configData.presetRecordAspects =
-                            argv.presetRecordAspects;
+                        configData.presetRecordAspects = argv.presetRecordAspects as JsonConnectorConfigPresetAspect[];
                     }
                 }
             } else {
                 configData = JSON.parse(
-                    fs.readFileSync(argv.config, { encoding: "utf-8" })
+                    fs.readFileSync(argv.config as string, {
+                        encoding: "utf-8"
+                    })
                 );
             }
 
