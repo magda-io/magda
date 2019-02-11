@@ -45,7 +45,12 @@ const responsibleParties = libraries.cswFuncs.getResponsibleParties(dataset);
 const datasetContactPoint = getContactPoint(
     jsonpath
         .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-        .concat(jsonpath.nodes(dataset.json, "$..CI_Responsibility[*]"))
+        .concat(
+            jsonpath.nodes(
+                dataset.json,
+                "$..CI_Responsibility[?(@.role[0].CI_RoleCode)]"
+            )
+        )
         .map(x => x.value),
     true
 );
@@ -88,7 +93,6 @@ const gaDataSetURI = jsonpath.value(
     ),
     "$.._"
 );
-
 const fileIdentifier = jsonpath.value(
     dataset.json,
     "$.fileIdentifier[*].CharacterString[*]._"
