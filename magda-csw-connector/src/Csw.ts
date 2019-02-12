@@ -8,7 +8,10 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import * as xmldom from "xmldom";
 import * as xml2js from "xml2js";
 import * as jsonpath from "jsonpath";
-import { groupBy } from "lodash";
+import * as fs from "fs";
+import { merge } from "lodash";
+
+import cswFuncs from "./cswFuncs";
 
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
@@ -21,6 +24,7 @@ export default class Csw implements ConnectorSource {
 
     private readonly xmlParser = new xmldom.DOMParser();
     private readonly xmlSerializer = new xmldom.XMLSerializer();
+    private readonly saveXMLFolder: string;
 
     constructor(options: CswOptions) {
         this.baseUrl = new URI(options.baseUrl);
@@ -29,10 +33,13 @@ export default class Csw implements ConnectorSource {
         this.pageSize = options.pageSize || 10;
         this.maxRetries = options.maxRetries || 10;
         this.secondsBetweenRetries = options.secondsBetweenRetries || 10;
+        this.saveXMLFolder = options.saveXMLFolder;
         this.urlBuilder = new CswUrlBuilder({
             id: options.id,
             name: options.name,
-            baseUrl: options.baseUrl
+            baseUrl: options.baseUrl,
+            outputSchema: options.outputSchema,
+            typeNames: options.typeNames
         });
     }
 
@@ -108,7 +115,7 @@ export default class Csw implements ConnectorSource {
             )[0];
             const records = searchResults.getElementsByTagNameNS(
                 "*",
-                "MD_Metadata"
+                this.urlBuilder.GetRecordsParameters.typeNames.split(":")[1]
             );
 
             const result = [];
@@ -131,6 +138,23 @@ export default class Csw implements ConnectorSource {
                     reject(error);
                     return;
                 }
+                if (this.saveXMLFolder) {
+                    const xmlFilename =
+                        this.saveXMLFolder +
+                        "/" +
+                        "getrecord-" +
+                        this.id +
+                        "-" +
+                        id +
+                        ".xml";
+                    fs.writeFile(xmlFilename, body, function(err: any) {
+                        if (err) {
+                            return console.log(err);
+                        }
+
+                        console.log("The file " + xmlFilename + " was saved!");
+                    });
+                }
                 resolve(this.xmlParser.parseFromString(body));
             });
         });
@@ -138,7 +162,7 @@ export default class Csw implements ConnectorSource {
         return xmlPromise.then(xml => {
             const recordXml = xml.documentElement.getElementsByTagNameNS(
                 "*",
-                "MD_Metadata"
+                this.urlBuilder.GetRecordByIdParameters.typeNames.split(":")[1]
             )[0];
             return this.xmlRecordToJsonRecord(recordXml);
         });
@@ -189,130 +213,32 @@ export default class Csw implements ConnectorSource {
     }
 
     public getJsonDatasetPublisher(dataset: any): Promise<any> {
-        const responsibleParties = jsonpath
-            .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
-            .map(node => {
-                return {
-                    ...node,
-                    role: jsonpath.value(
-                        node.value,
-                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-                    ),
-                    orgName: jsonpath.value(
-                        node.value,
-                        "$..organisationName[*].CharacterString[0]._"
-                    )
-                };
-            });
+        const responsibleParties = cswFuncs.getResponsibleParties(dataset);
 
-        /**
-         * Filter ResponsibleParty by roles is not a good idea as there are too many possible roles.
-         * Besides, the urls to list of role types returns 404
-         * Different type of people may ends up being the contact point of this dataset (publisher).
-         * So they could be on:
-         * - contact path
-         * - pointOfContact path
-         * - identificationInfo path (list of entities that are related to this data) with role `pointOfContact`
-         *
-         * The last scenario indicates the dataset doesn't have proper `publisher` info.
-         * All `pointOfContact` in this section are likely to be authors or any party related to the data.
-         * But they may not be the actual publisher.
-         *
-         * We should only use information from this section if we don't have a better choice.
-         */
-        let datasetOrgs = responsibleParties.filter(node => {
-            return (
-                node.path.findIndex(
-                    pathItem =>
-                        String(pathItem)
-                            .toLowerCase()
-                            .indexOf("pointofcontact") != -1
-                ) != -1 ||
-                String(
-                    jsonpath.value(
-                        node.value,
-                        '$.role[*].CI_RoleCode[*]["$"].codeListValue.value'
-                    )
-                ).toLowerCase() === "pointofcontact"
-            );
-        });
+        const publishers = cswFuncs.getPublishersFromResponsibleParties(
+            responsibleParties
+        );
 
-        if (!datasetOrgs || datasetOrgs.length === 0) {
-            if (!responsibleParties || responsibleParties.length === 0) {
-                return Promise.resolve(undefined);
-            } else {
-                /**
-                 * it's possible to reach here
-                 * i.e. the dataset has no any point of contact info
-                 * No need to look at further
-                 * Just pick the first one
-                 */
-                return Promise.resolve(responsibleParties[0]["value"]);
-            }
+        if (!publishers || publishers.length === 0) {
+            return Promise.resolve(undefined);
         }
 
-        let orgData = datasetOrgs[0]["value"];
+        const publisherName = cswFuncs.getOrganisationNameFromResponsibleParties(
+            publishers
+        );
 
-        if (datasetOrgs.length == 1) {
-            return Promise.resolve(orgData);
-        }
+        const withSameName = responsibleParties.filter(
+            (party: any) =>
+                cswFuncs.getOrganisationNameFromResponsibleParties(party) ===
+                publisherName
+        );
 
-        /**
-         * More than one pointOfContact found
-         * Try to avoid identificationInfo section as it contains mixture of all relevent parties
-         */
-        const altOrgs = datasetOrgs.filter(node => {
-            return (
-                node.path.findIndex(
-                    pathItem =>
-                        String(pathItem)
-                            .toLowerCase()
-                            .indexOf("identificationinfo") != -1
-                ) == -1
-            );
-        });
+        const mergedPublisher = withSameName.reduce(
+            (soFar, current) => merge({}, current, soFar),
+            publishers[0]
+        );
 
-        if (altOrgs.length != 0) {
-            orgData = altOrgs[0]["value"];
-        } else {
-            /**
-             * This means there ISN'T a proper pointOfContact section.
-             * This probably should be considered as a mistake
-             * and only very small amount of data like this can be found during my tests.
-             * We should now try pick one fron a list relevant entities.
-             */
-            const byRole = groupBy(datasetOrgs, node => node.role);
-            if (byRole["pointOfContact"]) {
-                const firstPointOfContactNode: any = byRole.pointOfContact[0];
-                orgData = firstPointOfContactNode.value;
-            } else {
-                /**
-                 * Some dataset was set a non `pointOfContact` role
-                 * But it's on `pointOfContact` path
-                 */
-                const pocNodes = datasetOrgs.filter(node => {
-                    return (
-                        node.path.findIndex(
-                            pathItem =>
-                                String(pathItem)
-                                    .toLowerCase()
-                                    .indexOf("pointofcontact") != -1
-                        ) != -1
-                    );
-                });
-                if (pocNodes.length) {
-                    orgData = pocNodes[0]["value"];
-                }
-            }
-            /**
-             * Otherwise, don't touch orgData --- use the first one from the initial shorter list would be the best
-             * Main contributor usually will be listed as the first.
-             * We can be more accurate if we drill down into all possible roles.
-             * But it probably won't be necessary as dataset reaches here should be lower than 1%~2% based on my tests.
-             */
-        }
-
-        return Promise.resolve(orgData);
+        return Promise.resolve(mergedPublisher);
     }
 
     private getJsonDistributionsArray(dataset: any): any[] {
@@ -370,6 +296,26 @@ export default class Csw implements ConnectorSource {
                         return;
                     }
                     try {
+                        if (this.saveXMLFolder) {
+                            const xmlFilename =
+                                this.saveXMLFolder +
+                                "/" +
+                                "getrecords-" +
+                                this.id +
+                                "-" +
+                                startIndex +
+                                ".xml";
+                            fs.writeFile(xmlFilename, body, function(err: any) {
+                                if (err) {
+                                    return console.log(err);
+                                }
+
+                                console.log(
+                                    "The file " + xmlFilename + " was saved!"
+                                );
+                            });
+                        }
+
                         const data = this.xmlParser.parseFromString(body);
                         if (
                             data.documentElement.getElementsByTagNameNS(
@@ -411,4 +357,7 @@ export interface CswOptions {
     pageSize?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    outputSchema?: string;
+    typeNames?: string;
+    saveXMLFolder?: string;
 }

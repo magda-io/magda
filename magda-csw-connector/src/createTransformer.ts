@@ -6,6 +6,7 @@ import * as moment from "moment";
 import * as URI from "urijs";
 import * as lodash from "lodash";
 import * as jsonpath from "jsonpath";
+import cswFuncs from "./cswFuncs";
 
 export interface CreateTransformerOptions {
     id: string;
@@ -39,7 +40,8 @@ export default function createTransformer({
                 id: id,
                 name: name,
                 baseUrl: sourceUrl
-            })
+            }),
+            cswFuncs
         }
     });
 }

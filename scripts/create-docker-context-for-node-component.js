@@ -215,7 +215,6 @@ if (argv.build) {
 
 function updateDockerFile(sourceDir, destDir) {
     const tags = getVersions(argv.local, argv.version);
-    console.log(tags);
     const repository = getRepository(argv.local, argv.repository);
     const dockerFileContents = fse.readFileSync(
         path.resolve(sourceDir, "Dockerfile"),

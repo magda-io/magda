@@ -10,6 +10,8 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "format": "WWW:LINK-1.0-http--link"
             },
             "source": {
@@ -33,7 +35,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -81,7 +85,7 @@
                 "issued": "2013-11-26T05:03:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((131.1178 -13.0769, 131.1178 -13.0769, 131.1178 -13.0769, 131.1178 -13.0769, 131.1178 -13.0769))",
@@ -162,7 +166,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/Gingin/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -186,8 +192,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((115.65 -31.375, 115.65 -31.375, 115.65 -31.375, 115.65 -31.375, 115.65 -31.375))",
                 "temporal": {
@@ -264,6 +269,8 @@
             "dcat-distribution-strings": {
                 "title":
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
                 "format": "WWW:LINK-1.0-http--link"
@@ -289,7 +296,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -313,7 +322,7 @@
                 "issued": "2013-05-08T11:07:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914))",
@@ -394,6 +403,8 @@
                 "title":
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
+                "license":
+                    "Creative Commons Attribution 4.0 International License",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
                 "format": "WWW:LINK-1.0-http--link"
             },
@@ -418,7 +429,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -442,7 +455,7 @@
                 "issued": "2014-02-03T11:07:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((145.576 -36.6499, 145.576 -36.6499, 145.576 -36.6499, 145.576 -36.6499, 145.576 -36.6499))",
@@ -523,7 +536,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/SturtPlains/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -547,8 +562,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507))",
                 "temporal": {
@@ -627,7 +641,10 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -650,7 +667,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -674,7 +693,7 @@
                 "issued": "2013-11-27T11:07:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((131.3072 -12.5452, 131.3072 -12.5452, 131.3072 -12.5452, 131.3072 -12.5452, 131.3072 -12.5452))",
@@ -756,7 +775,9 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -779,7 +800,10 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -803,7 +827,7 @@
                 "issued": "2013-11-26T11:07:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((132.3706 -15.2588, 132.3706 -15.2588, 132.3706 -15.2588, 132.3706 -15.2588, 132.3706 -15.2588))",
@@ -885,7 +909,9 @@
                     "An introduction to the Australian and New Zealand flux tower network – OzFlux",
                 "description": "Journal article",
                 "accessURL": "https://doi.org/10.5194/bg-13-5895-2016",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -908,7 +934,9 @@
                 "description":
                     "Journal article...describes the data sets, along with their quality control and post-processing...",
                 "accessURL": "https://doi.org/10.5194/bg-14-2903-2017",
-                "format": "WWW:LINK-1.0-http--link"
+                "format": "WWW:LINK-1.0-http--link",
+                "license":
+                    "Creative Commons Attribution 4.0 International License"
             },
             "source": {
                 "type": "csw-distribution",
@@ -932,7 +960,7 @@
                 "issued": "2013-11-26T11:07:36",
                 "modified": "2018-03-23T09:00:00",
                 "languages": [],
-                "publisher": "",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "accrualPeriodicity": "annually",
                 "spatial":
                     "POLYGON((133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507, 133.3502 -17.1507))",
@@ -1013,7 +1041,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/GreatWesternWoodlands/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -1038,8 +1068,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914, 120.6542 -30.1914))",
                 "temporal": {
@@ -1117,7 +1146,9 @@
                 "description": "Catalog via OpenDAP URL",
                 "accessURL":
                     "https://dap.tern.org.au/thredds/catalog/ecosystem_process/ozflux/Whroo/catalog.html",
-                "format": "WWW:LINK-1.0-http--opendap"
+                "format": "WWW:LINK-1.0-http--opendap",
+                "license":
+                    "Creative Commons Attribution 4.0 International Licence"
             },
             "source": {
                 "type": "csw-distribution",
@@ -1141,8 +1172,7 @@
                 "issued": "2016-01-06T09:00:00",
                 "modified": "2018-03-23T09:00:00",
                 "languages": ["eng"],
-                "publisher":
-                    "Terrestrial Ecosystem Research Network (TERN), esupport@tern.org.au",
+                "publisher": "Terrestrial Ecosystem Research Network (TERN)",
                 "spatial":
                     "POLYGON((145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732, 145.0294 -36.6732))",
                 "temporal": {

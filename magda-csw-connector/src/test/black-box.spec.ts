@@ -7,9 +7,18 @@ const fs = require("fs");
 const path = require("path");
 
 const TEST_CASES = [
+    /* basic CSW test file */
     {
         input: fs.readFileSync(path.join(__dirname, "csw1.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "csw1.json")))
+    },
+    /**
+     * Test for CSW data source: Geoscience Australia
+     * All datasets should have at leaset one distributions
+     */
+    {
+        input: fs.readFileSync(path.join(__dirname, "ga.xml")),
+        output: JSON.parse(fs.readFileSync(path.join(__dirname, "ga.json")))
     },
     /**
      * Test for CSW data source: TERN
@@ -32,7 +41,7 @@ const TEST_CASES = [
 
 runConnectorTest(TEST_CASES, MockCSWCatalog, {
     cleanRegistry: function(registry: any) {
-        Object.values(registry.records).forEach(record => {
+        Object.values(registry.records).forEach((record: any) => {
             if (record.aspects && record.aspects["csw-dataset"]) {
                 delete record.aspects["csw-dataset"].xml;
             }
