@@ -109,6 +109,9 @@ trait FacetDefinition {
   }
 
   def autocompleteQuery(textQuery: String): QueryDefinition
+
+  //--- Get api requested facet options and convert them to string
+  def getInputFacetOptions(query: Query): List[String]
 }
 
 object FacetDefinition {
@@ -161,6 +164,11 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 
   override def autocompleteQuery(textQuery: String) = matchQuery("publisher.name.english", textQuery)
+
+  def getInputFacetOptions(query: Query): List[String] = query.publishers.toList.flatMap{
+    case Specified(v) => Some(v.toString)
+    case _ => None
+  }
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
@@ -216,4 +224,9 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 
   override def autocompleteQuery(textQuery: String) = nestedQuery("distributions").query(matchQuery("distributions.format.english", textQuery))
+
+  def getInputFacetOptions(query: Query): List[String] = query.formats.toList.flatMap{
+    case Specified(v) => Some(v.toString)
+    case _ => None
+  }
 }
