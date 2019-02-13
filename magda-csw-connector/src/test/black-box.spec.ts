@@ -7,9 +7,18 @@ const fs = require("fs");
 const path = require("path");
 
 const TEST_CASES = [
+    /* basic CSW test file */
     {
         input: fs.readFileSync(path.join(__dirname, "csw1.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "csw1.json")))
+    },
+    /**
+     * Test for CSW data source: Geoscience Australia
+     * All datasets should have at leaset one distributions
+     */
+    {
+        input: fs.readFileSync(path.join(__dirname, "ga.xml")),
+        output: JSON.parse(fs.readFileSync(path.join(__dirname, "ga.json")))
     },
     /**
      * Test for CSW data source: TERN

@@ -1,11 +1,11 @@
 import { MockExpressServer } from "@magda/typescript-common/dist/test/connectors/MockExpressServer";
 
 export class MockCSWCatalog extends MockExpressServer {
-    spec: any;
+    spec: string;
 
-    constructor(spec: any) {
+    constructor(spec: string) {
         super();
-        this.spec = spec;
+        this.spec = spec.toString().replace(/\r\n/g, "\n");
     }
 
     runImplementation(registry: any) {

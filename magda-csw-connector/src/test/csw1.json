@@ -58,7 +58,7 @@
                 "languages": ["en"],
                 "issued": "2000-01-02",
                 "modified": "2000-01-02",
-                "publisher": "",
+                "publisher": "DEPT",
                 "spatial":
                     "POLYGON((137.5 -29.5, 154.0 -29.5, 154.0 -8.5, 137.5 -8.5, 137.5 -29.5))",
                 "temporal": {
