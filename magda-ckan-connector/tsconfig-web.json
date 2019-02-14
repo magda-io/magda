@@ -3,7 +3,6 @@
     "compilerOptions": {
         "declaration": false,
         "target": "es5",
-        "baseUrl": ".",
-        "lib": ["dom", "es5", "scripthost", "es2015.promise"]
+        "baseUrl": "."
     }
 }

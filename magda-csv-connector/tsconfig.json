@@ -10,6 +10,6 @@
                 "../node_modules/@magda/typescript-common/src/*"
             ]
         },
-        "lib": ["ES2017", "dom"]
+        "lib": ["es2015", "es2017", "dom"]
     }
 }

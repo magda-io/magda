@@ -16,7 +16,6 @@ const {
 
 // --- cache dependencies data from package.json
 const packageDependencyDataCache = {};
-
 const argv = yargs
     .options({
         build: {
@@ -64,6 +63,9 @@ const argv = yargs
             type: "string"
         }
     })
+    // Because 'version is a default yargs thing we need to specifically override its normal parsing.
+    .version(false)
+    .array("version")
     .help().argv;
 
 if (!argv.build && !argv.output) {

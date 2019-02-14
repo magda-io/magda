@@ -76,11 +76,11 @@ function getKnownProtocolUrls(record: Record) {
 }
 
 export type CheckResult = "success" | "error" | "notfound";
-export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
-    ["success" as "success", "error" as "error", "notfound" as "notfound"].map(
-        jsc.constant
-    )
-);
+export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof([
+    "success" as "success",
+    "error" as "error",
+    "notfound" as "notfound"
+].map(jsc.constant) as jsc.Arbitrary<CheckResult>[]);
 
 /**
  * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with
@@ -88,8 +88,8 @@ export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
  * distribution, for testing retries.
  */
 export const httpOnlyRecordArb = jsc.suchthat(
-    recordArbWithDistArbs(
-        jsc.oneof([
+    recordArbWithDistArbs({
+        url: jsc.oneof([
             jsc.constant(undefined),
             distUrlArb({
                 schemeArb: jsc.oneof([
@@ -98,7 +98,7 @@ export const httpOnlyRecordArb = jsc.suchthat(
                 ])
             })
         ])
-    ),
+    }),
     record =>
         record.aspects["dataset-distributions"].distributions.length > 1 &&
         record.aspects["dataset-distributions"].distributions.every(

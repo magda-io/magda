@@ -64,7 +64,7 @@ export const stateArb: jsc.Arbitrary<State> = arbFlatMap(
         if (connectorIds.length > 0) {
             return jsc.record(connectorStates);
         } else {
-            return jsc.constant({});
+            return jsc.constant({} as _.Dictionary<any>);
         }
     },
     connectorStates => {

@@ -5,8 +5,8 @@ resolvers += Resolver.sonatypeRepo("releases")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.18"
-  val akkaHttpV   = "10.0.7"
+  val akkaV       = "2.5.20"
+  val akkaHttpV   = "10.1.7"
   val scalaTestV  = "3.0.1"
   Seq(
        "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -15,7 +15,7 @@ libraryDependencies ++= {
        "com.typesafe.akka" %% "akka-http" % akkaHttpV,
        "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV,
        "com.typesafe.akka" %% "akka-slf4j" % akkaV,
-       "ch.qos.logback" % "logback-classic" % "1.1.3",
+       "ch.qos.logback" % "logback-classic" % "1.2.3",
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
        "org.scalaz" %% "scalaz-core" % "7.2.8",
 
@@ -30,8 +30,8 @@ libraryDependencies ++= {
 
        "com.mchange" %% "leftright" % "0.0.1",
        "com.beachape" %% "enumeratum" % "1.5.10",
-       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.9.1",
-       "com.auth0" % "java-jwt" % "3.2.0",
+       "com.github.swagger-akka-http" %% "swagger-akka-http" % "0.14.1",
+       "com.auth0" % "java-jwt" % "3.7.0",
        "net.virtual-void" %%  "json-lenses" % "0.6.2"
      )
 }

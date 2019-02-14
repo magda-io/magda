@@ -283,9 +283,7 @@ describe("AsyncPage", function() {
         });
 
         it("can take 0", function() {
-            let selectorCalls = 0;
             const page = AsyncPage.create<number>(value => {
-                ++selectorCalls;
                 if (value === undefined) {
                     return Promise.resolve(0);
                 } else if (value < 10) {

@@ -74,7 +74,7 @@ export class MockRegistry extends MockExpressServer {
                 if (record.sourceTag === req.query.sourceTagToPreserve) {
                     continue;
                 }
-                if (record.aspects.source.id === req.query.sourceId) {
+                if ((record as any).aspects.source.id === req.query.sourceId) {
                     delete this.records[recordId];
                     count++;
                 }

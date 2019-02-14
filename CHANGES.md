@@ -9,6 +9,10 @@ Dataset Page:
 
 -   When `dcat-dataset-strings.creation.isOpenData` is set, show `Public / Private` label accordingly
 
+Others:
+
+-   Upgraded dependencies with snyk.io vulnerabilities.
+
 ## 0.0.52
 
 Authentication:
