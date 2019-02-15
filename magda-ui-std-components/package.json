@@ -1,0 +1,16 @@
+{
+  "name": "@magda/ui-std-components",
+  "version": "0.0.53-0",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@zeit/next-typescript": "^1.1.1",
+    "next": "^8.0.1",
+    "react": "^16.8.2",
+    "react-dom": "^16.8.2"
+  },
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  }
+}

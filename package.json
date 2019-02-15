@@ -83,5 +83,8 @@
     "react": {
       "location": "pancake/react/"
     }
+  },
+  "dependencies": {
+    "@skatejs/cli": "^0.1.1"
   }
 }
