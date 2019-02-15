@@ -12,6 +12,7 @@ Dataset Page:
 Others:
 
 -   Upgraded dependencies with snyk.io vulnerabilities.
+-   Allowed Favicon to be configurable through API & Admin UI
 
 ## 0.0.52
 
