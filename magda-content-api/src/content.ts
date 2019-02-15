@@ -95,7 +95,7 @@ export const content: { [s: string]: ContentItem } = {
         {},
         { schema: schemas.configSearchResultsPerPage }
     ),
-    favicon: makeIconItem()
+    "favicon.ico": makeIconItem()
 };
 
 function makeImageItem(extra: any = {}) {
@@ -122,7 +122,7 @@ function makeIconItem(extra: any = {}) {
     return Object.assign(
         {
             body: bodyParser.raw({
-                type: ["image/x-icon"],
+                type: "image/x-icon",
                 inflate: true,
                 limit: "10mb"
             }),
