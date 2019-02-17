@@ -23,7 +23,7 @@ spec:
 {{ toYaml .Values.affinity | indent 8 }}
 {{- end }}
       tolerations:
-      - key: "reservedFor"
+      - key: "magda.reservedFor"
         operator: "Equal"
         value: "statefulsets"
         effect: "NoSchedule"

@@ -42,7 +42,7 @@ spec:
                   - data
               topologyKey: kubernetes.io/hostname
       tolerations:
-      - key: "reservedFor"
+      - key: "magda.reservedFor"
         operator: "Equal"
         value: "statefulsets"
         effect: "NoSchedule"
