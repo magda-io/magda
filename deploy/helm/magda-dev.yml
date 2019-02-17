@@ -31,6 +31,7 @@ gateway:
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+    ckanAuthenticationUrl: https://data.gov.au/data
   cors:
     credentials: true
     origin: true
@@ -40,27 +41,10 @@ gateway:
     directives:
       scriptSrc:
       - "''self''"
-      - "''unsafe-inline''" # For VWO, hopefully we can remove this soon
-      - "data:" # Also for VWO
       - browser-update.org
-      - dev.visualwebsiteoptimizer.com
-      - platform.twitter.com
-      - www.googletagmanager.com
-      - www.google-analytics.com
-      - rum-static.pingdom.net
-      - https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.4.1/rollbar.min.js
-      - https://tagmanager.google.com/debug
-      - assets.zendesk.com
-      - static.zdassets.com
-      - ekr.zdassets.com
+      - "''unsafe-inline''"
       objectSrc:
       - "''none''"
-      sandbox: # We run the sandbox because we have to have unsafe-inline, when we remove unsafe inline we should remove this
-      - allow-scripts
-      - allow-same-origin
-      - allow-popups
-      - allow-forms
-      - allow-popups-to-escape-sandbox
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
 combined-db:

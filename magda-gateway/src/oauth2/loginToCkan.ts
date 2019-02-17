@@ -14,19 +14,17 @@ namespace loginToCkan {
 
 function loginToCkan(
     username: string,
-    password: string
+    password: string,
+    ckanUrl: string
 ): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
-    return fetch(
-        "https://data.gov.au/login_generic?came_from=/user/logged_in",
-        {
-            method: "POST",
-            redirect: "manual",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: `login=${username}&password=${password}`
-        }
-    ).then(res => {
+    return fetch(ckanUrl + "/data/login_generic?came_from=/user/logged_in", {
+        method: "POST",
+        redirect: "manual",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `login=${username}&password=${password}`
+    }).then(res => {
         const cookies = res.headers.get("set-cookie");
 
         if (!cookies) {
@@ -39,15 +37,16 @@ function loginToCkan(
 
         const relevantCookie = cookies.split(";")[0];
 
-        return afterLoginSuccess(relevantCookie, username);
+        return afterLoginSuccess(relevantCookie, username, ckanUrl);
     });
 }
 
 function afterLoginSuccess(
     cookies: string,
-    username: string
+    username: string,
+    ckanUrl: string
 ): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
-    return fetch("https://data.gov.au/user/edit/" + username, {
+    return fetch(ckanUrl + "/user/edit/" + username, {
         headers: {
             cookie: cookies
         }

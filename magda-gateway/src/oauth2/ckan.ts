@@ -12,12 +12,14 @@ export interface CkanOptions {
     authorizationApi: ApiClient;
     passport: Authenticator;
     externalAuthHome: string;
+    ckanUrl: string;
 }
 
 export default function ckan(options: CkanOptions) {
     const authorizationApi = options.authorizationApi;
     const passport = options.passport;
     const externalAuthHome = options.externalAuthHome;
+    const ckanUrl = options.ckanUrl;
 
     passport.use(
         new LocalStrategy(function(
@@ -25,7 +27,7 @@ export default function ckan(options: CkanOptions) {
             password: string,
             cb: (error: any, user?: any, info?: any) => void
         ) {
-            loginToCkan(username, password).then(result => {
+            loginToCkan(username, password, ckanUrl).then(result => {
                 result.caseOf({
                     left: error => cb(error),
                     right: profile => {
