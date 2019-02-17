@@ -21,6 +21,7 @@ async function refresh() {
 
         const sections = {
             "My Information": showMe.bind(null, me),
+            Favicon: showFavicon,
             "Header Logo": showHeaderLogo,
             "Header Navigation": showHeaderNavigation,
             "Header Taglines": showHeaderTaglines,
@@ -65,6 +66,22 @@ function showMe(me, body) {
     body.text("");
     body.append("h2").text("My Information");
     body.append("pre").text(JSON.stringify(me, null, 2));
+}
+
+function showFavicon(body) {
+    body.append("h2").text("Favicon");
+
+    const table = body.append("table");
+
+    let row = table.append("tr");
+    row.append("th").text("item");
+    row.append("th")
+        .style("width", "100%")
+        .text("value");
+
+    row = table.append("tr");
+    row.append("td").text("Favicon");
+    iconConfig(row.append("td"), "favicon.ico");
 }
 
 function showHeaderLogo(body) {
@@ -425,6 +442,42 @@ function imageConfig(body, name) {
                         `${instanceURL}/content/${name}`,
                         data,
                         file.type
+                    );
+                    imageConfig(body, name);
+                };
+                fileReader.readAsArrayBuffer(file);
+            };
+        });
+
+    return body;
+}
+
+function iconConfig(body, name) {
+    body.text("");
+
+    body.append("img")
+        .attr("src", `${instanceURL}/content/${name}`)
+        .attr("onerror", `this.alt='NONE'`)
+        .style("max-height", `70px`)
+        .style("max-width", `367px`);
+
+    body.append("button")
+        .text("Change")
+        .on("click", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.click();
+            input.onchange = function() {
+                const file = input.files[0];
+                const fileReader = new FileReader();
+                fileReader.onloadend = async function(e) {
+                    const data = new Blob([new Uint8Array(e.target.result)]);
+                    await request(
+                        "PUT",
+                        `${instanceURL}/content/${name}`,
+                        data,
+                        "image/x-icon"
                     );
                     imageConfig(body, name);
                 };

@@ -281,6 +281,13 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 content: "Hello!",
                 getRoute: "/lang/en/publishersPage/blahface.text",
                 expectedContent: "Hello!"
+            },
+            {
+                route: "/favicon.ico",
+                mime: "image/x-icon",
+                content: gifImage,
+                getRoute: "/favicon.ico",
+                expectedContent: gifImage.toString("utf8")
             }
         ];
 
