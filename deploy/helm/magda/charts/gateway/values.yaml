@@ -54,6 +54,8 @@ csp:
   directives:
     scriptSrc:
     - "''self''"
+    - "''unsafe-inline''"
+    - browser-update.org
     objectSrc:
     - "''none''"
 
