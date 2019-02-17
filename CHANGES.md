@@ -12,6 +12,7 @@ Dataset Page:
 Others:
 
 -   Upgraded dependencies with snyk.io vulnerabilities.
+-   Added `magda.reservedFor=statefulsets:NoSchedule` toleration to statefulsets.
 
 ## 0.0.52
 
