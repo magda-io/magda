@@ -20,9 +20,28 @@ const constraints = jsonpath.query(
 );
 const licenseName = jsonpath.value(constraints, "$[*].licenseName[*]._");
 const licenseUrl = jsonpath.value(constraints, "$[*].licenseLink[*]._");
+/**
+ * If more than one license description is found, the shorter one (e.g. `CC - Attribution (CC BY)`)
+ * normally is the license title and the longer string is the description.
+ * Here, the sort func makes sure the license title always be shown in front of the long description block.
+ */
+const licenseSortFunc = (lcA, lcB) => {
+    let lenA = 0,
+        lenB = 0;
+    if (lcA && lcA.length) {
+        lenA = lcA.length;
+    }
+    if (lcB && lcB.length) {
+        lenB = lcB.length;
+    }
+    return lenA - lenB;
+};
 let license =
     licenseName || licenseUrl
-        ? [licenseName, licenseUrl].filter(item => item !== undefined).join(" ")
+        ? [licenseName, licenseUrl]
+              .filter(item => item !== undefined)
+              .sort(licenseSortFunc)
+              .join("\n")
         : undefined;
 if (!license) {
     const legalConstraints = jsonpath
@@ -49,13 +68,14 @@ if (!license) {
                 lc.codeListValue == "license" &&
                 lc.title &&
                 lc.title.search(
-                    /Creative Commons|CC |BY|Attribution|creativecommons/
-                )
+                    /Creative Commons|CC BY|CC - Attribution|creativecommons/i
+                ) !== -1
         )
         .map(lc => {
             return lc.title;
         })
-        .join(" ");
+        .sort(licenseSortFunc)
+        .join("\n");
 
     if (!license) {
         license = legalConstraints
@@ -63,7 +83,8 @@ if (!license) {
             .map(lc => {
                 return lc.title;
             })
-            .join(" ");
+            .sort(licenseSortFunc)
+            .join("\n");
     }
     if (license.length === 0) {
         license = undefined;
