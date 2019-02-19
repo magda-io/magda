@@ -4,6 +4,7 @@ Connectors:
 
 -   Allowed Ckan connector to pull datasets belongs to a specified organisation
 -   Added `presetRecordAspects` & `extra` parameters supports to all connectors
+-   Improvements on CSW connector license info retrieve
 
 Dataset Page:
 
