@@ -6,11 +6,14 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.misc.DataSet
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{AsyncFlatSpec, _}
+import org.scalatest.{AsyncFlatSpec, FlatSpec,  _}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with BeforeAndAfterEach {
+import org.scalatest.concurrent.ScalaFutures._
+import scala.concurrent.duration._
+
+class StreamSourceControllerTest extends FlatSpec with Matchers with BeforeAndAfterEach {
 
   implicit val system: ActorSystem = ActorSystem("StreamSourceControllerTest")
   implicit val ec: ExecutionContextExecutor = system.dispatcher
@@ -32,6 +35,8 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
 
   private val sourceBufferSize = dataSets.size * 2
 
+  implicit val patienceConfig = PatienceConfig(120.second)
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     ssc = new StreamSourceController(sourceBufferSize, None.orNull)
@@ -50,12 +55,16 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
     ssc.fillSource(dataSets, false, true)
 
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
+
+    whenReady(actualDataSetsF)(identity)
   }
 
   it should "fill the source before the stream starts" in {
     ssc.fillSource(dataSets, false, true)
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     actualDataSetsF.map(actual => actual shouldEqual dataSets)
+
+    whenReady(actualDataSetsF)(identity)
   }
 
   it should "fill the source before and after the stream starts" in {
@@ -63,5 +72,7 @@ class StreamSourceControllerTest extends AsyncFlatSpec with Matchers with Before
     val actualDataSetsF: Future[Seq[DataSet]] = source.runWith(Sink.seq)
     ssc.fillSource(dataSets, false, false)
     actualDataSetsF.map(actual => actual shouldEqual dataSets ++ dataSets)
+
+    whenReady(actualDataSetsF)(identity)
   }
 }
