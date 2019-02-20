@@ -18,6 +18,9 @@ import org.scalatest.{Assertion, AsyncFlatSpec, Matchers}
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
+import scala.util.Random
+
+
 class StreamControllerTest extends AsyncFlatSpec with Matchers {
 
   implicit val system: ActorSystem = ActorSystem("StreamControllerTest")
@@ -28,12 +31,17 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
   private var sc: StreamController = None.orNull
   private var dataSets: Seq[DataSet] = Seq()
 
+  def between(start:Int, end:Int) = {
+    val r = new scala.util.Random
+    start + r.nextInt(( end- start) + 1)
+  }
+
   class MockRegistryInterface extends RegistryInterface {
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 
     override def getDataSetsReturnToken(start: Long, size: Int)
-    : Future[(Option[String], List[DataSet])] = {
+    : Future[(Option[String], List[DataSet])] = Future {
       assert (start == 0)
       nextIndex.set(size)
       val batch = dataSets.slice(start.toInt, size).toList
@@ -42,12 +50,13 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
       val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
+      Thread.sleep(between(1, 2000))
 
-      Future.successful(tokenOption, batch)
+      (tokenOption, batch)
     }
 
     override def getDataSetsToken(token: String, size: Int)
-    : Future[(Option[String], List[DataSet])] = {
+    : Future[(Option[String], List[DataSet])] = Future {
       assert (token.nonEmpty)
 
       val startIndex = nextIndex.get()
@@ -70,8 +79,8 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
 
 //      println(s"** start: $startIndex, end: $endIndex, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
-
-      Future.successful(tokenOption, batch)
+      Thread.sleep(between(1, 2000))
+      (tokenOption, batch)
     }
   }
 
@@ -96,7 +105,6 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
               }
             }
         })
-        1/0
 
       indexResults.flatMap(identity)
     }
