@@ -51,7 +51,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
       val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
-      Thread.sleep(between(1, 20000))
+      Thread.sleep(between(1, 2000))
 
       (tokenOption, batch)
     }
@@ -80,7 +80,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
 //      println(s"** start: $startIndex, end: $endIndex, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
-      Thread.sleep(between(1, 20000))
+      Thread.sleep(between(1, 2000))
       (tokenOption, batch)
     }
   }
