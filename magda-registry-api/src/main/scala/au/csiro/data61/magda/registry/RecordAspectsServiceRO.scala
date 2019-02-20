@@ -53,9 +53,11 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
     new ApiResponse(code = 404, message = "No record or aspect exists with the given IDs.", response = classOf[BadRequest])))
   def getById = get {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      {
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
+
         DB readOnly { session =>
-          recordPersistence.getRecordAspectById(session, recordId, aspectId) match {
+          recordPersistence.getRecordAspectById(session, recordId, tenantId, aspectId) match {
             case Some(recordAspect) => complete(recordAspect)
             case None               => complete(StatusCodes.NotFound, BadRequest("No record aspect exists with that ID."))
           }

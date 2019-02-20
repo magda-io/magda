@@ -166,7 +166,7 @@ const argv = addJwtSecretFromEnvVar(
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
             type: "boolean",
-            default: false
+            default: true
         })
         .option("enableCkanRedirection", {
             describe: "Whether or not to turn on the CKan Redirection feature",

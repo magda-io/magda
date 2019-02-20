@@ -1680,7 +1680,7 @@ class RecordsServiceSpec extends ApiSpec {
           val mockedRecordPersistence = mock[RecordPersistence]
           val mockedApi = new RecordsService(param.api(role).config, param.webHookActor, param.authClient, system, materializer, mockedRecordPersistence)
 
-          (mockedRecordPersistence.trimRecordsBySource(_: String, _: String, _: Option[LoggingAdapter])(_: DBSession)).expects(*, *, *, *).onCall { (sourceId: String, tag: String, logger: Option[LoggingAdapter], session: DBSession) =>
+          (mockedRecordPersistence.trimRecordsBySource(_: String, _: String, _: BigInt, _: Option[LoggingAdapter])(_: DBSession)).expects(*, *, *, *, *).onCall { (sourceId: String, tag: String, tenantId: BigInt, logger: Option[LoggingAdapter], session: DBSession) =>
             Thread.sleep(600)
             Success(1)
           }

@@ -44,5 +44,25 @@ export default function createBaseProxy(): httpProxy {
         });
     });
 
+    proxy.on("proxyReq", function(proxyReq, req, res) {
+        const domainName = req.headers.host.replace(":6100", "");
+
+        // TODO: Find tenantId from DB.
+        let tenantId = 0;
+
+        if (domainName.startsWith("demo1.")) {
+            tenantId = 1;
+        } else if (domainName.startsWith("demo2.")) {
+            tenantId = 2;
+        } else if (domainName.startsWith("demo3.")) {
+            tenantId = 3;
+        }
+
+        proxyReq.setHeader("TenantId", tenantId);
+        console.debug(
+            "Domain Name = " + domainName + ", Tenant ID = " + tenantId
+        );
+    });
+
     return proxy;
 }

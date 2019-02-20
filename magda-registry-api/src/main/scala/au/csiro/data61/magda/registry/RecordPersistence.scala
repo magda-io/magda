@@ -52,30 +52,30 @@ trait RecordPersistence {
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage[Record]
 
-  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject]
+  def getRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Option[JsObject]
 
   def getPageTokens(implicit session: DBSession,
                     aspectIds: Iterable[String],
                     limit: Option[Int] = None,
                     recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String]
 
-  def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record]
+  def putRecordById(implicit session: DBSession, id: String, tenantId: BigInt, newRecord: Record): Try[Record]
 
-  def patchRecordById(implicit session: DBSession, id: String, recordPatch: JsonPatch): Try[Record]
+  def patchRecordById(implicit session: DBSession, id: String, tenantId: BigInt, recordPatch: JsonPatch): Try[Record]
 
-  def patchRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, aspectPatch: JsonPatch): Try[JsObject]
+  def patchRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspectPatch: JsonPatch): Try[JsObject]
 
-  def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject]
+  def putRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, newAspect: JsObject): Try[JsObject]
 
-  def createRecord(implicit session: DBSession, record: Record): Try[Record]
+  def createRecord(implicit session: DBSession, record: Record, tenantId: BigInt): Try[Record]
 
-  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean]
+  def deleteRecord(implicit session: DBSession, recordId: String, tenantId: BigInt): Try[Boolean]
 
-  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long]
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, tenantId: BigInt, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long]
 
-  def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject]
+  def createRecordAspect(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspect: JsObject): Try[JsObject]
 
-  def deleteRecordAspect(implicit session: DBSession, recordId: String, aspectId: String): Try[Boolean]
+  def deleteRecordAspect(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Try[Boolean]
 
   def reconstructRecordFromEvents(id: String, events: Source[RegistryEvent, NotUsed], aspects: Iterable[String], optionalAspects: Iterable[String]): Source[Option[Record], NotUsed]
 }
@@ -160,10 +160,11 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
+  def getRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Option[JsObject] = {
     sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
           inner join Aspects using (aspectId)
           where RecordAspects.recordId=$recordId
+          and RecordAspects.tenantId=$tenantId
           and RecordAspects.aspectId=$aspectId"""
       .map(rowToAspect)
       .single.apply()
@@ -190,7 +191,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }).list.apply()
   }
 
-  def putRecordById(implicit session: DBSession, id: String, newRecord: Record): Try[Record] = {
+  def putRecordById(implicit session: DBSession, id: String, tenantId: BigInt, newRecord: Record): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
     for {
@@ -201,7 +202,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
-        case None => DB.localTx { nested => createRecord(nested, newRecord).map(_.copy(aspects = Map())) } match {
+        case None => DB.localTx { nested => createRecord(nested, newRecord, tenantId).map(_.copy(aspects = Map())) } match {
           case Success(record) => Success(record)
           case Failure(e) => this.getByIdWithAspects(session, id) match {
             case Some(record) => Success(record)
@@ -216,11 +217,11 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
         JsonDiff.diff(oldRecordJson, newRecordJson, false)
       }
-      result <- patchRecordById(session, id, recordPatch)
+      result <- patchRecordById(session, id, tenantId, recordPatch)
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
-            (aspectId, this.putRecordAspectById(session, id, aspectId, data))
+            (aspectId, this.putRecordAspectById(session, id, tenantId, aspectId, data))
         }
       }
       // Report the first failed aspect, if any
@@ -233,7 +234,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield result.copy(aspects = resultAspects)
   }
 
-  def patchRecordById(implicit session: DBSession, id: String, recordPatch: JsonPatch): Try[Record] = {
+  def patchRecordById(implicit session: DBSession, id: String, tenantId: BigInt, recordPatch: JsonPatch): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, id) match {
         case Some(record) => Success(record)
@@ -256,7 +257,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       eventId <- Try {
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
-          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
+          val event = PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId = sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
           sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update.apply()
           eventId
@@ -273,21 +274,21 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           // We create if there's exactly one ADD operation and it's adding an entire aspect.
           case (Some(aspectId), List(Add("aspects" / (name / rest), value))) => {
             if (rest == Pointer.Empty)
-              (aspectId, putRecordAspectById(session, id, aspectId, value.asJsObject))
+              (aspectId, putRecordAspectById(session, id, tenantId, aspectId, value.asJsObject))
             else
-              (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Add(rest, value))))
+              (aspectId, patchRecordAspectById(session, id, tenantId, aspectId, JsonPatch(Add(rest, value))))
           }
           // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
           case (Some(aspectId), List(Remove("aspects" / (name / rest), old))) => {
             if (rest == Pointer.Empty) {
-              deleteRecordAspect(session, id, aspectId)
+              deleteRecordAspect(session, id, tenantId, aspectId)
               (aspectId, Success(JsNull))
             } else {
-              (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(Remove(rest, old))))
+              (aspectId, patchRecordAspectById(session, id, tenantId, aspectId, JsonPatch(Remove(rest, old))))
             }
           }
           // We patch in all other scenarios.
-          case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, aspectId, JsonPatch(operations.map({
+          case (Some(aspectId), operations) => (aspectId, patchRecordAspectById(session, id, tenantId, aspectId, JsonPatch(operations.map({
             // Make paths in operations relative to the aspect instead of the record
             case Add("aspects" / (name / rest), value)          => Add(rest, value)
             case Remove("aspects" / (name / rest), old)         => Remove(rest, old)
@@ -326,11 +327,11 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield Record(patchedRecord.id, patchedRecord.name, aspects)
   }
 
-  def patchRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
+  def patchRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
     for {
-      aspect <- this.getRecordAspectById(session, recordId, aspectId) match {
+      aspect <- this.getRecordAspectById(session, recordId, tenantId, aspectId) match {
         case Some(aspect) => Success(aspect)
-        case None         => createRecordAspect(session, recordId, aspectId, JsObject())
+        case None         => createRecordAspect(session, recordId, tenantId, aspectId, JsObject())
       }
 
       patchedAspect <- Try {
@@ -347,7 +348,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
       eventId <- Try {
         if (testRecordAspectPatch.ops.length > 0) {
-          val event = PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
+          val event = PatchRecordAspectEvent(recordId, tenantId, aspectId, aspectPatch).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
@@ -357,8 +358,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       _ <- Try {
         if (testRecordAspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
-               on conflict (recordId, aspectId) do update
+          sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonString::json)
+               on conflict (recordId, tenantId, aspectId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
         } else {
@@ -368,17 +369,17 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield patchedAspect
   }
 
-  def putRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, newAspect: JsObject): Try[JsObject] = {
+  def putRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, newAspect: JsObject): Try[JsObject] = {
     for {
-      oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
+      oldAspect <- this.getRecordAspectById(session, recordId, tenantId, aspectId) match {
         case Some(aspect) => Success(aspect)
         // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
-        case None => DB.localTx { nested => createRecordAspect(nested, recordId, aspectId, newAspect) } match {
+        case None => DB.localTx { nested => createRecordAspect(nested, recordId, tenantId, aspectId, newAspect) } match {
           case Success(aspect) => Success(aspect)
-          case Failure(e) => this.getRecordAspectById(session, recordId, aspectId) match {
+          case Failure(e) => this.getRecordAspectById(session, recordId, tenantId, aspectId) match {
             case Some(aspect) => Success(aspect)
             case None         => Failure(e)
           }
@@ -391,43 +392,43 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
         JsonDiff.diff(oldAspectJson, newAspectJson, false)
       }
-      result <- patchRecordAspectById(session, recordId, aspectId, recordAspectPatch)
+      result <- patchRecordAspectById(session, recordId, tenantId, aspectId, recordAspectPatch)
     } yield result
   }
 
-  def createRecord(implicit session: DBSession, record: Record): Try[Record] = {
+  def createRecord(implicit session: DBSession, record: Record, tenantId: BigInt): Try[Record] = {
     for {
       eventId <- Try {
-        val eventJson = CreateRecordEvent(record.id, record.name).toJson.compactPrint
+        val eventJson = CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
-        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag})""".update.apply()
+        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, $tenantId, ${record.name}, $eventId, ${record.sourceTag})""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create record '${record.id}' because a record with that ID already exists."))
         case anythingElse => anythingElse
       }
 
-      hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, aspect._1, aspect._2)).find(_.isFailure) match {
+      hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, tenantId, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
         case _                => Success(record)
       }
     } yield hasAspectFailure
   }
 
-  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean] = {
+  def deleteRecord(implicit session: DBSession, recordId: String, tenantId: BigInt): Try[Boolean] = {
     for {
       aspects <- Try {
         sql"select aspectId from RecordAspects where recordId=$recordId"
           .map(rs => rs.string("aspectId")).list.apply()
       }
-      _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, aspectId)).find(_.isFailure) match {
+      _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, tenantId, aspectId)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
         case _                => Success(aspects)
       }
       _ <- Try {
-        val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
+        val eventJson = DeleteRecordEvent(recordId, tenantId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
@@ -436,7 +437,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield rowsDeleted > 0
   }
 
-  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long] = {
+  def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, tenantId: BigInt, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
       sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
         .map(rs => rs.string("recordId")).list.apply()
@@ -446,7 +447,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       case Success(Nil) => Success(0l)
       case Success(ids) =>
         ids
-          .map(recordId => deleteRecord(session, recordId))
+          .map(recordId => deleteRecord(session, recordId, tenantId))
           .foldLeft[Try[Long]](Success(0l))((trySoFar: Try[Long], thisTry: Try[Boolean]) => (trySoFar, thisTry) match {
             case (Success(countSoFar), Success(bool)) => Success(countSoFar + (if (bool) 1 else 0))
             case (Failure(err), _)                    => Failure(err)
@@ -470,15 +471,15 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   }
 
-  def createRecordAspect(implicit session: DBSession, recordId: String, aspectId: String, aspect: JsObject): Try[JsObject] = {
+  def createRecordAspect(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspect: JsObject): Try[JsObject] = {
     for {
       eventId <- Try {
-        val eventJson = CreateRecordAspectEvent(recordId, aspectId, aspect).toJson.compactPrint
+        val eventJson = CreateRecordAspectEvent(recordId, tenantId, aspectId, aspect).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
         val jsonData = aspect.compactPrint
-        sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, ${aspectId}, $eventId, $jsonData::json)""".update.apply()
+        sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, ${aspectId}, $eventId, $jsonData::json)""".update.apply()
         aspect
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
@@ -488,10 +489,10 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     } yield insertResult
   }
 
-  def deleteRecordAspect(implicit session: DBSession, recordId: String, aspectId: String): Try[Boolean] = {
+  def deleteRecordAspect(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Try[Boolean] = {
     for {
       _ <- Try {
-        val eventJson = DeleteRecordAspectEvent(recordId, aspectId).toJson.compactPrint
+        val eventJson = DeleteRecordAspectEvent(recordId, tenantId, aspectId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
