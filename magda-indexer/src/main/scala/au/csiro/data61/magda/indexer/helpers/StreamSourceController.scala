@@ -83,8 +83,8 @@ class StreamSourceController(bufferSize: Int, streamController: StreamController
   }
 
   private def createStreamSource(): (ActorRef, Source[DataSet, NotUsed]) = {
-    // The additional 1 slot in the buffer are for a control message: either GET_MORE_DATASETS
-    // or NO_MORE_DATASETS.
+    // The additional 2 slot in the buffer are for control messages: either GET_MORE_DATASETS
+    // or NO_MORE_DATASETS or both GET_MORE_DATASETS and NO_MORE_DATASETS.
     val (ref: ActorRef, publisher: Publisher[DataSet]) =
       Source.actorRef[DataSet](bufferSize = bufferSize + 2, OverflowStrategy.fail)
         .toMat(Sink.asPublisher(true))(Keep.both).run()
