@@ -96,6 +96,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
               }
             }
         })
+        1/0
 
       indexResults.flatMap(identity)
     }
