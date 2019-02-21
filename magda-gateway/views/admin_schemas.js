@@ -1,9 +1,10 @@
-export const headerNavigation: any = {
+const headerNavigationSchema = {
     type: "object",
     properties: {
         order: {
             type: "number",
-            default: 1
+            default: 1,
+            propertyOrder: 99
         }
     },
     oneOf: [
@@ -16,22 +17,30 @@ export const headerNavigation: any = {
                     properties: {
                         label: {
                             type: "string",
-                            minLength: 1
+                            minLength: 1,
+                            propertyOrder: 1
                         },
                         rel: {
                             type: "string",
-                            minLength: 2
+                            minLength: 2,
+                            propertyOrder: 3
                         },
                         target: {
                             type: "string",
-                            enum: ["", "blank"]
+                            enum: ["", "blank"],
+                            propertyOrder: 4,
+                            default: ""
                         },
                         href: {
                             type: "string",
-                            minLength: 1
+                            minLength: 1,
+                            propertyOrder: 2
                         }
                     },
-                    required: ["label", "href"]
+                    required: ["label", "href"],
+                    options: {
+                        remove_empty_properties: true
+                    }
                 }
             },
             required: ["default"]
@@ -41,7 +50,10 @@ export const headerNavigation: any = {
             properties: {
                 auth: {
                     title: "Authentication Menu",
-                    type: "object"
+                    type: "object",
+                    options: {
+                        hidden: true
+                    }
                 }
             },
             required: ["auth"]
@@ -50,24 +62,15 @@ export const headerNavigation: any = {
     required: ["order"]
 };
 
-export const homeTagLine: any = {
+const headerTaglineSchema = {
     type: "string"
 };
 
-export const homeHighlight: any = {
-    type: "object",
-    properties: {
-        text: {
-            type: "string"
-        },
-        url: {
-            type: "string"
-        }
-    },
-    required: []
+const languageSchema = {
+    type: "string"
 };
 
-export const homeStory: any = {
+const homeStorySchema = {
     type: "object",
     properties: {
         title: {
@@ -83,17 +86,29 @@ export const homeStory: any = {
         },
         content: {
             type: "string",
-            minLength: 1
+            minLength: 1,
+            format: "markdown"
         }
     },
     required: ["title", "order", "content"]
 };
 
-export const languageString: any = {
-    type: "string"
+const homeHighlightSchema = {
+    type: "object",
+    properties: {
+        text: {
+            type: "string",
+            minLength: 1
+        },
+        url: {
+            type: "string",
+            minLength: 1
+        }
+    },
+    required: ["text", "url"]
 };
 
-export const footerCategory: any = {
+const footerCategory = {
     type: "object",
     properties: {
         order: {
@@ -108,7 +123,7 @@ export const footerCategory: any = {
     required: ["order", "label"]
 };
 
-export const footerLink: any = {
+const footerLink = {
     type: "object",
     properties: {
         order: {
@@ -127,7 +142,7 @@ export const footerLink: any = {
     required: ["order", "label", "href"]
 };
 
-export const footerCopyright: any = {
+const footerCopyright = {
     type: "object",
     properties: {
         order: {
@@ -158,17 +173,7 @@ export const footerCopyright: any = {
     required: ["order", "href", "logoSrc", "htmlContent"]
 };
 
-export const configDatasetSearchSuggestionScoreThreshold: any = {
-    type: "number",
-    minimum: -1
-};
-
-export const configSearchResultsPerPage: any = {
-    type: "number",
-    minimum: 1
-};
-
-export const page: any = {
+const pageSchema = {
     type: "object",
     properties: {
         title: {
@@ -177,7 +182,8 @@ export const page: any = {
         },
         content: {
             type: "string",
-            minLength: 1
+            minLength: 1,
+            format: "markdown"
         }
     },
     required: ["title"]
