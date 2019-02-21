@@ -110,15 +110,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
         val query = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
         Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
-          case Right(results) =>
-            if (results.result.totalHits > 0)
-              Future.successful((results.result, MatchAll))
-            else
-              client.execute(buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchPart, requestedFacetSize)).map {
-                case Right(results) => (results.result, MatchPart)
-                case Left(IllegalArgumentException(e)) => throw e
-                case Left(ESGenericException(e)) => throw e
-              }
+          case Right(results) => Future.successful((results.result, MatchAll))
           case Left(IllegalArgumentException(e)) => throw e
           case Left(ESGenericException(e)) => throw e
         })).map {
@@ -487,16 +479,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategy: SearchStrategy,
     isForAggregation: Boolean = false): QueryDefinition = {
     val operator = strategy match {
-      case MatchAll =>
-        if (query.boostRegions.isEmpty) {
-          "and"
-        } else {
-          // --- when boostRegions have been identified from user input
-          // --- we shouldn't use `and` for `simple_string_query`. Otherwise, user input `water in hurstville`
-          // --- will exclude datasets that don't include `hurstville` keywords but their spatial data covers `hurstville` region
-          // --- those datasets are more likely what users want
-          "or"
-        }
+      case MatchAll => "and"
       case MatchPart => "or"
     }
 
