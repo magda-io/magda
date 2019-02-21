@@ -473,51 +473,58 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .functions(allScorers).scoreMode("sum")
   }
 
+  private def createInputTextQuery(inputText: String):QueryDefinition = {
+    val queryString = new SimpleStringQueryDefinition(inputText)
+      .defaultOperator("and")
+      .quoteFieldSuffix(".quote")
+
+    def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
+      fields.foldRight(query) {
+        case ((fieldName: String, boost: Float), queryDef) =>
+          queryDef.field(fieldName, boost)
+        case (field: String, queryDef) => queryDef.field(field, 0)
+      }
+
+    // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
+    // other analysis does. So we do this silliness
+    val distributionsEnglishQueries = nestedQuery("distributions")
+      .query(
+        // If this was AND then a single distribution would have to match the entire query, this way you can
+        // have multiple dists partially match
+        queryString
+          .field("distributions.title")
+          .field("distributions.description")
+          .field("distributions.format.keyword_lowercase")
+          .defaultOperator("or"))
+      .scoreMode(ScoreMode.Max)
+
+    val queries =
+      Seq(
+        foldFields(
+          queryString,
+          NON_LANGUAGE_FIELDS ++ DATASETS_LANGUAGE_FIELDS),
+        distributionsEnglishQueries)
+
+    dismax(queries).tieBreaker(0.2)
+  }
+
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(
     query: Query,
     strategy: SearchStrategy,
     isForAggregation: Boolean = false): QueryDefinition = {
-    val operator = strategy match {
-      case MatchAll => "and"
-      case MatchPart => "or"
-    }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText flatMap { inputText =>
         val text = if (inputText.trim.length == 0) "*" else inputText
-        val queryString = new SimpleStringQueryDefinition(text)
-          .defaultOperator(operator)
-          .quoteFieldSuffix(".quote")
+        val textQuery = createInputTextQuery(text)
+        if(query.boostRegions.isEmpty) Some(textQuery)
+        else {
+          val altText = query.boostRegions.foldLeft(text)((str, region) => str.replace(region.regionName.get, ""))
+          boolQuery().should(textQuery).should(boolQuery().must(createInputTextQuery(altText)))
+        }
 
-        def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
-          fields.foldRight(query) {
-            case ((fieldName: String, boost: Float), queryDef) =>
-              queryDef.field(fieldName, boost)
-            case (field: String, queryDef) => queryDef.field(field, 0)
-          }
-
-        // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
-        // other analysis does. So we do this silliness
-        val distributionsEnglishQueries = nestedQuery("distributions")
-          .query(
-            // If this was AND then a single distribution would have to match the entire query, this way you can
-            // have multiple dists partially match
-            queryString
-              .field("distributions.title")
-              .field("distributions.description")
-              .field("distributions.format.keyword_lowercase")
-              .defaultOperator("or"))
-          .scoreMode(ScoreMode.Max)
-
-        val queries =
-          Seq(
-            foldFields(
-            queryString,
-            NON_LANGUAGE_FIELDS ++ DATASETS_LANGUAGE_FIELDS),
-            distributionsEnglishQueries)
-
-        Some(dismax(queries).tieBreaker(0.2))
+        Some(textQuery)
       },
       setToOption(query.publishers)(seq =>
         should(seq.map(publisherQuery(strategy))).boost(2)),
