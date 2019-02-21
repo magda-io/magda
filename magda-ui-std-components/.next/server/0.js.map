@@ -1,0 +1,1 @@
+{"version":3,"file":"0.js","sources":["webpack:///./src/footer.tsx"],"sourcesContent":["export default function Footer() {\n    return (\n        <div>\n            This is a footer{\" \"}\n            <button onClick={() => alert(\"hello\")}>Click me</button>\n        </div>\n    );\n}\n"],"mappings":";;;;;;;;;;;;;;;;AAAA;AACA;AAGA;AAAA;AAAA;AAAA;AAGA;;;;A","sourceRoot":""}

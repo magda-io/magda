@@ -1,10 +1,10 @@
-(window["webpackJsonp"] = window["webpackJsonp"] || []).push([
+(window["stdComponents"] = window["stdComponents"] || []).push([
     [0],
     {
-        /***/ "./node_modules/next/dist/client/noop.js":
-            /*!***********************************************!*\
-  !*** ./node_modules/next/dist/client/noop.js ***!
-  \***********************************************/
+        /***/ "../../next.js/packages/next/dist/client/noop.js":
+            /*!******************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/dist/client/noop.js ***!
+  \******************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";

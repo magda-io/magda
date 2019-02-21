@@ -1,0 +1,1 @@
+{"version":3,"file":"1.js","sources":["webpack:///./src/header.tsx"],"sourcesContent":["export default function Header() {\n    return (\n        <div>\n            This is a header{\" \"}\n            <button onClick={() => alert(\"hello\")}>Click me</button>\n        </div>\n    );\n}\n"],"mappings":";;;;;;;;;;;;;;;;AAAA;AACA;AAGA;AAAA;AAAA;AAAA;AAGA;;;;A","sourceRoot":""}

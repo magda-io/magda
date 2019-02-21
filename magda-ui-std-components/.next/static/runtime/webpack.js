@@ -160,7 +160,7 @@
     }
     /******/
     /******/ var hotApplyOnUpdate = true; // eslint-disable-next-line no-unused-vars
-    /******/ /******/ var hotCurrentHash = "fb51b2f8250bb3181afb";
+    /******/ /******/ var hotCurrentHash = "8c70dfe80b2cbfb68c79";
     /******/ var hotRequestTimeout = 10000;
     /******/ var hotCurrentModuleData = {};
     /******/ var hotCurrentChildModule; // eslint-disable-next-line no-unused-vars
@@ -1214,8 +1214,8 @@
         return hotCurrentHash;
     };
     /******/
-    /******/ var jsonpArray = (window["webpackJsonp"] =
-        window["webpackJsonp"] || []);
+    /******/ var jsonpArray = (window["stdComponents"] =
+        window["stdComponents"] || []);
     /******/ var oldJsonpFunction = jsonpArray.push.bind(jsonpArray);
     /******/ jsonpArray.push = webpackJsonpCallback;
     /******/ jsonpArray = jsonpArray.slice();

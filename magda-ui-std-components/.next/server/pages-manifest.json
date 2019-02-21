@@ -1,6 +1,7 @@
 {
-    "/_app": "static/development/pages/_app.js",
-    "/_error": "static/development/pages/_error.js",
-    "/_document": "static/development/pages/_document.js",
-    "/header": "static/development/pages/header.js"
+    "/index": "static/Dsvzygx6dkN6ziYzv3lr5/pages/index.js",
+    "/_app": "static/Dsvzygx6dkN6ziYzv3lr5/pages/_app.js",
+    "/_error": "static/Dsvzygx6dkN6ziYzv3lr5/pages/_error.js",
+    "/_document": "static/Dsvzygx6dkN6ziYzv3lr5/pages/_document.js",
+    "/": "static/Dsvzygx6dkN6ziYzv3lr5/pages/index.js"
 }

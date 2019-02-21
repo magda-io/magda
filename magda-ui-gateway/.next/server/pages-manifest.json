@@ -2,6 +2,9 @@
     "/_app": "static/development/pages/_app.js",
     "/_error": "static/development/pages/_error.js",
     "/_document": "static/development/pages/_document.js",
+    "/otherpage": "static/development/pages/otherpage.js",
     "/index": "static/development/pages/index.js",
+    "/next/dist/pages/_error":
+        "static/development/pages/next/dist/pages/_error.js",
     "/": "static/development/pages/index.js"
 }

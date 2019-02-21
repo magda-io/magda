@@ -123,493 +123,63 @@ module.exports = /******/ (function(modules) {
 })(
     /************************************************************************/
     /******/ {
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/date/now.js":
-            /*!******************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/date/now.js ***!
-  \******************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/date/now */ "core-js/library/fn/date/now"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/json/stringify.js":
-            /*!************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/json/stringify.js ***!
-  \************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/json/stringify */ "core-js/library/fn/json/stringify"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/object/assign.js":
-            /*!***********************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/object/assign.js ***!
-  \***********************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/object/assign */ "core-js/library/fn/object/assign"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/object/create.js":
-            /*!***********************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/object/create.js ***!
-  \***********************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/object/create */ "core-js/library/fn/object/create"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/object/define-property.js":
-            /*!********************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/object/define-property.js ***!
-  \********************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/object/define-property */ "core-js/library/fn/object/define-property"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js":
-            /*!*********************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js ***!
-  \*********************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/object/get-prototype-of */ "core-js/library/fn/object/get-prototype-of"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js":
-            /*!*********************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js ***!
-  \*********************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/object/set-prototype-of */ "core-js/library/fn/object/set-prototype-of"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/symbol.js":
-            /*!****************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/symbol.js ***!
-  \****************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/symbol */ "core-js/library/fn/symbol"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js":
-            /*!*************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js ***!
-  \*************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                module.exports = __webpack_require__(
-                    /*! core-js/library/fn/symbol/iterator */ "core-js/library/fn/symbol/iterator"
-                );
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js":
-            /*!*******************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js ***!
-  \*******************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports) {
-                function _assertThisInitialized(self) {
-                    if (self === void 0) {
-                        throw new ReferenceError(
-                            "this hasn't been initialised - super() hasn't been called"
-                        );
-                    }
-
-                    return self;
-                }
-
-                module.exports = _assertThisInitialized;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js":
-            /*!************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js ***!
-  \************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports) {
-                function _classCallCheck(instance, Constructor) {
-                    if (!(instance instanceof Constructor)) {
-                        throw new TypeError(
-                            "Cannot call a class as a function"
-                        );
-                    }
-                }
-
-                module.exports = _classCallCheck;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/createClass.js":
-            /*!*********************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/createClass.js ***!
-  \*********************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _Object$defineProperty = __webpack_require__(
-                    /*! ../core-js/object/define-property */ "../node_modules/@babel/runtime-corejs2/core-js/object/define-property.js"
-                );
-
-                function _defineProperties(target, props) {
-                    for (var i = 0; i < props.length; i++) {
-                        var descriptor = props[i];
-                        descriptor.enumerable = descriptor.enumerable || false;
-                        descriptor.configurable = true;
-                        if ("value" in descriptor) descriptor.writable = true;
-
-                        _Object$defineProperty(
-                            target,
-                            descriptor.key,
-                            descriptor
-                        );
-                    }
-                }
-
-                function _createClass(Constructor, protoProps, staticProps) {
-                    if (protoProps)
-                        _defineProperties(Constructor.prototype, protoProps);
-                    if (staticProps)
-                        _defineProperties(Constructor, staticProps);
-                    return Constructor;
-                }
-
-                module.exports = _createClass;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js":
-            /*!************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js ***!
-  \************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _Object$getPrototypeOf = __webpack_require__(
-                    /*! ../core-js/object/get-prototype-of */ "../node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js"
-                );
-
-                var _Object$setPrototypeOf = __webpack_require__(
-                    /*! ../core-js/object/set-prototype-of */ "../node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js"
-                );
-
-                function _getPrototypeOf(o) {
-                    module.exports = _getPrototypeOf = _Object$setPrototypeOf
-                        ? _Object$getPrototypeOf
-                        : function _getPrototypeOf(o) {
-                              return o.__proto__ || _Object$getPrototypeOf(o);
-                          };
-                    return _getPrototypeOf(o);
-                }
-
-                module.exports = _getPrototypeOf;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/inherits.js":
-            /*!******************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/inherits.js ***!
-  \******************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _Object$create = __webpack_require__(
-                    /*! ../core-js/object/create */ "../node_modules/@babel/runtime-corejs2/core-js/object/create.js"
-                );
-
-                var setPrototypeOf = __webpack_require__(
-                    /*! ./setPrototypeOf */ "../node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js"
-                );
-
-                function _inherits(subClass, superClass) {
-                    if (
-                        typeof superClass !== "function" &&
-                        superClass !== null
-                    ) {
-                        throw new TypeError(
-                            "Super expression must either be null or a function"
-                        );
-                    }
-
-                    subClass.prototype = _Object$create(
-                        superClass && superClass.prototype,
-                        {
-                            constructor: {
-                                value: subClass,
-                                writable: true,
-                                configurable: true
-                            }
-                        }
-                    );
-                    if (superClass) setPrototypeOf(subClass, superClass);
-                }
-
-                module.exports = _inherits;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js":
-            /*!*******************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js ***!
-  \*******************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports) {
-                function _interopRequireDefault(obj) {
-                    return obj && obj.__esModule
-                        ? obj
-                        : {
-                              default: obj
-                          };
-                }
-
-                module.exports = _interopRequireDefault;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js":
-            /*!***********************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js ***!
-  \***********************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _typeof = __webpack_require__(
-                    /*! ../helpers/typeof */ "../node_modules/@babel/runtime-corejs2/helpers/typeof.js"
-                );
-
-                var assertThisInitialized = __webpack_require__(
-                    /*! ./assertThisInitialized */ "../node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js"
-                );
-
-                function _possibleConstructorReturn(self, call) {
-                    if (
-                        call &&
-                        (_typeof(call) === "object" ||
-                            typeof call === "function")
-                    ) {
-                        return call;
-                    }
-
-                    return assertThisInitialized(self);
-                }
-
-                module.exports = _possibleConstructorReturn;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js":
-            /*!************************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js ***!
-  \************************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _Object$setPrototypeOf = __webpack_require__(
-                    /*! ../core-js/object/set-prototype-of */ "../node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js"
-                );
-
-                function _setPrototypeOf(o, p) {
-                    module.exports = _setPrototypeOf =
-                        _Object$setPrototypeOf ||
-                        function _setPrototypeOf(o, p) {
-                            o.__proto__ = p;
-                            return o;
-                        };
-
-                    return _setPrototypeOf(o, p);
-                }
-
-                module.exports = _setPrototypeOf;
-
-                /***/
-            },
-
-        /***/ "../node_modules/@babel/runtime-corejs2/helpers/typeof.js":
-            /*!****************************************************************!*\
-  !*** ../node_modules/@babel/runtime-corejs2/helpers/typeof.js ***!
-  \****************************************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                var _Symbol$iterator = __webpack_require__(
-                    /*! ../core-js/symbol/iterator */ "../node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js"
-                );
-
-                var _Symbol = __webpack_require__(
-                    /*! ../core-js/symbol */ "../node_modules/@babel/runtime-corejs2/core-js/symbol.js"
-                );
-
-                function _typeof2(obj) {
-                    if (
-                        typeof _Symbol === "function" &&
-                        typeof _Symbol$iterator === "symbol"
-                    ) {
-                        _typeof2 = function _typeof2(obj) {
-                            return typeof obj;
-                        };
-                    } else {
-                        _typeof2 = function _typeof2(obj) {
-                            return obj &&
-                                typeof _Symbol === "function" &&
-                                obj.constructor === _Symbol &&
-                                obj !== _Symbol.prototype
-                                ? "symbol"
-                                : typeof obj;
-                        };
-                    }
-                    return _typeof2(obj);
-                }
-
-                function _typeof(obj) {
-                    if (
-                        typeof _Symbol === "function" &&
-                        _typeof2(_Symbol$iterator) === "symbol"
-                    ) {
-                        module.exports = _typeof = function _typeof(obj) {
-                            return _typeof2(obj);
-                        };
-                    } else {
-                        module.exports = _typeof = function _typeof(obj) {
-                            return obj &&
-                                typeof _Symbol === "function" &&
-                                obj.constructor === _Symbol &&
-                                obj !== _Symbol.prototype
-                                ? "symbol"
-                                : _typeof2(obj);
-                        };
-                    }
-
-                    return _typeof(obj);
-                }
-
-                module.exports = _typeof;
-
-                /***/
-            },
-
-        /***/ "../node_modules/string-hash/index.js":
-            /*!********************************************!*\
-  !*** ../node_modules/string-hash/index.js ***!
-  \********************************************/
-            /*! no static exports found */
-            /***/ function(module, exports, __webpack_require__) {
-                "use strict";
-
-                function hash(str) {
-                    var hash = 5381,
-                        i = str.length;
-
-                    while (i) {
-                        hash = (hash * 33) ^ str.charCodeAt(--i);
-                    }
-
-                    /* JavaScript does bitwise operations (like XOR, above) on 32-bit signed
-   * integers. Since we want the results to be always positive, convert the
-   * signed int to an unsigned by doing an unsigned bitshift. */
-                    return hash >>> 0;
-                }
-
-                module.exports = hash;
-
-                /***/
-            },
-
-        /***/ "./node_modules/next/dist/pages/_document.js":
-            /*!***************************************************!*\
-  !*** ./node_modules/next/dist/pages/_document.js ***!
-  \***************************************************/
+        /***/ "../../next.js/packages/next/dist/pages/_document.js":
+            /*!**********************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/dist/pages/_document.js ***!
+  \**********************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
 
                 var _interopRequireDefault = __webpack_require__(
-                    /*! @babel/runtime-corejs2/helpers/interopRequireDefault */ "../node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js"
+                    /*! @babel/runtime-corejs2/helpers/interopRequireDefault */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js"
                 );
 
                 var _stringify = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/core-js/json/stringify */ "../node_modules/@babel/runtime-corejs2/core-js/json/stringify.js"
+                        /*! @babel/runtime-corejs2/core-js/json/stringify */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/json/stringify.js"
                     )
                 );
 
                 var _assign = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/core-js/object/assign */ "../node_modules/@babel/runtime-corejs2/core-js/object/assign.js"
+                        /*! @babel/runtime-corejs2/core-js/object/assign */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/assign.js"
                     )
                 );
 
                 var _now = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/core-js/date/now */ "../node_modules/@babel/runtime-corejs2/core-js/date/now.js"
+                        /*! @babel/runtime-corejs2/core-js/date/now */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/date/now.js"
                     )
                 );
 
                 var _classCallCheck2 = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/helpers/classCallCheck */ "../node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js"
+                        /*! @babel/runtime-corejs2/helpers/classCallCheck */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js"
                     )
                 );
 
                 var _createClass2 = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/helpers/createClass */ "../node_modules/@babel/runtime-corejs2/helpers/createClass.js"
+                        /*! @babel/runtime-corejs2/helpers/createClass */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/createClass.js"
                     )
                 );
 
                 var _possibleConstructorReturn2 = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/helpers/possibleConstructorReturn */ "../node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js"
+                        /*! @babel/runtime-corejs2/helpers/possibleConstructorReturn */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js"
                     )
                 );
 
                 var _getPrototypeOf2 = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/helpers/getPrototypeOf */ "../node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js"
+                        /*! @babel/runtime-corejs2/helpers/getPrototypeOf */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js"
                     )
                 );
 
                 var _inherits2 = _interopRequireDefault(
                     __webpack_require__(
-                        /*! @babel/runtime-corejs2/helpers/inherits */ "../node_modules/@babel/runtime-corejs2/helpers/inherits.js"
+                        /*! @babel/runtime-corejs2/helpers/inherits */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/inherits.js"
                     )
                 );
 
@@ -651,25 +221,14 @@ module.exports = /******/ (function(modules) {
                 );
 
                 var htmlescape_1 = __webpack_require__(
-                    /*! ../server/htmlescape */ "./node_modules/next/dist/server/htmlescape.js"
+                    /*! ../server/htmlescape */ "../../next.js/packages/next/dist/server/htmlescape.js"
                 );
 
                 var server_1 = __importDefault(
                     __webpack_require__(
-                        /*! styled-jsx/server */ "./node_modules/styled-jsx/server.js"
+                        /*! styled-jsx/server */ "../../next.js/packages/next/node_modules/styled-jsx/server.js"
                     )
                 );
-
-                var Fragment =
-                    react_1.default.Fragment ||
-                    function Fragment(_ref) {
-                        var children = _ref.children;
-                        return react_1.default.createElement(
-                            "div",
-                            null,
-                            children
-                        );
-                    };
 
                 var Document =
                     /*#__PURE__*/
@@ -709,7 +268,11 @@ module.exports = /******/ (function(modules) {
                                     value: function render() {
                                         return react_1.default.createElement(
                                             "html",
-                                            null,
+                                            {
+                                                amp: this.props.amphtml
+                                                    ? ""
+                                                    : null
+                                            },
                                             react_1.default.createElement(
                                                 Head,
                                                 null
@@ -733,8 +296,8 @@ module.exports = /******/ (function(modules) {
                             [
                                 {
                                     key: "getInitialProps",
-                                    value: function getInitialProps(_ref2) {
-                                        var renderPage = _ref2.renderPage;
+                                    value: function getInitialProps(_ref) {
+                                        var renderPage = _ref.renderPage;
 
                                         var _renderPage = renderPage(),
                                             html = _renderPage.html,
@@ -910,18 +473,21 @@ module.exports = /******/ (function(modules) {
                                 value: function render() {
                                     var _this$context$_docume4 = this.context
                                             ._documentProps,
+                                        ampEnabled =
+                                            _this$context$_docume4.ampEnabled,
                                         head = _this$context$_docume4.head,
                                         styles = _this$context$_docume4.styles,
+                                        amphtml =
+                                            _this$context$_docume4.amphtml,
                                         assetPrefix =
                                             _this$context$_docume4.assetPrefix,
-                                        __NEXT_DATA__ =
-                                            _this$context$_docume4.__NEXT_DATA__;
+                                        __NEXT_DATA__2 =
+                                            _this$context$_docume4.__NEXT_DATA__2;
                                     var _devOnlyInvalidateCacheQueryString = this
                                         .context
                                         ._devOnlyInvalidateCacheQueryString;
-                                    var page = __NEXT_DATA__.page,
-                                        buildId = __NEXT_DATA__.buildId;
-                                    var pagePathname = getPagePathname(page);
+                                    var page = __NEXT_DATA__2.page,
+                                        buildId = __NEXT_DATA__2.buildId;
                                     var children = this.props.children; // show a warning if Head contains <title> (only in development)
 
                                     if (true) {
@@ -951,56 +517,164 @@ module.exports = /******/ (function(modules) {
                                         (0, _assign.default)({}, this.props),
                                         children,
                                         head,
-                                        page !== "/_error" &&
+                                        amphtml &&
                                             react_1.default.createElement(
-                                                "link",
-                                                {
-                                                    rel: "preload",
-                                                    href: ""
-                                                        .concat(
-                                                            assetPrefix,
-                                                            "/_next/static/"
-                                                        )
-                                                        .concat(
-                                                            buildId,
-                                                            "/pages"
-                                                        )
-                                                        .concat(pagePathname)
-                                                        .concat(
-                                                            _devOnlyInvalidateCacheQueryString
-                                                        ),
-                                                    as: "script",
-                                                    nonce: this.props.nonce,
-                                                    crossOrigin:
-                                                        this.props
-                                                            .crossOrigin ||
-                                                        undefined
-                                                }
-                                            ),
-                                        react_1.default.createElement("link", {
-                                            rel: "preload",
-                                            href: ""
-                                                .concat(
-                                                    assetPrefix,
-                                                    "/_next/static/"
-                                                )
-                                                .concat(
-                                                    buildId,
-                                                    "/pages/_app.js"
-                                                )
-                                                .concat(
-                                                    _devOnlyInvalidateCacheQueryString
+                                                react_1.default.Fragment,
+                                                null,
+                                                react_1.default.createElement(
+                                                    "meta",
+                                                    {
+                                                        name: "viewport",
+                                                        content:
+                                                            "width=device-width,minimum-scale=1,initial-scale=1"
+                                                    }
                                                 ),
-                                            as: "script",
-                                            nonce: this.props.nonce,
-                                            crossOrigin:
-                                                this.props.crossOrigin ||
-                                                undefined
-                                        }),
-                                        this.getPreloadDynamicChunks(),
-                                        this.getPreloadMainLinks(),
-                                        this.getCssLinks(),
-                                        styles || null
+                                                react_1.default.createElement(
+                                                    "link",
+                                                    {
+                                                        rel: "canonical",
+                                                        href: page
+                                                    }
+                                                ),
+                                                react_1.default.createElement(
+                                                    "link",
+                                                    {
+                                                        rel: "preload",
+                                                        as: "script",
+                                                        href:
+                                                            "https://cdn.ampproject.org/v0.js"
+                                                    }
+                                                ),
+                                                styles &&
+                                                    react_1.default.createElement(
+                                                        "style",
+                                                        {
+                                                            "amp-custom": "",
+                                                            dangerouslySetInnerHTML: {
+                                                                __html: styles
+                                                                    .map(
+                                                                        function(
+                                                                            style
+                                                                        ) {
+                                                                            return style
+                                                                                .props
+                                                                                .dangerouslySetInnerHTML
+                                                                                .__html;
+                                                                        }
+                                                                    )
+                                                                    .join("")
+                                                            }
+                                                        }
+                                                    ),
+                                                react_1.default.createElement(
+                                                    "style",
+                                                    {
+                                                        "amp-boilerplate": "",
+                                                        dangerouslySetInnerHTML: {
+                                                            __html:
+                                                                "body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}"
+                                                        }
+                                                    }
+                                                ),
+                                                react_1.default.createElement(
+                                                    "noscript",
+                                                    null,
+                                                    react_1.default.createElement(
+                                                        "style",
+                                                        {
+                                                            "amp-boilerplate":
+                                                                "",
+                                                            dangerouslySetInnerHTML: {
+                                                                __html:
+                                                                    "body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}"
+                                                            }
+                                                        }
+                                                    )
+                                                ),
+                                                react_1.default.createElement(
+                                                    "script",
+                                                    {
+                                                        async: true,
+                                                        src:
+                                                            "https://cdn.ampproject.org/v0.js"
+                                                    }
+                                                )
+                                            ),
+                                        !amphtml &&
+                                            react_1.default.createElement(
+                                                react_1.default.Fragment,
+                                                null,
+                                                ampEnabled &&
+                                                    react_1.default.createElement(
+                                                        "link",
+                                                        {
+                                                            rel: "amphtml",
+                                                            href: "".concat(
+                                                                page,
+                                                                "?amp=1"
+                                                            )
+                                                        }
+                                                    ),
+                                                page !== "/_error" &&
+                                                    react_1.default.createElement(
+                                                        "link",
+                                                        {
+                                                            rel: "preload",
+                                                            href: ""
+                                                                .concat(
+                                                                    assetPrefix,
+                                                                    "/_next/static/"
+                                                                )
+                                                                .concat(
+                                                                    buildId,
+                                                                    "/pages"
+                                                                )
+                                                                .concat(
+                                                                    getPagePathname(
+                                                                        page
+                                                                    )
+                                                                )
+                                                                .concat(
+                                                                    _devOnlyInvalidateCacheQueryString
+                                                                ),
+                                                            as: "script",
+                                                            nonce: this.props
+                                                                .nonce,
+                                                            crossOrigin:
+                                                                this.props
+                                                                    .crossOrigin ||
+                                                                undefined
+                                                        }
+                                                    ),
+                                                react_1.default.createElement(
+                                                    "link",
+                                                    {
+                                                        rel: "preload",
+                                                        href: ""
+                                                            .concat(
+                                                                assetPrefix,
+                                                                "/_next/static/"
+                                                            )
+                                                            .concat(
+                                                                buildId,
+                                                                "/pages/_app.js"
+                                                            )
+                                                            .concat(
+                                                                _devOnlyInvalidateCacheQueryString
+                                                            ),
+                                                        as: "script",
+                                                        nonce: this.props.nonce,
+                                                        crossOrigin:
+                                                            this.props
+                                                                .crossOrigin ||
+                                                            undefined
+                                                    }
+                                                ),
+                                                this.getPreloadDynamicChunks(),
+                                                this.getPreloadMainLinks(),
+                                                this.getCssLinks(),
+                                                styles || null
+                                            )
                                     );
                                 }
                             }
@@ -1043,7 +717,7 @@ module.exports = /******/ (function(modules) {
                                     return react_1.default.createElement(
                                         "div",
                                         {
-                                            id: "__next",
+                                            id: "__next2",
                                             dangerouslySetInnerHTML: {
                                                 __html: html
                                             }
@@ -1185,18 +859,22 @@ module.exports = /******/ (function(modules) {
                                                 _this$context$_docume7.staticMarkup,
                                             assetPrefix =
                                                 _this$context$_docume7.assetPrefix,
+                                            amphtml =
+                                                _this$context$_docume7.amphtml,
                                             devFiles =
                                                 _this$context$_docume7.devFiles,
-                                            __NEXT_DATA__ =
-                                                _this$context$_docume7.__NEXT_DATA__;
+                                            __NEXT_DATA__2 =
+                                                _this$context$_docume7.__NEXT_DATA__2;
                                         var _devOnlyInvalidateCacheQueryString = this
                                             .context
                                             ._devOnlyInvalidateCacheQueryString;
-                                        var page = __NEXT_DATA__.page,
-                                            buildId = __NEXT_DATA__.buildId;
-                                        var pagePathname = getPagePathname(
-                                            page
-                                        );
+
+                                        if (amphtml) {
+                                            return null;
+                                        }
+
+                                        var page = __NEXT_DATA__2.page,
+                                            buildId = __NEXT_DATA__2.buildId;
 
                                         if (true) {
                                             if (this.props.crossOrigin)
@@ -1206,7 +884,7 @@ module.exports = /******/ (function(modules) {
                                         }
 
                                         return react_1.default.createElement(
-                                            Fragment,
+                                            react_1.default.Fragment,
                                             null,
                                             devFiles
                                                 ? devFiles.map(function(file) {
@@ -1239,7 +917,7 @@ module.exports = /******/ (function(modules) {
                                                 : react_1.default.createElement(
                                                       "script",
                                                       {
-                                                          id: "__NEXT_DATA__",
+                                                          id: "__NEXT_DATA__2",
                                                           type:
                                                               "application/json",
                                                           nonce: this.props
@@ -1261,7 +939,7 @@ module.exports = /******/ (function(modules) {
                                                     "script",
                                                     {
                                                         async: true,
-                                                        id: "__NEXT_PAGE__".concat(
+                                                        id: "__NEXT_P2AGE__".concat(
                                                             page
                                                         ),
                                                         src: ""
@@ -1274,7 +952,9 @@ module.exports = /******/ (function(modules) {
                                                                 "/pages"
                                                             )
                                                             .concat(
-                                                                pagePathname
+                                                                getPagePathname(
+                                                                    page
+                                                                )
                                                             )
                                                             .concat(
                                                                 _devOnlyInvalidateCacheQueryString
@@ -1290,7 +970,7 @@ module.exports = /******/ (function(modules) {
                                                 "script",
                                                 {
                                                     async: true,
-                                                    id: "__NEXT_PAGE__/_app",
+                                                    id: "__NEXT_P2AGE__/_app",
                                                     src: ""
                                                         .concat(
                                                             assetPrefix,
@@ -1326,12 +1006,12 @@ module.exports = /******/ (function(modules) {
                                     value: function getInlineScriptSource(
                                         documentProps
                                     ) {
-                                        var __NEXT_DATA__ =
-                                            documentProps.__NEXT_DATA__;
+                                        var __NEXT_DATA__2 =
+                                            documentProps.__NEXT_DATA__2;
 
                                         try {
                                             var data = (0, _stringify.default)(
-                                                __NEXT_DATA__
+                                                __NEXT_DATA__2
                                             );
                                             return htmlescape_1.htmlEscapeJsonString(
                                                 data
@@ -1344,7 +1024,7 @@ module.exports = /******/ (function(modules) {
                                             ) {
                                                 throw new Error(
                                                     'Circular structure in "getInitialProps" result of page "'.concat(
-                                                        __NEXT_DATA__.page,
+                                                        __NEXT_DATA__2.page,
                                                         '". https://err.sh/zeit/next.js/circular-structure'
                                                     )
                                                 );
@@ -1381,10 +1061,10 @@ module.exports = /******/ (function(modules) {
                 /***/
             },
 
-        /***/ "./node_modules/next/dist/server/htmlescape.js":
-            /*!*****************************************************!*\
-  !*** ./node_modules/next/dist/server/htmlescape.js ***!
-  \*****************************************************/
+        /***/ "../../next.js/packages/next/dist/server/htmlescape.js":
+            /*!************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/dist/server/htmlescape.js ***!
+  \************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
@@ -1411,10 +1091,440 @@ module.exports = /******/ (function(modules) {
                 /***/
             },
 
-        /***/ "./node_modules/styled-jsx/dist/lib/stylesheet.js":
-            /*!********************************************************!*\
-  !*** ./node_modules/styled-jsx/dist/lib/stylesheet.js ***!
-  \********************************************************/
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/date/now.js":
+            /*!******************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/date/now.js ***!
+  \******************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/date/now */ "core-js/library/fn/date/now"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/json/stringify.js":
+            /*!************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/json/stringify.js ***!
+  \************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/json/stringify */ "core-js/library/fn/json/stringify"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/assign.js":
+            /*!***********************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/assign.js ***!
+  \***********************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/object/assign */ "core-js/library/fn/object/assign"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/create.js":
+            /*!***********************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/create.js ***!
+  \***********************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/object/create */ "core-js/library/fn/object/create"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/define-property.js":
+            /*!********************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/define-property.js ***!
+  \********************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/object/define-property */ "core-js/library/fn/object/define-property"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js":
+            /*!*********************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js ***!
+  \*********************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/object/get-prototype-of */ "core-js/library/fn/object/get-prototype-of"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js":
+            /*!*********************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js ***!
+  \*********************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/object/set-prototype-of */ "core-js/library/fn/object/set-prototype-of"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol.js":
+            /*!****************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol.js ***!
+  \****************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/symbol */ "core-js/library/fn/symbol"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js":
+            /*!*************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js ***!
+  \*************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                module.exports = __webpack_require__(
+                    /*! core-js/library/fn/symbol/iterator */ "core-js/library/fn/symbol/iterator"
+                );
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js":
+            /*!*******************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js ***!
+  \*******************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports) {
+                function _assertThisInitialized(self) {
+                    if (self === void 0) {
+                        throw new ReferenceError(
+                            "this hasn't been initialised - super() hasn't been called"
+                        );
+                    }
+
+                    return self;
+                }
+
+                module.exports = _assertThisInitialized;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js":
+            /*!************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/classCallCheck.js ***!
+  \************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports) {
+                function _classCallCheck(instance, Constructor) {
+                    if (!(instance instanceof Constructor)) {
+                        throw new TypeError(
+                            "Cannot call a class as a function"
+                        );
+                    }
+                }
+
+                module.exports = _classCallCheck;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/createClass.js":
+            /*!*********************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/createClass.js ***!
+  \*********************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _Object$defineProperty = __webpack_require__(
+                    /*! ../core-js/object/define-property */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/define-property.js"
+                );
+
+                function _defineProperties(target, props) {
+                    for (var i = 0; i < props.length; i++) {
+                        var descriptor = props[i];
+                        descriptor.enumerable = descriptor.enumerable || false;
+                        descriptor.configurable = true;
+                        if ("value" in descriptor) descriptor.writable = true;
+
+                        _Object$defineProperty(
+                            target,
+                            descriptor.key,
+                            descriptor
+                        );
+                    }
+                }
+
+                function _createClass(Constructor, protoProps, staticProps) {
+                    if (protoProps)
+                        _defineProperties(Constructor.prototype, protoProps);
+                    if (staticProps)
+                        _defineProperties(Constructor, staticProps);
+                    return Constructor;
+                }
+
+                module.exports = _createClass;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js":
+            /*!************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/getPrototypeOf.js ***!
+  \************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _Object$getPrototypeOf = __webpack_require__(
+                    /*! ../core-js/object/get-prototype-of */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/get-prototype-of.js"
+                );
+
+                var _Object$setPrototypeOf = __webpack_require__(
+                    /*! ../core-js/object/set-prototype-of */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js"
+                );
+
+                function _getPrototypeOf(o) {
+                    module.exports = _getPrototypeOf = _Object$setPrototypeOf
+                        ? _Object$getPrototypeOf
+                        : function _getPrototypeOf(o) {
+                              return o.__proto__ || _Object$getPrototypeOf(o);
+                          };
+                    return _getPrototypeOf(o);
+                }
+
+                module.exports = _getPrototypeOf;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/inherits.js":
+            /*!******************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/inherits.js ***!
+  \******************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _Object$create = __webpack_require__(
+                    /*! ../core-js/object/create */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/create.js"
+                );
+
+                var setPrototypeOf = __webpack_require__(
+                    /*! ./setPrototypeOf */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js"
+                );
+
+                function _inherits(subClass, superClass) {
+                    if (
+                        typeof superClass !== "function" &&
+                        superClass !== null
+                    ) {
+                        throw new TypeError(
+                            "Super expression must either be null or a function"
+                        );
+                    }
+
+                    subClass.prototype = _Object$create(
+                        superClass && superClass.prototype,
+                        {
+                            constructor: {
+                                value: subClass,
+                                writable: true,
+                                configurable: true
+                            }
+                        }
+                    );
+                    if (superClass) setPrototypeOf(subClass, superClass);
+                }
+
+                module.exports = _inherits;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js":
+            /*!*******************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/interopRequireDefault.js ***!
+  \*******************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports) {
+                function _interopRequireDefault(obj) {
+                    return obj && obj.__esModule
+                        ? obj
+                        : {
+                              default: obj
+                          };
+                }
+
+                module.exports = _interopRequireDefault;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js":
+            /*!***********************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/possibleConstructorReturn.js ***!
+  \***********************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _typeof = __webpack_require__(
+                    /*! ../helpers/typeof */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/typeof.js"
+                );
+
+                var assertThisInitialized = __webpack_require__(
+                    /*! ./assertThisInitialized */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/assertThisInitialized.js"
+                );
+
+                function _possibleConstructorReturn(self, call) {
+                    if (
+                        call &&
+                        (_typeof(call) === "object" ||
+                            typeof call === "function")
+                    ) {
+                        return call;
+                    }
+
+                    return assertThisInitialized(self);
+                }
+
+                module.exports = _possibleConstructorReturn;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js":
+            /*!************************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/setPrototypeOf.js ***!
+  \************************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _Object$setPrototypeOf = __webpack_require__(
+                    /*! ../core-js/object/set-prototype-of */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/object/set-prototype-of.js"
+                );
+
+                function _setPrototypeOf(o, p) {
+                    module.exports = _setPrototypeOf =
+                        _Object$setPrototypeOf ||
+                        function _setPrototypeOf(o, p) {
+                            o.__proto__ = p;
+                            return o;
+                        };
+
+                    return _setPrototypeOf(o, p);
+                }
+
+                module.exports = _setPrototypeOf;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/typeof.js":
+            /*!****************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/@babel/runtime-corejs2/helpers/typeof.js ***!
+  \****************************************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                var _Symbol$iterator = __webpack_require__(
+                    /*! ../core-js/symbol/iterator */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js"
+                );
+
+                var _Symbol = __webpack_require__(
+                    /*! ../core-js/symbol */ "../../next.js/packages/next/node_modules/@babel/runtime-corejs2/core-js/symbol.js"
+                );
+
+                function _typeof2(obj) {
+                    if (
+                        typeof _Symbol === "function" &&
+                        typeof _Symbol$iterator === "symbol"
+                    ) {
+                        _typeof2 = function _typeof2(obj) {
+                            return typeof obj;
+                        };
+                    } else {
+                        _typeof2 = function _typeof2(obj) {
+                            return obj &&
+                                typeof _Symbol === "function" &&
+                                obj.constructor === _Symbol &&
+                                obj !== _Symbol.prototype
+                                ? "symbol"
+                                : typeof obj;
+                        };
+                    }
+                    return _typeof2(obj);
+                }
+
+                function _typeof(obj) {
+                    if (
+                        typeof _Symbol === "function" &&
+                        _typeof2(_Symbol$iterator) === "symbol"
+                    ) {
+                        module.exports = _typeof = function _typeof(obj) {
+                            return _typeof2(obj);
+                        };
+                    } else {
+                        module.exports = _typeof = function _typeof(obj) {
+                            return obj &&
+                                typeof _Symbol === "function" &&
+                                obj.constructor === _Symbol &&
+                                obj !== _Symbol.prototype
+                                ? "symbol"
+                                : _typeof2(obj);
+                        };
+                    }
+
+                    return _typeof(obj);
+                }
+
+                module.exports = _typeof;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/string-hash/index.js":
+            /*!********************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/string-hash/index.js ***!
+  \********************************************************************************************/
+            /*! no static exports found */
+            /***/ function(module, exports, __webpack_require__) {
+                "use strict";
+
+                function hash(str) {
+                    var hash = 5381,
+                        i = str.length;
+
+                    while (i) {
+                        hash = (hash * 33) ^ str.charCodeAt(--i);
+                    }
+
+                    /* JavaScript does bitwise operations (like XOR, above) on 32-bit signed
+   * integers. Since we want the results to be always positive, convert the
+   * signed int to an unsigned by doing an unsigned bitshift. */
+                    return hash >>> 0;
+                }
+
+                module.exports = hash;
+
+                /***/
+            },
+
+        /***/ "../../next.js/packages/next/node_modules/styled-jsx/dist/lib/stylesheet.js":
+            /*!*********************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/styled-jsx/dist/lib/stylesheet.js ***!
+  \*********************************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
@@ -1896,10 +2006,10 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
                 /***/
             },
 
-        /***/ "./node_modules/styled-jsx/dist/server.js":
-            /*!************************************************!*\
-  !*** ./node_modules/styled-jsx/dist/server.js ***!
-  \************************************************/
+        /***/ "../../next.js/packages/next/node_modules/styled-jsx/dist/server.js":
+            /*!*************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/styled-jsx/dist/server.js ***!
+  \*************************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
@@ -1915,7 +2025,7 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
                 );
 
                 var _style = __webpack_require__(
-                    /*! ./style */ "./node_modules/styled-jsx/dist/style.js"
+                    /*! ./style */ "../../next.js/packages/next/node_modules/styled-jsx/dist/style.js"
                 );
 
                 function _interopRequireDefault(obj) {
@@ -1966,10 +2076,10 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
                 /***/
             },
 
-        /***/ "./node_modules/styled-jsx/dist/style.js":
-            /*!***********************************************!*\
-  !*** ./node_modules/styled-jsx/dist/style.js ***!
-  \***********************************************/
+        /***/ "../../next.js/packages/next/node_modules/styled-jsx/dist/style.js":
+            /*!************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/styled-jsx/dist/style.js ***!
+  \************************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
@@ -1984,7 +2094,7 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
 
                 var _stylesheetRegistry = _interopRequireDefault(
                     __webpack_require__(
-                        /*! ./stylesheet-registry */ "./node_modules/styled-jsx/dist/stylesheet-registry.js"
+                        /*! ./stylesheet-registry */ "../../next.js/packages/next/node_modules/styled-jsx/dist/stylesheet-registry.js"
                     )
                 );
 
@@ -2205,10 +2315,10 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
                 /***/
             },
 
-        /***/ "./node_modules/styled-jsx/dist/stylesheet-registry.js":
-            /*!*************************************************************!*\
-  !*** ./node_modules/styled-jsx/dist/stylesheet-registry.js ***!
-  \*************************************************************/
+        /***/ "../../next.js/packages/next/node_modules/styled-jsx/dist/stylesheet-registry.js":
+            /*!**************************************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/styled-jsx/dist/stylesheet-registry.js ***!
+  \**************************************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 "use strict";
@@ -2220,13 +2330,13 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
 
                 var _stringHash = _interopRequireDefault(
                     __webpack_require__(
-                        /*! string-hash */ "../node_modules/string-hash/index.js"
+                        /*! string-hash */ "../../next.js/packages/next/node_modules/string-hash/index.js"
                     )
                 );
 
                 var _stylesheet = _interopRequireDefault(
                     __webpack_require__(
-                        /*! ./lib/stylesheet */ "./node_modules/styled-jsx/dist/lib/stylesheet.js"
+                        /*! ./lib/stylesheet */ "../../next.js/packages/next/node_modules/styled-jsx/dist/lib/stylesheet.js"
                     )
                 );
 
@@ -2631,14 +2741,14 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
                 /***/
             },
 
-        /***/ "./node_modules/styled-jsx/server.js":
-            /*!*******************************************!*\
-  !*** ./node_modules/styled-jsx/server.js ***!
-  \*******************************************/
+        /***/ "../../next.js/packages/next/node_modules/styled-jsx/server.js":
+            /*!********************************************************************************************!*\
+  !*** /Users/gil308/projects/magda/next.js/packages/next/node_modules/styled-jsx/server.js ***!
+  \********************************************************************************************/
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 module.exports = __webpack_require__(
-                    /*! ./dist/server */ "./node_modules/styled-jsx/dist/server.js"
+                    /*! ./dist/server */ "../../next.js/packages/next/node_modules/styled-jsx/dist/server.js"
                 );
 
                 /***/
@@ -2651,7 +2761,7 @@ https://github.com/threepointone/glamor/blob/667b480d31b3721a905021b26e1290ce92c
             /*! no static exports found */
             /***/ function(module, exports, __webpack_require__) {
                 module.exports = __webpack_require__(
-                    /*! next/dist/pages/_document */ "./node_modules/next/dist/pages/_document.js"
+                    /*! next/dist/pages/_document */ "../../next.js/packages/next/dist/pages/_document.js"
                 );
 
                 /***/

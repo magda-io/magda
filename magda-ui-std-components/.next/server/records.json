@@ -1,0 +1,29 @@
+{
+    "modules": {
+        "byIdentifier": {
+            "multi private-next-pages/index.tsx": 0,
+            "multi next/dist/pages/_app": 1,
+            "multi next/dist/pages/_error": 2,
+            "multi next/dist/pages/_document": 3
+        },
+        "usedIds": {
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3
+        }
+    },
+    "chunks": {
+        "byName": {
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/_app.js": 2,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/_document.js": 3,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/_error.js": 4,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/index.js": 5
+        },
+        "bySource": {
+            "0 ../../next.js/packages/next/dist/build/webpack/loaders/next-babel-loader.js??ref--5!pages/index.tsx ../src/footer": 0,
+            "0 ../../next.js/packages/next/dist/build/webpack/loaders/next-babel-loader.js??ref--5!pages/index.tsx ../src/header": 1
+        },
+        "usedIds": [0, 1, 2, 3, 4, 5]
+    }
+}

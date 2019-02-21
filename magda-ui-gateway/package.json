@@ -6,9 +6,11 @@
     "@zeit/next-typescript": "^1.1.1",
     "isomorphic-fetch": "^2.2.1",
     "jsdom": "^13.2.0",
+    "micro-proxy": "^1.1.0",
     "next": "^8.0.1",
     "react": "^16.8.2",
-    "react-dom": "^16.8.2"
+    "react-dom": "^16.8.2",
+    "react-shadow": "^16.3.2"
   },
   "scripts": {
     "dev": "next",

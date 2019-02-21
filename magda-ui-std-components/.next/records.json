@@ -1,0 +1,25 @@
+{
+    "modules": {
+        "byIdentifier": {
+            "multi ../../next.js/packages/next/dist/client/next": 0
+        },
+        "usedIds": {
+            "0": 0
+        }
+    },
+    "chunks": {
+        "byName": {
+            "commons": 0,
+            "static/runtime/webpack.js": 1,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/_app.js": 4,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/_error.js": 5,
+            "static/Dsvzygx6dkN6ziYzv3lr5/pages/index.js": 6,
+            "static/runtime/main.js": 7
+        },
+        "bySource": {
+            "0 ../../next.js/packages/next/dist/build/webpack/loaders/next-babel-loader.js??ref--5!pages/index.tsx ../src/footer": 2,
+            "0 ../../next.js/packages/next/dist/build/webpack/loaders/next-babel-loader.js??ref--5!pages/index.tsx ../src/header": 3
+        },
+        "usedIds": [0, 1, 2, 3, 4, 5, 6, 7]
+    }
+}
