@@ -15,6 +15,7 @@ Others:
 -   Upgraded dependencies with snyk.io vulnerabilities.
 -   Allowed Favicon to be configurable through API & Admin UI
 -   Added `magda.reservedFor=statefulsets:NoSchedule` toleration to statefulsets.
+-   Improvement indexer scala test cases for Travis
 -   Made feature images easier to configure
 
 ## 0.0.52
