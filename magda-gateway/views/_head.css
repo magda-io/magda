@@ -71,3 +71,7 @@ button + button::before {
 pre {
     white-space: pre-wrap;
 }
+
+#header {
+    padding: 0.5em;
+}
