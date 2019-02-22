@@ -46,6 +46,7 @@ export default function createBaseProxy(): httpProxy {
     });
 
     proxy.on("proxyReq", function(proxyReq, req, res) {
+        // TODO: Make getting domain name more robust.
         const domainName = req.headers.host.replace(":6100", "");
         let tenantId = tenantsMap.get(domainName);
         if (tenantId == undefined) {

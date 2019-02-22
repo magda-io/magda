@@ -229,8 +229,6 @@ const authenticator = new Authenticator({
     dbHost: argv.dbHost,
     dbPort: argv.dbPort
 });
-export let tenantsMap = new Map<String, BigInt>();
-loadTenantsTable(tenantsMap);
 
 // Create a new Express application.
 var app = express();
@@ -330,6 +328,13 @@ if (argv.enableCkanRedirection) {
         );
     }
 }
+
+/**
+ * Use this map to look up tenant ID by domain name.
+ * TODO: Make the URL configurable.
+ */
+export let tenantsMap = new Map<String, BigInt>();
+loadTenantsTable(tenantsMap, "http://localhost:6101/v0");
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
