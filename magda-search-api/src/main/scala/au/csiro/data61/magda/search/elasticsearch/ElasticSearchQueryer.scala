@@ -495,7 +495,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .field("distributions.title")
           .field("distributions.description")
           .field("distributions.format.keyword_lowercase")
-          .defaultOperator("or"))
+          .defaultOperator("and"))
       .scoreMode(ScoreMode.Max)
 
     val queries =
