@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import spray.json._
 import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.model.Registry.{ RegistryProtocols => CommonRegistryProtocols, Record, RecordSummary, RecordType }
+import au.csiro.data61.magda.model.Registry.{ RegistryProtocols => CommonRegistryProtocols, Record, RecordSummary, RecordType}
 
 
 final case class ReadyStatus(ready: Boolean = false)

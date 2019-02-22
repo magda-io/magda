@@ -4,7 +4,9 @@ import {
     Record,
     RecordsApi,
     RecordAspectsApi,
-    WebHooksApi
+    WebHooksApi,
+    TenantsApi,
+    Tenant
 } from "../generated/registry/api";
 import * as URI from "urijs";
 import retry from "../retry";
@@ -37,6 +39,7 @@ export default class RegistryClient {
     protected recordAspectsApi: RecordAspectsApi;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
+    protected tenantsApi: TenantsApi;
 
     constructor({
         baseUrl,
@@ -53,6 +56,7 @@ export default class RegistryClient {
         this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
+        this.tenantsApi = new TenantsApi(registryApiUrl);
     }
 
     getRecordUrl(id: string): string {
@@ -153,5 +157,15 @@ export default class RegistryClient {
         )
             .then(result => result.body)
             .catch(createServiceError);
+    }
+
+    getTenants(): Promise<Array<Tenant> | Error> {
+        return this.tenantsApi.getAll().then(result => result.body);
+    }
+
+    getTenant(domainName: string): Promise<Tenant | Error> {
+        return this.tenantsApi
+            .getByDomainName(domainName)
+            .then(result => result.body);
     }
 }

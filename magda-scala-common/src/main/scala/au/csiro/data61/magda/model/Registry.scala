@@ -51,6 +51,11 @@ object Registry {
     val name: String
   }
 
+  sealed trait TenantType {
+    val domainName: String
+    val id: BigInt
+  }
+
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
   case class Record(
     @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
@@ -61,6 +66,14 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
       "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+
+
+  @ApiModel(description = "A tenant in the registry.")
+  case class Tenant(
+    @(ApiModelProperty @field)(value = "The unique domain name of the tenant", required = true) domainName: String,
+
+    @(ApiModelProperty @field)(value = "The unique ID of the tenant", required = true) id: BigInt) extends TenantType
+
 
   @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
   case class RecordSummary(
@@ -161,6 +174,7 @@ object Registry {
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
     implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
     implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
+    implicit val tenantFormat = jsonFormat2(Tenant.apply)
 
     implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
       def write(obj: RecordType) = obj match {

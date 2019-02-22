@@ -26,7 +26,8 @@ class SwaggerDocService(address: String, port: Int, val registryApiBaseUrl: Stri
     ru.typeOf[RecordsService],
     ru.typeOf[RecordAspectsService],
     ru.typeOf[RecordHistoryService],
-    ru.typeOf[HooksService])
+    ru.typeOf[HooksService],
+    ru.typeOf[TenantsService])
   override val host = ""
   override val info = Info(version = "0.1")
   override val basePath = Uri(registryApiBaseUrl).path.toString()

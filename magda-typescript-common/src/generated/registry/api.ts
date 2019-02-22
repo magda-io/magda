@@ -43,6 +43,18 @@ export class BadRequest {
     "message": string;
 }
 
+export class BigInt {
+    "bigInteger": number;
+    "validByte": boolean;
+    "validChar": boolean;
+    "validInt": boolean;
+    "validShort": boolean;
+    "validLong": boolean;
+    "validDouble": boolean;
+    "validFloat": boolean;
+    "whole": boolean;
+}
+
 export class CountResponse {
     "count": number;
 }
@@ -141,6 +153,20 @@ export class RegistryEvent {
     "eventType": EventType;
     "userId": number;
     "data": JsObject;
+}
+
+/**
+ * A tenant in the registry.
+ */
+export class Tenant {
+    /**
+     * The unique domain name of the tenant
+     */
+    "domainName": string;
+    /**
+     * The unique ID of the tenant
+     */
+    "id": BigInt;
 }
 
 export class WebHook {
@@ -2055,6 +2081,159 @@ export class RecordsApi {
                 }
             });
         });
+    }
+}
+export enum TenantsApiApiKeys {}
+
+export class TenantsApi {
+    protected basePath = defaultBasePath;
+    protected defaultHeaders: any = {};
+    protected _useQuerystring: boolean = false;
+
+    protected authentications: any = {
+        default: <Authentication>new VoidAuth()
+    };
+
+    constructor(basePath?: string);
+    constructor(
+        basePathOrUsername: string,
+        password?: string,
+        basePath?: string
+    ) {
+        if (password) {
+            if (basePath) {
+                this.basePath = basePath;
+            }
+        } else {
+            if (basePathOrUsername) {
+                this.basePath = basePathOrUsername;
+            }
+        }
+    }
+
+    set useQuerystring(value: boolean) {
+        this._useQuerystring = value;
+    }
+
+    public setApiKey(key: TenantsApiApiKeys, value: string) {
+        this.authentications[TenantsApiApiKeys[key]].apiKey = value;
+    }
+    /**
+     * Get all tenants
+     *
+     */
+    public getAll(): Promise<{
+        response: http.IncomingMessage;
+        body: Array<Tenant>;
+    }> {
+        const localVarPath = this.basePath + "/tenants";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<Tenant>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get a tenant by its domain name
+     * Get all info about the tenant.
+     * @param domainName Domain name of the tenant to be fetched.
+     */
+    public getByDomainName(
+        domainName: string
+    ): Promise<{ response: http.IncomingMessage; body: Tenant }> {
+        const localVarPath =
+            this.basePath +
+            "/tenants/{domainName}".replace(
+                "{" + "domainName" + "}",
+                String(domainName)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'domainName' is not null or undefined
+        if (domainName === null || domainName === undefined) {
+            throw new Error(
+                "Required parameter domainName was null or undefined when calling getByDomainName."
+            );
+        }
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Tenant }>(
+            (resolve, reject) => {
+                request(requestOptions, (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (
+                            response.statusCode >= 200 &&
+                            response.statusCode <= 299
+                        ) {
+                            resolve({ response: response, body: body });
+                        } else {
+                            reject({ response: response, body: body });
+                        }
+                    }
+                });
+            }
+        );
     }
 }
 export enum WebHooksApiApiKeys {}

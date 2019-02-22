@@ -21,6 +21,8 @@ import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
+import loadTenantsTable from "./loadTenantsTable";
+import { BigInt } from "../../magda-typescript-common/src/generated/registry/api";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -227,6 +229,8 @@ const authenticator = new Authenticator({
     dbHost: argv.dbHost,
     dbPort: argv.dbPort
 });
+export let tenantsMap = new Map<String, BigInt>();
+loadTenantsTable(tenantsMap);
 
 // Create a new Express application.
 var app = express();
