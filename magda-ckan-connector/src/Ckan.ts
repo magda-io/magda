@@ -47,7 +47,8 @@ export interface CkanOptions {
     maxRetries?: number;
     secondsBetweenRetries?: number;
     ignoreHarvestSources?: string[];
-    allowedOrganisationName?: string;
+    allowedOrganisationNames?: string[];
+    ignoreOrganisationNames?: string[];
 }
 
 export default class Ckan implements ConnectorSource {
@@ -58,7 +59,8 @@ export default class Ckan implements ConnectorSource {
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: CkanUrlBuilder;
     private ignoreHarvestSources: string[];
-    private allowedOrganisationName: string;
+    private allowedOrganisationNames: string[];
+    private ignoreOrganisationNames: string[];
 
     constructor({
         baseUrl,
@@ -69,7 +71,8 @@ export default class Ckan implements ConnectorSource {
         maxRetries = 10,
         secondsBetweenRetries = 10,
         ignoreHarvestSources = [],
-        allowedOrganisationName = null
+        allowedOrganisationNames = [],
+        ignoreOrganisationNames = []
     }: CkanOptions) {
         this.id = id;
         this.name = name;
@@ -77,7 +80,8 @@ export default class Ckan implements ConnectorSource {
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.ignoreHarvestSources = ignoreHarvestSources;
-        this.allowedOrganisationName = allowedOrganisationName;
+        this.allowedOrganisationNames = allowedOrganisationNames;
+        this.ignoreOrganisationNames = ignoreOrganisationNames;
         this.urlBuilder = new CkanUrlBuilder({
             id: id,
             name: name,
@@ -87,7 +91,8 @@ export default class Ckan implements ConnectorSource {
     }
 
     public packageSearch(options?: {
-        allowedOrganisationName?: string;
+        allowedOrganisationNames?: string[];
+        ignoreOrganisationNames?: string[];
         ignoreHarvestSources?: string[];
         title?: string;
         sort?: string;
@@ -100,13 +105,33 @@ export default class Ckan implements ConnectorSource {
 
         if (
             options &&
-            options.allowedOrganisationName &&
-            typeof options.allowedOrganisationName === "string"
+            options.allowedOrganisationNames &&
+            options.allowedOrganisationNames.length > 0
         ) {
             solrQueries.push(
-                `organization:${encodeURIComponent(
-                    `"${options.allowedOrganisationName}"`
-                )}`
+                ...options.allowedOrganisationNames.map(title => {
+                    const encoded =
+                        title === "*"
+                            ? title
+                            : encodeURIComponent('"' + title + '"');
+                    return `organization:${encoded}`;
+                })
+            );
+        }
+
+        if (
+            options &&
+            options.ignoreOrganisationNames &&
+            options.ignoreOrganisationNames.length > 0
+        ) {
+            solrQueries.push(
+                ...options.ignoreOrganisationNames.map(title => {
+                    const encoded =
+                        title === "*"
+                            ? title
+                            : encodeURIComponent('"' + title + '"');
+                    return `-organization:${encoded}`;
+                })
             );
         }
 
@@ -192,7 +217,8 @@ export default class Ckan implements ConnectorSource {
     public getJsonDatasets(): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
-            allowedOrganisationName: this.allowedOrganisationName,
+            allowedOrganisationNames: this.allowedOrganisationNames,
+            ignoreOrganisationNames: this.ignoreOrganisationNames,
             sort: "metadata_created asc"
         });
         return packagePages.map(packagePage => packagePage.result.results);
@@ -218,7 +244,8 @@ export default class Ckan implements ConnectorSource {
     ): AsyncPage<any[]> {
         const packagePages = this.packageSearch({
             ignoreHarvestSources: this.ignoreHarvestSources,
-            allowedOrganisationName: this.allowedOrganisationName,
+            allowedOrganisationNames: this.allowedOrganisationNames,
+            ignoreOrganisationNames: this.ignoreOrganisationNames,
             title: title,
             maxResults: maxResults
         });
@@ -233,16 +260,16 @@ export default class Ckan implements ConnectorSource {
 
     public getJsonFirstClassOrganizations(): AsyncPage<object[]> {
         if (
-            this.allowedOrganisationName &&
-            typeof this.allowedOrganisationName === "string"
+            this.allowedOrganisationNames &&
+            this.allowedOrganisationNames.length > 0
         ) {
             return new AsyncPage(undefined, false, async () => {
                 return new AsyncPage(
-                    [
-                        await this.getJsonFirstClassOrganization(
-                            this.allowedOrganisationName
-                        )
-                    ],
+                    await Promise.all(
+                        this.allowedOrganisationNames.map(name => {
+                            return this.getJsonFirstClassOrganization(name);
+                        })
+                    ),
                     true,
                     undefined
                 );
