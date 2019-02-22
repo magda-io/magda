@@ -520,11 +520,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val textQuery = createInputTextQuery(text)
         if(query.boostRegions.isEmpty) Some(textQuery)
         else {
-          val altText = query.boostRegions.foldLeft(text)((str, region) => str.replace(region.regionName.get, ""))
-          boolQuery().should(textQuery).should(boolQuery().must(createInputTextQuery(altText)))
+          // --- make sure replace the longer region name string first to avoid missing anyone
+          val regionNames = query.boostRegions.flatMap(_.regionName.map(_.toLowerCase)).toList.sortWith(_.length > _.length)
+          val altText = regionNames.foldLeft(text.toLowerCase)((str, regionName) => str.replace(regionName, "")).trim
+          val inputTextQuery = if (altText.length == 0) createInputTextQuery("*") else createInputTextQuery(altText)
+          val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
+          val queryDef = boolQuery().should(textQuery :: boolQuery().must(inputTextQuery :: geomScorerQuery.toList) :: Nil).minimumShouldMatch(1)
+          Some(queryDef)
         }
-
-        Some(textQuery)
       },
       setToOption(query.publishers)(seq =>
         should(seq.map(publisherQuery(strategy))).boost(2)),
