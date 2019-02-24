@@ -94,7 +94,8 @@ export const content: { [s: string]: ContentItem } = {
     "config/searchResultsPerPage": makeJsonItem(
         {},
         { schema: schemas.configSearchResultsPerPage }
-    )
+    ),
+    "favicon.ico": makeIconItem()
 };
 
 function makeImageItem(extra: any = {}) {
@@ -108,6 +109,20 @@ function makeImageItem(extra: any = {}) {
                     "image/webp",
                     "image/svg+xml"
                 ],
+                inflate: true,
+                limit: "10mb"
+            }),
+            encode: ContentEncoding.base64
+        },
+        extra
+    );
+}
+
+function makeIconItem(extra: any = {}) {
+    return Object.assign(
+        {
+            body: bodyParser.raw({
+                type: "image/x-icon",
                 inflate: true,
                 limit: "10mb"
             }),

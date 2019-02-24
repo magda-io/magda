@@ -1,3 +1,23 @@
+## 0.0.53
+
+Connectors:
+
+-   Allowed Ckan connector to pull datasets belongs to a specified organisation
+-   Added `presetRecordAspects` & `extra` parameters supports to all connectors
+-   Improvements on CSW connector license info retrieve
+
+Dataset Page:
+
+-   When `dcat-dataset-strings.creation.isOpenData` is set, show `Public / Private` label accordingly
+
+Others:
+
+-   Upgraded dependencies with snyk.io vulnerabilities.
+-   Allowed Favicon to be configurable through API & Admin UI
+-   Added `magda.reservedFor=statefulsets:NoSchedule` toleration to statefulsets.
+-   Improvement indexer scala test cases for Travis
+-   Made feature images easier to configure
+
 ## 0.0.52
 
 Authentication:
@@ -28,6 +48,7 @@ Connectors:
 
 -   Made the CSV connector put the description column in the distribution description, not just the dataset one
 -   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
+-   Fixed: CSW connector does not capture persistent URL or licences for some sources (eg. geoscience australia)
 
 Interoperability:
 

@@ -9,7 +9,6 @@ export default function fakeArgv(options: {
 }): MinionArguments {
     return {
         ...options,
-        $0: "",
-        _: []
+        retries: 0
     };
 }

@@ -41,13 +41,13 @@ const clientRoot = path.resolve(
     ".."
 );
 
+let scssVars: object;
 // --- parse argv.scssVars
 try {
     if (argv.scssVars) {
-        const scssVars = JSON.parse(argv.scssVars);
-        argv.scssVars = scssVars;
+        scssVars = JSON.parse(argv.scssVars);
     } else {
-        argv.scssVars = {};
+        scssVars = {};
     }
 } catch (e) {
     console.error("Failed to parse `argv.scssVars`. ", e);
@@ -63,7 +63,7 @@ async function run() {
         clientRoot + "/src/index.scss",
         clientRoot + "/src/_variables.scss",
         files,
-        argv.scssVars
+        scssVars
     );
     console.log("Saving result to Content API...");
     await saveToContentApi(

@@ -12,7 +12,7 @@
     "url": "http://github.com/TerriaJS/TerriaMap"
   },
   "dependencies": {
-    "terriajs-server": "^2.7.4"
+    "terriajs-server": "^2.9.1"
   },
   "config": {
     "awsProfile": "terria",
@@ -69,7 +69,7 @@
     "url-loader": "^0.5.7",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.2",
-    "yargs": "^11.0.0"
+    "yargs": "^12.0.5"
   },
   "scripts": {
     "start": "bash ../node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",

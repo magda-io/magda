@@ -191,7 +191,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         success: CheckResult;
                     }) => {
                         const scope = nock(url, {
-                            reqheaders: { "User-Agent": /@magda.*/ }
+                            reqheaders: { "User-Agent": /magda.*/ }
                         });
 
                         const scopeHead = scope.head(

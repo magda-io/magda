@@ -41,6 +41,11 @@ spec:
                   values:
                   - data
               topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "magda.reservedFor"
+        operator: "Equal"
+        value: "statefulsets"
+        effect: "NoSchedule"
       containers:
       - name: es-data
         securityContext:

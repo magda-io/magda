@@ -64,6 +64,21 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
+        .option("saveXMLFolder", {
+            describe:
+                "Save XML files that are downloaded to a folder for further analysis and testing",
+            type: "string"
+        })
+        .option("outputSchema", {
+            describe:
+                "Desired output schema to be requested from CSW service as URI",
+            type: "string"
+        })
+        .option("typeNames", {
+            describe:
+                "Record type expected to be returned from CSW service as XML tag name",
+            type: "string"
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",
@@ -78,7 +93,10 @@ const csw = new Csw({
     id: argv.id,
     baseUrl: argv.sourceUrl,
     name: argv.name,
-    pageSize: argv.pageSize
+    pageSize: argv.pageSize,
+    saveXMLFolder: argv.saveXMLFolder,
+    outputSchema: argv.outputSchema,
+    typeNames: argv.typeNames
 });
 
 const registry = new Registry({

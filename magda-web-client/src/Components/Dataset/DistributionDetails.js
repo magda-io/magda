@@ -106,7 +106,7 @@ class DistributionDetails extends Component {
                         {sourceText.length > 0 && (
                             <div>
                                 {" "}
-                                <h3>Source</h3>
+                                <h3 className="section-heading">Source</h3>
                                 {sourceText}
                             </div>
                         )}

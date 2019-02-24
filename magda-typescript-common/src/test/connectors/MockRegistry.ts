@@ -1,5 +1,5 @@
 import { MockExpressServer } from "./MockExpressServer";
-
+import { merge } from "lodash";
 const body = require("body-parser");
 const djv = require("djv");
 
@@ -23,7 +23,10 @@ export class MockRegistry extends MockExpressServer {
         });
 
         registry.put("/records/:id", (req: any, res: any) => {
-            this.records[req.params.id] = req.body;
+            this.records[req.params.id] = merge(
+                this.records[req.params.id] || {},
+                req.body
+            );
             // validate aspects
             if (req.body.aspects) {
                 for (const [aspect, aspectBody] of Object.entries(
@@ -65,11 +68,13 @@ export class MockRegistry extends MockExpressServer {
 
         registry.delete("/records", (req: any, res: any) => {
             let count = 0;
-            for (const [recordId, record] of Object.entries(this.records)) {
+            for (const entry of Object.entries(this.records)) {
+                const [recordId, record]: [string, any] = entry;
+
                 if (record.sourceTag === req.query.sourceTagToPreserve) {
                     continue;
                 }
-                if (record.aspects.source.id === req.query.sourceId) {
+                if ((record as any).aspects.source.id === req.query.sourceId) {
                     delete this.records[recordId];
                     count++;
                 }

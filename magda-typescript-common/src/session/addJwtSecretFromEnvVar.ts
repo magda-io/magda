@@ -8,17 +8,16 @@ import { Arguments } from "yargs";
  * If it can't find one and required is true (or unprovided), this will
  * throw an Error.
  */
-export default function addJwtSecretFromEnvVar(
-    argv: Arguments,
+export default function addJwtSecretFromEnvVar<T>(
+    argv: { [key in keyof Arguments<T>]: Arguments<T>[key] },
     required = true
-): Arguments {
-    const newArgv = {
-        ...argv,
+): { [key in keyof Arguments<T>]: Arguments<T>[key] } {
+    const newArgv = Object.assign({}, argv, {
         jwtSecret:
             argv.jwtSecret ||
             process.env.JWT_SECRET ||
             process.env.npm_package_config_jwtSecret
-    };
+    });
 
     if (required && !newArgv.jwtSecret) {
         throw new Error(

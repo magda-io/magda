@@ -13,12 +13,16 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{Assertion, AsyncFlatSpec, Matchers}
+import org.scalatest.{Assertion, AsyncFlatSpec, FlatSpec, Matchers}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
-class StreamControllerTest extends AsyncFlatSpec with Matchers {
+import org.scalatest.concurrent.ScalaFutures._
+import scala.concurrent.duration._
+
+
+class StreamControllerTest extends FlatSpec with Matchers {
 
   implicit val system: ActorSystem = ActorSystem("StreamControllerTest")
   implicit val ec: ExecutionContextExecutor = system.dispatcher
@@ -28,12 +32,17 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
   private var sc: StreamController = None.orNull
   private var dataSets: Seq[DataSet] = Seq()
 
+  def between(start:Int, end:Int) = {
+    val r = new scala.util.Random
+    start + r.nextInt(( end- start) + 1)
+  }
+
   class MockRegistryInterface extends RegistryInterface {
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 
     override def getDataSetsReturnToken(start: Long, size: Int)
-    : Future[(Option[String], List[DataSet])] = {
+    : Future[(Option[String], List[DataSet])] = Future {
       assert (start == 0)
       nextIndex.set(size)
       val batch = dataSets.slice(start.toInt, size).toList
@@ -42,12 +51,13 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
       val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
+      Thread.sleep(1000)
 
-      Future.successful(tokenOption, batch)
+      (tokenOption, batch)
     }
 
     override def getDataSetsToken(token: String, size: Int)
-    : Future[(Option[String], List[DataSet])] = {
+    : Future[(Option[String], List[DataSet])] = Future {
       assert (token.nonEmpty)
 
       val startIndex = nextIndex.get()
@@ -70,8 +80,8 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
 
 //      println(s"** start: $startIndex, end: $endIndex, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
-
-      Future.successful(tokenOption, batch)
+      Thread.sleep(1000)
+      (tokenOption, batch)
     }
   }
 
@@ -148,6 +158,7 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
     }
   }
 
+  implicit val patienceConfig = PatienceConfig(120.second)
   private val bufferSize = 8
   private def run(dataSetNum: Int): Future[Assertion] = {
     dataSets = createDataSets(dataSetNum)
@@ -165,56 +176,56 @@ class StreamControllerTest extends AsyncFlatSpec with Matchers {
 
   "The stream controller" should "support the indexer stream when the dataset number is 1"  in {
     val numOfDataSets = 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is 0"  in {
     val numOfDataSets = 0
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is 10 * bufferSize - 1" in {
     val numOfDataSets = 10 * bufferSize - 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is 10 * bufferSize"  in {
     val numOfDataSets = 10 * bufferSize
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is 10 * bufferSize + 1" in {
     val numOfDataSets = 10 * bufferSize + 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize - 1" in {
     val numOfDataSets = bufferSize - 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize"  in {
     val numOfDataSets = bufferSize
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize + 1"  in {
     val numOfDataSets = bufferSize + 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize / 2 - 1"  in {
     val numOfDataSets = bufferSize / 2 - 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize / 2"  in {
     val numOfDataSets = bufferSize / 2
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 
   it should "support the indexer stream when the dataset number is bufferSize / 2 + 1"  in {
     val numOfDataSets = bufferSize / 2 + 1
-    run(numOfDataSets)
+    whenReady(run(numOfDataSets))(identity)
   }
 }
