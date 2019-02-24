@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import uniq from "lodash.uniq";
-import reduce from "lodash.reduce";
+import uniq from "lodash/uniq";
+import reduce from "lodash/reduce";
 import AUtags from "../pancake/react/tags";
 import "./TagsBox.css";
 

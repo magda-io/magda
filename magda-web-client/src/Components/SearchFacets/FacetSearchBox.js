@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import debounce from "lodash.debounce";
+import debounce from "lodash/debounce";
 
 import "./FacetSearchBox.css";
 import search from "../../assets/search-dark.svg";

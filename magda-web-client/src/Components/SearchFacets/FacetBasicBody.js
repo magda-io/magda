@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import find from "lodash.find";
-import maxBy from "lodash.maxby";
+import find from "lodash/find";
+import maxBy from "lodash/maxBy";
 import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
 import "./FacetBasicBody.css";

@@ -1,6 +1,6 @@
 import MagdaDocumentTitle from "./Components/i18n/MagdaDocumentTitle";
 import React from "react";
-import { config } from "./config.js";
+import { config } from "./config";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
