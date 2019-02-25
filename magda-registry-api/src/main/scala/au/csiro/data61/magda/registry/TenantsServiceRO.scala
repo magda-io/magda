@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
 
 @Path("/tenants")
 @io.swagger.annotations.Api(value = "tenants", produces = "application/json")
-class TenantsService(config: Config, system: ActorSystem, materializer: Materializer, tenantPersistence: TenantPersistence = DefaultTenantPersistence)
+class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materializer, tenantPersistence: TenantPersistence = DefaultTenantPersistence)
   extends Protocols with SprayJsonSupport {
 
   private val logger = Logging(system, getClass)

@@ -160,12 +160,34 @@ export default class RegistryClient {
     }
 
     getTenants(): Promise<Array<Tenant> | Error> {
-        return this.tenantsApi.getAll().then(result => result.body);
+        // return this.tenantsApi.getAll().then(result => result.body);
+        const operation = () => this.tenantsApi.getAll();
+        return <any>retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError("Failed to GET tenants.", e, retriesLeft)
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
     }
 
     getTenant(domainName: string): Promise<Tenant | Error> {
-        return this.tenantsApi
-            .getByDomainName(domainName)
-            .then(result => result.body);
+        // return this.tenantsApi.getByDomainName(domainName).then(result => result.body);
+        const operation = () => this.tenantsApi.getByDomainName(domainName);
+        return <any>retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError("Failed to GET tenants.", e, retriesLeft)
+                )
+        )
+            .then(result => result.body)
+            .catch(createServiceError);
     }
 }

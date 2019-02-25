@@ -72,7 +72,7 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
   val routes = handleExceptions(myExceptionHandler) {
       pathPrefix("v0") {
         path("ping") { complete("OK") } ~
-          pathPrefix("tenants") { new TenantsService(config, system, materializer).route } ~
+          pathPrefix("tenants") { new TenantsServiceRO(config, system, materializer).route } ~
         pathPrefix("status") {
           path("live") { complete("OK") } ~
           path("ready") { complete(ReadyStatus(true)) }

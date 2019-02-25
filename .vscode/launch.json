@@ -230,6 +230,50 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Launch Gateway for Terria",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
+            "windows": {
+                "runtimeExecutable":
+                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+            },
+            "args": [
+                "-r",
+                "${workspaceRoot}/node_modules/tsconfig-paths/register",
+                "src/index.ts",
+                "--jwtSecret",
+                "squirrel",
+                "--sessionSecret",
+                "keyboard cat",
+                "--ckanUrl",
+                "https://data.gov.au",
+                "--googleClientId",
+                "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
+                "--googleClientSecret",
+                "secret",
+                "--facebookClientId",
+                "1906944756293015",
+                "--facebookClientSecret",
+                "secret",
+                "--userId",
+                "00000000-0000-4000-8000-000000000000",
+                "--enableAuthEndpoint",
+                "true",
+                "--web",
+                "http://localhost:3001",
+                "--proxyRoutesJson",
+                "terria-map-proxy-routes.json",
+                "--cspJson",
+                "terria-map-csp.json"
+            ],
+            "env": {
+                "PGUSER": "client"
+            },
+            "cwd": "${workspaceRoot}/magda-gateway"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Web Server",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
