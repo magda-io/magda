@@ -1,10 +1,15 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:6.5.4
 
-ADD component/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
+RUN yum -y install sudo
+
+# Delete all x-pack modules
+RUN find modules -type d -name "x-pack-*" -exec rm -r {} +
+
+COPY --chown=elasticsearch:elasticsearch component/elasticsearch.yml /usr/share/elasticsearch/config/
 ADD component/setup.sh /setup.sh
-COPY component/wn_s.pl /elasticsearch/config/analysis/wn_s.pl
-COPY component/regionSynonyms.txt /elasticsearch/config/analysis/regionSynonyms.txt
-RUN apk add --no-cache --update curl procps
+COPY --chown=elasticsearch:elasticsearch component/wn_s.pl /usr/share/elasticsearch/config/analysis/
+COPY --chown=elasticsearch:elasticsearch component/regionSynonyms.txt /usr/share/elasticsearch/config/analysis/
+#RUN apk add --no-cache --update curl procps
 ENV REPO /snapshots
 
 CMD ["/setup.sh"]
