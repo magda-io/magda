@@ -61,6 +61,7 @@
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.14",
     "email-validator": "^2.0.3",
+    "eslint": "^5.14.1",
     "expect": "^22.4.0",
     "fast-xml-parser": "^2.6.0",
     "fetch-mock": "^5.8.1",

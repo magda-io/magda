@@ -12,7 +12,6 @@ import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import { config } from "../config";
 import chrono from "chrono-node";
-import { ParsedDistribution } from "./record";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;

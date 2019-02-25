@@ -1,3 +1,9 @@
+## 0.0.54
+
+Others:
+
+-   Upgraded the ui to create-react-app 2
+
 ## 0.0.53
 
 Connectors:
