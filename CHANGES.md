@@ -63,6 +63,7 @@ Others:
 -   Changed terminology for data rating to `Linked Data Rating`
 -   Fixed: Empty source link shows as a working link on dataset page
 -   Removed hard-coded URL for CKAN authentication, made it configurable.
+-   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
 
 ## 0.0.51
 
