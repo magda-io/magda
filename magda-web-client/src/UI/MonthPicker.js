@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import debounce from "lodash/debounce";
-import "./MonthPicker.css";
+import "./MonthPicker.scss";
 import helpIcon from "../assets/help.svg";
 import defined from "../helpers/defined";
 import Tooltip from "./Tooltip";

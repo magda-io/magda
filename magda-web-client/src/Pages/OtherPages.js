@@ -16,7 +16,7 @@ import SuggestDataset from "../Components/RequestDataset/SuggestDataset";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
 
-import "./OtherPages.css";
+import "./OtherPages.scss";
 
 const renderBody = (loading, pages) => {
     return (

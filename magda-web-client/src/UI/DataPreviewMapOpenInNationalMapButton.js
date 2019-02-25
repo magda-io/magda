@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import browser from "browser-detect";
 import { config } from "../config";
-import "./DataPreviewMapOpenInNationalMapButton.css";
+import "./DataPreviewMapOpenInNationalMapButton.scss";
 
 class DataPreviewMapOpenInNationalMapButton extends Component {
     constructor(props) {

@@ -1,7 +1,9 @@
 import React from "react";
-import "./MatchingStatus.css";
 import { Link } from "react-router-dom";
-import AUpageAlert from "../../pancake/react/page-alerts";
+const AUpageAlert = require("../../pancake/react/page-alerts").default;
+
+import "./MatchingStatus.scss";
+
 export default function MatchingStatus(props: {
     datasets: Array<any>;
     strategy: string;
@@ -21,7 +23,19 @@ export default function MatchingStatus(props: {
         return (
             <div>
                 <div className="no-matching">
-                    <AUpageAlert as="error">blah</AUpageAlert>
+                    <AUpageAlert>
+                        <p>
+                            <strong>
+                                Sorry, we couldn't find any datasets that match
+                                your search
+                            </strong>
+                        </p>
+                        <p>
+                            Please try a different search term, check your
+                            spelling or{" "}
+                            <Link to="suggest">suggest a dataset</Link>.
+                        </p>
+                    </AUpageAlert>
                 </div>
             </div>
         );

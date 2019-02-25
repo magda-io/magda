@@ -19,7 +19,7 @@ import { Route, Switch } from "react-router-dom";
 import { Medium } from "./UI/Responsive";
 import AUskipLink from "./pancake/react/skip-link";
 
-import "./AppContainer.css";
+import "./AppContainer.scss";
 
 class AppContainer extends React.Component {
     componentDidMount() {

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./RegionSearchBox.css";
+import "./RegionSearchBox.scss";
 import debounce from "lodash/debounce";
 import search from "../../assets/search-dark.svg";
 import { NoResultsLabel } from "./NoResultsLabel";

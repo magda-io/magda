@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
-import "./DistributionRow.css";
+import "./DistributionRow.scss";
 import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";

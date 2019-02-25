@@ -1,4 +1,4 @@
-import "./SearchBox.css";
+import "./SearchBox.scss";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import propTypes from "prop-types";

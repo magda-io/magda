@@ -1,4 +1,4 @@
-import "./DataQualityTooltip.css";
+import "./DataQualityTooltip.scss";
 
 import React from "react";
 import { Link } from "react-router-dom";

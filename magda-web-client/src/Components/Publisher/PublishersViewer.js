@@ -11,7 +11,7 @@ import queryString from "query-string";
 import PropTypes from "prop-types";
 import debounce from "lodash/debounce";
 import Pagination from "../../UI/Pagination";
-import "./PublishersViewer.css";
+import "./PublishersViewer.scss";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";

@@ -6,7 +6,7 @@ import { showFeedbackForm } from "../../../actions/feedbackActions";
 
 import feedback from "../../../assets/feedback.svg";
 
-import "./FeedbackButton.css";
+import "./FeedbackButton.scss";
 
 function RawFeedbackButton(props) {
     return (
@@ -15,7 +15,8 @@ function RawFeedbackButton(props) {
                 className="feedback-button au-btn"
                 onClick={props.showFeedbackForm}
             >
-                <img alt="feedback" src={feedback} />Give feedback
+                <img alt="feedback" src={feedback} />
+                Give feedback
             </button>
         </div>
     );

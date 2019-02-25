@@ -1,6 +1,6 @@
 import React from "react";
 // import CrappyChat from "../../Components/CrappyChat/CrappyChat";
-import "./RecordDetails.css";
+import "./RecordDetails.scss";
 
 export default function DatasetDiscussion(props) {
     return (

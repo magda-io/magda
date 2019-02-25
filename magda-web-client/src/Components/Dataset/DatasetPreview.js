@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import DataPreviewVis from "../../UI/DataPreviewVis";
 import DataPreviewMap from "../../UI/DataPreviewMap";
 import PropTypes from "prop-types";
-import "./DatasetPreview.css";
+import "./DatasetPreview.scss";
 
 export default class DatasetPreview extends Component {
     getDistributionForVis(distributions) {

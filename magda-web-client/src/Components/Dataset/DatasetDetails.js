@@ -6,8 +6,8 @@ import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
 import defined from "../../helpers/defined";
-import "./RecordDetails.css";
-import "./DatasetDetails.css";
+import "./RecordDetails.scss";
+import "./DatasetDetails.scss";
 
 class DatasetDetails extends Component {
     state = {

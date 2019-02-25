@@ -3,7 +3,7 @@ import find from "lodash/find";
 import maxBy from "lodash/maxBy";
 import defined from "../../helpers/defined";
 import FacetSearchBox from "./FacetSearchBox";
-import "./FacetBasicBody.css";
+import "./FacetBasicBody.scss";
 import { NoResultsLabel } from "./NoResultsLabel";
 
 class FacetBasicBody extends Component {

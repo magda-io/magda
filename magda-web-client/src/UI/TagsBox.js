@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import uniq from "lodash/uniq";
 import reduce from "lodash/reduce";
 import AUtags from "../pancake/react/tags";
-import "./TagsBox.css";
+import "./TagsBox.scss";
 
 const tagSeperatorRegex = /[,|;|/||]/g;
 

@@ -3,7 +3,7 @@ import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import Spinner from "../Components/Spinner";
 import { ParsedDistribution } from "../helpers/record";
-import "./DataPreviewTextBox.css";
+import "./DataPreviewTextBox.scss";
 
 class DataPreviewTextBox extends Component<
     {

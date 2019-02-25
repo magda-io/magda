@@ -10,7 +10,7 @@ import {
     prependToLocalStorageArray,
     deleteFromLocalStorageArray
 } from "../../storage/localStorage";
-import "./SearchSuggestionBox.css";
+import "./SearchSuggestionBox.scss";
 import recentSearchIcon from "../../assets/updated.svg";
 import closeIcon from "../../assets/mobile-menu-close.svg";
 import isEqual from "lodash/isEqual";

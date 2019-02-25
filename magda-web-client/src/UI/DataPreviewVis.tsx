@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
 import { ParsedDistribution } from "../helpers/record";
-import "./DataPreviewVis.css";
+import "./DataPreviewVis.scss";
 
 class DataPreviewVis extends Component<
     {

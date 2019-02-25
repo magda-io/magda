@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./PublisherBox.css";
+import "./PublisherBox.scss";
 
 export default function PublisherBox(props) {
     const publisher = props.publisher;

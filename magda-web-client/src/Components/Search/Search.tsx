@@ -1,4 +1,4 @@
-import "./Search.css";
+import "./Search.scss";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import defined from "../../helpers/defined";

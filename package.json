@@ -82,5 +82,8 @@
     "react": {
       "location": "pancake/react/"
     }
+  },
+  "dependencies": {
+    "@gov.au/pancake-sass": "^2.1.4"
   }
 }

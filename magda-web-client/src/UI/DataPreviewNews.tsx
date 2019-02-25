@@ -7,7 +7,7 @@ import Spinner from "../Components/Spinner";
 
 import { ParsedDistribution } from "../helpers/record";
 
-import "./DataPreviewNews.css";
+import "./DataPreviewNews.scss";
 
 function loadRssParser() {
     return import(/* webpackChunkName: "rssParser" */ "rss-parser")

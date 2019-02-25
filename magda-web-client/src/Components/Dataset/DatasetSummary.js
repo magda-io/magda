@@ -3,7 +3,7 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
 import { parseDataset } from "../../helpers/record";
 import QualityIndicator from "../../UI/QualityIndicator";
-import "./DatasetSummary.css";
+import "./DatasetSummary.scss";
 import { Link } from "react-router-dom";
 import uniq from "lodash/uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";

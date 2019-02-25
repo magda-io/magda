@@ -22,7 +22,7 @@ import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 import { Small, Medium } from "../UI/Responsive";
 import DescriptionBox from "../UI/DescriptionBox";
 import DistributionIcon from "../assets/distribution_icon.svg";
-import "./RecordHandler.css";
+import "./RecordHandler.scss";
 import TagsBox from "../UI/TagsBox";
 import ContactPoint from "../UI/ContactPoint";
 import QualityIndicator from "../UI/QualityIndicator";

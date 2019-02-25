@@ -3,7 +3,6 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "dist",
-        "baseUrl": ".",
         "target": "es2015",
         "allowJs": true,
         "skipLibCheck": false,

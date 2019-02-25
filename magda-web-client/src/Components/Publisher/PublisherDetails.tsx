@@ -14,12 +14,12 @@ import OverviewBox from "../../UI/OverviewBox";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import { Medium } from "../../UI/Responsive";
-const AUpageAlert = require("../../pancake/react/page-alerts");
+const AUpageAlert = require("../../pancake/react/page-alerts").default;
 import {
     fetchSearchResultsIfNeeded,
     resetDatasetSearch
 } from "../../actions/datasetSearchActions";
-import "./PublisherDetails.css";
+import "./PublisherDetails.scss";
 
 class PublisherDetails extends Component<any> {
     componentDidMount() {
