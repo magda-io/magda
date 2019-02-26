@@ -13,7 +13,8 @@
     "start": "react-scripts start",
     "build": "pancake && react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "analyze": "source-map-explorer build/static/js/main.*"
   },
   "dependencies": {
     "@gov.au/accordion": "^3.0.5",
@@ -44,6 +45,7 @@
     "leaflet": "^0.7.7",
     "react-app-polyfill": "^0.2.1",
     "react-i18next": "^8.1.0",
+    "source-map-explorer": "^1.7.0",
     "urijs": "^1.19.1"
   },
   "devDependencies": {
@@ -83,8 +85,6 @@
     "query-string": "^4.3.4",
     "raf": "^3.4.0",
     "react": "^16.3.2",
-    "react-app-rewire-eslint": "^0.2.3",
-    "react-app-rewired": "^1.1.4",
     "react-autosuggest": "^9.3.2",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.3.2",
