@@ -1,6 +1,6 @@
 ## 0.0.54
 
-
+-   Change content api delete response status code from to 204 to 200 so its content can be read.
 
 ## 0.0.53
 
