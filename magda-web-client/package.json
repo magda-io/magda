@@ -11,7 +11,7 @@
     "compile": "yarn run build-css && react-app-rewired build",
     "prepare": "pancake",
     "start": "react-scripts start",
-    "build": "pancake && react-scripts build",
+    "build": "CI=false && pancake && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer build/static/js/main.*"
