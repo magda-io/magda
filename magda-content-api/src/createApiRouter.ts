@@ -326,7 +326,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *
          * @apiParam {string} contentId id of content item
          *
-         * @apiSuccessExample {any} 204
+         * @apiSuccessExample {any} 200
          *    {
          *         "result": "SUCCESS"
          *    }
@@ -338,7 +338,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             await database.deleteContentById(finalContentId);
 
-            res.status(204).json({
+            res.status(200).json({
                 result: "SUCCESS"
             });
         });
