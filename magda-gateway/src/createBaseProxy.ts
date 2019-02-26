@@ -1,5 +1,5 @@
 import * as httpProxy from "http-proxy";
-import { tenantsMap } from "./index";
+import { tenantsTable, gatewayHostName } from "./index";
 
 export default function createBaseProxy(): httpProxy {
     const proxy = httpProxy.createProxyServer({
@@ -46,16 +46,28 @@ export default function createBaseProxy(): httpProxy {
     });
 
     proxy.on("proxyReq", function(proxyReq, req, res) {
-        // TODO: Make getting domain name more robust.
-        const domainName = req.headers.host.replace(":6100", "");
-        const tenantId = tenantsMap.get(domainName);
-        if (tenantId == undefined) {
-            res.writeHead(500, { "Content-Type": "text/plain" });
-            res.end(
-                `Something went wrong when processing the tenant with the domain name of ${domainName}.`
-            );
+        proxyReq.setHeader("TenantId", "undefined");
+        const host = req.headers.host;
+        let endIndex = host.lastIndexOf(":");
+        if (endIndex < 0) endIndex = host.length;
+
+        const domainName = host.substring(0, endIndex);
+
+        if (domainName != "localhost" && domainName != gatewayHostName) {
+            const tenantId = tenantsTable.get(domainName);
+            if (tenantId == undefined) {
+                res.writeHead(500, { "Content-Type": "text/plain" });
+                res.end(
+                    `Something went wrong when processing the tenant with the domain name of ${domainName}.`
+                );
+            } else {
+                proxyReq.setHeader("TenantId", String(tenantId));
+            }
         } else {
-            proxyReq.setHeader("TenantId", String(tenantId));
+            // TODO: Investigate how to perform access control here.
+            // The value -1 indicates that the request is from gateway host itself.
+            // The direct gateway access must be restrictive to magda admin only.
+            proxyReq.setHeader("TenantId", String(-1));
         }
     });
 

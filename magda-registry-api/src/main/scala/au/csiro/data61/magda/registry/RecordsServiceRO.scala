@@ -73,15 +73,18 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getAll = get {
     pathEnd {
-      parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long]?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
-        (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
-          val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = BigInt(tenantIdString.get)
+        parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long] ?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+          (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
+            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-          complete {
-            DB readOnly { session =>
-              recordPersistence.getAllWithAspects(session, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+            complete {
+              DB readOnly { session =>
+                recordPersistence.getAllWithAspects(session, tenantId, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+              }
             }
-          }
+        }
       }
     }
   }
@@ -231,11 +234,14 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
   def getById = get {
     path(Segment) { id =>
-      parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
-        DB readOnly { session =>
-          recordPersistence.getByIdWithAspects(session, id, aspects, optionalAspects, dereference) match {
-            case Some(record) => complete(record)
-            case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = BigInt(tenantIdString.get)
+        parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
+          DB readOnly { session =>
+            recordPersistence.getByIdWithAspects(session, id, tenantId, aspects, optionalAspects, dereference) match {
+              case Some(record) => complete(record)
+              case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+            }
           }
         }
       }

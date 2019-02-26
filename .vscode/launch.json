@@ -263,7 +263,9 @@
                 "--proxyRoutesJson",
                 "terria-map-proxy-routes.json",
                 "--cspJson",
-                "terria-map-csp.json"
+                "terria-map-csp.json",
+                "--externalUrl",
+                "http://admin.terria.magda:6100"
             ],
             "env": {
                 "PGUSER": "client"

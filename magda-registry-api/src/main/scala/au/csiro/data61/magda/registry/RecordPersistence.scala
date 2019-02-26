@@ -19,6 +19,7 @@ trait RecordPersistence {
   def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
 
   def getAllWithAspects(implicit session: DBSession,
+                        tenantId: BigInt,
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
                         pageToken: Option[Long] = None,
@@ -35,6 +36,7 @@ trait RecordPersistence {
 
   def getByIdWithAspects(implicit session: DBSession,
                          id: String,
+                         tenantId: BigInt,
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record]
@@ -89,6 +91,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   def getAllWithAspects(implicit session: DBSession,
+                        tenantId: BigInt,
                         aspectIds: Iterable[String],
                         optionalAspectIds: Iterable[String],
                         pageToken: Option[Long] = None,
@@ -96,7 +99,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
+    val tenantSelector = if (tenantId < 0) List(None) else List(Some(sqls"tenantId=$tenantId"))
+    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply) ++ tenantSelector
 
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
@@ -115,10 +119,13 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   def getByIdWithAspects(implicit session: DBSession,
                          id: String,
+                         tenantId: BigInt,
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
-    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=${id}"))).records.headOption
+
+    val selector = if (tenantId < 0) List(Some(sqls"recordId=$id")) else List(Some(sqls"recordId=$id and tenantId=$tenantId"))
+    this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selector).records.headOption
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
@@ -196,7 +203,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
     for {
       _ <- if (id == newRecord.id) Success(newRecord) else Failure(new RuntimeException("The provided ID does not match the record's ID."))
-      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
+      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id, 0) match {
         case Some(record) => Success(record)
         // Possibility of a race condition here. The record doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
@@ -204,7 +211,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         // we don't end up with an extraneous record creation event in the database.
         case None => DB.localTx { nested => createRecord(nested, newRecord, tenantId).map(_.copy(aspects = Map())) } match {
           case Success(record) => Success(record)
-          case Failure(e) => this.getByIdWithAspects(session, id) match {
+          case Failure(e) => this.getByIdWithAspects(session, id, 0) match {
             case Some(record) => Success(record)
             case None         => Failure(e)
           }
@@ -236,7 +243,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   def patchRecordById(implicit session: DBSession, id: String, tenantId: BigInt, recordPatch: JsonPatch): Try[Record] = {
     for {
-      record <- this.getByIdWithAspects(session, id) match {
+      record <- this.getByIdWithAspects(session, id, tenantId) match {
         case Some(record) => Success(record)
         case None         => Failure(new RuntimeException("No record exists with that ID."))
       }

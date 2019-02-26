@@ -230,6 +230,15 @@ const authenticator = new Authenticator({
     dbPort: argv.dbPort
 });
 
+const startIndex = argv.externalUrl.indexOf("//");
+let endIndex = argv.externalUrl.lastIndexOf(":");
+if (endIndex < 0) endIndex = argv.externalUrl.length;
+
+export const gatewayHostName = argv.externalUrl.substring(
+    startIndex + 2,
+    endIndex
+);
+
 // Create a new Express application.
 var app = express();
 
@@ -310,9 +319,10 @@ app.use(
     createApiRouter({
         authenticator: authenticator,
         jwtSecret: argv.jwtSecret,
-        routes
+        routes: routes
     })
 );
+
 app.use("/preview-map", createGenericProxy(argv.previewMap));
 
 if (argv.enableCkanRedirection) {
@@ -329,18 +339,14 @@ if (argv.enableCkanRedirection) {
     }
 }
 
-/**
- * Use this map to look up tenant ID by domain name.
- * TODO: Make the URL configurable.
- */
-export let tenantsMap = new Map<String, BigInt>();
-loadTenantsTable(tenantsMap, "http://localhost:6101/v0");
-
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
+
+export let tenantsTable = new Map<String, BigInt>();
+loadTenantsTable(tenantsTable, `${argv.externalUrl}/api/v0/registry`);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error("Unhandled rejection");
