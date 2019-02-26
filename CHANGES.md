@@ -4,6 +4,7 @@ Others:
 
 -   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
 
+
 ## 0.0.53
 
 Connectors:
