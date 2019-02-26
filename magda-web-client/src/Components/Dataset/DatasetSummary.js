@@ -103,7 +103,8 @@ export default class DatasetSummary extends Component {
                                 gapi.event({
                                     category: "Search and Result Clicked",
                                     action: this.props.searchText,
-                                    label: (searchResultNumber + 1).toString()
+                                    label: (searchResultNumber + 1).toString(),
+                                    value: (searchResultNumber + 1).toString()
                                 });
                             }
                         }}
