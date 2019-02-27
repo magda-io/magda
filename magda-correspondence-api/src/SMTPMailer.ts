@@ -1,5 +1,6 @@
 import * as nodemailer from "nodemailer";
 import * as SMTPTransport from "nodemailer/lib/smtp-transport";
+import { Attachment } from "nodemailer/lib/mailer";
 
 export interface SMTPMailer {
     send(msg: Message): Promise<{}>;
@@ -14,24 +15,8 @@ export interface SMTPMailerOptions {
     smtpSecure: boolean;
 }
 
-export interface Attachment {
-    filename: string;
-    contentType: string;
-    contentDisposition: string;
-    content?: string | Buffer;
-    path?: string;
-    cid: string;
-}
-
-export interface Message {
-    to: string;
-    from: string;
-    replyTo: string;
-    subject: string;
-    text: string;
-    html: string;
-    attachments: Array<Attachment>;
-}
+export type Message = SMTPTransport.Options;
+export type Attachment = Attachment;
 
 export class NodeMailerSMTPMailer implements SMTPMailer {
     constructor(readonly opts: SMTPMailerOptions) {}
@@ -70,7 +55,7 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
         });
     }
 
-    send(msg: Message) {
+    send(msg: SMTPTransport.Options) {
         return this.connect().then(
             transporter =>
                 new Promise((resolve, reject) => {

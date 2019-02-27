@@ -71,7 +71,7 @@ export default class EmailTemplateRender {
         if (this.attachments.length) {
             for (let i = 0; i < this.attachments.length; i++) {
                 const imgContent = await this.contentMapper.getFileContent(
-                    this.attachments[i].path
+                    this.attachments[i].path.toString()
                 );
                 this.attachments[i].content = imgContent;
                 delete this.attachments[i].path;
