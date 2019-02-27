@@ -19,13 +19,13 @@ import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
 import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
 import com.sksamuel.elastic4s.http.index.CreateIndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
+import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, RestoreSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.indexes.IndexRequest
 import com.sksamuel.elastic4s.snapshots._
 import com.typesafe.config.Config
-import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse
+import com.sksamuel.elastic4s.http.snapshots.GetSnapshotResponse
 import org.elasticsearch.snapshots.SnapshotInfo
 import spray.json._
 
@@ -132,11 +132,11 @@ class ElasticSearchIndexer(
       .to(Sink.ignore)
       .run()
 
-  private lazy val restoreQueue:SourceQueue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])] =
-    Source.queue[(ElasticClient, IndexDefinition, SnapshotInfo, Promise[RestoreResult])](indexingQueueBufferSize, OverflowStrategy.backpressure)
+  private lazy val restoreQueue:SourceQueue[(ElasticClient, IndexDefinition, Snapshot, Promise[RestoreResult])] =
+    Source.queue[(ElasticClient, IndexDefinition, Snapshot, Promise[RestoreResult])](indexingQueueBufferSize, OverflowStrategy.backpressure)
       .mapAsync(1) {
         case (client, definition, snapshot, promise) =>
-          logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshotId.getName, definition.name, definition.version)
+          logger.info("Restoring snapshot {} for {} version {}", snapshot.snapshot, definition.name, definition.version)
 
           logger.info("First deleting existing index if present...")
 
@@ -148,13 +148,13 @@ class ElasticSearchIndexer(
 
           client.execute {
             RestoreSnapshotRequest(
-              snapshotName = snapshot.snapshotId.getName,
+              snapshotName = snapshot.snapshot,
               repositoryName = SNAPSHOT_REPO_NAME,
               indices = indices.getIndex(config, definition.indicesIndex),
               waitForCompletion = Some(true)
             )
           } map {
-            case r: RestoreSnapshotResponse =>
+            case r: RequestSuccess[RestoreSnapshotResponse] =>
               logger.info("Restored {} version {}", definition.name, definition.version)
               promise.success(RestoreSuccess)
             //(client, definition, snapshot, promise.success(RestoreSuccess))
@@ -214,14 +214,14 @@ class ElasticSearchIndexer(
 
     val futures = IndexDefinition.indices.map(indexDef =>
       client.execute(ElasticDsl.getMapping(indices.getIndex(config, indexDef.indicesIndex)))
-        .map{
-          case results:GetMappingsResponse => Some(results.result)
+        .map {
+          case results: RequestSuccess[Seq[IndexMappings]] => Some(results.result)
           case IndexNotFoundException(e) =>
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
             indexNotFound(indexDef, e)
           case ESGenericException(e) =>
-              logger.error("failed to get {} index, error: {}", indexDef.name, e.getMessage)
-              None
+            logger.error("failed to get {} index, error: {}", indexDef.name, e.getMessage)
+            None
         }
     )
     Future.sequence(futures)
@@ -271,7 +271,7 @@ class ElasticSearchIndexer(
               logger.error(e, "Failed to set up the index")
               throw e
           } flatMap {
-          case r:CreateIndexResponse =>
+          case r:RequestSuccess[CreateIndexResponse] =>
             logger.info("Index {} version {} created", definition.name, definition.version)
 
             processingDefinitionCreateHandler()
@@ -307,7 +307,7 @@ class ElasticSearchIndexer(
         client <- setupFuture
         result <- client.execute(ElasticDsl.search(indices.getIndex(config, index)))
       } yield result match{
-        case r => r.result.isEmpty
+        case r:RequestSuccess[SearchResponse] => r.result.isEmpty
         case ESGenericException(e) => throw e
       }
   }
@@ -323,35 +323,37 @@ class ElasticSearchIndexer(
       case None =>
         logger.info("Could not find a snapshot for {} version {}", index.name, index.version)
         Future.successful(RestoreFailure)
-      case Some(snapshot:SnapshotInfo) =>
-        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.snapshotId.getName, index.name, index.version)
+      case Some(snapshot:Snapshot) =>
+        logger.info("Found snapshot {} for {} version {}, queueing restore operation", snapshot.snapshot, index.name, index.version)
         val promise = Promise[RestoreResult]()
         restoreQueue.offer((client, index, snapshot, promise))
         promise.future
     }
   }
 
-  private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[SnapshotInfo]] = {
+  private def getLatestSnapshot(client: ElasticClient, index: IndexDefinition): Future[Option[Snapshot]] = {
     def getSnapshot() = client.execute {
       GetSnapshotsRequest(Seq("_all"), SNAPSHOT_REPO_NAME)
     }
 
     getSnapshot()
       .flatMap {
-        case results:GetSnapshotsResponse => Future.successful(results.getSnapshots)
+        case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result.snapshots)
         case RepositoryMissingException(e) =>
           createSnapshotRepo(client, index).flatMap(_ => getSnapshot).map{
             case ESGenericException(e) => throw e
-            case results:GetSnapshotsResponse => Future.successful(results.getSnapshots)
+            case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result.snapshots)
           }
         case ESGenericException(e) => throw e
       }.map {
-        case snapshots : Seq[SnapshotInfo] =>
+        case GetSnapshotResponse(snapshots) =>
           snapshots
-            .filter(_.indices.exists(_.startsWith(snapshotPrefix(index))))
-            .filter(_.failedShards() == 0)
-            .sortBy(_.endTime())
+            .filter(_.snapshot.startsWith(snapshotPrefix(index)))
+            // --- As of v6.5.1 elastic4s doesn't parse `shards_stats` yet
+            .filter(_.state == "SUCCESS")
+            .sortBy(_.endTimeInMillis)
           .headOption
+        case Nil => None
         case _ => throw new Exception("getLatestSnapshot: Invalid response")
       }
   }
@@ -415,8 +417,8 @@ class ElasticSearchIndexer(
           deleteIn(idxName).by(
             rangeQuery("indexed").lt(before.toString)))
       }.map {
-        case results:DeleteByQueryResponse =>
-          logger.info("Trimmed index {} for {} old datasets", idxName, results.deleted)
+        case results:RequestSuccess[DeleteByQueryResponse] =>
+          logger.info("Trimmed index {} for {} old datasets", idxName, results.result.deleted)
         case ESGenericException(e) =>
           logger.info("Failed to Trimmed index {} old datasets: {}", idxName, e.getMessage)
       }
@@ -431,8 +433,8 @@ class ElasticSearchIndexer(
       client.execute(bulk(identifiers.map(identifier =>
         ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
     }.map {
-      case results:DeleteByQueryResponse =>
-        logger.info("Deleted {} datasets", results.deleted)
+      case results:RequestSuccess[BulkResponse] =>
+        logger.info("Deleted {} datasets", results.result.successes.size)
       case f:RequestFailure =>
         logger.warning("Failed to delete: {}, {}", f.error.`type`, f.error.reason)
     }
@@ -451,7 +453,7 @@ class ElasticSearchIndexer(
           Some(true)
         )
       }.map{
-        case results:CreateSnapshotResponse =>
+        case results:RequestSuccess[CreateSnapshotResponse] =>
           logger.info("Snapshotted {}",
             indices.getIndex(config, definition.indicesIndex)
           )
@@ -477,7 +479,7 @@ class ElasticSearchIndexer(
         case ESGenericException(e) =>
           logger.error(e, "Error when indexing records")
           throw e
-        case r:BulkResponse =>
+        case r:RequestSuccess[BulkResponse] =>
           r.result
       }
     }
