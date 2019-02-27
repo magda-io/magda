@@ -1,8 +1,7 @@
 import * as httpProxy from "http-proxy";
-import { tenantsTable, gatewayHostName } from "./index";
+import { tenantsTable, magdaAdminPortalName } from "./index";
 
 export default function createBaseProxy(): httpProxy {
-    const MAGDA_ADMIN_PORTAL_NAME = "magda-admin-portal";
     const MAGDA_ADMIN_PORTAL_ID = -1;
 
     const proxy = httpProxy.createProxyServer({
@@ -56,10 +55,9 @@ export default function createBaseProxy(): httpProxy {
 
         let domainName = host.substring(0, endIndex);
 
-        if (domainName == gatewayHostName || domainName == "localhost")
-            domainName = MAGDA_ADMIN_PORTAL_NAME;
-
-        if (domainName != MAGDA_ADMIN_PORTAL_NAME) {
+        if (domainName == magdaAdminPortalName || domainName == "localhost") {
+            proxyReq.setHeader("TenantId", String(MAGDA_ADMIN_PORTAL_ID));
+        } else {
             const tenant = tenantsTable.get(domainName);
             if (undefined == tenant || tenant.enabled == false) {
                 res.writeHead(500, { "Content-Type": "text/plain" });
@@ -69,8 +67,6 @@ export default function createBaseProxy(): httpProxy {
             } else {
                 proxyReq.setHeader("TenantId", String(tenant.id));
             }
-        } else {
-            proxyReq.setHeader("TenantId", String(MAGDA_ADMIN_PORTAL_ID));
         }
     });
 

@@ -234,7 +234,7 @@ const startIndex = argv.externalUrl.indexOf("//");
 let endIndex = argv.externalUrl.lastIndexOf(":");
 if (endIndex < 0) endIndex = argv.externalUrl.length;
 
-export const gatewayHostName = argv.externalUrl.substring(
+export const magdaAdminPortalName = argv.externalUrl.substring(
     startIndex + 2,
     endIndex
 );

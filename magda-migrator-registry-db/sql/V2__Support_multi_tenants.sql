@@ -29,7 +29,6 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.tenants TO client;
 
 GRANT ALL ON TABLE public.tenants TO postgres;
 
-INSERT INTO Tenants(domainName, id, enabled, description, lastUpdate) VALUES('magda-admin-portal', -1, true, 'This should be mapped to an actual portal domain name.', 1);
 INSERT INTO Tenants(domainName, id, enabled, description, lastUpdate) VALUES('initial-website', 0, true, 'Initial entry used for migrating database from single tenant to multi-tenants.', 1);
 
 ALTER TABLE recordaspects DROP CONSTRAINT recordaspects_recordid_fkey;
