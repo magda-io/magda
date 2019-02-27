@@ -3,6 +3,8 @@
 Others:
 
 -   Upgraded the ui to create-react-app 2
+-   Change content api delete response status code from to 204 to 200 so its content can be read.
+-   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
 
 ## 0.0.53
 
