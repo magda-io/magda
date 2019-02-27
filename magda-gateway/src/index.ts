@@ -22,7 +22,7 @@ import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
 import loadTenantsTable from "./loadTenantsTable";
-import { BigInt } from "../../magda-typescript-common/src/generated/registry/api";
+import { Tenant } from "../../magda-typescript-common/src/generated/registry/api";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -345,7 +345,7 @@ app.use("/", createGenericProxy(argv.web));
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-export let tenantsTable = new Map<String, BigInt>();
+export let tenantsTable = new Map<String, Tenant>();
 loadTenantsTable(tenantsTable, `${argv.externalUrl}/api/v0/registry`);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {

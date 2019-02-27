@@ -50,9 +50,9 @@ export class BigInt {
     "validInt": boolean;
     "validShort": boolean;
     "validLong": boolean;
+    "whole": boolean;
     "validDouble": boolean;
     "validFloat": boolean;
-    "whole": boolean;
 }
 
 export class CountResponse {
@@ -167,6 +167,10 @@ export class Tenant {
      * The unique ID of the tenant
      */
     "id": BigInt;
+    /**
+     * The status of the tenant
+     */
+    "enabled": boolean;
 }
 
 export class WebHook {

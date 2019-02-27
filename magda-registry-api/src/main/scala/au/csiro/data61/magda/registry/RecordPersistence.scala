@@ -99,7 +99,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val tenantSelector = if (tenantId < 0) List(None) else List(Some(sqls"tenantId=$tenantId"))
+    val tenantSelector = List(Some(sqls"tenantId=$tenantId"))
     val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply) ++ tenantSelector
 
     this.getRecords(session, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
@@ -124,7 +124,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
 
-    val selector = if (tenantId < 0) List(Some(sqls"recordId=$id")) else List(Some(sqls"recordId=$id and tenantId=$tenantId"))
+    val selector = List(Some(sqls"recordId=$id and tenantId=$tenantId"))
     this.getRecords(session, aspectIds, optionalAspectIds, None, None, None, dereference, selector).records.headOption
   }
 

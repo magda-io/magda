@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.model.Registry.Tenant
+import au.csiro.data61.magda.model.Registry.{Tenant, MAGDA_ADMIN_PORTAL_ID}
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
@@ -46,10 +46,18 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "Don't know anything about tenants.", response = classOf[BadRequest])))
   def getAll: Route = get {
     pathEnd {
-      DB readOnly { session =>
-        tenantPersistence.getTenants(session) match {
-          case tenants:List[Tenant] => complete(tenants)
-          case _       => complete(StatusCodes.NotFound, BadRequest("*****Don't know anything about tenants."))
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = BigInt(tenantIdString.get)
+        if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
+          DB readOnly { session =>
+            tenantPersistence.getTenants(session) match {
+              case tenants: List[Tenant] => complete(tenants)
+              case _ => complete(StatusCodes.NotFound, BadRequest("*****Don't know anything about tenants."))
+            }
+          }
+        }
+        else {
+          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
         }
       }
     }
@@ -80,10 +88,18 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "No tenant exists with that domain name.", response = classOf[BadRequest])))
   def getByDomainName: Route = get {
     path(Segment) { domainName =>
-      DB readOnly { session =>
-        tenantPersistence.getByDomainName(session, domainName) match {
-          case Some(tenant) => complete(tenant)
-          case None         => complete(StatusCodes.NotFound, BadRequest("No tenant exists with that domain name."))
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = BigInt(tenantIdString.get)
+        if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
+          DB readOnly { session =>
+            tenantPersistence.getByDomainName(session, domainName) match {
+              case Some(tenant) => complete(tenant)
+              case None => complete(StatusCodes.NotFound, BadRequest("No tenant exists with that domain name."))
+            }
+          }
+        }
+        else {
+          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
         }
       }
     }

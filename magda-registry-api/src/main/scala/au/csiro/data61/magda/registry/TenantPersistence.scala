@@ -34,7 +34,7 @@ object DefaultTenantPersistence extends Protocols with DiffsonProtocol with Tena
         sql"insert into Events (eventTypeId, userId, data) values (${CreateTenantEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       _ <- Try {
-        sql"""insert into Tenants (domainName, lastUpdate) values (${tenant.domainName}, $eventId)""".update.apply()
+        sql"""insert into Tenants (domainName, enabled, lastUpdate) values (${tenant.domainName}, true, $eventId)""".update.apply()
       } match {
         case Failure(e: SQLException) if e.getSQLState().substring(0, 2) == "23" =>
           Failure(new RuntimeException(s"Cannot create tenant '${tenant.domainName}' because a tenant with that domain name already exists."))
@@ -42,14 +42,14 @@ object DefaultTenantPersistence extends Protocols with DiffsonProtocol with Tena
       }
 
       maybeTenant <- Try {
-        sql"""select * from Tenants where domainName=${tenant.domainName}""".map(rowToTenant).single.apply()
+        sql"""select domainName, id, enabled from Tenants where domainName=${tenant.domainName}""".map(rowToTenant).single.apply()
       }
 
-      createdTenant = Tenant(maybeTenant.get.domainName, maybeTenant.get.id)
+      createdTenant = Tenant(maybeTenant.get.domainName, maybeTenant.get.id, maybeTenant.get.enabled)
     } yield createdTenant
   }
 
   private def rowToTenant(rs: WrappedResultSet): Tenant = {
-    Tenant(rs.string("domainName"), rs.bigInt("id"))
+    Tenant(rs.string("domainName"), rs.bigInt("id"), rs.boolean("enabled"))
   }
 }

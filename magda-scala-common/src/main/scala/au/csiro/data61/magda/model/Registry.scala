@@ -1,28 +1,22 @@
 package au.csiro.data61.magda.model
 
-import io.swagger.annotations.{ ApiModel, ApiModelProperty }
-import enumeratum.values.{ IntEnum, IntEnumEntry }
-
-import scala.annotation.meta.field
-import spray.json.{ DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat }
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
-import java.time.{ OffsetDateTime, ZoneOffset }
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.Temporal.{ ApiDate, PeriodOfTime, Periodicity }
-import spray.json.{ DefaultJsonProtocol, JsArray, JsObject }
-import spray.json.lenses.JsonLenses._
-import spray.json.DefaultJsonProtocol._
-import spray.json._
-import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
-
-import scala.util.{ Failure, Success, Try }
-import java.time.format.DateTimeFormatter
+import java.time.{OffsetDateTime, ZoneOffset}
 
 import akka.event.LoggingAdapter
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
+import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.util.DateParser
+import enumeratum.values.{IntEnum, IntEnumEntry}
+import io.swagger.annotations.{ApiModel, ApiModelProperty}
+import spray.json.lenses.JsonLenses._
+import spray.json.{DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat, _}
+
+import scala.annotation.meta.field
+import scala.util.{Failure, Success, Try}
 
 object Registry {
+  val MAGDA_ADMIN_PORTAL_ID: BigInt = -1
+
   @ApiModel(description = "A type of aspect in the registry.")
   case class AspectDefinition(
     @(ApiModelProperty @field)(value = "The unique identifier for the aspect type.", required = true) id: String,
@@ -54,6 +48,7 @@ object Registry {
   sealed trait TenantType {
     val domainName: String
     val id: BigInt
+    val enabled: Boolean
   }
 
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
@@ -71,8 +66,8 @@ object Registry {
   @ApiModel(description = "A tenant in the registry.")
   case class Tenant(
     @(ApiModelProperty @field)(value = "The unique domain name of the tenant", required = true) domainName: String,
-
-    @(ApiModelProperty @field)(value = "The unique ID of the tenant", required = true) id: BigInt) extends TenantType
+    @(ApiModelProperty @field)(value = "The unique ID of the tenant", required = true) id: BigInt,
+    @(ApiModelProperty @field)(value = "The status of the tenant", required = true) enabled: Boolean) extends TenantType
 
 
   @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
@@ -174,7 +169,7 @@ object Registry {
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
     implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
     implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
-    implicit val tenantFormat = jsonFormat2(Tenant.apply)
+    implicit val tenantFormat = jsonFormat3(Tenant.apply)
 
     implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
       def write(obj: RecordType) = obj match {

@@ -2,6 +2,9 @@ import * as httpProxy from "http-proxy";
 import { tenantsTable, gatewayHostName } from "./index";
 
 export default function createBaseProxy(): httpProxy {
+    const MAGDA_ADMIN_PORTAL_NAME = "magda-admin-portal";
+    const MAGDA_ADMIN_PORTAL_ID = -1;
+
     const proxy = httpProxy.createProxyServer({
         prependUrl: false
     } as httpProxy.ServerOptions);
@@ -51,23 +54,23 @@ export default function createBaseProxy(): httpProxy {
         let endIndex = host.lastIndexOf(":");
         if (endIndex < 0) endIndex = host.length;
 
-        const domainName = host.substring(0, endIndex);
+        let domainName = host.substring(0, endIndex);
 
-        if (domainName != "localhost" && domainName != gatewayHostName) {
-            const tenantId = tenantsTable.get(domainName);
-            if (tenantId == undefined) {
+        if (domainName == gatewayHostName || domainName == "localhost")
+            domainName = MAGDA_ADMIN_PORTAL_NAME;
+
+        if (domainName != MAGDA_ADMIN_PORTAL_NAME) {
+            const tenant = tenantsTable.get(domainName);
+            if (undefined == tenant || tenant.enabled == false) {
                 res.writeHead(500, { "Content-Type": "text/plain" });
                 res.end(
                     `Something went wrong when processing the tenant with the domain name of ${domainName}.`
                 );
             } else {
-                proxyReq.setHeader("TenantId", String(tenantId));
+                proxyReq.setHeader("TenantId", String(tenant.id));
             }
         } else {
-            // TODO: Investigate how to perform access control here.
-            // The value -1 indicates that the request is from gateway host itself.
-            // The direct gateway access must be restrictive to magda admin only.
-            proxyReq.setHeader("TenantId", String(-1));
+            proxyReq.setHeader("TenantId", String(MAGDA_ADMIN_PORTAL_ID));
         }
     });
 

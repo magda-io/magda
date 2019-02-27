@@ -52,17 +52,25 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create = post {
     pathEnd {
-      requireIsAdmin(authClient)(system, config) { _ =>
-        entity(as[AspectDefinition]) { aspect =>
-          val result = DB localTx { session =>
-            AspectPersistence.create(session, aspect) match {
-              case Success(result) =>
-                complete(result)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        val tenantId = BigInt(tenantIdString.get)
+        if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
+          requireIsAdmin(authClient)(system, config) { _ =>
+            entity(as[AspectDefinition]) { aspect =>
+              val result = DB localTx { session =>
+                AspectPersistence.create(session, aspect) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                }
+              }
+              webHookActor ! WebHookActor.Process()
+              result
             }
           }
-          webHookActor ! WebHookActor.Process()
-          result
+        }
+        else {
+          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
         }
       }
     }
