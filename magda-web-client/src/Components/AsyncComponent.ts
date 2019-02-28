@@ -17,10 +17,21 @@ export default class AsyncComponent<C extends Component> extends Component<
         component: undefined
     };
 
+    mounted = false;
+
     async componentDidMount() {
-        this.setState({
-            component: await this.props.importComponent()
-        });
+        this.mounted = true;
+        const component = await this.props.importComponent();
+
+        if (this.mounted) {
+            this.setState({
+                component
+            });
+        }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     render() {

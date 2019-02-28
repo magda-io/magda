@@ -7,8 +7,14 @@ import Styles from "./NewDataset.module.scss";
 import { Medium } from "../../../UI/Responsive";
 import FileDrop from "react-file-drop";
 
+const PUNCTUATION_REGEX = /[-_]+/g;
+
 type File = {
-    name: string;
+    filename: string;
+    title: string;
+    size: number;
+    lastModified: Date;
+    isEditing?: boolean;
 };
 
 type State = {
@@ -18,8 +24,6 @@ type State = {
 function trimExtension(filename: string) {
     return filename.substr(0, filename.lastIndexOf(".")) || filename;
 }
-
-const PUNCTUATION_REGEX = /[-_]+/g;
 
 function turnPunctuationToSpaces(filename: string) {
     return filename.replace(PUNCTUATION_REGEX, " ");
@@ -36,26 +40,33 @@ export default class NewDataset extends React.Component<{}, State> {
     };
 
     onDrop = (fileList: FileList, event: React.DragEvent<HTMLDivElement>) => {
-        const newFilesToAdd: File[] = [];
-        for (let i = 0; i < fileList.length; i++) {
-            const thisFile = fileList.item(i);
+        try {
+            const newFilesToAdd: File[] = [];
+            for (let i = 0; i < fileList.length; i++) {
+                const thisFile = fileList.item(i);
 
-            if (thisFile) {
-                newFilesToAdd.push({
-                    name: toTitleCase(
-                        turnPunctuationToSpaces(
-                            trimExtension(thisFile.name || "File Name")
-                        )
-                    ).trim()
-                });
+                if (thisFile) {
+                    newFilesToAdd.push({
+                        title: toTitleCase(
+                            turnPunctuationToSpaces(
+                                trimExtension(thisFile.name || "File Name")
+                            )
+                        ).trim(),
+                        filename: thisFile.name,
+                        size: thisFile.size,
+                        lastModified: new Date(thisFile.lastModified)
+                    });
+                }
             }
-        }
 
-        this.setState(state => {
-            return {
-                files: state.files.concat(newFilesToAdd)
-            };
-        });
+            this.setState(state => {
+                return {
+                    files: state.files.concat(newFilesToAdd)
+                };
+            });
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     editFileName = (index: number) => (
@@ -65,7 +76,24 @@ export default class NewDataset extends React.Component<{}, State> {
         this.setState(state => {
             const newFiles = state.files.concat();
             newFiles[index] = {
-                name: newName
+                ...newFiles[index],
+                title: newName
+            };
+
+            return {
+                files: newFiles
+            };
+        });
+    };
+
+    toggleEditingFile = (index: number) => (
+        event: React.MouseEvent<HTMLButtonElement>
+    ) => {
+        this.setState(state => {
+            const newFiles = state.files.concat();
+            newFiles[index] = {
+                ...newFiles[index],
+                isEditing: !newFiles[index].isEditing
             };
 
             return {
@@ -76,7 +104,7 @@ export default class NewDataset extends React.Component<{}, State> {
 
     render() {
         return (
-            <div className="">
+            <div className={Styles.root}>
                 <Medium>
                     <Breadcrumbs
                         breadcrumbs={[
@@ -94,37 +122,70 @@ export default class NewDataset extends React.Component<{}, State> {
                     <div className="col-sm-12">
                         <h1>Add a Dataset</h1>
                     </div>
+                </div>
 
+                <div className="row">
                     <div className="col-sm-12">
                         You can add a dataset to your catalogue by uploading all
                         the files within that dataset. Magda's publishing tool
                         will help you check for duplicates and create high
                         quality metadata for your catalogue.
                     </div>
+                </div>
 
-                    <div className="col-sm-8">
+                <div className="row justify-content-center">
+                    <div className="col-sm-12">
                         <FileDrop
                             onDrop={this.onDrop}
                             className={Styles.dropZone}
+                            targetClassName={Styles.dropTarget}
                         >
-                            Drag files here
+                            <span>Drag files here</span>
                         </FileDrop>
                     </div>
+                </div>
 
+                <div className="row">
                     <div className="col-sm-8">
                         <h2>Files</h2>
-                        <div>
+                        <ul>
                             {this.state.files.map((file, i) => {
                                 return (
-                                    <div key={i}>
-                                        <input
-                                            defaultValue={file.name}
-                                            onChange={this.editFileName(i)}
-                                        />
-                                    </div>
+                                    <li key={i}>
+                                        <h3>
+                                            {file.isEditing ? (
+                                                <input
+                                                    defaultValue={file.title}
+                                                    onChange={this.editFileName(
+                                                        i
+                                                    )}
+                                                />
+                                            ) : (
+                                                <React.Fragment>
+                                                    {file.title}
+                                                </React.Fragment>
+                                            )}
+
+                                            <button
+                                                onClick={this.toggleEditingFile(
+                                                    i
+                                                )}
+                                            >
+                                                {file.isEditing
+                                                    ? "Save"
+                                                    : "Edit"}
+                                            </button>
+                                        </h3>
+                                        <div>Filename: {file.filename}</div>
+                                        <div>
+                                            Last Modified:{" "}
+                                            {file.lastModified.toString()}
+                                        </div>
+                                        <div>Size: {file.size}</div>
+                                    </li>
                                 );
                             })}
-                        </div>
+                        </ul>
                     </div>
                 </div>
             </div>
