@@ -150,15 +150,22 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getCount = get {
     path("count") {
-      parameters('aspect.*, 'aspectQuery.*) {
-        (aspects, aspectQueries) =>
-          val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+          parameters('aspect.*, 'aspectQuery.*) {
+            (aspects, aspectQueries) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-          complete {
-            DB readOnly { session =>
-              CountResponse(recordPersistence.getCount(session, aspects, parsedAspectQueries))
-            }
+              complete {
+                DB readOnly { session =>
+                  CountResponse(recordPersistence.getCount(session, tenantId, aspects, parsedAspectQueries))
+                }
+              }
           }
+        } else {
+          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+        }
       }
     }
   }
@@ -187,11 +194,19 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   def getPageTokens = get {
     path("pagetokens") {
       pathEnd {
-        parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-          complete {
-            DB readOnly { session =>
-              "0" :: recordPersistence.getPageTokens(session, aspect, limit)
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          if (tenantIdString.isDefined) {
+            val tenantId = BigInt(tenantIdString.get)
+            parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
+              complete {
+                DB readOnly { session =>
+                  import scalikejdbc._
+                  "0" :: recordPersistence.getPageTokens(session, tenantId, aspect, limit, List(Some(sqls"tenantId=$tenantId")))
+                }
+              }
             }
+          } else {
+            complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
           }
         }
       }
