@@ -72,7 +72,7 @@ buildtest:search-with-index-cache:
     - apk upgrade
     - apk add python python-dev py-pip build-base
     - pip install docker-compose
-    - composer --version
+    - docker-compose --version
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -128,7 +128,7 @@ buildtest:search-no-index-cache:
     - apk upgrade
     - apk add python python-dev py-pip build-base
     - pip install docker-compose
-    - composer --version
+    - docker-compose --version
   cache:
     key: $CI_JOB_NAME
     paths:
