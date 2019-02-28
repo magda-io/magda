@@ -1,35 +1,19 @@
 package au.csiro.data61.magda.registry
 
-import java.util.concurrent.TimeoutException
-
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.util.Failure
-import scala.util.Success
-
-import com.typesafe.config.Config
-
-import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.event.Logging
-import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import java.util.concurrent.TimeoutException
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.model.Registry._
-import gnieh.diffson.sprayJson._
+import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
+
+import scala.concurrent.ExecutionContext
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -71,19 +55,24 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."),
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter."),
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
-  def getAll = get {
+  def getAll: Route = get {
     pathEnd {
       optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = BigInt(tenantIdString.get)
-        parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long] ?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
-          (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+          parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long] ?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+            (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-            complete {
-              DB readOnly { session =>
-                recordPersistence.getAllWithAspects(session, tenantId, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+              complete {
+                DB readOnly { session =>
+                  recordPersistence.getAllWithAspects(session, tenantId, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
+                }
               }
-            }
+          }
+        }
+        else {
+          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
         }
       }
     }
@@ -120,11 +109,19 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")))
   def getAllSummary = get {
     path("summary") {
-      parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-        complete {
-          DB readOnly { session =>
-            recordPersistence.getAll(session, pageToken, start, limit)
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+
+          parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
+            complete {
+              DB readOnly { session =>
+                recordPersistence.getAll(session, tenantId, pageToken, start, limit)
+              }
+            }
           }
+        } else {
+          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
         }
       }
     }
@@ -232,17 +229,21 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "dereference", required = false, dataType = "boolean", paramType = "query", value = "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
-  def getById = get {
+  def getById: Route = get {
     path(Segment) { id =>
       optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = BigInt(tenantIdString.get)
-        parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
-          DB readOnly { session =>
-            recordPersistence.getByIdWithAspects(session, id, tenantId, aspects, optionalAspects, dereference) match {
-              case Some(record) => complete(record)
-              case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+          parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
+            DB readOnly { session =>
+              recordPersistence.getByIdWithAspects(session, id, tenantId, aspects, optionalAspects, dereference) match {
+                case Some(record) => complete(record)
+                case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
+              }
             }
           }
+        } else {
+          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
         }
       }
     }
@@ -276,12 +277,17 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
   def getByIdSummary = get {
     path("summary" / Segment) { id =>
-      {
-        DB readOnly { session =>
-          recordPersistence.getById(session, id) match {
-            case Some(record) => complete(record)
-            case None         => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+          DB readOnly { session =>
+            recordPersistence.getById(session, tenantId, id) match {
+              case Some(record) => complete(record)
+              case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
+            }
           }
+        } else {
+          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
         }
       }
     }

@@ -16,7 +16,7 @@ import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
 
 trait RecordPersistence {
-  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
+  def getAll(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
 
   def getAllWithAspects(implicit session: DBSession,
                         tenantId: BigInt,
@@ -32,7 +32,7 @@ trait RecordPersistence {
                aspectIds: Iterable[String],
                aspectQueries: Iterable[AspectQuery] = Nil): Long
 
-  def getById(implicit session: DBSession, id: String): Option[RecordSummary]
+  def getById(implicit session: DBSession, tenantId: BigInt, id: String): Option[RecordSummary]
 
   def getByIdWithAspects(implicit session: DBSession,
                          id: String,
@@ -86,8 +86,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary] = {
-    this.getSummaries(session, pageToken, start, limit)
+  def getAll(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary] = {
+    this.getSummaries(session, tenantId, pageToken, start, limit)
   }
 
   def getAllWithAspects(implicit session: DBSession,
@@ -113,8 +113,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     this.getCountInner(session, aspectIds, selectors)
   }
 
-  def getById(implicit session: DBSession, id: String): Option[RecordSummary] = {
-    this.getSummaries(session, None, None, None, Some(id)).records.headOption
+  def getById(implicit session: DBSession, tenantId: BigInt, id: String): Option[RecordSummary] = {
+    this.getSummaries(session, tenantId, None, None, None, Some(id)).records.headOption
   }
 
   def getByIdWithAspects(implicit session: DBSession,
@@ -549,16 +549,17 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  private def getSummaries(implicit session: DBSession, pageToken: Option[String], start: Option[Int], rawLimit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
-    val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
-    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+  private def getSummaries(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], rawLimit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
+    val countWhereClauseParts = if (recordId.nonEmpty) Seq(recordId.map(id => sqls"recordId=$id and Records.tenantId=$tenantId")) else Seq(Some(sqls"Records.tenantId=$tenantId"))
+
+    val whereClauseParts = countWhereClauseParts :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong} and Records.tenantId=$tenantId")
     val limit = rawLimit.getOrElse(defaultResultCount)
 
     val result =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
+                   (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId and tenantId=$tenantId) as aspects
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by sequence
