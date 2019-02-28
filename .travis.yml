@@ -27,10 +27,6 @@ matrix:
         postgresql: "9.6"
       before_install:
         - docker info
-        - apk update
-        - apk upgrade
-        - apk add python python-dev py-pip build-base
-        - pip install docker-compose
       script: 
         - cd magda-elastic-search
         - docker-compose up -d
