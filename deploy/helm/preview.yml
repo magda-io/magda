@@ -79,23 +79,11 @@ indexer:
 
 web-server:
   fallbackUrl: "https://data.gov.au"
+  featureFlags:
+    cataloguing: true
 
 correspondence-api:
   defaultRecipient: "magda-test@googlegroups.com"
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
-
-connectors:
-  config:
-    - image:
-        name: magda-ckan-connector
-      id: dga
-      name: data.gov.au
-      sourceUrl: https://data.gov.au/
-      pageSize: 1000
-      ignoreHarvestSources:
-        - "*"
-      ignoreOrganisationNames:
-        - "Bioregional Assessment Programme"
-        - "State of the Environment"
