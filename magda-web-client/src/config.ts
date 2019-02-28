@@ -15,6 +15,10 @@ declare global {
 // Dev server
 const fallbackApiHost = "https://dev.magda.io/";
 
+const DEV_FEATURE_FLAGS = {
+    cataloguing: true
+};
+
 const homePageConfig: {
     baseUrl: string;
     backgroundImageUrls: Array<string>;
@@ -33,6 +37,9 @@ const serverConfig: {
     adminApiBaseUrl?: string;
     disableAuthenticationFeatures?: boolean;
     fallbackUrl?: string;
+    featureFlags?: {
+        [id: string]: boolean;
+    };
 } = window.magda_server_config || {};
 
 const registryApiUrl =
@@ -119,7 +126,10 @@ export const config = {
         east: 155,
         north: -5
     },
-    gapiIds: serverConfig.gapiIds || []
+    gapiIds: serverConfig.gapiIds || [],
+    featureFlags:
+        serverConfig.featureFlags ||
+        (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {})
 };
 
 export const defaultConfiguration = {

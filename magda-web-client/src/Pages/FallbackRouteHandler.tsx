@@ -1,17 +1,21 @@
+import React from "react";
 import { Route } from "react-router-dom";
 import { connect } from "react-redux";
 
 import RouteNotFound from "../Components/RouteNotFound";
 import Loading from "../Components/Loading";
+import withHeader from "./withHeader";
 
 type Props = {
     loading: boolean;
 };
 
 function FallbackRouteHandler({ loading }: Props) {
-    {
-        loading ? <Loading /> : <Route path="/*" component={RouteNotFound} />;
-    }
+    return loading ? (
+        <Loading />
+    ) : (
+        <Route path="/*" component={withHeader(RouteNotFound, true)} />
+    );
 }
 
 const mapStateToProps = state => {

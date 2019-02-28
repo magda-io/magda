@@ -44,6 +44,7 @@
     "is-url-external": "^1.0.3",
     "leaflet": "^0.7.7",
     "react-app-polyfill": "^0.2.1",
+    "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
     "source-map-explorer": "^1.7.0",
     "urijs": "^1.19.1"

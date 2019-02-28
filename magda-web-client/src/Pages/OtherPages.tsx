@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
+
 import Search from "../Components/Search/Search";
 import Account from "../Components/Account/Account";
 import Login from "../Components/Account/Login";
@@ -14,6 +15,8 @@ import NewDataset from "../Components/Dataset/New/NewDatasetLoader";
 import RouteNotFound from "../Components/RouteNotFound";
 import FallbackRouteHandler from "./FallbackRouteHandler";
 import withHeader from "./withHeader";
+
+import { config } from "../config";
 
 const OtherPages = () => {
     return (
@@ -68,11 +71,13 @@ const OtherPages = () => {
                 path="/dataset/:datasetId/distribution/:distributionId"
                 component={withHeader(RecordHandler, true)}
             />
-            <Route
-                exact
-                path="/dataset/new"
-                component={withHeader(NewDataset, false)}
-            />
+            {config.featureFlags.cataloguing && (
+                <Route
+                    exact
+                    path="/dataset/new"
+                    component={withHeader(NewDataset, false)}
+                />
+            )}
             <Route
                 path="/dataset/:datasetId"
                 component={withHeader(RecordHandler, true)}

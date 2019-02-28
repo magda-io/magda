@@ -8,5 +8,6 @@ data:
     {{- if .Values.fallbackUrl -}} "fallbackUrl": {{ .Values.fallbackUrl | quote }}, {{- end -}}
     {{- if .Values.contentApiBaseUrlInternal -}} "contentApiBaseUrlInternal": {{ .Values.contentApiBaseUrlInternal | quote }}, {{- end -}}
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
-    "baseUrl": {{ .Values.baseUrl | default "/" | quote }}
+    "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
+    "featureFlags": {{ .Values.featureFlags | default "{}" | quote }},
   }'
