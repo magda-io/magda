@@ -114,6 +114,7 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   def checkRegionLoading(regionLoader: RegionLoader, regions: Seq[(RegionSource, JsObject)])(implicit config: Config) = {
     IndexDefinition.setupRegions(client, regionLoader, fakeIndices).await(120 seconds)
     val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
+    val indexType = fakeIndices.getType(Indices.RegionsIndexType)
 
     refresh(indexName)
 
@@ -158,7 +159,13 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
       }
     }
 
-    deleteIndex(indexName)
+    client.execute(deleteByQuery(indexName, indexType, matchAllQuery())).await match {
+      case ESGenericException(e) => throw e
+      case _ =>
+    }
+
+    refresh(indexName)
+
   }
 
   def withinFraction(left: Double, right: Double, comparison: Double, fraction: Double) = (
