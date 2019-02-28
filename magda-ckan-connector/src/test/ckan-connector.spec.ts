@@ -175,7 +175,7 @@ describe("JsonTransformer", () => {
         ]
     };
 
-    it("Should filter by organisation if `allowedOrganisationNames` is specified", function() {
+    it("Should filter by organisation if one `allowedOrganisationNames` is specified", function() {
         this.timeout(5000000);
         const organisationName = "deptxxx";
         const { sourceScope, registryScope, connector } = setupCrawlTest({
@@ -205,7 +205,63 @@ describe("JsonTransformer", () => {
             .get(/\/package_search/)
             .query((q: any) => {
                 const fq: string = q.fq;
-                expect(fq).include(`organization:"${organisationName}"`);
+                expect(fq).include(`(organization:"${organisationName}")`);
+                expect(fq).include("-harvest_source_title:*");
+                return true;
+            })
+            .reply(200, ckanPackageSearchResponse);
+
+        registryScope
+            .persist()
+            .put(new RegExp("/records"), (body: any) => {
+                return body.sourceTag === connector.sourceTag;
+            })
+            .reply(200);
+
+        registryScope.delete(/.*/).reply(201, { count: 0 });
+
+        return connector.run().then(result => {
+            // --- make sure all mocks are satisfied
+            sourceScope.done();
+            registryScope.done();
+        });
+    });
+
+    it("Should filter by organisations if multiple `allowedOrganisationNames` is specified", function() {
+        this.timeout(5000000);
+        const organisationName = "deptxxx";
+        const organisationName2 = "deptyyy";
+        const { sourceScope, registryScope, connector } = setupCrawlTest({
+            id: "test-ckan-connector",
+            name: "Test Ckan Connector",
+            ignoreHarvestSources: ["*"],
+            pageSize: 100,
+            allowedOrganisationNames: [organisationName, organisationName2],
+            ignoreOrganisationNames: [],
+            sourceUrl: "http://test-ckan.com"
+        });
+        sourceScope
+            .get(/\/organization_show/)
+            .query({
+                id: organisationName
+            })
+            .reply(200, ckanOrgResponse);
+        sourceScope
+            .get(/\/organization_show/)
+            .query({
+                id: organisationName2
+            })
+            .reply(200, ckanOrgResponse);
+        /**
+         * Connector should call package_search api with extra `fq` query
+         */
+        sourceScope
+            .get(/\/package_search/)
+            .query((q: any) => {
+                const fq: string = q.fq;
+                expect(fq).include(
+                    `(organization:"${organisationName}" AND organization:"${organisationName2}")`
+                );
                 expect(fq).include("-harvest_source_title:*");
                 return true;
             })
@@ -236,7 +292,7 @@ describe("JsonTransformer", () => {
             ignoreHarvestSources: ["*"],
             pageSize: 1,
             allowedOrganisationNames: [],
-            ignoreOrganisationNames: [organisationName],
+            ignoreOrganisationNames: [organisationName, organisationName],
             sourceUrl: "http://test-ckan.com"
         });
 

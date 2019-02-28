@@ -108,15 +108,14 @@ export default class Ckan implements ConnectorSource {
             options.allowedOrganisationNames &&
             options.allowedOrganisationNames.length > 0
         ) {
-            solrQueries.push(
-                ...options.allowedOrganisationNames.map(title => {
-                    const encoded =
-                        title === "*"
-                            ? title
-                            : encodeURIComponent('"' + title + '"');
-                    return `organization:${encoded}`;
-                })
-            );
+            const encOrgs = options.allowedOrganisationNames.map(title => {
+                const encoded =
+                    title === "*"
+                        ? title
+                        : encodeURIComponent('"' + title + '"');
+                return `organization:${encoded}`;
+            });
+            solrQueries.push("(" + encOrgs.join(" AND ") + ")");
         }
 
         if (
