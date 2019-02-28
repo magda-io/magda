@@ -103,7 +103,7 @@ buildtest:search-with-index-cache:
     - docker-compose up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
@@ -164,7 +164,7 @@ buildtest:search-no-index-cache:
     - docker-compose up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:

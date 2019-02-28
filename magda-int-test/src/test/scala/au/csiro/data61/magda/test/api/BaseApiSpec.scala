@@ -49,7 +49,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   val logger = Logging(system, getClass)
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
-  implicit val config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://localhost:9200"))
+  implicit val config = buildConfig
 
   val clientProvider = new DefaultClientProvider
 
