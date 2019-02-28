@@ -13,6 +13,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.util.ErrorHandling.retry
+import com.sksamuel.elastic4s.admin.OpenIndexRequest
 import com.sksamuel.elastic4s.bulk.BulkRequest
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
@@ -151,18 +152,40 @@ class ElasticSearchIndexer(
               snapshotName = snapshot.snapshot,
               repositoryName = SNAPSHOT_REPO_NAME,
               indices = indices.getIndex(config, definition.indicesIndex),
+              // --- As of elastic4s 6.5.1, `waitForCompletion` is actually not sent as part of request
               waitForCompletion = Some(true)
             )
           } map {
             case r: RequestSuccess[RestoreSnapshotResponse] =>
               logger.info("Restored {} version {}", definition.name, definition.version)
-              promise.success(RestoreSuccess)
-            //(client, definition, snapshot, promise.success(RestoreSuccess))
+              Thread.sleep(5000)
+              (client, definition, RestoreSuccess)
             case f: RequestFailure =>
               logger.info("Failed to restore for {} version {} with status {}", definition.name, definition.version, f.status.toString)
-              promise.success(RestoreFailure)
-            //(client, definition, snapshot, promise.success(RestoreFailure))
+              RestoreFailure
           }
+      }
+      .mapAsync(1){
+        case RestoreFailure => Future.successful(RestoreFailure)
+        case (client:ElasticClient, definition:IndexDefinition, RestoreSuccess) =>
+          val indexName = indices.getIndex(config, definition.indicesIndex)
+          retry(() => {
+            logger.info("Checking whether index {} is ready...", indexName)
+            client.execute(ElasticDsl.search(indexName).size(0))
+              .flatMap {
+                case results: RequestSuccess[SearchResponse] =>
+                  logger.info("Index {} is ready!", indexName)
+                  Future.successful(true)
+                case ESGenericException(e) => throw e
+              }
+          }, 30 seconds, 3, (retiresCount: Int, e: Throwable) => {
+            logger.error("Index {} is not ready, {} retries left. Reason: {}", indexName, retiresCount, e)
+            e match {
+              case ESException(f, m) => f match {
+                case IndexCloseException(e) => client.execute(OpenIndexRequest(indexName))
+              }
+            }
+          })
       }
       .recover {
         case e: Throwable =>
@@ -175,7 +198,22 @@ class ElasticSearchIndexer(
   /** Initialises an ElasticClient, handling initial connection to the ElasticSearch server and creation of the indices */
   private def setup(): Future[ElasticClient] = {
     clientProvider.getClient.flatMap(client =>
-      retry(() => getIndexDefinitions(client), 10 seconds, config.getInt("indexer.connectionRetries"), logger.error("Failed to get indexes, {} retries left", _, _))
+      retry(() => getIndexDefinitions(client), 30 seconds, config.getInt("indexer.connectionRetries"), (retries:Int, e:Throwable) => {
+        logger.error("Failed to get indexes, {} retries left, reason: {}", retries, e)
+        e match {
+          case ESException(failure, message) =>
+            failure match {
+              case IndexCloseException(e) =>
+                failure.error.index match {
+                  case Some(idxName) =>
+                    logger.info("Index {} is closed, try to reopen it...", idxName)
+                    client.execute(OpenIndexRequest(idxName))
+                  case None =>
+                    logger.info("Unknown index is closed, do nothing.")
+                }
+            }
+        }
+      })
         .flatMap { indexPairs =>
           updateIndices(client, indexPairs)
             .map { _ =>
@@ -214,14 +252,21 @@ class ElasticSearchIndexer(
 
     val futures = IndexDefinition.indices.map(indexDef =>
       client.execute(ElasticDsl.getMapping(indices.getIndex(config, indexDef.indicesIndex)))
-        .map {
-          case results: RequestSuccess[Seq[IndexMappings]] => Some(results.result)
+        .flatMap {
+          case results: RequestSuccess[Seq[IndexMappings]] =>
+            // --- As es 6.5.1, es may set an index to `close` after recovery
+            // --- we need to check this before assume index is ready
+            client.execute(ElasticDsl.search(indices.getIndex(config, indexDef.indicesIndex)).size(0))
+              .map {
+                case searchResults: RequestSuccess[SearchResponse] => Some(results.result)
+                case ESGenericException(e) => throw e
+              }
           case IndexNotFoundException(e) =>
             // If the index wasn't found that's fine, we'll just recreate it. Otherwise log an error - every subsequent request to the provider will fail with this exception.
-            indexNotFound(indexDef, e)
+            Future.successful(indexNotFound(indexDef, e))
           case ESGenericException(e) =>
             logger.error("failed to get {} index, error: {}", indexDef.name, e.getMessage)
-            None
+            Future.successful(None)
         }
     )
     Future.sequence(futures)
@@ -338,11 +383,11 @@ class ElasticSearchIndexer(
 
     getSnapshot()
       .flatMap {
-        case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result.snapshots)
+        case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result)
         case RepositoryMissingException(e) =>
           createSnapshotRepo(client, index).flatMap(_ => getSnapshot).map{
             case ESGenericException(e) => throw e
-            case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result.snapshots)
+            case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result)
           }
         case ESGenericException(e) => throw e
       }.map {
@@ -353,7 +398,6 @@ class ElasticSearchIndexer(
             .filter(_.state == "SUCCESS")
             .sortBy(_.endTimeInMillis)
           .headOption
-        case Nil => None
         case _ => throw new Exception("getLatestSnapshot: Invalid response")
       }
   }
