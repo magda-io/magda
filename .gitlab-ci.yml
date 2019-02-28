@@ -62,6 +62,12 @@ buildtest:search-with-index-cache:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
   dependencies: []
+  before_script:
+    - docker info
+    - apk update
+    - apk upgrade
+    - apk add python python-dev py-pip build-base
+    - pip install docker-compose
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -69,7 +75,10 @@ buildtest:search-with-index-cache:
       - "target"
       - "*/target"
       - "*/project/target"
+  services:
+    - docker:dind
   variables:
+    DOCKER_IMAGE: "registry.gitlab.com/magda-data/magda/data61/magda-elastic-search:$CI_COMMIT_REF_SLUG"
     # 2.5gb heap
     # unload classes we don't need
     # aim for < 1000ms gc pauses (largely ignored)
@@ -86,8 +95,11 @@ buildtest:search-with-index-cache:
   tags:
     - heavy
   script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - "cd magda-elastic-search; docker-compose up &; cd .."
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+    - "cd magda-elastic-search; docker-compose down"
   artifacts:
     paths:
       - "target"
@@ -101,6 +113,11 @@ buildtest:search-no-index-cache:
   dependencies: []
   before_script:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+    - docker info
+    - apk update
+    - apk upgrade
+    - apk add python python-dev py-pip build-base
+    - pip install docker-compose
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -110,11 +127,13 @@ buildtest:search-no-index-cache:
       - "*/project/target"
   services:
     - postgres:9.6
+    - docker:dind
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
+    DOCKER_IMAGE: "registry.gitlab.com/magda-data/magda/data61/magda-elastic-search:$CI_COMMIT_REF_SLUG"
     # 2.5gb heap
     # unload classes we don't need
     # aim for < 1000ms gc pauses (largely ignored)
@@ -131,8 +150,11 @@ buildtest:search-no-index-cache:
   tags:
     - heavy
   script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - "cd magda-elastic-search; docker-compose up &; cd .."
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - "cd magda-elastic-search; docker-compose down"
   artifacts:
     paths:
       - "target"
