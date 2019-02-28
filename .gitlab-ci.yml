@@ -72,6 +72,7 @@ buildtest:search-with-index-cache:
     - apk upgrade
     - apk add python python-dev py-pip build-base
     - pip install docker-compose
+    - composer --version
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -103,7 +104,8 @@ buildtest:search-with-index-cache:
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
-    - "cd magda-elastic-search; docker-compose down"
+    - cd magda-elastic-search
+    - docker-compose down
   artifacts:
     paths:
       - "target"
@@ -126,6 +128,7 @@ buildtest:search-no-index-cache:
     - apk upgrade
     - apk add python python-dev py-pip build-base
     - pip install docker-compose
+    - composer --version
   cache:
     key: $CI_JOB_NAME
     paths:
@@ -162,7 +165,8 @@ buildtest:search-no-index-cache:
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
-    - "cd magda-elastic-search; docker-compose down"
+    - cd magda-elastic-search
+    - docker-compose down
   artifacts:
     paths:
       - "target"

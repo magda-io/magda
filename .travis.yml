@@ -28,13 +28,13 @@ matrix:
       before_install:
         - docker info
         - composer --version
-        - docker pull docker.elastic.co/elasticsearch/elasticsearch:6.5.4
-        - docker ps -a
       script: 
         - cd magda-elastic-search
         - docker-compose up -d
         - cd ..
         - travis_retry sbt test
+        - cd magda-elastic-search
+        - docker-compose down
     - language: node_js
       node_js: "8"
       cache:
