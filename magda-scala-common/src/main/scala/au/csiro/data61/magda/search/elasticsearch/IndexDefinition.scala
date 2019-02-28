@@ -489,12 +489,12 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map { result =>
         result match {
           case failure:RequestFailure => logger.error("Failure: {}", failure.error)
-          case results:BulkResponse =>
+          case results:RequestSuccess[BulkResponse] =>
             logger.debug(
               "Took {} seconds to execute request.",
               results.result.took
             )
-            results.result.items.length
+            results.result.successes.size
         }
       }
       .recover {
