@@ -1,5 +1,11 @@
 #!/bin/bash
 
+echo "Delete all x-pack modules..."
+find modules -type d -name "x-pack-*" -exec rm -r {} +
+
+cp -f /tmp/elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml
+chown -R 1000:1000 /usr/share/elasticsearch/config/elasticsearch.yml
+
 echo "Setting up data directory"
 
 mkdir /data
@@ -8,6 +14,8 @@ mkdir /data/data
 mkdir /data/logs
 chown -R 1000:1000 /data
 
+mkdir /usr/share/elasticsearch/config/analysis
+chown -R 1000:1000 /usr/share/elasticsearch/config/analysis
 cp -f /tmp/wn_s.pl /usr/share/elasticsearch/config/analysis/wn_s.pl
 cp -f /tmp/regionSynonyms.txt /usr/share/elasticsearch/config/analysis/regionSynonyms.txt
 

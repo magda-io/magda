@@ -1,7 +1,7 @@
 version: '3'
 services:
   test-es:
-    image: "${DOCKER_IMAGE}"
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     ports:
       - 9200:9200
       - 9300:9300
@@ -10,6 +10,7 @@ services:
         soft: -1
         hard: -1
     volumes:
+      - ./elasticsearch.yml:/tmp/elasticsearch.yml
       - ./setup-test.sh:/tmp/setup.sh
       - ./regionSynonyms.test.txt:/tmp/regionSynonyms.txt
       - ./wn_s_test.pl:/tmp/wn_s.pl
@@ -29,5 +30,3 @@ services:
       - path.logs=/data/logs
     entrypoint:
       - /tmp/setup.sh
-volumes:
-  esdata:

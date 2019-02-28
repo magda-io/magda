@@ -82,7 +82,6 @@ buildtest:search-with-index-cache:
   services:
     - docker:dind
   variables:
-    DOCKER_IMAGE: "registry.gitlab.com/magda-data/magda/data61/magda-elastic-search:$CI_COMMIT_REF_SLUG"
     # 2.5gb heap
     # unload classes we don't need
     # aim for < 1000ms gc pauses (largely ignored)
@@ -99,8 +98,6 @@ buildtest:search-with-index-cache:
   tags:
     - heavy
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $DOCKER_IMAGE
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
@@ -144,7 +141,6 @@ buildtest:search-no-index-cache:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
-    DOCKER_IMAGE: "registry.gitlab.com/magda-data/magda/data61/magda-elastic-search:$CI_COMMIT_REF_SLUG"
     # 2.5gb heap
     # unload classes we don't need
     # aim for < 1000ms gc pauses (largely ignored)
@@ -161,8 +157,6 @@ buildtest:search-no-index-cache:
   tags:
     - heavy
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $DOCKER_IMAGE
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
