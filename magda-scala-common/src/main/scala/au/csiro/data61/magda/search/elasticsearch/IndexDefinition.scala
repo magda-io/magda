@@ -12,7 +12,6 @@ import com.sksamuel.elastic4s.IndexAndTypes.apply
 import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, NamedStopTokenFilter, StandardTokenizer, StemmerTokenFilter, StopTokenFilter, TokenFilterDefinition, Tokenizer, UppercaseTokenFilter, WhitespaceTokenizer}
-import com.sksamuel.elastic4s.analyzers.SynonymTokenFilter
 import com.typesafe.config.Config
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
