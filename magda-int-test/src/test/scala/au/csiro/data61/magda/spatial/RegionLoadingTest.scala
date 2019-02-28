@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.spatial
 
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
 import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, IndexDefinition, Indices}
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -37,7 +37,6 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
-import com.sksamuel.elastic4s.http.HttpClient
 import com.sksamuel.elastic4s.http.get.GetResponse
 
 class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpecLike with BeforeAndAfterAll with Matchers with MagdaGeneratorTest with MagdaElasticSugar {
@@ -47,12 +46,11 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(workers = PosInt(1), sizeRange = PosInt(20), minSuccessful = PosInt(10)) // This is a super heavy test so do 10 only, one-at-a-time
 
-  val node = getNode
-  implicit val config = TestActorSystem.config.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+  implicit val config = TestActorSystem.config.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://localhost:9200"))
 
   val clientProvider = new DefaultClientProvider
 
-  override def client(): HttpClient = clientProvider.getClient().await
+  override def client(): ElasticClient = clientProvider.getClient().await
 
   object fakeIndices extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
@@ -130,8 +128,8 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
 
       withClue("region " + regionId) {
         result match {
-          case Left(ESGenericException(e)) => throw e
-          case Right(r) =>
+          case ESGenericException(e) => throw e
+          case r:RequestSuccess[GetResponse] =>
             r.result.exists should be(true)
             val indexedGeometry = r.result.sourceAsString.parseJson.asJsObject.fields("geometry").convertTo[Geometry]
             val indexedGeometryJts = indexedGeometry.toJTSGeo
