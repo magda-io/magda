@@ -387,7 +387,7 @@ class ElasticSearchIndexer(
         case RepositoryMissingException(e) =>
           createSnapshotRepo(client, index).flatMap(_ => getSnapshot).map{
             case ESGenericException(e) => throw e
-            case results:RequestSuccess[GetSnapshotResponse] => Future.successful(results.result)
+            case results:RequestSuccess[GetSnapshotResponse] => results.result
           }
         case ESGenericException(e) => throw e
       }.map {
