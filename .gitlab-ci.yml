@@ -101,7 +101,9 @@ buildtest:search-with-index-cache:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $DOCKER_IMAGE
-    - "cd magda-elastic-search; docker-compose up &; cd .."
+    - cd magda-elastic-search
+    - docker-compose up -d
+    - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.api.*Spec"
     - "cd magda-elastic-search; docker-compose down"
@@ -161,7 +163,9 @@ buildtest:search-no-index-cache:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $DOCKER_IMAGE
-    - "cd magda-elastic-search; docker-compose up &; cd .."
+    - cd magda-elastic-search
+    - docker-compose up -d
+    - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
     - "cd magda-elastic-search; docker-compose down"
