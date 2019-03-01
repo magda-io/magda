@@ -27,7 +27,7 @@ const store = createStore(
     composeWithDevTools(
         applyMiddleware(
             thunkMiddleware, // lets us dispatch() functions
-            process.env.NODE_ENV === "development" && logger // neat middleware that logs actions
+            logger // neat middleware that logs actions
         )
     )
 );
