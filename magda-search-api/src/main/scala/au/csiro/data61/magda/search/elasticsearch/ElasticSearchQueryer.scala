@@ -507,7 +507,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             queryString
               .field("distributions.title")
               .field("distributions.description")
-              .field("distributions.format.keyword_lowercase")
+              .field("distributions.format")
               .defaultOperator("or"))
           .scoreMode(ScoreMode.Max)
 
