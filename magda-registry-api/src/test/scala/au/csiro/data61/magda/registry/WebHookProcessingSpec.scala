@@ -3,6 +3,7 @@ package au.csiro.data61.magda.registry
 import akka.actor.ActorRef
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -20,6 +21,8 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+  // ID of the initial tenant in the Tenants table.
+  private val tenantId = "0"
 
   override def afterEach(): Unit = {
     Util.clearWebHookActorsCache()
@@ -29,7 +32,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("aspectDefinitions if events modified them") { param =>
       testWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -44,7 +47,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("records if events modified them") { param =>
       testWebHook(param, None) { (payloads, _) =>
         val record = Record("testId", "testName", Map())
-        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> RawHeader("TenantId", tenantId) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -61,7 +64,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -71,7 +74,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -81,7 +84,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
         // Generate and process events with IDs of 4, 5, 6.
-        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> RawHeader("TenantId", tenantId) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -91,7 +94,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate and process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> RawHeader("TenantId", tenantId) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -107,17 +110,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> RawHeader("TenantId", tenantId) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -125,7 +128,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> RawHeader("TenantId", tenantId) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -139,12 +142,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A")), optionalAspects = Some(List("B"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -173,12 +176,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -208,7 +211,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -218,7 +221,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Will not process this event (with ID of 3).
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -253,7 +256,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate but not process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -262,7 +265,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -315,7 +318,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -331,7 +334,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -380,13 +383,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilAllDone()
           payloads.length shouldBe 0
 
-          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -403,7 +406,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -411,7 +414,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           payloads.length shouldBe 0
 
           // Generate and process event with ID of 3.
-          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -478,7 +481,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -505,7 +508,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -533,7 +536,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -543,7 +546,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate but not process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -576,7 +579,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -586,7 +589,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate but not process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -634,7 +637,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -696,7 +699,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -749,7 +752,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -815,7 +818,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -876,7 +879,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -933,13 +936,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1000,13 +1003,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1063,13 +1066,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1126,13 +1129,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1385,7 +1388,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("delays further notifications until previous one is acknowledged") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1399,7 +1402,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1411,7 +1414,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("retries an unsuccessful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1439,7 +1442,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("sends the next events after a successful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1452,7 +1455,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1486,7 +1489,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1502,7 +1505,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           payloads.length should be(0)
@@ -1513,7 +1516,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testAsyncWebHook(param, None) { (payloads, _) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[Registry.AspectDefinition].id shouldBe "testId"
           }
@@ -1553,7 +1556,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testAsyncWebHook(param, Some(defaultWebHook.copy(active = false))) { (payloads, _) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1573,7 +1576,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
           // Generate but not process event with ID of 3 as the hook is waiting for ack.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1612,7 +1615,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1659,7 +1662,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
       // Generate but not process event with ID of 2 as the hook is inactive.
-      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(Full).routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 
