@@ -88,8 +88,13 @@ async function getIndexFileContent(
     if (useLocalStyleSheet) {
         const cssFileName = getStaticStyleSheetFileName(clientRoot);
         indexFileContent = indexFileContent.replace(
-            "/api/v0/content/stylesheet.css",
-            `/static/css/${cssFileName}`
+            "</head>",
+            `<link href="/static/css/${cssFileName}" rel="stylesheet">\n</head>`
+        );
+    } else {
+        indexFileContent = indexFileContent.replace(
+            "</head>",
+            `<link href="/api/v0/content/stylesheet.css" rel="stylesheet">\n</head>`
         );
     }
 
