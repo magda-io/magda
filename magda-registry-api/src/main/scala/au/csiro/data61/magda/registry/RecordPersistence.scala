@@ -15,6 +15,9 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
 
+// TODO: Not to filter results by tenant ID for magda internal use only functions.
+// For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
+// In this case, those records should not be filtered by tenant ID.
 trait RecordPersistence {
   def getAll(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
 
@@ -43,12 +46,14 @@ trait RecordPersistence {
                          dereference: Option[Boolean] = None): Option[Record]
 
   def getByIdsWithAspects(implicit session: DBSession,
+                          tenantId: BigInt,
                           ids: Iterable[String],
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage[Record]
 
   def getRecordsLinkingToRecordIds(implicit session: DBSession,
+                                   tenantId: BigInt,
                                    ids: Iterable[String],
                                    idsToExclude: Iterable[String] = Seq(),
                                    aspectIds: Iterable[String] = Seq(),
@@ -101,8 +106,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val tenantSelector = List(Some(sqls"tenantId=$tenantId"))
-    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply) ++ tenantSelector
+    val selectors = aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
@@ -111,7 +115,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                tenantId: BigInt,
                aspectIds: Iterable[String],
                aspectQueries: Iterable[AspectQuery] = Nil): Long = {
-    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
+    val selectors = aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getCountInner(session, tenantId, aspectIds, selectors)
   }
@@ -132,19 +136,20 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
+                          tenantId: BigInt,
                           ids: Iterable[String],
                           aspectIds: Iterable[String] = Seq(),
                           optionalAspectIds: Iterable[String] = Seq(),
                           dereference: Option[Boolean] = None): RecordsPage[Record] = {
     if (ids.isEmpty)
-      RecordsPage(false, Some("0"), List())
+      RecordsPage(hasMore = false, Some("0"), List())
     else {
-      // TODO: Fix tenantId.
-      this.getRecords(session, 0, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in ($ids)")))
+      this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId in ($ids)")))
     }
   }
 
   def getRecordsLinkingToRecordIds(implicit session: DBSession,
+                                   tenantId: BigInt,
                                    ids: Iterable[String],
                                    idsToExclude: Iterable[String] = Seq(),
                                    aspectIds: Iterable[String] = Seq(),
@@ -153,7 +158,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     val linkAspects = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     if (linkAspects.isEmpty) {
       // There are no linking aspects, so there cannot be any records linking to these IDs.
-      RecordsPage(false, None, List())
+      RecordsPage(hasMore = false, None, List())
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
@@ -164,12 +169,11 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
       }
 
-      val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in (${idsToExclude})")
+      val excludeSelector = if (idsToExclude.isEmpty) None else Some(sqls"recordId not in ($idsToExclude)")
 
       val selectors = Seq(Some(SQLSyntax.join(dereferenceSelectors.toSeq, SQLSyntax.or)), excludeSelector)
 
-      // TODO: Fix tenantId.
-      this.getRecords(session, 0, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
+      this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, selectors)
     }
   }
 
@@ -229,7 +233,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         val oldRecordJson = oldRecordWithoutAspects.toJson
         val newRecordJson = newRecordWithoutAspects.toJson
 
-        JsonDiff.diff(oldRecordJson, newRecordJson, false)
+        JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
       }
       result <- patchRecordById(session, id, tenantId, recordPatch)
       patchedAspects <- Try {
@@ -268,7 +272,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where recordId = $id""".update.apply()
         }
       }
-      eventId <- Try {
+      _ <- Try {
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
           val event = PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
@@ -609,15 +613,14 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
 
     val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ recordSelector) :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
-    val aspectSelectors = aspectIdsToSelectClauses(tenantId, List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
+    val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val limit = rawLimit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)
-
     val result =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName
-                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}" else SQLSyntax.empty},
+                   ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors" else SQLSyntax.empty},
                    Records.sourcetag as sourceTag
             from Records
             ${makeWhereClause(whereClauseParts)}
@@ -739,13 +742,13 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  private def aspectIdsToSelectClauses(tenantId: BigInt, aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.
         val aspectColumnName = SQLSyntax.createUnsafely(s"aspect$index")
         val selection = dereferenceDetails.get(aspectId).map {
-          case PropertyWithLink(propertyName, true) => {
+          case PropertyWithLink(propertyName, true) =>
             sqls"""(
             |                CASE WHEN
             |                        EXISTS (
@@ -765,7 +768,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                                            (
             |                                                select jsonb_object_agg(aspectId, data)
             |                                                from RecordAspects
-            |                                                where tenantId=$tenantId and recordId=Records.recordId
+            |                                                where tenantId=Records.tenantId and recordId=Records.recordId
             |                                            )
             |                                        )
             |                                    )
@@ -776,34 +779,34 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                    ELSE(
             |                        select data
             |                        from RecordAspects
-            |                        where tenantId=$tenantId and aspectId=$aspectId and recordId=Records.recordId
+            |                        where tenantId=Records.tenantId and aspectId=$aspectId and recordId=Records.recordId
             |                    )
             |                END
             )""".stripMargin
-          }
-          case PropertyWithLink(propertyName, false) => {
+          case PropertyWithLink(propertyName, false) =>
             sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
-                  (select jsonb_object_agg(aspectId, data) from RecordAspects where tenantId=$tenantId and recordId=Records.recordId)))
-                   from Records where Records.tenantId=$tenantId and Records.recordId=RecordAspects.data->>$propertyName)"""
-          }
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where tenantId=Records.tenantId and recordId=Records.recordId)))
+                   from Records where Records.tenantId=RecordAspects.tenantId and Records.recordId=RecordAspects.data->>$propertyName)"""
         }.getOrElse(sqls"data")
-        sqls"""(select $selection from RecordAspects where tenantId=$tenantId and aspectId=$aspectId and recordId=Records.recordId) as $aspectColumnName"""
+        sqls"""(select $selection from RecordAspects where tenantId=Records.tenantId and aspectId=$aspectId and recordId=Records.recordId) as $aspectColumnName"""
     }
   }
 
   private def aspectIdsToWhereClause(tenantId: BigInt, aspectIds: Iterable[String]): Seq[Option[SQLSyntax]] = {
-    if (aspectIds.nonEmpty) aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq else List(aspectIdToWhereClause(tenantId, ""))
+    if (aspectIds.nonEmpty) aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq else List(aspectIdToWhereClause(tenantId, aspectId = ""))
   }
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
+    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
     if (aspectId.nonEmpty)
-      Some(sqls"Records.tenantId=$tenantId and exists (select 1 from RecordAspects where RecordAspects.tenantId=$tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
+      Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
     else
-      Some(sqls"Records.tenantId=$tenantId and exists (select 1 from RecordAspects where RecordAspects.tenantId=$tenantId and RecordAspects.recordId=Records.recordId)")
+      Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId)")
   }
 
-  private def aspectQueryToWhereClause(query: AspectQuery) = {
-    val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
-    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
+  private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+//    val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
+    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
+    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND recordaspects.tenantId=records.tenantId AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
   }
 }
