@@ -52,25 +52,29 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create = post {
     pathEnd {
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = BigInt(tenantIdString.get)
-        if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
-          requireIsAdmin(authClient)(system, config) { _ =>
-            entity(as[AspectDefinition]) { aspect =>
-              val result = DB localTx { session =>
-                AspectPersistence.create(session, aspect) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requireIsAdmin(authClient)(system, config) { _ =>
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          if (tenantIdString.isDefined) {
+            val tenantId = BigInt(tenantIdString.get)
+            if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
+              entity(as[AspectDefinition]) { aspect =>
+                val result = DB localTx { session =>
+                  AspectPersistence.create(session, aspect) match {
+                    case Success(result) =>
+                      complete(result)
+                    case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                result
               }
-              webHookActor ! WebHookActor.Process()
-              result
             }
+            else {
+              complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
+            }
+          } else {
+            complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
           }
-        }
-        else {
-          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
         }
       }
     }
