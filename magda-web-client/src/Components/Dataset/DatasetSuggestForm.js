@@ -1,6 +1,6 @@
 import React from "react";
 import RequestFormLogic from "../RequestDataset/RequestFormLogic";
-import "./DatasetSuggestForm.css";
+import "./DatasetSuggestForm.scss";
 import AUbutton from "../../pancake/react/buttons";
 import Modal from "react-modal";
 

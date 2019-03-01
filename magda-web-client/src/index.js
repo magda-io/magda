@@ -6,7 +6,7 @@ import "core-js/es6/symbol";
 import "core-js/fn/object/entries";
 import "core-js/fn/object/values";
 import logger from "redux-logger";
-import "./index.css";
+import "./index.scss";
 import { BrowserRouter, Route } from "react-router-dom";
 
 import thunkMiddleware from "redux-thunk";

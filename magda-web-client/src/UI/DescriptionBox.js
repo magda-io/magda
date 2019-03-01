@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import MarkdownViewer, { willBeTruncated } from "../UI/MarkdownViewer";
 import ToggleButton from "./ToggleButton";
-import "./DescriptionBox.css";
+import "./DescriptionBox.scss";
 import downArrowIcon from "../assets/downArrow.svg";
 import upArrowIcon from "../assets/upArrow.svg";
 

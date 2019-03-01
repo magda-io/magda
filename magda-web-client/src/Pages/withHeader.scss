@@ -1,0 +1,6 @@
+.app-container {
+    &.loading {
+        // page height - header height
+        min-height: calc(100vh - 112px);
+    }
+}

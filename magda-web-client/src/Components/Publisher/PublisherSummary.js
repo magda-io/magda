@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./PublisherSummary.css";
+import "./PublisherSummary.scss";
 
 function PublisherSummary(props) {
     return (

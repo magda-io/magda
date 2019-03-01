@@ -6,7 +6,7 @@ import MagdaNamespacesConsumer from "../Components/i18n/MagdaNamespacesConsumer"
 import ToggleButton from "./ToggleButton";
 import { gapi } from "../analytics/ga";
 
-import "./ContactPoint.css";
+import "./ContactPoint.scss";
 
 class ContactPoint extends React.Component {
     state = { reveal: false };

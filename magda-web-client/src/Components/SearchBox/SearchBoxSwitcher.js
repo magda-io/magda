@@ -1,7 +1,7 @@
 import React from "react";
 import { Medium, Small } from "../../UI/Responsive";
 import SearchBox from "../../Components/Search/SearchBox";
-import "../../Components/Search/SearchBox.css";
+import "../../Components/Search/SearchBox.scss";
 
 const SearchBoxSwitcher = props => {
     return (

@@ -79,6 +79,8 @@ indexer:
 
 web-server:
   fallbackUrl: "https://data.gov.au"
+  featureFlags:
+    cataloguing: true
 
 correspondence-api:
   defaultRecipient: "magda-test@googlegroups.com"

@@ -1,4 +1,4 @@
-import "./FilterExplanation.css";
+import "./FilterExplanation.scss";
 
 import React from "react";
 

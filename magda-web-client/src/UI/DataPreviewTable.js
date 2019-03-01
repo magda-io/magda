@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactTable from "react-table";
-import "./ReactTable.css";
+import "./ReactTable.scss";
 import { config } from "../config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "../Components/Spinner";
@@ -123,10 +123,12 @@ export default class DataPreviewTable extends Component {
         )
             return <div>Data grid preview is not available</div>;
         const fields = this.state.parsedResults.meta.fields;
-        const columns = fields.filter(f => f.length > 0).map(item => ({
-            Header: item,
-            accessor: item
-        }));
+        const columns = fields
+            .filter(f => f.length > 0)
+            .map(item => ({
+                Header: item,
+                accessor: item
+            }));
         const rows = this.removeEmptyRows(this.state.parsedResults.data);
         return (
             <div className="clearfix">

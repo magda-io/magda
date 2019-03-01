@@ -7,7 +7,7 @@ import { retrieveLocalData, setLocalData } from "../../storage/localStorage";
 import FilterExplanation from "./FilterExplanation";
 import memoize from "memoize-one";
 
-import "./SearchFacets.css";
+import "./SearchFacets.scss";
 
 // partition an array by size n
 const partitionArray = (array, size) =>

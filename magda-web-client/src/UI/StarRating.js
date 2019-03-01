@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import emptyStarIcon from "../assets/emptyStar.svg";
-import "./StarRating.css";
+import "./StarRating.scss";
 import starIcon from "../assets/star.svg";
 
 function StarRating(props) {
