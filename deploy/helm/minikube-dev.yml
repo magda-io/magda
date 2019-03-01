@@ -35,6 +35,8 @@ correspondence-api:
   
 web-server:
   fallbackUrl: "https://data.gov.au"
+  featureFlags:
+    cataloguing: true
 
 connectors:
   includeCronJobs: false
