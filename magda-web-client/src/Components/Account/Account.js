@@ -1,5 +1,5 @@
 import React from "react";
-import "./Account.css";
+import "./Account.scss";
 import Login from "./Login";
 import { connect } from "react-redux";
 import queryString from "query-string";

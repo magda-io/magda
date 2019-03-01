@@ -23,7 +23,6 @@
     "@types/lru-cache": "4.0.0",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
-    "@types/node": "^8.0.14",
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",

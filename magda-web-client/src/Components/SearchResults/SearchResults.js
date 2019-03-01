@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import DatasetSummary from "../../Components/Dataset/DatasetSummary";
-import "./SearchResults.css";
+import "./SearchResults.scss";
 import SearchPageSuggest from "./SearchPageSuggest";
 import { needsContent } from "../../helpers/content";
 

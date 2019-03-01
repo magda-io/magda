@@ -3,16 +3,9 @@ import onRecordFound from "./onRecordFound";
 import brokenLinkAspectDef from "./brokenLinkAspectDef";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
 import { CoreOptions } from "request";
+import coerceJson from "@magda/typescript-common/dist/coerceJson";
 
 const ID = "minion-broken-link";
-
-const coerceJson = (param: string) => (json?: string) => {
-    const data = JSON.parse(json);
-    if (!data || typeof data !== "object") {
-        throw new Error(`Invalid "${param}" parameter.`);
-    }
-    return data;
-};
 
 const argv = commonYargs(6111, "http://localhost:6111", argv =>
     argv

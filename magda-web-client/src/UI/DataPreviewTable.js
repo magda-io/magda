@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactTable from "react-table";
-import "./ReactTable.css";
+import "./ReactTable.scss";
 import { config } from "../config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "../Components/Spinner";

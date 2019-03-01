@@ -9,7 +9,7 @@ import AUpageAlert from "../pancake/react/page-alerts";
 import memoize from "memoize-one";
 import { gapi } from "../analytics/ga";
 
-import "./DataPreviewChart.css";
+import "./DataPreviewChart.scss";
 
 let ReactEcharts = null;
 

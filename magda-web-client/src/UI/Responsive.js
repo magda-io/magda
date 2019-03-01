@@ -1,6 +1,6 @@
 import React from "react";
 import MediaQuery from "react-responsive";
-import { config } from "../config.js";
+import { config } from "../config";
 
 export function ExtraSmall(props) {
     return (

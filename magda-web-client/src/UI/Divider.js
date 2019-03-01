@@ -1,6 +1,6 @@
 import React from "react";
 
-import "./Divider.css";
+import "./Divider.scss";
 
 /**
  * Return a divider with left and right padding, e.g abc | def

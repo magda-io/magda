@@ -3,15 +3,15 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { fetchPublishersIfNeeded } from "../../actions/publisherActions";
 import PublisherSummary from "./PublisherSummary";
-import ErrorHandler from "../../Components/ErrorHandler";
+import ErrorHandler from "../ErrorHandler";
 import getPageNumber from "../../helpers/getPageNumber";
 import ProgressBar from "../../UI/ProgressBar";
 import Breadcrumbs from "../../UI/Breadcrumbs";
 import queryString from "query-string";
 import PropTypes from "prop-types";
-import debounce from "lodash.debounce";
+import debounce from "lodash/debounce";
 import Pagination from "../../UI/Pagination";
-import "./PublishersViewer.css";
+import "./PublishersViewer.scss";
 import search from "../../assets/search-dark.svg";
 import { Medium } from "../../UI/Responsive";
 import AUpageAlert from "../../pancake/react/page-alerts";
@@ -285,7 +285,7 @@ class PublishersViewer extends Component {
     }
 }
 
-function mapDispatchToProps(dispatch: Function) {
+function mapDispatchToProps(dispatch) {
     return bindActionCreators(
         {
             fetchPublishersIfNeeded: fetchPublishersIfNeeded
@@ -295,10 +295,10 @@ function mapDispatchToProps(dispatch: Function) {
 }
 
 function mapStateToProps(state, ownProps) {
-    const publishers: Array<Object> = state.publisher.publishers;
-    const isFetching: boolean = state.publisher.isFetchingPublishers;
-    const hitCount: number = state.publisher.hitCount;
-    const error: Object = state.publisher.errorFetchingPublishers;
+    const publishers = state.publisher.publishers;
+    const isFetching = state.publisher.isFetchingPublishers;
+    const hitCount = state.publisher.hitCount;
+    const error = state.publisher.errorFetchingPublishers;
     const keyword = state.publisher.keyword;
     return {
         publishers,

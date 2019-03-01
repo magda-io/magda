@@ -5,7 +5,7 @@ import MagdaDocumentTitle from "../Components/i18n/MagdaDocumentTitle";
 import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { connect } from "react-redux";
 import { markdownToHtml } from "../UI/MarkdownViewer";
-import "./StaticPage.css";
+import "./StaticPage.scss";
 
 import { fetchStaticPage } from "../actions/staticPagesActions";
 import { bindActionCreators } from "redux";

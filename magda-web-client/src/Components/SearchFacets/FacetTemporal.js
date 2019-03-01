@@ -1,4 +1,4 @@
-import "./FacetTemporal.css";
+import "./FacetTemporal.scss";
 import React, { Component } from "react";
 import defined from "../../helpers/defined";
 import MonthPicker from "../../UI/MonthPicker";

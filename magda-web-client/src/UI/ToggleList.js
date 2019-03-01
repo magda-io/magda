@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./ToggleList.css";
+import "./ToggleList.scss";
 
 class ToggleList extends Component {
     constructor(props) {

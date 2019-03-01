@@ -61,7 +61,6 @@
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
-    "@types/node": "^8.0.14",
     "@types/passport": "^0.4.5",
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.31",
