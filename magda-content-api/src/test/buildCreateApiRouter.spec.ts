@@ -305,7 +305,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                             .expect(customRoute.expectedContent)
                     )
                     .then(() =>
-                        admin(agent.delete(customRoute.route)).expect(204)
+                        admin(agent.delete(customRoute.route)).expect(200)
                     )
                     .then(() => agent.get(customRoute.getRoute).expect(404))
                     .then(() => done())
