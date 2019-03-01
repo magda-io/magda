@@ -1,8 +1,13 @@
 #!/bin/bash
+echo "Setting up data directory"
+
+mkdir /data/data
+mkdir /data/log
+chown -R elasticsearch:elasticsearch /data
 
 echo "Setting up snapshot directory"
 mkdir /snapshots
-chown -R elasticsearch /snapshots
+chown -R elasticsearch:elasticsearch /snapshots
 
 if [[ ! -z $GOOGLE_APPLICATION_CREDENTIALS ]]; then
     echo "Creating gcs permissions..."
