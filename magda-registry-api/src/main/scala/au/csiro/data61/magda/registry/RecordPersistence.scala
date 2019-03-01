@@ -793,15 +793,12 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def aspectIdsToWhereClause(tenantId: BigInt, aspectIds: Iterable[String]): Seq[Option[SQLSyntax]] = {
-    if (aspectIds.nonEmpty) aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq else List(aspectIdToWhereClause(tenantId, aspectId = ""))
+    aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq
   }
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
     val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    if (aspectId.nonEmpty)
-      Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
-    else
-      Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId)")
+    Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
   }
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
