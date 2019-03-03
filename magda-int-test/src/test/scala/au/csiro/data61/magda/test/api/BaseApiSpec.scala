@@ -1,45 +1,25 @@
 package au.csiro.data61.magda.test.api
 
 import java.net.URL
-
-import scala.collection.mutable
 import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.function.Consumer
 
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
-import org.elasticsearch.cluster.health.ClusterHealthStatus
-import org.scalacheck.Gen
-import org.scalacheck.Shrink
-import org.scalatest.BeforeAndAfter
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.{FunSpec, FunSuite}
-import org.scalatest.Matchers
+import akka.actor.ActorSystem
+import akka.event.Logging
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.search.elasticsearch._
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
+import au.csiro.data61.magda.test.util.{Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.HttpClient
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
-import akka.actor.ActorSystem
-import akka.actor.Scheduler
-import akka.event.Logging
-import akka.event.LoggingAdapter
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.RouteTestTimeout
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.spatial.RegionSource
-import au.csiro.data61.magda.test.util.Generators
-import au.csiro.data61.magda.test.util.MagdaGeneratorTest
+import org.elasticsearch.cluster.health.ClusterHealthStatus
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import spray.json.JsObject
-import au.csiro.data61.magda.test.util.TestActorSystem
-import au.csiro.data61.magda.spatial.RegionLoader
-import au.csiro.data61.magda.test.util.MagdaElasticSugar
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import org.scalatest.BeforeAndAfterEach
+
+import scala.collection.mutable
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
