@@ -92,8 +92,8 @@ class PublishersViewer extends Component {
         const pageIndex = page
             ? page
             : getPageNumber(this.props)
-                ? getPageNumber(this.props)
-                : 1;
+            ? getPageNumber(this.props)
+            : 1;
         this.props.fetchPublishersIfNeeded(pageIndex, searchText);
     }
 

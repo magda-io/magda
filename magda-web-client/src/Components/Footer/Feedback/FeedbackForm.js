@@ -135,8 +135,7 @@ class FeedbackForm extends React.Component {
         return (
             <div className="feedback-form-inner">
                 <div className="feedback-form-header">
-                    <span
-                    >{`Have feedback on this website? We're all ears`}</span>
+                    <span>{`Have feedback on this website? We're all ears`}</span>
                     <button
                         className="close-btn au-btn au-btn--secondary"
                         onClick={() => {

@@ -87,10 +87,9 @@ class HomePage extends React.Component {
                             <Lozenge content={this.props.lozenge} />
                         </Medium>
                     )}
-                    {(this.props.stories &&
-                        this.props.stories.length && (
-                            <Stories stories={this.props.stories} />
-                        )) ||
+                    {(this.props.stories && this.props.stories.length && (
+                        <Stories stories={this.props.stories} />
+                    )) ||
                         ""}
                 </div>
             </div>

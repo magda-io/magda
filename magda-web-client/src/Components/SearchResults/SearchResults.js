@@ -53,8 +53,9 @@ class SearchResults extends Component {
                 <ul className="list--unstyled">
                     {/* Only show the suggestion box before the first result if we're on the first page - if we're not
                     on the first page then presumably it was already shown as the last result on the previous page */}
-                    {suggestionBoxIndex === 0 &&
-                        this.props.isFirstPage && <SuggestionBox />}
+                    {suggestionBoxIndex === 0 && this.props.isFirstPage && (
+                        <SuggestionBox />
+                    )}
 
                     {shownSearchResults.map((result, i) => (
                         //show the request dataset form only after the first result
