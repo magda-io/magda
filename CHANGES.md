@@ -1,5 +1,8 @@
 ## 0.0.54
 
+Connectors:
+
+-   Add organisation ignore filter to CKAN connector
 UI:
 
 -   Upgraded the to create-react-app 2
