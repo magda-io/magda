@@ -7,8 +7,6 @@
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
     "deploy-storybook": "build-storybook -c .storybook -o .out",
     "dev": "yarn run start",
-    "build-staging": "env REACT_APP_IS_STAGING=1 yarn run compile",
-    "compile": "yarn run build-css && react-app-rewired build",
     "prepare": "pancake",
     "start": "react-scripts start",
     "build": "CI=false && pancake && react-scripts build",
