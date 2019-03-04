@@ -22,14 +22,14 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
-  def buildConfig = TestActorSystem.config
+  implicit def default(implicit system: ActorSystem): RouteTestTimeout = RouteTestTimeout(300 seconds)
+  def buildConfig: Config = TestActorSystem.config
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
   val logger = Logging(system, getClass)
-  implicit val indexedRegions = BaseApiSpec.indexedRegions
+  implicit val indexedRegions: List[(RegionSource, JsObject)] = BaseApiSpec.indexedRegions
 
-  val node = getNode
-  implicit val config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+  private val node = getNode
+  implicit val config: Config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
 
   val clientProvider = new DefaultClientProvider
 
@@ -41,7 +41,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
-      client.execute(
+      client().execute(
         IndexDefinition.regions.definition(DefaultIndices, config)
       ).await(90 seconds)
 
@@ -50,7 +50,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       }
 
       logger.info("Setting up regions")
-      IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
+      IndexDefinition.setupRegions(client(), fakeRegionLoader, DefaultIndices).await(60 seconds)
       logger.info("Finished setting up regions")
     }
 
@@ -62,27 +62,27 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(): Future[HttpClient] = Future(client)
+    override def getClient(): Future[HttpClient] = Future(client())
   }
 
   def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have NOT RED status") { () =>
-      client.execute {
+      client().execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED
-        case Left(f) => false
+        case Right(r) => r.result.status != ClusterHealthStatus.RED.toString
+        case Left(_) => false
       }
     }
   }
 
   def blockUntilNotYellow(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
-      client.execute {
+      client().execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
-        case Left(f) => false
+        case Right(r) => r.result.status != ClusterHealthStatus.RED.toString && r.result.status != ClusterHealthStatus.YELLOW.toString
+        case Left(_) => false
       }
     }
   }
@@ -98,7 +98,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
         if (!done) {
           logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
-          Thread.sleep(500 * (backoff))
+          Thread.sleep(500 * backoff)
         } else {
           logger.debug(s"{} is true, proceeding.", explain)
         }
@@ -125,16 +125,16 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
-      case Indices.DataSetsIndex => s"dataset-idx-${rawIndexName}"
-      case Indices.PublishersIndex => s"publisher-idx-${rawIndexName}"
-      case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
+      case Indices.DataSetsIndex => s"dataset-idx-$rawIndexName"
+      case Indices.PublishersIndex => s"publisher-idx-$rawIndexName"
+      case Indices.FormatsIndex => s"format-idx-$rawIndexName"
       case _ => DefaultIndices.getIndex(config, index)
     }
   }
 }
 
 object BaseApiSpec {
-  val testStates = {
+  val testStates: List[(RegionSource, JsObject)] = {
     import spray.json._
     List(
       (new RegionSource("ithinkthisisregiontype",new URL("http://example.com"), "STE_CODE11", "STE_NAME11", Some("STE_ABBREV"), false, false, 10), """
@@ -149,5 +149,5 @@ object BaseApiSpec {
     )
 
   }
-  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
+  val indexedRegions: List[(RegionSource, JsObject)] = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
 }

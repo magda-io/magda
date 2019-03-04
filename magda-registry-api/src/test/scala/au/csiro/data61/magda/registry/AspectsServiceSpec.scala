@@ -2,12 +2,11 @@ package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
+import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
-import spray.json._
-import au.csiro.data61.magda.model.Registry._
-import akka.http.scaladsl.server.AuthenticationFailedRejection
 import scalikejdbc._
+import spray.json._
 
 class AspectsServiceSpec extends ApiSpec {
   // ID of the initial tenant in the Tenants table.
@@ -58,7 +57,7 @@ class AspectsServiceSpec extends ApiSpec {
 
             val aspectDefinitions = responseAs[List[AspectDefinition]]
             aspectDefinitions.length shouldEqual 1
-            aspectDefinitions(0) shouldEqual aspectDefinition
+            aspectDefinitions.head shouldEqual aspectDefinition
           }
         }
       }
@@ -82,7 +81,6 @@ class AspectsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual aspectDefinition
 
-          val updated = aspectDefinition.copy(name = "foo")
           param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> RawHeader("TenantId", MAGDA_ADMIN_PORTAL_ID.toString()) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
             responseAs[BadRequest].message should include("already exists")
@@ -108,7 +106,7 @@ class AspectsServiceSpec extends ApiSpec {
 
             val aspectDefinitions = responseAs[List[AspectDefinition]]
             aspectDefinitions.length shouldEqual 1
-            aspectDefinitions(0) shouldEqual aspectDefinition
+            aspectDefinitions.head shouldEqual aspectDefinition
           }
         }
       }
@@ -237,7 +235,7 @@ class AspectsServiceSpec extends ApiSpec {
         sql"""SELECT e.eventId
           FROM events e
           LEFT JOIN aspects a ON a.lastUpdate = e.eventId
-          WHERE a.aspectId=${aspectId}
+          WHERE a.aspectId=$aspectId
           ORDER BY e.eventId DESC
           LIMIT 1""".map(rs => rs.long("eventId")).headOption().apply()
       }
