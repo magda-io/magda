@@ -329,7 +329,10 @@ export default class JsonConnector {
             .then(deletionResult => {
                 const result = new ConnectionResult();
 
-                if (deletionResult !== "Processing") {
+                if (
+                    deletionResult !== undefined &&
+                    deletionResult !== "Processing"
+                ) {
                     result.recordsTrimmed = deletionResult.count;
                 } else {
                     result.trimStillProcessing = true;
@@ -756,7 +759,8 @@ export interface JsonConnectorConfig {
     pageSize?: number;
     schedule?: string;
     ignoreHarvestSources?: string[];
-    allowedOrganisationName?: string;
+    allowedOrganisationNames?: string[];
+    ignoreOrganisationNames?: string[];
 
     extras?: JsonConnectorConfigExtraMetaData;
     presetRecordAspects?: JsonConnectorConfigPresetAspect[];
