@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import MarkdownViewer from "../UI/MarkdownViewer";
-import "./OverviewBox.css";
+import "./OverviewBox.scss";
 
 class OverviewBox extends Component {
     constructor(props) {

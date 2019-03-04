@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import MarkdownViewer from "../../UI/MarkdownViewer";
-import "./StoryBox.css";
+import "./StoryBox.scss";
 
 class StoryBox extends Component {
     getClickableElement(el, url, label) {

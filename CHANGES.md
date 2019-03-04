@@ -3,6 +3,10 @@
 Connectors:
 
 -   Add organisation ignore filter to CKAN connector
+UI:
+
+-   Upgraded the to create-react-app 2
+-   Added a basic new dataset page
 
 Others:
 

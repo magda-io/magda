@@ -1,6 +1,6 @@
 import React from "react";
 import MarkdownIt from "markdown-it";
-import "./MarkdownViewer.css";
+import "./MarkdownViewer.scss";
 import defined from "../helpers/defined";
 import truncate from "html-truncate";
 var DOMPurify = require("dompurify/dist/purify");

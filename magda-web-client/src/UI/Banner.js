@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 import React from "react";
 import { connect } from "react-redux";
-import "./Banner.css";
+import "./Banner.scss";
 import { closeTopBanner } from "../actions/topBanner";
 
 class Banner extends React.Component {

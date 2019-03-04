@@ -1,8 +1,8 @@
-import "./SearchBox.css";
+import "./SearchBox.scss";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import propTypes from "prop-types";
-import debounce from "lodash.debounce";
+import debounce from "lodash/debounce";
 import defined from "../../helpers/defined";
 import React, { Component } from "react";
 import { fetchRegionMapping } from "../../actions/regionMappingActions";
@@ -20,7 +20,7 @@ import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsum
 class SearchBox extends Component {
     constructor(props) {
         super(props);
-        const self: any = this;
+        const self = this;
         self.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
         );

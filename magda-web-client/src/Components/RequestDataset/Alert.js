@@ -1,6 +1,6 @@
 import React from "react";
 import AUpageAlert from "../../pancake/react/page-alerts";
-import "./Alert.css";
+import "./Alert.scss";
 
 const Alert = props => {
     return (

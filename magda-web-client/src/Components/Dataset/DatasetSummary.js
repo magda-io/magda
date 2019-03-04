@@ -3,9 +3,9 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import defined from "../../helpers/defined";
 import { parseDataset } from "../../helpers/record";
 import QualityIndicator from "../../UI/QualityIndicator";
-import "./DatasetSummary.css";
+import "./DatasetSummary.scss";
 import { Link } from "react-router-dom";
-import uniq from "lodash.uniq";
+import uniq from "lodash/uniq";
 import fileIcon from "../../assets/format-passive-dark.svg";
 import Divider from "../../UI/Divider";
 import { gapi } from "../../analytics/ga";
@@ -25,7 +25,9 @@ export default class DatasetSummary extends Component {
         return formats.length ? (
             <div className="dataset-summary-downloads">
                 <img src={fileIcon} alt="File icon" />{" "}
-                {formats.map((f, i) => <span key={i}>{f}</span>)}
+                {formats.map((f, i) => (
+                    <span key={i}>{f}</span>
+                ))}
             </div>
         ) : null;
     }

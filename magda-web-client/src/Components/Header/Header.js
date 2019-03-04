@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
-import "./Header.css";
+import "./Header.scss";
 import { config } from "../../config";
 import { Small, Medium } from "../../UI/Responsive";
 import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
