@@ -55,11 +55,14 @@ object IndexerApp extends App {
   } flatMap {
     case ShouldCrawl => Future(ShouldCrawl)
     case ShouldNotCrawl => {
-      logger.info("Checking to see if index is empty")
+      logger.info("Checking to see if datasets index is empty")
       indexer.isEmpty(Indices.DataSetsIndex).map(isEmpty => if (isEmpty) {
         logger.info("Datasets index is empty, recrawling")
         ShouldCrawl
-      } else { ShouldNotCrawl })
+      } else {
+        logger.info("Datasets index is NOT empty. No need to recrawl.")
+        ShouldNotCrawl
+      })
     }
   } map {
     case ShouldCrawl => {

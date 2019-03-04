@@ -3,22 +3,14 @@ package au.csiro.data61.magda.search.elasticsearch
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import org.elasticsearch.search.aggregations.Aggregation
-import com.sksamuel.elastic4s.searches.aggs.AggregationApi
-import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter
 import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.SearchDefinition
-import com.sksamuel.elastic4s.searches.aggs.AggregationDefinition
-import com.sksamuel.elastic4s.searches.aggs.FilterAggregationDefinition
-import com.sksamuel.elastic4s.searches.queries.{
-  InnerHitDefinition,
-  QueryDefinition,
-  QueryStringQueryDefinition,
-  SimpleStringQueryDefinition
-}
+import com.sksamuel.elastic4s.searches.SearchRequest
+import com.sksamuel.elastic4s.searches.aggs.{ Aggregation => AggregationDefinition }
+import com.sksamuel.elastic4s.searches.aggs.{ FilterAggregation => FilterAggregationDefinition }
+import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, QueryStringQuery => QueryStringQueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
 import com.typesafe.config.Config
 import spray.json._
 import akka.actor.ActorSystem
@@ -27,12 +19,8 @@ import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
-import au.csiro.data61.magda.api.model.{
-  OrganisationsSearchResult,
-  RegionSearchResult,
-  SearchResult
-}
-import au.csiro.data61.magda.model.Temporal.{ ApiDate, PeriodOfTime }
+import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.SearchQueryer
@@ -52,18 +40,12 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
-import com.sksamuel.elastic4s.searches.collapse.CollapseDefinition
+import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
-import com.sksamuel.elastic4s.http.HttpClient
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-import com.sksamuel.elastic4s.http.search.{
-  Aggregations,
-  FilterAggregationResult,
-  SearchResponse
-}
-
-import com.sksamuel.elastic4s.searches.queries.funcscorer.ScoreFunctionDefinition
+import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
+import com.sksamuel.elastic4s.searches.queries.funcscorer.{ ScoreFunction => ScoreFunctionDefinition}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit
@@ -75,7 +57,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   extends SearchQueryer {
   private val logger = system.log
 
-  val clientFuture: Future[HttpClient] = clientProvider.getClient.recover {
+  val clientFuture: Future[ElasticClient] = clientProvider.getClient.recover {
     case t: Throwable =>
       logger.error(
         t,
@@ -110,9 +92,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
         val query = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
         Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
-          case Right(results) => Future.successful((results.result, MatchAll))
-          case Left(IllegalArgumentException(e)) => throw e
-          case Left(ESGenericException(e)) => throw e
+          case results: RequestSuccess[SearchResponse] => Future.successful((results.result, MatchAll))
+          case IllegalArgumentException(e) => throw e
+          case ESGenericException(e) => throw e
         })).map {
           case Seq(fullRegions: List[Option[Region]], (response: SearchResponse, strategy: SearchStrategy)) =>
             val newQueryRegions =
@@ -139,14 +121,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
-  def augmentWithBoostRegions(query: Query)(implicit client: HttpClient): Future[Query] = {
+  def augmentWithBoostRegions(query: Query)(implicit client: ElasticClient): Future[Query] = {
     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
         query(matchQuery("regionSearchId", freeText).operator("or"))
         limit 50
       ).map {
-        case Left(ESGenericException(e)) => throw e
-        case Right(results) => {
+        case ESGenericException(e) => throw e
+        case results: RequestSuccess[SearchResponse] => {
           results.result.totalHits match {
             case 0 => Set[Region]() // If there's no hits, no need to do anything more
             case _ => results.result.to[Region].toSet
@@ -227,7 +209,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                   definition.extractFacetOptions(
                     aggs
                       .filter(facetType.id + "-filter")
-                      .getAgg(facetType.id))
+                      .dataAsMap.get(facetType.id).flatMap(AggUtils.toAgg(_)))
                 case false => Nil
               }).filter(definition.isFilterOptionRelevant(query))
                 .map(_.copy(matched = true))
@@ -286,8 +268,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             val alternativeOptions =
               definition.extractFacetOptions(
                 aggs
-                  .getAgg(facetType.id + "-global")
-                  .flatMap(_.getAgg("filter").flatMap(_.getAgg(facetType.id))))
+                  .dataAsMap.get(facetType.id + "-global").flatMap(AggUtils.toAgg(_))
+                  .flatMap(_.dataAsMap.get("filter").flatMap(AggUtils.toAgg(_)).flatMap{ agg =>
+                    agg.dataAsMap.get(facetType.id).flatMap(AggUtils.toAgg(_))
+                  }))
             definition.truncateFacets(
               query,
               filteredOptions,
@@ -345,7 +329,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
-    searchDef: SearchDefinition,
+    searchDef: SearchRequest,
     query: Query,
     strategy: SearchStrategy,
     facetSize: Int) = {
@@ -494,7 +478,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         queryString
           .field("distributions.title")
           .field("distributions.description")
-          .field("distributions.format.keyword_lowercase")
+          .field("distributions.format")
           .defaultOperator("and"))
       .scoreMode(ScoreMode.Max)
 
@@ -561,8 +545,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .tieBreaker(0))
             .limit(limit))
         .flatMap {
-          case Left(ESGenericException(e)) => throw e
-          case Right(results) =>
+          case ESGenericException(e) => throw e
+          case results: RequestSuccess[SearchResponse] =>
             results.result.totalHits match {
               case 0 =>
                 Future(FacetSearchResult(0, Nil)) // If there's no hits, no need to do anything more
@@ -591,8 +575,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                     0,
                     MatchAll).aggs(filters)
                 } map {
-                  case Left(ESGenericException(e)) => throw e
-                  case Right(results) =>
+                  case ESGenericException(e) => throw e
+                  case results: RequestSuccess[SearchResponse] =>
                     val aggregations = results.result.aggregations.data.map {
                       case (name: String, value: Map[String, Any]) =>
                         (name,
@@ -646,8 +630,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               scoreSort order SortOrder.DESC)
               sourceExclude "geometry")
         .flatMap {
-          case Left(ESGenericException(e)) => throw e
-          case Right(results) =>
+          case ESGenericException(e) => throw e
+          case results: RequestSuccess[SearchResponse] =>
             results.result.totalHits match {
               case 0 =>
                 Future(RegionSearchResult(query, 0, List())) // If there's no hits, no need to do anything more
@@ -683,7 +667,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             .field("publisher.addrState")
         }
         .aggs(cardinalityAgg("totalCount", "publisher.identifier"))
-        .collapse(new CollapseDefinition(
+        .collapse(new CollapseRequest(
           "publisher.aggKeywords.keyword",
           Some(new InnerHitDefinition("datasetCount", Some(1)))))
       client
@@ -694,7 +678,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             query
           })
         .flatMap {
-          case Right(r) =>
+          case r: RequestSuccess[SearchResponse] =>
             val orgs = r.result.hits.hits
               .flatMap(h => {
                 val d = h.to[DataSet]
@@ -710,7 +694,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               r.result.aggregations.cardinality("totalCount").value
             Future(
               OrganisationsSearchResult(queryString, totalCount.toLong, orgs))
-          case Left(ESGenericException(e)) => throw e
+          case ESGenericException(e) => throw e
         }
         .recover {
           case RootCause(illegalArgument: IllegalArgumentException) =>
@@ -734,7 +718,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   def resolveFullRegion(queryRegionFV: FilterValue[Region])(
     implicit
-    client: HttpClient): Future[Option[Region]] = {
+    client: ElasticClient): Future[Option[Region]] = {
     queryRegionFV match {
       case Specified(region) =>
         client
@@ -745,8 +729,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                   (region.queryRegion.regionType + "/" + region.queryRegion.regionId).toLowerCase)
               } start 0 limit 1 sourceExclude "geometry")
           .flatMap {
-            case Left(ESGenericException(e)) => throw e
-            case Right(results) =>
+            case ESGenericException(e) => throw e
+            case results: RequestSuccess[SearchResponse] =>
               results.result.totalHits match {
                 case 0 => Future(None)
                 case _ => Future(results.result.to[Region].headOption)

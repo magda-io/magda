@@ -1,3 +1,22 @@
+## 0.0.54
+
+UI:
+
+-   Upgraded the to create-react-app 2
+-   Added a basic new dataset page
+
+Others:
+
+-   Change content api delete response status code from to 204 to 200 so its content can be read.
+-   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
+-   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
+-   Elasticsearch related test cases run on Docker container than than local node
+
+Indexer:
+
+-   Fixed issues of snapshot creation & restore
+-   Indexer will auto reopen index if it's closed
+
 ## 0.0.53
 
 Connectors:
@@ -15,6 +34,8 @@ Others:
 -   Upgraded dependencies with snyk.io vulnerabilities.
 -   Allowed Favicon to be configurable through API & Admin UI
 -   Added `magda.reservedFor=statefulsets:NoSchedule` toleration to statefulsets.
+-   Improvement indexer scala test cases for Travis
+-   Made feature images easier to configure
 
 ## 0.0.52
 

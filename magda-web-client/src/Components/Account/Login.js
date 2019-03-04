@@ -3,7 +3,7 @@ import fbLogo from "./fb-logo.svg";
 import googleLogo from "./google-logo.svg";
 import aafLogo from "./aaf-logo.png";
 import AUctaLink from "../../pancake/react/cta-link";
-import "./Login.css";
+import "./Login.scss";
 import { config } from "../../config";
 const { baseUrl } = config;
 
@@ -124,7 +124,8 @@ export default function Login(props) {
                             link="https://data.gov.au/user/register"
                             target="_blank"
                             text="click here"
-                        />.
+                        />
+                        .
                     </p>
                 </div>
             )}

@@ -1,7 +1,7 @@
 import React from "react";
 import AUtextInput from "../../pancake/react/text-inputs";
 import AUbutton from "../../pancake/react/buttons";
-import "./FormTemplate.css";
+import "./FormTemplate.scss";
 
 //This is the react form template
 export default class RequestFormTemplate extends React.Component {

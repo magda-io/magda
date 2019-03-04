@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import memoize from "memoize-one";
-import "./DataPreviewMap.css";
+import "./DataPreviewMap.scss";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
 import { config } from "../config";
 import { Medium, Small } from "./Responsive";

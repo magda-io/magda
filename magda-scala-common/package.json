@@ -1,6 +1,6 @@
 {
   "name": "@magda/scala-common",
-  "version": "0.0.53-0",
+  "version": "0.0.54-0",
   "description": "Common Scala code shared between components.",
   "scripts": {
     "test": "cd .. && sbt common/test",

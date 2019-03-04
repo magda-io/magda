@@ -11,7 +11,7 @@ import close from "../../../assets/close.svg";
 import success from "../../../assets/success.svg";
 import Notification from "../../../UI/Notification";
 
-import "./FeedbackForm.css";
+import "./FeedbackForm.scss";
 
 class FeedbackForm extends React.Component {
     constructor(props) {
@@ -135,8 +135,7 @@ class FeedbackForm extends React.Component {
         return (
             <div className="feedback-form-inner">
                 <div className="feedback-form-header">
-                    <span
-                    >{`Have feedback on this website? We're all ears`}</span>
+                    <span>{`Have feedback on this website? We're all ears`}</span>
                     <button
                         className="close-btn au-btn au-btn--secondary"
                         onClick={() => {

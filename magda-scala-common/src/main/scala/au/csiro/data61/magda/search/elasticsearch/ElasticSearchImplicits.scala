@@ -3,10 +3,12 @@ package au.csiro.data61.magda.search.elasticsearch
 import au.csiro.data61.magda.model.misc.{ Agent, BoundingBox, DataSet, FacetOption, QueryRegion, Region }
 import au.csiro.data61.magda.model.misc.Protocols
 import spray.json._
+import scala.util.Try
 
 import collection.JavaConverters._
 import com.sksamuel.elastic4s.{ AggReader, Hit, HitReader, Indexable }
 import com.sksamuel.elastic4s.http.search.{ Aggregations, HasAggregations }
+
 
 object ElasticSearchImplicits extends Protocols {
 
@@ -15,24 +17,24 @@ object ElasticSearchImplicits extends Protocols {
   }
 
   implicit object SprayJsonHitAs extends HitReader[JsValue] {
-    override def read(hit: Hit): Either[Throwable, JsValue] = Right(hit.sourceAsString.parseJson)
+    override def read(hit: Hit): Try[JsValue] = Try(hit.sourceAsString.parseJson)
   }
 
   implicit object DataSetHitAs extends HitReader[DataSet] {
-    override def read(hit: Hit): Either[Throwable, DataSet] = {
-      Right(hit.sourceAsString.parseJson.convertTo[DataSet].copy(score = Some(hit.score)))
+    override def read(hit: Hit): Try[DataSet] = {
+      Try(hit.sourceAsString.parseJson.convertTo[DataSet].copy(score = Some(hit.score)))
     }
   }
 
   implicit object DataSetHitAggAs extends AggReader[DataSet] {
-    override def read(json: String): Either[Throwable, DataSet] = {
-      Right(json.parseJson.convertTo[DataSet])
+    override def read(json: String): Try[DataSet] = {
+      Try(json.parseJson.convertTo[DataSet])
     }
   }
 
   implicit object RegionHitAs extends HitReader[Region] {
-    override def read(hit: Hit): Either[Throwable, Region] = {
-      Right(hit.to[JsValue].asJsObject.convertTo[Region](esRegionFormat))
+    override def read(hit: Hit): Try[Region] = {
+      Try(hit.to[JsValue].asJsObject.convertTo[Region](esRegionFormat))
     }
   }
 
@@ -40,9 +42,9 @@ object ElasticSearchImplicits extends Protocols {
     case None => Nil
     case Some(agg) =>
       val buckets = if (agg.contains("buckets")) {
-        agg.get("buckets")
+        agg.dataAsMap.get("buckets")
       } else {
-        agg.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
+        agg.dataAsMap.get("nested").flatMap(_.asInstanceOf[Map[String, Any]].get("buckets"))
       }
 
       buckets.toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]

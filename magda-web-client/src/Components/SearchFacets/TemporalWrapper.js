@@ -61,22 +61,21 @@ export default class TemporalWrapper extends React.Component {
                     onClick={this.props.toggleFacet}
                     isOpen={this.props.isOpen}
                 />
-                {this.props.isOpen &&
-                    this.props.temporalRange && (
-                        <FacetTemporal
-                            title={this.props.title}
-                            id={this.props.id}
-                            hasQuery={this.props.hasQuery}
-                            activeDates={this.props.activeDates}
-                            onToggleOption={this.props.onToggleOption}
-                            onResetFacet={this.resetTemporalFacet}
-                            toggleFacet={this.props.toggleFacet}
-                            isOpen={this.props.isOpen}
-                            temporalRange={this.props.temporalRange}
-                            disableApply={this.state.disableApply}
-                            toggleDateReset={this.toggleDateReset}
-                        />
-                    )}
+                {this.props.isOpen && this.props.temporalRange && (
+                    <FacetTemporal
+                        title={this.props.title}
+                        id={this.props.id}
+                        hasQuery={this.props.hasQuery}
+                        activeDates={this.props.activeDates}
+                        onToggleOption={this.props.onToggleOption}
+                        onResetFacet={this.resetTemporalFacet}
+                        toggleFacet={this.props.toggleFacet}
+                        isOpen={this.props.isOpen}
+                        temporalRange={this.props.temporalRange}
+                        disableApply={this.state.disableApply}
+                        toggleDateReset={this.toggleDateReset}
+                    />
+                )}
             </React.Fragment>
         );
     }

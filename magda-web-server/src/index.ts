@@ -6,6 +6,7 @@ import * as morgan from "morgan";
 import request from "@magda/typescript-common/dist/request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import coerceJson from "@magda/typescript-common/dist/coerceJson";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -106,6 +107,13 @@ const argv = yargs
         describe: "Google Analytics ID(s)",
         type: "array",
         default: []
+    })
+    .option("featureFlags", {
+        describe:
+            "A map of feature flags ids to booleans, turning feature flags on/off",
+        type: "string",
+        coerce: coerceJson("requestOpts"),
+        default: "{}"
     }).argv;
 
 var app = express();
@@ -177,7 +185,8 @@ const webServerConfig = {
                 .toString()
     ),
     fallbackUrl: argv.fallbackUrl,
-    gapiIds: argv.gapiIds
+    gapiIds: argv.gapiIds,
+    featureFlags: argv.featureFlags || {}
 };
 
 app.get("/server-config.js", function(req, res) {

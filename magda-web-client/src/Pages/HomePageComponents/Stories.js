@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import StoryBox from "./StoryBox";
 import { Medium, Small } from "../../UI/Responsive";
-import "./Stories.css";
+import "./Stories.scss";
 import downArrow from "../../assets/downArrow-homepage-more-stories.svg";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 

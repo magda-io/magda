@@ -95,8 +95,8 @@ spec:
           value: {{ .Values.data.pluginsInstall | quote }}
         - name: NETWORK_HOST
           value: "0.0.0.0"
-        - name: HTTP_ENABLE
-          value: "true"
+        - name: DISCOVERY_SERVICE
+          value: elasticsearch-discovery
 {{- if .Values.backup.googleApplicationCreds }}
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}/{{ .Values.backup.googleApplicationCreds.fileName }}"

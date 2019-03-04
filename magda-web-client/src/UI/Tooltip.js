@@ -1,4 +1,4 @@
-import "./Tooltip.css";
+import "./Tooltip.scss";
 
 import React from "react";
 

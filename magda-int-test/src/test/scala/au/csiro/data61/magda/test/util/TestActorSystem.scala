@@ -3,7 +3,6 @@ package au.csiro.data61.magda.test.util
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.test.util.ContinuousIntegration
 
 object TestActorSystem {
   // This has to be separated out to make overriding the config work for some stupid reason.
@@ -28,6 +27,7 @@ object TestActorSystem {
       connectTimeout = 30000
       socketTimeout = 600000
       maxRetryTimeout = 30000
+      serverUrl = "elasticsearch://localhost:9201"
     }
     auth.userId = "1"
   """).resolve().withFallback(AppConfig.conf())
