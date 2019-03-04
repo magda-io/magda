@@ -260,7 +260,7 @@ describe("JsonTransformer", () => {
             .query((q: any) => {
                 const fq: string = q.fq;
                 expect(fq).include(
-                    `(organization:"${organisationName}" AND organization:"${organisationName2}")`
+                    `(organization:"${organisationName}" OR organization:"${organisationName2}")`
                 );
                 expect(fq).include("-harvest_source_title:*");
                 return true;

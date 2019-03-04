@@ -115,7 +115,7 @@ export default class Ckan implements ConnectorSource {
                         : encodeURIComponent('"' + title + '"');
                 return `organization:${encoded}`;
             });
-            solrQueries.push("(" + encOrgs.join(" AND ") + ")");
+            solrQueries.push("(" + encOrgs.join(" OR ") + ")");
         }
 
         if (
