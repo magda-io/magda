@@ -7,6 +7,7 @@ UI:
 
 -   Upgraded the to create-react-app 2
 -   Added a basic new dataset page
+-   Added results of automated metadata extraction spikes to add new dataset page
 
 Others:
 
