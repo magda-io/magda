@@ -3,37 +3,32 @@ package au.csiro.data61.magda.registry
 import java.lang.annotation.Annotation
 import java.lang.reflect.Type
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.model.{MediaTypes, Uri}
+import akka.http.scaladsl.server.PathMatchers
+import akka.stream.ActorMaterializer
+import com.github.swagger.akka.SwaggerHttpService
+import com.github.swagger.akka.SwaggerHttpService.removeInitialSlashIfNecessary
 import com.github.swagger.akka.model.Info
+import enumeratum.values.IntEnumEntry
+import gnieh.diffson.sprayJson.JsonPatch
+import io.swagger.converter.{ModelConverter, ModelConverterContext, ModelConverters}
+import io.swagger.models.ModelImpl
+import io.swagger.models.properties.{ArrayProperty, RefProperty}
 
 import scala.reflect.runtime.{universe => ru}
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Uri}
-import akka.stream.ActorMaterializer
-import com.github.swagger.akka._
-import enumeratum.values.IntEnumEntry
-import gnieh.diffson._
-import io.swagger.converter.{ModelConverter, ModelConverterContext, ModelConverters}
-import io.swagger.models.{ArrayModel, ComposedModel, ModelImpl}
-import gnieh.diffson.sprayJson.JsonPatch
-import io.swagger.models.properties.{ArrayProperty, ObjectProperty, RefProperty, StringProperty}
-import spray.json.JsValue
 
-class SwaggerDocService(address: String, port: Int, val registryApiBaseUrl: String, system: ActorSystem) extends SwaggerHttpService with HasActorSystem {
-  override implicit val actorSystem: ActorSystem = system
-  override implicit val materializer: ActorMaterializer = ActorMaterializer()
-  override val apiTypes = Seq(
-    ru.typeOf[AspectsService],
-    ru.typeOf[RecordsService],
-    ru.typeOf[RecordAspectsService],
-    ru.typeOf[RecordHistoryService],
-    ru.typeOf[HooksService],
-    ru.typeOf[TenantsServiceRO])
+class SwaggerDocService(address: String, port: Int, val registryApiBaseUrl: String, system: ActorSystem) extends SwaggerHttpService {
+  implicit val actorSystem: ActorSystem = system
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  override def apiClasses = Set(classOf[AspectsService], classOf[RecordsService], classOf[RecordAspectsService], classOf[RecordHistoryService], classOf[HooksService])
   override val host = ""
   override val info = Info(version = "0.1")
   override val basePath = Uri(registryApiBaseUrl).path.toString()
+  val base = PathMatchers.separateOnSlashes(removeInitialSlashIfNecessary(apiDocsPath))
   lazy val allRoutes =
     routes ~
-      path(apiDocsBase / "json-patch.json") {
+      path(base / "json-patch.json") {
         getFromResource("json-patch.json", MediaTypes.`application/json`)
       }
 

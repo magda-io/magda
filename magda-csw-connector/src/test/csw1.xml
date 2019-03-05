@@ -123,7 +123,7 @@ ABSTRACT
                     <gmd:pointOfContact>
                         <gmd:CI_ResponsibleParty>
                             <gmd:organisationName>
-                                <gco:CharacterString>POI DEPT</gco:CharacterString>
+                                <gco:CharacterString>DEPT</gco:CharacterString>
                             </gmd:organisationName>
                             <gmd:role>
                                 <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="ISOTC211/19115">pointOfContact</gmd:CI_RoleCode>

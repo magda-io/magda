@@ -5,7 +5,7 @@ import onRecordFound from "./onRecordFound";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
 
 const ID = "minion-linked-data-rating";
-const argv = commonYargs(ID, 6109, "http://localhost:6109");
+const argv = commonYargs(6109, "http://localhost:6109");
 
 function sleuthLinkedData() {
     minion({

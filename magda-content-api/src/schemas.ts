@@ -58,15 +58,13 @@ export const homeHighlight: any = {
     type: "object",
     properties: {
         text: {
-            type: "string",
-            minLength: 1
+            type: "string"
         },
         url: {
-            type: "string",
-            minLength: 1
+            type: "string"
         }
     },
-    required: ["text", "url"]
+    required: []
 };
 
 export const homeStory: any = {

@@ -40,8 +40,18 @@ const modifiedDate =
 
 const extent = jsonpath.query(identification, "$[*].extent[*].EX_Extent[*]");
 
+const responsibleParties = libraries.cswFuncs.getResponsibleParties(dataset);
+
 const datasetContactPoint = getContactPoint(
-    jsonpath.query(dataset.json, "$.contact[*].CI_ResponsibleParty[*]"),
+    jsonpath
+        .nodes(dataset.json, "$..CI_ResponsibleParty[*]")
+        .concat(
+            jsonpath.nodes(
+                dataset.json,
+                "$..CI_Responsibility[?(@.role[0].CI_RoleCode)]"
+            )
+        )
+        .map(x => x.value),
     true
 );
 const identificationContactPoint = getContactPoint(
@@ -67,16 +77,26 @@ const pointOfTruth = distNodes.filter(
         "Point of truth URL of this metadata record"
 );
 
-const responsibleParties = jsonpath.query(
-    dataset.json,
-    "$..CI_ResponsibleParty[*]"
+const publisher = libraries.cswFuncs.getOrganisationNameFromResponsibleParties(
+    libraries.cswFuncs.getPublishersFromResponsibleParties(responsibleParties)
 );
-const byRole = libraries.lodash.groupBy(responsibleParties, party =>
-    jsonpath.value(party, '$.role[*].CI_RoleCode[*]["$"].codeListValue.value')
-);
-const datasetOrgs = byRole.publisher || byRole.owner || byRole.custodian || [];
-const publisher = getContactPoint(datasetOrgs, false);
 
+const urnIdentifier = jsonpath.value(
+    dataset.json,
+    "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='urn:uuid')].code.._"
+);
+
+const gaDataSetURI = jsonpath.value(
+    jsonpath.nodes(
+        dataset.json,
+        "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='ga-dataSetURI')]"
+    ),
+    "$.._"
+);
+const fileIdentifier = jsonpath.value(
+    dataset.json,
+    "$.fileIdentifier[*].CharacterString[*]._"
+);
 return {
     title: jsonpath.value(citation, "$[*].title[*].CharacterString[*]._"),
     description: jsonpath.value(
@@ -94,7 +114,7 @@ return {
             )
         )
         .filter((item, index, array) => array.indexOf(item) === index),
-    publisher: publisher,
+    publisher: publisher ? publisher : "",
     accrualPeriodicity: jsonpath.value(
         identification,
         '$[*].resourceMaintenance[*].MD_MaintenanceInformation[*].maintenanceAndUpdateFrequency[*].MD_MaintenanceFrequencyCode[*]["$"].codeListValue.value'
@@ -120,7 +140,8 @@ return {
         "$[*].descriptiveKeywords[*].MD_Keywords[*].keyword[*].CharacterString[*]._"
     ),
     contactPoint: contactPoint,
-    landingPage: jsonpath.value(pointOfTruth, "$[*].linkage[*].URL[*]._")
+    landingPage:
+        jsonpath.value(pointOfTruth, "$[*].linkage[*].URL[*]._") || gaDataSetURI
 };
 
 function findDatesWithType(dates, type) {
@@ -211,29 +232,24 @@ function getContactPoint(responsibleParties, preferIndividual) {
 
     const contactInfo = jsonpath.query(
         responsibleParties,
-        "$[*].contactInfo[*].CI_Contact[*]"
+        "$..contactInfo[*].CI_Contact[*]"
     );
     const individual = jsonpath.value(
         responsibleParties,
         "$[*].individualName[*].CharacterString[*]._"
     );
-    const organisation = jsonpath.value(
-        responsibleParties,
-        "$[*].organisationName[*].CharacterString[*]._"
+    const organisation = libraries.cswFuncs.getOrganisationNameFromResponsibleParties(
+        responsibleParties
     );
     const homepage = jsonpath.value(
         contactInfo,
         "$[*].onlineResource[*].CI_OnlineResource[*].linkage[*].URL[*]._"
     );
-    const address = jsonpath.query(
-        contactInfo,
-        "$[*].address[*].CI_Address[*]"
-    );
+    const address = jsonpath.query(contactInfo, "$..address[*].CI_Address[*]");
     const emailAddress = jsonpath.value(
         address,
         "$[*].electronicMailAddress[*].CharacterString[*]._"
     );
-
     const name = preferIndividual
         ? individual || organisation
         : organisation || individual;

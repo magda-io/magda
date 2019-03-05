@@ -5,8 +5,9 @@ import MarkdownViewer from "../../UI/MarkdownViewer";
 import { connect } from "react-redux";
 import DistributionRow from "../DistributionRow";
 import queryString from "query-string";
-import "./RecordDetails.css";
-import "./DatasetDetails.css";
+import defined from "../../helpers/defined";
+import "./RecordDetails.scss";
+import "./DatasetDetails.scss";
 
 class DatasetDetails extends Component {
     state = {
@@ -17,9 +18,11 @@ class DatasetDetails extends Component {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
         const source = this.props.dataset.source
-            ? `This dataset was originally found on [${
-                  this.props.dataset.source
-              }](${dataset.landingPage})`
+            ? `This dataset was originally found on ${
+                  dataset.landingPage
+                      ? `[${this.props.dataset.source}](${dataset.landingPage})`
+                      : this.props.dataset.source
+              }`
             : "";
         return (
             <div className="dataset-details">
@@ -62,6 +65,15 @@ class DatasetDetails extends Component {
                                 >
                                     {dataset.landingPage}
                                 </a>
+                                {defined(dataset.creation) &&
+                                defined(dataset.creation.isOpenData) ? (
+                                    <h3 className="section-heading">
+                                        Type:{" "}
+                                        {dataset.creation.isOpenData
+                                            ? "Public"
+                                            : "Private"}
+                                    </h3>
+                                ) : null}
                             </div>
                         )}
                         <div

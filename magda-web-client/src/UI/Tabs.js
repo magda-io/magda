@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./Tabs.css";
+import "./Tabs.scss";
 
 function Tabs(props) {
     // manully detect Nav link active link

@@ -281,6 +281,13 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 content: "Hello!",
                 getRoute: "/lang/en/publishersPage/blahface.text",
                 expectedContent: "Hello!"
+            },
+            {
+                route: "/favicon.ico",
+                mime: "image/x-icon",
+                content: gifImage,
+                getRoute: "/favicon.ico",
+                expectedContent: gifImage.toString("utf8")
             }
         ];
 
@@ -298,7 +305,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                             .expect(customRoute.expectedContent)
                     )
                     .then(() =>
-                        admin(agent.delete(customRoute.route)).expect(204)
+                        admin(agent.delete(customRoute.route)).expect(200)
                     )
                     .then(() => agent.get(customRoute.getRoute).expect(404))
                     .then(() => done())

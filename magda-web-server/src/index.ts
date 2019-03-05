@@ -6,6 +6,7 @@ import * as morgan from "morgan";
 import request from "@magda/typescript-common/dist/request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import coerceJson from "@magda/typescript-common/dist/coerceJson";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -87,6 +88,16 @@ const argv = yargs
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("previewMapBaseUrl", {
+        describe:
+            "The base URL of the Magda preview map.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("correspondenceApiBaseUrl", {
+        describe:
+            "The base URL of the correspondence api.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("fallbackUrl", {
         describe:
             "An older system to fall back to - this url will be shown in a banner that says 'you can still go back to old site'.",
@@ -96,6 +107,13 @@ const argv = yargs
         describe: "Google Analytics ID(s)",
         type: "array",
         default: []
+    })
+    .option("featureFlags", {
+        describe:
+            "A map of feature flags ids to booleans, turning feature flags on/off",
+        type: "string",
+        coerce: coerceJson("requestOpts"),
+        default: "{}"
     }).argv;
 
 var app = express();
@@ -167,7 +185,8 @@ const webServerConfig = {
                 .toString()
     ),
     fallbackUrl: argv.fallbackUrl,
-    gapiIds: argv.gapiIds
+    gapiIds: argv.gapiIds,
+    featureFlags: argv.featureFlags || {}
 };
 
 app.get("/server-config.js", function(req, res) {

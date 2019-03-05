@@ -220,9 +220,18 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
+type Route = {
+    to: string;
+    auth?: boolean;
+};
+
+type Routes = {
+    [host: string]: Route;
+};
+
 const routes = _.isEmpty(argv.proxyRoutesJson)
     ? defaultConfig.proxyRoutes
-    : argv.proxyRoutesJson;
+    : ((argv.proxyRoutesJson as unknown) as Routes);
 
 const authenticator = new Authenticator({
     sessionSecret: argv.sessionSecret,
@@ -251,9 +260,12 @@ const probes: any = {};
  * Should use argv.routes to setup probes
  * so that no prob will be setup when run locally for testing
  */
-_.forEach(argv.routes, (value, key) => {
-    probes[key] = createServiceProbe(value.to);
-});
+_.forEach(
+    (argv.proxyRoutesJson as unknown) as Routes,
+    (value: any, key: string) => {
+        probes[key] = createServiceProbe(value.to);
+    }
+);
 installStatusRouter(app, { probes });
 
 // Redirect http url to https
@@ -265,14 +277,16 @@ app.use(compression());
 
 // Set sensible secure headers
 app.disable("x-powered-by");
-app.use(helmet(_.merge({}, defaultConfig.helmet, argv.helmetJson)));
+app.use(helmet(_.merge({}, defaultConfig.helmet, argv.helmetJson as {})));
 console.log(_.merge({}, defaultConfig.csp, argv.cspJson));
 app.use(
     helmet.contentSecurityPolicy(_.merge({}, defaultConfig.csp, argv.cspJson))
 );
 
 // Set up CORS headers for all requests
-const configuredCors = cors(_.merge({}, defaultConfig.cors, argv.corsJson));
+const configuredCors = cors(
+    _.merge({}, defaultConfig.cors, argv.corsJson as {})
+);
 app.options("*", configuredCors);
 app.use(configuredCors);
 

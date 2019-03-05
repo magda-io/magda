@@ -6,10 +6,12 @@ export const RecordTypeMapping = {
     Distribution: "dist"
 };
 
+export type RecordType = "Organization" | "Dataset" | "Distribution";
+
 export default class ConnectorRecordId {
     constructor(
         readonly id: string,
-        readonly type: "Organization" | "Dataset" | "Distribution",
+        readonly type: RecordType,
         readonly sourceId: string
     ) {}
 

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import "./NoResultsLabel.css";
+import "./NoResultsLabel.scss";
 
 export class NoResultsLabel extends Component {
     render() {

@@ -32,7 +32,7 @@ const TEST_CASES = [
 
 runConnectorTest(TEST_CASES, MockCSVCatalog, {
     cleanRegistry: function(registry: any) {
-        Object.values(registry.records).forEach(record => {
+        Object.values(registry.records).forEach((record: any) => {
             if (record.aspects && record.aspects["csv-dataset"]) {
                 delete record.aspects["csv-dataset"].json;
             }

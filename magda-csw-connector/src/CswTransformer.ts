@@ -42,9 +42,15 @@ export default class CswTransformer extends JsonTransformer {
     }
 
     getNameFromJsonOrganization(jsonOrganization: any): string {
-        return jsonpath.value(
-            jsonOrganization,
-            "$.organisationName[0].CharacterString[0]._"
+        return (
+            jsonpath.value(
+                jsonOrganization,
+                "$.organisationName[0].CharacterString[0]._"
+            ) ||
+            jsonpath.value(
+                jsonOrganization,
+                "$..CI_Organisation[*].name[*].CharacterString[*]._"
+            )
         );
     }
 
@@ -98,15 +104,22 @@ export default class CswTransformer extends JsonTransformer {
     private getJsonDistributionsArray(dataset: any): any[] {
         return jsonpath.query(
             dataset.json,
-            "$.distributionInfo[*].MD_Distribution[*].transferOptions[*].MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
+            "$..MD_DigitalTransferOptions[*].onLine[*].CI_OnlineResource[*]"
         );
     }
 
     private getRawDatasetId(jsonDataset: any): string {
-        return jsonpath.value(
+        const urnIdentifier = jsonpath.value(
+            jsonDataset.json,
+            "$..MD_Identifier[?(@.codeSpace[0].CharacterString[0]._=='urn:uuid')].code.._"
+        );
+
+        const fileIdentifier = jsonpath.value(
             jsonDataset.json,
             "$.fileIdentifier[*].CharacterString[*]._"
         );
+
+        return fileIdentifier || urnIdentifier;
     }
 
     private getRawDistributionId(

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import "./ChartConfig.css";
+import "./ChartConfig.scss";
 import bar from "../assets/chart-bar.svg";
 import pie from "../assets/chart-pie.svg";
 import line from "../assets/chart-line.svg";

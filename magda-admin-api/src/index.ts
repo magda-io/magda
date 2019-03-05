@@ -3,6 +3,7 @@ import * as yargs from "yargs";
 
 import buildApiRouter from "./buildApiRouter";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import { K8SApiType } from "./k8sApi";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -76,7 +77,7 @@ app.use(
         dockerRepo: argv.dockerRepo,
         authApiUrl: argv.authApiUrl,
         imageTag: argv.imageTag,
-        kubernetesApiType: argv.kubernetesApiType,
+        kubernetesApiType: argv.kubernetesApiType as K8SApiType,
         registryApiUrl: argv.registryApiUrl,
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,

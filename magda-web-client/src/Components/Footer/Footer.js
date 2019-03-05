@@ -5,7 +5,7 @@ import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
 import { Small } from "../../UI/Responsive";
 
-import "./footer.css";
+import "./footer.scss";
 
 const externalLinkRegex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
 

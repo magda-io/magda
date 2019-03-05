@@ -34,6 +34,12 @@ let downloadURL = fuzzy.findClosestFieldThreshold(
     "internal location"
 );
 
+let description = fuzzy.findClosestField(
+    dataset,
+    "description",
+    "short description"
+);
+
 let format = fuzzy.findClosestFieldThreshold(distribution, 0.5, "format");
 
 return {
@@ -43,5 +49,6 @@ return {
     accessURL,
     accessNotes,
     downloadURL,
-    format
+    format,
+    description
 };

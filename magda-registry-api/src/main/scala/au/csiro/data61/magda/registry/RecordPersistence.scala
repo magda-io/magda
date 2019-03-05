@@ -801,9 +801,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
   }
 
+
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
-//    val path = query.path.map(pathElement => sqls"->>$pathElement").reduce((a, b) => a.append(b))
     val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND recordaspects.tenantId=records.tenantId AND aspectId = ${query.aspectId} AND data #>> ${"{" + query.path.mkString(",") + "}"}::varchar[] = ${query.value})"
+    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND recordaspects.tenantId=records.tenantId AND aspectId = ${query.aspectId} AND #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }

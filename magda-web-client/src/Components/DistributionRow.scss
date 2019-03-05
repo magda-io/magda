@@ -26,6 +26,7 @@
 
     .distribution-row-link-license {
         @include AU-fontgrid(xs);
+        white-space: pre;
     }
 
     .download-button {

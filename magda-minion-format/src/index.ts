@@ -5,7 +5,7 @@ import commonYargs from "@magda/minion-framework/dist/commonYargs";
 
 const ID = "minion-format";
 
-const argv = commonYargs(ID, 6115, "http://localhost:6115");
+const argv = commonYargs(6115, "http://localhost:6115");
 
 function sleuthLayerer() {
     return minion({

@@ -70,7 +70,7 @@ Use https://github.com/magda-io/magda-config
 
 ## To build and run from source
 
-https://magda.io/doc/building-and-running
+https://magda.io/docs/building-and-running
 
 ## To get help with developing or running Magda
 

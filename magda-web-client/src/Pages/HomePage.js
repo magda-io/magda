@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
-import "./HomePage.css";
+import "./HomePage.scss";
 
 import TagLine from "./HomePageComponents/TagLine";
 import Lozenge from "./HomePageComponents/Lozenge";

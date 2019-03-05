@@ -3,7 +3,7 @@ import onRecordFound from "./onRecordFound";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
 
 const ID = "minion-visualization";
-const argv = commonYargs(ID, 6311, "http://localhost:6311");
+const argv = commonYargs(6311, "http://localhost:6311");
 
 const aspectDefinition = {
     id: "visualization-info",

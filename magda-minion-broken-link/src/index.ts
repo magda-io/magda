@@ -3,18 +3,11 @@ import onRecordFound from "./onRecordFound";
 import brokenLinkAspectDef from "./brokenLinkAspectDef";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
 import { CoreOptions } from "request";
+import coerceJson from "@magda/typescript-common/dist/coerceJson";
 
 const ID = "minion-broken-link";
 
-const coerceJson = (param: string) => (json?: string) => {
-    const data = JSON.parse(json);
-    if (!data || typeof data !== "object") {
-        throw new Error(`Invalid "${param}" parameter.`);
-    }
-    return data;
-};
-
-const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
+const argv = commonYargs(6111, "http://localhost:6111", argv =>
     argv
         .option("externalRetries", {
             describe:
@@ -26,7 +19,6 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
             describe:
                 "A object that defines wait time for each of domain. " +
                 "Echo property name of the object would be the domain name and property value is the wait time in seconds",
-            type: "string",
             coerce: coerceJson("domainWaitTimeConfig"),
             default: process.env.DOMAIN_WAIT_TIME_CONFIG || JSON.stringify({})
         })
@@ -40,7 +32,10 @@ const argv = commonYargs(ID, 6111, "http://localhost:6111", argv =>
         })
 );
 
-console.log("domainWaitTimeConfig: ", argv.domainWaitTimeConfig);
+console.log(
+    "domainWaitTimeConfig: ",
+    JSON.stringify(argv.domainWaitTimeConfig as any, null, 2)
+);
 
 function sleuthBrokenLinks() {
     return minion({
@@ -56,7 +51,7 @@ function sleuthBrokenLinks() {
                 registry,
                 argv.externalRetries,
                 1,
-                argv.domainWaitTimeConfig,
+                argv.domainWaitTimeConfig as any,
                 argv.requestOpts as CoreOptions
             )
     });

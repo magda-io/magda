@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import left_arrow from "../assets/left-arrow.svg";
 import right_arrow from "../assets/right-arrow.svg";
-import "./Pagination.css";
+import "./Pagination.scss";
 import { needsContent } from "../helpers/content";
 
 class Pagination extends Component {

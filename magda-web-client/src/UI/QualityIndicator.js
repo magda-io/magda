@@ -1,4 +1,4 @@
-import "./QualityIndicator.css";
+import "./QualityIndicator.scss";
 
 import React from "react";
 import StarRating from "./StarRating";

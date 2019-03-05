@@ -1,3 +1,38 @@
+## 0.0.54
+
+Connectors:
+
+-   Add organisation ignore filter to CKAN connector
+    UI:
+
+-   Upgraded the to create-react-app 2
+-   Added a basic new dataset page
+
+Others:
+
+-   Change content api delete response status code from to 204 to 200 so its content can be read.
+-   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
+
+## 0.0.53
+
+Connectors:
+
+-   Allowed Ckan connector to pull datasets belongs to a specified organisation
+-   Added `presetRecordAspects` & `extra` parameters supports to all connectors
+-   Improvements on CSW connector license info retrieve
+
+Dataset Page:
+
+-   When `dcat-dataset-strings.creation.isOpenData` is set, show `Public / Private` label accordingly
+
+Others:
+
+-   Upgraded dependencies with snyk.io vulnerabilities.
+-   Allowed Favicon to be configurable through API & Admin UI
+-   Added `magda.reservedFor=statefulsets:NoSchedule` toleration to statefulsets.
+-   Improvement indexer scala test cases for Travis
+-   Made feature images easier to configure
+
 ## 0.0.52
 
 Authentication:
@@ -11,19 +46,38 @@ Ops:
 -   Added `enableCkanRedirection` switch to turn on or off Ckan redirection feature from gateway
 -   Added `global.enablePriorityClass` switch to turn on or off `priorityClassName` on deployment templates
 -   Improved responsiveness of registry-api when it's under load
+-   Made the content-api accept authentication by default
+-   Lowered the resource requirements for the apidocs-server based on data.gov.au usage.
 
 Search:
 
 -   Made the lowest quality rating for a dataset in the search index 0.01, so that 0-quality datasets rank properly relative to each other.
     Others:
+-   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
 
-Interoperability
+Accessibility:
+
+-   Added `aria-label` field to Facet buttons to reflect the current filter selection
+
+Connectors:
+
+-   Made the CSV connector put the description column in the distribution description, not just the dataset one
+-   Fixed: CSW connector does not capture all distributions for some datasources (e.g. TERN)
+-   Fixed: CSW connector does not capture persistent URL or licences for some sources (eg. geoscience australia)
+
+Interoperability:
 
 -   Fixed /dashboard and /dataset?q=keyword redirects for migrating easily from CKAN sites
+
+Development:
+
+-   Made connector tests use the typescript of the code under test through ts-node, instead of the `/dist` directory.
 
 Others:
 
 -   Changed terminology for data rating to `Linked Data Rating`
+-   Fixed: Empty source link shows as a working link on dataset page
+-   Removed hard-coded URL for CKAN authentication, made it configurable.
 
 ## 0.0.51
 
@@ -55,6 +109,7 @@ Ops:
 -   Added `cloudsql-db-credentials` to create-secrets tool
 -   Only runtime dependencies will be included by docker image build script
 -   Fixed an file selector error in create-secrets script when current directory & non of its sub directory has \*.json file
+-   Changed SQL for querying aspects by path/value so that it could take advantage of JSONB indices.
 
 Security:
 

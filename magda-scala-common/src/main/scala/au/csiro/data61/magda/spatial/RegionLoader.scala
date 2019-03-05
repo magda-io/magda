@@ -9,7 +9,7 @@ import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.JsonFraming
 import akka.stream.scaladsl.Source
 import spray.json.JsObject
-import spray.json.pimpString
+import spray.json._
 import scala.concurrent.Future
 import com.typesafe.config.Config
 

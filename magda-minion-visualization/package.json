@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-visualization",
   "description": "MAGDA visualization Minion",
-  "version": "0.0.52-0",
+  "version": "0.0.54-0",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -15,22 +15,21 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.52-0",
-    "@types/node": "^7.0.5",
+    "@magda/scripts": "^0.0.54-0",
     "@types/papaparse": "^4.1.31",
     "@types/read-pkg-up": "^3.0.1",
-    "@types/request": "^2.0.0",
+    "@types/request": "^2.48.1",
     "@types/urijs": "^1.15.31",
-    "typescript": "~2.5.0"
+    "typescript": "^3.2.0"
   },
   "dependencies": {
-    "@magda/minion-framework": "^0.0.52-0",
-    "@magda/registry-aspects": "^0.0.52-0",
-    "@magda/typescript-common": "^0.0.52-0",
+    "@magda/minion-framework": "^0.0.54-0",
+    "@magda/registry-aspects": "^0.0.54-0",
+    "@magda/typescript-common": "^0.0.54-0",
     "moment": "^2.19.1",
     "papaparse": "^4.3.6",
     "read-pkg-up": "^3.0.0",
-    "request": "^2.79.0",
+    "request": "^2.88.0",
     "urijs": "^1.18.7"
   },
   "config": {

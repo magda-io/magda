@@ -503,6 +503,7 @@ class ElasticSearchIndexer(
           "addrPostCode" -> publisher.addrPostCode.toJson,
           "addrCountry" -> publisher.addrCountry.toJson,
           "website" -> publisher.website.toJson,
+          "source" -> publisher.source.toJson,
           "indexed" -> OffsetDateTime.now.toString.toJson).toJson)
     ))
 

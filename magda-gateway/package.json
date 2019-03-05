@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.52-0",
+  "version": "0.0.54-0",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -16,7 +16,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.52-0",
+    "@magda/typescript-common": "^0.0.54-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -29,16 +29,15 @@
     "express": "^4.15.3",
     "express-basic-auth": "^1.1.5",
     "express-session": "^1.11.3",
-    "gravatar": "^1.6.0",
+    "gravatar": "^1.8.0",
     "helmet": "^3.12.0",
     "http-proxy": "^1.16.2",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
-    "jsonwebtoken": "^7.4.1",
+    "jsonwebtoken": "^8.4.0",
     "jwt-simple": "^0.5.1",
     "lodash": "^4.17.4",
     "morgan": "^1.6.1",
-    "node-http-proxy": "^0.2.3",
     "passport": "^0.2.2",
     "passport-custom": "^1.0.5",
     "passport-facebook": "^2.0.0",
@@ -46,13 +45,13 @@
     "passport-local": "^1.0.0",
     "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",
-    "request": "^2.79.0",
+    "request": "^2.88.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
-    "yargs": "^8.0.2"
+    "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.52-0",
+    "@magda/scripts": "^0.0.54-0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cors": "^2.8.1",
@@ -63,25 +62,24 @@
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
-    "@types/node": "^8.0.14",
     "@types/passport": "^0.4.5",
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.31",
     "@types/pg": "^6.1.41",
     "@types/randomstring": "^1.1.6",
     "@types/read-pkg-up": "^3.0.1",
-    "@types/request": "2.47.0",
+    "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
     "@types/urijs": "^1.15.34",
-    "@types/yargs": "^8.0.2",
+    "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "~2.5.0"
+    "typescript": "^3.2.0"
   },
   "config": {
     "docker": {

@@ -1,7 +1,7 @@
 {
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "lib": ["es2017", "dom"],
+        "lib": ["es2015", "es2017", "dom"],
         "declaration": true,
         "outDir": "dist",
         "baseUrl": "."

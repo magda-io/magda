@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactParticles from "react-particles-js";
-import "./Particles.css";
+import "./Particles.scss";
 
 class Particles extends Component {
     render() {

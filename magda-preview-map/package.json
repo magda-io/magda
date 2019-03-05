@@ -1,6 +1,6 @@
 {
   "name": "@magda/preview-map",
-  "version": "0.0.52-0",
+  "version": "0.0.54-0",
   "description": "Geospatial preview based on TerriaJS.",
   "license": "Apache-2.0",
   "engines": {
@@ -12,7 +12,7 @@
     "url": "http://github.com/TerriaJS/TerriaMap"
   },
   "dependencies": {
-    "terriajs-server": "^2.7.4"
+    "terriajs-server": "^2.9.1"
   },
   "config": {
     "awsProfile": "terria",
@@ -29,7 +29,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.52-0",
+    "@magda/scripts": "^0.0.54-0",
     "babel-core": "^6.7.4",
     "babel-eslint": "^8.2.2",
     "babel-loader": "^7.0.0",
@@ -69,7 +69,7 @@
     "url-loader": "^0.5.7",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.2",
-    "yargs": "^11.0.0"
+    "yargs": "^12.0.5"
   },
   "scripts": {
     "start": "bash ../node_modules/terriajs-server/run_server.sh --config-file devserverconfig.json",
