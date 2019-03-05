@@ -1,28 +1,25 @@
 package au.csiro.data61.magda.client
 
 import java.io.IOException
+import java.net.URL
 import java.time.ZoneOffset
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-
-import com.typesafe.config.Config
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.{ OK, NotFound }
+import akka.http.scaladsl.model.StatusCodes.{NotFound, OK}
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Registry.{ Record, RegistryConverters, RegistryRecordsResponse, WebHook, RegistryConstants, WebHookAcknowledgement, WebHookAcknowledgementResponse, RegistryCountResponse }
+import au.csiro.data61.magda.Authentication
+import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
-import java.net.URL
 import com.auth0.jwt.JWT
-import au.csiro.data61.magda.Authentication
-import akka.http.scaladsl.model.headers.RawHeader
+import com.typesafe.config.Config
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait RegistryInterface {
   def getDataSetsReturnToken(start: Long, size: Int): Future[(Option[String], List[DataSet])]
@@ -44,6 +41,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   implicit val logger = Logging(system, getClass)
 
   val authHeader = RawHeader(Authentication.headerName, JWT.create().withClaim("userId", config.getString("auth.userId")).sign(Authentication.algorithm))
+  val tenantIdHeader = RawHeader("TenantId", MAGDA_SYSTEM_ID.toString())
   val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
   val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
@@ -57,7 +55,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(s"${baseRecordsPath}&dereference=true&pageToken=$pageToken&limit=$number").flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -70,7 +68,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(s"${baseRecordsPath}&dereference=true&start=$start&limit=$number").flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -83,7 +81,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getWebhooks(): Future[List[WebHook]] = {
-    fetcher.get(s"${baseApiPath}/hooks", Seq(authHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseApiPath/hooks", headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[List[WebHook]]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -92,7 +90,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getWebhook(id: String): Future[Option[WebHook]] = {
-    fetcher.get(s"${baseApiPath}/hooks/$id", Seq(authHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK       => Unmarshal(response.entity).to[WebHook].map(Some.apply)
         case NotFound => Future(None)
@@ -102,7 +100,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def putWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.put(s"${baseApiPath}/hooks/${webhook.id.get}", webhook, Seq(authHeader)).flatMap { response =>
+    fetcher.put(path = s"$baseApiPath/hooks/${webhook.id.get}", payload = webhook, headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -111,7 +109,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def createWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.post(s"${baseApiPath}/hooks", webhook, Seq(authHeader)).flatMap { response =>
+    fetcher.post(path = s"$baseApiPath/hooks", payload = webhook, headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -120,7 +118,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def resumeWebhook(webhookId: String): Future[WebHookAcknowledgementResponse] = {
-    fetcher.post(s"${baseApiPath}/hooks/$webhookId/ack", WebHookAcknowledgement(succeeded = false), Seq(authHeader)).flatMap { response =>
+    fetcher.post(path = s"$baseApiPath/hooks/$webhookId/ack", payload = WebHookAcknowledgement(succeeded = false), headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHookAcknowledgementResponse]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
