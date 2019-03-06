@@ -43,18 +43,6 @@ export class BadRequest {
     "message": string;
 }
 
-export class BigInt {
-    "bigInteger": number;
-    "validByte": boolean;
-    "validChar": boolean;
-    "validInt": boolean;
-    "validShort": boolean;
-    "validLong": boolean;
-    "whole": boolean;
-    "validDouble": boolean;
-    "validFloat": boolean;
-}
-
 export class CountResponse {
     "count": number;
 }
@@ -166,7 +154,7 @@ export class Tenant {
     /**
      * The unique ID of the tenant
      */
-    "id": BigInt;
+    "id": number;
     /**
      * The status of the tenant
      */
