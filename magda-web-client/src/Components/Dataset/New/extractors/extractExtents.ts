@@ -1,5 +1,5 @@
 /**
- * Extract spatial and temporal extend of stpeadsheet files
+ * Extract spatial and temporal extent of spreadsheet files
  */
 export function extractExtents(input, output) {
     if (input.workbook) {

@@ -16,9 +16,5 @@ module.exports = function override(config, env) {
         // --- stop auto inject. Will manually inject through tpl
         return new HtmlWebpackPlugin({ ...item.options, inject: false });
     });
-    config.module.rules.push({
-        test: /\.worker\.js$/,
-        use: { loader: "worker-loader" }
-    });
     return config;
 };

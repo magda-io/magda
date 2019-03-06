@@ -9,20 +9,7 @@ import FileDrop from "react-file-drop";
 
 const PUNCTUATION_REGEX = /[-_]+/g;
 
-// different extractors/processors
-import { extractText } from "./extractText";
-import { extractEqualHash } from "./extractEqualHash";
-import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
-import { extractExtents } from "./extractExtents";
-import { extractKeywords } from "./extractKeywords";
-
-const extractors = [
-    extractText,
-    extractEqualHash,
-    extractSimilarFingerprint,
-    extractExtents,
-    extractKeywords
-];
+import { extractors, ExtractorInput } from "./extractors";
 
 type File = {
     filename: string;
@@ -106,7 +93,7 @@ export default class NewDataset extends React.Component<{}, State> {
                     };
 
                     // done it this way to minimise duplicate content reading/processing
-                    const input: any = {
+                    const input: ExtractorInput = {
                         file: thisFile
                     };
 
