@@ -165,7 +165,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                * */
             keywordField("identifier"),
             objectField("contactPoint").fields(keywordField("identifier")),
-            dateField("indexed")
+            dateField("indexed"),
+            keywordField("publishingState")
           )
         )
         .analysis(

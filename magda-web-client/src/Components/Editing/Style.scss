@@ -1,0 +1,19 @@
+@import "../../variables";
+
+.edit-button {
+    margin-left: 0.5em;
+    margin-top: 0.5em;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    font-size: 1rem;
+    border: none;
+    background-color: $AU-colordark-foreground-action;
+    color: $AU-colordark-background;
+}
+
+.edit-button:hover {
+    cursor: pointer;
+    background-color: $AU-colordark-background;
+    color: $AU-colordark-foreground-action;
+}

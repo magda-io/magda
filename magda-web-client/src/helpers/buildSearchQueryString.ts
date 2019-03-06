@@ -14,6 +14,7 @@ type Query = {
     page: number;
     start?: number;
     limit?: number;
+    publishingState?: string | Array<string>;
 };
 
 export default function buildSearchQueryString(
@@ -43,6 +44,11 @@ export default function buildSearchQueryString(
         ? (query.page - 1) * searchResultsPerPage
         : 0;
 
+    let publishingState = queryToString(
+        "publishingState",
+        query.publishingState
+    );
+
     let queryArr = flatten([
         keywords,
         dateFroms,
@@ -51,7 +57,8 @@ export default function buildSearchQueryString(
         formats,
         locations,
         "start=" + startIndex,
-        "limit=" + (searchResultsPerPage + 1) // we get one more than we need so we can see what the score of the item at the top of the next page is
+        "limit=" + (searchResultsPerPage + 1), // we get one more than we need so we can see what the score of the item at the top of the next page is
+        publishingState
     ]);
 
     return queryArr.join("&");

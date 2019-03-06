@@ -20,8 +20,10 @@ export function extractExtents(input, output) {
                 headers.push(header);
             }
 
-            output.temporalExtent = aggregateDates(rows, headers);
-            output.spatialExtent = calculateSpatialExtent(rows, headers);
+            output.temporalCoverage = {
+                intervals: [aggregateDates(rows, headers)].filter(i => i)
+            };
+            output.spatialCoverage = calculateSpatialExtent(rows, headers);
         }
     }
 }
@@ -184,10 +186,19 @@ function aggregateDates(rows: any[], headers: string[]) {
         "Latest end: " + (latestNotFound ? "Not found" : latestEnd.toString())
     );
 
-    return {
-        earliestStart: !earliestNotFound && earliestStart,
-        latestEnd: !latestNotFound && latestEnd
-    };
+    if (!earliestNotFound || !latestNotFound) {
+        return {
+            start:
+                (!earliestNotFound &&
+                    earliestStart.toISOString().substr(0, 10)) ||
+                undefined,
+            end:
+                (!latestNotFound && latestEnd.toISOString().substr(0, 10)) ||
+                undefined
+        };
+    } else {
+        return undefined;
+    }
 }
 
 function getGreater(num1: number, num2: number) {
@@ -267,10 +278,21 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
     console.log(`Longitude: ${spatial.minLng} to ${spatial.maxLng}`);
     console.log(`Latitude: ${spatial.minLat} to ${spatial.maxLat}`);
 
-    return {
-        maxLat: spatial.maxLat !== Number.MIN_SAFE_INTEGER && spatial.maxLat,
-        minLat: spatial.minLat !== Number.MAX_SAFE_INTEGER && spatial.minLat,
-        maxLng: spatial.maxLng !== Number.MIN_SAFE_INTEGER && spatial.maxLng,
-        minLng: spatial.minLng !== Number.MAX_SAFE_INTEGER && spatial.minLng
-    };
+    if (
+        spatial.maxLat !== Number.MIN_SAFE_INTEGER &&
+        spatial.minLat !== Number.MAX_SAFE_INTEGER &&
+        spatial.maxLng !== Number.MIN_SAFE_INTEGER &&
+        spatial.minLng !== Number.MAX_SAFE_INTEGER
+    ) {
+        return {
+            bbox: [
+                spatial.minLng,
+                spatial.minLat,
+                spatial.maxLng,
+                spatial.maxLat
+            ]
+        };
+    } else {
+        return {};
+    }
 }

@@ -10,6 +10,13 @@ UI:
 -   Fixed clicking out of search filter causes the results to refetch
 -   Provide access to CKAN Data API for enabled resources
 -   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
+Cataloging:
+
+-   Added new aspects for publishing state and spatial coverage
+-   Updated Indexer and Search API to support publishingState
+-   Updated new dataset demo UI page to support adding new datasets
+-   Updated dataset ui page to be able to edit fields
+-   Added editor / editor type abstraction for making state management simpler for large forms.
 
 Correspondence:
 

@@ -87,7 +87,8 @@ package misc {
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
       creation: Option[DcatCreation] = None,
-      score: Option[Float]) {
+      score: Option[Float],
+      publishingState: Option[String] = None) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
 
@@ -480,7 +481,8 @@ package misc {
           "hasQuality" -> dataSet.hasQuality.toJson,
           "creation" -> dataSet.creation.toJson,
           "source" -> dataSet.source.toJson,
-          "score" -> dataSet.score.toJson
+          "score" -> dataSet.score.toJson,
+          "publishingState" -> dataSet.publishingState.toJson
         )
 
       def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
@@ -518,7 +520,8 @@ package misc {
           hasQuality = convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
           creation = convertOptionField[DcatCreation]("creation", json),
-          score = convertOptionField[Float]("score", json)
+          score = convertOptionField[Float]("score", json),
+          publishingState = convertOptionField[String]("publishingState", json)
         )
       }
     }
