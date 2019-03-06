@@ -31,7 +31,7 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     * @apiDescription Get all tenants.
     *
     *
-    * @apiSuccess (Success 200) [{json}] Response all the tenants
+    * @apiSuccess (Success 200) {json} Response all the tenants
     * @apiSuccessExample {json} Response:
     * [
     *   {"domainName":"default","id":0},
