@@ -225,7 +225,8 @@ package misc {
   case class Region(
     queryRegion: QueryRegion,
     regionName: Option[String] = None,
-    boundingBox: Option[BoundingBox] = None)
+    boundingBox: Option[BoundingBox] = None,
+    regionShortName: Option[String] = None)
 
   case class Distribution(
     identifier: Option[String] = None,
@@ -416,6 +417,7 @@ package misc {
         "regionId" -> region.queryRegion.regionId.toJson,
         "regionType" -> region.queryRegion.regionType.toJson,
         "regionName" -> region.regionName.toJson,
+        "regionShortName" -> region.regionShortName.toJson,
         "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson).filter(x => !x._2.equals(JsNull)))
 
       override def read(jsonRaw: JsValue): Region = {
@@ -425,8 +427,12 @@ package misc {
           QueryRegion(
             regionId = json.getFields("regionId").head.convertTo[String],
             regionType = json.getFields("regionType").head.convertTo[String]),
-          regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
-          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)))
+            regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
+            boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
+            regionShortName = json.getFields("regionShortName").headOption.flatMap { shortName => shortName match {
+              case JsNull => None
+              case _ => Some(shortName.convertTo[String])
+            }})
       }
     }
 

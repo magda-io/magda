@@ -76,7 +76,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "_id",
     "catalog",
     "accrualPeriodicity",
-    "contactPoint.name",
+    "contactPoint.identifier",
     "publisher.acronym")
 
   override def search(
@@ -473,8 +473,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     // other analysis does. So we do this silliness
     val distributionsEnglishQueries = nestedQuery("distributions")
       .query(
-        // If this was AND then a single distribution would have to match the entire query, this way you can
-        // have multiple dists partially match
         queryString
           .field("distributions.title")
           .field("distributions.description")
@@ -482,11 +480,24 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           .defaultOperator("and"))
       .scoreMode(ScoreMode.Max)
 
+    /**
+      * Unfortunately, when default operator is AND, we can't put NON_LANGUAGE_FIELDS & DATASETS_LANGUAGE_FIELDS
+      * into one SimpleStringQuery as they have different searchAnalylzer
+      * It will result a term like +(catalog:at | _id:at) will will never be matched
+      * We need to fix on our side as elasticsearch won't know our intention for this case
+      * */
     val queries =
       Seq(
-        foldFields(
-          queryString,
-          NON_LANGUAGE_FIELDS ++ DATASETS_LANGUAGE_FIELDS),
+        should(
+          foldFields(
+            queryString,
+            DATASETS_LANGUAGE_FIELDS
+          ),
+          foldFields(
+            queryString,
+            NON_LANGUAGE_FIELDS
+          )
+        ).minimumShouldMatch(1),
         distributionsEnglishQueries)
 
     dismax(queries).tieBreaker(0.2)
@@ -505,7 +516,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         if(query.boostRegions.isEmpty) Some(textQuery)
         else {
           // --- make sure replace the longer region name string first to avoid missing anyone
-          val regionNames = query.boostRegions.flatMap(_.regionName.map(_.toLowerCase)).toList.sortWith(_.length > _.length)
+          val regionNames = query.boostRegions.toList.flatMap{ region =>
+            // --- Please note: regionShortName should also be taken care
+            region.regionName.toList ++ region.regionShortName.toList
+          }.map(_.toLowerCase).sortWith(_.length > _.length)
           val altText = regionNames.foldLeft(text.toLowerCase)((str, regionName) => str.replace(regionName, "")).trim
           val inputTextQuery = if (altText.length == 0) createInputTextQuery("*") else createInputTextQuery(altText)
           val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
