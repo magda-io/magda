@@ -25,7 +25,9 @@ export default class DatasetSummary extends Component {
         return formats.length ? (
             <div className="dataset-summary-downloads">
                 <img src={fileIcon} alt="File icon" />{" "}
-                {formats.map((f, i) => <span key={i}>{f}</span>)}
+                {formats.map((f, i) => (
+                    <span key={i}>{f}</span>
+                ))}
             </div>
         ) : null;
     }

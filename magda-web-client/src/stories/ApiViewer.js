@@ -44,22 +44,21 @@ class ApiViewer extends React.Component {
             ];
             return (
                 <div>
-                    {this.state.data &&
-                        this.state.data.length > 0 && (
-                            <ReactTable
-                                filterable
-                                data={this.state.data}
-                                columns={columns}
-                                defaultPageSize={this.state.hitCount}
-                                defaultSorted={[
-                                    {
-                                        id: "hitCount",
-                                        desc: true
-                                    }
-                                ]}
-                                className="-striped -highlight"
-                            />
-                        )}
+                    {this.state.data && this.state.data.length > 0 && (
+                        <ReactTable
+                            filterable
+                            data={this.state.data}
+                            columns={columns}
+                            defaultPageSize={this.state.hitCount}
+                            defaultSorted={[
+                                {
+                                    id: "hitCount",
+                                    desc: true
+                                }
+                            ]}
+                            className="-striped -highlight"
+                        />
+                    )}
                 </div>
             );
         } else {
