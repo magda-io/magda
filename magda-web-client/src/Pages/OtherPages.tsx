@@ -71,7 +71,7 @@ const OtherPages = () => {
                 path="/dataset/:datasetId/distribution/:distributionId"
                 component={withHeader(RecordHandler, true)}
             />
-            {config.featureFlags.cataloguing && (
+            {/*config.featureFlags.cataloguing &&*/ (
                 <Route
                     exact
                     path="/dataset/new"
