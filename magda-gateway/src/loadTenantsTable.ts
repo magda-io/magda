@@ -1,5 +1,5 @@
-import RegistryClient from "@magda/magda-typescript-common/dist/registry/RegistryClient";
-import { Tenant } from "@magda/magda-typescript-common/dist/generated/registry/api";
+import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 
 export default function loadTenantsTable(
     tenantsTable: Map<String, Tenant>,
