@@ -1,8 +1,13 @@
 import * as httpProxy from "http-proxy";
-import { tenantsTable, magdaAdminPortalName } from "./index";
+import {
+    tenantsTable,
+    magdaAdminPortalName,
+    enableDefaultTenant
+} from "./index";
 
 export default function createBaseProxy(): httpProxy {
-    const MAGDA_ADMIN_PORTAL_ID = -1;
+    const MAGDA_ADMIN_PORTAL_ID = "-1";
+    const MAGDA_DEFAULT_TENANT_ID = "0";
 
     const proxy = httpProxy.createProxyServer({
         prependUrl: false
@@ -55,17 +60,27 @@ export default function createBaseProxy(): httpProxy {
 
         let domainName = host.substring(0, endIndex);
 
-        if (domainName == magdaAdminPortalName || domainName == "localhost") {
-            proxyReq.setHeader("TenantId", String(MAGDA_ADMIN_PORTAL_ID));
+        if (domainName === magdaAdminPortalName || domainName === "localhost") {
+            proxyReq.setHeader("TenantId", MAGDA_ADMIN_PORTAL_ID);
         } else {
             const tenant = tenantsTable.get(domainName);
-            if (undefined == tenant || tenant.enabled == false) {
+
+            if (undefined === tenant) {
+                if (enableDefaultTenant === true) {
+                    proxyReq.setHeader("TenantId", MAGDA_DEFAULT_TENANT_ID);
+                } else {
+                    res.writeHead(500, { "Content-Type": "text/plain" });
+                    res.end(
+                        `Something went wrong when processing the tenant with the domain name of ${domainName}.`
+                    );
+                }
+            } else if (tenant.enabled === true) {
+                proxyReq.setHeader("TenantId", tenant.id);
+            } else {
                 res.writeHead(500, { "Content-Type": "text/plain" });
                 res.end(
                     `Something went wrong when processing the tenant with the domain name of ${domainName}.`
                 );
-            } else {
-                proxyReq.setHeader("TenantId", String(tenant.id));
             }
         }
     });

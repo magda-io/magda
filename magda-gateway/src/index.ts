@@ -217,6 +217,11 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("enableDefaultTenant", {
+            describe: "Whether use default tenant",
+            type: "boolean",
+            default: true
         }).argv
 );
 
@@ -247,6 +252,8 @@ export const magdaAdminPortalName = argv.externalUrl.substring(
     startIndex + 2,
     endIndex
 );
+
+export const enableDefaultTenant = argv.enableDefaultTenant;
 
 // Create a new Express application.
 var app = express();
