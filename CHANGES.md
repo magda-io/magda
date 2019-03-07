@@ -7,6 +7,7 @@ Connectors:
 
 -   Upgraded the to create-react-app 2
 -   Fixed javascript error when user clicks away from facet dropdowns
+-   Distribution pages: prepend file-specific icon to title
 -   Added a basic new dataset page
 -   Added results of automated metadata extraction spikes to add new dataset page
 
