@@ -937,7 +937,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       caseInsensitiveMatchFv("formats", outputQuery.formats, inputQuery.formats)
       caseInsensitiveMatchFv("publishers", outputQuery.publishers, inputQuery.publishers)
       outputQuery.dateFrom should equal(inputQuery.dateFrom)
-      outputQuery.regions.map(_.map(_.copy(regionName = None, boundingBox = None))) should equal(inputQuery.regions)
+      outputQuery.regions.map(_.map(_.copy(regionName = None, boundingBox = None, regionShortName = None))) should equal(inputQuery.regions)
 
       (outputQuery.dateTo, inputQuery.dateTo) match {
         case (Some(Specified(output)), Some(Specified(input))) =>
