@@ -9,12 +9,19 @@ import FileDrop from "react-file-drop";
 
 const PUNCTUATION_REGEX = /[-_]+/g;
 
+import { extractors, ExtractorInput } from "./extractors";
+
 type File = {
     filename: string;
     title: string;
     size: number;
     lastModified: Date;
     isEditing?: boolean;
+    description?: string;
+    author?: string;
+    keywords?: string[];
+    temporalExtent?: any;
+    spatialExtent?: any;
 };
 
 type State = {
@@ -31,22 +38,50 @@ function turnPunctuationToSpaces(filename: string) {
 
 function toTitleCase(str: string) {
     return str.replace(/\w\S*/g, function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        return (
+            txt.charAt(0).toUpperCase() +
+            txt
+                .substr(1)
+                .replace(/([a-z])([A-Z])/g, "$1 $2")
+                .toLowerCase()
+        );
     });
 }
+
+function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        var fileReader = new FileReader();
+        fileReader.onload = function() {
+            resolve(this.result as ArrayBuffer);
+        };
+        fileReader.readAsArrayBuffer(file);
+    });
+}
+
+function stringSummarise(item: any, length: number = 100): any {
+    let str = typeof item === "object" ? JSON.stringify(item) : item.toString();
+    if (str.length > length) {
+        str = str.substr(0, length - 3) + "...";
+    }
+    return str;
+}
+
 export default class NewDataset extends React.Component<{}, State> {
     state: State = {
         files: []
     };
 
-    onDrop = (fileList: FileList, event: React.DragEvent<HTMLDivElement>) => {
+    onDrop = async (
+        fileList: FileList,
+        event: React.DragEvent<HTMLDivElement>
+    ) => {
         try {
             const newFilesToAdd: File[] = [];
             for (let i = 0; i < fileList.length; i++) {
                 const thisFile = fileList.item(i);
 
                 if (thisFile) {
-                    newFilesToAdd.push({
+                    const newFile = {
                         title: toTitleCase(
                             turnPunctuationToSpaces(
                                 trimExtension(thisFile.name || "File Name")
@@ -55,7 +90,26 @@ export default class NewDataset extends React.Component<{}, State> {
                         filename: thisFile.name,
                         size: thisFile.size,
                         lastModified: new Date(thisFile.lastModified)
-                    });
+                    };
+
+                    // done it this way to minimise duplicate content reading/processing
+                    const input: ExtractorInput = {
+                        file: thisFile
+                    };
+
+                    input.arrayBuffer = await readFileAsArrayBuffer(thisFile);
+                    input.array = new Uint8Array(input.arrayBuffer);
+
+                    for (const extractor of extractors) {
+                        try {
+                            await extractor(input, newFile);
+                        } catch (e) {
+                            // even if one of the modules fail, we keep going
+                            console.error(e);
+                        }
+                    }
+
+                    newFilesToAdd.push(newFile);
                 }
             }
 
@@ -176,12 +230,17 @@ export default class NewDataset extends React.Component<{}, State> {
                                                     : "Edit"}
                                             </button>
                                         </h3>
-                                        <div>Filename: {file.filename}</div>
-                                        <div>
-                                            Last Modified:{" "}
-                                            {file.lastModified.toString()}
-                                        </div>
-                                        <div>Size: {file.size}</div>
+                                        {Object.entries(file)
+                                            .filter(prop => prop[0] !== "title")
+                                            .map(property => {
+                                                const [key, value] = property;
+                                                return (
+                                                    <div>
+                                                        {toTitleCase(key)}:{" "}
+                                                        {stringSummarise(value)}
+                                                    </div>
+                                                );
+                                            })}
                                     </li>
                                 );
                             })}
