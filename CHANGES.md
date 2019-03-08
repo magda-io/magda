@@ -11,6 +11,7 @@ Others:
 -   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
 -   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
 -   Elasticsearch related test cases run on Docker container than than local node
+-   Made search always match all input keywords (MatchAll mode)
 
 Indexer:
 
