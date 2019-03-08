@@ -75,14 +75,6 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
     });
 }
 
-function stringSummarise(item: any, length: number = 100): any {
-    let str = typeof item === "object" ? JSON.stringify(item) : item.toString();
-    if (str.length > length) {
-        str = str.substr(0, length - 3) + "...";
-    }
-    return str;
-}
-
 function humanFileSize(bytes, si) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
@@ -105,32 +97,18 @@ export default class NewDataset extends React.Component<{}, State> {
         processing: false
     };
 
-    fileList: FileList | null = null;
-
-    onDrop = async (
-        fileList: FileList,
-        event: React.DragEvent<HTMLDivElement>
-    ) => {
+    onDrop = async (fileList: FileList) => {
         try {
-            this.fileList = fileList;
             this.setState({
                 processing: true
             });
+            this.addFiles(fileList);
         } catch (e) {
             console.error(e);
         }
     };
 
-    componentDidUpdate() {
-        if (this.fileList) {
-            this.addFiles();
-        }
-    }
-
-    addFiles = async () => {
-        const fileList = this.fileList!;
-        this.fileList = null;
-
+    addFiles = async (fileList: FileList) => {
         const newFilesToAdd: File[] = [];
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
