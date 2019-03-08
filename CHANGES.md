@@ -8,6 +8,7 @@ Connectors:
 -   Upgraded the to create-react-app 2
 -   Fixed javascript error when user clicks away from facet dropdowns
 -   Added a basic new dataset page
+-   Updated design system components
 
 Others:
 
