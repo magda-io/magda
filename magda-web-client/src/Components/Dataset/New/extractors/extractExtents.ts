@@ -20,8 +20,6 @@ export function extractExtents(input, output) {
                 headers.push(header);
             }
 
-            console.log(headers);
-
             output.temporalExtent = aggregateDates(rows, headers);
             output.spatialExtent = calculateSpatialExtent(rows, headers);
         }
