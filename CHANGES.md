@@ -3,9 +3,8 @@
 Connectors:
 
 -   Add organisation ignore filter to CKAN connector
-    UI
 
-User Interface:
+UI:
 
 -   Upgraded the to create-react-app 2
 -   Fixed javascript error when user clicks away from facet dropdowns
