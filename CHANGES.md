@@ -25,6 +25,7 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
+-   Updated design system components
 
 Others:
 
