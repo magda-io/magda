@@ -2,7 +2,7 @@ package au.csiro.data61.magda.test.util.testkit
 
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.http.HttpClient
+import com.sksamuel.elastic4s.http.ElasticClient
 import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.{IndexAndTypes, Indexes}
 import org.elasticsearch.ResourceAlreadyExistsException
@@ -16,12 +16,12 @@ trait SharedElasticSugar extends HttpElasticSugar
   * index has a certain count of documents. These methods are very useful when writing
   * tests to allow for blocking, imperative coding
   */
-trait HttpElasticSugar extends LocalNodeProvider{
+trait HttpElasticSugar{
 
   private val esLogger : Logger = LoggerFactory getLogger getClass.getName
 
   //val client = getNode.client(false)
-  def client():HttpClient
+  def client():ElasticClient
   def http = client
 
   // refresh all indexes
@@ -34,8 +34,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
         refreshIndex(indexes)
       }
       .await
-      .right
-      .get
       .result
 
   def blockUntilGreen(): Unit =
@@ -45,8 +43,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
           clusterHealth()
         }
         .await
-        .right
-        .get
         .result
         .status
         .toUpperCase == "GREEN"
@@ -87,8 +83,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
         indexExists(name)
       }
       .await
-      .right
-      .get
       .result
       .isExists
 
@@ -112,21 +106,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
           get(id).from(index)
         }
         .await
-        .right
-        .get
-      resp.isSuccess && resp.result.exists
-    }
-
-  @deprecated("Use blockUntilDocumentExists(id, string) because types will be removed in elasticsearch 7.0", "6.0")
-  def blockUntilDocumentExists(id: String, index: String, `type`: String): Unit =
-    blockUntil(s"Expected to find document $id") { () =>
-      val resp = http
-        .execute {
-          get(id).from(index / `type`)
-        }
-        .await
-        .right
-        .get
       resp.isSuccess && resp.result.exists
     }
 
@@ -137,52 +116,7 @@ trait HttpElasticSugar extends LocalNodeProvider{
           search(index).matchAllQuery().size(0)
         }
         .await
-        .right
-        .get
       expected <= result.result.totalHits
-    }
-
-  @deprecated("Use blockUntilCount(expected: Long, index: string) because types will be removed in elasticsearch 7.0", "6.0")
-  def blockUntilCount(expected: Long, indexAndTypes: IndexAndTypes): Unit =
-    blockUntil(s"Expected count of $expected") { () =>
-      val result = http
-        .execute {
-          search(indexAndTypes).matchAllQuery().size(0)
-        }
-        .await
-        .right
-        .get
-      expected <= result.result.totalHits
-    }
-
-  /**
-    * Will block until the given index and optional types have at least the given number of documents.
-    */
-  @deprecated("Use blockUntilCount(expected: Long, index: string) because types will be removed in elasticsearch 7.0", "6.0")
-  def blockUntilCount(expected: Long, index: String, types: String*): Unit =
-    blockUntil(s"Expected count of $expected") { () =>
-      val result = http
-        .execute {
-          search(index / types).matchAllQuery().size(0)
-        }
-        .await
-        .right
-        .get
-      expected <= result.result.totalHits
-    }
-
-  @deprecated("Types will be removed in elasticsearch 7.0", "6.0")
-  def blockUntilExactCount(expected: Long, index: String, types: String*): Unit =
-    blockUntil(s"Expected count of $expected") { () =>
-      expected == http
-        .execute {
-          search(index / types).size(0)
-        }
-        .await
-        .right
-        .get
-        .result
-        .totalHits
     }
 
   def blockUntilExactCount(expected: Long, index: String): Unit =
@@ -192,8 +126,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
           search(index).size(0)
         }
         .await
-        .right
-        .get
         .result
         .totalHits
     }
@@ -205,8 +137,6 @@ trait HttpElasticSugar extends LocalNodeProvider{
           search(Indexes(index)).size(0)
         }
         .await
-        .right
-        .get
         .result
         .totalHits == 0
     }
@@ -221,16 +151,4 @@ trait HttpElasticSugar extends LocalNodeProvider{
       !doesIndexExists(index)
     }
 
-  @deprecated("Types will be removed in elasticsearch 7.0", "6.0")
-  def blockUntilDocumentHasVersion(index: String, `type`: String, id: String, version: Long): Unit =
-    blockUntil(s"Expected document $id to have version $version") { () =>
-      val resp = http
-        .execute {
-          get(id).from(index / `type`)
-        }
-        .await
-        .right
-        .get
-      resp.isSuccess && resp.result.version == version
-    }
 }

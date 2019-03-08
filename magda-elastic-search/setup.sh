@@ -1,14 +1,22 @@
 #!/bin/bash
+echo "Setting up data directory"
+
+mkdir /data/data
+mkdir /data/log
+chown -R elasticsearch:elasticsearch /data
 
 echo "Setting up snapshot directory"
-adduser -D -g '' elasticsearch
 mkdir /snapshots
-chown -R elasticsearch /snapshots
+chown -R elasticsearch:elasticsearch /snapshots
 
 if [[ ! -z $GOOGLE_APPLICATION_CREDENTIALS ]]; then
+    echo "Install repository-gcs plugin..."
+    sudo -u elasticsearch -E bin/elasticsearch-plugin install -b repository-gcs
+    echo "Finished Install repository-gcs plugin..."
     echo "Creating gcs permissions..."
-    su-exec elasticsearch /elasticsearch/bin/elasticsearch-keystore create
-    su-exec elasticsearch bin/elasticsearch-keystore add-file gcs.client.default.credentials_file $GOOGLE_APPLICATION_CREDENTIALS
+    sudo -u elasticsearch -E bin/elasticsearch-keystore create
+    sudo -u elasticsearch -E bin/elasticsearch-keystore add-file gcs.client.default.credentials_file $GOOGLE_APPLICATION_CREDENTIALS
+    echo "Finished gcs permissions..."
 fi
 
 echo "Set vm.max_map_count=262144 in host"
@@ -22,4 +30,4 @@ echo "New max locked memory: "
 ulimit -l
 
 echo "Starting up"
-/run.sh
+/usr/local/bin/docker-entrypoint.sh

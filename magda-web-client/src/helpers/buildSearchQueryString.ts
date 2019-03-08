@@ -36,8 +36,8 @@ export default function buildSearchQueryString(
     searchResultsPerPage = defined(searchResultsPerPage)
         ? searchResultsPerPage
         : defined(query.limit)
-        ? query.limit
-        : defaultConfiguration.searchResultsPerPage;
+            ? query.limit
+            : defaultConfiguration.searchResultsPerPage;
 
     let startIndex = defined(query.page)
         ? (query.page - 1) * searchResultsPerPage
