@@ -3,11 +3,14 @@
 Connectors:
 
 -   Add organisation ignore filter to CKAN connector
-    UI:
+    UI
+
+User Interface:
 
 -   Upgraded the to create-react-app 2
 -   Fixed javascript error when user clicks away from facet dropdowns
 -   Added a basic new dataset page
+-   Fixed javascript errors in download analytics and pie charts
 
 Others:
 

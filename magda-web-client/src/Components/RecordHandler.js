@@ -247,7 +247,8 @@ class RecordHandler extends React.Component {
                                         });
                                         gapi.event({
                                             category: "Download by Publisher",
-                                            action: this.props.dataset,
+                                            action: this.props.dataset.publisher
+                                                .name,
                                             label: resource_url
                                         });
                                     }
