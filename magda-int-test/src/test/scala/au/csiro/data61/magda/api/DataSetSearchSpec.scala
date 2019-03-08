@@ -669,7 +669,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-      it("inexact") {
+      ignore("inexact") {
         def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
           val formats = dataSet.distributions
             .map(_.format.map(Specified.apply).flatMap(x => x)).flatten
@@ -768,7 +768,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-      it("inexact") {
+      ignore("inexact") {
         def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
           val publisher = dataSet.publisher.flatMap(_.name)
 
