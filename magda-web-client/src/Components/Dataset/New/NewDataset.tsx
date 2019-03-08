@@ -10,20 +10,7 @@ import Styles from "./NewDataset.module.scss";
 
 const PUNCTUATION_REGEX = /[-_]+/g;
 
-// different extractors/processors
-import { extractText } from "./extractText";
-import { extractEqualHash } from "./extractEqualHash";
-import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
-import { extractExtents } from "./extractExtents";
-import { extractKeywords } from "./extractKeywords";
-
-const extractors = [
-    extractText,
-    extractEqualHash,
-    extractSimilarFingerprint,
-    extractExtents,
-    extractKeywords
-];
+import { extractors } from "./extractors";
 
 type File = {
     filename: string;

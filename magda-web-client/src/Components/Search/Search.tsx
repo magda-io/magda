@@ -17,12 +17,17 @@ import {
 import queryString from "query-string";
 import ProgressBar from "../../UI/ProgressBar";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
+import PropTypes from "prop-types";
 
 type Props = {
     location: URL;
 };
 
 class Search extends Component<Props & any> {
+    static contextTypes = {
+        router: PropTypes.object
+    };
+
     state: {
         searchText?: string;
     };

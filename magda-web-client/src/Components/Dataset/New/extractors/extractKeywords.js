@@ -1,5 +1,3 @@
-"use strict";
-
 import retext from "retext";
 import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
@@ -8,7 +6,6 @@ import toString from "nlcst-to-string";
  * Extract keywords from text based file formats
  */
 export async function extractKeywords(input, output) {
-    const inp = input.text;
     if (input.text) {
         output.keywords = (output.keywords || []).concat(
             await getKeywords(input.text)

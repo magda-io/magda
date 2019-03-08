@@ -10,7 +10,8 @@ export function extractSimilarFingerprint(input, output) {
 }
 
 /**
- * Fingerprint text files in case insensitive whitespace ignoring fashion
+ * Fingerprint text files so that comparison is case insensitive
+ * whitespaces are ignored
  */
 function txtTransform(text) {
     return text.replace(/\s+/g, "").toLowerCase();

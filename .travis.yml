@@ -7,6 +7,7 @@ matrix:
           jdk: oraclejdk8
           services:
               - postgresql
+              - docker
           cache:
               directories:
                   - $HOME/.ivy2/cache
@@ -24,7 +25,16 @@ matrix:
                   - REACT_APP_SHA1=$TRAVIS_COMMIT
           addons:
               postgresql: "9.6"
-          script: travis_retry sbt test
+          before_install:
+              - docker info
+              - docker-compose --version
+          script:
+              - cd magda-elastic-search
+              - docker-compose up -d
+              - cd ..
+              - travis_retry sbt test
+              - cd magda-elastic-search
+              - docker-compose down
         - language: node_js
           node_js: "8"
           cache:
