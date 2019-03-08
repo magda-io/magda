@@ -23,7 +23,8 @@ const homePageConfig: {
     baseUrl: string;
     backgroundImageUrls: Array<string>;
     stories: string[];
-} = window.magda_client_homepage_config || {};
+} =
+    window.magda_client_homepage_config || {};
 
 const serverConfig: {
     authApiBaseUrl?: string;
@@ -40,7 +41,8 @@ const serverConfig: {
     featureFlags?: {
         [id: string]: boolean;
     };
-} = window.magda_server_config || {};
+} =
+    window.magda_server_config || {};
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";

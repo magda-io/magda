@@ -173,7 +173,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
             this.props.onSelectedIdChange &&
                 this.props.onSelectedIdChange(
                     this.state.selectedItemIdx ||
-                        this.state.selectedItemIdx === 0
+                    this.state.selectedItemIdx === 0
                         ? this.buildOptionId(
                               this.state.selectedItemIdx,
                               this.state.deleteSelected

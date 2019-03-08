@@ -8,7 +8,7 @@ import com.sksamuel.elastic4s.ElasticsearchClientUri
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import com.sksamuel.elastic4s.http.{HttpClient, NoOpHttpClientConfigCallback}
+import com.sksamuel.elastic4s.http.{ElasticClient, NoOpHttpClientConfigCallback}
 import com.typesafe.config.Config
 import org.apache.http.HttpHost
 import org.apache.http.client.config.RequestConfig
@@ -17,14 +17,14 @@ import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback
 
 
 trait ClientProvider {
-  def getClient(): Future[HttpClient]
+  def getClient(): Future[ElasticClient]
 }
 
 class DefaultClientProvider(implicit val system: ActorSystem,
                             implicit val ec: ExecutionContext,
                             implicit val config: Config)
     extends ClientProvider {
-  private var clientFuture: Option[Future[HttpClient]] = None
+  private var clientFuture: Option[Future[ElasticClient]] = None
   private implicit val scheduler = system.scheduler
   private val logger = system.log
 
@@ -67,7 +67,7 @@ class DefaultClientProvider(implicit val system: ActorSystem,
     }
   }
 
-  override def getClient(): Future[HttpClient] = {
+  override def getClient(): Future[ElasticClient] = {
 
     var maxRetryTimeout = 30000
     try{
@@ -102,7 +102,7 @@ class DefaultClientProvider(implicit val system: ActorSystem,
                 .setHttpClientConfigCallback(NoOpHttpClientConfigCallback)
                 .build()
 
-              HttpClient.fromRestClient(client)
+              ElasticClient.fromRestClient(client)
           },
           10 seconds,
           10,
