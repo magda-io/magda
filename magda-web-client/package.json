@@ -9,7 +9,7 @@
     "dev": "yarn run start",
     "prepare": "pancake",
     "start": "react-scripts start",
-    "build": "CI=false && pancake && react-scripts build",
+    "build": "pancake && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer build/static/js/main.*"
