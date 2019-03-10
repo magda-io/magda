@@ -50,20 +50,23 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
-  def deleteById = delete {
-    path(Segment) { (recordId: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-        requireIsAdmin(authClient)(system, config) { _ => {
-          val result = DB localTx { session =>
-            recordPersistence.deleteRecord(session, recordId, tenantId) match {
-              case Success(result) => complete(DeleteResult(result))
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+  def deleteById: Route = delete {
+    path(Segment) { recordId: String =>
+      requireIsAdmin(authClient)(system, config) { _ =>
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          if (tenantIdString.isDefined) {
+            val tenantId = BigInt(tenantIdString.get)
+            val theResult = DB localTx { session =>
+              recordPersistence.deleteRecord(session, recordId, tenantId) match {
+                case Success(result) => complete(DeleteResult(result))
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
+            webHookActor ! WebHookActor.Process()
+            theResult
+          } else {
+            responseForUnknownTenant
           }
-          webHookActor ! WebHookActor.Process()
-          result
-        }
         }
       }
     }
@@ -98,39 +101,40 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 202, message = "Deletion is taking a long time (normal for sources with many records) but it has worked"),
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
-  def trimBySourceTag = delete {
+  def trimBySourceTag: Route = delete {
     pathEnd {
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-
-        requireIsAdmin(authClient)(system, config) { _ =>
-          parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
-
-            val deleteFuture = Future {
-              // --- DB session needs to be created within the `Future`
-              // --- as the `Future` will keep running after timeout and require active DB session
-              DB localTx { implicit session =>
-                recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, tenantId, Some(logger))
+      requireIsAdmin(authClient)(system, config) { _ =>
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          if (tenantIdString.isDefined) {
+            val tenantId = BigInt(tenantIdString.get)
+            parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
+              val deleteFuture = Future {
+                // --- DB session needs to be created within the `Future`
+                // --- as the `Future` will keep running after timeout and require active DB session
+                DB localTx { implicit session =>
+                  recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, tenantId, Some(logger))
+                }
+              } map { result =>
+                webHookActor ! WebHookActor.Process()
+                result
               }
-            } map { result =>
-              webHookActor ! WebHookActor.Process()
-              result
-            }
 
-            val deleteResult = try {
-              Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
-            } catch {
-              case e: Throwable => Failure(e)
-            }
+              val deleteResult = try {
+                Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
+              } catch {
+                case e: Throwable => Failure(e)
+              }
 
-            deleteResult match {
-              case Success(result) => complete(MultipleDeleteResult(result))
-              case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
-              case Failure(exception) =>
-                logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
-                complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
+              deleteResult match {
+                case Success(result) => complete(MultipleDeleteResult(result))
+                case Failure(_: TimeoutException) => complete(StatusCodes.Accepted)
+                case Failure(exception) =>
+                  logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
+                  complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
+              }
             }
-
+          } else {
+            responseForUnknownTenant
           }
         }
       }
@@ -169,25 +173,29 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def putById = put {
-    path(Segment) { (id: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-        requireIsAdmin(authClient)(system, config) { _ => {
-          entity(as[Record]) { record =>
-            val result = DB localTx { session =>
-              recordPersistence.putRecordById(session, id, tenantId, record) match {
-                case Success(_) =>
-                  // TODO: Check if this is really what we want!
-                  // A scala test expects this though.
-                  complete(record)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+  def putById: Route = put {
+    path(Segment) { id: String =>
+      requireIsAdmin(authClient)(system, config) { _ => {
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          val tenantId = BigInt(tenantIdString.get)
+            if (tenantIdString.isDefined) {
+              entity(as[Record]) { record =>
+                val result = DB localTx { session =>
+                  recordPersistence.putRecordById(session, id, tenantId, record) match {
+                    case Success(_) =>
+                      // TODO: Check if this is really what we want!
+                      // A scala test expects this though.
+                      complete(record)
+                    case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                  }
+                }
+                webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+                result
               }
+            } else {
+              responseForUnknownTenant
             }
-            webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
-            result
           }
-        }
         }
       }
     }
@@ -223,25 +231,28 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def patchById = patch {
-    path(Segment) { (id: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-        requireIsAdmin(authClient)(system, config) { _ => {
-          entity(as[JsonPatch]) { recordPatch =>
-            val result = DB localTx { session =>
-              recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
-                case Success(result) =>
-                  complete(result)
-                case Failure(exception) =>
-                  logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
-                  complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+  def patchById: Route = patch {
+    path(Segment) { id: String =>
+      requireIsAdmin(authClient)(system, config) { _ =>
+        optionalHeaderValueByName("TenantId") { tenantIdString =>
+          if (tenantIdString.isDefined) {
+            val tenantId = BigInt(tenantIdString.get)
+            entity(as[JsonPatch]) { recordPatch =>
+              val theResult = DB localTx { session =>
+                recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(exception) =>
+                    logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
+                    complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                }
               }
+              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(List(id)))
+              theResult
             }
-            webHookActor ! WebHookActor.Process(false, Some(List(id)))
-            result
+          } else {
+            responseForUnknownTenant
           }
-        }
         }
       }
     }
@@ -280,26 +291,30 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create: Route = post {
-    optionalHeaderValueByName("TenantId") { tenantIdString =>
-      val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-      requireIsAdmin(authClient)(system, config) { _ =>
-        pathEnd {
-          entity(as[Record]) { record =>
-            val result = DB localTx { session =>
-              recordPersistence.createRecord(session, record, tenantId) match {
-                case Success(theResult) => complete(theResult)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+    requireIsAdmin(authClient)(system, config) { _ =>
+      optionalHeaderValueByName("TenantId") { tenantIdString =>
+        if (tenantIdString.isDefined) {
+          val tenantId = BigInt(tenantIdString.get)
+          pathEnd {
+            entity(as[Record]) { record =>
+              val result = DB localTx { session =>
+                recordPersistence.createRecord(session, record, tenantId) match {
+                  case Success(theResult) => complete(theResult)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                }
               }
+              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+              result
             }
-            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
-            result
           }
+        } else {
+          responseForUnknownTenant
         }
       }
     }
   }
 
-  override def route =
+  override def route: Route =
     super.route ~
       putById ~
       patchById ~

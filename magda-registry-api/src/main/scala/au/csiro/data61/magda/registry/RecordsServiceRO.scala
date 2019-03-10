@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
@@ -19,8 +18,11 @@ import scala.concurrent.ExecutionContext
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends Protocols with SprayJsonSupport {
 
-  private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
+
+  def responseForUnknownTenant: Route = {
+    complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+  }
 
   /**
    * @apiGroup Registry Record Service
@@ -72,7 +74,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
           }
         }
         else {
-          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          responseForUnknownTenant
         }
       }
     }
@@ -107,7 +109,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
     new ApiImplicitParam(name = "start", required = false, dataType = "number", paramType = "query", value = "The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")))
-  def getAllSummary = get {
+  def getAllSummary: Route = get {
     path("summary") {
       optionalHeaderValueByName("TenantId") { tenantIdString =>
         if (tenantIdString.isDefined) {
@@ -121,7 +123,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
             }
           }
         } else {
-          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          responseForUnknownTenant
         }
       }
     }
@@ -148,7 +150,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
-  def getCount = get {
+  def getCount: Route = get {
     path("count") {
       optionalHeaderValueByName("TenantId") { tenantIdString =>
         if (tenantIdString.isDefined) {
@@ -164,7 +166,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
               }
           }
         } else {
-          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          responseForUnknownTenant
         }
       }
     }
@@ -191,7 +193,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The size of each page to get tokens for.")))
-  def getPageTokens = get {
+  def getPageTokens: Route = get {
     path("pagetokens") {
       pathEnd {
         optionalHeaderValueByName("TenantId") { tenantIdString =>
@@ -206,7 +208,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
               }
             }
           } else {
-            complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+            responseForUnknownTenant
           }
         }
       }
@@ -258,7 +260,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
             }
           }
         } else {
-          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          responseForUnknownTenant
         }
       }
     }
@@ -290,7 +292,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
-  def getByIdSummary = get {
+  def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       optionalHeaderValueByName("TenantId") { tenantIdString =>
         if (tenantIdString.isDefined) {
@@ -302,13 +304,13 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
             }
           }
         } else {
-          complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          responseForUnknownTenant
         }
       }
     }
   }
 
-  def route =
+  def route: Route =
     getAll ~
       getCount ~
       getAllSummary ~

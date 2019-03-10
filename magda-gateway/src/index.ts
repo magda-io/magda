@@ -168,7 +168,7 @@ const argv = addJwtSecretFromEnvVar(
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
             type: "boolean",
-            default: true
+            default: false
         })
         .option("enableCkanRedirection", {
             describe: "Whether or not to turn on the CKan Redirection feature",
@@ -252,6 +252,8 @@ export const magdaAdminPortalName = argv.externalUrl.substring(
     startIndex + 2,
     endIndex
 );
+
+console.log("magdaAdminPortalName = " + magdaAdminPortalName);
 
 export const enableDefaultTenant = argv.enableDefaultTenant;
 

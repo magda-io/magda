@@ -57,7 +57,7 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
           }
         }
         else {
-          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
+          complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed for tenantId of $tenantId."))
         }
       }
     }
@@ -99,7 +99,7 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
           }
         }
         else {
-          complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
+          complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed tenantId of $tenantId."))
         }
       }
     }
