@@ -1,9 +1,15 @@
 ## 0.0.54
 
-UI:
+Connectors:
+
+-   Add organisation ignore filter to CKAN connector
+    UI:
 
 -   Upgraded the to create-react-app 2
+-   Fixed javascript error when user clicks away from facet dropdowns
+-   Distribution pages: prepend file-specific icon to title
 -   Added a basic new dataset page
+-   Added results of automated metadata extraction spikes to add new dataset page
 
 Others:
 
