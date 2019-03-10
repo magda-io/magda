@@ -44,7 +44,7 @@
     "leaflet": "^0.7.7",
     "mammoth": "^1.4.7",
     "nlcst-to-string": "^2.0.2",
-    "pdfjs-dist": "^2.0.943",
+    "pdfjs-dist": "2.0.550",
     "react-app-polyfill": "^0.2.1",
     "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
