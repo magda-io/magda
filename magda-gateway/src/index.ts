@@ -369,7 +369,10 @@ app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
 export let tenantsTable = new Map<String, Tenant>();
-loadTenantsTable(tenantsTable, `${argv.externalUrl}/api/v0/registry`);
+loadTenantsTable(
+    tenantsTable,
+    `http://localhost:${argv.listenPort}/api/v0/registry`
+);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error("Unhandled rejection");
