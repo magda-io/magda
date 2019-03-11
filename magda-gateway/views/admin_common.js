@@ -97,13 +97,12 @@ async function showJsonEditor(body, options) {
         `/api/v0/content/all?id=${options.idPattern}&inline=true`
     );
     if (files.length && files[0].order !== undefined) {
-        files = files.sort(
-            (a, b) =>
-                a.content.order === b.content.order
-                    ? a.id < b.id
-                        ? -1
-                        : 1
-                    : a.content.order - b.content.order
+        files = files.sort((a, b) =>
+            a.content.order === b.content.order
+                ? a.id < b.id
+                    ? -1
+                    : 1
+                : a.content.order - b.content.order
         );
     }
 

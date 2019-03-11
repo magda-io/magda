@@ -186,73 +186,67 @@ class Search extends Component<Props & any> {
                                 updateQuery={this.updateQuery}
                                 location={this.props.location}
                             />
-                            {!this.props.isFetching &&
-                                !this.props.error && (
-                                    <div className="sub-heading">
-                                        {" "}
-                                        results {this.filterCount()} (
-                                        {this.props.hitCount})
-                                    </div>
-                                )}
-                            {!this.props.isFetching &&
-                                !this.props.error && (
-                                    <div>
-                                        <MatchingStatus
-                                            datasets={this.props.datasets}
-                                            strategy={this.props.strategy}
-                                        />
+                            {!this.props.isFetching && !this.props.error && (
+                                <div className="sub-heading">
+                                    {" "}
+                                    results {this.filterCount()} (
+                                    {this.props.hitCount})
+                                </div>
+                            )}
+                            {!this.props.isFetching && !this.props.error && (
+                                <div>
+                                    <MatchingStatus
+                                        datasets={this.props.datasets}
+                                        strategy={this.props.strategy}
+                                    />
 
-                                        {// redirect if we came from a 404 error and there is only one result
-                                        queryString.parse(
-                                            this.props.location.search
-                                        ).notfound &&
-                                            this.props.datasets.length ===
-                                                1 && (
-                                                <Redirect
-                                                    to={`/dataset/${encodeURI(
-                                                        this.props.datasets[0]
-                                                            .identifier
-                                                    )}/details`}
-                                                />
-                                            )}
-                                        <SearchResults
-                                            strategy={this.props.strategy}
-                                            searchResults={this.props.datasets}
-                                            onClickTag={this.onClickTag}
-                                            onToggleDataset={
-                                                this.onToggleDataset
-                                            }
-                                            openDataset={
-                                                queryString.parse(
-                                                    this.props.location.search
-                                                ).open
-                                            }
-                                            searchText={searchText}
-                                            isFirstPage={currentPage === 1}
-                                            suggestionBoxAtEnd={isBlankSearch}
-                                        />
-                                        {this.props.hitCount >
-                                            searchResultsPerPage && (
-                                            <Pagination
-                                                currentPage={currentPage}
-                                                maxPage={Math.ceil(
-                                                    this.props.hitCount /
-                                                        searchResultsPerPage
-                                                )}
-                                                onPageChange={this.onPageChange}
-                                                totalItems={this.props.hitCount}
+                                    {// redirect if we came from a 404 error and there is only one result
+                                    queryString.parse(
+                                        this.props.location.search
+                                    ).notfound &&
+                                        this.props.datasets.length === 1 && (
+                                            <Redirect
+                                                to={`/dataset/${encodeURI(
+                                                    this.props.datasets[0]
+                                                        .identifier
+                                                )}/details`}
                                             />
                                         )}
-                                    </div>
-                                )}
-                            {!this.props.isFetching &&
-                                this.props.error && (
-                                    <Notification
-                                        content={this.props.error}
-                                        type="error"
-                                        onDismiss={this.onDismissError}
+                                    <SearchResults
+                                        strategy={this.props.strategy}
+                                        searchResults={this.props.datasets}
+                                        onClickTag={this.onClickTag}
+                                        onToggleDataset={this.onToggleDataset}
+                                        openDataset={
+                                            queryString.parse(
+                                                this.props.location.search
+                                            ).open
+                                        }
+                                        searchText={searchText}
+                                        isFirstPage={currentPage === 1}
+                                        suggestionBoxAtEnd={isBlankSearch}
                                     />
-                                )}
+                                    {this.props.hitCount >
+                                        searchResultsPerPage && (
+                                        <Pagination
+                                            currentPage={currentPage}
+                                            maxPage={Math.ceil(
+                                                this.props.hitCount /
+                                                    searchResultsPerPage
+                                            )}
+                                            onPageChange={this.onPageChange}
+                                            totalItems={this.props.hitCount}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                            {!this.props.isFetching && this.props.error && (
+                                <Notification
+                                    content={this.props.error}
+                                    type="error"
+                                    onDismiss={this.onDismissError}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
