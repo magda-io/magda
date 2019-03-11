@@ -222,6 +222,12 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Whether use default tenant",
             type: "boolean",
             default: true
+        })
+        .option("magdaAdminPortalName", {
+            describe:
+                "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
+            type: "string",
+            default: "unknown_portal_host_name"
         }).argv
 );
 
@@ -244,14 +250,11 @@ const authenticator = new Authenticator({
     dbPort: argv.dbPort
 });
 
-const startIndex = argv.externalUrl.indexOf("//");
-let endIndex = argv.externalUrl.lastIndexOf(":");
-if (endIndex < 0) endIndex = argv.externalUrl.length;
-
-export const magdaAdminPortalName = argv.externalUrl.substring(
-    startIndex + 2,
-    endIndex
-);
+// Should not use the gateway external URL as magda admin portal. Use argv.magdaAdminPortalName instead.
+// The gateway external URL will be default tenant website if default tenant is enabled.
+// A magda admin portal must be different from any tenant websites. Otherwise createBaseProxy will not be able
+// to set admin portal id correctly.
+export const magdaAdminPortalName = argv.magdaAdminPortalName;
 
 console.log("magdaAdminPortalName = " + magdaAdminPortalName);
 
@@ -369,9 +372,13 @@ app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
 export let tenantsTable = new Map<String, Tenant>();
+let httpOrHttps = "http";
+if (argv.externalUrl.toLowerCase().startsWith("https")) "https";
+
+// Use localhost to signal magda admin portal.
 loadTenantsTable(
     tenantsTable,
-    `http://localhost:${argv.listenPort}/api/v0/registry`
+    `${httpOrHttps}://localhost:${argv.listenPort}/api/v0/registry`
 );
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
