@@ -13,6 +13,7 @@
         "module": "esnext",
         "resolveJsonModule": true,
         "noEmit": true,
+        "noEmitOnError": false,
         "jsx": "preserve",
         "moduleResolution": "node",
         "isolatedModules": true,
