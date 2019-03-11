@@ -11,8 +11,9 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.util.{Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.HttpClient
-import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
+import com.typesafe.config.{Config, ConfigFactory}
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import spray.json.JsObject
@@ -22,18 +23,17 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
-  implicit def default(implicit system: ActorSystem): RouteTestTimeout = RouteTestTimeout(300 seconds)
-  def buildConfig: Config = TestActorSystem.config
+  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
+  def buildConfig = TestActorSystem.config
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
   val logger = Logging(system, getClass)
-  implicit val indexedRegions: List[(RegionSource, JsObject)] = BaseApiSpec.indexedRegions
+  implicit val indexedRegions = BaseApiSpec.indexedRegions
 
-  private val node = getNode
-  implicit val config: Config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+  implicit val config = buildConfig
 
   val clientProvider = new DefaultClientProvider
 
-  override def client(): HttpClient = clientProvider.getClient().await
+  override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
 
@@ -41,7 +41,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
     if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
 
-      client().execute(
+      client.execute(
         IndexDefinition.regions.definition(DefaultIndices, config)
       ).await(90 seconds)
 
@@ -50,7 +50,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       }
 
       logger.info("Setting up regions")
-      IndexDefinition.setupRegions(client(), fakeRegionLoader, DefaultIndices).await(60 seconds)
+      IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
       logger.info("Finished setting up regions")
     }
 
@@ -62,27 +62,27 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(): Future[HttpClient] = Future(client())
+    override def getClient(): Future[ElasticClient] = Future(client)
   }
 
   def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have NOT RED status") { () =>
-      client().execute {
+      client.execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED.toString
-        case Left(_) => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED
+        case f: RequestFailure => false
       }
     }
   }
 
   def blockUntilNotYellow(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
-      client().execute {
+      client.execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED.toString && r.result.status != ClusterHealthStatus.YELLOW.toString
-        case Left(_) => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
+        case f: RequestFailure => false
       }
     }
   }
@@ -98,7 +98,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
         if (!done) {
           logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
-          Thread.sleep(500 * backoff)
+          Thread.sleep(500 * (backoff))
         } else {
           logger.debug(s"{} is true, proceeding.", explain)
         }
@@ -125,16 +125,16 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
-      case Indices.DataSetsIndex => s"dataset-idx-$rawIndexName"
-      case Indices.PublishersIndex => s"publisher-idx-$rawIndexName"
-      case Indices.FormatsIndex => s"format-idx-$rawIndexName"
+      case Indices.DataSetsIndex => s"dataset-idx-${rawIndexName}"
+      case Indices.PublishersIndex => s"publisher-idx-${rawIndexName}"
+      case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
       case _ => DefaultIndices.getIndex(config, index)
     }
   }
 }
 
 object BaseApiSpec {
-  val testStates: List[(RegionSource, JsObject)] = {
+  val testStates = {
     import spray.json._
     List(
       (new RegionSource("ithinkthisisregiontype",new URL("http://example.com"), "STE_CODE11", "STE_NAME11", Some("STE_ABBREV"), false, false, 10), """
@@ -149,5 +149,5 @@ object BaseApiSpec {
     )
 
   }
-  val indexedRegions: List[(RegionSource, JsObject)] = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
+  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
 }

@@ -3,78 +3,13 @@ import { connect } from "react-redux";
 import { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
 import "./DistributionRow.scss";
-import defaultFormatIcon from "../assets/format-passive-dark.svg";
 import downloadIcon from "../assets/download.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 import { gapi } from "../analytics/ga";
 import { Dataset } from "../helpers/datasetSearch";
 
-const formatIcons = {
-    default: defaultFormatIcon
-};
-
-const dataFormatCategories = [
-    "api",
-    "archive",
-    "document",
-    "gis",
-    "html",
-    "image-raster",
-    "image-vector",
-    "presentation",
-    "spreadsheet",
-    "tabular"
-];
-dataFormatCategories.forEach(item => {
-    formatIcons[item] = require(`../assets/data-types/${item}.svg`);
-});
-const CategoryDetermineConfigItems = [
-    {
-        regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS|ESRI REST/i,
-        category: "gis"
-    },
-    {
-        regex: /api|webservice| web service/i,
-        category: "api"
-    },
-    {
-        regex: /zip|7z|rar|arj/i,
-        category: "archive"
-    },
-    {
-        regex: /doc|pdf|docx|txt|plaintext/i,
-        category: "document"
-    },
-    {
-        regex: /html|htm|web page|web site/i,
-        category: "html"
-    },
-    {
-        regex: /^www:/i,
-        category: "html"
-    },
-    {
-        regex: /jpg|gif|jpeg/i,
-        category: "image-raster"
-    },
-    {
-        regex: /svg|png/i,
-        category: "image-vector"
-    },
-    {
-        regex: /ppt|pptx/i,
-        category: "presentation"
-    },
-    {
-        regex: /xlsx|xls/i,
-        category: "spreadsheet"
-    },
-    {
-        regex: /csv|tab/i,
-        category: "tabular"
-    }
-];
+import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
 
 export type PropType = {
     dataset: Dataset;
@@ -89,35 +24,6 @@ class DistributionRow extends Component<PropType> {
 
     constructor(props: PropType) {
         super(props);
-    }
-
-    determineCategoryFromString(str) {
-        let matchedCategory = "default";
-        if (!str || typeof str !== "string") return matchedCategory;
-        str = str.trim().toLowerCase();
-        for (let i = 0; i < CategoryDetermineConfigItems.length; i++) {
-            let config = CategoryDetermineConfigItems[i];
-            if (str.match(config.regex)) {
-                matchedCategory = config.category;
-                break;
-            }
-        }
-        return matchedCategory;
-    }
-
-    determineFormatIcon() {
-        let matchedCategory = this.determineCategoryFromString(
-            this.props.distribution.format
-        );
-        if (
-            this.props.distribution.downloadURL &&
-            matchedCategory === "default"
-        ) {
-            matchedCategory = this.determineCategoryFromString(
-                this.props.distribution.downloadURL
-            );
-        }
-        return matchedCategory;
     }
 
     /**
@@ -158,11 +64,9 @@ class DistributionRow extends Component<PropType> {
                             <div className="col-sm-1">
                                 <img
                                     className="format-icon"
-                                    src={
-                                        formatIcons[this.determineFormatIcon()]
-                                    }
+                                    src={getFormatIcon(distribution)}
                                     alt="format icon"
-                                    data-tip={this.determineFormatIcon()}
+                                    data-tip={determineFormatIcon(distribution)}
                                     data-place="top"
                                 />
                             </div>
@@ -216,8 +120,8 @@ class DistributionRow extends Component<PropType> {
                                     (typeof distribution.license === "string"
                                         ? distribution.license
                                         : distribution.license.name
-                                            ? distribution.license.name
-                                            : "")}
+                                        ? distribution.license.name
+                                        : "")}
                             </div>
                         </div>
                     </div>

@@ -286,7 +286,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+      blockUntilExactCount(2, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
@@ -336,7 +336,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+      blockUntilExactCount(2, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
@@ -400,7 +400,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName, indices.getType(Indices.DataSetsIndexType))
+      blockUntilExactCount(2, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {

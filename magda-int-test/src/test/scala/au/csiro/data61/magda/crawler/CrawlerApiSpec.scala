@@ -2,7 +2,7 @@
 package au.csiro.data61.magda.crawler
 
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.{ElasticDsl, RequestSuccess}
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import au.csiro.data61.magda.test.util.Generators
@@ -11,7 +11,7 @@ import org.scalacheck.Gen
 import scala.concurrent.Future
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import akka.http.scaladsl.model.StatusCodes.{ Accepted, OK }
+import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 
 import scala.concurrent.duration._
@@ -34,6 +34,7 @@ import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.test.util.MagdaMatchers
+import com.sksamuel.elastic4s.http.search.SearchResponse
 
 class CrawlerApiSpec extends BaseApiSpec with Protocols {
 
@@ -144,14 +145,14 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
         case (e: Throwable) =>
           val sizeQuery = search(indexNames(0)).size(10000)
           val result = client.execute(sizeQuery).await(60 seconds) match {
-            case Right(r) =>
+            case r:RequestSuccess[SearchResponse] =>
               logger.error("Did not have the right dataset count - this looks like it's a kraken, but it's actually more likely to be an elusive failure in the crawler")
               logger.error(s"Desired dataset count was ${allDataSets.size}, actual dataset count was ${r.result.totalHits}" +
                 s", firstIndex = ${source._1.size}, afterCount = ${source._2.size}")
               logger.error(s"Returned results: ${r.result.hits}")
               logger.error(s"First index: ${source._1.map(_.normalToString)}")
               logger.error(s"Second index: ${source._2.map(_.normalToString)}")
-            case Left(ESGenericException(e)) => throw e
+            case ESGenericException(e) => throw e
           }
 
           throw e
