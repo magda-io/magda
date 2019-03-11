@@ -6,7 +6,7 @@ global:
     maxUnavailable: 0
   exposeNodePorts: false
   image:
-    tag: 0.0.54-0
+    tag: 0.0.54-RC0
     repository: "data61"
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
