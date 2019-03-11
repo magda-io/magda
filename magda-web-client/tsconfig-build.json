@@ -14,6 +14,7 @@
         "noEmit": true,
         "jsx": "preserve",
         "moduleResolution": "node",
+        "declaration": false,
         "isolatedModules": true,
         "noImplicitAny": false
     },
