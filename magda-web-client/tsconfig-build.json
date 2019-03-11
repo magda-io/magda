@@ -16,6 +16,7 @@
         "moduleResolution": "node",
         "declaration": false,
         "isolatedModules": true,
+        "noEmitOnError": false,
         "noImplicitAny": false
     },
     "include": ["src"]
