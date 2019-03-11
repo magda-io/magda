@@ -5,10 +5,20 @@ export function extractExtents(input, output) {
     if (input.workbook) {
         // what if it has multiple sheets?
         const worksheet = input.workbook.Sheets[input.workbook.SheetNames[0]];
+
         const rows = XLSX.utils.sheet_to_json(worksheet);
         if (rows.length) {
-            const rowOne = rows[0];
-            const headers = Object.keys(rowOne);
+            const headersSet = new Set<string>();
+            for (let row of rows) {
+                for (let key of Object.keys(row)) {
+                    headersSet.add(key);
+                }
+            }
+
+            const headers: string[] = [];
+            for (let header of headersSet) {
+                headers.push(header);
+            }
 
             output.temporalExtent = aggregateDates(rows, headers);
             output.spatialExtent = calculateSpatialExtent(rows, headers);

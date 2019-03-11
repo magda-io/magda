@@ -5,7 +5,7 @@
         "outDir": "dist",
         "target": "es2015",
         "allowJs": true,
-        "skipLibCheck": false,
+        "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": true,
@@ -15,7 +15,7 @@
         "noEmit": true,
         "jsx": "preserve",
         "moduleResolution": "node",
-        "isolatedModules": true,
+        "isolatedModules": false,
         "noImplicitAny": false
     },
     "include": ["src"]
