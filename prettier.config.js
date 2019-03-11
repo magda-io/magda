@@ -10,6 +10,12 @@ module.exports = {
             options: {
                 tabWidth: 2
             }
+        },
+        {
+            files: ["**/*.yml", "**/*.yaml"],
+            options: {
+                tabWidth: 2
+            }
         }
     ]
 };
