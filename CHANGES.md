@@ -21,6 +21,7 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
+-   Fixed javascript errors in download analytics and pie charts
 
 Others:
 
