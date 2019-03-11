@@ -4,7 +4,7 @@ import com.sksamuel.elastic4s.http.search.Aggregations
 
 object AggUtils {
   def toAgg(data: Any): Option[Aggregations] = data match {
-    case d: Map[String, Any] => Some(Aggregations(d))
+    case d: Map[_, _] => Some(Aggregations(d.asInstanceOf[Map[String, Any]]))
     case _ => None
   }
 }
