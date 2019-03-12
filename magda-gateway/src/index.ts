@@ -21,8 +21,8 @@ import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
-import loadTenantsTable from "./loadTenantsTable";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
+import request from "@magda/typescript-common/dist/request";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -223,6 +223,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: true
         })
+        .option("registryApi", {
+            describe: "The base URL of the registry API.",
+            type: "string",
+            default: "http://localhost:6101/v0"
+        })
         .option("magdaAdminPortalName", {
             describe:
                 "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
@@ -371,15 +376,41 @@ app.use("/", createGenericProxy(argv.web));
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-export let tenantsTable = new Map<String, Tenant>();
-let httpOrHttps = "http";
-if (argv.externalUrl.toLowerCase().startsWith("https")) "https";
+export const tenantsTable = new Map<String, Tenant>();
+const MAGDA_ADMIN_PORTAL_ID = -1;
+let retryNum = 10;
+function loadTenants(): any {
+    request({
+        headers: { TenantId: MAGDA_ADMIN_PORTAL_ID },
+        url: `${argv.registryApi}/tenants`
+    })
+        .on("error", e => {
+            if (retryNum < 0) {
+                console.info(
+                    `Failed to retrieve tenants. ${
+                        e.message
+                    }. Two many retries. Give up now.`
+                );
+            } else {
+                console.info(
+                    `Failed to retrieve tenants. ${
+                        e.message
+                    }. Retries left: ${retryNum}`
+                );
+                retryNum = retryNum - 1;
+                setTimeout(loadTenants, 10000);
+            }
+        })
+        .on("data", tenantsString => {
+            const tenantsJson: [Tenant] = JSON.parse(`${tenantsString}`);
+            tenantsJson.forEach(t => {
+                tenantsTable.set(t.domainName, t);
+                console.debug(`${t.domainName} : ${t.id}`);
+            });
+        });
+}
 
-// Use localhost to signal magda admin portal.
-loadTenantsTable(
-    tenantsTable,
-    `${httpOrHttps}://localhost:${argv.listenPort}/api/v0/registry`
-);
+loadTenants();
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error("Unhandled rejection");

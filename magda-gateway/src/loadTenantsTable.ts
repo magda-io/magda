@@ -5,9 +5,15 @@ export default function loadTenantsTable(
     tenantsTable: Map<String, Tenant>,
     url: string
 ) {
-    let registryClient = new RegistryClient({ baseUrl: url });
-    registryClient.getTenants().then((tenants: any[]) => {
-        let tenantsJson = <Array<Tenant>>tenants;
-        tenantsJson.forEach(t => tenantsTable.set(t.domainName, t));
-    });
+    new RegistryClient({ baseUrl: url })
+        .getTenants()
+        .then((tenants: Tenant[]) => {
+            tenants.forEach(t => {
+                tenantsTable.set(t.domainName, t);
+                console.debug(`${t.domainName} : ${t.id}`);
+            });
+        })
+        .catch(error => {
+            console.error(`Error occurred in getting tenants ${error}`);
+        });
 }

@@ -63,6 +63,7 @@ spec:
             "--corsJson", "/etc/config/cors.json",
             "--web", "http://web",
             "--authorizationApi", "http://authorization-api/v0",
+            "--registryApi", "http://registry-api-full/v0",
             "--previewMap", "http://preview-map:6110",
         ]
         volumeMounts:
