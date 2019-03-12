@@ -12,7 +12,6 @@ import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import { config } from "../config";
 import chrono from "chrono-node";
-import type { ParsedDistribution } from "../helpers/record";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
@@ -200,7 +199,9 @@ const rollupResult2Rows = function(
 const aggrLabelRegex = /^(count|sum)(_0\.+\d+)$/i;
 
 function unknownIfBlank(input) {
-    return !input || input.trim() === "" ? UNKNOWN_AXIS_LABEL : input;
+    return !input || (typeof input === "string" && input.trim() === "")
+        ? UNKNOWN_AXIS_LABEL
+        : input;
 }
 
 const defaultChartOption = {
@@ -405,7 +406,7 @@ function getDefaultColumn(
 }
 
 class ChartDatasetEncoder {
-    constructor(distribution: ParsedDistribution) {
+    constructor(distribution) {
         this.fields = null;
         this.data = null;
         this.encode = null;
@@ -419,7 +420,7 @@ class ChartDatasetEncoder {
         this.init(distribution);
     }
 
-    init(distribution: ParsedDistribution) {
+    init(distribution) {
         ChartDatasetEncoder.validateDistributionData(distribution);
         this.distribution = distribution;
     }
@@ -813,9 +814,7 @@ class ChartDatasetEncoder {
     }
 }
 
-ChartDatasetEncoder.isValidDistributionData = function(
-    distribution: ParsedDistribution
-) {
+ChartDatasetEncoder.isValidDistributionData = function(distribution) {
     try {
         ChartDatasetEncoder.validateDistributionData(distribution);
         return true;
@@ -824,9 +823,7 @@ ChartDatasetEncoder.isValidDistributionData = function(
     }
 };
 
-ChartDatasetEncoder.validateDistributionData = function(
-    distribution: ParsedDistribution
-) {
+ChartDatasetEncoder.validateDistributionData = function(distribution) {
     if (!distribution) throw new Error("Invalid empty `distribution` data");
     if (!distribution.identifier)
         throw new Error(

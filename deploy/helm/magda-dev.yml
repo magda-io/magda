@@ -20,7 +20,9 @@ ingress:
   hostname: dev.magda.io
   ingressClass: nginx
   enableTls: true
-  useDefaultCertificate: true
+  domains:
+    - dev.magda.io
+    - "*.dev.magda.io"
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
@@ -90,6 +92,8 @@ indexer:
 
 web-server:
   fallbackUrl: "https://data.gov.au"
+  featureFlags:
+    cataloguing: true
 
 correspondence-api:
   defaultRecipient: "magda-test@googlegroups.com"

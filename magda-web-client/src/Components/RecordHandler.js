@@ -21,11 +21,11 @@ import queryString from "query-string";
 import DatasetSuggestForm from "./Dataset/DatasetSuggestForm";
 import { Small, Medium } from "../UI/Responsive";
 import DescriptionBox from "../UI/DescriptionBox";
-import DistributionIcon from "../assets/distribution_icon.svg";
-import "./RecordHandler.css";
+import "./RecordHandler.scss";
 import TagsBox from "../UI/TagsBox";
 import ContactPoint from "../UI/ContactPoint";
 import QualityIndicator from "../UI/QualityIndicator";
+import { getFormatIcon } from "./DistributionIcon";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -174,7 +174,7 @@ class RecordHandler extends React.Component {
                         <span className="distribution-title">
                             <img
                                 className="distribution-icon"
-                                src={DistributionIcon}
+                                src={getFormatIcon(this.props.distribution)}
                                 alt="distribution icon"
                             />
                             <h1>{this.props.distribution.title}</h1>
@@ -247,7 +247,8 @@ class RecordHandler extends React.Component {
                                         });
                                         gapi.event({
                                             category: "Download by Publisher",
-                                            action: this.props.dataset,
+                                            action: this.props.dataset.publisher
+                                                .name,
                                             label: resource_url
                                         });
                                     }

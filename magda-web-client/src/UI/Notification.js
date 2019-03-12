@@ -1,5 +1,5 @@
 import React from "react";
-import "./Notification.css";
+import "./Notification.scss";
 import close from "../assets/close.svg";
 import AUpageAlert from "../pancake/react/page-alerts";
 

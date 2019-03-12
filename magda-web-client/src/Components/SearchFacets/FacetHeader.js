@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./FacetHeader.css";
+import "./FacetHeader.scss";
 import publisher_passive from "../../assets/publisher-passive.svg";
 import format_passive from "../../assets/format-passive.svg";
 import temporal_passive from "../../assets/temporal-passive.svg";

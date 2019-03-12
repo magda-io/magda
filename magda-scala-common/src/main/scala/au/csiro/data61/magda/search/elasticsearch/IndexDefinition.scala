@@ -5,31 +5,13 @@ import scala.math.BigDecimal.double2bigDecimal
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.mappings.{Analysis, Nulls, TextFieldDefinition}
+import com.sksamuel.elastic4s.mappings.{Analysis, Nulls}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.http.HttpClient
-import com.sksamuel.elastic4s.indexes.CreateIndexDefinition
-import com.sksamuel.elastic4s.indexes.IndexContentBuilder
+import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
 import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{
-  CustomAnalyzerDefinition,
-  StopTokenFilter,
-  LowercaseTokenFilter,
-  KeywordTokenizer,
-  StandardTokenizer,
-  UppercaseTokenFilter,
-  StemmerTokenFilter,
-  NamedStopTokenFilter,
-  Tokenizer,
-  TokenFilterDefinition,
-  WhitespaceTokenizer
-}
-import com.sksamuel.elastic4s.analyzers.{
-  SynonymTokenFilter,
-  SynonymGraphTokenFilter
-}
+import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, NamedStopTokenFilter, StandardTokenizer, StemmerTokenFilter, StopTokenFilter, TokenFilterDefinition, Tokenizer, UppercaseTokenFilter, WhitespaceTokenizer}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -37,7 +19,6 @@ import org.locationtech.jts.geom.LinearRing
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
@@ -51,14 +32,15 @@ import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
+
 import scala.collection.JavaConverters._
 
 case class IndexDefinition(
   name: String,
   version: Int,
   indicesIndex: Indices.Index,
-  definition: (Indices, Config) => CreateIndexDefinition,
-  create: Option[(HttpClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None
+  definition: (Indices, Config) => CreateIndexRequest,
+  create: Option[(ElasticClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None
 ) {}
 
 object IndexDefinition extends DefaultJsonProtocol {
@@ -94,7 +76,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 39,
+    version = 40,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -103,6 +85,9 @@ object IndexDefinition extends DefaultJsonProtocol {
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
           mapping(indices.getType(Indices.DataSetsIndexType)).fields(
+            objectField("accrualPeriodicity").fields(
+              magdaTextField("text")
+            ),
             objectField("temporal").fields(
               objectField("start").fields(
                 dateField("date"),
@@ -386,7 +371,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val indices = Seq(dataSets, regions, publishers, formats)
 
-  def setupRegions(client: HttpClient, indices: Indices)(
+  def setupRegions(client: ElasticClient, indices: Indices)(
     implicit
     config: Config,
     materializer: Materializer,
@@ -403,7 +388,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   implicit val geometryFactory =
     JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: HttpClient, loader: RegionLoader, indices: Indices)(
+  def setupRegions(client: ElasticClient, loader: RegionLoader, indices: Indices)(
     implicit
     config: Config,
     materializer: Materializer,
@@ -505,13 +490,13 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result match {
-          case Left(failure) => logger.error("Failure: {}", failure.error)
-          case Right(results) =>
+          case failure:RequestFailure => logger.error("Failure: {}", failure.error)
+          case results:RequestSuccess[BulkResponse] =>
             logger.debug(
               "Took {} seconds to execute request.",
               results.result.took
             )
-            results.result.items.length
+            results.result.successes.size
         }
       }
       .recover {

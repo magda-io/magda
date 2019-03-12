@@ -6,8 +6,8 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.searches.aggs.{AggregationDefinition, TermsOrder}
-import com.sksamuel.elastic4s.searches.queries.QueryDefinition
+import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition, TermsOrder}
+import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
@@ -132,7 +132,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      agg.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
+      agg.dataAsMap.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
         .map{m =>
           val agg = Aggregations(m)
           new FacetOption(
@@ -181,7 +181,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      agg.getAgg("nested").flatMap(_.data.get("buckets"))
+      agg.dataAsMap.get("nested").flatMap(AggUtils.toAgg(_)).flatMap(_.data.get("buckets"))
         .toSeq
         .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
           val agg = Aggregations(m)

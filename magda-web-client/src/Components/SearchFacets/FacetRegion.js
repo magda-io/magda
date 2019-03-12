@@ -1,13 +1,13 @@
 import "leaflet/dist/leaflet.css";
-import "./FacetRegion.css";
+import "./FacetRegion.scss";
 import React, { Component } from "react";
 import RegionMap from "./RegionMap";
 import RegionSearchBox from "./RegionSearchBox";
 import defined from "../../helpers/defined";
 import RegionSummray from "./RegionSummary";
 /*
-* the region (location) facet facet, extends Facet class
-*/
+ * the region (location) facet facet, extends Facet class
+ */
 class FacetRegion extends Component {
     constructor(props) {
         super(props);

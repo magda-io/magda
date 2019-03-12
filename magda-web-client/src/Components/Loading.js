@@ -2,14 +2,16 @@ import React from "react";
 import ReactDocumentTitle from "react-document-title";
 import { needsContent } from "../helpers/content";
 
-class RecordHandler extends React.Component {
+class Loading extends React.Component {
     render() {
+        const strings = this.props.strings || {};
+
         return (
-            <ReactDocumentTitle title={`${this.props.strings.applicationName}`}>
-                <p>{this.props.strings.loading}</p>
+            <ReactDocumentTitle title={`${strings.applicationName}`}>
+                <p>{strings.loading}</p>
             </ReactDocumentTitle>
         );
     }
 }
 
-export default needsContent("strings")(RecordHandler);
+export default needsContent("strings")(Loading);

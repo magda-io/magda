@@ -4,7 +4,7 @@ import java.time.OffsetDateTime
 
 import com.sksamuel.elastic4s.searches.ScoreMode
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.queries.NestedQueryDefinition
+import com.sksamuel.elastic4s.searches.queries.{NestedQuery => NestedQueryDefinition}
 import com.typesafe.config.Config
 
 import au.csiro.data61.magda.model.misc.QueryRegion
@@ -13,10 +13,10 @@ import com.sksamuel.elastic4s.searches.queries.geo.{
 //import au.csiro.data61.magda.search.elasticsearch.QueryDefinitions.{
   ShapeRelation,
   PreindexedShape,
-  GeoShapeQueryDefinition
+  GeoShapeQuery => GeoShapeQueryDefinition
 }
 import au.csiro.data61.magda.api.FilterValue
-import com.sksamuel.elastic4s.searches.queries.QueryDefinition
+import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.model.misc.Region

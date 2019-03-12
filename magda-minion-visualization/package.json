@@ -16,7 +16,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@magda/scripts": "^0.0.54-0",
-    "@types/node": "^7.0.5",
     "@types/papaparse": "^4.1.31",
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",

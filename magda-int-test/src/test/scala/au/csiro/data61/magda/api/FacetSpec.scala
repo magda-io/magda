@@ -40,7 +40,6 @@ import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
 import java.util.HashMap
 import com.sksamuel.elastic4s.http.HttpClient
 import org.elasticsearch.cluster.health.ClusterHealthStatus
-import au.csiro.data61.magda.test.util.testkit.LocalNode
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.util.SetExtractor

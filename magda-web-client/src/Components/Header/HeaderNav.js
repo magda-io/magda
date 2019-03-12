@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import AccountNavbar from "../Account/AccountNavbar";
-import { config } from "../../config.js";
+import { config } from "../../config";
 import isExternalURL from "is-url-external";
 
 const headerNavigationPlugins = {
@@ -24,7 +24,7 @@ const headerNavigationPlugins = {
                         target={opts.target}
                         rel={opts.rel}
                         title={`Go to ${nav.label}`}
-                        id={i === 0 && "nav"}
+                        id={i === 0 ? "nav" : undefined}
                     >
                         <span>{nav.label}</span>
                     </Link>

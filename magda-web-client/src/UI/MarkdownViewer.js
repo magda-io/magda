@@ -1,6 +1,6 @@
 import React from "react";
 import MarkdownIt from "markdown-it";
-import "./MarkdownViewer.css";
+import "./MarkdownViewer.scss";
 import defined from "../helpers/defined";
 import truncate from "html-truncate";
 var DOMPurify = require("dompurify/dist/purify");
@@ -8,6 +8,7 @@ var DOMPurify = require("dompurify/dist/purify");
 class MarkdownViewer extends React.Component {
     render() {
         let html = markdownToHtml(this.props.markdown);
+        html = html ? html : "";
         if (this.props.truncate === true) {
             html = truncate(
                 html,

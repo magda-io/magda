@@ -3,7 +3,10 @@ import * as path from "path";
 import "isomorphic-fetch";
 import { throttle, memoize } from "lodash";
 
-import getStaticStyleSheetFileName from "./getStaticStyleSheetFileName";
+const STATIC_STYLE_REGEX = new RegExp(
+    '<link href="\\/static\\/css\\/.*.css" rel="stylesheet">',
+    "g"
+);
 
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
@@ -85,11 +88,11 @@ async function getIndexFileContent(
         dynamicContent + "</body>"
     );
 
-    if (useLocalStyleSheet) {
-        const cssFileName = getStaticStyleSheetFileName(clientRoot);
+    if (!useLocalStyleSheet) {
+        indexFileContent = indexFileContent.replace(STATIC_STYLE_REGEX, "");
         indexFileContent = indexFileContent.replace(
-            "/api/v0/content/stylesheet.css",
-            `/static/css/${cssFileName}`
+            "</head>",
+            `<link href="/api/v0/content/stylesheet.css" rel="stylesheet">\n</head>`
         );
     }
 

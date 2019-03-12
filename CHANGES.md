@@ -1,3 +1,38 @@
+## 0.0.54
+
+Connectors:
+
+-   Add organisation ignore filter to CKAN connector
+
+UI:
+
+-   Upgraded the to create-react-app 2
+-   Fixed javascript error when user clicks away from facet dropdowns
+-   Distribution pages: prepend file-specific icon to title
+-   Added a basic new dataset page
+-   Fixed javascript errors in download analytics and pie charts
+-   Added results of automated metadata extraction spikes to add new dataset page
+
+Analytics:
+
+-   Added dataset id to dataset request/feedback where applicable
+-   Added value to the "Search result and click" Google Analytics event that will show averages and other numeric aggregates in Google Analytics.
+-   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
+-   Elasticsearch related test cases run on Docker container than than local node
+-   Made search always match all input keywords (MatchAll mode)
+
+Indexer:
+
+-   Fixed issues of snapshot creation & restore
+-   Indexer will auto reopen index if it's closed
+
+Others:
+
+-   Change content api delete response status code from to 204 to 200 so its content can be read.
+-   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
+-   Elasticsearch related test cases run on Docker container than than local node
+-   Fixed: datasets with null description could lead to blank search result page
+
 ## 0.0.53
 
 Connectors:

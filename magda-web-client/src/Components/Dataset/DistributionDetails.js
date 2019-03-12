@@ -6,7 +6,7 @@ import ContactPoint from "../../UI/ContactPoint";
 
 import { gapi } from "../../analytics/ga";
 
-import "./RecordDetails.css";
+import "./RecordDetails.scss";
 
 class DistributionDetails extends Component {
     renderLinkStatus(linkStatusAvailable, linkActive) {

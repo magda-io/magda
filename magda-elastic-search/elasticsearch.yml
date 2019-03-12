@@ -7,7 +7,6 @@ node:
   master: ${NODE_MASTER}
   data: ${NODE_DATA}
   ingest: ${NODE_INGEST}
-  max_local_storage_nodes: ${MAX_LOCAL_STORAGE_NODES}
 
 network.host: ${NETWORK_HOST}
 
@@ -20,15 +19,12 @@ bootstrap:
   memory_lock: true
 
 action:
-  auto_create_index: ".security*,.monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*"
+  auto_create_index: false
 
 http:
   compression: true
-  cors:
-    enabled: ${HTTP_CORS_ENABLE}
-    allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
 
 discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
-    minimum_master_nodes: ${NUMBER_OF_MASTERS}
+    minimum_master_nodes: 1
