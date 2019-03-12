@@ -19,7 +19,7 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{FunSpec, FunSuite}
 import org.scalatest.Matchers
-import com.sksamuel.elastic4s.http.HttpClient
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import akka.actor.ActorSystem
 import akka.actor.Scheduler
@@ -39,6 +39,7 @@ import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
 import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import org.scalatest.BeforeAndAfterEach
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
@@ -48,31 +49,31 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   val logger = Logging(system, getClass)
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
-  val node = getNode
-  implicit val config = buildConfig.withValue("elasticSearch.serverUrl", ConfigValueFactory.fromAnyRef(s"elasticsearch://${node.host}:${node.port}"))
+  implicit val config = buildConfig
 
   val clientProvider = new DefaultClientProvider
 
-  override def client(): HttpClient = clientProvider.getClient().await
+  override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
 
     blockUntilNotRed()
 
-    if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
-
-      client.execute(
-        IndexDefinition.regions.definition(DefaultIndices, config)
-      ).await(90 seconds)
-
-      val fakeRegionLoader = new RegionLoader {
-        override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
-      }
-
-      logger.info("Setting up regions")
-      IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
-      logger.info("Finished setting up regions")
+    if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
+      deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
     }
+
+    client.execute(
+      IndexDefinition.regions.definition(DefaultIndices, config)
+    ).await(90 seconds)
+
+    val fakeRegionLoader = new RegionLoader {
+      override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
+    }
+
+    logger.info("Setting up regions")
+    IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
+    logger.info("Finished setting up regions")
 
     System.gc()
   }
@@ -82,7 +83,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(): Future[HttpClient] = Future(client)
+    override def getClient(): Future[ElasticClient] = Future(client)
   }
 
   def blockUntilNotRed(): Unit = {
@@ -90,8 +91,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       client.execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED
-        case Left(f) => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED
+        case f: RequestFailure => false
       }
     }
   }
@@ -101,8 +102,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       client.execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case Right(r) => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
-        case Left(f) => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
+        case f: RequestFailure => false
       }
     }
   }
