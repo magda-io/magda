@@ -60,7 +60,7 @@ export default function createBaseProxy(): httpProxy {
 
         let domainName = host.substring(0, endIndex);
 
-        if (domainName === magdaAdminPortalName || domainName === "localhost") {
+        if (domainName === magdaAdminPortalName) {
             proxyReq.setHeader("TenantId", MAGDA_ADMIN_PORTAL_ID);
         } else {
             const tenant = tenantsTable.get(domainName);

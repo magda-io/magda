@@ -22,7 +22,7 @@ import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
-import request from "@magda/typescript-common/dist/request";
+import * as request from "request";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
