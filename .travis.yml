@@ -28,7 +28,7 @@ matrix:
       before_install:
         - docker info
         - docker-compose --version
-      script: 
+      script:
         - cd magda-elastic-search
         - docker-compose up -d
         - cd ..

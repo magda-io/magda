@@ -120,8 +120,8 @@ class DistributionRow extends Component<PropType> {
                                     (typeof distribution.license === "string"
                                         ? distribution.license
                                         : distribution.license.name
-                                            ? distribution.license.name
-                                            : "")}
+                                        ? distribution.license.name
+                                        : "")}
                             </div>
                         </div>
                     </div>

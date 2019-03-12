@@ -21,8 +21,8 @@ builders-and-yarn:
   cache:
     key: $CI_JOB_NAME-yarn-cache
     paths:
-    - .yarn
-    - "yarn.lock"
+      - .yarn
+      - "yarn.lock"
   before_script:
     - yarn config set cache-folder .yarn
     - yarn install
@@ -45,10 +45,10 @@ registry-typescript-api:
   cache:
     key: $CI_JOB_NAME
     paths:
-    - "$CI_PROJECT_DIR/sbt-cache"
-    - "target"
-    - "*/target"
-    - "*/project/target"
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "target"
+      - "*/target"
+      - "*/project/target"
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - lerna run generate --scope=@magda/typescript-common --stream
@@ -190,8 +190,8 @@ buildtest:ui:
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:
     paths:
-    - "*/build"
-    - "*/dist"
+      - "*/build"
+      - "*/dist"
     expire_in: 30 days
 
 buildtest:registry:
@@ -235,9 +235,9 @@ buildtest:map:
     - yarn run in-submodules -- -f categories.map=true -- run test
   artifacts:
     paths:
-    - "*/build"
-    - "*/dist"
-    - "magda-preview-map/wwwroot/build"
+      - "*/build"
+      - "*/dist"
+      - "magda-preview-map/wwwroot/build"
     expire_in: 30 days
 
 buildtest:typescript-apis:
@@ -416,7 +416,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   services:
-  - docker:dind
+    - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
@@ -501,10 +501,10 @@ Stop Preview: &stopPreview
     name: preview/$CI_COMMIT_REF_NAME
     action: stop
   script:
-  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
-  - export KUBECONFIG=kubectlconfig.yaml
-  - helm del --purge $CI_COMMIT_REF_SLUG
-  - kubectl delete namespace $CI_COMMIT_REF_SLUG
+    - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+    - export KUBECONFIG=kubectlconfig.yaml
+    - helm del --purge $CI_COMMIT_REF_SLUG
+    - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
 Deploy Master To Dev:
   stage: deploy-dev
@@ -519,10 +519,10 @@ Deploy Master To Dev:
     name: dev
     url: https://dev.magda.io
   script:
-  - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
-  - export KUBECONFIG=kubectlconfig.yaml
-  - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
-  - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 3600 --wait
+    - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
+    - export KUBECONFIG=kubectlconfig.yaml
+    - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
+    - helm upgrade magda deploy/helm/magda --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 3600 --wait
 
 Release Tags To Docker Hub:
   stage: release

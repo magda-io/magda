@@ -258,7 +258,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region") {
-    // 2 fake datasets. One that relates to Queensland, the other to all of Australia
+    // 3 fake datasets. One that relates to Queensland, the other to all of Australia
+    // (but one of those has `queensland` in title otherwise only one document will be matched)
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
     //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
@@ -272,7 +273,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         spatial=Some(Location(geoJson=qldGeometry)),
         quality = 0.6,
         score = None)
-    val nationalDataset = DataSet(
+    val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
@@ -280,21 +281,30 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       quality = 0.6,
       score = None)
 
-    val datasets = List(nationalDataset, qldDataset)
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+
+    val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName)
+      blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
-        response.dataSets(1).identifier shouldEqual qldDataset.identifier
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual qldDataset.identifier
 
       }
 
@@ -303,7 +313,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
         response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
-        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
     } finally {
@@ -316,35 +326,43 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
     val saDataset = DataSet(
       identifier="ds-region-in-query-test-1",
-      title=Some("Wildlife density in rural areas"),
+      title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
       spatial=Some(Location(geoJson=saGeometry)),
       quality = 0.6,
       score = None)
-    val nationalDataset = DataSet(
+    val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
-      title=Some("Wildlife density in rural areas"),
+      title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
       score = None)
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      title=Some("Wildlife density in rural areas south"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
 
-    val datasets = List(nationalDataset, saDataset)
+    val datasets = List(nationalDataset1, nationalDataset2, saDataset)
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName)
+      blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
-        response.dataSets(1).identifier shouldEqual saDataset.identifier
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual saDataset.identifier
 
       }
 
@@ -353,16 +371,17 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
         response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
-        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
       // Verify that half the name doesn't boost results
       Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
-        response.dataSets(1).identifier shouldEqual saDataset.identifier
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual saDataset.identifier
 
       }
 
@@ -372,7 +391,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region in Alfredton") {
-    // 2 fake datasets. One that relates to Alfredton, the other to all of Australia
+    // 3 fake datasets. One that relates to Alfredton, the other to all of Australia
+    // (but one of those has `Alfredton` in title otherwise only one document will be matched)
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
     //  Alfredton dataset should be boosted if a user searches for wildlife density in Alfredton
 
@@ -386,29 +406,37 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       spatial=Some(Location(geoJson=alfGeometry)),
       quality = 0.6,
       score = None)
-    val nationalDataset = DataSet(
+    val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
       score = None)
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
 
-    val datasets = List(nationalDataset, alfDataset)
+    val datasets = List(nationalDataset1, nationalDataset2, alfDataset)
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
     try {
-      blockUntilExactCount(2, indexName)
+      blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
       Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual nationalDataset.identifier
-        response.dataSets(1).identifier shouldEqual alfDataset.identifier
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual alfDataset.identifier
 
       }
 
@@ -416,8 +444,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual alfDataset.identifier // Failed
-        response.dataSets(1).identifier shouldEqual nationalDataset.identifier
+        response.dataSets.head.identifier shouldEqual alfDataset.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
     } finally {
@@ -641,52 +669,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-      it("inexact") {
-        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
-          val formats = dataSet.distributions
-            .map(_.format.map(Specified.apply).flatMap(x => x)).flatten
-
-          if (formats.isEmpty)
-            Gen.const(Query())
-          else {
-            for {
-              format <- Gen.oneOf(formats)
-              reducedFormat <- ApiGenerators.partialStringGen(format)
-              reducedFormatValid = ApiGenerators.validFilter(reducedFormat)
-              query = Query(formats = Set(Specified(reducedFormat)))
-            } yield if (reducedFormatValid) query else Query()
-          }
-        }
-
-        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-          whenever(query != Query() && query.formats.exists(!_.get.trim.isEmpty)) {
-            val queryFormats = query.formats
-            val dataSetFormats = dataSet.distributions.flatMap(_.format)
-            withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-            }
-
-            response.dataSets.foreach { dataSet =>
-              val queryToDataSetComparison = for {
-                queryFormat <- queryFormats
-                queryWord <- MagdaMatchers.tokenize(queryFormat.get)
-                dataSetFormat <- dataSetFormats
-                dataSetWord <- MagdaMatchers.tokenize(dataSetFormat)
-              } yield (dataSetWord, queryWord)
-
-              withClue("with dataSet->query: " + queryToDataSetComparison) {
-                queryToDataSetComparison.exists {
-                  case (dataSetWord, queryWord) =>
-                    MagdaMatchers.extractAlphaNum(dataSetWord) == MagdaMatchers.extractAlphaNum(queryWord) ||
-                      MagdaMatchers.toEnglishToken(dataSetWord) == MagdaMatchers.toEnglishToken(queryWord)
-                } should be(true)
-              }
-            }
-          }
-        }
-      }
-
       it("unspecified") {
         val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
 
@@ -734,58 +716,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
               withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
                 matchesQuery should be(true)
-              }
-            }
-          }
-        }
-      }
-
-      it("inexact") {
-        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
-          val publisher = dataSet.publisher.flatMap(_.name)
-
-          publisher match {
-            case None => Gen.const(Query())
-            case Some(innerPublisher) =>
-              for {
-                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher).suchThat(ApiGenerators.validFilter(_))
-                query = Query(publishers = Set(Specified(reducedPublisher)))
-              } yield query
-          }
-        }
-
-        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-          whenever(query != Query() && query.publishers.exists(!_.get.trim.isEmpty)) {
-            val queryPublishers = query.publishers
-            withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSet.publisher.get.name}") {
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-            }
-
-            response.dataSets.foreach { dataSet =>
-              val dataSetPublisher = dataSet.publisher.get.name
-
-              withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
-                def tokenize(string: String) = string.split("[\\s-.']+").map(MagdaMatchers.toEnglishToken)
-
-                val gotQueryPublishers = queryPublishers.map(_.get).flatMap(_.split("[\\s-.']+"))
-                val tokenizedQueryPublishers = gotQueryPublishers.flatMap(tokenize)
-
-                val possibleQueryPublishers = gotQueryPublishers.zip(tokenizedQueryPublishers)
-
-                val tokenizedDataSetPublishers = tokenize(dataSetPublisher.get)
-
-                val allDataSetPublisherTerms = dataSetPublisher.get.split("[\\s-.]+") ++ tokenizedDataSetPublishers
-
-                val y = possibleQueryPublishers.foldLeft(0) {
-                  case (soFar, (untokenizedTerm, tokenizedTerm)) =>
-                    val hasAMatch = allDataSetPublisherTerms.exists(dataSetTerm => dataSetTerm == untokenizedTerm || dataSetTerm === tokenizedTerm)
-
-                    soFar + (if (hasAMatch) 1 else 0)
-                }
-
-                // Generally it should match >= 50% of the terms in the query, but for some reason it doesn't now. FIXME
-                (y.toDouble / possibleQueryPublishers.size) should be > 0d
               }
             }
           }
@@ -909,7 +839,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       caseInsensitiveMatchFv("formats", outputQuery.formats, inputQuery.formats)
       caseInsensitiveMatchFv("publishers", outputQuery.publishers, inputQuery.publishers)
       outputQuery.dateFrom should equal(inputQuery.dateFrom)
-      outputQuery.regions.map(_.map(_.copy(regionName = None, boundingBox = None))) should equal(inputQuery.regions)
+      outputQuery.regions.map(_.map(_.copy(regionName = None, boundingBox = None, regionShortName = None))) should equal(inputQuery.regions)
 
       (outputQuery.dateTo, inputQuery.dateTo) match {
         case (Some(Specified(output)), Some(Specified(input))) =>
