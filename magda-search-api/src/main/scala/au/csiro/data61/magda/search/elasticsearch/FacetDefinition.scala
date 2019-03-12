@@ -125,8 +125,9 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
     termsAggregation(Publisher.id)
       .field("publisher.name.keyword")
       .size(limit)
+      .showTermDocCountError(true)
       .subAggregations(
-        topHitsAggregation("topHits").size(1).sortBy(fieldSort("publisher.identifier")))
+        topHitsAggregation("topHits").size(1))
   }
 
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
@@ -171,6 +172,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
       termsAggregation("nested")
         .field("distributions.format.keyword_lowercase")
         .size(limit)
+        .showTermDocCountError(true)
         .includeExclude(Seq(), Seq(""))
         .subAggregations {
           reverseNestedAggregation("reverse")
