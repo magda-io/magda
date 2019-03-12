@@ -365,27 +365,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           query,
           facetDef,
           strategy,
-          facetSize) :: exactMatchAggregations(
-          query,
-          facetType,
-          facetDef,
-          strategy))
-        .asInstanceOf[AggregationDefinition]
-
-    val partialMatchesAggs =
-      if (facetDef.isRelevantToQuery(query))
-        exactMatchAggregations(query, facetType, facetDef, strategy, "-filter") :+
-          // If there's details in the query that relate to this facet
-          // then create an aggregation that shows all results for this facet that partially match the details
-          // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
-          filterAggregation(facetType.id + "-filter")
-          .query(facetDef.filterAggregationQuery(query))
-          .subAggregations(facetDef.aggregationDefinition(facetSize))
+          facetSize))
           .asInstanceOf[AggregationDefinition]
-      else
-        List()
 
-    partialMatchesAggs :+ globalAgg
+    globalAgg :: Nil
   }
 
   /**
