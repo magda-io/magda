@@ -1,8 +1,6 @@
 {
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "declaration": false,
-        "outDir": "dist",
         "target": "es2015",
         "allowJs": true,
         "skipLibCheck": true,
@@ -13,11 +11,12 @@
         "module": "esnext",
         "resolveJsonModule": true,
         "noEmit": true,
-        "noEmitOnError": false,
         "jsx": "preserve",
         "moduleResolution": "node",
-        "isolatedModules": false,
-        "noImplicitAny": false
+        "isolatedModules": true,
+        "noImplicitAny": false,
+        "sourceMap": false
     },
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["**/node_modules/**/*"]
 }
