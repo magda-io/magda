@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_DEFAULT_TENANT_ID}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -49,11 +49,11 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
-    RawHeader("TenantId", tenantId.toString)
+    RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
   def addDefaultTenantIdHeader: RawHeader = {
-    addTenantIdHeader(BigInt("0"))  // 0 is defined in tenants table in the database.
+    addTenantIdHeader(MAGDA_DEFAULT_TENANT_ID)
   }
 
   def addAdminPortalIdHeader: RawHeader = {

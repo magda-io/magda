@@ -10,6 +10,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -53,20 +54,15 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          if (tenantIdString.isDefined) {
-            val tenantId = BigInt(tenantIdString.get)
-            val theResult = DB localTx { session =>
-              recordPersistence.deleteRecord(session, recordId, tenantId) match {
-                case Success(result) => complete(DeleteResult(result))
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-              }
+        requiredTenantId { tenantId =>
+          val theResult = DB localTx { session =>
+            recordPersistence.deleteRecord(session, recordId, tenantId) match {
+              case Success(result) => complete(DeleteResult(result))
+              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
-          } else {
-            responseForUnknownTenant
           }
+          webHookActor ! WebHookActor.Process()
+          theResult
         }
       }
     }
@@ -104,37 +100,32 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def trimBySourceTag: Route = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          if (tenantIdString.isDefined) {
-            val tenantId = BigInt(tenantIdString.get)
-            parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
-              val deleteFuture = Future {
-                // --- DB session needs to be created within the `Future`
-                // --- as the `Future` will keep running after timeout and require active DB session
-                DB localTx { implicit session =>
-                  recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, tenantId, Some(logger))
-                }
-              } map { result =>
-                webHookActor ! WebHookActor.Process()
-                result
+        requiredTenantId { tenantId =>
+          parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
+            val deleteFuture = Future {
+              // --- DB session needs to be created within the `Future`
+              // --- as the `Future` will keep running after timeout and require active DB session
+              DB localTx { implicit session =>
+                recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, tenantId, Some(logger))
               }
-
-              val deleteResult = try {
-                Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
-              } catch {
-                case e: Throwable => Failure(e)
-              }
-
-              deleteResult match {
-                case Success(result) => complete(MultipleDeleteResult(result))
-                case Failure(_: TimeoutException) => complete(StatusCodes.Accepted)
-                case Failure(exception) =>
-                  logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
-                  complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
-              }
+            } map { result =>
+              webHookActor ! WebHookActor.Process()
+              result
             }
-          } else {
-            responseForUnknownTenant
+
+            val deleteResult = try {
+              Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
+            } catch {
+              case e: Throwable => Failure(e)
+            }
+
+            deleteResult match {
+              case Success(result) => complete(MultipleDeleteResult(result))
+              case Failure(_: TimeoutException) => complete(StatusCodes.Accepted)
+              case Failure(exception) =>
+                logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
+                complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
+            }
           }
         }
       }
@@ -176,24 +167,19 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def putById: Route = put {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ => {
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          val tenantId = BigInt(tenantIdString.get)
-            if (tenantIdString.isDefined) {
-              entity(as[Record]) { record =>
-                val result = DB localTx { session =>
-                  recordPersistence.putRecordById(session, id, tenantId, record) match {
-                    case Success(_) =>
-                      // TODO: Check if this is really what we want!
-                      // A scala test expects this though.
-                      complete(record)
-                    case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                  }
+        requiredTenantId { tenantId =>
+            entity(as[Record]) { record =>
+              val result = DB localTx { session =>
+                recordPersistence.putRecordById(session, id, tenantId, record) match {
+                  case Success(_) =>
+                    // TODO: Check if this is really what we want!
+                    // A scala test expects this though.
+                    complete(record)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
                 }
-                webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
-                result
               }
-            } else {
-              responseForUnknownTenant
+              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+              result
             }
           }
         }
@@ -234,24 +220,19 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          if (tenantIdString.isDefined) {
-            val tenantId = BigInt(tenantIdString.get)
-            entity(as[JsonPatch]) { recordPatch =>
-              val theResult = DB localTx { session =>
-                recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(exception) =>
-                    logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
-                    complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                }
+        requiredTenantId { tenantId =>
+          entity(as[JsonPatch]) { recordPatch =>
+            val theResult = DB localTx { session =>
+              recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
+                case Success(result) =>
+                  complete(result)
+                case Failure(exception) =>
+                  logger.error(exception, "Exception encountered while PATCHing record {} with {}", id, recordPatch.toJson.prettyPrint)
+                  complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
-              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(List(id)))
-              theResult
             }
-          } else {
-            responseForUnknownTenant
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(List(id)))
+            theResult
           }
         }
       }
@@ -292,23 +273,18 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-          pathEnd {
-            entity(as[Record]) { record =>
-              val result = DB localTx { session =>
-                recordPersistence.createRecord(session, record, tenantId) match {
-                  case Success(theResult) => complete(theResult)
-                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                }
+      requiredTenantId { tenantId =>
+        pathEnd {
+          entity(as[Record]) { record =>
+            val result = DB localTx { session =>
+              recordPersistence.createRecord(session, record, tenantId) match {
+                case Success(theResult) => complete(theResult)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
-              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
-              result
             }
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+            result
           }
-        } else {
-          responseForUnknownTenant
         }
       }
     }

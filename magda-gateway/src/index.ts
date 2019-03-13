@@ -22,7 +22,7 @@ import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import defaultConfig from "./defaultConfig";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
-import * as request from "request";
+import updateTenants from "./updateTenants";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -219,7 +219,8 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.USER_ID || process.env.npm_package_config_userId
         })
         .option("enableDefaultTenant", {
-            describe: "Whether use default tenant",
+            describe:
+                "Whether use default tenant. If false, magdaAdminPortalName must be set properly.",
             type: "boolean",
             default: true
         })
@@ -377,40 +378,7 @@ app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
 export const tenantsTable = new Map<String, Tenant>();
-const MAGDA_ADMIN_PORTAL_ID = -1;
-let retryNum = 10;
-function loadTenants(): any {
-    request({
-        headers: { TenantId: MAGDA_ADMIN_PORTAL_ID },
-        url: `${argv.registryApi}/tenants`
-    })
-        .on("error", e => {
-            if (retryNum < 0) {
-                console.info(
-                    `Failed to retrieve tenants. ${
-                        e.message
-                    }. Two many retries. Give up now.`
-                );
-            } else {
-                console.info(
-                    `Failed to retrieve tenants. ${
-                        e.message
-                    }. Retries left: ${retryNum}`
-                );
-                retryNum = retryNum - 1;
-                setTimeout(loadTenants, 10000);
-            }
-        })
-        .on("data", tenantsString => {
-            const tenantsJson: [Tenant] = JSON.parse(`${tenantsString}`);
-            tenantsJson.forEach(t => {
-                tenantsTable.set(t.domainName, t);
-                console.debug(`${t.domainName} : ${t.id}`);
-            });
-        });
-}
-
-loadTenants();
+updateTenants(tenantsTable, argv.registryApi, 10);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error("Unhandled rejection");

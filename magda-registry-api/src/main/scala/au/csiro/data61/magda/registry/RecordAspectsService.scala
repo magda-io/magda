@@ -3,9 +3,11 @@ package au.csiro.data61.magda.registry
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{optionalHeaderValueByName, _}
+import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -62,24 +64,20 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to update."),
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$Aspect", paramType = "body", value = "The record aspect to save."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def putById = put {
+  def putById: Route = put {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-
-        requireIsAdmin(authClient)(system, config) { _ => {
-
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiredTenantId { tenantId =>
           entity(as[JsObject]) { aspect =>
-            val result = DB localTx { session =>
+            val theResult = DB localTx { session =>
               recordPersistence.putRecordAspectById(session, recordId, tenantId, aspectId, aspect) match {
                 case Success(result) => complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
-            webHookActor ! WebHookActor.Process(false, Some(List(aspectId)))
-            result
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(List(aspectId)))
+            theResult
           }
-        }
         }
       }
     }
@@ -106,12 +104,10 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to delete an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def deleteById = delete {
+  def deleteById: Route = delete {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-
-        requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiredTenantId { tenantId =>
           DB localTx { session =>
             recordPersistence.deleteRecordAspect(session, recordId, tenantId, aspectId) match {
               case Success(result) => complete(DeleteResult(result))
@@ -158,11 +154,10 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch."),
     new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def patchById = patch {
+  def patchById: Route = patch {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        val tenantId = if (tenantIdString.nonEmpty) BigInt(tenantIdString.get) else BigInt("0")
-        requireIsAdmin(authClient)(system, config) { _ => {
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiredTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
             DB localTx { session =>
               recordPersistence.patchRecordAspectById(session, recordId, tenantId, aspectId, aspectPatch) match {
@@ -172,12 +167,11 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
             }
           }
         }
-        }
       }
     }
   }
 
-  override def route = super.route ~
+  override def route: Route = super.route ~
     putById ~
     deleteById ~
     patchById

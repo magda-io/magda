@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -50,27 +51,22 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   def create: Route = post {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          if (tenantIdString.isDefined) {
-            val tenantId = BigInt(tenantIdString.get)
-            if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
-              entity(as[AspectDefinition]) { aspect =>
-                val theResult = DB localTx { session =>
-                  AspectPersistence.create(session, aspect) match {
-                    case Success(result) =>
-                      complete(result)
-                    case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                  }
+        requiredTenantId { tenantId =>
+          if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
+            entity(as[AspectDefinition]) { aspect =>
+              val theResult = DB localTx { session =>
+                AspectPersistence.create(session, aspect) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
                 }
-                webHookActor ! WebHookActor.Process()
-                theResult
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            else {
-              complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
-            }
-          } else {
-            complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
+          }
+          else {
+            complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed for tenant id of $tenantId."))
           }
         }
       }

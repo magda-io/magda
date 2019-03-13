@@ -3,12 +3,13 @@ package au.csiro.data61.magda.registry
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{as, complete, entity, optionalHeaderValueByName, pathEnd, post}
+import akka.http.scaladsl.server.Directives.{as, complete, entity, pathEnd, post}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.model.Registry.{Tenant, MAGDA_ADMIN_PORTAL_ID}
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, Tenant}
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
@@ -51,31 +52,28 @@ class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A tenant already exists with the supplied domainName", response = classOf[BadRequest])))
   def create: Route = post {
-      requireIsAdmin(authClient)(system, config) { _ =>
-        pathEnd {
-          optionalHeaderValueByName("TenantId") { tenantIdString =>
-            val tenantId = BigInt(tenantIdString.get)
-            if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
-
+    requireIsAdmin(authClient)(system, config) { _ =>
+      pathEnd {
+        requiredTenantId { tenantId =>
+          if ( tenantId == MAGDA_ADMIN_PORTAL_ID) {
             entity(as[Tenant]) { tenant =>
-              val result = DB localTx { session =>
+              val theResult = DB localTx { session =>
                 tenantPersistence.createTenant(session, tenant) match {
-                  case Success(theResult) => complete(theResult)
+                  case Success(result) => complete(result)
                   case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
                 }
               }
               webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, None)
-              result
+              theResult
             }
-          }
-            else {
-              complete(StatusCodes.BadRequest, BadRequest("Operation not allowed."))
-            }
+          } else {
+            complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed for tenant id of $tenantId."))
           }
         }
       }
+    }
   }
 
-  def route =
+  def route: Route =
       create
 }

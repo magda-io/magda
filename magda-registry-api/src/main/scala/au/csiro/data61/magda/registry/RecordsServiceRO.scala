@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -19,10 +20,6 @@ import scala.concurrent.ExecutionContext
 class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends Protocols with SprayJsonSupport {
 
   implicit private val ec: ExecutionContext = system.dispatcher
-
-  def responseForUnknownTenant: Route = {
-    complete(StatusCodes.BadRequest, BadRequest("An unknown tenant is not allowed for the operation."))
-  }
 
   /**
    * @apiGroup Registry Record Service
@@ -59,22 +56,16 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getAll: Route = get {
     pathEnd {
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-          parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long] ?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
-            (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
-              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+      requiredTenantId { tenantId =>
+        parameters('aspect.*, 'optionalAspect.*, 'pageToken.as[Long] ?, 'start.as[Int].?, 'limit.as[Int].?, 'dereference.as[Boolean].?, 'aspectQuery.*) {
+          (aspects, optionalAspects, pageToken, start, limit, dereference, aspectQueries) =>
+            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-              complete {
-                DB readOnly { session =>
-                  recordPersistence.getAllWithAspects(session, tenantId, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
-                }
+            complete {
+              DB readOnly { session =>
+                recordPersistence.getAllWithAspects(session, tenantId, aspects, optionalAspects, pageToken, start, limit, dereference, parsedAspectQueries)
               }
-          }
-        }
-        else {
-          responseForUnknownTenant
+            }
         }
       }
     }
@@ -111,19 +102,13 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")))
   def getAllSummary: Route = get {
     path("summary") {
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-
-          parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-            complete {
-              DB readOnly { session =>
-                recordPersistence.getAll(session, tenantId, pageToken, start, limit)
-              }
+      requiredTenantId { tenantId =>
+        parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
+          complete {
+            DB readOnly { session =>
+              recordPersistence.getAll(session, tenantId, pageToken, start, limit)
             }
           }
-        } else {
-          responseForUnknownTenant
         }
       }
     }
@@ -152,21 +137,16 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getCount: Route = get {
     path("count") {
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-          parameters('aspect.*, 'aspectQuery.*) {
-            (aspects, aspectQueries) =>
-              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+      requiredTenantId { tenantId =>
+        parameters('aspect.*, 'aspectQuery.*) {
+          (aspects, aspectQueries) =>
+            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-              complete {
-                DB readOnly { session =>
-                  CountResponse(recordPersistence.getCount(session, tenantId, aspects, parsedAspectQueries))
-                }
+            complete {
+              DB readOnly { session =>
+                CountResponse(recordPersistence.getCount(session, tenantId, aspects, parsedAspectQueries))
               }
-          }
-        } else {
-          responseForUnknownTenant
+            }
         }
       }
     }
@@ -196,19 +176,14 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   def getPageTokens: Route = get {
     path("pagetokens") {
       pathEnd {
-        optionalHeaderValueByName("TenantId") { tenantIdString =>
-          if (tenantIdString.isDefined) {
-            val tenantId = BigInt(tenantIdString.get)
-            parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-              complete {
-                DB readOnly { session =>
-                  import scalikejdbc._
-                  "0" :: recordPersistence.getPageTokens(session, tenantId, aspect, limit, List(Some(sqls"tenantId=$tenantId")))
-                }
+        requiredTenantId { tenantId =>
+          parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
+            complete {
+              DB readOnly { session =>
+                import scalikejdbc._
+                "0" :: recordPersistence.getPageTokens(session, tenantId, aspect, limit, List(Some(sqls"tenantId=$tenantId")))
               }
             }
-          } else {
-            responseForUnknownTenant
           }
         }
       }
@@ -248,19 +223,14 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
   def getById: Route = get {
     path(Segment) { id =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-          parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
-            DB readOnly { session =>
-              recordPersistence.getByIdWithAspects(session, id, tenantId, aspects, optionalAspects, dereference) match {
-                case Some(record) => complete(record)
-                case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
-              }
+      requiredTenantId { tenantId =>
+        parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) { (aspects, optionalAspects, dereference) =>
+          DB readOnly { session =>
+            recordPersistence.getByIdWithAspects(session, id, tenantId, aspects, optionalAspects, dereference) match {
+              case Some(record) => complete(record)
+              case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID or it does not have the required aspects."))
             }
           }
-        } else {
-          responseForUnknownTenant
         }
       }
     }
@@ -294,17 +264,12 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
-      optionalHeaderValueByName("TenantId") { tenantIdString =>
-        if (tenantIdString.isDefined) {
-          val tenantId = BigInt(tenantIdString.get)
-          DB readOnly { session =>
-            recordPersistence.getById(session, tenantId, id) match {
-              case Some(record) => complete(record)
-              case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
-            }
+      requiredTenantId { tenantId =>
+        DB readOnly { session =>
+          recordPersistence.getById(session, tenantId, id) match {
+            case Some(record) => complete(record)
+            case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID."))
           }
-        } else {
-          responseForUnknownTenant
         }
       }
     }
