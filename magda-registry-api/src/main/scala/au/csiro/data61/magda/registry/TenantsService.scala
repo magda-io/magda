@@ -8,8 +8,8 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, Tenant}
+import au.csiro.data61.magda.directives.TenantDirectives.requiredAdminTenantId
+import au.csiro.data61.magda.model.Registry.Tenant
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
@@ -54,20 +54,16 @@ class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
       pathEnd {
-        requiredTenantId { tenantId =>
-          if ( tenantId == MAGDA_ADMIN_PORTAL_ID) {
-            entity(as[Tenant]) { tenant =>
-              val theResult = DB localTx { session =>
-                tenantPersistence.createTenant(session, tenant) match {
-                  case Success(result) => complete(result)
-                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                }
+        requiredAdminTenantId { _ =>
+          entity(as[Tenant]) { tenant =>
+            val theResult = DB localTx { session =>
+              tenantPersistence.createTenant(session, tenant) match {
+                case Success(result) => complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
-              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, None)
-              theResult
             }
-          } else {
-            complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed for tenant id of $tenantId."))
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, None)
+            theResult
           }
         }
       }

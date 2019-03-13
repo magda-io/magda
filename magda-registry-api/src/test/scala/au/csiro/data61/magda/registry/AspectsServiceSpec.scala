@@ -188,7 +188,7 @@ class AspectsServiceSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api(role).routes ~> check {
+          param.asAdmin(Patch("/v0/aspects/testId", patch))~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "foo", None)
           }
@@ -199,7 +199,7 @@ class AspectsServiceSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> param.api(role).routes ~> check {
+          param.asAdmin(Patch("/v0/aspects/testId", patch))~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
             responseAs[BadRequest].message should include("ID")
           }

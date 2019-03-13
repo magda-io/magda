@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiredAdminTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -51,22 +51,17 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   def create: Route = post {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
-          if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
-            entity(as[AspectDefinition]) { aspect =>
-              val theResult = DB localTx { session =>
-                AspectPersistence.create(session, aspect) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
-                }
+        requiredAdminTenantId { _ =>
+          entity(as[AspectDefinition]) { aspect =>
+            val theResult = DB localTx { session =>
+              AspectPersistence.create(session, aspect) match {
+                case Success(result) =>
+                  complete(result)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
-          }
-          else {
-            complete(StatusCodes.BadRequest, BadRequest(s"Operation not allowed for tenant id of $tenantId."))
+            webHookActor ! WebHookActor.Process()
+            theResult
           }
         }
       }
@@ -110,16 +105,18 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     path(Segment) { id: String =>
       {
         requireIsAdmin(authClient)(system, config) { _ =>
-          entity(as[AspectDefinition]) { aspect =>
-            val theResult = DB localTx { session =>
-              AspectPersistence.putById(session, id, aspect) match {
-                case Success(result) =>
-                  complete(result)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+          requiredAdminTenantId { _ =>
+            entity(as[AspectDefinition]) { aspect =>
+              val theResult = DB localTx { session =>
+                AspectPersistence.putById(session, id, aspect) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                }
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
           }
         }
       }
@@ -161,8 +158,8 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      {
-        requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiredAdminTenantId { _ =>
           entity(as[JsonPatch]) { aspectPatch =>
             val theResult = DB localTx { session =>
               AspectPersistence.patchById(session, id, aspectPatch) match {
