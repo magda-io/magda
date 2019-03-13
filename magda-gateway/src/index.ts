@@ -377,13 +377,23 @@ if (argv.enableCkanRedirection) {
     }
 }
 
+export const tenantsTable = new Map<String, Tenant>();
+
+// When a magda admin add new tenants, this URL should be called.
+app.get("/refreshTenants", (_, res) => {
+    updateTenants(tenantsTable, argv.registryApi, 10);
+    res.writeHead(202, {
+        "Content-Type": "text/plain"
+    });
+    res.end("Will try to refresh tenants now now.");
+});
+
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-export const tenantsTable = new Map<String, Tenant>();
 updateTenants(tenantsTable, argv.registryApi, 10);
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
