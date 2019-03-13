@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
@@ -21,7 +20,6 @@ import scala.concurrent.ExecutionContext
 class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materializer, tenantPersistence: TenantPersistence = DefaultTenantPersistence)
   extends Protocols with SprayJsonSupport {
 
-  private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
 
 

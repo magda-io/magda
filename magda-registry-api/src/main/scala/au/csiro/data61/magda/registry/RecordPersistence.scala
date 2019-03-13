@@ -180,9 +180,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   def getRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Option[JsObject] = {
     sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
           inner join Aspects using (aspectId)
-          where RecordAspects.recordId=$recordId
-          and RecordAspects.tenantId=$tenantId
-          and RecordAspects.aspectId=$aspectId"""
+          where (RecordAspects.aspectId, RecordAspects.recordId, RecordAspects.tenantId)=($aspectId, $recordId, $tenantId)"""
       .map(rowToAspect)
       .single.apply()
   }
@@ -269,7 +267,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       _ <- Try {
         // Sourcetag should not generate an event so updating it is done separately
         if (record.sourceTag != patchedRecord.sourceTag) {
-          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where recordId = $id""".update.apply()
+          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, $tenantId)""".update.apply()
         }
       }
       _ <- Try {
@@ -277,7 +275,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         if (record.name != patchedRecord.name) {
           val event = PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId = sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
-          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update.apply()
+          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, $tenantId)""".update.apply()
           eventId
         } else {
           0
@@ -377,7 +375,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         if (testRecordAspectPatch.ops.length > 0) {
           val jsonString = patchedAspect.compactPrint
           sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonString::json)
-               on conflict (recordId, tenantId, aspectId) do update
+               on conflict (aspectId, recordId, tenantId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
         } else {
@@ -438,7 +436,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   def deleteRecord(implicit session: DBSession, recordId: String, tenantId: BigInt): Try[Boolean] = {
     for {
       aspects <- Try {
-        sql"select aspectId from RecordAspects where recordId=$recordId"
+        sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, $tenantId)"
           .map(rs => rs.string("aspectId")).list.apply()
       }
       _ <- aspects.map(aspectId => deleteRecordAspect(session, recordId, tenantId, aspectId)).find(_.isFailure) match {
@@ -450,14 +448,14 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from Records where recordId=$recordId""".update.apply()
+        sql"""delete from Records where (recordId, tenantId)=($recordId, $tenantId)""".update.apply()
       }
     } yield rowsDeleted > 0
   }
 
   def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, tenantId: BigInt, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
         .map(rs => rs.string("recordId")).list.apply()
     }
 
@@ -514,7 +512,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from RecordAspects where recordId=$recordId and aspectId=$aspectId""".update.apply()
+        sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, $tenantId)""".update.apply()
       }
     } yield rowsDeleted > 0
   }
@@ -779,7 +777,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                    ELSE(
             |                        select data
             |                        from RecordAspects
-            |                        where tenantId=Records.tenantId and aspectId=$aspectId and recordId=Records.recordId
+            |                        where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
             |                    )
             |                END
             )""".stripMargin
@@ -788,7 +786,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                   (select jsonb_object_agg(aspectId, data) from RecordAspects where tenantId=Records.tenantId and recordId=Records.recordId)))
                    from Records where Records.tenantId=RecordAspects.tenantId and Records.recordId=RecordAspects.data->>$propertyName)"""
         }.getOrElse(sqls"data")
-        sqls"""(select $selection from RecordAspects where tenantId=Records.tenantId and aspectId=$aspectId and recordId=Records.recordId) as $aspectColumnName"""
+        sqls"""(select $selection from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId)) as $aspectColumnName"""
     }
   }
 
@@ -798,12 +796,12 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
     val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where RecordAspects.tenantId=Records.tenantId and RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)")
+    Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))")
   }
 
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
     val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND recordaspects.tenantId=records.tenantId AND aspectId = ${query.aspectId} AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
+    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }
