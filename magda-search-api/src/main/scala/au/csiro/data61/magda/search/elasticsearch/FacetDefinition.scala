@@ -193,7 +193,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
       )
       val otherOptions = aggToFacetOptions(agg.dataAsMap.get("terms-other-options").flatMap(AggUtils.toAgg(_)))
 
-      (selectedOptions ++ otherOptions).sortBy(_.hitCount).reverse
+      selectedOptions ++ otherOptions
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -229,7 +229,6 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .size(limit)
         .field("distributions.format.keyword_lowercase")
         .showTermDocCountError(true)
-        //-- there is a bug in elastic4s that if you only
         .exclude(atLeast2Items("" :: inputOptions))
         .subAggregations {
           reverseNestedAggregation("reverse")
@@ -280,7 +279,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
       )
       val otherOptions = aggToFacetOptions(nestedAgg.flatMap(_.dataAsMap.get("terms-other-options").flatMap(AggUtils.toAgg(_))))
 
-      (selectedOptions ++ otherOptions).sortBy(_.hitCount).reverse
+      selectedOptions ++ otherOptions
   }
 
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty

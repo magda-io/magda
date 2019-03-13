@@ -320,29 +320,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /**
-   * The exact match aggs are for situations where the user puts in a free text facet - we want
-   * to see whether that exists in the system at all even if it has no hits with their current
-   * query, in order to more helpfully correct their search if they mispelled etc.
-   */
-  def exactMatchAggregations(
-    query: Query,
-    facetType: FacetType,
-    facetDef: FacetDefinition,
-    strategy: SearchStrategy,
-    suffix: String = ""): List[FilterAggregationDefinition] =
-    facetDef
-      .exactMatchQueries(query)
-      .map {
-        case (name, query) =>
-          filterAggregation(facetType.id + "-exact-" + name + suffix)
-            .query(query)
-            .subAggregations(topHitsAggregation("topHits")
-              .size(1)
-              .sortBy(fieldSort("identifier")))
-      }
-      .toList
-
-  /**
    * The alternatives aggregation shows what other choices are available if the user wasn't
    * filtering on this facet - e.g. if I was searching for datasets from a certain publisher,
    * this shows me other publishers I could search on instead
