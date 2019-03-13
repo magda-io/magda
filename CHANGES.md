@@ -1,3 +1,9 @@
+## 0.0.55
+
+UI:
+
+-   Integrate sentry release notification and source map upload
+
 ## 0.0.54
 
 Connectors:
