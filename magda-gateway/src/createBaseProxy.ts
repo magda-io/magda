@@ -2,13 +2,13 @@ import * as httpProxy from "http-proxy";
 import {
     tenantsTable,
     magdaAdminPortalName,
-    enableDefaultTenant
+    enableDefaultTenant,
+    MAGDA_TENANT_ID_HEADER,
+    MAGDA_DEFAULT_TENANT_ID,
+    MAGDA_ADMIN_PORTAL_ID
 } from "./index";
 
 export default function createBaseProxy(): httpProxy {
-    const MAGDA_ADMIN_PORTAL_ID = "-1";
-    const MAGDA_DEFAULT_TENANT_ID = "0";
-
     const proxy = httpProxy.createProxyServer({
         prependUrl: false
     } as httpProxy.ServerOptions);
@@ -53,7 +53,7 @@ export default function createBaseProxy(): httpProxy {
     });
 
     proxy.on("proxyReq", function(proxyReq, req, res) {
-        proxyReq.setHeader("TenantId", "undefined");
+        proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, "undefined");
         const host = req.headers.host;
         let endIndex = host.lastIndexOf(":");
         if (endIndex < 0) endIndex = host.length;
@@ -61,13 +61,16 @@ export default function createBaseProxy(): httpProxy {
         let domainName = host.substring(0, endIndex);
 
         if (domainName === magdaAdminPortalName) {
-            proxyReq.setHeader("TenantId", MAGDA_ADMIN_PORTAL_ID);
+            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
         } else {
             const tenant = tenantsTable.get(domainName);
 
             if (undefined === tenant) {
                 if (enableDefaultTenant === true) {
-                    proxyReq.setHeader("TenantId", MAGDA_DEFAULT_TENANT_ID);
+                    proxyReq.setHeader(
+                        MAGDA_TENANT_ID_HEADER,
+                        MAGDA_DEFAULT_TENANT_ID
+                    );
                 } else {
                     res.writeHead(500, { "Content-Type": "text/plain" });
                     res.end(
@@ -75,7 +78,7 @@ export default function createBaseProxy(): httpProxy {
                     );
                 }
             } else if (tenant.enabled === true) {
-                proxyReq.setHeader("TenantId", tenant.id);
+                proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
             } else {
                 res.writeHead(500, { "Content-Type": "text/plain" });
                 res.end(
