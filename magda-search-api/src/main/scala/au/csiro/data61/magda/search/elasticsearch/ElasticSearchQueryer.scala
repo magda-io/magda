@@ -76,7 +76,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "_id",
     "catalog",
     "accrualPeriodicity",
-    "contactPoint.name",
+    "contactPoint.identifier",
     "publisher.acronym")
 
   override def search(
@@ -92,15 +92,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
         val query = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
         Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
-          case results: RequestSuccess[SearchResponse] =>
-            if (results.result.totalHits > 0)
-              Future.successful((results.result, MatchAll))
-            else
-              client.execute(buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchPart, requestedFacetSize)).map {
-                case results: RequestSuccess[SearchResponse] => (results.result, MatchPart)
-                case IllegalArgumentException(e) => throw e
-                case ESGenericException(e) => throw e
-              }
+          case results: RequestSuccess[SearchResponse] => Future.successful((results.result, MatchAll))
           case IllegalArgumentException(e) => throw e
           case ESGenericException(e) => throw e
         })).map {
@@ -465,60 +457,75 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .functions(allScorers).scoreMode("sum")
   }
 
+  private def createInputTextQuery(inputText: String):QueryDefinition = {
+    val queryString = new SimpleStringQueryDefinition(inputText)
+      .defaultOperator("and")
+      .quoteFieldSuffix(".quote")
+
+    def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
+      fields.foldRight(query) {
+        case ((fieldName: String, boost: Float), queryDef) =>
+          queryDef.field(fieldName, boost)
+        case (field: String, queryDef) => queryDef.field(field, 0)
+      }
+
+    // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
+    // other analysis does. So we do this silliness
+    val distributionsEnglishQueries = nestedQuery("distributions")
+      .query(
+        queryString
+          .field("distributions.title")
+          .field("distributions.description")
+          .field("distributions.format")
+          .defaultOperator("and"))
+      .scoreMode(ScoreMode.Max)
+
+    /**
+      * Unfortunately, when default operator is AND, we can't put NON_LANGUAGE_FIELDS & DATASETS_LANGUAGE_FIELDS
+      * into one SimpleStringQuery as they have different searchAnalylzer
+      * It will result a term like +(catalog:at | _id:at) will will never be matched
+      * We need to fix on our side as elasticsearch won't know our intention for this case
+      * */
+    val queries =
+      Seq(
+        should(
+          foldFields(
+            queryString,
+            DATASETS_LANGUAGE_FIELDS
+          ),
+          foldFields(
+            queryString,
+            NON_LANGUAGE_FIELDS
+          )
+        ).minimumShouldMatch(1),
+        distributionsEnglishQueries)
+
+    dismax(queries).tieBreaker(0.2)
+  }
+
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(
     query: Query,
     strategy: SearchStrategy,
     isForAggregation: Boolean = false): QueryDefinition = {
-    val operator = strategy match {
-      case MatchAll =>
-        if (query.boostRegions.isEmpty) {
-          "and"
-        } else {
-          // --- when boostRegions have been identified from user input
-          // --- we shouldn't use `and` for `simple_string_query`. Otherwise, user input `water in hurstville`
-          // --- will exclude datasets that don't include `hurstville` keywords but their spatial data covers `hurstville` region
-          // --- those datasets are more likely what users want
-          "or"
-        }
-      case MatchPart => "or"
-    }
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText flatMap { inputText =>
         val text = if (inputText.trim.length == 0) "*" else inputText
-        val queryString = new SimpleStringQueryDefinition(text)
-          .defaultOperator(operator)
-          .quoteFieldSuffix(".quote")
-
-        def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
-          fields.foldRight(query) {
-            case ((fieldName: String, boost: Float), queryDef) =>
-              queryDef.field(fieldName, boost)
-            case (field: String, queryDef) => queryDef.field(field, 0)
-          }
-
-        // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
-        // other analysis does. So we do this silliness
-        val distributionsEnglishQueries = nestedQuery("distributions")
-          .query(
-            // If this was AND then a single distribution would have to match the entire query, this way you can
-            // have multiple dists partially match
-            queryString
-              .field("distributions.title")
-              .field("distributions.description")
-              .field("distributions.format")
-              .defaultOperator("or"))
-          .scoreMode(ScoreMode.Max)
-
-        val queries =
-          Seq(
-            foldFields(
-            queryString,
-            NON_LANGUAGE_FIELDS ++ DATASETS_LANGUAGE_FIELDS),
-            distributionsEnglishQueries)
-
-        Some(dismax(queries).tieBreaker(0.2))
+        val textQuery = createInputTextQuery(text)
+        if(query.boostRegions.isEmpty) Some(textQuery)
+        else {
+          // --- make sure replace the longer region name string first to avoid missing anyone
+          val regionNames = query.boostRegions.toList.flatMap{ region =>
+            // --- Please note: regionShortName should also be taken care
+            region.regionName.toList ++ region.regionShortName.toList
+          }.map(_.toLowerCase).sortWith(_.length > _.length)
+          val altText = regionNames.foldLeft(text.toLowerCase)((str, regionName) => str.replace(regionName, "")).trim
+          val inputTextQuery = if (altText.length == 0) createInputTextQuery("*") else createInputTextQuery(altText)
+          val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
+          val queryDef = boolQuery().should(textQuery :: boolQuery().must(inputTextQuery :: geomScorerQuery.toList) :: Nil).minimumShouldMatch(1)
+          Some(queryDef)
+        }
       },
       setToOption(query.publishers)(seq =>
         should(seq.map(publisherQuery(strategy))).boost(2)),
