@@ -1056,6 +1056,43 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
+      it("can add two new records with the same record IDs by different tenants") { param =>
+        val record_1 = Record("aRecordId", "a default tenant", Map(), Some("tag"))
+        param.asAdmin(Post("/v0/records", record_1)) ~> addDefaultTenantIdHeader ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual record_1
+        }
+
+        val newTenantId = 1 // next new tenant id to be created by database
+        val aNewTenant = Tenant("new.tenant.website", newTenantId, enabled = true)
+
+        // The id of aNewTenant
+        param.asAdmin(Post("/v0/tenants", aNewTenant)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Tenant] shouldEqual aNewTenant
+        }
+
+        val record_2 = Record("aRecordId", "a new tenant", Map(), Some("tag"))
+        param.asAdmin(Post("/v0/records", record_2)) ~> addTenantIdHeader(newTenantId) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual record_2
+        }
+
+        Get("/v0/records/aRecordId") ~> addDefaultTenantIdHeader ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val recordRes = responseAs[Record]
+          recordRes shouldEqual record_1
+        }
+
+        Get("/v0/records/aRecordId") ~> addTenantIdHeader(newTenantId) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val recordRes = responseAs[Record]
+          recordRes shouldEqual record_2
+        }
+      }
+
       it("sets sourcetag to NULL by default") { param =>
         val record = Record("testId", "testName", Map(), None)
         param.asAdmin(Post("/v0/records", record)) ~> addDefaultTenantIdHeader ~> param.api(role).routes ~> check {
