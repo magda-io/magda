@@ -1,6 +1,6 @@
 import XLSX from "xlsx";
 import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist";
+import pdfjsLib from "pdfjs-dist/build/pdf";
 import PDFWorker from "pdfjs-dist/build/pdf.worker";
 window.pdfjsWorker = PDFWorker;
 

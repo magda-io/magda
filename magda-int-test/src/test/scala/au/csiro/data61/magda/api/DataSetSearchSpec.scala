@@ -669,52 +669,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-      ignore("inexact") {
-        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
-          val formats = dataSet.distributions
-            .map(_.format.map(Specified.apply).flatMap(x => x)).flatten
-
-          if (formats.isEmpty)
-            Gen.const(Query())
-          else {
-            for {
-              format <- Gen.oneOf(formats)
-              reducedFormat <- ApiGenerators.partialStringGen(format)
-              reducedFormatValid = ApiGenerators.validFilter(reducedFormat)
-              query = Query(formats = Set(Specified(reducedFormat)))
-            } yield if (reducedFormatValid) query else Query()
-          }
-        }
-
-        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-          whenever(query != Query() && query.formats.exists(!_.get.trim.isEmpty)) {
-            val queryFormats = query.formats
-            val dataSetFormats = dataSet.distributions.flatMap(_.format)
-            withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-            }
-
-            response.dataSets.foreach { dataSet =>
-              val queryToDataSetComparison = for {
-                queryFormat <- queryFormats
-                queryWord <- MagdaMatchers.tokenize(queryFormat.get)
-                dataSetFormat <- dataSetFormats
-                dataSetWord <- MagdaMatchers.tokenize(dataSetFormat)
-              } yield (dataSetWord, queryWord)
-
-              withClue("with dataSet->query: " + queryToDataSetComparison) {
-                queryToDataSetComparison.exists {
-                  case (dataSetWord, queryWord) =>
-                    MagdaMatchers.extractAlphaNum(dataSetWord) == MagdaMatchers.extractAlphaNum(queryWord) ||
-                      MagdaMatchers.toEnglishToken(dataSetWord) == MagdaMatchers.toEnglishToken(queryWord)
-                } should be(true)
-              }
-            }
-          }
-        }
-      }
-
       it("unspecified") {
         val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
 
@@ -762,58 +716,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
               withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
                 matchesQuery should be(true)
-              }
-            }
-          }
-        }
-      }
-
-      ignore("inexact") {
-        def dataSetToQuery(dataSet: DataSet): Gen[Query] = {
-          val publisher = dataSet.publisher.flatMap(_.name)
-
-          publisher match {
-            case None => Gen.const(Query())
-            case Some(innerPublisher) =>
-              for {
-                reducedPublisher <- ApiGenerators.partialStringGen(innerPublisher).suchThat(ApiGenerators.validFilter(_))
-                query = Query(publishers = Set(Specified(reducedPublisher)))
-              } yield query
-          }
-        }
-
-        doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-          whenever(query != Query() && query.publishers.exists(!_.get.trim.isEmpty)) {
-            val queryPublishers = query.publishers
-            withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSet.publisher.get.name}") {
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-            }
-
-            response.dataSets.foreach { dataSet =>
-              val dataSetPublisher = dataSet.publisher.get.name
-
-              withClue(s"Query publishers ${queryPublishers} and dataSetPublisher ${dataSetPublisher}") {
-                def tokenize(string: String) = string.split("[\\s-.']+").map(MagdaMatchers.toEnglishToken)
-
-                val gotQueryPublishers = queryPublishers.map(_.get).flatMap(_.split("[\\s-.']+"))
-                val tokenizedQueryPublishers = gotQueryPublishers.flatMap(tokenize)
-
-                val possibleQueryPublishers = gotQueryPublishers.zip(tokenizedQueryPublishers)
-
-                val tokenizedDataSetPublishers = tokenize(dataSetPublisher.get)
-
-                val allDataSetPublisherTerms = dataSetPublisher.get.split("[\\s-.]+") ++ tokenizedDataSetPublishers
-
-                val y = possibleQueryPublishers.foldLeft(0) {
-                  case (soFar, (untokenizedTerm, tokenizedTerm)) =>
-                    val hasAMatch = allDataSetPublisherTerms.exists(dataSetTerm => dataSetTerm == untokenizedTerm || dataSetTerm === tokenizedTerm)
-
-                    soFar + (if (hasAMatch) 1 else 0)
-                }
-
-                // Generally it should match >= 50% of the terms in the query, but for some reason it doesn't now. FIXME
-                (y.toDouble / possibleQueryPublishers.size) should be > 0d
               }
             }
           }
