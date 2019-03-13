@@ -222,9 +222,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             val inputOptions = allOptions.filter(_.matched)
 
             if ( facetSize <= inputOptions.size ) {
-              inputOptions.sortBy(_.hitCount).reverse
+              inputOptions.take(facetSize).sortBy(_.hitCount).reverse
             } else {
-              (nonInputOptions.sortBy(_.hitCount).reverse.take(facetSize - inputOptions.size) ++ inputOptions).sortBy(_.hitCount).reverse
+              inputOptions ++ nonInputOptions.sortBy(_.hitCount).reverse.take(facetSize - inputOptions.size)
             }
           })
       }.toSeq))
