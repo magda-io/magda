@@ -36,9 +36,13 @@ trait FacetDefinition {
   def facetType: FacetType
 
   /**
-   *  The elastic4s aggregation definition for this facet, given a max bucket size
+    *  The elastic4s aggregation definition for this facet, given a max bucket size
+    *  We need to generate terms aggs in the following two groups:
+    *  - terms agg `include` all input facet options
+    *  - terms agg `exclude` all input facet options
+    *  This will guarantee that user selected options will always be aggregated
    */
-  def aggregationDefinition(limit: Int): AggregationDefinition
+  def aggregationDefinition(query: Query, limit: Int): Seq[AggregationDefinition]
 
   /**
    * Determines whether the passed query has any relevance to this facet - e.g. a query is only relevant to Year if it
@@ -109,6 +113,18 @@ trait FacetDefinition {
   }
 
   def autocompleteQuery(textQuery: String): QueryDefinition
+
+  //--- Get api requested facet options and convert them to string
+  def getInputFacetOptions(query: Query): List[String]
+
+  /**
+    * There is a bug in elastic4s that:
+    * if `include` or `exclude` field of `terms agg` is a Seq with only 1 element, a string instead of an array of string will be generated in JSON request
+    * This will cause an `x_content_parse_exception` as `include` & `exclude` must be both array or string
+    * This function will duplicate the only element in a Seq if its size is 1
+    * Luckily elasticsearch will ignore any duplicate items in `include` or `exclude`
+    */
+  def atLeast2Items(items: Seq[String]): Seq[String] = if(items.size == 1) items ++ items else items
 }
 
 object FacetDefinition {
@@ -121,30 +137,63 @@ object FacetDefinition {
 class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinition {
   def facetType = Publisher
 
-  override def aggregationDefinition(limit: Int): AggregationDefinition = {
-    termsAggregation(Publisher.id)
-      .field("publisher.name.keyword")
+  override def aggregationDefinition(query: Query, limit: Int): Seq[AggregationDefinition] = {
+
+    val inputOptions = getInputFacetOptions(query)
+
+    val otherOptionsAgg = termsAggregation("terms-other-options")
       .size(limit)
+      .field("publisher.name.keyword")
       .showTermDocCountError(true)
       .subAggregations(
         topHitsAggregation("topHits").size(1))
+
+    var aggs = List(otherOptionsAgg)
+
+    if(inputOptions.size > 0) {
+      otherOptionsAgg.exclude(atLeast2Items(inputOptions))
+
+      aggs = termsAggregation("terms-selected-options")
+        .size(inputOptions.size)
+        .include(atLeast2Items(inputOptions))
+        .field("publisher.name.keyword")
+        .showTermDocCountError(true)
+        .subAggregations(
+          topHitsAggregation("topHits").size(1)) :: aggs
+    }
+
+    aggs
+  }
+
+  def aggToFacetOptions(agg:Option[Aggregations]) = {
+    agg.toSeq.flatMap(_.dataAsMap.get("buckets").toSeq.toSeq)
+      .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+        val agg = Aggregations(m)
+        new FacetOption(
+          identifier = if(agg.contains("topHits")) {
+            agg.tophits("topHits").hits.headOption.flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
+          } else {
+            None
+          },
+          value = agg.data("key").toString,
+          hitCount = agg.data("doc_count").toString.toLong,
+          countErrorUpperBound = agg.data.get("doc_count_error_upper_bound").getOrElse("0").toString.toLong
+        )
+      })
   }
 
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      agg.dataAsMap.get("buckets").toSeq.flatMap(_.asInstanceOf[Seq[Map[String, Any]]]
-        .map{m =>
-          val agg = Aggregations(m)
-          new FacetOption(
-            identifier = if(agg.contains("topHits")) {
-              agg.tophits("topHits").hits.headOption.flatMap(_.to[DataSet].publisher.flatMap(_.identifier))
-            } else {
-              None
-            },
-            value = agg.data("key").toString,
-            hitCount = agg.data("doc_count").toString.toLong)
-          })
+
+      val selectedOptions = aggToFacetOptions(agg.dataAsMap.get("terms-selected-options").flatMap(AggUtils.toAgg(_))).map(
+        _.copy(
+          matched = true
+        )
+      )
+      val otherOptions = aggToFacetOptions(agg.dataAsMap.get("terms-other-options").flatMap(AggUtils.toAgg(_)))
+
+      (selectedOptions ++ otherOptions).sortBy(_.hitCount).reverse
   }
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
@@ -162,38 +211,76 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.publishers.map(publisher => (publisher, exactMatchQuery(publisher)))
 
   override def autocompleteQuery(textQuery: String) = matchQuery("publisher.name.english", textQuery)
+
+  def getInputFacetOptions(query: Query): List[String] = query.publishers.toList.flatMap{
+    case Specified(v) => Some(v.toString)
+    case _ => None
+  }
 }
 
 class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition {
   override def facetType = Format
 
-  override def aggregationDefinition(limit: Int): AggregationDefinition =
-    nestedAggregation(Format.id, "distributions").subAggregations {
-      termsAggregation("nested")
-        .field("distributions.format.keyword_lowercase")
+  override def aggregationDefinition(query: Query, limit: Int): Seq[AggregationDefinition] =
+    nestedAggregation("nested-distributions", "distributions").subAggregations {
+      val inputOptions = getInputFacetOptions(query)
+
+      val otherOptionsAgg = termsAggregation("terms-other-options")
         .size(limit)
+        .field("distributions.format.keyword_lowercase")
         .showTermDocCountError(true)
-        .includeExclude(Seq(), Seq(""))
+        //-- there is a bug in elastic4s that if you only
+        .exclude(atLeast2Items("" :: inputOptions))
         .subAggregations {
           reverseNestedAggregation("reverse")
         }
         .order(TermsOrder("reverse", false))
-    }
+
+      var aggs = List(otherOptionsAgg)
+
+      if(inputOptions.size > 0) {
+
+       aggs = termsAggregation("terms-selected-options")
+          .size(inputOptions.size)
+          .include(atLeast2Items(inputOptions))
+          .exclude(atLeast2Items(Seq("")))
+          .field("distributions.format.keyword_lowercase")
+          .showTermDocCountError(true)
+          .subAggregations {
+            reverseNestedAggregation("reverse")
+          }
+          .order(TermsOrder("reverse", false)) :: aggs
+      }
+
+      aggs
+    } :: Nil
+
+  def aggToFacetOptions(agg:Option[Aggregations]) = {
+    agg.toSeq.flatMap(_.dataAsMap.get("buckets").toSeq.toSeq)
+      .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+        val agg = Aggregations(m)
+        new FacetOption(
+          identifier = None,
+          value = agg.data("key").toString,
+          hitCount = Aggregations(agg.data("reverse").asInstanceOf[Map[String, Any]])
+            .data("doc_count").toString.toLong,
+          countErrorUpperBound = agg.data.get("doc_count_error_upper_bound").getOrElse("0").toString.toLong
+        )
+      })
+  }
 
   override def extractFacetOptions(aggregation: Option[HasAggregations]): Seq[FacetOption] = aggregation match {
     case None => Nil
     case Some(agg) =>
-      agg.dataAsMap.get("nested").flatMap(AggUtils.toAgg(_)).flatMap(_.data.get("buckets"))
-        .toSeq
-        .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
-          val agg = Aggregations(m)
-          new FacetOption(
-            identifier = None,
-            value = agg.data("key").toString,
-            hitCount = Aggregations(agg.data("reverse").asInstanceOf[Map[String, Any]])
-                        .data("doc_count").toString.toLong
-          )
-        })
+      val nestedAgg = agg.dataAsMap.get("nested-distributions").flatMap(AggUtils.toAgg(_))
+      val selectedOptions = aggToFacetOptions(nestedAgg.flatMap(_.dataAsMap.get("terms-selected-options").flatMap(AggUtils.toAgg(_)))).map(
+        _.copy(
+          matched = true
+        )
+      )
+      val otherOptions = aggToFacetOptions(nestedAgg.flatMap(_.dataAsMap.get("terms-other-options").flatMap(AggUtils.toAgg(_))))
+
+      (selectedOptions ++ otherOptions).sortBy(_.hitCount).reverse
   }
 
   override def isRelevantToQuery(query: Query): Boolean = !query.formats.isEmpty
@@ -218,4 +305,9 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
   override def exactMatchQueries(query: Query): Set[(FilterValue[String], QueryDefinition)] = query.formats.map(format => (format, exactMatchQuery(format)))
 
   override def autocompleteQuery(textQuery: String) = nestedQuery("distributions").query(matchQuery("distributions.format.english", textQuery))
+
+  def getInputFacetOptions(query: Query): List[String] = query.formats.toList.flatMap{
+    case Specified(v) => Some(v.toString)
+    case _ => None
+  }
 }
