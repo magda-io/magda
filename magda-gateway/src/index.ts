@@ -379,14 +379,18 @@ if (argv.enableCkanRedirection) {
 
 export const tenantsTable = new Map<String, Tenant>();
 
+// TODO: Limit access to magda admin portal user only.
+// By default, argv.enableDefaultTenant === true.
 // When a magda admin add new tenants, this URL should be called.
-app.get("/refreshTenants", (_, res) => {
-    updateTenants(tenantsTable, argv.registryApi, 10);
-    res.writeHead(202, {
-        "Content-Type": "text/plain"
+if (argv.enableDefaultTenant === false) {
+    app.get("/refreshTenants", (_, res) => {
+        updateTenants(tenantsTable, argv.registryApi, 10);
+        res.writeHead(202, {
+            "Content-Type": "text/plain"
+        });
+        res.end("Will try to refresh tenants now now.");
     });
-    res.end("Will try to refresh tenants now now.");
-});
+}
 
 // Proxy any other URL to magda-web
 app.use("/", createGenericProxy(argv.web));
