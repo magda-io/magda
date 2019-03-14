@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_DEFAULT_TENANT_ID}
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_DEFAULT_TENANT_ID, MAGDA_SYSTEM_ID}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -58,6 +58,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
   def addAdminPortalIdHeader: RawHeader = {
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+  }
+
+  def addSystemIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_SYSTEM_ID)
   }
 
   // Stop Flyway from producing so much spam that Travis terminates the process.

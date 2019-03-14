@@ -1065,8 +1065,6 @@ class RecordsServiceSpec extends ApiSpec {
 
         val newTenantId = 1 // next new tenant id to be created by database
         val aNewTenant = Tenant("new.tenant.website", newTenantId, enabled = true)
-
-        // The id of aNewTenant
         param.asAdmin(Post("/v0/tenants", aNewTenant)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Tenant] shouldEqual aNewTenant
