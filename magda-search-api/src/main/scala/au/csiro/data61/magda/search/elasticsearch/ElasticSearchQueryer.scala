@@ -218,13 +218,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
             val allOptions = alternativeOptions ++ notMatchedInputFacetOptions
 
-            val nonInputOptions = allOptions.filter(!_.matched)
-            val inputOptions = allOptions.filter(_.matched)
+            val nonInputOptions = allOptions.filter(!_.matched).sortBy(_.hitCount).reverse
+            val inputOptions = allOptions.filter(_.matched).sortBy(_.hitCount).reverse
 
             if ( facetSize <= inputOptions.size ) {
-              inputOptions.take(facetSize).sortBy(_.hitCount).reverse
+              inputOptions.take(facetSize)
             } else {
-              inputOptions ++ nonInputOptions.sortBy(_.hitCount).reverse.take(facetSize - inputOptions.size)
+              inputOptions ++ nonInputOptions.take(facetSize - inputOptions.size)
             }
           })
       }.toSeq))
