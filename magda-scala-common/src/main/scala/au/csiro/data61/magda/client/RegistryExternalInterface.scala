@@ -41,7 +41,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   implicit val logger = Logging(system, getClass)
 
   val authHeader = RawHeader(Authentication.headerName, JWT.create().withClaim("userId", config.getString("auth.userId")).sign(Authentication.algorithm))
-  val tenantIdHeader = RawHeader("TenantId", MAGDA_SYSTEM_ID.toString())
+  val tenantIdHeader = RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID.toString())
   val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
   val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
