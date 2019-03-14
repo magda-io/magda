@@ -141,18 +141,22 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
 
     val inputOptions = getInputFacetOptions(query)
 
-    val otherOptionsAgg = termsAggregation("terms-other-options")
+    var otherOptionsAgg = termsAggregation("terms-other-options")
       .size(limit)
       .field("publisher.name.keyword")
       .showTermDocCountError(true)
       .subAggregations(
         topHitsAggregation("topHits").size(1))
 
+    if(inputOptions.size > 0) {
+      // --- this if block cannot be combined with the one below
+      // --- otherwise `aggs` only get a outdated copy
+      otherOptionsAgg = otherOptionsAgg.exclude(atLeast2Items(inputOptions))
+    }
+
     var aggs = List(otherOptionsAgg)
 
     if(inputOptions.size > 0) {
-      otherOptionsAgg.exclude(atLeast2Items(inputOptions))
-
       aggs = termsAggregation("terms-selected-options")
         .size(inputOptions.size)
         .include(atLeast2Items(inputOptions))
