@@ -37,8 +37,8 @@ export default function updateTenants(
             console.debug(`tenantsString = ${tenantsString}`);
             const tenantsJson: [Tenant] = JSON.parse(`${tenantsString}`);
             tenantsJson.forEach(t => {
-                tenantsTable.set(t.domainName, t);
-                console.debug(`${t.domainName} : ${t.id}`);
+                tenantsTable.set(t.domainName.toLowerCase(), t);
+                console.debug(`${t.domainName.toLowerCase()} : ${t.id}`);
             });
         });
 }

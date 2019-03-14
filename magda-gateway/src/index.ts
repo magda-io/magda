@@ -266,7 +266,7 @@ const authenticator = new Authenticator({
 // The gateway external URL will be default tenant website if default tenant is enabled.
 // A magda admin portal must be different from any tenant websites. Otherwise createBaseProxy will not be able
 // to set admin portal id correctly.
-export const magdaAdminPortalName = argv.magdaAdminPortalName;
+export const magdaAdminPortalName = argv.magdaAdminPortalName.toLowerCase();
 
 console.log("magdaAdminPortalName = " + magdaAdminPortalName);
 

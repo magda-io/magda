@@ -1,4 +1,5 @@
 import * as httpProxy from "http-proxy";
+import * as URI from "urijs";
 import {
     tenantsTable,
     magdaAdminPortalName,
@@ -55,10 +56,7 @@ export default function createBaseProxy(): httpProxy {
     proxy.on("proxyReq", function(proxyReq, req, res) {
         proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, "undefined");
         const host = req.headers.host;
-        let endIndex = host.lastIndexOf(":");
-        if (endIndex < 0) endIndex = host.length;
-
-        let domainName = host.substring(0, endIndex);
+        let domainName = new URI("http://" + host).hostname().toLowerCase();
 
         if (domainName === magdaAdminPortalName) {
             proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);

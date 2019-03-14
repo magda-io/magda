@@ -9,11 +9,9 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Admin API",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
             "runtimeArgs": ["src/index.ts"],
             "args": [],
@@ -26,8 +24,7 @@
             "name": "Launch Project Open Data Connector",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
@@ -49,8 +46,7 @@
             "name": "Launch CSW Connector",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
@@ -85,11 +81,9 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Minion Format",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
@@ -122,8 +116,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "magda-admin-api tests",
-            "program":
-                "${workspaceRoot}/magda-admin-api/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceRoot}/magda-admin-api/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-admin-api",
             "args": [
                 "--compilers",
@@ -168,8 +161,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "minion-linked-data-rating",
-            "program":
-                "${workspaceRoot}/magda-minion-linked-data-rating/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceRoot}/magda-minion-linked-data-rating/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-minion-linked-data-rating",
             "args": [
                 "--compilers",
@@ -216,8 +208,7 @@
             "name": "Launch Gateway",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
@@ -251,57 +242,10 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Launch Gateway for Terria",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
-            "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
-            },
-            "args": [
-                "-r",
-                "${workspaceRoot}/node_modules/tsconfig-paths/register",
-                "src/index.ts",
-                "--jwtSecret",
-                "squirrel",
-                "--sessionSecret",
-                "keyboard cat",
-                "--ckanUrl",
-                "https://data.gov.au",
-                "--googleClientId",
-                "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
-                "--googleClientSecret",
-                "secret",
-                "--facebookClientId",
-                "1906944756293015",
-                "--facebookClientSecret",
-                "secret",
-                "--userId",
-                "00000000-0000-4000-8000-000000000000",
-                "--enableAuthEndpoint",
-                "true",
-                "--web",
-                "http://localhost:3001",
-                "--proxyRoutesJson",
-                "terria-map-proxy-routes.json",
-                "--cspJson",
-                "terria-map-csp.json",
-                "--externalUrl",
-                "http://admin.terria.magda:6100"
-            ],
-            "env": {
-                "PGUSER": "client"
-            },
-            "cwd": "${workspaceRoot}/magda-gateway"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
             "name": "Launch Web Server",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",
@@ -316,8 +260,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "Launch Auth API",
-            "runtimeExecutable":
-                "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "cwd": "${workspaceRoot}/magda-authorization-api",
             "args": [
                 "src/index.ts",
@@ -339,8 +282,7 @@
                 "SESSION_SECRET": "keyboard cat",
                 "FACEBOOK_CLIENT_ID": "173073926555600",
                 "FACEBOOK_CLIENT_SECRET": "none",
-                "GOOGLE_CLIENT_ID":
-                    "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
+                "GOOGLE_CLIENT_ID": "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
                 "GOOGLE_CLIENT_SECRET": "none"
             }
         },
@@ -374,8 +316,7 @@
             "request": "launch",
             "protocol": "inspector",
             "name": "create-docker-context-for-node-component",
-            "program":
-                "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
+            "program": "${workspaceRoot}/scripts/create-docker-context-for-node-component.js",
             "cwd": "${workspaceRoot}/magda-gateway",
             "args": ["--output", "foo.tar.gz"]
         },
@@ -386,8 +327,7 @@
             "name": "Ckan Connector",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "windows": {
-                "runtimeExecutable":
-                    "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
             "args": [
                 "-r",

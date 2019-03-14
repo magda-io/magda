@@ -1,5 +1,15 @@
 ## 0.0.55
 
+First step to support multi-tenants. Deployed as single tenant by default.
+Registry:
+
+-   Changed database schema.
+-   Provide services based on Tenant IDs.
+
+Gateway:
+
+-   Add tenant ID header to client requests.
+
 ## 0.0.54
 
 Connectors:
