@@ -35,8 +35,8 @@ object GeoJsonValidator {
     * A Longitude (x) can be -180 to +180 & A latitude (y) can only be in the range of -90 to +90.
     */
   def validateCoordinate(c:GeoJson.Coordinate): Boolean = {
-    if(c.x > 180 || c.x < -180) throw new Exception(s"Invalid Longitude (x) range: ${c.x}. Should be within -180 to +180")
-    if(c.y > 90 || c.y < -90) throw new Exception(s"Invalid latitude (x) range: ${c.x}. Should be within -90 to +90")
+    if(c.x.abs > BigDecimal(180)) throw new Exception(s"Invalid Longitude (x) range: ${c.x}. Should be within -180 to +180")
+    if(c.y.abs > BigDecimal(90)) throw new Exception(s"Invalid latitude (y) range: ${c.y}. Should be within -90 to +90")
     true
   }
 
