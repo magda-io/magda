@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_DEFAULT_TENANT_ID, MAGDA_SYSTEM_ID}
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_SINGLE_TENANT_ID, MAGDA_SYSTEM_ID}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -52,8 +52,8 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
-  def addDefaultTenantIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_DEFAULT_TENANT_ID)
+  def addSingleTenantIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_SINGLE_TENANT_ID)
   }
 
   def addAdminPortalIdHeader: RawHeader = {
@@ -63,6 +63,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   def addSystemIdHeader: RawHeader = {
     addTenantIdHeader(MAGDA_SYSTEM_ID)
   }
+
+  // Any positive numbers
+  val tenant_1: BigInt = 1
+  val tenant_2: BigInt = 2
 
   // Stop Flyway from producing so much spam that Travis terminates the process.
   LoggerFactory.getLogger("org.flywaydb").asInstanceOf[Logger].setLevel(Level.WARN)
@@ -114,6 +118,11 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     }
 
     flyway.migrate()
+
+    DB localTx { implicit session =>
+      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test1', $tenant_1, true, 'test1', 1)".update.apply()
+      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test2', $tenant_2, true, 'test2', 1)".update.apply()
+    }
 
     val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
     val api = (role: Role) => new Api(if (role == Full) Some(actor) else None, authClient, testConfig, system, executor, materializer)

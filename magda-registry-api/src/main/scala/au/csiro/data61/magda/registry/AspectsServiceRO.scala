@@ -1,23 +1,16 @@
 package au.csiro.data61.magda.registry
 
-import javax.ws.rs.Path
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.stream.Materializer
-import akka.http.scaladsl.server.Directives._
-import scalikejdbc._
 import akka.http.scaladsl.model.StatusCodes
-import io.swagger.annotations._
-import spray.json._
-import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-
-import scala.util.{ Failure, Success }
-import com.typesafe.config.Config
+import akka.http.scaladsl.server.Directives._
+import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
-import akka.actor.ActorRef
+import au.csiro.data61.magda.model.Registry._
+import com.typesafe.config.Config
+import io.swagger.annotations._
+import javax.ws.rs.Path
+import scalikejdbc._
 
 /**
  * @apiGroup Registry Aspects

@@ -7,8 +7,8 @@ export default function updateTenants(
     registryApi: string,
     retryNum: number
 ): any {
+    // TODO: How to use MAGDA_TENANT_ID_HEADER exported from "./index".
     request({
-        // TODO: How to use MAGDA_TENANT_ID_HEADER exported from "./index".
         headers: { "X-Magda-TenantId": MAGDA_ADMIN_PORTAL_ID },
         url: `${registryApi}/tenants`
     })
@@ -25,7 +25,6 @@ export default function updateTenants(
                         e.message
                     }. Retries left: ${retryNum}`
                 );
-
                 setTimeout(
                     () =>
                         updateTenants(tenantsTable, registryApi, retryNum - 1),

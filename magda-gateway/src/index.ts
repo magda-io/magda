@@ -34,7 +34,7 @@ const coerceJson = (path?: string) => path && require(path);
 // TODO: Investigate how to use swagger codegen to automatically generate these constants.
 // These constants are the same as defined in the scala model Registry.
 export const MAGDA_TENANT_ID_HEADER = "X-Magda-TenantId";
-export const MAGDA_DEFAULT_TENANT_ID = 0;
+export const MAGDA_SINGLE_TENANT_ID = 0;
 export const MAGDA_ADMIN_PORTAL_ID = -1;
 
 const argv = addJwtSecretFromEnvVar(
@@ -224,11 +224,11 @@ const argv = addJwtSecretFromEnvVar(
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
         })
-        .option("enableDefaultTenant", {
+        .option("enableMultiTenants", {
             describe:
-                "Whether use default tenant. If false, magdaAdminPortalName must be set properly.",
+                "Whether to run in multi-tenant mode. If true, magdaAdminPortalName must refer to a real portal.",
             type: "boolean",
-            default: true
+            default: false
         })
         .option("registryApi", {
             describe: "The base URL of the registry API.",
@@ -270,7 +270,7 @@ export const magdaAdminPortalName = argv.magdaAdminPortalName.toLowerCase();
 
 console.log("magdaAdminPortalName = " + magdaAdminPortalName);
 
-export const enableDefaultTenant = argv.enableDefaultTenant;
+export const multiTenantsMode = argv.enableMultiTenants;
 
 // Create a new Express application.
 var app = express();
@@ -380,15 +380,15 @@ if (argv.enableCkanRedirection) {
 export const tenantsTable = new Map<String, Tenant>();
 
 // TODO: Limit access to magda admin portal user only.
-// By default, argv.enableDefaultTenant === true.
-// When a magda admin add new tenants, this URL should be called.
-if (argv.enableDefaultTenant === false) {
+// By default, multiTenantsMode === false.
+// In multi-tenant mode, if a new tenant is added, this URL should be called.
+if (multiTenantsMode === true) {
     app.get("/refreshTenants", (_, res) => {
         updateTenants(tenantsTable, argv.registryApi, 10);
         res.writeHead(202, {
             "Content-Type": "text/plain"
         });
-        res.end("Will try to refresh tenants now now.");
+        res.end("Will try to refresh tenants now.");
     });
 }
 
@@ -398,7 +398,9 @@ app.use("/", createGenericProxy(argv.web));
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-updateTenants(tenantsTable, argv.registryApi, 10);
+if (multiTenantsMode === true) {
+    updateTenants(tenantsTable, argv.registryApi, 10);
+}
 
 process.on("unhandledRejection", (reason: string, promise: any) => {
     console.error("Unhandled rejection");

@@ -3,9 +3,9 @@ import * as URI from "urijs";
 import {
     tenantsTable,
     magdaAdminPortalName,
-    enableDefaultTenant,
+    multiTenantsMode,
     MAGDA_TENANT_ID_HEADER,
-    MAGDA_DEFAULT_TENANT_ID,
+    MAGDA_SINGLE_TENANT_ID,
     MAGDA_ADMIN_PORTAL_ID
 } from "./index";
 
@@ -55,34 +55,34 @@ export default function createBaseProxy(): httpProxy {
 
     proxy.on("proxyReq", function(proxyReq, req, res) {
         proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, "undefined");
-        const host = req.headers.host;
-        let domainName = new URI("http://" + host).hostname().toLowerCase();
 
-        if (domainName === magdaAdminPortalName) {
-            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
-        } else {
-            const tenant = tenantsTable.get(domainName);
+        if (multiTenantsMode === true) {
+            const host = req.headers.host;
+            const domainName = new URI("http://" + host)
+                .hostname()
+                .toLowerCase();
 
-            if (undefined === tenant) {
-                if (enableDefaultTenant === true) {
-                    proxyReq.setHeader(
-                        MAGDA_TENANT_ID_HEADER,
-                        MAGDA_DEFAULT_TENANT_ID
-                    );
+            if (domainName === magdaAdminPortalName) {
+                proxyReq.setHeader(
+                    MAGDA_TENANT_ID_HEADER,
+                    MAGDA_ADMIN_PORTAL_ID
+                );
+            } else {
+                const tenant = tenantsTable.get(domainName);
+                if (
+                    tenant !== undefined &&
+                    tenant.id !== MAGDA_SINGLE_TENANT_ID
+                ) {
+                    proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
                 } else {
                     res.writeHead(500, { "Content-Type": "text/plain" });
                     res.end(
                         `Something went wrong when processing the tenant with the domain name of ${domainName}.`
                     );
                 }
-            } else if (tenant.enabled === true) {
-                proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
-            } else {
-                res.writeHead(500, { "Content-Type": "text/plain" });
-                res.end(
-                    `Something went wrong when processing the tenant with the domain name of ${domainName}.`
-                );
             }
+        } else {
+            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SINGLE_TENANT_ID);
         }
     });
 
