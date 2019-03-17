@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.6.2
 
 RUN yum -y install sudo
 
