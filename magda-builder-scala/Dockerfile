@@ -36,6 +36,7 @@ ENV PATH ${PATH}:${SBT_HOME}/bin
 # Install sbt
 RUN mkdir -p "$SBT_HOME" && \
     apk add --no-cache --update wget bash && \
+    apk add nss && \
     wget -qO - --no-check-certificate "http://dl.bintray.com/sbt/native-packages/sbt/$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
     apk del wget && \
 	sbt sbtVersion
