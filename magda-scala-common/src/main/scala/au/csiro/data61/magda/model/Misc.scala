@@ -3,14 +3,15 @@ package au.csiro.data61.magda.model
 import java.time.OffsetDateTime
 
 import com.monsanto.labs.mwundo.GeoJson._
-
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
+import au.csiro.data61.magda.spatial.GeoJsonValidator
 import spray.json._
+
 import scala.runtime.ScalaRunTime
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 package misc {
   sealed trait FacetType {
@@ -137,6 +138,8 @@ package misc {
           }
         case x => x
       }
+
+      processedGeoJson.foreach(geoJson => GeoJsonValidator.validate(geoJson))
 
       new Location(Some(text), processedGeoJson)
     }
