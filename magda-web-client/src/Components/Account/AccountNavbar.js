@@ -21,7 +21,10 @@ class AccountNavbar extends React.Component {
                             </NavLink>
                         </li>,
                         <li key="/signOut">
-                            <a href="" onClick={this.signOut.bind(this)}>
+                            <a
+                                href="/signout"
+                                onClick={this.signOut.bind(this)}
+                            >
                                 <span>Sign Out</span>
                             </a>
                         </li>

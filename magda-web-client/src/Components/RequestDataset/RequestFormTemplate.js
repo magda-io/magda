@@ -162,7 +162,7 @@ export default class RequestFormTemplate extends React.Component {
                     id="message"
                     value={this.state.message}
                     className={
-                        "correspondence-message-input " +
+                        "correspondence-message-input au-text-input--block " +
                         (this.state.messageValid
                             ? ""
                             : "au-text-input--invalid")
@@ -194,7 +194,7 @@ export default class RequestFormTemplate extends React.Component {
                     onChange={this.handleInputChange}
                     type="text"
                     className={
-                        "correspondence-name-input " +
+                        "correspondence-name-input au-text-input--width-lg " +
                         (this.state.senderNameValid
                             ? ""
                             : "au-text-input--invalid")
@@ -223,7 +223,7 @@ export default class RequestFormTemplate extends React.Component {
                     value={this.state.senderEmail}
                     onChange={this.handleInputChange}
                     className={
-                        "correspondence-email-input " +
+                        "correspondence-email-input au-text-input--width-lg" +
                         (this.state.senderEmailValid
                             ? ""
                             : "au-text-input--invalid")

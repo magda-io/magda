@@ -76,7 +76,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 39,
+    version = 40,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -85,6 +85,9 @@ object IndexDefinition extends DefaultJsonProtocol {
         .replicas(config.getInt("elasticSearch.replicaCount"))
         .mappings(
           mapping(indices.getType(Indices.DataSetsIndexType)).fields(
+            objectField("accrualPeriodicity").fields(
+              magdaTextField("text")
+            ),
             objectField("temporal").fields(
               objectField("start").fields(
                 dateField("date"),

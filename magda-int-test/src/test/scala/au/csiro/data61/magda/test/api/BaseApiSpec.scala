@@ -59,20 +59,21 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
     blockUntilNotRed()
 
-    if (!doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
-
-      client.execute(
-        IndexDefinition.regions.definition(DefaultIndices, config)
-      ).await(90 seconds)
-
-      val fakeRegionLoader = new RegionLoader {
-        override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
-      }
-
-      logger.info("Setting up regions")
-      IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
-      logger.info("Finished setting up regions")
+    if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
+      deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
     }
+
+    client.execute(
+      IndexDefinition.regions.definition(DefaultIndices, config)
+    ).await(90 seconds)
+
+    val fakeRegionLoader = new RegionLoader {
+      override def setupRegions(): Source[(RegionSource, JsObject), _] = Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
+    }
+
+    logger.info("Setting up regions")
+    IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
+    logger.info("Finished setting up regions")
 
     System.gc()
   }

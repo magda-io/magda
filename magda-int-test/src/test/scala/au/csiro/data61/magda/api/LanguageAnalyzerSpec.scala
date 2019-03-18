@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import au.csiro.data61.magda.test.util.Generators
 import au.csiro.data61.magda.util.Regex._
+import scala.util.Random
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
@@ -38,11 +39,16 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("distribution title") {
-      testDataSetSearch(dataSet => dataSet.distributions.map(_.title))
+      testDataSetSearch(dataSet => {
+        // --- only randomly pick one distribution to test as now it's AND operator in simple_string_query
+        Random.shuffle(dataSet.distributions).take(1).map(_.title)
+      })
     }
 
     describe("distribution description") {
-      testDataSetSearch(dataSet => dataSet.distributions.flatMap(_.description.toSeq), true)
+      testDataSetSearch(dataSet => {
+        Random.shuffle(dataSet.distributions).take(1).flatMap(_.description.toSeq)
+      }, true)
     }
 
     describe("theme") {

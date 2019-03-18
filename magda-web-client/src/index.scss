@@ -15,8 +15,20 @@ body {
             background: $AU-color-foreground-action;
         }
     }
-    a {
+    a,
+    .au-anchor {
         color: $AU-color-foreground-action;
+    }
+    .au-anchor {
+        text-decoration: underline;
+        text-decoration-skip-ink: auto;
+
+        &:hover {
+            color: $AU-color-foreground-text;
+            text-decoration: none;
+        }
+
+        @include AU-focus();
     }
 
     button.au-btn,

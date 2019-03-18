@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   test-es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4

@@ -91,7 +91,8 @@ export default class RequestFormLogic extends React.Component {
                         action:
                             this.props.requestType === "request"
                                 ? "Data Request"
-                                : "Dataset Feedback"
+                                : "Dataset Feedback",
+                        label: this.props.datasetId
                     });
 
                     this.handleChange(data);
