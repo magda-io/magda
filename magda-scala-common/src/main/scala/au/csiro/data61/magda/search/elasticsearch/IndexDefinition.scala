@@ -76,7 +76,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 40,
+    version = 41,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -137,7 +137,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                   .fielddata(true)
               )
             ),
-            objectField("spatial").fields(geoshapeField("geoJson")),
+            objectField("spatial").fields(geoshapeField("geoJson").precision("1km").distanceErrorPct(0.025)),
             magdaTextField("title"),
             magdaSynonymTextField("description"),
             magdaTextField("keywords"),
@@ -255,7 +255,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 22,
+      version = 23,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
       createIndex(indices.getIndex(config, Indices.RegionsIndex))
@@ -270,8 +270,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             textField("regionSearchId")
               .analyzer("regionSearchIdIndex")
               .searchAnalyzer("regionSearchIdInput"),
-            geoshapeField("boundingBox"),
-            geoshapeField("geometry"),
+            geoshapeField("boundingBox").precision("1km").distanceErrorPct(0.025),
+            geoshapeField("geometry").precision("1km").distanceErrorPct(0.025),
             intField("order")
           )
         )
