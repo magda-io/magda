@@ -124,7 +124,7 @@ trait FacetDefinition {
     * This function will duplicate the only element in a Seq if its size is 1
     * Luckily elasticsearch will ignore any duplicate items in `include` or `exclude`
     */
-  def atLeast2Items(items: Seq[String]): Seq[String] = if(items.size == 1) items ++ items else items
+  def fixArrayBug(items: Seq[String]): Seq[String] = if(items.size == 1) items ++ items else items
 }
 
 object FacetDefinition {
@@ -151,7 +151,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
     if(inputOptions.size > 0) {
       // --- this if block cannot be combined with the one below
       // --- otherwise `aggs` only get a outdated copy
-      otherOptionsAgg = otherOptionsAgg.exclude(atLeast2Items(inputOptions))
+      otherOptionsAgg = otherOptionsAgg.exclude(fixArrayBug(inputOptions))
     }
 
     var aggs = List(otherOptionsAgg)
@@ -159,7 +159,7 @@ class PublisherFacetDefinition(implicit val config: Config) extends FacetDefinit
     if(inputOptions.size > 0) {
       aggs = termsAggregation("terms-selected-options")
         .size(inputOptions.size)
-        .include(atLeast2Items(inputOptions))
+        .include(fixArrayBug(inputOptions))
         .field("publisher.name.keyword")
         .showTermDocCountError(true)
         .subAggregations(
@@ -233,7 +233,7 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
         .size(limit)
         .field("distributions.format.keyword_lowercase")
         .showTermDocCountError(true)
-        .exclude(atLeast2Items("" :: inputOptions))
+        .exclude(fixArrayBug("" :: inputOptions))
         .subAggregations {
           reverseNestedAggregation("reverse")
         }
@@ -245,8 +245,8 @@ class FormatFacetDefinition(implicit val config: Config) extends FacetDefinition
 
        aggs = termsAggregation("terms-selected-options")
           .size(inputOptions.size)
-          .include(atLeast2Items(inputOptions))
-          .exclude(atLeast2Items(Seq("")))
+          .include(fixArrayBug(inputOptions))
+          .exclude(fixArrayBug(Seq("")))
           .field("distributions.format.keyword_lowercase")
           .showTermDocCountError(true)
           .subAggregations {
