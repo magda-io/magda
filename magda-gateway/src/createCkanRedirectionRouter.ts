@@ -243,9 +243,8 @@ export default function buildCkanRedirectionRouter({
         retrieveAspects: string[] = [],
         limit: number = 1
     ): Promise<any[]> {
-        const query = `${aspectName}.${
-            uuidRegEx.test(ckanIdOrName) ? "id" : "name"
-        }:${ckanIdOrName}`;
+        const idQuery = `${aspectName}.id:${ckanIdOrName}`;
+        const nameQuery = `${aspectName}.name:${ckanIdOrName}`;
 
         let aspectList: string[] = [];
 
@@ -260,14 +259,26 @@ export default function buildCkanRedirectionRouter({
 
         aspectList = _.uniq(aspectList);
 
-        const resData: any = await queryRegistryRecordApi(
-            [query],
+        let resData: any = await queryRegistryRecordApi(
+            [uuidRegEx.test(ckanIdOrName) ? idQuery : nameQuery],
             retrieveAspects,
             limit
         );
 
-        if (!resData || !resData.records || !resData.records.length)
-            return null;
+        if (!resData || !resData.records || !resData.records.length) {
+            if (uuidRegEx.test(ckanIdOrName)) {
+                resData = await queryRegistryRecordApi(
+                    [nameQuery],
+                    retrieveAspects,
+                    limit
+                );
+                if (!resData || !resData.records || !resData.records.length) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
         return resData.records;
     }
 
