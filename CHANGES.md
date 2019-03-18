@@ -9,6 +9,9 @@ Registry:
 Gateway:
 
 -   Add tenant ID header to client requests.
+Others:
+
+-   Upgraded JDK version for magda-builder-scala to 8u201
 
 ## 0.0.54
 
