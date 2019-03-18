@@ -65,6 +65,8 @@ spec:
             "--authorizationApi", "http://authorization-api/v0",
             "--registryApi", "http://registry-api/v0",
             "--previewMap", "http://preview-map:6110",
+            "--enableMultiTenants", "true",
+            "--magdaAdminPortalName", "admin-multi-tenant.dev.magda.io"
         ]
         volumeMounts:
           - name: config
