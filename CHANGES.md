@@ -38,6 +38,7 @@ Others:
 -   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
 -   Elasticsearch related test cases run on Docker container than than local node
 -   Fixed: datasets with null description could lead to blank search result page
+-   Added Geo Spatial Data Validation to Indexer
 
 ## 0.0.53
 
