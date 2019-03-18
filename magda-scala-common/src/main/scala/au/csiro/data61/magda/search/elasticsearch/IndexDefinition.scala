@@ -423,7 +423,7 @@ object IndexDefinition extends DefaultJsonProtocol {
               val simplified =
                 TopologyPreservingSimplifier.simplify(
                   jtsGeo,
-                  shortestSide / 100
+                  shortestSide * regionSource.simplifyToleranceRatio
                 )
 
               def removeInvalidHoles(polygon: Polygon): Polygon = {
