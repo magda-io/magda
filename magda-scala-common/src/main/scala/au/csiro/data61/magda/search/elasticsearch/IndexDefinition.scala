@@ -26,9 +26,8 @@ import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.model.misc.Format
 import au.csiro.data61.magda.model.misc.Publisher
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.spatial.RegionLoader
+import au.csiro.data61.magda.spatial.{GeoDataSimplifier, RegionLoader, RegionSources}
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.RegionSources
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
@@ -414,41 +413,10 @@ object IndexDefinition extends DefaultJsonProtocol {
           val geometryOpt = jsonRegion.fields("geometry") match {
             case (jsGeometry: JsObject) =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
-              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
-              val shortestSide = {
-                val env = jtsGeo.getEnvelopeInternal
-                Math.min(env.getWidth, env.getHeight)
-              }
-              val simplified =
-                TopologyPreservingSimplifier.simplify(
-                  jtsGeo,
-                  shortestSide * regionSource.simplifyToleranceRatio
-                )
+              val simplified = GeoDataSimplifier.simplifyByRatio(geometry, regionSource.simplifyToleranceRatio)
 
-              def removeInvalidHoles(polygon: Polygon): Polygon = {
-                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
-                val filteredHoles = holes.filter(_.within(simplified))
-                new Polygon(
-                  polygon.getExteriorRing.asInstanceOf[LinearRing],
-                  filteredHoles.toArray,
-                  geometryFactory
-                )
-              }
-
-              // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
-              val simplifiedFixed: Geometry = simplified.getGeometryType match {
-                case "Polygon" =>
-                  val x = simplified.asInstanceOf[Polygon]
-                  removeInvalidHoles(x)
-                case "MultiPolygon" =>
-                  val x = simplified.asInstanceOf[MultiPolygon]
-                  val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[Polygon])
-                  new MultiPolygon(geometries.toArray, geometryFactory)
-                case _ => simplified
-              }
-
-              Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
+              Some(simplified)
             case _ => None
           }
 
