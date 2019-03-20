@@ -199,13 +199,16 @@ object polylineSimplifier {
       val newPoints = ListBuffer(prevPoint)
       var lastPoint:Point = points.head
 
-      points.foreach { point =>
+      var i = 0
+      while(i < points.length) {
+        val point = points(i)
         lastPoint = point
         val dist = getSqDist(point, prevPoint)
         if ( dist != 0 && dist > sqTolerance ) {
           newPoints.append(point)
           prevPoint = point
         }
+        i = i + 1
       }
 
       if (prevPoint != lastPoint) newPoints.append(lastPoint)
@@ -220,12 +223,12 @@ object polylineSimplifier {
 
     var i = first + 1
     while (i < last) {
-      i += 1
       val sqDist = getSqSegDist(points(i), points(first), points(last))
       if (sqDist > maxSqDist) {
         index = i
         maxSqDist = sqDist
       }
+      i = i + 1
     }
 
     if (maxSqDist > sqTolerance) {

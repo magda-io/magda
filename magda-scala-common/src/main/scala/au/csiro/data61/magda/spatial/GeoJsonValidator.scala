@@ -10,7 +10,7 @@ object GeoJsonValidator {
   def validate(geoJson:GeoJson.Typed):GeoJson = geoJson match {
     case geoJson:GeoJson.Point =>
       validateCoordinate(geoJson.coordinates)
-      Point.fromJson(geoJson.toJson.toString)
+      com.mapbox.geojson.Point.fromJson(geoJson.toJson.toString)
     case geoJson:GeoJson.MultiPoint =>
       validateCoordinates(geoJson.coordinates)
       MultiPoint.fromJson(geoJson.toJson.toString)
