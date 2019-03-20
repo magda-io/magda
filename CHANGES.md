@@ -1,5 +1,9 @@
 ## 0.0.55
 
+UI:
+
+-   Updated design system components
+
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
@@ -18,7 +22,6 @@ UI:
 -   Added a basic new dataset page
 -   Fixed javascript errors in download analytics and pie charts
 -   Added results of automated metadata extraction spikes to add new dataset page
--   Updated design system components
 
 Analytics:
 
@@ -32,7 +35,6 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
--   Updated design system components
 
 Others:
 
