@@ -1,15 +1,18 @@
 
 package au.csiro.data61.magda.spatial
 
-import com.mapbox.geojson._
-import com.mapbox.geojson.utils.PolylineUtils
+import com.mapbox.geojson.{BoundingBox}
 import com.monsanto.labs.mwundo.GeoJson
+
 import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
+
+case class Point(x:Double, y:Double)
 
 object GeoDataSimplifier {
 
-  val SIMPLIFY_DEFAULT_TOLERANCE: Double = 1
-  val SIMPLIFY_DEFAULT_HIGHEST_QUALITY: Boolean = false
+  val SIMPLIFY_DEFAULT_TOLERANCE: Double = polylineSimplifier.SIMPLIFY_DEFAULT_TOLERANCE
+  val SIMPLIFY_DEFAULT_HIGHEST_QUALITY: Boolean = polylineSimplifier.SIMPLIFY_DEFAULT_HIGHEST_QUALITY
 
   def simplify(geoJson:GeoJson.Geometry, toleranceDistance: Double = SIMPLIFY_DEFAULT_TOLERANCE, highestQuality: Boolean = SIMPLIFY_DEFAULT_HIGHEST_QUALITY):GeoJson.Geometry = geoJson match {
     case geoJson:GeoJson.LineString =>
@@ -17,9 +20,9 @@ object GeoDataSimplifier {
     case geoJson:GeoJson.MultiLineString =>
       geoJson.copy(coordinates = simplifyCoordinatesCollection(geoJson.coordinates, toleranceDistance, highestQuality))
     case geoJson:GeoJson.Polygon =>
-      geoJson.copy(coordinates = simplifyCoordinatesCollection(geoJson.coordinates, toleranceDistance, highestQuality))
+      geoJson.copy(coordinates = simplifyPolygon(geoJson.coordinates, toleranceDistance, highestQuality))
     case geoJson:GeoJson.MultiPolygon =>
-      geoJson.copy(coordinates = simplifyCoordinatesCollections(geoJson.coordinates, toleranceDistance, highestQuality))
+      geoJson.copy(coordinates = simplifyMultiPolygon(geoJson.coordinates, toleranceDistance, highestQuality))
     case _ => geoJson
   }
 
@@ -100,16 +103,154 @@ object GeoDataSimplifier {
     finalBboxOption
   }
 
-  def simplifyCoordinates(cs:Seq[GeoJson.Coordinate], toleranceDistance: Double, highestQuality: Boolean):Seq[GeoJson.Coordinate] = {
-    val pointList = seqAsJavaList(cs.map(c => Point.fromLngLat(c.x.toDouble, c.y.toDouble)))
-    PolylineUtils.simplify(pointList, toleranceDistance, highestQuality).map(c => GeoJson.Coordinate(c.longitude(), c.latitude()))
+  def simplifyCoordinates(cs:Seq[GeoJson.Coordinate], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[GeoJson.Coordinate] = {
+    if(!validateRing) {
+      polylineSimplifier
+        .simplify(cs.map(c => Point(c.x.toDouble, c.y.toDouble)).toArray, toleranceDistance, highestQuality)
+        .map(c => GeoJson.Coordinate(c.x, c.y))
+    } else {
+      val points = cs.map(c => Point(c.x.toDouble, c.y.toDouble)).toArray
+      var runTimeToleranceDistance:Double = toleranceDistance
+      var simplifedRing = polylineSimplifier.simplify(points, runTimeToleranceDistance, highestQuality)
+
+      //remove 1 percent of tolerance until enough points to make a triangle
+      while(!checkValidity(simplifedRing)){
+        runTimeToleranceDistance -= runTimeToleranceDistance * 0.01
+        simplifedRing = polylineSimplifier.simplify(points, runTimeToleranceDistance, highestQuality)
+      }
+
+      if( simplifedRing(0) != simplifedRing(simplifedRing.length - 1)) {
+        simplifedRing.append(simplifedRing(0).copy())
+      }
+
+      simplifyCoordinates(cs, toleranceDistance, highestQuality)
+    }
   }
 
-  def simplifyCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[GeoJson.Coordinate]] = {
-    col.map(cs => simplifyCoordinates(cs, toleranceDistance, highestQuality))
+  def simplifyCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[GeoJson.Coordinate]] = {
+    col.map(cs => simplifyCoordinates(cs, toleranceDistance, highestQuality, validateRing))
   }
 
-  def simplifyCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
-    cols.map(col => simplifyCoordinatesCollection(col, toleranceDistance, highestQuality))
+  def simplifyPolygon(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[GeoJson.Coordinate]] = {
+    simplifyCoordinatesCollection(col, toleranceDistance, highestQuality, true)
   }
+
+  def simplifyCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
+    cols.map(col => simplifyCoordinatesCollection(col, toleranceDistance, highestQuality, validateRing))
+  }
+
+  def simplifyMultiPolygon(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
+    simplifyCoordinatesCollections(cols, toleranceDistance, highestQuality, true)
+  }
+
+  /**
+    * A ring should has at least 3 points and the last point not same as the last one
+    */
+  def checkValidity(ring:Seq[Point]) = {
+    if(ring.length < 3) false
+    else {
+      !(ring.length == 3 && ring(2) == ring(0))
+    }
+  }
+}
+
+
+object polylineSimplifier {
+
+  val SIMPLIFY_DEFAULT_TOLERANCE: Double = 1
+  val SIMPLIFY_DEFAULT_HIGHEST_QUALITY: Boolean = false
+
+  private def getSqDist(p1:Point, p2:Point): Double = {
+    val dx:Double = p1.x - p2.x
+    val dy:Double = p1.y - p2.y
+    dx * dx + dy * dy
+  }
+
+  private def getSqSegDist(p:Point, p1: Point, p2: Point): Double = {
+    var x:Double = p1.x
+    var y:Double = p1.y
+    var dx:Double = p2.x - x
+    var dy:Double = p2.y - y
+
+    if (x != 0 || dy != 0) {
+      val t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy)
+
+      if (t > 1) {
+        x = p2.x
+        y = p2.y
+      }
+      else if (t > 0) {
+        x += dx * t
+        y += dy * t
+      }
+    }
+
+    dx = p.x - x
+    dy = p.y - y
+
+    dx * dx + dy * dy
+  }
+
+
+  private def simplifyRadialDist(points:Array[Point], sqTolerance:Double): ListBuffer[Point] = {
+    if(points.length < 3) ListBuffer() ++ points
+    else {
+      var prevPoint:Point = points.head
+      val newPoints = ListBuffer(prevPoint)
+      var lastPoint:Point = points.head
+
+      points.foreach { point =>
+        lastPoint = point
+        val dist = getSqDist(point, prevPoint)
+        if ( dist != 0 && dist > sqTolerance ) {
+          newPoints.append(point)
+          prevPoint = point
+        }
+      }
+
+      if (prevPoint != lastPoint) newPoints.append(lastPoint)
+      newPoints
+    }
+  }
+
+
+  private def simplifyDPStep(points:Array[Point], first:Int, last:Int, sqTolerance:Double, simplified:ListBuffer[Point]):Unit = {
+    var maxSqDist:Double = sqTolerance
+    var index:Int = 0
+
+    var i = first + 1
+    while (i < last) {
+      i += 1
+      val sqDist = getSqSegDist(points(i), points(first), points(last))
+      if (sqDist > maxSqDist) {
+        index = i
+        maxSqDist = sqDist
+      }
+    }
+
+    if (maxSqDist > sqTolerance) {
+      if (index - first > 1) simplifyDPStep(points, first, index, sqTolerance, simplified)
+      simplified.append(points(index))
+      if (last - index > 1) simplifyDPStep(points, index, last, sqTolerance, simplified)
+    }
+  }
+
+  private def simplifyDouglasPeucker(points:Array[Point], sqTolerance:Double) = {
+    val last:Int = points.length - 1
+
+    val simplified = ListBuffer(points(0))
+    simplifyDPStep(points, 0, last, sqTolerance, simplified)
+    simplified.append(points.last)
+    simplified
+  }
+
+  def simplify(points:Array[Point], tolerance:Double = SIMPLIFY_DEFAULT_TOLERANCE, highestQuality:Boolean = SIMPLIFY_DEFAULT_HIGHEST_QUALITY) = {
+    if(points.length <= 2 ) ListBuffer() ++ points
+    else {
+      val sqTolerance:Double = tolerance * tolerance
+      val simplified = if(highestQuality) points else simplifyRadialDist(points, sqTolerance).toArray
+      simplifyDouglasPeucker(simplified, sqTolerance)
+    }
+  }
+
 }

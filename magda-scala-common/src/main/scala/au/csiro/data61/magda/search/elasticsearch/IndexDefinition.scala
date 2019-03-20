@@ -414,7 +414,9 @@ object IndexDefinition extends DefaultJsonProtocol {
             case (jsGeometry: JsObject) =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
 
-              val simplified = GeoDataSimplifier.simplifyByRatio(geometry, regionSource.simplifyToleranceRatio)
+              val simplified = GeoDataSimplifier.simplify(geometry)
+
+              logger.info("Simplified GeoData {} : {}", regionSource.idProperty, simplified.toJson)
 
               Some(simplified)
             case _ => None
