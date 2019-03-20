@@ -7,6 +7,7 @@ UI:
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
+-   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
 
 ## 0.0.54
 

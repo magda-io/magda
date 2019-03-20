@@ -69,13 +69,13 @@ export default class SearchPageSuggest extends React.Component {
                 {!this.state.formPosted ? (
                     <h3 className="suggest-dataset-text">
                         Can't find what you're looking for?{" "}
-                        <span
+                        <button
                             onClick={this.toggleSuggest}
-                            className="au-anchor"
+                            className="link-button suggest-dataset-button"
                         >
                             {" "}
                             Suggest a new dataset
-                        </span>
+                        </button>
                         <img
                             alt="close"
                             className="suggest-dataset-icon"

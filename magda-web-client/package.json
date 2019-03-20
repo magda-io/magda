@@ -6,7 +6,7 @@
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
     "deploy-storybook": "build-storybook -c .storybook -o .out",
-    "dev": "yarn run start",
+    "dev": "pancake && yarn run start",
     "prepare": "pancake",
     "start": "craco start --react-scripts ../node_modules/react-scripts",
     "build": "pancake && craco build --react-scripts ../node_modules/react-scripts",
