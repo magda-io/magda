@@ -202,82 +202,30 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         new Facet(
           id = facetType.id,
           options = {
-            // Filtered options are the ones that partly match the user's input... e.g. "Ballarat Council" for input "Ballarat"
-            val filteredOptions =
-              (aggs.contains(facetType.id + "-filter") match {
-                case true =>
-                  definition.extractFacetOptions(
-                    aggs
-                      .filter(facetType.id + "-filter")
-                      .dataAsMap.get(facetType.id).flatMap(AggUtils.toAgg(_)))
-                case false => Nil
-              }).filter(definition.isFilterOptionRelevant(query))
-                .map(_.copy(matched = true))
 
-            // filteredExact aggregations are those that exactly match a filter (e.g. "Ballarat Council" exactly) but are also filtered by
-            // the rest of the query - we use this to filter the exact options below and make sure we don't show 0 results for a filtered
-            // aggregation that does actually have results.
-            val filteredExact = definition
-              .exactMatchQueries(query)
-              .map {
-                case (name, query) =>
-                  (
-                    name,
-                    aggs.filter(facetType.id + "-exact-" + name + "-filter"))
-              }
-              .map {
-                case (name, agg: FilterAggregationResult) => name -> agg
-              }
-              .toMap
-
-            // Exact options are for when a user types a correct facet name exactly but we have no hits for it, so we still want to
-            // display it to them to show them that it does *exist* but not for this query
-            val exactOptions =
-              definition
-                .exactMatchQueries(query)
-                .map {
-                  case (name, query) =>
-                    val value = facetType.id + "-exact-" + name
-                    (name, aggs.global(facetType.id + "-global").filter(value))
-                }
-                .flatMap {
-                  case (name, agg) =>
-                    if (agg.docCount > 0 && filteredExact
-                      .get(name)
-                      .map(_.docCount)
-                      .getOrElse(0l) == 0l) {
-                      Some(FacetOption(
-                        identifier =
-                          if (!agg.contains("topHits")) None
-                          else {
-                            agg
-                              .tophits("topHits")
-                              .hits
-                              .headOption
-                              .flatMap(
-                                _.to[DataSet].publisher.flatMap(_.identifier))
-                          },
-                        value = name.getOrElse(
-                          config.getString("strings.unspecifiedWord")),
-                        hitCount = 0,
-                        matched = true))
-                    } else None
-                }
-                .toSeq
+            val inputFacetOptions = definition.getInputFacetOptions(query)
 
             val alternativeOptions =
               definition.extractFacetOptions(
                 aggs
                   .dataAsMap.get(facetType.id + "-global").flatMap(AggUtils.toAgg(_))
-                  .flatMap(_.dataAsMap.get("filter").flatMap(AggUtils.toAgg(_)).flatMap{ agg =>
-                    agg.dataAsMap.get(facetType.id).flatMap(AggUtils.toAgg(_))
-                  }))
-            definition.truncateFacets(
-              query,
-              filteredOptions,
-              exactOptions,
-              alternativeOptions,
-              facetSize)
+                  .flatMap(_.dataAsMap.get("filter").flatMap(AggUtils.toAgg(_)))
+              )
+
+            val notMatchedInputFacetOptions = inputFacetOptions
+              .filter(optionStr => !alternativeOptions.exists(_.value == optionStr))
+              .map(FacetOption(None, _, 0l, None, None, true))
+
+            val allOptions = alternativeOptions ++ notMatchedInputFacetOptions
+
+            val nonInputOptions = allOptions.filter(!_.matched).sortBy(_.hitCount).reverse
+            val inputOptions = allOptions.filter(_.matched).sortBy(_.hitCount).reverse
+
+            if ( facetSize <= inputOptions.size ) {
+              inputOptions.take(facetSize)
+            } else {
+              inputOptions ++ nonInputOptions.take(facetSize - inputOptions.size)
+            }
           })
       }.toSeq))
   }
@@ -365,51 +313,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           query,
           facetDef,
           strategy,
-          facetSize) :: exactMatchAggregations(
-          query,
-          facetType,
-          facetDef,
-          strategy))
+          facetSize))
         .asInstanceOf[AggregationDefinition]
 
-    val partialMatchesAggs =
-      if (facetDef.isRelevantToQuery(query))
-        exactMatchAggregations(query, facetType, facetDef, strategy, "-filter") :+
-          // If there's details in the query that relate to this facet
-          // then create an aggregation that shows all results for this facet that partially match the details
-          // in the query... this is useful if say the user types in "Ballarat", we can suggest "Ballarat Council"
-          filterAggregation(facetType.id + "-filter")
-          .query(facetDef.filterAggregationQuery(query))
-          .subAggregations(facetDef.aggregationDefinition(facetSize))
-          .asInstanceOf[AggregationDefinition]
-      else
-        List()
-
-    partialMatchesAggs :+ globalAgg
+    globalAgg :: Nil
   }
-
-  /**
-   * The exact match aggs are for situations where the user puts in a free text facet - we want
-   * to see whether that exists in the system at all even if it has no hits with their current
-   * query, in order to more helpfully correct their search if they mispelled etc.
-   */
-  def exactMatchAggregations(
-    query: Query,
-    facetType: FacetType,
-    facetDef: FacetDefinition,
-    strategy: SearchStrategy,
-    suffix: String = ""): List[FilterAggregationDefinition] =
-    facetDef
-      .exactMatchQueries(query)
-      .map {
-        case (name, query) =>
-          filterAggregation(facetType.id + "-exact-" + name + suffix)
-            .query(query)
-            .subAggregations(topHitsAggregation("topHits")
-              .size(1)
-              .sortBy(fieldSort("identifier")))
-      }
-      .toList
 
   /**
    * The alternatives aggregation shows what other choices are available if the user wasn't
@@ -423,7 +331,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     facetSize: Int) =
     filterAggregation("filter")
       .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
-      .subAggregations(facetDef.aggregationDefinition(facetSize))
+      .subAggregations(facetDef.aggregationDefinition(query, facetSize))
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.

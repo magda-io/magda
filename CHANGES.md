@@ -4,6 +4,10 @@ UI:
 
 -   Integrate sentry release notification and source map upload
 
+Others:
+
+-   Upgraded JDK version for magda-builder-scala to 8u201
+
 ## 0.0.54
 
 Connectors:
@@ -37,6 +41,7 @@ Others:
 -   Change content api delete response status code from to 204 to 200 so its content can be read.
 -   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
 -   Elasticsearch related test cases run on Docker container than than local node
+-   Fixed: datasets with null description could lead to blank search result page
 
 ## 0.0.53
 
