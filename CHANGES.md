@@ -1,5 +1,9 @@
 ## 0.0.55
 
+UI:
+
+-   Integrate sentry release notification and source map upload
+
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
