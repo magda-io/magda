@@ -123,7 +123,7 @@ object GeoDataSimplifier {
         simplifedRing.append(simplifedRing(0).copy())
       }
 
-      simplifyCoordinates(cs, toleranceDistance, highestQuality)
+      simplifedRing.map(c => GeoJson.Coordinate(c.x, c.y))
     }
   }
 
