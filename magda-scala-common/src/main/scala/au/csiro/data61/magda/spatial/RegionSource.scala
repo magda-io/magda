@@ -16,7 +16,8 @@ case class RegionSource(
   includeIdInName: Boolean,
   disabled: Boolean,
   order: Int,
-  simplifyToleranceRatio: Double = 0.01)
+  simplifyToleranceRatio: Double = 0.01,
+  requireSimplify: Boolean = true)
 
 object RegionSource {
   def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
@@ -45,7 +46,11 @@ class RegionSources(config: Config) {
           simplifyToleranceRatio =
             if (regionSourceConfig.hasPath("simplifyToleranceRatio"))
               regionSourceConfig.getDouble("simplifyToleranceRatio")
-            else 0.01
+            else 0.01,
+          requireSimplify =
+            if (regionSourceConfig.hasPath("requireSimplify"))
+              regionSourceConfig.getBoolean("requireSimplify")
+            else true
         )
     }.toSeq.filterNot(_.disabled)
   }

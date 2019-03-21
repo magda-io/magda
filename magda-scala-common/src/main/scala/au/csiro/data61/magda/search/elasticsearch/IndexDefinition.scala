@@ -410,15 +410,31 @@ object IndexDefinition extends DefaultJsonProtocol {
           val shortName = regionSource.shortNameProperty.map(shortNameProp =>
             properties.fields(shortNameProp).convertTo[String])
 
+          // --- allow simplifyToleranceRatio to be specified per file or per region
+          val simplifyToleranceRatio:Double = properties
+            .getFields("simplifyToleranceRatio")
+            .headOption.map(_.convertTo[Double])
+            .getOrElse(regionSource.simplifyToleranceRatio)
+
+          // --- allow requireSimplify to be specified per file or per region
+          val requireSimplify:Boolean = properties
+            .getFields("requireSimplify")
+            .headOption.map(_.convertTo[Boolean])
+            .getOrElse(regionSource.requireSimplify)
+
           val geometryOpt = jsonRegion.fields("geometry") match {
             case (jsGeometry: JsObject) =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
 
-              val simplified = GeoDataSimplifier.simplifyByRatio(geometry, regionSource.simplifyToleranceRatio)
+              if (!requireSimplify) {
+                logger.info("Skipped simplifying GeoData {}/{}/{}", regionSource.idProperty, id, name)
+                Some(geometry)
+              }
+              else {
+                val simplified = GeoDataSimplifier.simplifyByRatio(geometry, simplifyToleranceRatio)
 
-              logger.info("Simplified GeoData {} : {}", regionSource.idProperty, simplified.toJson)
-
-              Some(simplified)
+                Some(simplified)
+              }
             case _ => None
           }
 
