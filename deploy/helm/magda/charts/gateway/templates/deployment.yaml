@@ -61,7 +61,7 @@ spec:
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
-            "--web", "http://terria-terriamap:3001",
+            "--web", "http://terria-map:3001",
             "--authorizationApi", "http://authorization-api/v0",
             "--registryApi", "http://registry-api/v0",
             "--previewMap", "http://preview-map:6110",
