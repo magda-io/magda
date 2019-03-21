@@ -4,6 +4,7 @@ UI:
 
 -   Updated design system components
 -   Integrate sentry release notification and source map upload
+-   Added "role" to account page
 
 Others:
 
