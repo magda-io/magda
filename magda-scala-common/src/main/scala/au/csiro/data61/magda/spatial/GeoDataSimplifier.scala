@@ -1,11 +1,9 @@
 
 package au.csiro.data61.magda.spatial
 
-import com.mapbox.geojson.{BoundingBox}
 import com.monsanto.labs.mwundo.GeoJson
-
-import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+import au.csiro.data61.magda.model.misc.BoundingBox
 
 case class Point(x:Double, y:Double)
 
@@ -31,8 +29,8 @@ object GeoDataSimplifier {
     if( toleranceDistanceRatio > 0 && toleranceDistanceRatio <= 1 ) {
       val bboxOption= calculateBoundingBoxFromGeometry(geoJson)
       if(!bboxOption.isEmpty){
-        val width = (bboxOption.get.east() - bboxOption.get.west()).abs
-        val height = (bboxOption.get.north() - bboxOption.get.south()).abs
+        val width:Double = (bboxOption.get.east.toDouble - bboxOption.get.west.toDouble).abs
+        val height:Double = (bboxOption.get.north.toDouble - bboxOption.get.south.toDouble).abs
         var toleranceDistanceBase = Math.min(width, height)
         if(toleranceDistanceBase == 0) toleranceDistanceBase = Math.max(width, height)
         if(toleranceDistanceBase != 0) {
@@ -44,6 +42,8 @@ object GeoDataSimplifier {
   }
 
   def calculateBoundingBoxFromGeometry(geoJson:GeoJson.Geometry):Option[BoundingBox] = geoJson match {
+    case geoJson:GeoJson.Point =>
+      Some(BoundingBox(geoJson.coordinates.y, geoJson.coordinates.x, geoJson.coordinates.y, geoJson.coordinates.x))
     case geoJson:GeoJson.MultiPoint =>
       calculateBoundingBoxFromCoordinates(geoJson.coordinates)
     case geoJson:GeoJson.LineString =>
@@ -57,17 +57,17 @@ object GeoDataSimplifier {
     case _ => None
   }
 
-  def calculateBoundingBoxFromCoordinates(cs:Seq[GeoJson.Coordinate], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
+  private def calculateBoundingBoxFromCoordinates(cs:Seq[GeoJson.Coordinate], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
     var xMin:Option[Double] = None
     var xMax:Option[Double] = None
     var yMin:Option[Double] = None
     var yMax:Option[Double] = None
 
     bboxOption.foreach{ bbox =>
-      xMin = Some(bbox.west())
-      xMax = Some(bbox.east())
-      yMin = Some(bbox.south())
-      yMax = Some(bbox.north())
+      xMin = Some(bbox.west.toDouble)
+      xMax = Some(bbox.east.toDouble)
+      yMin = Some(bbox.south.toDouble)
+      yMax = Some(bbox.north.toDouble)
     }
 
     cs.foreach{ c =>
@@ -78,10 +78,10 @@ object GeoDataSimplifier {
     }
 
     if(xMin.isEmpty || xMax.isEmpty || yMin.isEmpty || yMax.isEmpty) None
-    else Some(BoundingBox.fromLngLats(xMin.get, yMin.get, xMax.get, yMax.get))
+    else Some(BoundingBox(yMax.get, xMax.get, yMin.get, xMin.get))
   }
 
-  def calculateBoundingBoxFromCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
+  private def calculateBoundingBoxFromCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
 
     var finalBboxOption = bboxOption
 
@@ -92,7 +92,7 @@ object GeoDataSimplifier {
     finalBboxOption
   }
 
-  def calculateBoundingBoxFromCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
+  private def calculateBoundingBoxFromCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], bboxOption: Option[BoundingBox] = None):Option[BoundingBox] = {
 
     var finalBboxOption = bboxOption
 
@@ -103,7 +103,7 @@ object GeoDataSimplifier {
     finalBboxOption
   }
 
-  def simplifyCoordinates(cs:Seq[GeoJson.Coordinate], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[GeoJson.Coordinate] = {
+  private def simplifyCoordinates(cs:Seq[GeoJson.Coordinate], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[GeoJson.Coordinate] = {
     if(!validateRing) {
       polylineSimplifier
         .simplify(cs.map(c => Point(c.x.toDouble, c.y.toDouble)).toArray, toleranceDistance, highestQuality)
@@ -114,7 +114,7 @@ object GeoDataSimplifier {
       var simplifedRing = polylineSimplifier.simplify(points, runTimeToleranceDistance, highestQuality)
 
       //remove 1 percent of tolerance until enough points to make a triangle
-      while(!checkValidity(simplifedRing)){
+      while(!checkRingValidity(simplifedRing)){
         runTimeToleranceDistance -= runTimeToleranceDistance * 0.01
         simplifedRing = polylineSimplifier.simplify(points, runTimeToleranceDistance, highestQuality)
       }
@@ -127,26 +127,26 @@ object GeoDataSimplifier {
     }
   }
 
-  def simplifyCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[GeoJson.Coordinate]] = {
+  private def simplifyCoordinatesCollection(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[GeoJson.Coordinate]] = {
     col.map(cs => simplifyCoordinates(cs, toleranceDistance, highestQuality, validateRing))
   }
 
-  def simplifyPolygon(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[GeoJson.Coordinate]] = {
+  private def simplifyPolygon(col:Seq[Seq[GeoJson.Coordinate]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[GeoJson.Coordinate]] = {
     simplifyCoordinatesCollection(col, toleranceDistance, highestQuality, true)
   }
 
-  def simplifyCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
+  private def simplifyCoordinatesCollections(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean, validateRing: Boolean = false):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
     cols.map(col => simplifyCoordinatesCollection(col, toleranceDistance, highestQuality, validateRing))
   }
 
-  def simplifyMultiPolygon(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
+  private def simplifyMultiPolygon(cols:Seq[Seq[Seq[GeoJson.Coordinate]]], toleranceDistance: Double, highestQuality: Boolean):Seq[Seq[Seq[GeoJson.Coordinate]]] = {
     simplifyCoordinatesCollections(cols, toleranceDistance, highestQuality, true)
   }
 
   /**
     * A ring should has at least 3 points and the last point not same as the last one
     */
-  def checkValidity(ring:Seq[Point]) = {
+  def checkRingValidity(ring:Seq[Point]) = {
     if(ring.length < 3) false
     else {
       !(ring.length == 3 && ring(2) == ring(0))

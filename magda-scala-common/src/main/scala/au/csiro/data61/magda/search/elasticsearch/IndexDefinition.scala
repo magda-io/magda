@@ -1,8 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import scala.concurrent.Future
-import scala.math.BigDecimal.double2bigDecimal
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.http.bulk.BulkResponse
 import com.sksamuel.elastic4s.mappings.{Analysis, Nulls}
@@ -13,26 +11,14 @@ import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, NamedStopTokenFilter, StandardTokenizer, StemmerTokenFilter, StopTokenFilter, TokenFilterDefinition, Tokenizer, UppercaseTokenFilter, WhitespaceTokenizer}
 import com.typesafe.config.Config
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.LinearRing
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.model.misc.BoundingBox
-import au.csiro.data61.magda.model.misc.Format
-import au.csiro.data61.magda.model.misc.Publisher
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.{GeoDataSimplifier, RegionLoader, RegionSources}
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
-
-import scala.collection.JavaConverters._
 
 case class IndexDefinition(
   name: String,
@@ -384,9 +370,6 @@ object IndexDefinition extends DefaultJsonProtocol {
     setupRegions(client, loader, indices)
   }
 
-  implicit val geometryFactory =
-    JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
-
   def setupRegions(client: ElasticClient, loader: RegionLoader, indices: Indices)(
     implicit
     config: Config,
@@ -453,9 +436,9 @@ object IndexDefinition extends DefaultJsonProtocol {
                     .map(JsString(_))
                     .getOrElse(JsNull),
                   "regionSearchId" -> JsString(uniqueRegionId),
-                  "boundingBox" -> createEnvelope(geometry).toJson(
-                    EsBoundingBoxFormat
-                  ),
+                  "boundingBox" -> GeoDataSimplifier
+                    .calculateBoundingBoxFromGeometry(geometry)
+                    .map(_.toJson(EsBoundingBoxFormat)).getOrElse(JsNull),
                   "geometry" -> geometry.toJson,
                   "order" -> JsNumber(regionSource.order)
                 ).toJson)
@@ -495,18 +478,5 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map { count =>
         logger.info("Successfully indexed {} regions", count)
       }
-  }
-
-  val geoFactory = new GeometryFactory()
-  def createEnvelope(geometry: GeoJson.Geometry): BoundingBox = {
-    val indexedEnvelope =
-      GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
-
-    BoundingBox(
-      indexedEnvelope.getMaxY,
-      indexedEnvelope.getMinX,
-      indexedEnvelope.getMinY,
-      indexedEnvelope.getMaxX
-    )
   }
 }
