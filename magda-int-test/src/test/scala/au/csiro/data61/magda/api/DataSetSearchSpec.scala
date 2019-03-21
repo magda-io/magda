@@ -921,7 +921,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
               val byY = allCoords.sortBy(_.y)
               val byX = allCoords.sortBy(_.x)
 
-              val indexedBoundingBox = BoundingBox(byY.last.y, byX.head.x, byY.head.y, byX.last.x)
+              val indexedBoundingBox = BoundingBox(byY.last.y, byX.last.x, byY.head.y, byX.head.x)
 
               responseRegion.get.boundingBox.isDefined should be(true)
 
