@@ -879,15 +879,24 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
+"@craco/craco@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@craco/craco/-/craco-3.6.0.tgz#4b4ce7dacda8ac64731c18b1542f70127cd3eb8e"
+  integrity sha512-01hBd0kefkDmfOsiXq5lAnSISVPgLqT1Qrr8Y062XRboeIlz9GQvOjJxhIxoqgVFYdeKURW6xza2qOEj5Til4w==
+  dependencies:
+    cross-spawn "6.0.5"
+    lodash.mergewith "4.6.1"
+    webpack-merge "4.1.4"
+
 "@csstools/convert-colors@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
   integrity sha512-5a6wqoJV/xEdbRNKVo6I4hO3VjyDq//8q2f9I6PBAvMesJHFauXDorcNCsr9RzvsZnaWi5NYCcfyqP1QeFHFbw==
 
-"@gov.au/accordion@^3.0.5":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@gov.au/accordion/-/accordion-3.0.5.tgz#7ccdedba8a2e52b73e8a892d44e3f6f87129e16d"
-  integrity sha512-oOPYVOUqhDADFGigtD1jADCJ6usgo/SIeCUKnz/RS2BKqqKjAUHZAtLudHoeJycd9d8s/cpFSOLzDr/plaOl+A==
+"@gov.au/accordion@^7.0.7":
+  version "7.0.7"
+  resolved "https://registry.yarnpkg.com/@gov.au/accordion/-/accordion-7.0.7.tgz#ee4aa8b90dddfe20e576e4552bfacac73546375c"
+  integrity sha512-IhkFh8+qOAm+36GHezm17/KwIpK5QWi7DlbSfFzOr+pWkIBAraKkfN56TCeFlehJnF7DOGfy+wP2M9TM/6+IUw==
   dependencies:
     "@gov.au/animate" "^1.0.0"
     "@gov.au/core" "^3.0.0"
@@ -906,7 +915,7 @@
     "@gov.au/pancake-js" "~1"
     "@gov.au/pancake-json" "~1"
 
-"@gov.au/body@^2.0.0", "@gov.au/body@^2.0.7":
+"@gov.au/body@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@gov.au/body/-/body-2.1.0.tgz#c798c14984a634dc2f9fef607777ab758e64b919"
   integrity sha512-XzvAiIrSZ1oFaACf2cGSABAkoEJymAVKWqEV+TNs24jO8VatmieTxWEyK6crc8TXVpOgHYDM2FdCqW9OMwdNng==
@@ -916,22 +925,32 @@
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/breadcrumbs@^2.0.3":
+"@gov.au/body@^2.1.1":
   version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@gov.au/breadcrumbs/-/breadcrumbs-2.1.1.tgz#7575cefc90ede423150b1399af6135db974fd167"
-  integrity sha512-FUsuVXbEU8uO6Ali7pkYnQAhaLnoho9A5T5VBP7Q3YBciBjIuPQMxWxHkJV0DLPbG6xPMkrUKCwVSGptxL5/NQ==
+  resolved "https://registry.yarnpkg.com/@gov.au/body/-/body-2.1.1.tgz#f675ad988c31036a18df5bef8c15df6c8961ebf7"
+  integrity sha512-Tt+OcTkrN7lHkSf2eThb6QGXEmJiw57VGBeAwLAcn0ODkdC1a1q36+ojed/rO+BdBd7w1m2H/Rx9YjwhwyMZlw==
   dependencies:
     "@gov.au/core" "^3.0.0"
-    "@gov.au/link-list" "^2.1.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-sass" "~2"
+
+"@gov.au/breadcrumbs@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gov.au/breadcrumbs/-/breadcrumbs-3.0.4.tgz#3665f1fcce2a5f134055cb30fa098c3731681174"
+  integrity sha512-gIM/ttibTLWd1U7aaS5ipIIhf/ybIpmSm+shDaYWX8ayGMw0swzraHHsJo158D88eH8fhNjaUcnFXDuEBVK/qw==
+  dependencies:
+    "@gov.au/core" "^3.0.0"
+    "@gov.au/link-list" "^3.0.0"
     "@gov.au/pancake" "~1"
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/buttons@^3.0.1":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@gov.au/buttons/-/buttons-3.0.5.tgz#c81071532c1757b14b48cb101c34370406d453aa"
-  integrity sha512-XrceqHF39rVt+0RT2YdM42+7O6wzjvDTovZbuabT++oD/ixfEEzJMV4ottG2dEJ2P67f629VTvSjkyREkEhcCQ==
+"@gov.au/buttons@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@gov.au/buttons/-/buttons-3.0.6.tgz#7b8ad3924eaf250f7b88039ccfeaba7d6e9de06b"
+  integrity sha512-re8V+0LAi7q6XVZfrBiVKSwBTnZYkSHqh8cEV/fIYxXmEuB4ghr6/7UtyzhPNw0ZERRUvD4vh7BVrmJU+yf6kw==
   dependencies:
     "@gov.au/core" "^3.0.0"
     "@gov.au/pancake" "~1"
@@ -939,7 +958,7 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/core@^3.0.0":
+"@gov.au/core@^3.0.0", "@gov.au/core@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@gov.au/core/-/core-3.2.0.tgz#a580f6b34f971bbef5fa3ea1c4165a78e0af4cbc"
   integrity sha512-z5H9nznMIqg1teH6YlF+3lwCSsDFXHCzHEGKXCzC7sQYdQHtMh7IDGtNfqjdiU1oZpwurCVOQffhUnzlY4AIMw==
@@ -949,10 +968,10 @@
     "@gov.au/pancake-sass" "~2"
     sass-versioning "^0.3.0"
 
-"@gov.au/cta-link@^2.1.1":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@gov.au/cta-link/-/cta-link-2.1.7.tgz#900ce88d04c08a23e6787898e037b70ec2c58d36"
-  integrity sha512-m7VpVtkJU6uLrN4Iy677cj0cpW32eqMpVsXZnC1wHH/hzMy2f+GIFExkZdgbmAfVK20uIos8GO3as7n74WbEyQ==
+"@gov.au/cta-link@^2.1.9":
+  version "2.1.9"
+  resolved "https://registry.yarnpkg.com/@gov.au/cta-link/-/cta-link-2.1.9.tgz#a35aefc646b6533c930956f1f6e406a17047509d"
+  integrity sha512-zwxVst5QoeqUhPsJMuqGNgV9cmuwtDD0UPWzebySTJEg8jmEV8UzduEjDh1+xFKW1U7n0Lz8itY9r4io7wmEXA==
   dependencies:
     "@gov.au/core" "^3.0.0"
     "@gov.au/pancake" "~1"
@@ -960,10 +979,10 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/footer@^2.1.3":
-  version "2.1.9"
-  resolved "https://registry.yarnpkg.com/@gov.au/footer/-/footer-2.1.9.tgz#c19769b345122a7edf6d511d1a2fce45722306c8"
-  integrity sha512-ZRkt7cnej4dfqkwePvzkirM2KN5TRER9idvXHG2Hd1n+QIufqZ2lghRnpurC8igVx/yba5HeJhuUGamionkNig==
+"@gov.au/footer@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@gov.au/footer/-/footer-3.0.3.tgz#76014052b38dce227dd7e1c43fbc34d427312fe5"
+  integrity sha512-lqtoCSyn47gd75xCJT4ToBXFypdQ3wLa3fMwD0f+BPCeMlvF8Nvb1QgvtfLY1ukC89fGOi7jowpwcRy2wBiqbg==
   dependencies:
     "@gov.au/core" "^3.0.0"
     "@gov.au/pancake" "~1"
@@ -981,10 +1000,10 @@
     "@gov.au/pancake-json" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/header@^4.1.1":
-  version "4.1.9"
-  resolved "https://registry.yarnpkg.com/@gov.au/header/-/header-4.1.9.tgz#6d8b4e7b98abf89bec5650b7ea6fb8804c298bed"
-  integrity sha512-UHZUE+7OOZscS0gITmravZT1rZXf87zvNCeLMpFUivHnCxcQDIl0PcAga6+T+nx/dno/cNjK681Nsqlgwfd8GQ==
+"@gov.au/header@^4.1.11":
+  version "4.1.11"
+  resolved "https://registry.yarnpkg.com/@gov.au/header/-/header-4.1.11.tgz#6064bcf8ca8901bb2d059ff2f9aca2d6aad1b80a"
+  integrity sha512-plRyHxRdMSiN//cfpC3SrwMj14mW53Ik4T0jDriG+M9XQozoOY+wMzzga7UWsp8LWwrMvFtcwb5QXZIyY93Caw==
   dependencies:
     "@gov.au/core" "^3.0.0"
     "@gov.au/pancake" "~1"
@@ -992,10 +1011,10 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/link-list@^2.1.0", "@gov.au/link-list@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@gov.au/link-list/-/link-list-2.1.1.tgz#92e61eb11efd05ed5aa18037a907505467fd2225"
-  integrity sha512-/8RYBT5kWVhr/sbXSe/p8YqjY0yttuBSPZ9BHdjLHypYEoR44dJGV+UiOZeBpPrDelLQGzvl63z+gBiKtQs7EQ==
+"@gov.au/link-list@^3.0.0", "@gov.au/link-list@^3.0.5":
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@gov.au/link-list/-/link-list-3.0.5.tgz#db94129d6554596ba6fd953cba9a5323689525cb"
+  integrity sha512-Y4JxpHGhAmIE5FZyUKN4sQTX/RxK5iuxQRbR3xh7k6nKic1BRxgOUdUHZ22eELzfTxsG5fZmakVTiZGRw5NtNQ==
   dependencies:
     "@gov.au/body" "^2.0.0"
     "@gov.au/core" "^3.0.0"
@@ -1004,10 +1023,10 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
-"@gov.au/page-alerts@^2.0.5":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@gov.au/page-alerts/-/page-alerts-2.1.1.tgz#0d224f220bd5ee7c5a6795d539bbecc6eac03623"
-  integrity sha512-VMUHVNxwx6a45x3q0aKfSf8bEEDM9Dhi60oM0TcjnK7xPtGyU1EywHnazyqdtq4m25IcuKyxTbJLe1vhgMLZLQ==
+"@gov.au/page-alerts@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@gov.au/page-alerts/-/page-alerts-2.1.2.tgz#47cb02566048c0c2cec8acd255fe9a0f99592cc5"
+  integrity sha512-FRcxaH1NXmrcILEiNO2vhqVeRCyZUCdEvCDjSA5Loksbd3Wzn+fvevfRzvPcuz00wcxEqMClMLJgS5xwv1M8bQ==
   dependencies:
     "@gov.au/body" "^2.0.0"
     "@gov.au/core" "^3.0.0"
@@ -1070,43 +1089,43 @@
   dependencies:
     babel-runtime "6.26.0"
 
-"@gov.au/select@^2.0.5":
-  version "2.0.9"
-  resolved "https://registry.yarnpkg.com/@gov.au/select/-/select-2.0.9.tgz#7c1568f8561402bcca05491954ebb222a50ec38f"
-  integrity sha512-6UmvEjtZojaifkiHaXkBMJqr991zntOyhxtOE5hM02i/61BcQEe15OWyTrIGTvOAJN2ZG9fADY71TBOHjqCvYQ==
-  dependencies:
-    "@gov.au/core" "^3.0.0"
-    "@gov.au/pancake" "~1"
-    "@gov.au/pancake-json" "~1"
-    "@gov.au/pancake-react" "~1"
-    "@gov.au/pancake-sass" "~2"
-
-"@gov.au/skip-link@^2.0.6":
-  version "2.0.13"
-  resolved "https://registry.yarnpkg.com/@gov.au/skip-link/-/skip-link-2.0.13.tgz#e53937d3948cc57eacefc223ce6367c7bfea27a1"
-  integrity sha512-o7K/BPVTj+PSjiX+BAkNplAKoO5pfww2mrOclExU1dOgaEjA9IjrDLxNm3mzN0ByBRNLyFDwcN7+jv/HLcDWRQ==
-  dependencies:
-    "@gov.au/core" "^3.0.0"
-    "@gov.au/pancake" "~1"
-    "@gov.au/pancake-json" "~1"
-    "@gov.au/pancake-react" "~1"
-    "@gov.au/pancake-sass" "~2"
-
-"@gov.au/tags@^3.1.1":
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-3.1.5.tgz#2bcd14fc9587cd23ed10fa9a8e65c0f76ec0cd60"
-  integrity sha512-cl9Btlyy8qehLekwJY+LG0ujQp99T0HpDubiQn5t5MoiTISONFJ86midQe0R+gfCCV9O6dN63n3WJTYiYVebKw==
-  dependencies:
-    "@gov.au/core" "^3.0.0"
-    "@gov.au/pancake" "~1"
-    "@gov.au/pancake-json" "~1"
-    "@gov.au/pancake-react" "~1"
-    "@gov.au/pancake-sass" "~2"
-
-"@gov.au/text-inputs@^2.0.6":
+"@gov.au/select@^2.0.10":
   version "2.0.10"
-  resolved "https://registry.yarnpkg.com/@gov.au/text-inputs/-/text-inputs-2.0.10.tgz#b7f1c90c7adf73f7d74d80d8af18a293fe36a531"
-  integrity sha512-wmkn/f6eZwIzY5gF28aK+IOa3QZEwQuLZz7YK/nReTZpbiMZS1MuTzaR4mnBHbMCuUOQIh3z9AHISm+ESqLIew==
+  resolved "https://registry.yarnpkg.com/@gov.au/select/-/select-2.0.10.tgz#19b2495e472f83c8eeb66decac17f6d7743fc45b"
+  integrity sha512-EoTmkHisr0HCi9DUtP2R5hvWBUo5l8gaGiPL7ELN1A1dzIsZoFEClBV/Uzs2qUgLScq9gh/2jOZkMVQYsgQ1OQ==
+  dependencies:
+    "@gov.au/core" "^3.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~2"
+
+"@gov.au/skip-link@^2.0.15":
+  version "2.0.15"
+  resolved "https://registry.yarnpkg.com/@gov.au/skip-link/-/skip-link-2.0.15.tgz#c110068167d748560cc762881338aaea99ea2884"
+  integrity sha512-hAhggq2kBUZAXSRCkdVQg9i9utP/hMNj6aHUDRnrsdzt6K19pbCK0D6Sem6KkJeHxTQQUaSlDgA0QL0LXXtI1Q==
+  dependencies:
+    "@gov.au/core" "^3.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~2"
+
+"@gov.au/tags@^3.1.6":
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/@gov.au/tags/-/tags-3.1.6.tgz#d65cbede871f80bbf32c986ef664c8eac9916dfe"
+  integrity sha512-GP9vO5xAK3qlzqyMQ3gTL0pmCHjTtgaOZ76kRxqRYG56wt2bYDEtARdC0ANxYuiLdv/2UTKhCjL2IxocE2LIyg==
+  dependencies:
+    "@gov.au/core" "^3.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~2"
+
+"@gov.au/text-inputs@^2.0.11":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@gov.au/text-inputs/-/text-inputs-2.1.0.tgz#2e77c9f9fa1c4b062a8aca593ec5a0e2882829d8"
+  integrity sha512-Tgsc2iuDoVD+KbFL8QD6qLFrQ+C1uTq9h/HIL+4qzP9Vv2y5CW0vhf0bNu+5nzQOhuMLQWDM758xewvWnUQ6Nw==
   dependencies:
     "@gov.au/core" "^3.0.0"
     "@gov.au/pancake" "~1"
@@ -4005,10 +4024,10 @@ babel-preset-minify@^0.3.0:
     babel-plugin-transform-undefined-to-void "^6.9.0"
     lodash.isplainobject "^4.0.6"
 
-babel-preset-react-app@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/babel-preset-react-app/-/babel-preset-react-app-7.0.1.tgz#8dd7fef73fba124a6e140d245185ca657a943313"
-  integrity sha512-cic2V+GftWwt82XNMKGxvkFAVvuaBISy0/mzNLLPlALXXJxUvxJgVy2DI8HVk311oewJsmBiu/unE4wINUCvkg==
+babel-preset-react-app@^7.0.2:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/babel-preset-react-app/-/babel-preset-react-app-7.0.2.tgz#d01ae973edc93b9f1015cb0236dd55889a584308"
+  integrity sha512-mwCk/u2wuiO8qQqblN5PlDa44taY0acq7hw6W+a70W522P7a9mIcdggL1fe5/LgAT7tqCq46q9wwhqaMoYKslQ==
   dependencies:
     "@babel/core" "7.2.2"
     "@babel/plugin-proposal-class-properties" "7.3.0"
@@ -5691,10 +5710,10 @@ configstore@^4.0.0:
     write-file-atomic "^2.0.0"
     xdg-basedir "^3.0.0"
 
-confusing-browser-globals@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.5.tgz#0171050cfdd4261e278978078bc00c4d88e135f4"
-  integrity sha512-tHo1tQL/9Ox5RELbkCAJhnViqWlzBz3MG1bB2czbHjH2mWd4aYUgNCNLfysFL7c4LoDws7pjg2tj48Gmpw4QHA==
+confusing-browser-globals@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.6.tgz#5918188e8244492cdd46d6be1cab60edef3063ce"
+  integrity sha512-GzyX86c2TvaagAOR+lHL2Yq4T4EnoBcnojZBcNbxVKSunxmGTnioXHR5Mo2ha/XnCoQw8eurvj6Ta+SwPEPkKg==
 
 connect-ensure-login@^0.1.1:
   version "0.1.1"
@@ -7695,12 +7714,12 @@ eslint-config-react-app@^2.1.0:
   resolved "https://registry.yarnpkg.com/eslint-config-react-app/-/eslint-config-react-app-2.1.0.tgz#23c909f71cbaff76b945b831d2d814b8bde169eb"
   integrity sha512-8QZrKWuHVC57Fmu+SsKAVxnI9LycZl7NFQ4H9L+oeISuCXhYdXqsOOIVSjQFW6JF5MXZLFE+21Syhd7mF1IRZQ==
 
-eslint-config-react-app@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/eslint-config-react-app/-/eslint-config-react-app-3.0.7.tgz#d58c9216ff285e2b4de0eb8403c28b0600e45b3e"
-  integrity sha512-Mmmc9lIY/qvX6OEV09+ZLqVTz1aX8VVCrgCjBHXdmMGaC+pldD+87oj3BiJWXMSfcYs5iOo9gy0mGnQ8f/fMsQ==
+eslint-config-react-app@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/eslint-config-react-app/-/eslint-config-react-app-3.0.8.tgz#6f606828ba30bafee7d744c41cd07a3fea8f3035"
+  integrity sha512-Ovi6Bva67OjXrom9Y/SLJRkrGqKhMAL0XCH8BizPhjEVEhYczl2ZKiNZI2CuqO5/CJwAfMwRXAVGY0KToWr1aA==
   dependencies:
-    confusing-browser-globals "^1.0.5"
+    confusing-browser-globals "^1.0.6"
 
 eslint-import-resolver-node@^0.3.1, eslint-import-resolver-node@^0.3.2:
   version "0.3.2"
@@ -12681,7 +12700,7 @@ lodash.merge@^4.4.0, lodash.merge@^4.6.0:
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
   integrity sha512-AOYza4+Hf5z1/0Hztxpm2/xiPZgi/cjMqdnKTUWTBSKchJlxXXuUSxCCl8rJlf4g6yww/j6mA8nC8Hw/EZWxKQ==
 
-lodash.mergewith@^4.6.0:
+lodash.mergewith@4.6.1, lodash.mergewith@^4.6.0:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/lodash.mergewith/-/lodash.mergewith-4.6.1.tgz#639057e726c3afbdb3e7d42741caa8d6e4335927"
   integrity sha512-eWw5r+PYICtEBgrBE5hhlT6aAa75f411bgDz/ZL2KZqYV03USvucsxcHUIlGTDTECs1eunpI7HOV7U+WLDvNdQ==
@@ -16549,7 +16568,7 @@ radium@^0.19.0:
     inline-style-prefixer "^2.0.5"
     prop-types "^15.5.8"
 
-raf@3.4.1, raf@^3.4.0:
+raf@3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/raf/-/raf-3.4.1.tgz#0742e99a4a6552f445d73e3ee0328af0ff1ede39"
   integrity sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==
@@ -16684,6 +16703,17 @@ react-app-polyfill@^0.2.1:
     raf "3.4.1"
     whatwg-fetch "3.0.0"
 
+react-app-polyfill@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/react-app-polyfill/-/react-app-polyfill-0.2.2.tgz#a903b61a8bfd9c5e5f16fc63bebe44d6922a44fb"
+  integrity sha512-mAYn96B/nB6kWG87Ry70F4D4rsycU43VYTj3ZCbKP+SLJXwC0x6YCbwcICh3uW8/C9s1VgP197yx+w7SCWeDdQ==
+  dependencies:
+    core-js "2.6.4"
+    object-assign "4.1.1"
+    promise "8.0.2"
+    raf "3.4.1"
+    whatwg-fetch "3.0.0"
+
 react-autosuggest@^9.3.2:
   version "9.4.3"
   resolved "https://registry.yarnpkg.com/react-autosuggest/-/react-autosuggest-9.4.3.tgz#eb46852422a48144ab9f39fb5470319222f26c7c"
@@ -16747,10 +16777,10 @@ react-dev-utils@^5.0.0:
     strip-ansi "3.0.1"
     text-table "0.2.0"
 
-react-dev-utils@^7.0.2:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-7.0.3.tgz#f1316cfffd792fd41b0c28ad5db86c1d74484d6f"
-  integrity sha512-KEFsH1CewnmddPLXIuU+QWKTH/hpJKZClL2+74XN54NkPnR2KnB5gGmuQ0E7DwcCkUpdMxxqBX+rB7aB5sZS4A==
+react-dev-utils@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-8.0.0.tgz#7c5b227a45a32ea8ff7fbc318f336cf9e2c6e34c"
+  integrity sha512-TK8cj7eghvxfe7bfBluLGpI/upo4EXC+G74hYmPucAG8C2XcbT+vKnlWPwLnABb75Zk+mR6D556Da+yvDjljrw==
   dependencies:
     "@babel/code-frame" "7.0.0"
     address "1.0.3"
@@ -16761,6 +16791,7 @@ react-dev-utils@^7.0.2:
     escape-string-regexp "1.0.5"
     filesize "3.6.1"
     find-up "3.0.0"
+    fork-ts-checker-webpack-plugin "1.0.0-alpha.6"
     global-modules "2.0.0"
     globby "8.0.2"
     gzip-size "5.0.0"
@@ -16770,7 +16801,7 @@ react-dev-utils@^7.0.2:
     loader-utils "1.2.3"
     opn "5.4.0"
     pkg-up "2.0.0"
-    react-error-overlay "^5.1.3"
+    react-error-overlay "^5.1.4"
     recursive-readdir "2.2.2"
     shell-quote "1.6.1"
     sockjs-client "1.3.0"
@@ -16813,10 +16844,10 @@ react-error-overlay@^4.0.1:
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-4.0.1.tgz#417addb0814a90f3a7082eacba7cee588d00da89"
   integrity sha512-xXUbDAZkU08aAkjtUvldqbvI04ogv+a1XdHxvYuHPYKIVk/42BIOD0zSKTHAWV4+gDy3yGm283z2072rA2gdtw==
 
-react-error-overlay@^5.1.3:
-  version "5.1.3"
-  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.1.3.tgz#16fcbde75ed4dc6161dc6dc959b48e92c6ffa9ad"
-  integrity sha512-GoqeM3Xadie7XUApXOjkY3Qhs8RkwB/Za4WMedBGrOKH1eTuKGyoAECff7jiVonJchOx6KZ9i8ILO5XIoHB+Tg==
+react-error-overlay@^5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.1.4.tgz#88dfb88857c18ceb3b9f95076f850d7121776991"
+  integrity sha512-fp+U98OMZcnduQ+NSEiQa4s/XMsbp+5KlydmkbESOw4P69iWZ68ZMFM5a2BuE0FgqPBKApJyRuYHR95jM8lAmg==
 
 react-file-drop@^0.2.7:
   version "0.2.7"
@@ -17001,10 +17032,10 @@ react-router@^4.3.1:
     prop-types "^15.6.1"
     warning "^4.0.1"
 
-react-scripts@2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-2.1.4.tgz#7341bb1bb25b4e98b26703237328970ab5e44788"
-  integrity sha512-2g0vn/Onar6rSYq8WeInBllHhMBQG4qk6/3U5eJiHZhSSLFWJD4ZvO7PanhucH6aXUP8Xbs710gU8GoIAL0DMA==
+react-scripts@^2.1.8:
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-2.1.8.tgz#21195bb928b2c0462aa98b2d32edf7d034cff2a9"
+  integrity sha512-mDC8fYWCyuB9VROti8OCPdHE79UEchVVZmuS/yaIs47VkvZpgZqUvzghYBswZRchqnW0aARNY8xXrzoFRhhK7A==
   dependencies:
     "@babel/core" "7.2.2"
     "@svgr/webpack" "4.1.0"
@@ -17013,21 +17044,20 @@ react-scripts@2.1.4:
     babel-jest "23.6.0"
     babel-loader "8.0.5"
     babel-plugin-named-asset-import "^0.3.1"
-    babel-preset-react-app "^7.0.1"
+    babel-preset-react-app "^7.0.2"
     bfj "6.1.1"
     case-sensitive-paths-webpack-plugin "2.2.0"
     css-loader "1.0.0"
     dotenv "6.0.0"
     dotenv-expand "4.2.0"
     eslint "5.12.0"
-    eslint-config-react-app "^3.0.7"
+    eslint-config-react-app "^3.0.8"
     eslint-loader "2.1.1"
     eslint-plugin-flowtype "2.50.1"
     eslint-plugin-import "2.14.0"
     eslint-plugin-jsx-a11y "6.1.2"
     eslint-plugin-react "7.12.4"
     file-loader "2.0.0"
-    fork-ts-checker-webpack-plugin "1.0.0-alpha.6"
     fs-extra "7.0.1"
     html-webpack-plugin "4.0.0-alpha.2"
     identity-obj-proxy "3.0.0"
@@ -17042,8 +17072,8 @@ react-scripts@2.1.4:
     postcss-loader "3.0.0"
     postcss-preset-env "6.5.0"
     postcss-safe-parser "4.0.1"
-    react-app-polyfill "^0.2.1"
-    react-dev-utils "^7.0.2"
+    react-app-polyfill "^0.2.2"
+    react-dev-utils "^8.0.0"
     resolve "1.10.0"
     sass-loader "7.1.0"
     style-loader "0.23.1"
@@ -21263,6 +21293,13 @@ webpack-manifest-plugin@2.0.4:
     fs-extra "^7.0.0"
     lodash ">=3.5 <5"
     tapable "^1.0.0"
+
+webpack-merge@4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-4.1.4.tgz#0fde38eabf2d5fd85251c24a5a8c48f8a3f4eb7b"
+  integrity sha512-TmSe1HZKeOPey3oy1Ov2iS3guIZjWvMT2BBJDzzT5jScHTjVC3mpjJofgueEzaEd6ibhxRDD6MIblDr8tzh8iQ==
+  dependencies:
+    lodash "^4.17.5"
 
 webpack-sources@^1.0.1, webpack-sources@^1.1.0, webpack-sources@^1.3.0:
   version "1.3.0"

@@ -1,7 +1,3 @@
 {
-    "extends": "./tsconfig-build.json",
-    "compilerOptions": {
-        "lib": ["dom", "dom.iterable", "esnext"],
-        "isolatedModules": true
-    }
+    "extends": "./tsconfig-build.json"
 }

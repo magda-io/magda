@@ -254,3 +254,32 @@ h4 {
 .au-header.au-header {
     padding: 0.5rem 0 0.5rem 0;
 }
+
+.navigation .au-link-list > li button {
+    font-size: 1rem;
+    padding: 1rem 0.78rem;
+    line-height: 1.5;
+    display: block;
+    text-decoration: none;
+
+    &:hover {
+        background-color: #341039;
+        color: #fff;
+    }
+}
+
+.link-button {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #4c2a85;
+    text-decoration: underline;
+    -webkit-text-decoration-skip: ink;
+    text-decoration-skip-ink: auto;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    @include AU-focus();
+}

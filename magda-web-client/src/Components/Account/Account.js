@@ -33,7 +33,7 @@ class Account extends React.Component {
                         <Breadcrumbs
                             breadcrumbs={[
                                 <li key="account">
-                                    <span>Acount</span>
+                                    <span>Account</span>
                                 </li>
                             ]}
                         />
