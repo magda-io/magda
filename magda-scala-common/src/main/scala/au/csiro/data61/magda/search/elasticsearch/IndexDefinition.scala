@@ -415,8 +415,8 @@ object IndexDefinition extends DefaultJsonProtocol {
               }
               else {
                 val simplified = GeoDataSimplifier.simplifyByRatio(geometry, simplifyToleranceRatio)
-
-                Some(simplified)
+                val fixedSimplied = GeoDataSimplifier.removeIntersections(simplified)
+                Some(fixedSimplied)
               }
             case _ => None
           }
@@ -459,13 +459,20 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result match {
-          case failure:RequestFailure => logger.error("Failure: {}", failure.error)
+          case failure:RequestFailure =>
+            logger.error("Failure: {}", failure.error)
+            0
           case results:RequestSuccess[BulkResponse] =>
-            logger.debug(
-              "Took {} seconds to execute request.",
-              results.result.took
-            )
-            results.result.successes.size
+            if(result.result.errors) {
+              logger.error("Failure: {}", result.body)
+              0
+            } else {
+              logger.debug(
+                "Took {} seconds to execute request.",
+                results.result.took
+              )
+              results.result.successes.size
+            }
         }
       }
       .recover {

@@ -4,6 +4,14 @@ package au.csiro.data61.magda.spatial
 import com.monsanto.labs.mwundo.GeoJson
 import scala.collection.mutable.ListBuffer
 import au.csiro.data61.magda.model.misc.BoundingBox
+import org.locationtech.jts.geom.{
+  Polygon => JTSPolygon,
+  MultiPolygon => JTSMultiPolygon,
+  LinearRing => JTSLinearRing,
+  Geometry => JTSGeometry
+}
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 
 case class Point(x:Double, y:Double)
 
@@ -152,6 +160,37 @@ object GeoDataSimplifier {
       !(ring.length == 3 && ring(2) == ring(0))
     }
   }
+
+  implicit val geometryFactory = JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
+
+  def removeIntersections(inputSimplied:GeoJson.Geometry):GeoJson.Geometry = {
+    val simplified: JTSGeometry = GeometryConverter.toJTSGeo(inputSimplied, geometryFactory)
+
+    def removeInvalidHoles(polygon: JTSPolygon): JTSPolygon = {
+      val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[JTSLinearRing]
+      val filteredHoles = holes.filter(_.within(simplified))
+      new JTSPolygon(
+        polygon.getExteriorRing.asInstanceOf[JTSLinearRing],
+        filteredHoles.toArray,
+        geometryFactory
+      )
+    }
+
+    // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
+    val simplifiedFixed: JTSGeometry = simplified.getGeometryType match {
+      case "Polygon" =>
+        val x = simplified.asInstanceOf[JTSPolygon]
+        removeInvalidHoles(x)
+      case "MultiPolygon" =>
+        val x = simplified.asInstanceOf[JTSMultiPolygon]
+        val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[JTSPolygon])
+        new JTSMultiPolygon(geometries.toArray, geometryFactory)
+      case _ => simplified
+    }
+
+    GeometryConverter.fromJTSGeo(simplifiedFixed)
+  }
+
 }
 
 
