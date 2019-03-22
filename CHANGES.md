@@ -31,6 +31,10 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
+-   Added Geo Spatial Data Validation to Indexer
+-   Added `simplifyToleranceRatio` & `requireSimplify` Parameters to Indexer & Allow them to be configured per file & per data
+-   Used manual simplified STE region data
+-   Fixed timeout issue when filter by WA state
 
 Others:
 
@@ -38,7 +42,6 @@ Others:
 -   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
 -   Elasticsearch related test cases run on Docker container than than local node
 -   Fixed: datasets with null description could lead to blank search result page
--   Added Geo Spatial Data Validation to Indexer
 
 ## 0.0.53
 
