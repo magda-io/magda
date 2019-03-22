@@ -1,26 +1,8 @@
-import * as cors from "cors";
-import * as express from "express";
-import * as path from "path";
 import * as yargs from "yargs";
-import * as ejs from "ejs";
-import * as helmet from "helmet";
 import * as _ from "lodash";
-import * as compression from "compression";
-import * as basicAuth from "express-basic-auth";
 
+import buildApp from "./buildApp";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import {
-    installStatusRouter,
-    createServiceProbe
-} from "@magda/typescript-common/dist/express/status";
-
-import Authenticator from "./Authenticator";
-import createApiRouter from "./createApiRouter";
-import createAuthRouter from "./createAuthRouter";
-import createGenericProxy from "./createGenericProxy";
-import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
-import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
-import defaultConfig from "./defaultConfig";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -218,131 +200,7 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
-type Route = {
-    to: string;
-    auth?: boolean;
-};
-
-type Routes = {
-    [host: string]: Route;
-};
-
-const routes = _.isEmpty(argv.proxyRoutesJson)
-    ? defaultConfig.proxyRoutes
-    : ((argv.proxyRoutesJson as unknown) as Routes);
-
-const authenticator = new Authenticator({
-    sessionSecret: argv.sessionSecret,
-    dbHost: argv.dbHost,
-    dbPort: argv.dbPort
-});
-
-// Create a new Express application.
-var app = express();
-
-// Log everything
-app.use(require("morgan")("combined"));
-
-const probes: any = {};
-
-/**
- * Should use argv.routes to setup probes
- * so that no prob will be setup when run locally for testing
- */
-_.forEach(
-    (argv.proxyRoutesJson as unknown) as Routes,
-    (value: any, key: string) => {
-        probes[key] = createServiceProbe(value.to);
-    }
-);
-installStatusRouter(app, { probes });
-
-// Redirect http url to https
-app.set("trust proxy", true);
-app.use(createHttpsRedirectionMiddleware(argv.enableHttpsRedirection));
-
-// GZIP responses where appropriate
-app.use(compression());
-
-// Set sensible secure headers
-app.disable("x-powered-by");
-app.use(helmet(_.merge({}, defaultConfig.helmet, argv.helmetJson as {})));
-console.log(_.merge({}, defaultConfig.csp, argv.cspJson));
-app.use(
-    helmet.contentSecurityPolicy(_.merge({}, defaultConfig.csp, argv.cspJson))
-);
-
-// Set up CORS headers for all requests
-const configuredCors = cors(
-    _.merge({}, defaultConfig.cors, argv.corsJson as {})
-);
-app.options("*", configuredCors);
-app.use(configuredCors);
-
-// Configure view engine to render EJS templates.
-app.set("views", path.join(__dirname, "..", "views"));
-app.set("view engine", "ejs");
-app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
-
-// --- enable http basic authentication for all users
-if (argv.enableWebAccessControl) {
-    app.use(
-        basicAuth({
-            users: {
-                [argv.webAccessUsername]: argv.webAccessPassword
-            },
-            challenge: true,
-            unauthorizedResponse: `You cannot access the system unless provide correct username & password.`
-        })
-    );
-}
-
-if (argv.enableAuthEndpoint) {
-    app.use(
-        "/auth",
-        createAuthRouter({
-            authenticator: authenticator,
-            jwtSecret: argv.jwtSecret,
-            facebookClientId: argv.facebookClientId,
-            facebookClientSecret: argv.facebookClientSecret,
-            googleClientId: argv.googleClientId,
-            googleClientSecret: argv.googleClientSecret,
-            aafClientUri: argv.aafClientUri,
-            aafClientSecret: argv.aafClientSecret,
-            ckanUrl: argv.ckanUrl,
-            authorizationApi: argv.authorizationApi,
-            externalUrl: argv.externalUrl,
-            userId: argv.userId
-        })
-    );
-}
-
-app.use(
-    "/api/v0",
-    createApiRouter({
-        authenticator: authenticator,
-        jwtSecret: argv.jwtSecret,
-        routes
-    })
-);
-app.use("/preview-map", createGenericProxy(argv.previewMap));
-
-if (argv.enableCkanRedirection) {
-    if (!routes.registry) {
-        console.error("Cannot locate routes.registry for ckan redirection!");
-    } else {
-        app.use(
-            createCkanRedirectionRouter({
-                ckanRedirectionDomain: argv.ckanRedirectionDomain,
-                ckanRedirectionPath: argv.ckanRedirectionPath,
-                registryApiBaseUrlInternal: routes.registry.to
-            })
-        );
-    }
-}
-
-// Proxy any other URL to magda-web
-app.use("/", createGenericProxy(argv.web));
+const app = buildApp(argv);
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);

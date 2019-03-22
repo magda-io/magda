@@ -1,4 +1,29 @@
 import * as httpProxy from "http-proxy";
+import groupBy = require("lodash/groupBy");
+
+const DO_NOT_PROXY_HEADERS = [
+    "Host",
+    "X-Forwarded-Host",
+    "Proxy-Connection",
+    "Connection",
+    "Keep-Alive",
+    "Transfer-Encoding",
+    "TE",
+    "Trailer",
+    "Proxy-Authorization",
+    "Proxy-Authenticate",
+    "Upgrade",
+    "Expires",
+    "pragma",
+    "Strict-Transport-Security",
+    "Authorization",
+    "Cookie"
+];
+
+const headerLookup = groupBy(
+    DO_NOT_PROXY_HEADERS.map(x => x.toLowerCase()),
+    (x: string) => x
+);
 
 export default function createBaseProxy(): httpProxy {
     const proxy = httpProxy.createProxyServer({
@@ -13,6 +38,17 @@ export default function createBaseProxy(): httpProxy {
         console.error(err);
 
         res.end("Something went wrong.");
+    });
+
+    proxy.on("proxyReq", function(proxyReq, req, res) {
+        // Presume that we've already got whatever auth details we need out of the request and so remove it now.
+        // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
+        // be leaking auth details to wherever it proxies to.
+        for (let headerName of proxyReq.getHeaderNames()) {
+            if (!!headerLookup[headerName.toLowerCase()]) {
+                proxyReq.removeHeader(headerName);
+            }
+        }
     });
 
     proxy.on("proxyRes", function(proxyRes, req, res) {
