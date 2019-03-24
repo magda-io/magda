@@ -61,12 +61,18 @@ spec:
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
-            "--web", "http://terria-map:3001",
+{{- if .Values.web }}
+            "--web", {{ .Values.web | quote }},
+{{- end }}
             "--authorizationApi", "http://authorization-api/v0",
             "--registryApi", "http://registry-api/v0",
             "--previewMap", "http://preview-map:6110",
-            "--enableMultiTenants", "true",
-            "--magdaAdminPortalName", "admin-multi-tenant.dev.magda.io"
+{{- if .Values.enableMultiTenants }}
+            "--enableMultiTenants", {{ .Values.enableMultiTenants | quote }},
+{{- end }}
+{{- if .Values.magdaAdminPortalName }}
+            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
+{{- end }}
         ]
         volumeMounts:
           - name: config

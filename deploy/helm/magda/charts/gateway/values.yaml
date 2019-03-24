@@ -56,9 +56,6 @@ csp:
     scriptSrc:
     - "''self''"
     - "''unsafe-inline''"
-    - "*.terria.magda"
-    - "https://cdn.polyfill.io"
-    - "https://dev.virtualearth.net"
     - browser-update.org
     objectSrc:
     - "''none''"

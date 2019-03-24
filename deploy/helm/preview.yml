@@ -25,6 +25,9 @@ gateway:
   enableAuthEndpoint: true
   enableHttpsRedirection: true
   enableCkanRedirection: false
+  enableMultiTenants: true  
+  magdaAdminPortalName: admin-multi-tenant.dev.magda.io
+  web: http://terria-map:3001
   helmet:
     frameguard: false
   cors:
@@ -35,6 +38,9 @@ gateway:
       scriptSrc:
       - "''self''"
       - "''unsafe-inline''"
+      - "*.dev.magda.io"
+      - "https://cdn.polyfill.io"
+      - "https://dev.virtualearth.net"
       - browser-update.org
       objectSrc:
       - "''none''"
