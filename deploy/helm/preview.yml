@@ -16,6 +16,10 @@ ingress:
   ingressClass: nginx
   enableTls: true
   useDefaultCertificate: true
+
+registry-api:
+  skipAuthorization: true
+  
 gateway:
   auth:
     facebookClientId: "173073926555600"
