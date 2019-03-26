@@ -14,6 +14,7 @@ import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 import EmailTemplateRender from "./EmailTemplateRender";
+
 export interface ApiRouterOptions {
     registry: RegistryClient;
     templateRender: EmailTemplateRender;
@@ -153,8 +154,31 @@ export default function createApiRouter(
             const promise = getDataset(req.params.datasetId).then(dataset => {
                 const dcatDatasetStrings =
                     dataset.aspects["dcat-dataset-strings"];
-
-                const { contactPoint } = dcatDatasetStrings;
+                const datasetPublisher = dataset.aspects["dataset-publisher"];
+                const datasetPublisherEmail =
+                    datasetPublisher &&
+                    datasetPublisher.publisher &&
+                    datasetPublisher.publisher.aspects[
+                        "organization-details"
+                    ] &&
+                    datasetPublisher.publisher.aspects["organization-details"]
+                        .email
+                        ? datasetPublisher.publisher.aspects[
+                              "organization-details"
+                          ].email
+                        : undefined;
+                const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/;
+                const contactPoint =
+                    (dcatDatasetStrings.contactPoint ||
+                        datasetPublisherEmail) &&
+                    (
+                        dcatDatasetStrings.contactPoint || datasetPublisherEmail
+                    ).match(emailRegex)
+                        ? (
+                              dcatDatasetStrings.contactPoint ||
+                              datasetPublisherEmail
+                          ).match(emailRegex)[1]
+                        : undefined;
 
                 const validContactPoint =
                     contactPoint && emailValidator.validate(contactPoint);
@@ -162,7 +186,11 @@ export default function createApiRouter(
                 const recipient = validContactPoint
                     ? contactPoint
                     : options.defaultRecipient;
-
+                if (!validContactPoint) {
+                    body.note = `You are getting this email because the contact point '${
+                        dcatDatasetStrings.contactPoint
+                    }' on the dataset and ‘${datasetPublisherEmail}’ on the organisation is not a valid email address`;
+                }
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
@@ -201,7 +229,7 @@ export default function createApiRouter(
             .getRecord(
                 encodeURIComponent(datasetId),
                 ["dcat-dataset-strings"],
-                [],
+                ["dataset-publisher"],
                 false
             )
             .then(result => unionToThrowable(result));
