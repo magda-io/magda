@@ -32,7 +32,7 @@ defaultRoutes:
     to: http://registry-api-read-only/v0
   registry-auth:
     to: http://registry-api/v0
-    auth: false
+    auth: true
   auth:
     to: http://authorization-api/v0/public
     auth: true
