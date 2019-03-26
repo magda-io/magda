@@ -57,7 +57,7 @@ jobs:
             - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
             - run: cd /tmp/workspace && tree -C
             - run: sentry-cli releases new $CIRCLE_SHA1
-            - run: sentry-cli releases files $CIRCLE_SHA1 upload-sourcemaps --ext js --ext ts --ext map magda-web-client/build
+            - run: sentry-cli releases files $CIRCLE_SHA1 upload-sourcemaps --ext js --ext ts --ext map build
             - run: cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
 
 workflows:
