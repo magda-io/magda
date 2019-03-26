@@ -6,6 +6,7 @@ UI:
 -   Integrate sentry release notification and source map upload
 -   Added "role" to account page
 -   Fixed clicking out of search filter causes the results to refetch
+-   Provide access to CKAN Data API for enabled resources
 
 Others:
 

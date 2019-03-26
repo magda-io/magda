@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="16px" viewBox="0 0 18 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>icon/download-24</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="dataset_final" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-1035.000000, -2146.000000)">
+        <g id="Group" transform="translate(1024.000000, 2134.000000)">
+            <g id="button/download">
+                <g id="icon/download-24" transform="translate(8.000000, 8.000000)">
+                    <rect id="Rectangle-Copy-7" x="0" y="0" width="24" height="24"></rect>
+                    <path d="M11,11.5857864 L11,5 C11,4.44771525 11.4477153,4 12,4 C12.5522847,4 13,4.44771525 13,5 L13,11.5857864 L15.2928932,9.29289322 C15.6834175,8.90236893 16.3165825,8.90236893 16.7071068,9.29289322 C17.0976311,9.68341751 17.0976311,10.3165825 16.7071068,10.7071068 L12.7071068,14.7071068 C12.3165825,15.0976311 11.6834175,15.0976311 11.2928932,14.7071068 L7.29289322,10.7071068 C6.90236893,10.3165825 6.90236893,9.68341751 7.29289322,9.29289322 C7.68341751,8.90236893 8.31658249,8.90236893 8.70710678,9.29289322 L11,11.5857864 Z M4,20 C3.44771525,20 3,19.5522847 3,19 C3,18.4477153 3.44771525,18 4,18 L20,18 C20.5522847,18 21,18.4477153 21,19 C21,19.5522847 20.5522847,20 20,20 L4,20 Z" id="Combined-Shape" fill="#ffffff" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
