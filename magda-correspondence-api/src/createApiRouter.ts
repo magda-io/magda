@@ -155,18 +155,10 @@ export default function createApiRouter(
                 const dcatDatasetStrings =
                     dataset.aspects["dcat-dataset-strings"];
                 const datasetPublisher = dataset.aspects["dataset-publisher"];
-                const datasetPublisherEmail =
-                    datasetPublisher &&
-                    datasetPublisher.publisher &&
-                    datasetPublisher.publisher.aspects[
-                        "organization-details"
-                    ] &&
-                    datasetPublisher.publisher.aspects["organization-details"]
-                        .email
-                        ? datasetPublisher.publisher.aspects[
-                              "organization-details"
-                          ].email
-                        : undefined;
+                const datasetPublisherEmail: string | undefined = _.get(
+                    datasetPublisher,
+                    "publisher.aspects.organization-details.email"
+                );
                 const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/;
                 const contactPoint =
                     (dcatDatasetStrings.contactPoint ||
