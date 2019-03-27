@@ -5,11 +5,13 @@ UI:
 -   Updated design system components
 -   Integrate sentry release notification and source map upload
 -   Added "role" to account page
+-   Fixed clicking out of search filter causes the results to refetch
 
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
 -   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
+-   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
 
 ## 0.0.54
 
