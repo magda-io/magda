@@ -255,7 +255,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 22,
+      version = 23,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
       createIndex(indices.getIndex(config, Indices.RegionsIndex))
@@ -411,44 +411,63 @@ object IndexDefinition extends DefaultJsonProtocol {
           val shortName = regionSource.shortNameProperty.map(shortNameProp =>
             properties.fields(shortNameProp).convertTo[String])
 
+          // --- allow simplifyToleranceRatio to be specified per file or per region
+          val simplifyToleranceRatio:Double = properties
+            .getFields("simplifyToleranceRatio")
+            .headOption.map(_.convertTo[Double])
+            .getOrElse(regionSource.simplifyToleranceRatio)
+
+          // --- allow requireSimplify to be specified per file or per region
+          val requireSimplify:Boolean = properties
+            .getFields("requireSimplify")
+            .headOption.map(_.convertTo[Boolean])
+            .getOrElse(regionSource.requireSimplify)
+
           val geometryOpt = jsonRegion.fields("geometry") match {
             case (jsGeometry: JsObject) =>
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
-              val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
-              val shortestSide = {
-                val env = jtsGeo.getEnvelopeInternal
-                Math.min(env.getWidth, env.getHeight)
+              if (!requireSimplify) {
+                logger.info("Skipped simplifying GeoData {}/{}/{}", regionSource.idProperty, id, name)
+                Some(geometry)
+              } else {
+
+                val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
+
+                val shortestSide = {
+                  val env = jtsGeo.getEnvelopeInternal
+                  Math.min(env.getWidth, env.getHeight)
+                }
+                val simplified =
+                  TopologyPreservingSimplifier.simplify(
+                    jtsGeo,
+                    shortestSide * simplifyToleranceRatio
+                  )
+
+                def removeInvalidHoles(polygon: Polygon): Polygon = {
+                  val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
+                  val filteredHoles = holes.filter(_.within(simplified))
+                  new Polygon(
+                    polygon.getExteriorRing.asInstanceOf[LinearRing],
+                    filteredHoles.toArray,
+                    geometryFactory
+                  )
+                }
+
+                // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
+                val simplifiedFixed: Geometry = simplified.getGeometryType match {
+                  case "Polygon" =>
+                    val x = simplified.asInstanceOf[Polygon]
+                    removeInvalidHoles(x)
+                  case "MultiPolygon" =>
+                    val x = simplified.asInstanceOf[MultiPolygon]
+                    val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[Polygon])
+                    new MultiPolygon(geometries.toArray, geometryFactory)
+                  case _ => simplified
+                }
+
+                Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
               }
-              val simplified =
-                TopologyPreservingSimplifier.simplify(
-                  jtsGeo,
-                  shortestSide / 100
-                )
-
-              def removeInvalidHoles(polygon: Polygon): Polygon = {
-                val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
-                val filteredHoles = holes.filter(_.within(simplified))
-                new Polygon(
-                  polygon.getExteriorRing.asInstanceOf[LinearRing],
-                  filteredHoles.toArray,
-                  geometryFactory
-                )
-              }
-
-              // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
-              val simplifiedFixed: Geometry = simplified.getGeometryType match {
-                case "Polygon" =>
-                  val x = simplified.asInstanceOf[Polygon]
-                  removeInvalidHoles(x)
-                case "MultiPolygon" =>
-                  val x = simplified.asInstanceOf[MultiPolygon]
-                  val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[Polygon])
-                  new MultiPolygon(geometries.toArray, geometryFactory)
-                case _ => simplified
-              }
-
-              Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
             case _ => None
           }
 
@@ -490,13 +509,20 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result match {
-          case failure:RequestFailure => logger.error("Failure: {}", failure.error)
+          case failure:RequestFailure =>
+            logger.error("Failure: {}", failure.error)
+            0
           case results:RequestSuccess[BulkResponse] =>
-            logger.debug(
-              "Took {} seconds to execute request.",
-              results.result.took
-            )
-            results.result.successes.size
+            if(result.result.errors) {
+              logger.error("Failure: {}", result.body)
+              0
+            } else {
+              logger.debug(
+                "Took {} seconds to execute request.",
+                results.result.took
+              )
+              results.result.successes.size
+            }
         }
       }
       .recover {
