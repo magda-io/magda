@@ -23,7 +23,7 @@ export default function MatchingStatus(props: {
         return (
             <div>
                 <div className="no-matching">
-                    <AUpageAlert>
+                    <AUpageAlert as="info">
                         <p>
                             <strong>
                                 Sorry, we couldn't find any datasets that match
