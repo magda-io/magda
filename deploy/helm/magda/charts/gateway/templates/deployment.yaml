@@ -61,9 +61,7 @@ spec:
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
-{{- if .Values.web }}
-            "--web", {{ .Values.web | quote }},
-{{- end }}
+            "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
             "--registryApi", "http://registry-api/v0",
             "--previewMap", "http://preview-map:6110",
