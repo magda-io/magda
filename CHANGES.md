@@ -40,6 +40,10 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
+-   Added Geo Spatial Data Validation to Indexer
+-   Added `simplifyToleranceRatio` & `requireSimplify` Parameters to Indexer & Allow them to be configured per file & per data
+-   Used manual simplified STE region data
+-   Fixed timeout issue when filter by WA state
 
 Others:
 
