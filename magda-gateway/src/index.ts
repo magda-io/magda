@@ -4,11 +4,6 @@ import * as _ from "lodash";
 import buildApp from "./buildApp";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
-// Tell typescript about the semi-private __express field of ejs.
-declare module "ejs" {
-    var __express: any;
-}
-
 const coerceJson = (path?: string) => path && require(path);
 
 const argv = addJwtSecretFromEnvVar(
@@ -200,7 +195,7 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
-const app = buildApp(argv);
+const app = buildApp(argv as any);
 
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);

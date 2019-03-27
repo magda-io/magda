@@ -20,7 +20,7 @@ const DO_NOT_PROXY_HEADERS = [
     "Cookie"
 ];
 
-const headerLookup = groupBy(
+const doNotProxyHeaderLookup = groupBy(
     DO_NOT_PROXY_HEADERS.map(x => x.toLowerCase()),
     (x: string) => x
 );
@@ -44,8 +44,10 @@ export default function createBaseProxy(): httpProxy {
         // Presume that we've already got whatever auth details we need out of the request and so remove it now.
         // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
         // be leaking auth details to wherever it proxies to.
-        for (let headerName of proxyReq.getHeaderNames()) {
-            if (!!headerLookup[headerName.toLowerCase()]) {
+        const headerNames = proxyReq.getHeaderNames();
+        for (let i = 0; i < headerNames.length; i++) {
+            const headerName = headerNames[i];
+            if (!!doNotProxyHeaderLookup[headerName]) {
                 proxyReq.removeHeader(headerName);
             }
         }

@@ -18,6 +18,12 @@ import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
+import { ProxyTarget } from "./createApiRouter";
+
+// Tell typescript about the semi-private __express field of ejs.
+declare module "ejs" {
+    var __express: any;
+}
 
 type Route = {
     to: string;
@@ -33,7 +39,9 @@ type Config = {
     externalUrl: string;
     dbHost: string;
     dbPort: number;
-    proxyRoutesJson: string;
+    proxyRoutesJson: {
+        [localRoute: string]: ProxyTarget;
+    };
     helmetJson: string;
     cspJson: string;
     corsJson: string;
@@ -101,7 +109,6 @@ export default function buildApp(config: Config) {
     // Set sensible secure headers
     app.disable("x-powered-by");
     app.use(helmet(_.merge({}, defaultConfig.helmet, config.helmetJson as {})));
-    console.log(_.merge({}, defaultConfig.csp, config.cspJson));
     app.use(
         helmet.contentSecurityPolicy(
             _.merge({}, defaultConfig.csp, config.cspJson)

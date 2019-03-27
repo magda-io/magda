@@ -10,8 +10,8 @@ import * as supertest from "supertest";
 import buildApp from "../buildApp";
 
 const PROXY_ROOTS = {
-    "/v0/api/registry": "http://registry.example.com/",
-    "/preview-map": "http://preview-map.example.com"
+    "/api/v0/registry": "http://registry",
+    "/preview-map": "http://preview-map/"
 };
 
 describe("proxying", () => {
@@ -19,28 +19,35 @@ describe("proxying", () => {
 
     before(() => {
         // registryScope = nock(registryUrl);
+        // nock.disableNetConnect();
     });
 
     after(() => {
         nock.cleanAll();
+        // nock.enableNetConnect();
     });
 
     beforeEach(() => {
         app = buildApp({
             listenPort: 80,
-            externalUrl: "https://example.com",
+            externalUrl: "http://127.0.0.1",
             dbHost: "localhost",
             dbPort: 5432,
-            proxyRoutesJson: "{}",
+            proxyRoutesJson: {
+                registry: {
+                    to: "http://registry",
+                    auth: true
+                }
+            },
             helmetJson: "{}",
             cspJson: "{}",
             corsJson: "{}",
-            authorizationApi: "https://example.com",
+            authorizationApi: "http://127.0.0.1",
             sessionSecret: "secret",
             jwtSecret: "othersecret",
             userId: "123",
-            web: "https://example.com",
-            previewMap: "https://preview-map"
+            web: "https://127.0.0.1",
+            previewMap: "http://preview-map"
         });
     });
 
@@ -50,19 +57,28 @@ describe("proxying", () => {
         }
     });
 
-    _.map(PROXY_ROOTS, (key, value) => {
+    _.map(PROXY_ROOTS, (value, key) => {
         describe(`when proxying ${key} to ${value}`, () => {
-            it("doesn't pass auth headers through", () => {
+            it("proxies requests", () => {
                 nock(value)
-                    .get("/", null, {
-                        badheaders: ["Authorization"]
-                    })
-                    .reply((uri, body, cb) => {
-                        return 200;
-                    });
+                    .get("/")
+                    .reply(200);
 
-                supertest(app)
+                return supertest(app)
                     .get(key)
+                    .expect(200);
+            });
+
+            it("doesn't pass auth headers through", () => {
+                nock(value, {
+                    badheaders: ["Authorization"]
+                })
+                    .get("/")
+                    .reply(200);
+
+                return supertest(app)
+                    .get(key)
+                    .set("Authorization", "blah")
                     .expect(200);
             });
         });

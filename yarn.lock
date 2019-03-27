@@ -13789,6 +13789,20 @@ nock@^9.0.14, nock@^9.1.6, nock@^9.2.5:
     qs "^6.5.1"
     semver "^5.5.0"
 
+"nock@git://github.com/magda-io/nock.git#master":
+  version "0.0.0-development"
+  resolved "git://github.com/magda-io/nock.git#b82b93a80b4893f39bbdd83a81dd4db610894f2a"
+  dependencies:
+    chai "^4.1.2"
+    debug "^4.1.0"
+    deep-equal "^1.0.0"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.5"
+    mkdirp "^0.5.0"
+    propagate "^1.0.0"
+    qs "^6.5.1"
+    semver "^5.5.0"
+
 node-dir@^0.1.10:
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/node-dir/-/node-dir-0.1.17.tgz#5f5665d93351335caabef8f1c554516cf5f1e4e5"
