@@ -1,0 +1,47 @@
+[
+    {
+        "id": "R01",
+        "name": "Anonymous Users",
+        "permissions": ["P020"]
+    },
+    {
+        "id": "R01",
+        "name": "Anonymous Users",
+        "permissions": ["P020"]
+    },
+    {
+        "id": "R02",
+        "name": "Standard Users / Data Producer",
+        "permissions": ["P016", "P017", "P003", "P005", "P007"]
+    },
+    {
+        "id": "R03",
+        "name": "Data Steward Users",
+        "permissions": ["P016", "P017", "P003", "P004", "P006", "P008", "P019"]
+    },
+    {
+        "id": "R04",
+        "name": "Managers",
+        "permissions": ["P016", "P017", "P003", "P004", "P006", "P010"]
+    },
+    {
+        "id": "R05",
+        "name": "Senior Managers",
+        "permissions": [
+            "P016",
+            "P017",
+            "P003",
+            "P004",
+            "P006",
+            "P008",
+            "P019",
+            "P020",
+            "P010"
+        ]
+    },
+    {
+        "id": "R06",
+        "name": "Data Administrators (System)",
+        "permissions": ["P009"]
+    }
+]

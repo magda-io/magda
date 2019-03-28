@@ -1,0 +1,154 @@
+[
+    {
+        "id": "P001",
+        "name": "View Non-Draft Dataset",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": ["OP008"]
+    },
+    {
+        "id": "P002",
+        "name": "View Draft Dataset",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": ["OP007"]
+    },
+    {
+        "id": "P003",
+        "name": "Create Draft Dataset (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP006"]
+    },
+    {
+        "id": "P004",
+        "name": "Update Draft Dataset (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP009"]
+    },
+    {
+        "id": "P005",
+        "name": "Update Draft Dataset (Own Dataset)",
+        "res_id": "RES02",
+        "user_ownership_constraint": true,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": ["OP009"]
+    },
+    {
+        "id": "P006",
+        "name": "Delete Draft Dataset (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP010"]
+    },
+    {
+        "id": "P007",
+        "name": "Delete Draft Dataset (Own Dataset)",
+        "res_id": "RES02",
+        "user_ownership_constraint": true,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": ["OP010"]
+    },
+    {
+        "id": "P008",
+        "name": "Dataset Publish / Unpublish (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP011", "OP012"]
+    },
+    {
+        "id": "P009",
+        "name": "Data Administration (System)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": [
+            "OP006",
+            "OP007",
+            "OP008",
+            "OP009",
+            "OP010",
+            "OP011",
+            "OP012"
+        ]
+    },
+    {
+        "id": "P010",
+        "name": "User Administration (Within Org Unit)",
+        "res_id": "RES01",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP001", "OP002", "OP003", "OP004", "OP005"]
+    },
+    {
+        "id": "P011",
+        "name": "User Administration (System wide)",
+        "res_id": "RES01",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": false,
+        "operations": ["OP001", "OP002", "OP003", "OP004", "OP005"]
+    },
+    {
+        "id": "P016",
+        "name": "View Non-Draft Dataset (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP008"]
+    },
+    {
+        "id": "P017",
+        "name": "View Draft Dataset (Within Org Unit)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP007"]
+    },
+    {
+        "id": "P018",
+        "name": "Update Published Dataset (Licence Info Only)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP029"]
+    },
+    {
+        "id": "P019",
+        "name": "Update Published Dataset (Non-Licence Info Only)",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": true,
+        "pre-authorised_constraint": false,
+        "operations": ["OP030"]
+    },
+    {
+        "id": "P020",
+        "name": "Anonymous Users Published Dataset Read-Only",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre-authorised_constraint": true,
+        "operations": ["OP008"]
+    }
+]

@@ -1,0 +1,74 @@
+[
+    {
+        "id": "RES01",
+        "name": "user",
+        "user_ownership_support": true,
+        "org_unit_ownership_support": true,
+        "operations": [
+            {
+                "id": "OP001",
+                "name": "Create User"
+            },
+            {
+                "id": "OP002",
+                "name": "View User"
+            },
+            {
+                "id": "OP003",
+                "name": "Update User"
+            },
+            {
+                "id": "OP004",
+                "name": "Delete User"
+            },
+            {
+                "id": "OP005",
+                "name": "Disable User"
+            }
+        ]
+    },
+    {
+        "id": "RES02",
+        "name": "dataset",
+        "user_ownership_support": true,
+        "org_unit_ownership_support": true,
+        "operations": [
+            {
+                "id": "OP006",
+                "name": "Create Draft Dataset"
+            },
+            {
+                "id": "OP007",
+                "name": "Read Draft Dataset"
+            },
+            {
+                "id": "OP008",
+                "name": "Read Published Dataset"
+            },
+            {
+                "id": "OP009",
+                "name": "Update Draft Dataset"
+            },
+            {
+                "id": "OP010",
+                "name": "Delete Draft Dataset"
+            },
+            {
+                "id": "OP011",
+                "name": "Publish Dataset"
+            },
+            {
+                "id": "OP012",
+                "name": "Unpublish Dataset"
+            },
+            {
+                "id": "OP029",
+                "name": "Update Published Dataset (Licence Info Only)"
+            },
+            {
+                "id": "OP030",
+                "name": "Update Published Dataset (Non-Licence Info)"
+            }
+        ]
+    }
+]

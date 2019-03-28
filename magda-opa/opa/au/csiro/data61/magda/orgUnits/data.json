@@ -1,0 +1,32 @@
+[
+    {
+        "id": "OU01",
+        "name": "Department of Agriculture and Water Resources",
+        "managing_org_units": ["OU02", "OU03"]
+    },
+    {
+        "id": "OU02",
+        "name": "Water Division",
+        "managing_org_units": ["OU04", "OU05"]
+    },
+    {
+        "id": "OU03",
+        "name": "Export Division",
+        "managing_org_units": ["OU06"]
+    },
+    {
+        "id": "OU04",
+        "name": "National Water Policy branch",
+        "managing_org_units": []
+    },
+    {
+        "id": "OU05",
+        "name": "Water Recovery branch",
+        "managing_org_units": []
+    },
+    {
+        "id": "OU06",
+        "name": "Export Standards branch",
+        "managing_org_units": []
+    }
+]
