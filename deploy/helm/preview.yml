@@ -18,14 +18,17 @@ ingress:
   useDefaultCertificate: true
   
 gateway:
+  ckanRedirectionDomain: "ckan.data.gov.au"
+  ckanRedirectionPath: ""
+  enableCkanRedirection: true
+  enableAuthEndpoint: true
+  enableHttpsRedirection: true
   auth:
     facebookClientId: "173073926555600"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+    ckanAuthenticationUrl: https://data.gov.au/data
   autoscaler:
     enabled: false
-  enableAuthEndpoint: true
-  enableHttpsRedirection: true
-  enableCkanRedirection: false
   helmet:
     frameguard: false
   cors:
@@ -40,8 +43,6 @@ gateway:
       objectSrc:
       - "''none''"
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
-  auth:
-    ckanAuthenticationUrl: https://data.gov.au/data
       
 combined-db:
   waleBackup:

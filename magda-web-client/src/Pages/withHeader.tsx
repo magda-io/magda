@@ -1,5 +1,6 @@
 import React, { ComponentType } from "react";
 import { connect } from "react-redux";
+import { memoize } from "lodash";
 
 import Header from "../Components/Header/Header";
 import SearchBoxSwitcher from "../Components/SearchBox/SearchBoxSwitcher";
@@ -59,4 +60,4 @@ const withHeader = <P extends {}>(
     return connect(mapStateToProps)(NewComponent);
 };
 
-export default withHeader;
+export default memoize(withHeader);

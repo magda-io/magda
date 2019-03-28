@@ -9,9 +9,19 @@ Registry:
 Gateway:
 
 -   Add tenant ID header to client requests.
+UI:
+
+-   Updated design system components
+-   Integrate sentry release notification and source map upload
+-   Added "role" to account page
+-   Fixed clicking out of search filter causes the results to refetch
+
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
+-   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
+-   Fixed Unable to use Google / Facebook Login on Preview Site
+-   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
 
 ## 0.0.54
 
@@ -41,6 +51,10 @@ Indexer:
 
 -   Fixed issues of snapshot creation & restore
 -   Indexer will auto reopen index if it's closed
+-   Added Geo Spatial Data Validation to Indexer
+-   Added `simplifyToleranceRatio` & `requireSimplify` Parameters to Indexer & Allow them to be configured per file & per data
+-   Used manual simplified STE region data
+-   Fixed timeout issue when filter by WA state
 
 Others:
 

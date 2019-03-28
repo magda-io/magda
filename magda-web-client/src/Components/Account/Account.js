@@ -33,7 +33,7 @@ class Account extends React.Component {
                         <Breadcrumbs
                             breadcrumbs={[
                                 <li key="account">
-                                    <span>Acount</span>
+                                    <span>Account</span>
                                 </li>
                             ]}
                         />
@@ -53,6 +53,12 @@ class Account extends React.Component {
                             <h1>Account</h1>
                             <p>Display Name: {this.props.user.displayName}</p>
                             <p>Email: {this.props.user.email}</p>
+                            <p>
+                                Role:{" "}
+                                {this.props.user.isAdmin
+                                    ? "Admin"
+                                    : "Data User"}
+                            </p>
                         </div>
                     )}
                 </div>

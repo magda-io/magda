@@ -12,7 +12,13 @@ module.exports = {
             }
         },
         {
-            files: ["**/*.yml", "**/*.yaml"],
+            files: [
+                "**/*.yml",
+                "**/*.yaml",
+                "**/.*.yaml",
+                "**/.*.yml",
+                "**/*.yaml"
+            ],
             options: {
                 tabWidth: 2
             }

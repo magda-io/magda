@@ -3,14 +3,15 @@ package au.csiro.data61.magda.model
 import java.time.OffsetDateTime
 
 import com.monsanto.labs.mwundo.GeoJson._
-
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
+import au.csiro.data61.magda.spatial.GeoJsonValidator
 import spray.json._
+
 import scala.runtime.ScalaRunTime
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 package misc {
   sealed trait FacetType {
@@ -47,7 +48,8 @@ package misc {
     hitCount: Long,
     upperBound: Option[Int] = None,
     lowerBound: Option[Int] = None,
-    matched: Boolean = false)
+    matched: Boolean = false,
+    countErrorUpperBound: Long = 0)
 
 
   final case class ReadyStatus(ready: Boolean = false)
@@ -137,6 +139,8 @@ package misc {
           }
         case x => x
       }
+
+      processedGeoJson.foreach(geoJson => GeoJsonValidator.validate(geoJson))
 
       new Location(Some(text), processedGeoJson)
     }
@@ -442,7 +446,7 @@ package misc {
     implicit val distributionFormat = jsonFormat13(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat17(Agent.apply)
-    implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
+    implicit val facetOptionFormat = jsonFormat7(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
 

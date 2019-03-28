@@ -15,7 +15,9 @@ case class RegionSource(
   shortNameProperty: Option[String],
   includeIdInName: Boolean,
   disabled: Boolean,
-  order: Int)
+  order: Int,
+  simplifyToleranceRatio: Double = 0.01,
+  requireSimplify: Boolean = true)
 
 object RegionSource {
   def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
@@ -40,7 +42,16 @@ class RegionSources(config: Config) {
           shortNameProperty = if (regionSourceConfig.hasPath("shortNameField")) Some(regionSourceConfig.getString("shortNameField")) else None,
           includeIdInName = if (regionSourceConfig.hasPath("includeIdInName")) regionSourceConfig.getBoolean("includeIdInName") else false,
           disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
-          order = regionSourceConfig.getInt("order"))
+          order = regionSourceConfig.getInt("order"),
+          simplifyToleranceRatio =
+            if (regionSourceConfig.hasPath("simplifyToleranceRatio"))
+              regionSourceConfig.getDouble("simplifyToleranceRatio")
+            else 0.01,
+          requireSimplify =
+            if (regionSourceConfig.hasPath("requireSimplify"))
+              regionSourceConfig.getBoolean("requireSimplify")
+            else true
+        )
     }.toSeq.filterNot(_.disabled)
   }
 }

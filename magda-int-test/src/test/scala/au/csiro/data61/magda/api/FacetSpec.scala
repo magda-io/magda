@@ -181,7 +181,9 @@ class FacetSpec extends BaseSearchApiSpec {
                 matched.foreach { option ⇒
 
                   withClue(s"For option ${option} and grouped datasets ${groupedResults} and all options ${facet.options}") {
-                    groupedResults(option.value).toLong should equal(option.hitCount)
+                    groupedResults.get(option.value).foreach { x =>
+                      x.toLong should equal(option.hitCount)
+                    }
                   }
                 }
               }
@@ -358,7 +360,7 @@ class FacetSpec extends BaseSearchApiSpec {
 
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
 
-      describe("should have identifiers") {
+      describe("should have identifiers except user selected option with 0 hitCount") {
         implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
           Stream.empty
         }
@@ -389,8 +391,10 @@ class FacetSpec extends BaseSearchApiSpec {
 
                   withClue("publishers " + publisherLookup) {
                     facet.options.foreach { x =>
-                      val matchedPublishers = publisherLookup(x.value.toLowerCase)
-                      matchedPublishers.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                      val matchedPublishers = publisherLookup.get(x.value.toLowerCase)
+                      if(matchedPublishers.isDefined && ( !x.matched || x.hitCount != 0 )) {
+                        matchedPublishers.get.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                      }
                     }
                   }
                 }
@@ -402,52 +406,6 @@ class FacetSpec extends BaseSearchApiSpec {
           }
         }
 
-        it("for exact match facets") {
-          implicit def indexShrinker(implicit a: Shrink[(String, List[DataSet], Route)], b: Shrink[Int], c: Shrink[(String, Query)], d: Shrink[Seq[Agent]]) = Shrink[((String, List[DataSet], Route), Int, (String, Query), Seq[Agent])] {
-            case _ =>
-              Stream.empty
-          }
-
-          val exactMatchMerges = for {
-            tuple <- mediumIndexGen
-            (indexName, dataSets, routes) = tuple
-            facetSize <- Gen.posNum[Int]
-            actualPublishers <- Gen.someOf(dataSets.flatMap(_.publisher))
-            uuid <- Gen.uuid
-            query = Query(freeText = Some(s""""${uuid.toString}""""), publishers = actualPublishers.flatMap(_.name).map(x => Specified(x)).toSet)
-            textQuery <- textQueryGen(query)
-          } yield (tuple, facetSize, textQuery, actualPublishers)
-
-          forAll(exactMatchMerges) {
-            case (tuple, facetSize, textQuery, publishers) ⇒
-              val (indexName, dataSets, routes) = tuple
-
-              Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
-                status shouldBe OK
-
-                val result = responseAs[SearchResult]
-
-                val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
-
-                val exactMatchFacets = facet.options.filter(option => option.matched && option.hitCount == 0)
-
-                val publisherLookup = dataSets
-                  .flatMap(_.publisher)
-                  .groupBy(_.name.get.toLowerCase)
-
-                whenever(exactMatchFacets.size > 0) {
-                  exactMatchFacets.foreach { filterValue =>
-                    withClue(s"with publishers ${publisherLookup.map(x => (x._1, x._2.map(_.identifier)))} and facet ${filterValue.toString}") {
-                      filterValue.identifier should not be (None)
-                      publisherLookup.contains(filterValue.value.toLowerCase) should be(true)
-                      val matchedPublishers = publisherLookup(filterValue.value.toLowerCase)
-                      matchedPublishers.exists(publisher => publisher.identifier.get.equals(filterValue.identifier.get)) should be(true)
-                    }
-                  }
-                }
-              }
-          }
-        }
       }
 
     }
