@@ -2,22 +2,20 @@ import * as httpProxy from "http-proxy";
 import groupBy = require("lodash/groupBy");
 
 const DO_NOT_PROXY_HEADERS = [
-    "Host",
-    "X-Forwarded-Host",
-    "Proxy-Connection",
     "Connection",
+    "Proxy-Connection",
     "Keep-Alive",
-    "Transfer-Encoding",
-    "TE",
-    "Trailer",
     "Proxy-Authorization",
     "Proxy-Authenticate",
+    "TE",
+    "Trailer",
+    "Transfer-Encoding",
     "Upgrade",
-    "Expires",
-    "pragma",
-    "Strict-Transport-Security",
     "Authorization",
-    "Cookie"
+    "Cookie",
+    "Cookie2",
+    "Set-Cookie",
+    "Set-Cookie2"
 ];
 
 const doNotProxyHeaderLookup = groupBy(
@@ -27,7 +25,8 @@ const doNotProxyHeaderLookup = groupBy(
 
 export default function createBaseProxy(): httpProxy {
     const proxy = httpProxy.createProxyServer({
-        prependUrl: false
+        prependUrl: false,
+        changeOrigin: true
     } as httpProxy.ServerOptions);
 
     proxy.on("error", function(err: any, req: any, res: any) {
@@ -64,6 +63,7 @@ export default function createBaseProxy(): httpProxy {
         ) {
             proxyRes.headers["Cache-Control"] = "public, max-age=60";
         }
+
         /**
          * Remove security sensitive headers
          * `server` header is from scala APIs

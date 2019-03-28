@@ -1,11 +1,10 @@
 import {} from "mocha";
 import * as sinon from "sinon";
 import * as express from "express";
-// import { expect } from "chai";
 import * as nock from "nock";
 import * as _ from "lodash";
 import * as supertest from "supertest";
-// import * as URI from "urijs";
+import * as URI from "urijs";
 
 import buildApp from "../buildApp";
 
@@ -17,14 +16,8 @@ const PROXY_ROOTS = {
 describe("proxying", () => {
     let app: express.Application;
 
-    before(() => {
-        // registryScope = nock(registryUrl);
-        // nock.disableNetConnect();
-    });
-
     after(() => {
         nock.cleanAll();
-        // nock.enableNetConnect();
     });
 
     beforeEach(() => {
@@ -79,6 +72,23 @@ describe("proxying", () => {
                 return supertest(app)
                     .get(key)
                     .set("Authorization", "blah")
+                    .expect(200);
+            });
+
+            it("should rewrite host header", () => {
+                nock(value, {
+                    reqheaders: {
+                        host: URI(value).host()
+                    }
+                })
+                    .get("/")
+                    .reply(() => {
+                        return 200;
+                    });
+
+                return supertest(app)
+                    .get(key)
+                    .set("Host", "test")
                     .expect(200);
             });
         });
