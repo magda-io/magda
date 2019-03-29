@@ -70,7 +70,7 @@ buildtest:search-with-index-cache:
     - docker info
     - apk update
     - apk upgrade
-    - apk add python python-dev py-pip build-base
+    - apk add python3 python3-dev py3-pip build-base
     - pip install docker-compose
     - docker-compose --version
   cache:
@@ -126,7 +126,7 @@ buildtest:search-no-index-cache:
     - docker info
     - apk update
     - apk upgrade
-    - apk add python python-dev py-pip build-base
+    - apk add python3 python3-dev py3-pip build-base
     - pip install docker-compose
     - docker-compose --version
   cache:
