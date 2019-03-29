@@ -3,14 +3,14 @@
         "id": "U01",
         "name": "Malcolm Thompson",
         "job_title": "Deputy Secretary",
-        "roles": ["R04", "R03"],
+        "roles": ["R05", "R03"],
         "org_unit": "OU01"
     },
     {
         "id": "U02",
         "name": "Paul Morris",
         "job_title": "First Assistant Secretary",
-        "roles": ["R04", "R03"],
+        "roles": ["R05", "R03"],
         "org_unit": "OU02"
     },
     {

@@ -56,10 +56,41 @@ roles[[role, id]] {
 }
 
 permissionIdsWithOperation[[permissionId, op, ownerConstraint, orgOwnerConstraint, preAuthorisedConstrains, id]] {
-    permissions[[p,id]][0].operations[_] = op
+    permissions[[p, id]][0].operations[_] = op
     p.id = permissionId
     p.user_ownership_constraint = ownerConstraint
     p.pre_authorised_constraint = preAuthorisedConstrains
     p.org_unit_ownership_constraint = orgOwnerConstraint
 }
 
+allowedUsers[[user]] {
+    input.path = "/resources/dataset"
+    magda.users[i] = user
+    # if any no constraints permissions
+    permissionIdsWithOperation[[_,input.operation,false,false,false, user.id]]
+}
+
+allowedUsers[[user]] {
+    input.path = "/resources/dataset"
+    magda.users[i] = user
+    # if any user ownership constraints
+    permissionIdsWithOperation[[_,input.operation,true,_,_,user.id]]
+    # if yes, then owner_id should match
+    input.dataset.owner_id = user.id
+}
+
+allowedUsers[[user]] {
+    input.path = "/resources/dataset"
+    magda.users[i] = user
+    # if any org ownership constraints
+    permissionIdsWithOperation[[_,input.operation,_,true,_,user.id]]
+    # if yes, one of user managingOrgUnits should match
+    managingOrgUnits[[orgUnitId, user.id]][0] = input.dataset.org_unit_id
+}
+
+allowedUsers[[user]] {
+    input.path = "/resources/dataset"
+    magda.users[i] = user
+    # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
+    input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,true,user.id]][0]
+}
