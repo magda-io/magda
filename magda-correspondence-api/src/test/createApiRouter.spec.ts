@@ -218,7 +218,7 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal(DEFAULT_RECIPIENT);
-                expect(args.text).to.not.contain(" not a valid email address");
+                expect(args.html).to.not.contain(" not valid email addresses");
                 expect(args.subject).to.contain(
                     "for " + DEFAULT_DATASET_CONTACT_POINT
                 );
@@ -233,11 +233,34 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal("sales@dept.gov.au");
-                expect(args.text).to.not.contain(" not a valid email address");
+                expect(args.html).to.not.contain(" not valid email addresses");
             });
         });
 
-        it("should fall back to default recipient if there's no contact point", () => {
+        it("should fall back to publisher email address if there's no email with the contact point", () => {
+            return sendQuestion(
+                {
+                    contactPoint: "Commonwealth of Australia (Dept. of Code)"
+                },
+                {
+                    publisher: {
+                        aspects: {
+                            "organization-details": {
+                                email:
+                                    "blah blah publisher@example.com blah blah"
+                            }
+                        }
+                    }
+                }
+            ).then(() => {
+                const args: Message = sendStub.firstCall.args[0];
+
+                expect(args.to).to.equal("publisher@example.com");
+                expect(args.html).to.not.contain(" not valid email addresses");
+            });
+        });
+
+        it("should fall back to default recipient if there's no contact point and no publisher email", () => {
             return sendQuestion({
                 contactPoint: undefined,
                 email: undefined
@@ -245,7 +268,7 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal(DEFAULT_RECIPIENT);
-                expect(args.text).to.contain(" not a valid email address");
+                expect(args.html).to.contain(" not valid email addresses");
             });
         });
 
@@ -256,7 +279,7 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal(DEFAULT_RECIPIENT);
-                expect(args.text).to.contain(" not a valid email address");
+                expect(args.html).to.contain(" not valid email addresses");
             });
         });
 
@@ -267,7 +290,7 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal(DEFAULT_RECIPIENT);
-                expect(args.text).to.contain(" not a valid email address");
+                expect(args.html).to.contain(" not valid email addresses");
             });
         });
 
@@ -279,7 +302,7 @@ describe("send dataset request mail", () => {
                 const args: Message = sendStub.firstCall.args[0];
 
                 expect(args.to).to.equal(DEFAULT_RECIPIENT);
-                expect(args.text).to.contain(" not a valid email address");
+                expect(args.html).to.contain(" not valid email addresses");
             });
         });
 
@@ -292,10 +315,13 @@ describe("send dataset request mail", () => {
             `/public/send/dataset/${ENCODED_DEFAULT_DATASET_ID}/question`
         );
 
-        function sendQuestion(overrideDataset: {} = {}) {
+        function sendQuestion(
+            overrideDataset: {} = {},
+            overridePublisher: {} = {}
+        ) {
             sendStub.returns(Promise.resolve());
 
-            stubGetRecordCall(overrideDataset);
+            stubGetRecordCall(overrideDataset, overridePublisher);
 
             return supertest(app)
                 .post(
@@ -313,10 +339,10 @@ describe("send dataset request mail", () => {
         }
     });
 
-    function stubGetRecordCall(overrideObject: {} = {}) {
+    function stubGetRecordCall(overrideDataset = {}, overridePublisher = {}) {
         registryScope
             .get(
-                `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=false`
+                `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=true`
             )
             .reply(200, {
                 id: DEFAULT_DATASET_ID,
@@ -325,17 +351,10 @@ describe("send dataset request mail", () => {
                         title: DEFAULT_DATASET_TITLE,
                         publisher: DEFAULT_DATASET_PUBLISHER,
                         contactPoint: DEFAULT_DATASET_CONTACT_POINT,
-                        ...overrideObject
+                        ...overrideDataset
                     },
                     "dataset-publisher": {
-                        publisher: {
-                            aspects: {
-                                "organization-details": {
-                                    email: "contact@dept.gov.au",
-                                    ...overrideObject
-                                }
-                            }
-                        }
+                        ...overridePublisher
                     }
                 }
             });
@@ -365,7 +384,7 @@ describe("send dataset request mail", () => {
                 it("should return 404 if getting dataset from registry returns 404", () => {
                     registryScope
                         .get(
-                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=false`
+                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=true`
                         )
                         .reply(404);
 
@@ -391,7 +410,7 @@ describe("send dataset request mail", () => {
                 it("should return 500 if getting dataset from registry returns 500", () => {
                     registryScope
                         .get(
-                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=false`
+                            `/records/${ENCODED_DEFAULT_DATASET_ID}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&dereference=true`
                         )
                         .reply(500);
 
