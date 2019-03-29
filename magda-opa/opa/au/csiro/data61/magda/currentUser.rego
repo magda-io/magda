@@ -102,14 +102,3 @@ allowAccessCurrentDataset {
     # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
     input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,true]][0]
 }
-
-# all permissionId has OP008
-# [pid | data.au.csiro.data61.magda.whoHasAccess.permissionsWithOperation[_]=[pid,"OP008"]]
-#userPermissions[id] {
-#    users.
-#}
-
-#publishers {
-#    input.dataset.
-#    users[i].permissions[_]=
-#}
