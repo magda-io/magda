@@ -2,15 +2,8 @@ import * as httpProxy from "http-proxy";
 import groupBy = require("lodash/groupBy");
 
 const DO_NOT_PROXY_HEADERS = [
-    "Connection",
-    "Proxy-Connection",
-    "Keep-Alive",
     "Proxy-Authorization",
     "Proxy-Authenticate",
-    "TE",
-    "Trailer",
-    "Transfer-Encoding",
-    "Upgrade",
     "Authorization",
     "Cookie",
     "Cookie2",
