@@ -38,3 +38,28 @@ lv4OrgUnits[[orgUnitId, id]]{
 
 managingOrgUnits = directOrgUnits | lv1OrgUnits | lv2OrgUnits | lv3OrgUnits | lv4OrgUnits
 
+permissionIds[[permissionId, id]] {
+    usersById[[user, id]][0].roles[_] = magda.roles[i].id
+    user.id = id
+    magda.roles[i].permissions[_] = permissionId
+}
+
+permissions[[permission, id]] {
+    permissionIds[[_,id]][0] = magda.permissions[i].id 
+    magda.permissions[i] = permission
+}
+
+roles[[role, id]] {
+    usersById[[user, id]][0].roles[_] = magda.roles[i].id
+    user.id = id
+    magda.roles[i] = role
+}
+
+permissionIdsWithOperation[[permissionId, op, ownerConstraint, orgOwnerConstraint, preAuthorisedConstrains, id]] {
+    permissions[[p,id]][0].operations[_] = op
+    p.id = permissionId
+    p.user_ownership_constraint = ownerConstraint
+    p.pre_authorised_constraint = preAuthorisedConstrains
+    p.org_unit_ownership_constraint = orgOwnerConstraint
+}
+
