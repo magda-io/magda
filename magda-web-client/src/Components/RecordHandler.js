@@ -257,7 +257,11 @@ class RecordHandler extends React.Component {
                                     }
                                 }}
                             >
-                                <img src={downloadWhiteIcon} alt="download" />
+                                <img
+                                    src={downloadWhiteIcon}
+                                    alt="download"
+                                    className="distribution-button-icon"
+                                />
                                 {"  "}
                                 Download
                             </a>
@@ -285,8 +289,12 @@ class RecordHandler extends React.Component {
                                             : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
                                     }
                                 >
-                                    <img src={apiAccessIcon} alt="" /> Access
-                                    Data API
+                                    <img
+                                        src={apiAccessIcon}
+                                        alt=""
+                                        className="distribution-button-icon"
+                                    />{" "}
+                                    Access Data API
                                 </a>
                             )}{" "}
                         <Small>
