@@ -5,7 +5,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP008"]
     },
     {
@@ -14,7 +14,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP007"]
     },
     {
@@ -23,7 +23,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP006"]
     },
     {
@@ -32,7 +32,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP009"]
     },
     {
@@ -41,7 +41,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": true,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP009"]
     },
     {
@@ -50,7 +50,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP010"]
     },
     {
@@ -59,7 +59,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": true,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP010"]
     },
     {
@@ -68,7 +68,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP011", "OP012"]
     },
     {
@@ -77,7 +77,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": [
             "OP006",
             "OP007",
@@ -85,7 +85,9 @@
             "OP009",
             "OP010",
             "OP011",
-            "OP012"
+            "OP012",
+            "OP029",
+            "OP030"
         ]
     },
     {
@@ -94,7 +96,7 @@
         "res_id": "RES01",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP001", "OP002", "OP003", "OP004", "OP005"]
     },
     {
@@ -103,7 +105,7 @@
         "res_id": "RES01",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP001", "OP002", "OP003", "OP004", "OP005"]
     },
     {
@@ -112,7 +114,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP008"]
     },
     {
@@ -121,7 +123,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP007"]
     },
     {
@@ -130,7 +132,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP029"]
     },
     {
@@ -139,7 +141,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": true,
-        "pre-authorised_constraint": false,
+        "pre_authorised_constraint": false,
         "operations": ["OP030"]
     },
     {
@@ -148,7 +150,7 @@
         "res_id": "RES02",
         "user_ownership_constraint": false,
         "org_unit_ownership_constraint": false,
-        "pre-authorised_constraint": true,
+        "pre_authorised_constraint": true,
         "operations": ["OP008"]
     }
 ]

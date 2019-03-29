@@ -4,62 +4,76 @@
         "name": "Malcolm Thompson",
         "job_title": "Deputy Secretary",
         "roles": ["R04", "R03"],
-        "org_unit": "U01"
+        "org_unit": "OU01"
     },
     {
         "id": "U02",
         "name": "Paul Morris",
         "job_title": "First Assistant Secretary",
         "roles": ["R04", "R03"],
-        "org_unit": "U02"
+        "org_unit": "OU02"
     },
     {
         "id": "U03",
         "name": "Data Steward A",
         "job_title": "Data Steward",
         "roles": ["R03"],
-        "org_unit": "U02"
+        "org_unit": "OU02"
     },
     {
         "id": "U04",
         "name": "Carol Grossman",
         "job_title": "Assistant Secretary",
         "roles": ["R04", "R03"],
-        "org_unit": "U04"
+        "org_unit": "OU04"
     },
     {
         "id": "U05",
         "name": "Data Collector A",
         "job_title": "Data Collector",
         "roles": ["R02"],
-        "org_unit": "U04"
+        "org_unit": "OU04"
     },
     {
         "id": "U06",
         "name": "Barbara Cooper",
         "job_title": "First Assistant Secretary",
         "roles": ["R05", "R03"],
-        "org_unit": "U03"
+        "org_unit": "OU03"
     },
     {
         "id": "U07",
         "name": "Data Steward B",
         "job_title": "Data Steward",
         "roles": ["R03"],
-        "org_unit": "U03"
+        "org_unit": "OU03"
     },
     {
         "id": "U08",
         "name": "Anna Somerville",
         "job_title": "Assistant Secretary",
         "roles": ["R03", "R04"],
-        "org_unit": "U06"
+        "org_unit": "OU06"
     },
     {
         "id": "U09",
         "name": "Data Collector C",
         "job_title": "Data Collector",
         "roles": ["R02"],
-        "org_unit": "U06"
+        "org_unit": "OU06"
+    },
+    {
+        "id": "U10",
+        "name": "Tanya Stacpoole",
+        "job_title": "Assistant Secretary",
+        "roles": ["R04", "R03"],
+        "org_unit": "OU05"
+    },
+    {
+        "id": "U11",
+        "name": "Data Collector B",
+        "job_title": "Data Collector",
+        "roles": ["R02"],
+        "org_unit": "OU05"
     }
 ]

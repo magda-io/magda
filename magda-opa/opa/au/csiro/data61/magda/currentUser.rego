@@ -1,61 +1,102 @@
 package au.csiro.data61.magda.currentUser
 
-import data.au.csiro.data61.magda.permissions
+import data.au.csiro.data61.magda
 import data.au.csiro.data61.magda.roles
 import data.au.csiro.data61.magda.users
 import data.au.csiro.data61.magda.orgUnits
 import data.au.csiro.data61.magda.resources
 import data.input
 
-userInfos = [x | users[i].id = input.user_id; users[i] = x ]
+infos = [x | users[i].id = input.user_id; users[i] = x ]
 
-userInfo = userInfos[0]
+info = infos[0]
 
-userDirectOrgUnits[x] { 
+directOrgUnits[x] { 
     users[i].id = input.user_id
     users[i].org_unit=x
 }
 
-userLv1OrgUnits[x]{
-    userDirectOrgUnits[_] = orgUnits[i].id
+lv1OrgUnits[x]{
+    directOrgUnits[_] = orgUnits[i].id
     orgUnits[i].managing_org_units[_] = x
 }
 
-userLv2OrgUnits[x]{
-    userLv1OrgUnits[_] = orgUnits[i].id
+lv2OrgUnits[x]{
+    lv1OrgUnits[_] = orgUnits[i].id
     orgUnits[i].managing_org_units[_] = x
 }
 
-userLv3OrgUnits[x]{
-    userLv2OrgUnits[_] = orgUnits[i].id
+lv3OrgUnits[x]{
+    lv2OrgUnits[_] = orgUnits[i].id
     orgUnits[i].managing_org_units[_] = x
 }
 
-userLv4OrgUnits[x]{
-    userLv3OrgUnits[_] = orgUnits[i].id
+lv4OrgUnits[x]{
+    lv3OrgUnits[_] = orgUnits[i].id
     orgUnits[i].managing_org_units[_] = x
 }
 
-userManagingOrgUnits = userDirectOrgUnits | userLv1OrgUnits | userLv2OrgUnits | userLv3OrgUnits | userLv4OrgUnits
+managingOrgUnits = directOrgUnits | lv1OrgUnits | lv2OrgUnits | lv3OrgUnits | lv4OrgUnits
 
 default isDatasetOwner = false
 isDatasetOwner {
-    input.dataset.owner_id = userInfo.id
+    input.dataset.owner_id = info.id
 }
 
 default isDatasetOrgUnitOwner = false
 isDatasetOrgUnitOwner {
-    userManagingOrgUnits[_] = input.dataset.org_unit_id
+    managingOrgUnits[_] = input.dataset.org_unit_id
 }
 
-managingOrgUints[org_unit_id] {
-    orgUnits[org_unit_id]
+permissionIds[x] {
+    info.roles[_] = roles[i].id
+    roles[i].permissions[_] = x 
 }
 
-permissionsWithOperation[[pid, opId]] {
-    permissions[i].operations[_] = opId
-    permissions[i].id = pid
-    #input.user.roles[_].permissions[_]
+permissions[x] {
+    permissionIds[_] = magda.permissions[i].id 
+    magda.permissions[i] = x 
+}
+
+permissionIdsWithOperation[[permissionId, op, ownerConstraint, orgOwnerConstraint, preAuthorisedConstrains]] {
+    permissions[i].operations[j] = op
+    permissions[i].id = permissionId
+    permissions[i].user_ownership_constraint = ownerConstraint
+    permissions[i].pre_authorised_constraint = preAuthorisedConstrains
+    permissions[i].org_unit_ownership_constraint = orgOwnerConstraint
+}
+
+#t1 = {x|permissionIdsWithOperation[[_,input.operation,_,_,_]][0]=x}
+#t2 = {x|permissionIdsWithOperation[[_,"OP003",_,_,_]][0]=x}
+
+default canAccessDataset = false
+
+allowAccessCurrentDataset1 {
+    input.path = "/resources/dataset"
+    # if any no constraints permissions
+    permissionIdsWithOperation[[_,input.operation,false,false,false]]
+}
+
+allowAccessCurrentDataset2 {
+    input.path = "/resources/dataset"
+    # if any user ownership constraints
+    permissionIdsWithOperation[[_,input.operation,true,_,_]]
+    # if yes, then owner_id should match
+    input.dataset.owner_id = info.id
+}
+
+allowAccessCurrentDataset3 {
+    input.path = "/resources/dataset"
+    # if any org ownership constraints
+    permissionIdsWithOperation[[_,input.operation,_,true,_]]
+    # if yes, one of user managingOrgUnits should match
+    managingOrgUnits[_] = input.dataset.org_unit_id
+}
+
+allowAccessCurrentDataset4 {
+    input.path = "/resources/dataset"
+    # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
+    input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,false]][0]
 }
 
 # all permissionId has OP008
