@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.currentUser
 
 import data.au.csiro.data61.magda
-import data.au.csiro.data61.magda.roles
 import data.au.csiro.data61.magda.users
 import data.au.csiro.data61.magda.orgUnits
 import data.au.csiro.data61.magda.resources
@@ -49,13 +48,18 @@ isDatasetOrgUnitOwner {
 }
 
 permissionIds[x] {
-    info.roles[_] = roles[i].id
-    roles[i].permissions[_] = x 
+    info.roles[_] = magda.roles[i].id
+    magda.roles[i].permissions[_] = x 
 }
 
 permissions[x] {
     permissionIds[_] = magda.permissions[i].id 
     magda.permissions[i] = x 
+}
+
+roles[x] {
+    info.roles[_] = magda.roles[i].id
+    magda.roles[i] = x
 }
 
 permissionIdsWithOperation[[permissionId, op, ownerConstraint, orgOwnerConstraint, preAuthorisedConstrains]] {
@@ -69,15 +73,15 @@ permissionIdsWithOperation[[permissionId, op, ownerConstraint, orgOwnerConstrain
 #t1 = {x|permissionIdsWithOperation[[_,input.operation,_,_,_]][0]=x}
 #t2 = {x|permissionIdsWithOperation[[_,"OP003",_,_,_]][0]=x}
 
-default canAccessDataset = false
+default allowAccessCurrentDataset = false
 
-allowAccessCurrentDataset1 {
+allowAccessCurrentDataset {
     input.path = "/resources/dataset"
     # if any no constraints permissions
     permissionIdsWithOperation[[_,input.operation,false,false,false]]
 }
 
-allowAccessCurrentDataset2 {
+allowAccessCurrentDataset {
     input.path = "/resources/dataset"
     # if any user ownership constraints
     permissionIdsWithOperation[[_,input.operation,true,_,_]]
@@ -85,7 +89,7 @@ allowAccessCurrentDataset2 {
     input.dataset.owner_id = info.id
 }
 
-allowAccessCurrentDataset3 {
+allowAccessCurrentDataset {
     input.path = "/resources/dataset"
     # if any org ownership constraints
     permissionIdsWithOperation[[_,input.operation,_,true,_]]
@@ -93,10 +97,10 @@ allowAccessCurrentDataset3 {
     managingOrgUnits[_] = input.dataset.org_unit_id
 }
 
-allowAccessCurrentDataset4 {
+allowAccessCurrentDataset {
     input.path = "/resources/dataset"
     # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
-    input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,false]][0]
+    input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,true]][0]
 }
 
 # all permissionId has OP008

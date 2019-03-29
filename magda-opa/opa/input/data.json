@@ -1,10 +1,10 @@
 {
-    "user_id": "U09",
+    "user_id": "U07",
     "path": "/resources/dataset",
     "dataset": {
         "org_unit_id": "OU04",
         "owner_id": "U05",
-        "pre_authoised_permissions": []
+        "pre_authoised_permissions": ["P021"]
     },
-    "operation": "OP030"
+    "operation": "OP009"
 }

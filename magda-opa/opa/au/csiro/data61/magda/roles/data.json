@@ -43,5 +43,10 @@
         "id": "R06",
         "name": "Data Administrators (System)",
         "permissions": ["P009"]
+    },
+    {
+        "id": "R07",
+        "name": "Test Ad-hoc Role",
+        "permissions": ["P021"]
     }
 ]

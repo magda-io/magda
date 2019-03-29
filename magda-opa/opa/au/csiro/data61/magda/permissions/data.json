@@ -152,5 +152,14 @@
         "org_unit_ownership_constraint": false,
         "pre_authorised_constraint": true,
         "operations": ["OP008"]
+    },
+    {
+        "id": "P021",
+        "name": "Test Ad-hoc Permission",
+        "res_id": "RES02",
+        "user_ownership_constraint": false,
+        "org_unit_ownership_constraint": false,
+        "pre_authorised_constraint": true,
+        "operations": ["OP009"]
     }
 ]
