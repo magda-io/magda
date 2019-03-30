@@ -128,7 +128,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
             recordsSummary.records.length shouldEqual 0
           }
         }
-        
+
         def insertAspectDefs(param: FixtureParam) {
           val aspectDefinition1 = AspectDefinition("test1", "test1", None)
           param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
@@ -1280,9 +1280,6 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
         }
       }
 
-      // TODO: Fix this!
-      //  addTenantIdHeader() has no meaning in this test because tenant-dependent RecordHistoryService
-      //  has not been implemented yet. The commented out tests will fail.
       it("updates the sourcetag of an otherwise identical record without generating events") { param =>
         val record = Record("testId", "testName", Map(), Some("tag1"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
@@ -1294,10 +1291,10 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           responseAs[EventsPage].events.length shouldEqual 1
         }
 
-//        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-//          status shouldEqual StatusCodes.OK
-//          responseAs[EventsPage].events.length shouldEqual 0
-//        }
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[EventsPage].events.length shouldEqual 0
+        }
 
         val newRecord = record.copy(sourceTag = Some("tag2"))
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
@@ -1305,9 +1302,10 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           responseAs[Record] shouldEqual newRecord
         }
 
-//        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-//          status shouldEqual StatusCodes.BadRequest
-//        }
+        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual newRecord
+        }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -1320,12 +1318,14 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.NotFound
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual newRecord
         }
 
-//        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-//          status shouldEqual StatusCodes.NotFound
-//        }
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[EventsPage].events.length shouldEqual 1
+        }
       }
 
       it("cannot change the ID of an existing record") { param =>
@@ -1841,8 +1841,6 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           Map("source" -> JsObject(Map[String, JsValue]("id" -> JsString(id), "name" -> JsString("name"), "url" -> JsString("http://example.com"), "type" -> JsString("fake"))))
         }
 
-        // TODO: Fix this.
-        //   Investigage why the commented out tests failed.
         it("deletes only records with the correct source and without the specified tag") { param =>
           val junitFile = new java.io.File("../magda-registry-aspects/source.schema.json").getCanonicalFile
           val commandLineFile = new java.io.File("./magda-registry-aspects/source.schema.json").getCanonicalFile
@@ -1882,16 +1880,16 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
             res.records.length shouldEqual all.length
           }
 
-//          Get("/v0/records") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-//            status shouldEqual StatusCodes.OK
-//            val res = responseAs[RecordsPage[Record]]
-//            res.records.length shouldEqual 0
-//          }
-//
-//          param.asAdmin(Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")) ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
-//            status shouldEqual StatusCodes.OK
-//            responseAs[MultipleDeleteResult].count shouldEqual 0
-//          }
+          Get("/v0/records") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val res = responseAs[RecordsPage[Record]]
+            res.records.length shouldEqual 0
+          }
+
+          param.asAdmin(Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")) ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[MultipleDeleteResult].count shouldEqual 0
+          }
 
           param.asAdmin(Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1916,6 +1914,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
               val res = responseAs[EventsPage]
 
               val deleteRecordEvents = res.events.filter(event => event.eventType == EventType.DeleteRecord)
+
               deleteRecordEvents.length shouldEqual 1
               val deletedRecordEvent = deleteRecordEvents.head.data.convertTo[Map[String, JsValue]]
               deletedRecordEvent("recordId") shouldEqual JsString(recordId)

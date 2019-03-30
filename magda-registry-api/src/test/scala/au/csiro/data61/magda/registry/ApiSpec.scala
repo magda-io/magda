@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_SINGLE_TENANT_ID, MAGDA_SYSTEM_ID}
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -53,7 +53,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   }
 
   def addSingleTenantIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_SINGLE_TENANT_ID)
+    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
 
   def addAdminPortalIdHeader: RawHeader = {

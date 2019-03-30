@@ -56,10 +56,12 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                 lastEventId: Option[Long] = None,
                 recordId: Option[String] = None,
                 aspectIds: Set[String] = Set(),
-                eventTypes: Set[EventType] = Set()): EventsPage = {
+                eventTypes: Set[EventType] = Set(),
+                tenantId: Option[BigInt] = Some(0)): EventsPage = {
     val filters = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
+      tenantId.map(v => sqls"tenantId = $v"),
       recordId.map(v => sqls"data->>'recordId' = $v")).filter(_.isDefined)
 
     val eventTypesFilter = if (eventTypes.isEmpty) sqls"1=1" else

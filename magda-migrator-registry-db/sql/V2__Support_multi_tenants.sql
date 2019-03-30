@@ -29,7 +29,7 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE tenants TO client;
 
 GRANT ALL ON TABLE tenants TO postgres;
 
-INSERT INTO Tenants(domainName, id, enabled, description, lastUpdate) VALUES('initial-website', 0, true, 'Initial entry used for migrating database from single tenant to multi-tenants.', 1);
+INSERT INTO Tenants(domainName, id, enabled, description, lastUpdate) VALUES('A built-in id.', 0, true, 'Initial entry used for migrating database from single tenant to multi-tenants.', 1);
 
 ALTER TABLE recordaspects DROP CONSTRAINT recordaspects_recordid_fkey;
 
@@ -52,3 +52,12 @@ ALTER TABLE recordaspects ADD CONSTRAINT recordaspects_tenantid_fkey FOREIGN KEY
     ON DELETE NO ACTION;
 
 INSERT INTO EventTypes (eventTypeId, name) VALUES (10, 'Create Tenant');
+
+ALTER TABLE events ADD COLUMN tenantId bigint;
+UPDATE events SET tenantId = 0 where tenantId is Null;
+UPDATE events SET data = jsonb_set(data::jsonb , '{tenantId}', '0'::jsonb, true);
+--UPDATE events SET data = jsonb_set(data::jsonb , '{tenantId}', '0'::jsonb, true), tenantId = 0 where eventtypeid = 1 or eventtypeid = 4 or eventtypeid = 7 or eventtypeid = 10;
+ALTER TABLE events ADD CONSTRAINT events_tenantid_fkey FOREIGN KEY (tenantId)
+    REFERENCES tenants(id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;

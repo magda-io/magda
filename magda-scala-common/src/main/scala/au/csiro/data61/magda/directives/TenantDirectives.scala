@@ -3,7 +3,7 @@ package au.csiro.data61.magda.directives
 import akka.http.scaladsl.model.headers
 import akka.http.scaladsl.server.Directives.{extractRequest, provide, reject}
 import akka.http.scaladsl.server.{Directive1, MissingHeaderRejection, ValidationRejection}
-import au.csiro.data61.magda.model.Registry.{MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID, MAGDA_SINGLE_TENANT_ID}
+import au.csiro.data61.magda.model.Registry.{MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID}
 
 object TenantDirectives {
   def requiredTenantId: Directive1[BigInt] = {
@@ -24,8 +24,7 @@ object TenantDirectives {
 
   def requiredAdminTenantId: Directive1[BigInt] = {
     requiredTenantId flatMap {tenantId =>
-      if (tenantId == MAGDA_ADMIN_PORTAL_ID || tenantId == MAGDA_SINGLE_TENANT_ID) {
-        // MAGDA_SINGLE_TENANT_ID indicates single tenant mode.
+      if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
         provide(tenantId)
       }
       else {

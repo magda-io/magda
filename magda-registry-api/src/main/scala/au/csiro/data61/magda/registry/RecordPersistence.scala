@@ -11,7 +11,7 @@ import java.sql.SQLException
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_SINGLE_TENANT_ID, MAGDA_SYSTEM_ID, Record, RecordSummary, RegistryEvent}
+import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_ADMIN_PORTAL_ID, MAGDA_SYSTEM_ID, Record, RecordSummary, RegistryEvent}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 
@@ -276,7 +276,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
           val event = PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
-          val eventId = sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
+          val eventId = sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, $tenantId, $event::json)".updateAndReturnGeneratedKey().apply()
           sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, $tenantId)""".update.apply()
           eventId
         } else {
@@ -367,7 +367,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       eventId <- Try {
         if (testRecordAspectPatch.ops.length > 0) {
           val event = PatchRecordAspectEvent(recordId, tenantId, aspectId, aspectPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, 0, $tenantId, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
@@ -418,7 +418,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     for {
       eventId <- Try {
         val eventJson = CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
         sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, $tenantId, ${record.name}, $eventId, ${record.sourceTag})""".update.apply()
@@ -447,7 +447,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       }
       _ <- Try {
         val eventJson = DeleteRecordEvent(recordId, tenantId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
         sql"""delete from Records where (recordId, tenantId)=($recordId, $tenantId)""".update.apply()
@@ -493,7 +493,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     for {
       eventId <- Try {
         val eventJson = CreateRecordAspectEvent(recordId, tenantId, aspectId, aspect).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       insertResult <- Try {
         val jsonData = aspect.compactPrint
@@ -511,7 +511,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     for {
       _ <- Try {
         val eventJson = DeleteRecordAspectEvent(recordId, tenantId, aspectId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       rowsDeleted <- Try {
         sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, $tenantId)""".update.apply()
@@ -797,13 +797,13 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
-    val filteredByTenant = if (tenantId == MAGDA_SINGLE_TENANT_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
+    val filteredByTenant = if (tenantId == MAGDA_ADMIN_PORTAL_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
     Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))")
   }
 
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
-    val filteredByTenant = if (tenantId == MAGDA_SINGLE_TENANT_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
+    val filteredByTenant = if (tenantId == MAGDA_ADMIN_PORTAL_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
     sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }

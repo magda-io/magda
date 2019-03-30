@@ -5,7 +5,6 @@ import {
     magdaAdminPortalName,
     multiTenantsMode,
     MAGDA_TENANT_ID_HEADER,
-    MAGDA_SINGLE_TENANT_ID,
     MAGDA_ADMIN_PORTAL_ID
 } from "./index";
 
@@ -69,10 +68,7 @@ export default function createBaseProxy(): httpProxy {
                 );
             } else {
                 const tenant = tenantsTable.get(domainName);
-                if (
-                    tenant !== undefined &&
-                    tenant.id !== MAGDA_SINGLE_TENANT_ID
-                ) {
+                if (tenant !== undefined) {
                     proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
                 } else {
                     res.writeHead(500, { "Content-Type": "text/plain" });
@@ -82,7 +78,7 @@ export default function createBaseProxy(): httpProxy {
                 }
             }
         } else {
-            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SINGLE_TENANT_ID);
+            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
         }
     });
 

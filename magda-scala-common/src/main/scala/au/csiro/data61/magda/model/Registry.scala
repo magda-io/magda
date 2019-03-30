@@ -16,9 +16,8 @@ import scala.util.{Failure, Success, Try}
 
 object Registry {
   val MAGDA_TENANT_ID_HEADER: String = "X-Magda-TenantId"
-  val MAGDA_SINGLE_TENANT_ID: BigInt = 0
-  val MAGDA_ADMIN_PORTAL_ID: BigInt = -1
-  val MAGDA_SYSTEM_ID: BigInt = -2
+  val MAGDA_ADMIN_PORTAL_ID: BigInt = 0
+  val MAGDA_SYSTEM_ID: BigInt = -1
 
   @ApiModel(description = "A type of aspect in the registry.")
   case class AspectDefinition(

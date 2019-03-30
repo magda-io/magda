@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import java.sql.SQLException
 
-import au.csiro.data61.magda.model.Registry.Tenant
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, Tenant}
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import spray.json._
@@ -31,7 +31,7 @@ object DefaultTenantPersistence extends Protocols with DiffsonProtocol with Tena
     for {
       eventId <- Try {
         val eventJson = CreateTenantEvent(tenant).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${CreateTenantEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey.apply()
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateTenantEvent.Id}, 0, $MAGDA_ADMIN_PORTAL_ID, $eventJson::json)".updateAndReturnGeneratedKey.apply()
       }
       _ <- Try {
         sql"""insert into Tenants (domainName, enabled, lastUpdate) values (${tenant.domainName}, true, $eventId)""".update.apply()
