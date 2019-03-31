@@ -212,7 +212,7 @@ export default class RequestFormTemplate extends React.Component {
                             id="senderEmailFieldError"
                             aria-live="assertive"
                         >
-                            Email is invalid
+                            Please enter a valid email address
                             <span className="sr-only">.</span>
                         </span>
                     )}
