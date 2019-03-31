@@ -170,9 +170,9 @@ baseSpec(
                     //---registryReplyFunc
                     const params = queryString.parseUrl(uri).query;
                     const pageIdx = params.pageToken
-                        ? parseInt(params.pageToken, 10)
+                        ? parseInt(params.pageToken as string, 10)
                         : 0;
-                    const limit = parseInt(params.limit, 10);
+                    const limit = parseInt(params.limit as string, 10);
                     if (limit < 1)
                         throw new Error("Invalid limit param received!");
                     if (pageIdx >= this.registryRecords.length)
@@ -249,9 +249,9 @@ baseSpec(
                     //---registryReplyFunc
                     const params = queryString.parseUrl(uri).query;
                     const pageIdx = params.pageToken
-                        ? parseInt(params.pageToken, 10)
+                        ? parseInt(params.pageToken as string, 10)
                         : 0;
-                    const limit = parseInt(params.limit, 10);
+                    const limit = parseInt(params.limit as string, 10);
                     if (limit < 1)
                         throw new Error("Invalid limit param received!");
                     if (pageIdx >= this.registryRecords.length) {
