@@ -7,7 +7,8 @@
         "state": {
             "title": "State of dataset",
             "type": "string",
-            "default": "published"
+            "default": "published",
+            "enum": ["draft", "published", "archived"]
         }
     }
 }
