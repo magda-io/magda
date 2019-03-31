@@ -56,12 +56,6 @@
         "settings": true
       }
     },
-    "js": {
-      "minified": true,
-      "modules": false,
-      "location": "pancake/js/",
-      "name": "pancake.min.js"
-    },
     "css": {
       "minified": true,
       "modules": false,
@@ -79,11 +73,17 @@
       "location": "pancake/sass/",
       "name": "pancake.scss"
     },
+    "js": {
+      "minified": true,
+      "modules": false,
+      "location": "pancake/js/",
+      "name": "pancake.min.js"
+    },
     "react": {
       "location": "pancake/react/"
     }
   },
   "dependencies": {
-    "@gov.au/pancake-sass": "^2.1.4"
+    "@gov.au/pancake-sass": "^2.3.4"
   }
 }
