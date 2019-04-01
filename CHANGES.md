@@ -1,3 +1,5 @@
+## 0.0.56
+
 ## 0.0.55
 
 First step to support multi-tenants. Deployed as single tenant by default.
@@ -18,6 +20,10 @@ Gateway:
 -   Provide access to CKAN Data API for enabled resources
 -   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
 
+Correspondence:
+
+-   Broadened search for a valid dataset email contact address
+
 Others:
 
 -   Upgraded JDK version for magda-builder-scala to 8u201
@@ -34,7 +40,7 @@ Connectors:
 
 UI:
 
--   Upgraded the to create-react-app 2
+-   Upgraded to create-react-app 2
 -   Fixed javascript error when user clicks away from facet dropdowns
 -   Distribution pages: prepend file-specific icon to title
 -   Added a basic new dataset page
