@@ -6,6 +6,7 @@ UI:
 -   Integrate sentry release notification and source map upload
 -   Added "role" to account page
 -   Fixed clicking out of search filter causes the results to refetch
+-   Provide access to CKAN Data API for enabled resources
 -   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
 
 Correspondence:
@@ -57,6 +58,7 @@ Others:
 -   Upgraded Elasticsearch to v6.5.4 Elastic4s to v6.5.1
 -   Elasticsearch related test cases run on Docker container than than local node
 -   Fixed: datasets with null description could lead to blank search result page
+-   Stopped gateway from passing auth and single-hop headers through to other services
 
 ## 0.0.53
 
