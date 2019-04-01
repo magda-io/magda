@@ -6,6 +6,7 @@ UI:
 -   Integrate sentry release notification and source map upload
 -   Added "role" to account page
 -   Fixed clicking out of search filter causes the results to refetch
+-   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
 
 Others:
 
