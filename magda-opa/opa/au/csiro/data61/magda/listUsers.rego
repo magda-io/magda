@@ -3,7 +3,6 @@ package au.csiro.data61.magda.listUsers
 import data.au.csiro.data61.magda
 import data.au.csiro.data61.magda.orgUnits
 import data.au.csiro.data61.magda.resources
-import data.input
 
 
 usersById[[user, id]] {

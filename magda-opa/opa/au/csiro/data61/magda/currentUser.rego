@@ -102,34 +102,3 @@ allowAccessCurrentDataset {
     # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
     input.dataset.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,true]][0]
 }
-
-
-default allowAccessEsDataset = false
-
-allowAccessEsDataset {
-    input.path = "/resources/dataset"
-    # if any no constraints permissions
-    permissionIdsWithOperation[[_,input.operation,false,false,false]]
-}
-
-allowAccessEsDataset {
-    input.path = "/resources/dataset"
-    # if any user ownership constraints
-    permissionIdsWithOperation[[_,input.operation,true,_,_]]
-    # if yes, then owner_id should match
-    data.elasticsearch.dataset.accessControlMetadata.owner_id = info.id
-}
-
-allowAccessEsDataset {
-    input.path = "/resources/dataset"
-    # if any org ownership constraints
-    permissionIdsWithOperation[[_,input.operation,_,true,_]]
-    # if yes, one of user managingOrgUnits should match
-    managingOrgUnits[_] = data.elasticsearch.dataset.accessControlMetadata.org_unit_id
-}
-
-allowAccessEsDataset {
-    input.path = "/resources/dataset"
-    # if any pre-authoised constraints # if yes, it must listed on dataset's pre-authoised list
-    data.elasticsearch.dataset.accessControlMetadata.pre_authoised_permissions[_] = permissionIdsWithOperation[[_,input.operation,_,_,true]][0]
-}
