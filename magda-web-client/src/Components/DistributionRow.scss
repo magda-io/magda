@@ -36,7 +36,7 @@
             margin-left: 25px;
         }
         img {
-            vertical-align: inherit;
+            vertical-align: -2px;
         }
     }
     .new-tab-button {
@@ -59,6 +59,10 @@
         @media (min-width: $medium) {
             text-align: right;
             margin-top: 5px;
+        }
+        a {
+            display: inline-block;
+            margin-left: 5px;
         }
     }
 }

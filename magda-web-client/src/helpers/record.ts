@@ -124,6 +124,7 @@ export type ParsedDistribution = {
     accessNotes?: string;
     visualizationInfo: any;
     sourceDetails: any;
+    ckanResource: any;
 };
 
 // all aspects become required and must have value
@@ -339,7 +340,8 @@ export function parseDistribution(
             ? aspects["visualization-info"]
             : null,
         compatiblePreviews,
-        sourceDetails: aspects["source"]
+        sourceDetails: aspects["source"],
+        ckanResource: aspects["ckan-resource"]
     };
 }
 
@@ -435,7 +437,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             chartFields,
             compatiblePreviews,
             visualizationInfo: visualizationInfo ? visualizationInfo : null,
-            sourceDetails: distributionAspects["source"]
+            sourceDetails: distributionAspects["source"],
+            ckanResource: distributionAspects["ckan-resource"]
         };
     });
     return {

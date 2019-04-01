@@ -2,8 +2,10 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { ParsedDistribution } from "../helpers/record";
 import { Link } from "react-router-dom";
+import { get } from "lodash";
 import "./DistributionRow.scss";
 import downloadIcon from "../assets/download.svg";
+import apiAccessIcon from "../assets/apiAccess.svg";
 import newTabIcon from "../assets/external.svg";
 import { Medium } from "../UI/Responsive";
 import { gapi } from "../analytics/ga";
@@ -58,7 +60,7 @@ class DistributionRow extends Component<PropType> {
                 itemScope
                 itemType="http://schema.org/DataDownload"
             >
-                <div className="col-sm-9">
+                <div className="col-sm-8">
                     <div className="row">
                         <Medium>
                             <div className="col-sm-1">
@@ -126,7 +128,30 @@ class DistributionRow extends Component<PropType> {
                         </div>
                     </div>
                 </div>
-                <div className="col-sm-3 button-area">
+                <div className="col-sm-4 button-area">
+                    {distribution.ckanResource &&
+                        distribution.ckanResource.datastore_active && (
+                            <a
+                                className="download-button au-btn au-btn--secondary au-float-left"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href={
+                                    get(distribution, "sourceDetails.url")
+                                        ? get(
+                                              distribution,
+                                              "sourceDetails.url",
+                                              ""
+                                          ).replace(
+                                              "3/action/resource_show?",
+                                              "1/util/snippet/api_info.html?resource_"
+                                          )
+                                        : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
+                                }
+                            >
+                                <img src={apiAccessIcon} alt="" /> Access Data
+                                API
+                            </a>
+                        )}{" "}
                     {distribution.downloadURL && (
                         <a
                             className="download-button au-btn au-btn--secondary"
