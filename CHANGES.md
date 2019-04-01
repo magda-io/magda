@@ -15,6 +15,7 @@ Others:
 -   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
 -   Fixed Unable to use Google / Facebook Login on Preview Site
 -   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
+-   Made registry-api DB pool settings configurable via Helm
 
 ## 0.0.54
 
