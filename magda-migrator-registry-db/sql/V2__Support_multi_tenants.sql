@@ -1,12 +1,5 @@
 CREATE SEQUENCE IF NOT EXISTS tenants_id_seq;
 
-ALTER SEQUENCE tenants_id_seq
-    OWNER TO postgres;
-
-GRANT ALL ON SEQUENCE tenants_id_seq TO postgres;
-
-GRANT SELECT, USAGE ON SEQUENCE tenants_id_seq TO client;
-
 CREATE TABLE IF NOT EXISTS Tenants (
     domainName character varying(100) COLLATE pg_catalog."default" NOT NULL,
     id bigint NOT NULL DEFAULT nextval('tenants_id_seq'::regclass),
@@ -21,13 +14,6 @@ WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
-
-ALTER TABLE tenants
-    OWNER to postgres;
-
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE tenants TO client;
-
-GRANT ALL ON TABLE tenants TO postgres;
 
 INSERT INTO Tenants(domainName, id, enabled, description, lastUpdate) VALUES('A built-in id.', 0, true, 'Initial entry used for migrating database from single tenant to multi-tenants.', 1);
 
