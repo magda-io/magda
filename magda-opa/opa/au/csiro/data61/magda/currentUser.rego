@@ -4,7 +4,7 @@ import data.au.csiro.data61.magda
 import data.au.csiro.data61.magda.users
 import data.au.csiro.data61.magda.orgUnits
 import data.au.csiro.data61.magda.resources
-import data.input
+#import data.input
 
 infos = [x | users[i].id = input.user_id; users[i] = x ]
 
