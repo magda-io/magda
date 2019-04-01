@@ -102,7 +102,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             config.registryApiUrl +
             `records/${encodeURIComponent(
                 id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=visualization-info&optionalAspect=dataset-format`;
+            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=dataset-format&optionalAspect=ckan-resource`;
         return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {

@@ -48,7 +48,8 @@ package misc {
     hitCount: Long,
     upperBound: Option[Int] = None,
     lowerBound: Option[Int] = None,
-    matched: Boolean = false)
+    matched: Boolean = false,
+    countErrorUpperBound: Long = 0)
 
 
   final case class ReadyStatus(ready: Boolean = false)
@@ -445,7 +446,7 @@ package misc {
     implicit val distributionFormat = jsonFormat13(Distribution.apply)
     implicit val locationFormat = jsonFormat2(Location.apply)
     implicit val agentFormat = jsonFormat17(Agent.apply)
-    implicit val facetOptionFormat = jsonFormat6(FacetOption.apply)
+    implicit val facetOptionFormat = jsonFormat7(FacetOption.apply)
     implicit val facetFormat = jsonFormat2(Facet.apply)
     implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
 

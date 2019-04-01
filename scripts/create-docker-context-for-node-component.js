@@ -315,7 +315,7 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
     });
 }
 
-function getPackageList(packagePath, packageSearchRoot) {
+function getPackageList(packagePath, packageSearchRoot, resolvedSoFar = {}) {
     const dependencies = getPackageDependencies(packagePath);
     const result = [];
 
@@ -358,15 +358,20 @@ function getPackageList(packagePath, packageSearchRoot) {
             );
         }
 
-        result.push({ name: dependencyName, path: dependencyDir });
+        // If we haven't already seen this
+        if (!resolvedSoFar[dependencyDir]) {
+            result.push({ name: dependencyName, path: dependencyDir });
 
-        // Now that we've added this package to the list to resolve, add all its children.
-        const childPackageResult = getPackageList(
-            dependencyDir,
-            packageSearchRoot
-        );
+            // Now that we've added this package to the list to resolve, add all its children.
 
-        Array.prototype.push.apply(result, childPackageResult);
+            const childPackageResult = getPackageList(
+                dependencyDir,
+                packageSearchRoot,
+                { ...resolvedSoFar, [dependencyDir]: true }
+            );
+
+            Array.prototype.push.apply(result, childPackageResult);
+        }
     });
 
     return result;

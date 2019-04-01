@@ -26,6 +26,9 @@ import TagsBox from "../UI/TagsBox";
 import ContactPoint from "../UI/ContactPoint";
 import QualityIndicator from "../UI/QualityIndicator";
 import { getFormatIcon } from "./DistributionIcon";
+import apiAccessIcon from "../assets/apiAccess.svg";
+import downloadWhiteIcon from "../assets/download-white.svg";
+import { get } from "lodash";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -254,9 +257,46 @@ class RecordHandler extends React.Component {
                                     }
                                 }}
                             >
+                                <img
+                                    src={downloadWhiteIcon}
+                                    alt="download"
+                                    className="distribution-button-icon"
+                                />
+                                {"  "}
                                 Download
                             </a>
                         ) : null}{" "}
+                        {this.props.distribution.ckanResource &&
+                            this.props.distribution.ckanResource
+                                .datastore_active && (
+                                <a
+                                    className="download-button au-btn au-btn--secondary"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={
+                                        get(
+                                            this.props.distribution,
+                                            "sourceDetails.url"
+                                        )
+                                            ? get(
+                                                  this.props.distribution,
+                                                  "sourceDetails.url",
+                                                  ""
+                                              ).replace(
+                                                  "3/action/resource_show?",
+                                                  "1/util/snippet/api_info.html?resource_"
+                                              )
+                                            : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
+                                    }
+                                >
+                                    <img
+                                        src={apiAccessIcon}
+                                        alt=""
+                                        className="distribution-button-icon"
+                                    />{" "}
+                                    Access Data API
+                                </a>
+                            )}{" "}
                         <Small>
                             <DescriptionBox
                                 content={this.props.distribution.description}

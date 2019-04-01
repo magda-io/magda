@@ -14,6 +14,9 @@ import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 import EmailTemplateRender from "./EmailTemplateRender";
+
+const EMAIL_REGEX = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/;
+
 export interface ApiRouterOptions {
     registry: RegistryClient;
     templateRender: EmailTemplateRender;
@@ -151,18 +154,46 @@ export default function createApiRouter(
             const body: DatasetMessage = req.body;
 
             const promise = getDataset(req.params.datasetId).then(dataset => {
-                const dcatDatasetStrings =
-                    dataset.aspects["dcat-dataset-strings"];
+                const dcatDatasetStrings = dataset.aspects[
+                    "dcat-dataset-strings"
+                ] as {
+                    contactPoint?: string;
+                    title: string;
+                };
+                const contactPointEmailMatches =
+                    dcatDatasetStrings.contactPoint &&
+                    dcatDatasetStrings.contactPoint.match(EMAIL_REGEX);
+                const contactPointEmail =
+                    contactPointEmailMatches &&
+                    contactPointEmailMatches.length > 1 &&
+                    contactPointEmailMatches[1];
 
-                const { contactPoint } = dcatDatasetStrings;
+                const datasetPublisher = dataset.aspects["dataset-publisher"];
+                const datasetPublisherEmailMatches = _.get(
+                    datasetPublisher,
+                    "publisher.aspects.organization-details.email",
+                    ""
+                ).match(EMAIL_REGEX);
+                const datasetPublisherEmail: string | undefined =
+                    datasetPublisherEmailMatches &&
+                    datasetPublisherEmailMatches.length > 1 &&
+                    datasetPublisherEmailMatches[1];
 
-                const validContactPoint =
-                    contactPoint && emailValidator.validate(contactPoint);
+                const emails = [contactPointEmail, datasetPublisherEmail]
+                    .filter(email => !!email)
+                    .filter(email => email !== "")
+                    .filter(email => emailValidator.validate(email));
 
-                const recipient = validContactPoint
-                    ? contactPoint
+                const validEmail = emails.length > 0;
+                if (!validEmail) {
+                    body.note = `You are getting this email because the contact point '${
+                        dcatDatasetStrings.contactPoint
+                    }' on the dataset and ‘${datasetPublisherEmail}’ on the organisation are not valid email addresses`;
+                }
+
+                const recipient = validEmail
+                    ? emails[0]
                     : options.defaultRecipient;
-
                 const subject = `Question About ${dcatDatasetStrings.title}`;
 
                 const html = renderTemplate(
@@ -201,8 +232,8 @@ export default function createApiRouter(
             .getRecord(
                 encodeURIComponent(datasetId),
                 ["dcat-dataset-strings"],
-                [],
-                false
+                ["dataset-publisher"],
+                true
             )
             .then(result => unionToThrowable(result));
     }

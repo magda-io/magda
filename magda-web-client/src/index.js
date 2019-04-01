@@ -15,16 +15,16 @@ import ReactDOM from "react-dom";
 import { gapi } from "./analytics/ga";
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
-import { createStore, applyMiddleware } from "redux";
+import { createStore, applyMiddleware, compose } from "redux";
 import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
-import { composeWithDevTools } from "redux-devtools-extension/developmentOnly";
 import "./i18n";
 
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
     reducer,
-    composeWithDevTools(
+    composeEnhancers(
         applyMiddleware(
             thunkMiddleware, // lets us dispatch() functions
             logger // neat middleware that logs actions

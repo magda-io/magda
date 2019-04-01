@@ -1,77 +1,75 @@
 version: 2
 jobs:
-  build_web:
-    docker:
-      - image: circleci/node:8
-    steps:
-      - checkout
-      - run:
-          name: install npm/lerna/eslint dev tools
-          command: 'sudo yarn global add npm@latest lerna @gov.au/pancake'
-      - run:
-          name: set yarn cache
-          command: yarn config set cache-folder .yarn
-      - restore_cache:
-          key: v1-dependency-cache-{{ checksum "yarn.lock" }}
-      - run:
-          name: yarn install
-          command: yarn install
-      - save_cache:
-          key: v1-dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./.yarn
-      - run:
-          name: eslint
-          command: yarn run eslint
-      - run:
-          name: npm build
-          command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 yarn run build
-      - store_artifacts:
-          path: lerna-debug.log
-          path: magda-web-client/build
-      # Persist the specified paths into the workspace for use in downstream job.
-      - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is taken to be the root directory of the workspace.
-          root: magda-web-client
-          # Must be relative path from root
-          paths:
-            - manifest.yml
-            - build
-  deploy_web:
-    docker:
-      - image: circleci/node:9
-    steps:
-      - attach_workspace:
-          # Must be absolute path or relative path from working_directory
-          at: /tmp/workspace
-      - run: cd /tmp/workspace
-      - run: sudo apt-get install apt-transport-https
-      - run: wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-      - run: echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
-      - run: sudo apt-get update
-      - run: sudo apt-get install tree cf-cli
-      - run: cf install-plugin https://github.com/govau/autopilot/releases/download/0.0.5-venapp/autopilot-linux -f
-      - run: cf version
-      - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
-      - run: cd /tmp/workspace && tree -C
-      #- run: cd /tmp/workspace && cf push -f manifest.yml
-      - run: cd /tmp/workspace/build && curl https://api.rollbar.com/api/1/sourcemap
-               -F access_token=$ROLLBAR_ACCESS_TOKEN
-               -F version=$CIRCLE_SHA1
-               -F minified_url=https://magda-web-client.apps.y.cld.gov.au/`jq -r '."main.js"' asset-manifest.json`
-               -F source_map=@`jq -r '."main.js"' asset-manifest.json`.map
-      - run:  cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
+    build_web:
+        docker:
+            - image: circleci/node:8
+        steps:
+            - checkout
+            - run:
+                  name: install npm/lerna/eslint dev tools
+                  command: "sudo yarn global add npm@latest lerna @gov.au/pancake"
+            - run:
+                  name: set yarn cache
+                  command: yarn config set cache-folder .yarn
+            - restore_cache:
+                  key: v1-dependency-cache-{{ checksum "yarn.lock" }}
+            - run:
+                  name: yarn install
+                  command: yarn install
+            - save_cache:
+                  key: v1-dependency-cache-{{ checksum "yarn.lock" }}
+                  paths:
+                      - ./.yarn
+            - run:
+                  name: eslint
+                  command: yarn run eslint
+            - run:
+                  name: npm build
+                  command: cd magda-web-client && REACT_APP_SHA1=$CIRCLE_SHA1 yarn run build
+            - store_artifacts:
+                  path: lerna-debug.log
+            - store_artifacts:
+                  path: magda-web-client/build
+            # Persist the specified paths into the workspace for use in downstream job.
+            - persist_to_workspace:
+                  # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is taken to be the root directory of the workspace.
+                  root: magda-web-client
+                  # Must be relative path from root
+                  paths:
+                      - manifest.yml
+                      - build
+    deploy_web:
+        docker:
+            - image: circleci/node:9-stretch
+        steps:
+            - attach_workspace:
+                  # Must be absolute path or relative path from working_directory
+                  at: /tmp/workspace
+            - run: cd /tmp/workspace
+            - run: sudo yarn global add @sentry/cli
+            - run: sudo apt-get install apt-transport-https
+            - run: wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+            - run: echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+            - run: sudo apt-get update
+            - run: sudo apt-get install tree cf-cli
+            - run: cf install-plugin https://github.com/govau/autopilot/releases/download/0.0.5-venapp/autopilot-linux -f
+            - run: cf version
+            - run: cf login -a api.system.y.cld.gov.au -o dta -s data-gov-au -u $CF_USER -p $CF_PASSWORD
+            - run: cd /tmp/workspace && tree -C
+            - run: sentry-cli releases new $CIRCLE_SHA1
+            - run: sentry-cli releases files $CIRCLE_SHA1 upload-sourcemaps --ext js --ext ts --ext map /tmp/workspace
+            - run: cd /tmp/workspace && cf zero-downtime-push magda-web-client -f manifest.yml
 
 workflows:
-  version: 2
-  build_and_deploy_web:
-    jobs:
-      - build_web
-      - deploy_web:
-          requires:
+    version: 2
+    build_and_deploy_web:
+        jobs:
             - build_web
-          filters:
-            branches:
-              only:
-                - master
-                - circleci
+            - deploy_web:
+                  requires:
+                      - build_web
+                  filters:
+                      branches:
+                          only:
+                              - master
+                              - circleci
