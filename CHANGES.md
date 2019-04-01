@@ -7,6 +7,7 @@ UI:
 -   Added "role" to account page
 -   Fixed clicking out of search filter causes the results to refetch
 -   Provide access to CKAN Data API for enabled resources
+-   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
 
 Others:
 
