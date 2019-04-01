@@ -41,7 +41,7 @@ INSERT INTO EventTypes (eventTypeId, name) VALUES (10, 'Create Tenant');
 
 ALTER TABLE events ADD COLUMN tenantId bigint;
 UPDATE events SET tenantId = 0 where tenantId is Null;
-UPDATE events SET data = jsonb_set(data::jsonb , '{tenantId}', '0'::jsonb, true);
+-- UPDATE events SET data = jsonb_set(data::jsonb , '{tenantId}', '0'::jsonb, true);
 --UPDATE events SET data = jsonb_set(data::jsonb , '{tenantId}', '0'::jsonb, true), tenantId = 0 where eventtypeid = 1 or eventtypeid = 4 or eventtypeid = 7 or eventtypeid = 10;
 ALTER TABLE events ADD CONSTRAINT events_tenantid_fkey FOREIGN KEY (tenantId)
     REFERENCES tenants(id) MATCH SIMPLE

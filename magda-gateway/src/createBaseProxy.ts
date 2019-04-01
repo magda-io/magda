@@ -1,16 +1,36 @@
 import * as httpProxy from "http-proxy";
+
 import * as URI from "urijs";
 import {
-    tenantsTable,
     magdaAdminPortalName,
-    multiTenantsMode,
     MAGDA_TENANT_ID_HEADER,
-    MAGDA_ADMIN_PORTAL_ID
+    MAGDA_ADMIN_PORTAL_ID,
+    multiTenantsMode
 } from "./index";
+
+import { tenantsTable } from "./buildApp";
+
+import groupBy = require("lodash/groupBy");
+
+const DO_NOT_PROXY_HEADERS = [
+    "Proxy-Authorization",
+    "Proxy-Authenticate",
+    "Authorization",
+    "Cookie",
+    "Cookie2",
+    "Set-Cookie",
+    "Set-Cookie2"
+];
+
+const doNotProxyHeaderLookup = groupBy(
+    DO_NOT_PROXY_HEADERS.map(x => x.toLowerCase()),
+    (x: string) => x
+);
 
 export default function createBaseProxy(): httpProxy {
     const proxy = httpProxy.createProxyServer({
-        prependUrl: false
+        prependUrl: false,
+        changeOrigin: true
     } as httpProxy.ServerOptions);
 
     proxy.on("error", function(err: any, req: any, res: any) {
@@ -21,6 +41,19 @@ export default function createBaseProxy(): httpProxy {
         console.error(err);
 
         res.end("Something went wrong.");
+    });
+
+    proxy.on("proxyReq", function(proxyReq, req, res) {
+        // Presume that we've already got whatever auth details we need out of the request and so remove it now.
+        // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
+        // be leaking auth details to wherever it proxies to.
+        const headerNames = proxyReq.getHeaderNames();
+        for (let i = 0; i < headerNames.length; i++) {
+            const headerName = headerNames[i];
+            if (!!doNotProxyHeaderLookup[headerName]) {
+                proxyReq.removeHeader(headerName);
+            }
+        }
     });
 
     proxy.on("proxyRes", function(proxyRes, req, res) {
@@ -34,6 +67,7 @@ export default function createBaseProxy(): httpProxy {
         ) {
             proxyRes.headers["Cache-Control"] = "public, max-age=60";
         }
+
         /**
          * Remove security sensitive headers
          * `server` header is from scala APIs
