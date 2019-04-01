@@ -4,19 +4,14 @@
   "description": "The MAGDA in-browser web front end.",
   "version": "0.0.55-0",
   "license": "Apache-2.0",
-  "workspaces": {
-    "nohoist": [
-      "react-scripts"
-    ]
-  },
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
     "deploy-storybook": "build-storybook -c .storybook -o .out",
     "dev": "pancake && yarn run start",
     "prepare": "pancake",
-    "start": "craco start",
-    "build": "pancake && craco build",
-    "test": "craco test",
+    "start": "craco start --react-scripts ../node_modules/react-scripts",
+    "build": "pancake && craco build --react-scripts ../node_modules/react-scripts",
+    "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
