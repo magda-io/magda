@@ -1,5 +1,9 @@
 ## 0.0.56
 
+Others:
+
+-   Make broken link sleuther recrawl period configurable via Helm
+
 ## 0.0.55
 
 UI:
@@ -21,7 +25,6 @@ Others:
 -   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
 -   Fixed Unable to use Google / Facebook Login on Preview Site
 -   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
--   Make broken link sleuther recrawl period configurable via Helm
 
 ## 0.0.54
 
