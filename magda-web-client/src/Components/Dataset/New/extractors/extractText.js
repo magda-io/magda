@@ -13,14 +13,19 @@ export async function extractText(input, output) {
 
     if (name.match(/[.]xlsx?$/i)) {
         await extractSpreadsheetFile(input, output);
+        output.format = "XLSX";
     } else if (name.match(/[.]csv/i)) {
         await extractSpreadsheetFile(input, output, "csv");
+        output.format = "CSV";
     } else if (name.match(/[.]tsv$/i)) {
         await extractSpreadsheetFile(input, output, "csv");
+        output.format = "TSV";
     } else if (name.match(/[.]pdf$/i)) {
         await extractPDFFile(input, output);
+        output.format = "PDF";
     } else if (name.match(/[.]docx?$/i)) {
         await extractDocumentFile(input, output);
+        output.format = "DOCX";
     }
 
     if (input.text) {
@@ -41,7 +46,7 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
     const props = input.workbook.Props;
     if (props) {
         if (props.Title) {
-            output.title = props.Title;
+            output.datasetTitle = props.Title;
         }
         if (props.LastAuthor) {
             output.author = props.LastAuthor;
@@ -50,7 +55,7 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
             output.author = props.Author;
         }
         if (props.ModifiedDate) {
-            output.lastModified = props.ModifiedDate;
+            output.modified = props.ModifiedDate.toISOString().substr(0, 10);
         }
     }
 
@@ -80,7 +85,7 @@ async function extractPDFFile(input, output) {
             output.author = meta.info.Author;
         }
         if (meta.info.Title) {
-            output.title = meta.info.Title;
+            output.datasetTitle = meta.info.Title;
         }
 
         if (meta.info.Keywords) {
@@ -88,7 +93,7 @@ async function extractPDFFile(input, output) {
         }
 
         if (meta.info.Subject) {
-            output.subject = meta.info.Subject;
+            output.themes = [meta.info.Subject];
         }
     }
 
