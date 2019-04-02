@@ -1,6 +1,6 @@
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 import * as request from "request";
-import { MAGDA_ADMIN_PORTAL_ID } from "./index";
+import { MAGDA_ADMIN_PORTAL_ID } from "./buildApp";
 
 export default function updateTenants(
     tenantsTable: Map<String, Tenant>,

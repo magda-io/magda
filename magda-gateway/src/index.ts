@@ -6,11 +6,6 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 
 const coerceJson = (path?: string) => path && require(path);
 
-// TODO: Investigate how to use swagger codegen to automatically generate these constants.
-// These constants are the same as defined in the scala model Registry.
-export const MAGDA_TENANT_ID_HEADER = "X-Magda-TenantId";
-export const MAGDA_ADMIN_PORTAL_ID = 0;
-
 const argv = addJwtSecretFromEnvVar(
     yargs
         .config()
@@ -217,13 +212,6 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
-// Should not use the gateway external URL as magda admin portal. Use argv.magdaAdminPortalName instead.
-// The gateway external URL will be default tenant website if default tenant is enabled.
-// A magda admin portal must be different from any tenant websites. Otherwise createBaseProxy will not be able
-// to set admin portal id correctly.
-export const magdaAdminPortalName = argv.magdaAdminPortalName.toLowerCase();
-console.log("magdaAdminPortalName = " + magdaAdminPortalName);
-export const multiTenantsMode = argv.enableMultiTenants;
 const app = buildApp(argv as any);
 
 app.listen(argv.listenPort);

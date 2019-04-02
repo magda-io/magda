@@ -4,9 +4,10 @@ import * as URI from "urijs";
 import {
     magdaAdminPortalName,
     MAGDA_TENANT_ID_HEADER,
-    MAGDA_ADMIN_PORTAL_ID,
-    multiTenantsMode
-} from "./index";
+    MAGDA_ADMIN_PORTAL_ID
+} from "./buildApp";
+
+import { multiTenantsMode } from "./buildApp";
 
 import { tenantsTable } from "./buildApp";
 

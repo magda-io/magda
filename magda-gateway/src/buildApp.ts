@@ -20,7 +20,6 @@ import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
-import { multiTenantsMode } from "./index";
 import updateTenants from "./updateTenants";
 
 // Tell typescript about the semi-private __express field of ejs.
@@ -70,11 +69,23 @@ type Config = {
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
     registryApi?: string;
+    enableMultiTenants?: boolean;
+    magdaAdminPortalName?: string;
 };
 
+// TODO: Investigate how to use swagger codegen to automatically generate these constants.
+// These constants are the same as defined in the scala model Registry.
+export const MAGDA_TENANT_ID_HEADER = "X-Magda-TenantId";
+export const MAGDA_ADMIN_PORTAL_ID = 0;
 export const tenantsTable = new Map<String, Tenant>();
+export var multiTenantsMode: boolean = undefined;
+export var magdaAdminPortalName: string = undefined;
+console.log("magdaAdminPortalName = " + magdaAdminPortalName);
 
 export default function buildApp(config: Config) {
+    multiTenantsMode = config.enableMultiTenants;
+    magdaAdminPortalName = config.magdaAdminPortalName;
+
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
