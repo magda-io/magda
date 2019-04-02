@@ -1,9 +1,5 @@
 ## 0.0.56
 
-Others:
-
--   Make broken link sleuther recrawl period configurable via Helm
-
 Cataloging:
 
 -   Added new aspects for publishing state and spatial coverage
@@ -11,6 +7,11 @@ Cataloging:
 -   Updated new dataset demo UI page to support adding new datasets
 -   Updated dataset ui page to be able to edit fields
 -   Added editor / editor type abstraction for making state management simpler for large forms.
+
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
 
 ## 0.0.55
 
