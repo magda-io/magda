@@ -1,5 +1,9 @@
 ## 0.0.56
 
+Others:
+
+-   Make broken link sleuther recrawl period configurable via Helm
+
 Cataloging:
 
 -   Added new aspects for publishing state and spatial coverage
