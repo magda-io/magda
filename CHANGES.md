@@ -1,5 +1,9 @@
 ## 0.0.56
 
+Search:
+
+-   Prevent freeText query from being None which will cause score to be 0
+
 ## 0.0.55
 
 UI:
