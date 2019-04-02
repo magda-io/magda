@@ -439,6 +439,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         should(seq.map(publisherQuery(strategy))).boost(2)),
       setToOption(query.formats)(seq =>
         should(seq.map(formatQuery(strategy))).boost(2)),
+      Some(
+        should(publishingStateQuery(strategy)(query.publishingState)).boost(2)),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq =>
         should(seq.map(region => regionIdQuery(region, indices))).boost(2)))

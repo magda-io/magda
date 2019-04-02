@@ -73,8 +73,9 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
               'dateFrom?,
               'dateTo?,
               'region*,
-              'format*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats) =>
-                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
+              'format*,
+              'publishingState*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
                 FacetType.fromId(facetId) match {
                   case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, query, start, limit))
@@ -183,8 +184,9 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
               'dateFrom?,
               'dateTo?,
               'region*,
-              'format*)) { (generalQuery, start, limit, facetSize, publishers, dateFrom, dateTo, regions, formats) ⇒
-                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
+              'format*,
+              'publishingState*)) { (generalQuery, start, limit, facetSize, publishers, dateFrom, dateTo, regions, formats, publishingState) ⇒
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
                 onSuccess(searchQueryer.search(query, start, limit, facetSize)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK

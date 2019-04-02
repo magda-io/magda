@@ -26,7 +26,7 @@ function fingerprint(data) {
     for (let i = 0; i < data.length; i++) {
         setByte(hash, data[i]);
     }
-    return hash;
+    return Array.prototype.slice.call(hash);
 }
 
 function setByte(array, bit) {

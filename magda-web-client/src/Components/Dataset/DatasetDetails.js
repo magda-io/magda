@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import TemporalAspectViewer from "../../UI/TemporalAspectViewer";
 import DatasetPreview from "./DatasetPreview";
 import MarkdownViewer from "../../UI/MarkdownViewer";
 import { connect } from "react-redux";
@@ -76,17 +75,6 @@ class DatasetDetails extends Component {
                                 ) : null}
                             </div>
                         )}
-                        <div
-                            className="dataset-details-temporal-coverage"
-                            style={{ display: "none" }}
-                        >
-                            <h3 className="section-heading">
-                                Temporal coverage
-                            </h3>
-                            <TemporalAspectViewer
-                                data={dataset.temporalCoverage}
-                            />
-                        </div>
                     </div>
                 </div>
             </div>

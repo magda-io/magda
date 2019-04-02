@@ -272,14 +272,17 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         catalog=Some("region-in-query-test-catalog"),
         spatial=Some(Location(geoJson=qldGeometry)),
         quality = 0.6,
-        score = None)
+        score = None,
+        publishingState=Some("published")
+      )
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
 
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
@@ -287,7 +290,8 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
 
     val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
 
@@ -331,21 +335,24 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       catalog=Some("region-in-query-test-catalog"),
       spatial=Some(Location(geoJson=saGeometry)),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
 
     val datasets = List(nationalDataset1, nationalDataset2, saDataset)
 
@@ -405,21 +412,24 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       catalog=Some("region-in-query-test-catalog"),
       spatial=Some(Location(geoJson=alfGeometry)),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
       catalog=Some("region-in-query-test-catalog"),
       quality = 0.6,
-      score = None)
+      score = None,
+      publishingState=Some("published"))
 
     val datasets = List(nationalDataset1, nationalDataset2, alfDataset)
 
