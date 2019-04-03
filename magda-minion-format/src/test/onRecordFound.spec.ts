@@ -22,6 +22,12 @@ import * as dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
 
 import * as failingDocs from "./sampleDataFiles/failing-docs.json";
 
+import * as ascGridDist from "./sampleDataFiles/asc-grid-dist.json";
+
+import * as soilRiskMap1 from "./sampleDataFiles/soil-risk-map-1.json";
+
+import * as soilRiskMap2 from "./sampleDataFiles/soil-risk-map-2.json";
+
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
@@ -101,6 +107,20 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     it("Should a dataset with the format '.csv' correctly even if the file doesn't have a csv extension", () => {
         return testDistReturnsFormat(dsaDistCsv, "CSV");
+    });
+
+    it("Dataset's dcat format should be trust if other measures report it as a ZIP", () => {
+        return testDistReturnsFormat(ascGridDist, "ASC");
+    });
+
+    describe("Should process soil risk map dataset correctly", function() {
+        it("Should process (1st distribution) as `WFS` rather than `ESRI`", () => {
+            return testDistReturnsFormat(soilRiskMap1, "WFS");
+        });
+
+        it("Should process (2nd distribution) as `WMS` rather than `ESRI`", () => {
+            return testDistReturnsFormat(soilRiskMap2, "WMS");
+        });
     });
 
     /**

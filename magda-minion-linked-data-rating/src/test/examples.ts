@@ -27,5 +27,5 @@ export const ZERO_STAR_FORMATS = [undefined, "", "pdf", "doc", "png", "tiff"];
 export const FORMAT_EXAMPLES: { [a: number]: string[] } = {
     2: ["XSLX (Microsoft Excel)", "Excel", "MS EXCEL"],
     3: ["CSV", "Comma-Separated Values"],
-    4: ["Csv-geo-au"]
+    4: ["Csv-geo-au", "ASC"]
 };
