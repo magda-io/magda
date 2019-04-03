@@ -43,7 +43,7 @@ object Query {
 
   def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String], publishingState: Iterable[String])(implicit config: Config): Query = {
     Query(
-      freeText = freeText,
+      freeText = if(freeText.isEmpty) Some("*") else freeText,
       publishers = publishers.map(x => filterValueFromString(Some(x))).flatten.toSet,
       dateFrom = dateFilterValueFromString(dateFrom),
       dateTo = dateFilterValueFromString(dateTo),
