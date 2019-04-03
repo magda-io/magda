@@ -4,14 +4,13 @@ import * as URI from "urijs";
 import {
     magdaAdminPortalName,
     MAGDA_TENANT_ID_HEADER,
-    MAGDA_ADMIN_PORTAL_ID
-} from "./buildApp";
-
-import { multiTenantsMode } from "./buildApp";
-
-import { tenantsTable } from "./buildApp";
+    MAGDA_ADMIN_PORTAL_ID,
+    multiTenantsMode,
+    tenantsTable
+} from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
+import updateTenants from "./updateTenants";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -103,12 +102,16 @@ export default function createBaseProxy(): httpProxy {
                 );
             } else {
                 const tenant = tenantsTable.get(domainName);
+                if (tenant == undefined) {
+                    updateTenants(1);
+                }
+
                 if (tenant !== undefined) {
                     proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
                 } else {
-                    res.writeHead(500, { "Content-Type": "text/plain" });
+                    res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
-                        `Something went wrong when processing the tenant with the domain name of ${domainName}.`
+                        `Unable to handle the domain name of ${domainName}.`
                     );
                 }
             }
