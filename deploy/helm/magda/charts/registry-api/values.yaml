@@ -1,5 +1,6 @@
 image: {}
 livenessProbe: {}
+db: {}
 resources: 
   requests:
     cpu: 250m
