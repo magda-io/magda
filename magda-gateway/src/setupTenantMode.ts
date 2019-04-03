@@ -1,5 +1,4 @@
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
-import updateTenants from "./updateTenants";
 
 // TODO: Investigate how to use swagger codegen to automatically generate these constants.
 // These constants are the same as defined in the scala model Registry.
