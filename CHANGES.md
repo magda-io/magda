@@ -19,6 +19,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Display search box placeholder text at a lower opacity while the field is in focus.
 
 ## 0.0.55
 

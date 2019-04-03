@@ -61,16 +61,16 @@
     }
 
     input:focus::-webkit-input-placeholder {
-        opacity: 0;
+        opacity: 0.5;
     }
     input:focus:-moz-placeholder {
-        opacity: 0;
+        opacity: 0.5;
     }
     input:focus::-moz-placeholder {
-        opacity: 0;
+        opacity: 0.5;
     }
     input:focus:-ms-input-placeholder {
-        opacity: 0;
+        opacity: 0.5;
     }
 
     @media (min-width: $medium) {
