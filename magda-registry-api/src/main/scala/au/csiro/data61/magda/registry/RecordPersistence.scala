@@ -181,7 +181,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   def getRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String): Option[JsObject] = {
     sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
-          inner join Aspects using (aspectId)
+          inner join Aspects using (aspectId, tenantId)
           where (RecordAspects.aspectId, RecordAspects.recordId, RecordAspects.tenantId)=($aspectId, $recordId, $tenantId)"""
       .map(rowToAspect)
       .single.apply()

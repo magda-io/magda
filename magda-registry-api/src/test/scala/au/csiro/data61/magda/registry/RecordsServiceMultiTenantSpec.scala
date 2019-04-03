@@ -445,6 +445,40 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           }
         }
 
+        it("returns the specified aspect of the specified record of the specified tenant") { param =>
+          val aspectDefinition_1 = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition_1)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          val aspectDefinition_2 = AspectDefinition("test", "test", None)
+          param.asAdmin(Post("/v0/aspects", aspectDefinition_2)) ~> addTenantIdHeader(tenant_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val expected_aspect_1 = JsObject("foo_1" -> JsString("bar_1"))
+          val recordWithAspect_1 = Record("with", "with", Map("test" -> expected_aspect_1))
+          param.asAdmin(Post("/v0/records", recordWithAspect_1)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val expected_aspect_2 = JsObject("foo_2" -> JsString("bar_2"))
+          val recordWithAspect_2 = Record("with", "with", Map("test" -> expected_aspect_2))
+          param.asAdmin(Post("/v0/records", recordWithAspect_2)) ~> addTenantIdHeader(tenant_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Get("/v0/records/with/aspects/test") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val actual_aspect_1 = responseAs[JsObject]
+            actual_aspect_1 shouldBe expected_aspect_1
+          }
+
+          Get("/v0/records/with/aspects/test") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val actual_aspect_2 = responseAs[JsObject]
+            actual_aspect_2 shouldBe expected_aspect_2
+          }
+        }
       }
 
       describe("dereference") {
