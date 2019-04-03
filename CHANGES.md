@@ -22,11 +22,6 @@ Cataloging:
 
 UI:
 
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
 
