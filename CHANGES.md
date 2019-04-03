@@ -1,7 +1,5 @@
 ## 0.0.56
 
-## 0.0.55
-
 First step to support multi-tenants. Deployed as single tenant by default.
 Registry:
 
@@ -11,7 +9,10 @@ Registry:
 Gateway:
 
 -   Add tenant ID header to client requests.
-    UI:
+
+## 0.0.55
+
+UI:
 
 -   Updated design system components
 -   Integrate sentry release notification and source map upload
@@ -36,7 +37,6 @@ Others:
 Connectors:
 
 -   Add organisation ignore filter to CKAN connector
-    UI:
 
 UI:
 

@@ -56,14 +56,6 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
 
-  def addAdminPortalIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
-  }
-
-  def addSystemIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_SYSTEM_ID)
-  }
-
   // Any positive numbers
   val tenant_1: BigInt = 1
   val tenant_2: BigInt = 2

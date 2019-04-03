@@ -49,7 +49,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("returns 404 if the given ID does not have a required aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -131,15 +131,15 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         def insertAspectDefs(param: FixtureParam) {
           val aspectDefinition1 = AspectDefinition("test1", "test1", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           val aspectDefinition2 = AspectDefinition("test2", "test2", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           val aspectDefinition3 = AspectDefinition("test3", "test3", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition3)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition3)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
         }
@@ -171,7 +171,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
       describe("aspects") {
         it("includes optionalAspect if it exists") { param =>
           val aspectDefinition = AspectDefinition("test", "test", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -202,7 +202,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("requires presence of aspect") { param =>
           val aspectDefinition = AspectDefinition("test", "test", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -244,12 +244,12 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("requires any specified aspects to be present") { param =>
           val fooAspect = AspectDefinition("foo", "foo", None)
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val barAspect = AspectDefinition("bar", "bar", None)
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -296,12 +296,12 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("optionalAspects are optional") { param =>
           val fooAspect = AspectDefinition("foo", "foo", None)
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val barAspect = AspectDefinition("bar", "bar", None)
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -344,17 +344,17 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("supports a mix of aspects and optionalAspects") { param =>
           val fooAspect = AspectDefinition("foo", "foo", None)
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val barAspect = AspectDefinition("bar", "bar", None)
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           val bazAspect = AspectDefinition("baz", "baz", None)
-          param.asAdmin(Post("/v0/aspects", bazAspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", bazAspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -397,7 +397,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("accepts URL-encoded aspect names") { param =>
           val aspect = AspectDefinition("with space", "foo", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -470,7 +470,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
               |}
             """.stripMargin
           val aspect = AspectDefinition("withLink", "with link", Some(JsonParser(jsonSchema).asJsObject))
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -538,7 +538,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
               |}
             """.stripMargin
           val aspect = AspectDefinition("withLinks", "with links", Some(JsonParser(jsonSchema).asJsObject))
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -614,7 +614,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
               |}
             """.stripMargin
           val aspect = AspectDefinition("withLinks", "with links", Some(JsonParser(jsonSchema).asJsObject))
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -634,7 +634,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
       describe("querying by aspect value") {
         it("works for shallow paths") { param =>
           val aspect = AspectDefinition("exampleAspect", "exampleAspect", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -670,7 +670,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("works without specifying the aspect in aspects or optionalAspects") { param =>
           val aspect = AspectDefinition("exampleAspect", "exampleAspect", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -706,7 +706,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("works for deep paths") { param =>
           val aspect = AspectDefinition("exampleAspect", "exampleAspect", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -742,7 +742,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("works as AND when multiple queries specified") { param =>
           val aspect = AspectDefinition("exampleAspect", "exampleAspect", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -778,7 +778,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("allows url encoded paths and values") { param =>
           val aspect = AspectDefinition("example Aspect", "example Aspect", None)
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -819,7 +819,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
         def pagingTests(path: String) {
           it("honors the limit parameter") { param =>
             val aspectDefinition = AspectDefinition("test", "test", None)
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
@@ -841,7 +841,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
           it("honors the start parameter") { param =>
             val aspectDefinition = AspectDefinition("test", "test", None)
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
@@ -863,7 +863,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
           it("pageTokens can be used to page through results") { param =>
             val aspectDefinition = AspectDefinition("test", "test", None)
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
@@ -904,7 +904,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
           it("provides hasMore correctly") { param =>
             val aspectDefinition = AspectDefinition("test", "test", None)
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
@@ -972,7 +972,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
                 it(s"for pageSize $pageSize and recordCount $recordCount") { param =>
                   // Add an aspect for our records
                   val aspectDefinition = AspectDefinition("test", "test", None)
-                  param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+                  param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
                     status shouldEqual StatusCodes.OK
                   }
 
@@ -1017,7 +1017,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
                   // Insert two aspects
                   for (aspectNumber <- 1 to 2) {
                     val aspectDefinition = AspectDefinition(aspectNumber.toString, aspectNumber.toString, None)
-                    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+                    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
                       status shouldEqual StatusCodes.OK
 
                       // Insert $recordCount records for each aspect
@@ -1065,7 +1065,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
                   val aspectIds = for (aspectNumber <- 1 to 2) yield aspectNumber.toString
                   aspectIds.foreach { aspectNumber =>
                     val aspectDefinition = AspectDefinition(aspectNumber, aspectNumber, None)
-                    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(Full).routes ~> check {
+                    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(Full).routes ~> check {
                       status shouldEqual StatusCodes.OK
                     }
                   }
@@ -1361,7 +1361,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can add an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1384,7 +1384,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can modify an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1407,7 +1407,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("does not remove aspects simply because they're missing from the PUT payload") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1487,7 +1487,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can add an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1518,7 +1518,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can modify an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1549,7 +1549,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can add a new property to an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1580,7 +1580,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can remove an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1611,7 +1611,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("can remove a property from an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1642,7 +1642,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("supports Move within an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1673,7 +1673,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("supports Copy within an aspect") { param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1704,7 +1704,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("evaluates Test operations") { param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1732,12 +1732,12 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("does not support Move between aspects") { param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val B = AspectDefinition("B", "B", None)
-        param.asAdmin(Post("/v0/aspects", B)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", B)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1755,12 +1755,12 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
       it("does not support Copy between aspects") { param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val B = AspectDefinition("B", "B", None)
-        param.asAdmin(Post("/v0/aspects", B)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", B)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1810,7 +1810,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
 
         it("can delete a record with an aspect") { param =>
           val aspectDefinition = AspectDefinition("test", "test", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1850,7 +1850,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           val lines = try source.mkString finally source.close()
 
           val aspectDefinition = AspectDefinition("source", "source", Some(lines.parseJson.asJsObject))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1952,7 +1952,7 @@ class RecordsServiceMultiTenantSpec extends ApiSpec {
           val lines = try source.mkString finally source.close()
 
           val aspectDefinition = AspectDefinition("source", "source", Some(lines.parseJson.asJsObject))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addAdminPortalIdHeader ~> param.api(role).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 

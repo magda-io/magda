@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredAdminTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -51,10 +51,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   def create: Route = post {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredAdminTenantId { _ =>
+        requiredTenantId { tenantId =>
           entity(as[AspectDefinition]) { aspect =>
             val theResult = DB localTx { session =>
-              AspectPersistence.create(session, aspect) match {
+              AspectPersistence.create(session, aspect, tenantId) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -105,10 +105,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
     path(Segment) { id: String =>
       {
         requireIsAdmin(authClient)(system, config) { _ =>
-          requiredAdminTenantId { _ =>
+          requiredTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
               val theResult = DB localTx { session =>
-                AspectPersistence.putById(session, id, aspect) match {
+                AspectPersistence.putById(session, id, aspect, tenantId) match {
                   case Success(result) =>
                     complete(result)
                   case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -159,10 +159,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredAdminTenantId { _ =>
+        requiredTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
             val theResult = DB localTx { session =>
-              AspectPersistence.patchById(session, id, aspectPatch) match {
+              AspectPersistence.patchById(session, id, aspectPatch, tenantId) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))

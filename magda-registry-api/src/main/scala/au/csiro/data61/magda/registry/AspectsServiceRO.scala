@@ -4,8 +4,10 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -34,11 +36,13 @@ import scalikejdbc._
 class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
 
   @ApiOperation(value = "Get a list of all aspects", nickname = "getAll", httpMethod = "GET", response = classOf[AspectDefinition], responseContainer = "List")
-  def getAll = get {
+  def getAll: Route = get {
     pathEnd {
-      complete {
-        DB readOnly { session =>
-          AspectPersistence.getAll(session)
+      requiredTenantId { tenantId =>
+        complete {
+          DB readOnly { session =>
+            AspectPersistence.getAll(session, tenantId)
+          }
         }
       }
     }
@@ -68,20 +72,20 @@ class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorS
   @ApiOperation(value = "Get an aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be fetched.")))
-  def getById = get {
-    path(Segment) { (id: String) =>
-      {
+  def getById: Route = get {
+    path(Segment) { id: String =>
+      requiredTenantId { tenantId =>
         DB readOnly { session =>
-          AspectPersistence.getById(session, id) match {
+          AspectPersistence.getById(session, id, tenantId) match {
             case Some(aspect) => complete(aspect)
-            case None         => complete(StatusCodes.NotFound, BadRequest("No aspect exists with that ID."))
+            case None => complete(StatusCodes.NotFound, BadRequest("No aspect exists with that ID."))
           }
         }
       }
     }
   }
 
-  def route =
+  def route: Route =
     getAll ~
       getById
 }
