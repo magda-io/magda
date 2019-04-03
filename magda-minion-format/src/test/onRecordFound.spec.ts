@@ -22,6 +22,8 @@ import * as dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
 
 import * as failingDocs from "./sampleDataFiles/failing-docs.json";
 
+import * as ascGridDist from "./sampleDataFiles/asc-grid-dist.json";
+
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
@@ -101,6 +103,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
 
     it("Should a dataset with the format '.csv' correctly even if the file doesn't have a csv extension", () => {
         return testDistReturnsFormat(dsaDistCsv, "CSV");
+    });
+
+    it("Dataset's dcat format should be trust if other measures report it as a ZIP", () => {
+        return testDistReturnsFormat(ascGridDist, "ASC");
     });
 
     /**

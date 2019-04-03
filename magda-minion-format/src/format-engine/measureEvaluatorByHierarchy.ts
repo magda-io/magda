@@ -12,15 +12,33 @@ export default function getBestMeasureResult(
         return null;
     }
 
+    const dcatSet = candidates[0];
+
     let sortedCandidates = candidates.sort(candidateSortFn);
 
     //TODO produce a system that mitigates when all measures return null. What should happen then?
     if (!sortedCandidates[0].measureResult) {
         return null;
     } else {
+        let finalCandidate = sortedCandidates[0];
+        if (dcatSet.measureResult) {
+            const sortedFormat = (
+                "" + sortedCandidates[0].measureResult.formats[0].format
+            )
+                .trim()
+                .toLowerCase();
+            const dcatFormat = ("" + dcatSet.measureResult.formats[0].format)
+                .trim()
+                .toLowerCase();
+            if (sortedFormat === "zip" && dcatFormat !== sortedFormat) {
+                // --- if sortedFormat is zip & is different from dcatFormat
+                // --- we should trust dcatFormat
+                finalCandidate = dcatSet;
+            }
+        }
         return {
-            format: sortedCandidates[0].measureResult.formats[0],
-            absConfidenceLevel: sortedCandidates[0].getProcessedData()
+            format: finalCandidate.measureResult.formats[0],
+            absConfidenceLevel: finalCandidate.getProcessedData()
                 .absoluteConfidenceLevel
         };
     }
