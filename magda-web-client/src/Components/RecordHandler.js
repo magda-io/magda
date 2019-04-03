@@ -8,7 +8,8 @@ import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
     fetchDistributionFromRegistry,
-    resetFetchRecord
+    resetFetchRecord,
+    modifyRecordAspect
 } from "../actions/recordActions";
 import defined from "../helpers/defined";
 import { gapi } from "../analytics/ga";
@@ -25,10 +26,28 @@ import "./RecordHandler.scss";
 import TagsBox from "../UI/TagsBox";
 import ContactPoint from "../UI/ContactPoint";
 import QualityIndicator from "../UI/QualityIndicator";
+import TemporalAspectViewer from "../UI/TemporalAspectViewer";
 import { getFormatIcon } from "./DistributionIcon";
 import apiAccessIcon from "../assets/apiAccess.svg";
 import downloadWhiteIcon from "../assets/download-white.svg";
 import { get } from "lodash";
+
+import { ToggleEditor } from "./Editing/ToggleEditor";
+import {
+    textEditor,
+    multilineTextEditor,
+    multiTextEditor,
+    multiDateIntervalEditor
+} from "./Editing/Editors/textEditor";
+import {
+    codelistEditor,
+    multiCodelistEditor
+} from "./Editing/Editors/codelistEditor";
+import { bboxEditor } from "./Editing/Editors/spatialEditor";
+import { booleanEditor } from "./Editing/Editors/booleanEditor";
+
+import * as codelists from "./Dataset/New/codelists";
+import { config } from "../config";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -139,12 +158,41 @@ class RecordHandler extends React.Component {
         }
     }
 
+    change(id, aspect) {
+        return field => {
+            return newValue => {
+                this.props.modifyRecordAspect(id, aspect, field, newValue);
+            };
+        };
+    }
+
     renderByState() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
         const publisherId = this.props.dataset.publisher
             ? this.props.dataset.publisher.id
             : null;
+
+        const datasetChange = this.change(
+            this.props.dataset.identifier,
+            "dcat-dataset-strings"
+        );
+        const publishingChange = this.change(
+            this.props.dataset.identifier,
+            "publishing"
+        );
+
+        const spatialChange = this.change(
+            this.props.dataset.identifier,
+            "spatial-coverage"
+        );
+
+        const temporalChange = this.change(
+            this.props.dataset.identifier,
+            "temporal-coverage"
+        );
+
+        const { dataset, hasEditPermissions } = this.props;
 
         if (this.props.match.params.distributionId) {
             // on distribution detail page
@@ -180,12 +228,13 @@ class RecordHandler extends React.Component {
                                 src={getFormatIcon(this.props.distribution)}
                                 alt="distribution icon"
                             />
+                            bb
                             <h1>{this.props.distribution.title}</h1>
                         </span>
                         <div className="distribution-meta">
                             <div className="publisher">
                                 <Link to={`/organisations/${publisherId}`}>
-                                    {this.props.dataset.publisher.name}
+                                    {dataset.publisher.name}
                                 </Link>
                             </div>
 
@@ -199,7 +248,7 @@ class RecordHandler extends React.Component {
                                 </span>
                             )}
 
-                            {defined(this.props.dataset.issuedDate) && (
+                            {defined(dataset.issuedDate) && (
                                 <span className="created-date">
                                     <span className="separator hidden-sm">
                                         &nbsp;/&nbsp;
@@ -379,7 +428,12 @@ class RecordHandler extends React.Component {
                         <div className="row">
                             <div className="col-sm-8">
                                 <h1 itemProp="name">
-                                    {this.props.dataset.title}
+                                    <ToggleEditor
+                                        enabled={hasEditPermissions}
+                                        value={this.props.dataset.title}
+                                        onChange={datasetChange("title")}
+                                        editor={textEditor}
+                                    />
                                 </h1>
                                 <div className="publisher-basic-info-row">
                                     <span
@@ -423,25 +477,195 @@ class RecordHandler extends React.Component {
                                         </span>
                                     )}
                                     <div className="dataset-details-overview">
-                                        <Small>
-                                            <DescriptionBox
-                                                content={
-                                                    this.props.dataset
-                                                        .description
-                                                }
-                                                truncateLength={200}
-                                            />
-                                        </Small>
-                                        <Medium>
-                                            <DescriptionBox
-                                                content={
-                                                    this.props.dataset
-                                                        .description
-                                                }
-                                                truncateLength={500}
-                                            />
-                                        </Medium>
+                                        <ToggleEditor
+                                            enabled={hasEditPermissions}
+                                            value={
+                                                this.props.dataset.description
+                                            }
+                                            onChange={datasetChange(
+                                                "description"
+                                            )}
+                                            editor={multilineTextEditor}
+                                        >
+                                            <Small>
+                                                <DescriptionBox
+                                                    content={
+                                                        this.props.dataset
+                                                            .description
+                                                    }
+                                                    truncateLength={200}
+                                                />
+                                            </Small>
+                                            <Medium>
+                                                <DescriptionBox
+                                                    content={
+                                                        this.props.dataset
+                                                            .description
+                                                    }
+                                                    truncateLength={500}
+                                                />
+                                            </Medium>
+                                        </ToggleEditor>
                                     </div>
+                                    {hasEditPermissions && (
+                                        <div className="au-body au-body--alt">
+                                            <h4>State: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={dataset.publishingState}
+                                                onChange={publishingChange(
+                                                    "state"
+                                                )}
+                                                editor={codelistEditor(
+                                                    codelists.status
+                                                )}
+                                            />
+                                            <h4>Priority: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={dataset.importance}
+                                                onChange={datasetChange(
+                                                    "importance"
+                                                )}
+                                                editor={codelistEditor(
+                                                    codelists.importance
+                                                )}
+                                            />
+                                            <h4>Affiliated Organisations: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.creationAffiliatedOrganisation
+                                                }
+                                                onChange={datasetChange(
+                                                    "creation/affiliatedOrganisation"
+                                                )}
+                                                editor={multilineTextEditor}
+                                            />
+                                            <h4>Update frequency: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.accrualPeriodicity
+                                                }
+                                                onChange={datasetChange(
+                                                    "accrualPeriodicity"
+                                                )}
+                                                editor={codelistEditor(
+                                                    codelists.accrualPeriodicity
+                                                )}
+                                            />
+                                            <h4>Spatial coverage: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.spatialCoverageBbox
+                                                }
+                                                onChange={spatialChange("bbox")}
+                                                editor={bboxEditor}
+                                            />
+                                            <h4>Temporal coverage: </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.temporalCoverage
+                                                        .intervals
+                                                }
+                                                onChange={temporalChange(
+                                                    "intervals"
+                                                )}
+                                                editor={multiDateIntervalEditor}
+                                            >
+                                                <div className="dataset-details-temporal-coverage">
+                                                    <TemporalAspectViewer
+                                                        data={
+                                                            dataset.temporalCoverage
+                                                        }
+                                                    />
+                                                </div>
+                                            </ToggleEditor>
+                                            <h4>Access level:</h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={dataset.accessLevel}
+                                                onChange={datasetChange(
+                                                    "accessLevel"
+                                                )}
+                                                editor={codelistEditor(
+                                                    codelists.accessLevel
+                                                )}
+                                            />
+                                            <h4>
+                                                Dataset security classification:
+                                            </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.informationSecurity
+                                                        .disseminationLimits
+                                                }
+                                                onChange={datasetChange(
+                                                    "informationSecurity/disseminationLimits"
+                                                )}
+                                                editor={multiCodelistEditor(
+                                                    codelists.disseminationLimits
+                                                )}
+                                            />
+                                            <h4>
+                                                Dataset security
+                                                classification2:
+                                            </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.informationSecurity
+                                                        .classification
+                                                }
+                                                onChange={datasetChange(
+                                                    "informationSecurity/classification"
+                                                )}
+                                                editor={codelistEditor(
+                                                    codelists.classification
+                                                )}
+                                            />
+                                            <h4>Is this public open data?</h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.creation.isOpenData
+                                                }
+                                                onChange={datasetChange(
+                                                    "creation/isOpenData"
+                                                )}
+                                                editor={booleanEditor}
+                                            />
+                                            <h4>
+                                                How was the dataset produced?
+                                            </h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.creation.mechanism
+                                                }
+                                                onChange={datasetChange(
+                                                    "creation/mechanism"
+                                                )}
+                                                editor={multilineTextEditor}
+                                            />
+                                            <h4>Source system:</h4>
+                                            <ToggleEditor
+                                                enabled={hasEditPermissions}
+                                                value={
+                                                    dataset.creation
+                                                        .sourceSystem
+                                                }
+                                                onChange={datasetChange(
+                                                    "creation/sourceSystem"
+                                                )}
+                                                editor={textEditor}
+                                            />
+                                        </div>
+                                    )}
                                     {this.props.dataset.hasQuality ? (
                                         <div className="quality-rating-box">
                                             <QualityIndicator
@@ -452,14 +676,31 @@ class RecordHandler extends React.Component {
                                             />
                                         </div>
                                     ) : null}
-                                    {this.props.dataset.contactPoint && (
-                                        <ContactPoint
-                                            contactPoint={
-                                                this.props.dataset.contactPoint
-                                            }
+                                    <ToggleEditor
+                                        enabled={hasEditPermissions}
+                                        value={dataset.contactPoint}
+                                        onChange={datasetChange("contactPoint")}
+                                        editor={multilineTextEditor}
+                                    >
+                                        {this.props.dataset.contactPoint && (
+                                            <ContactPoint
+                                                contactPoint={
+                                                    this.props.dataset
+                                                        .contactPoint
+                                                }
+                                            />
+                                        )}
+                                    </ToggleEditor>
+                                    <ToggleEditor
+                                        enabled={hasEditPermissions}
+                                        value={this.props.dataset.tags}
+                                        onChange={datasetChange("keywords")}
+                                        editor={multiTextEditor}
+                                    >
+                                        <TagsBox
+                                            tags={this.props.dataset.tags}
                                         />
-                                    )}
-                                    <TagsBox tags={this.props.dataset.tags} />
+                                    </ToggleEditor>
                                 </div>
                             </div>
                             <div
@@ -577,6 +818,13 @@ function mapStateToProps(state) {
     const datasetFetchError = record.datasetFetchError;
     const distributionFetchError = record.distributionFetchError;
 
+    // for now, assume that if the user is admin, they can edit the data
+    const hasEditPermissions =
+        config.featureFlags.cataloguing &&
+        state.userManagement &&
+        state.userManagement.user &&
+        state.userManagement.user.isAdmin;
+
     return {
         dataset,
         distribution,
@@ -584,7 +832,8 @@ function mapStateToProps(state) {
         distributionIsFetching,
         distributionFetchError,
         datasetFetchError,
-        strings: state.content.strings
+        strings: state.content.strings,
+        hasEditPermissions
     };
 }
 
@@ -593,7 +842,8 @@ const mapDispatchToProps = dispatch => {
         {
             fetchDataset: fetchDatasetFromRegistry,
             fetchDistribution: fetchDistributionFromRegistry,
-            resetFetchRecord: resetFetchRecord
+            resetFetchRecord: resetFetchRecord,
+            modifyRecordAspect: modifyRecordAspect
         },
         dispatch
     );

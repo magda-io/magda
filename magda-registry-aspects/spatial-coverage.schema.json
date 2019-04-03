@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Spatial extent defined (will try to confom as much to) in geojson.",
+    "type": "object",
+    "properties": {
+        "bbox": {
+            "title": "Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)",
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        }
+    }
+}

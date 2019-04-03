@@ -7,8 +7,7 @@ var DOMPurify = require("dompurify/dist/purify");
 
 class MarkdownViewer extends React.Component {
     render() {
-        let html = markdownToHtml(this.props.markdown);
-        html = html ? html : "";
+        let html = markdownToHtml(this.props.markdown || "");
         if (this.props.truncate === true) {
             html = truncate(
                 html,

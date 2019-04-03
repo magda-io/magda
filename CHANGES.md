@@ -4,6 +4,19 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 
+Cataloging:
+
+-   Added new aspects for publishing state and spatial coverage
+-   Updated Indexer and Search API to support publishingState
+-   Updated new dataset demo UI page to support adding new datasets
+-   Updated dataset ui page to be able to edit fields
+-   Added editor / editor type abstraction for making state management simpler for large forms.
+
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+
 ## 0.0.55
 
 UI:

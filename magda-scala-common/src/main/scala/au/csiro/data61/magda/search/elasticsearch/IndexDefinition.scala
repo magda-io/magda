@@ -76,7 +76,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 40,
+    version = 41,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -165,7 +165,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                * */
             keywordField("identifier"),
             objectField("contactPoint").fields(keywordField("identifier")),
-            dateField("indexed")
+            dateField("indexed"),
+            keywordField("publishingState")
           )
         )
         .analysis(

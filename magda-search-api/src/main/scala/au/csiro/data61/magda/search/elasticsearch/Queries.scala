@@ -54,6 +54,24 @@ object Queries {
     }
   }
 
+  def publishingStateQuery(strategy: SearchStrategy)(publishingStateValue: Set[FilterValue[String]]): QueryDefinition = {
+    var filteredValue = publishingStateValue.filter(value => {
+        value match {
+          case Specified(inner) => true
+          case _ => false
+        }
+      }).map(value => {
+        value match {
+          case Specified(inner) => inner
+          case Unspecified() => ""
+        }
+      });
+    filteredValue.isEmpty match {
+      case true => termQuery("publishingState", "published")
+      case _ => termsQuery("publishingState", filteredValue)
+    }
+  }
+
   def regionToGeoShapeQuery(region: Region, indices: Indices)(implicit config: Config) = new GeoShapeQueryDefinition(
       "spatial.geoJson",
       PreindexedShape(
@@ -99,4 +117,3 @@ object Queries {
     case Unspecified()    => boolQuery().not(existsQuery(field))
   }
 }
-

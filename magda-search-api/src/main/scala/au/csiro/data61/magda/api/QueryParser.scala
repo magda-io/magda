@@ -35,12 +35,13 @@ case class Query(
   dateTo: Option[FilterValue[OffsetDateTime]] = None,
   regions: Set[FilterValue[Region]] = Set(),
   boostRegions: Set[Region] = Set(),
-  formats: Set[FilterValue[String]] = Set())
+  formats: Set[FilterValue[String]] = Set(),
+  publishingState: Set[FilterValue[String]] = Set())
 
 object Query {
   val quoteRegex = """"(.*)""".r
 
-  def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String])(implicit config: Config): Query = {
+  def fromQueryParams(freeText: Option[String], publishers: Iterable[String], dateFrom: Option[String], dateTo: Option[String], regions: Iterable[String], formats: Iterable[String], publishingState: Iterable[String])(implicit config: Config): Query = {
     Query(
       freeText = if(freeText.isEmpty) Some("*") else freeText,
       publishers = publishers.map(x => filterValueFromString(Some(x))).flatten.toSet,
@@ -48,7 +49,8 @@ object Query {
       dateTo = dateFilterValueFromString(dateTo),
       regions = regions.map(regionValueFromString).flatten.toSet,
       boostRegions = Set(),
-      formats = formats.map(x => filterValueFromString(Some(x))).flatten.toSet)
+      formats = formats.map(x => filterValueFromString(Some(x))).flatten.toSet,
+      publishingState = publishingState.map(x => filterValueFromString(Some(x))).flatten.toSet)
   }
 
   private def regionValueFromString(input: String)(implicit config: Config): Option[FilterValue[Region]] = {

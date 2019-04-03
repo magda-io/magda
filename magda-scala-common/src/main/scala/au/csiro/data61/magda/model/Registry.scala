@@ -221,7 +221,7 @@ object Registry {
 
     def convertRegistryDataSet(hit: Record, logger: Option[LoggingAdapter] = None)(implicit defaultOffset: ZoneOffset): DataSet = {
       val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
-      val source = hit.aspects("source")
+      val source = hit.aspects.getOrElse("source", JsObject())
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
@@ -268,6 +268,8 @@ object Registry {
           None
       }
 
+      val publishing = hit.aspects.getOrElse("publishing", JsObject())
+      
       DataSet(
         identifier = hit.id,
         title = dcatStrings.extract[String]('title.?),
@@ -292,7 +294,8 @@ object Registry {
         creation = dcatStrings.getFields("creation").headOption.filter{
           case JsNull => false
           case _ => true
-        }.map(_.convertTo[DcatCreation]))
+        }.map(_.convertTo[DcatCreation]),
+        publishingState = Some(publishing.extract[String]('state.?).getOrElse("published"))) // assume not set means published
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
@@ -342,14 +345,16 @@ object Registry {
 
   object RegistryConstants {
     val aspects = List(
-      "dcat-dataset-strings",
-      "dataset-distributions",
-      "source")
+      "dcat-dataset-strings")
 
     val optionalAspects = List(
+      "dataset-distributions",
+      "source",
       "temporal-coverage",
       "dataset-publisher",
       "dataset-quality-rating",
-      "dataset-format")
+      "dataset-format",
+      "publishing",
+      "spatial-coverage")
   }
 }
