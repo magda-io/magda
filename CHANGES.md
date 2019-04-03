@@ -19,6 +19,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Showed text message if there are no tags to display in a dataset page.
 
 ## 0.0.55
 

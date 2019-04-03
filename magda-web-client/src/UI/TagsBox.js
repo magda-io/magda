@@ -28,22 +28,26 @@ function TagsBox(props) {
     return (
         <div className="tags-box">
             <div className="heading">Tags: </div>
-            <AUtags
-                tags={
-                    props.tags &&
-                    mergeTags(props.tags)
-                        .sort((a, b) => {
-                            if (a < b) return -1;
-                            else if (a > b) return 1;
-                            else return 0;
-                        })
-                        .map((t, _) => ({
-                            link: `/search?q=${encodeURIComponent(t)}`,
-                            text: t
-                        }))
-                }
-                linkComponent={Link}
-            />
+            {props.tags && props.tags.length > 0 ? (
+                <AUtags
+                    tags={
+                        props.tags &&
+                        mergeTags(props.tags)
+                            .sort((a, b) => {
+                                if (a < b) return -1;
+                                else if (a > b) return 1;
+                                else return 0;
+                            })
+                            .map((t, _) => ({
+                                link: `/search?q=${encodeURIComponent(t)}`,
+                                text: t
+                            }))
+                    }
+                    linkComponent={Link}
+                />
+            ) : (
+                <span>No tags defined</span>
+            )}
         </div>
     );
 }
