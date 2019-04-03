@@ -114,6 +114,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     DB localTx { implicit session =>
       sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test1', $tenant_1, true, 'test1', 1)".update.apply()
       sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test2', $tenant_2, true, 'test2', 1)".update.apply()
+      sql"ALTER SEQUENCE tenants_id_seq RESTART WITH 3".update().apply()
     }
 
     val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))

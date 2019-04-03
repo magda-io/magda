@@ -1,10 +1,10 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{as, complete, entity, pathEnd, post}
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
@@ -22,7 +22,7 @@ import scala.util.{Failure, Success}
 class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient,
                      system: ActorSystem, materializer: Materializer,
                      tenantPersistence: TenantPersistence = DefaultTenantPersistence)
-  extends Protocols with SprayJsonSupport {
+  extends TenantsServiceRO(config, system, materializer, tenantPersistence) {
   /**
     * @apiGroup Registry Tenant Service
     * @api {post} /v0/registry/tenants Create a new tenant
@@ -70,6 +70,6 @@ class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     }
   }
 
-  def route: Route =
-      create
+  override def route: Route = super.route ~
+    create
 }
