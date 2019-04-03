@@ -26,13 +26,21 @@ export default function getBestMeasureResult(
                 "" + sortedCandidates[0].measureResult.formats[0].format
             )
                 .trim()
-                .toLowerCase();
+                .toUpperCase();
             const dcatFormat = ("" + dcatSet.measureResult.formats[0].format)
                 .trim()
-                .toLowerCase();
-            if (sortedFormat === "zip" && dcatFormat !== sortedFormat) {
-                // --- if sortedFormat is zip & is different from dcatFormat
-                // --- we should trust dcatFormat
+                .toUpperCase();
+            if (
+                /**
+                 * if sortedFormat is `ZIP` & is different from dcatFormat, we should trust dcatFormat
+                 */
+                (sortedFormat === "ZIP" && dcatFormat !== sortedFormat) ||
+                /**
+                 * if sortedFormat is `ESRI REST` & is different from dcatFormat, we should trust dcatFormat
+                 * The Regex for testing `ESRI REST` URL cannot be very specific. Thus, should only be used when DcatFormat not present
+                 */
+                (sortedFormat === "ESRI REST" && dcatFormat !== sortedFormat)
+            ) {
                 finalCandidate = dcatSet;
             }
         }

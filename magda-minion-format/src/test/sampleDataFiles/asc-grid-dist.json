@@ -26,10 +26,6 @@
             "wms_layer": "",
             "zip_extract": "True"
         },
-        "dataset-format": {
-            "confidenceLevel": 90,
-            "format": "ZIP"
-        },
         "dcat-distribution-strings": {
             "downloadURL": "https://data.gov.au/dataset/ccbc03e4-b788-419c-b456-f9819d80e277/resource/92b17b46-2115-44ca-bbbc-9f815a6cae36/download/dtmmountain-creekcatchment2014.zip",
             "format": "ASC",
