@@ -1,7 +1,11 @@
-INSERT INTO "public"."resources" ("id", "name", "description") VALUES ('1', 'Draft Datasets', 'Datasets in draft status'),
-('2', 'Published Datasets', 'Datasets in non-draft (published) status');
+INSERT INTO "public"."resources" ("id", "name", "uri", "description") 
+VALUES 
+('1', 'Draft Datasets', 'object/draft_dataset', 'Datasets in draft status'),
+('2', 'Published Datasets', 'object/published_dataset', 'Datasets in non-draft (published) status');
 
-INSERT INTO "public"."operations" ("id", "name", "description", "resource_id") VALUES ('1', 'Read Draft Dataset', '', '1'),
+INSERT INTO "public"."operations" ("id", "name", "description", "resource_id") 
+VALUES 
+('1', 'Read Draft Dataset', '', '1'),
 ('2', 'Create Draft Dataset', '', '1'),
 ('3', 'Update Draft Dataset', '', '1'),
 ('4', 'Delete Draft Dataset', '', '1'),

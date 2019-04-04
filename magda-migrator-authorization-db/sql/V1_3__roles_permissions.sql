@@ -45,6 +45,7 @@ CREATE SEQUENCE IF NOT EXISTS resources_id_seq;
 CREATE TABLE "public"."resources" (
     "id" int4 NOT NULL DEFAULT nextval('resources_id_seq'::regclass),
     "name" varchar(250) NOT NULL DEFAULT ''::character varying,
+    "uri" varchar(250) NOT NULL DEFAULT ''::character varying UNIQUE,
     "description" text NOT NULL DEFAULT ''::text,
     PRIMARY KEY ("id")
 ) WITH (
@@ -113,6 +114,7 @@ CREATE INDEX user_roles_user_id_idx ON "public"."user_roles" USING btree ("user_
 CREATE INDEX operations_name_gin_trgm_idx ON "public"."operations" USING gin ("name" gin_trgm_ops);
 CREATE INDEX permissions_name_gin_trgm_idx ON "public"."permissions" USING gin ("name" gin_trgm_ops);
 CREATE INDEX resources_name_gin_trgm_idx ON "public"."resources" USING gin ("name" gin_trgm_ops);
+CREATE INDEX resources_uri_gin_trgm_idx ON "public"."resources" USING gin ("uri" gin_trgm_ops);
 CREATE INDEX roles_name_gin_trgm_idx ON "public"."roles" USING gin ("name" gin_trgm_ops);
 
 -- Grant clientUser all permissions
