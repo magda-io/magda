@@ -135,6 +135,46 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
 
+    interface WhoamiResponse {
+        id: string;
+        displayName: string;
+        email: string;
+        photoURL: string;
+        source: string;
+        isAdmin: boolean;
+        roles: {
+            id: string;
+            name: string;
+            description: string;
+            permissions: string[];
+        }[];
+        permissions: {
+            id: string;
+            name: string;
+            description: string;
+            resource_id: number;
+            operations: number[];
+        }[];
+    }
+
+    const defaultAnonymousUserInfo: WhoamiResponse = {
+        id: null as string,
+        displayName: "Anonymous User",
+        email: "",
+        photoURL: "",
+        source: "",
+        isAdmin: false,
+        roles: [
+            {
+                id: "00000000-0000-0001-0000-000000000000",
+                name: "Anonymous Users",
+                description: "Default role for unauthenticated users",
+                permissions: [] as string[]
+            }
+        ],
+        permissions: []
+    };
+
     router.get("/public/users/whoami", async function(req, res) {
         try {
             res.set({
@@ -143,6 +183,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 Expires: "0"
             });
             const userId = getUserId(req, options.jwtSecret).valueOr(null);
+
             if (!userId) {
                 throw new AuthError();
             }
@@ -152,7 +193,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             res.json(user);
         } catch (e) {
-            if (e instanceof GenericError) {
+            if (e instanceof AuthError) {
+                res.json(e.toData());
+            } else if (e instanceof GenericError) {
                 res.json(e.toData());
             } else {
                 console.error(
