@@ -10,6 +10,8 @@ import "./StaticPage.scss";
 import { fetchStaticPage } from "../actions/staticPagesActions";
 import { bindActionCreators } from "redux";
 
+import starIcon from "../assets/star.svg";
+
 class StaticPage extends Component {
     componentDidMount() {
         if (this.props.match.params.pageId) {
@@ -35,6 +37,12 @@ class StaticPage extends Component {
                 <span>{title}</span>
             </li>
         ];
+
+        let html = markdownToHtml(bodyContent);
+
+        // replace star emoji with star icon
+        html = html.replace(/⭐/g, `<img src="${starIcon}" />`);
+
         return (
             <MagdaDocumentTitle prefixes={[title]}>
                 <div
@@ -49,7 +57,7 @@ class StaticPage extends Component {
                     <div
                         className="markdown-body"
                         dangerouslySetInnerHTML={{
-                            __html: markdownToHtml(bodyContent)
+                            __html: html
                         }}
                     />
                 </div>

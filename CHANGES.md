@@ -4,6 +4,14 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
+
 Cataloging:
 
 -   Added new aspects for publishing state and spatial coverage
@@ -12,14 +20,12 @@ Cataloging:
 -   Updated dataset ui page to be able to edit fields
 -   Added editor / editor type abstraction for making state management simpler for large forms.
 
-Others:
+UI:
 
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
 -   Display search box placeholder text at a lower opacity while the field is in focus.
+-   Showed text message if there are no tags to display in a dataset page.
+-   Removed gap after data quality star rating
+-   Replaced star emoji in static page markdown with quality star icon
 
 ## 0.0.55
 
