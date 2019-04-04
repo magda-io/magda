@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID}
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -56,9 +56,15 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
 
+  def addAdminPortalIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+  }
+
   // Any positive numbers
   val tenant_1: BigInt = 1
   val tenant_2: BigInt = 2
+  val domain_name_1: String = "test1"
+  val domain_name_2: String = "test2"
 
   // Stop Flyway from producing so much spam that Travis terminates the process.
   LoggerFactory.getLogger("org.flywaydb").asInstanceOf[Logger].setLevel(Level.WARN)
@@ -112,8 +118,8 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     flyway.migrate()
 
     DB localTx { implicit session =>
-      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test1', $tenant_1, true, 'test1', 1)".update.apply()
-      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES('test2', $tenant_2, true, 'test2', 1)".update.apply()
+      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES($domain_name_1, $tenant_1, true, 'test1', 1)".update.apply()
+      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES($domain_name_2, $tenant_2, true, 'test2', 1)".update.apply()
       sql"ALTER SEQUENCE tenants_id_seq RESTART WITH 3".update().apply()
     }
 
