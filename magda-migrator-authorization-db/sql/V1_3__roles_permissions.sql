@@ -13,7 +13,7 @@ CREATE TABLE "public"."operations" (
 );
 
 CREATE TABLE "public"."permission_operations" (
-    "id" uuid NOT NULL,
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "permission_id" uuid NOT NULL,
     "operation_id" int4 NOT NULL,
     PRIMARY KEY ("id")
@@ -23,7 +23,7 @@ CREATE TABLE "public"."permission_operations" (
 
 
 CREATE TABLE "public"."permissions" (
-    "id" uuid NOT NULL,
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "resource_id" int4 NOT NULL,
     "user_ownership_constraint" bool NOT NULL DEFAULT false,
@@ -52,7 +52,7 @@ CREATE TABLE "public"."resources" (
 );
 
 CREATE TABLE "public"."role_permissions" (
-    "id" uuid NOT NULL,
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "role_id" uuid NOT NULL,
     "permission_id" uuid NOT NULL,
     PRIMARY KEY ("id")
@@ -61,7 +61,7 @@ CREATE TABLE "public"."role_permissions" (
 );
 
 CREATE TABLE "public"."roles" (
-    "id" uuid NOT NULL,
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "description" text NOT NULL DEFAULT ''::text,
     "create_by" uuid,
@@ -74,7 +74,7 @@ CREATE TABLE "public"."roles" (
 );
 
 CREATE TABLE "public"."user_roles" (
-    "id" uuid NOT NULL,
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" uuid NOT NULL,
     "role_id" uuid NOT NULL,
     PRIMARY KEY ("id")
