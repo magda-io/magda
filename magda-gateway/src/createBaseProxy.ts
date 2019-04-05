@@ -103,7 +103,7 @@ export default function createBaseProxy(): httpProxy {
             } else {
                 const tenant = tenantsTable.get(domainName);
                 if (tenant == undefined) {
-                    updateTenants(1);
+                    updateTenants(1, 2);
                 }
 
                 if (tenant !== undefined) {
