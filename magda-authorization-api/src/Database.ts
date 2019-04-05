@@ -1,8 +1,13 @@
 import createPool from "./createPool";
-import { User } from "@magda/typescript-common/dist/authorization-api/model";
+import {
+    User,
+    Role,
+    Permission
+} from "@magda/typescript-common/dist/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
 import * as pg from "pg";
+import * as _ from "lodash";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -23,6 +28,104 @@ export default class Database {
                 [id]
             )
             .then(res => arrayToMaybe(res.rows));
+    }
+
+    async getUserRoles(id: string): Promise<Role[]> {
+        const result = await this.pool.query(
+            `SELECT r.id, r.name, rp.permission_id
+                FROM user_roles AS ur
+                LEFT JOIN roles r ON r.id = ur.role_id
+                LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
+                WHERE ur.user_id = '$1'`,
+            [id]
+        );
+        const list: any = {};
+        result.rows.forEach(item => {
+            const { permissionId, ...roleData } = _.zipObject(
+                // --- underscore to camelCase case
+                Object.keys(item).map(_.camelCase),
+                Object.values(item)
+            );
+            if (!list[item.id]) {
+                list[item.id] = {
+                    ...roleData,
+                    operations: []
+                };
+            }
+            if (permissionId) {
+                list[item.id].permissionIds.push(permissionId);
+            }
+        });
+        return Object.values(list);
+    }
+
+    async getUserPermissions(id: string): Promise<Permission[]> {
+        const result = await this.pool.query(
+            `SELECT p.id, p.name, p.resource_id, res.uri AS resource_uri, 
+                p.user_ownership_constraint,
+                p.org_unit_ownership_constraint,
+                p.pre_authorised_constraint,
+                op.id AS operation_id,
+                op.name AS operation_name
+                FROM role_permissions rp
+                LEFT JOIN user_roles ur ON ur.role_id = rp.role_id
+                LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
+                LEFT JOIN operations op ON op.id = po.operation_id
+                LEFT JOIN permissions p ON p.id = rp.permission_id
+                LEFT JOIN resources res ON res.id = p.resource_id
+                WHERE ur.user_id = '$1'`,
+            [id]
+        );
+        return this.convertPermissionOperationRowsToPermissions(result);
+    }
+
+    private convertPermissionOperationRowsToPermissions(
+        result: pg.QueryResult
+    ): Permission[] {
+        const list: any = {};
+        result.rows.forEach(item => {
+            const {
+                operationId,
+                operationName,
+                ...permissionData
+            } = _.zipObject(
+                // --- underscore to camelCase case
+                Object.keys(item).map(_.camelCase),
+                Object.values(item)
+            );
+            if (!list[item.id]) {
+                list[item.id] = {
+                    ...permissionData,
+                    operations: []
+                };
+            }
+            if (operationId) {
+                list[item.id].operations.push({
+                    id: operationId,
+                    name: operationName
+                });
+            }
+        });
+        return Object.values(list);
+    }
+
+    async getRolePermissions(id: string): Promise<Permission[]> {
+        const result = await this.pool.query(
+            `SELECT p.id, p.name, p.resource_id, res.uri AS resource_uri,
+            p.user_ownership_constraint,
+            p.org_unit_ownership_constraint,
+            p.pre_authorised_constraint,
+            op.id AS operation_id,
+            op.name AS operation_name
+            FROM role_permissions rp 
+            LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
+            LEFT JOIN operations op ON op.id = po.operation_id
+            LEFT JOIN permissions p ON p.id = rp.permission_id
+            LEFT JOIN resources res ON res.id = p.resource_id
+            WHERE rp.role_id = '$1'`,
+            [id]
+        );
+        return this.convertPermissionOperationRowsToPermissions(result);
     }
 
     getUsers(): Promise<User[]> {

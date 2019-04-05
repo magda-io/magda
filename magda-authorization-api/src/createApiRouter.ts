@@ -2,7 +2,11 @@ import * as express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
-import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
+import {
+    PublicUser,
+    Role,
+    Permission
+} from "@magda/typescript-common/dist/authorization-api/model";
 import {
     getUserIdHandling,
     getUserId
@@ -142,19 +146,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
         photoURL: string;
         source: string;
         isAdmin: boolean;
-        roles: {
-            id: string;
-            name: string;
-            description: string;
-            permissions: string[];
-        }[];
-        permissions: {
-            id: string;
-            name: string;
-            description: string;
-            resource_id: number;
-            operations: number[];
-        }[];
+        roles: Role[];
+        permissions: Permission[];
     }
 
     const defaultAnonymousUserInfo: WhoamiResponse = {
@@ -169,7 +162,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 id: "00000000-0000-0001-0000-000000000000",
                 name: "Anonymous Users",
                 description: "Default role for unauthenticated users",
-                permissions: [] as string[]
+                permissionIds: [] as string[]
             }
         ],
         permissions: []
@@ -182,15 +175,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 Pragma: "no-cache",
                 Expires: "0"
             });
+
             const userId = getUserId(req, options.jwtSecret).valueOr(null);
 
             if (!userId) {
-                throw new AuthError();
+                const user = { ...defaultAnonymousUserInfo };
+                user.permissions = await database.getRolePermissions(
+                    user.roles[0].id
+                );
+                user.roles[0].permissionIds = user.permissions.map(
+                    item => item.id
+                );
+                res.json(user);
+                return;
             }
+
             const user = (await database.getUser(userId)).valueOr(null);
             if (!user) {
                 throw new GenericError("Not Found User", 404);
             }
+            user.roles = await database.getUserRoles(userId);
+            user.permissions = await database.getRolePermissions(userId);
             res.json(user);
         } catch (e) {
             if (e instanceof AuthError) {
