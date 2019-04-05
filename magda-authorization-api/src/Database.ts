@@ -49,7 +49,7 @@ export default class Database {
             if (!list[item.id]) {
                 list[item.id] = {
                     ...roleData,
-                    operations: []
+                    permissionIds: []
                 };
             }
             if (permissionId) {

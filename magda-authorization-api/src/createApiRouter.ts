@@ -195,7 +195,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 throw new GenericError("Not Found User", 404);
             }
             user.roles = await database.getUserRoles(userId);
-            user.permissions = await database.getRolePermissions(userId);
+            user.permissions = await database.getUserPermissions(userId);
             res.json(user);
         } catch (e) {
             if (e instanceof GenericError) {

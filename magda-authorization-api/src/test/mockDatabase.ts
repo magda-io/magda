@@ -1,5 +1,9 @@
 import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataStore";
-import { User } from "@magda/typescript-common/dist/authorization-api/model";
+import {
+    User,
+    Role,
+    Permission
+} from "@magda/typescript-common/dist/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
 
@@ -45,6 +49,18 @@ export default class MockDatabase {
                 )
             );
         });
+    }
+
+    async getUserRoles(id: string): Promise<Role[]> {
+        return [];
+    }
+
+    async getUserPermissions(id: string): Promise<Permission[]> {
+        return [];
+    }
+
+    async getRolePermissions(id: string): Promise<Permission[]> {
+        return [];
     }
 
     createUser(user: User): Promise<User> {
