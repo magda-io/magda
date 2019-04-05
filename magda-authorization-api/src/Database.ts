@@ -36,7 +36,7 @@ export default class Database {
                 FROM user_roles AS ur
                 LEFT JOIN roles r ON r.id = ur.role_id
                 LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
-                WHERE ur.user_id = '$1'`,
+                WHERE ur.user_id = $1`,
             [id]
         );
         const list: any = {};
@@ -73,7 +73,7 @@ export default class Database {
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
                 LEFT JOIN resources res ON res.id = p.resource_id
-                WHERE ur.user_id = '$1'`,
+                WHERE ur.user_id = $1`,
             [id]
         );
         return this.convertPermissionOperationRowsToPermissions(result);
@@ -122,7 +122,7 @@ export default class Database {
             LEFT JOIN operations op ON op.id = po.operation_id
             LEFT JOIN permissions p ON p.id = rp.permission_id
             LEFT JOIN resources res ON res.id = p.resource_id
-            WHERE rp.role_id = '$1'`,
+            WHERE rp.role_id = $1`,
             [id]
         );
         return this.convertPermissionOperationRowsToPermissions(result);
