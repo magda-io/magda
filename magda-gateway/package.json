@@ -78,7 +78,8 @@
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.2.0",
+    "mockttp": "^0.13.0"
   },
   "config": {
     "docker": {
