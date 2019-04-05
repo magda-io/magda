@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import AccountNavbar from "../Account/AccountNavbar";
-import { config } from "../../config";
+import AccountNavbar from "Components/Account/AccountNavbar";
+import { config } from "config";
 import isExternalURL from "is-url-external";
 
 const headerNavigationPlugins = {
