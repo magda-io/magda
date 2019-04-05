@@ -55,9 +55,11 @@ class Account extends React.Component {
                             <p>Email: {this.props.user.email}</p>
                             <p>
                                 Role:{" "}
-                                {this.props.user.isAdmin
-                                    ? "Admin"
-                                    : "Data User"}
+                                {this.props.user.roles.length
+                                    ? this.props.user.roles
+                                          .map(item => item.name)
+                                          .join("; ")
+                                    : "N/A"}
                             </p>
                         </div>
                     )}
