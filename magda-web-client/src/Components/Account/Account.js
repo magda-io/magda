@@ -25,7 +25,7 @@ class Account extends React.Component {
     }
 
     render() {
-        const pageTitle = this.props.user ? "Account" : "Sign In";
+        const pageTitle = this.props.user.id ? "Account" : "Sign In";
         return (
             <MagdaDocumentTitle prefixes={[pageTitle]}>
                 <div className="account">
@@ -38,7 +38,7 @@ class Account extends React.Component {
                             ]}
                         />
                     </Medium>
-                    {!this.props.user && (
+                    {!this.props.user.id && (
                         <Login
                             signInError={
                                 this.props.location.state &&
@@ -48,7 +48,7 @@ class Account extends React.Component {
                             location={this.props.location}
                         />
                     )}
-                    {this.props.user && (
+                    {this.props.user.id && (
                         <div>
                             <h1>Account</h1>
                             <p>Display Name: {this.props.user.displayName}</p>

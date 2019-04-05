@@ -151,7 +151,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     }
 
     const defaultAnonymousUserInfo: WhoamiResponse = {
-        id: null as string,
+        id: "",
         displayName: "Anonymous User",
         email: "",
         photoURL: "",
@@ -198,9 +198,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             user.permissions = await database.getRolePermissions(userId);
             res.json(user);
         } catch (e) {
-            if (e instanceof AuthError) {
-                res.json(e.toData());
-            } else if (e instanceof GenericError) {
+            if (e instanceof GenericError) {
                 res.json(e.toData());
             } else {
                 console.error(
