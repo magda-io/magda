@@ -1,7 +1,7 @@
 INSERT INTO "public"."resources" ("id", "name", "uri", "description") 
 VALUES 
-('1', 'Draft Datasets', 'object/draft_dataset', 'Datasets in draft status'),
-('2', 'Published Datasets', 'object/published_dataset', 'Datasets in non-draft (published) status');
+('1', 'Draft Datasets', 'object/dataset/draft', 'Datasets in draft status'),
+('2', 'Published Datasets', 'object/dataset/published', 'Datasets in non-draft (published) status');
 
 INSERT INTO "public"."operations" ("id", "name", "description", "resource_id") 
 VALUES 
