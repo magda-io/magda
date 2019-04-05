@@ -74,7 +74,6 @@ export function requestSignOut() {
             .then(response => {
                 if (response.status <= 400) {
                     dispatch(completedSignOut());
-                    return;
                 } else {
                     dispatch(
                         signOutError(
@@ -83,7 +82,9 @@ export function requestSignOut() {
                     );
                 }
             })
-            .then(requestWhoAmI);
+            .then(() => {
+                return requestWhoAmI()(dispatch, getState);
+            });
         return undefined;
     };
 }
