@@ -3,9 +3,9 @@ import { expect } from "chai";
 import reloadTenants from "../reloadTenants";
 import { MAGDA_TENANT_ID_HEADER } from "../setupTenantMode";
 
-const mockServer = require("mockttp").getLocal({ debug: true });
+const mockServer = require("mockttp").getLocal();
 
-describe("Test updateTenants", () => {
+describe("Test reloadTenants", () => {
     const port = 12345;
     const pathPrefix = "someVersion";
     const tenantsUrl = `/${pathPrefix}/tenants`;
@@ -19,7 +19,7 @@ describe("Test updateTenants", () => {
         mockServer.stop();
     });
 
-    it("should make request with correct ID for header MAGDA_TENANT_ID_HEADER", async () => {
+    it("should make request with correct tenant ID for header MAGDA_TENANT_ID_HEADER", async () => {
         const endpointMock = await mockServer
             .get(tenantsUrl)
             .thenReply(
@@ -40,7 +40,7 @@ describe("Test updateTenants", () => {
         ).to.equal("0");
     });
 
-    it("should update tenant table with enabled tenants", () =>
+    it("should reload tenants table with enabled tenants only", () =>
         mockServer
             .get(tenantsUrl)
             .thenReply(

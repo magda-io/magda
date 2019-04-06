@@ -86,7 +86,7 @@ export default function createBaseProxy(): httpProxy {
         });
     });
 
-    proxy.on("proxyReq", function(proxyReq, req, res) {
+    proxy.on("proxyReq", async function(proxyReq, req, res) {
         proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, "undefined");
 
         if (multiTenantsMode === true) {
@@ -102,8 +102,8 @@ export default function createBaseProxy(): httpProxy {
                 );
             } else {
                 const tenant = tenantsTable.get(domainName);
-                if (tenant == undefined) {
-                    reloadTenants();
+                if (tenant === undefined) {
+                    await reloadTenants();
                 }
 
                 if (tenant !== undefined) {
