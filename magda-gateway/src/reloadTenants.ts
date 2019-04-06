@@ -8,12 +8,16 @@ import {
     MAGDA_ADMIN_PORTAL_ID
 } from "./setupTenantMode";
 
-export default function updateTenants(
+export default async function reloadTenants() {
+    await updateTenantsTable(1, 10);
+}
+
+function updateTenantsTable(
     secondsBetweenRetries: number,
     maxRetries: number
 ): Promise<{}> {
-    const operation = () => async () =>
-        await new Promise<{}>((resolve, reject) => {
+    const operation = () => () =>
+        new Promise<{}>((resolve, reject) => {
             request({
                 headers: { "X-Magda-TenantId": MAGDA_ADMIN_PORTAL_ID },
                 url: `${registryApi}/tenants`
@@ -24,7 +28,7 @@ export default function updateTenants(
                         `${tenantsString}`
                     );
                     tenantsJson.forEach(t => {
-                        if (t.enabled == true) {
+                        if (t.enabled === true) {
                             tenantsTable.set(t.domainName.toLowerCase(), t);
                             console.debug(
                                 `${t.domainName.toLowerCase()} : ${t.id}`

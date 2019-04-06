@@ -10,7 +10,7 @@ import {
 } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
-import updateTenants from "./updateTenants";
+import reloadTenants from "./reloadTenants";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -103,7 +103,7 @@ export default function createBaseProxy(): httpProxy {
             } else {
                 const tenant = tenantsTable.get(domainName);
                 if (tenant == undefined) {
-                    updateTenants(1, 2);
+                    reloadTenants();
                 }
 
                 if (tenant !== undefined) {
