@@ -1,6 +1,6 @@
-package system.whoami
+package system
 
-response [x] {
+whoami [x] {
     request := {
         "url": "http://authorization-api/v0/public/users/whoami",
         "force_json_decode": true,
