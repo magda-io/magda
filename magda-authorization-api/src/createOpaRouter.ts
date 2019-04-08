@@ -1,5 +1,6 @@
 import * as express from "express";
 import { Router } from "express";
+import * as _ from "lodash";
 import Database from "./Database";
 import { User } from "@magda/typescript-common/dist/authorization-api/model";
 import * as request from "request";
@@ -98,10 +99,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 } catch (e) {}
             }
 
-            if (unknowns && typeof unknowns === "string" && unknowns.length) {
-                try {
-                    reqData["unknowns"] = JSON.parse(unknowns);
-                } catch (e) {}
+            if (unknowns) {
+                // --- could be a string or array of string
+                if (_.isString(unknowns) && unknowns.length) {
+                    reqData["unknowns"] = [unknowns];
+                } else if (_.isArray(unknowns) && unknowns.length) {
+                    reqData["unknowns"] = unknowns;
+                }
             }
 
             reqQueryParams = otherQueryParams;
@@ -121,6 +125,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         if (Object.keys(reqQueryParams).length) {
             reqOpts.qs = reqQueryParams;
         }
+
         request(`${opaUrl}${req.path}`, reqOpts).pipe(res);
     }
 
