@@ -36,6 +36,9 @@ defaultRoutes:
   auth:
     to: http://authorization-api/v0/public
     auth: true
+  opa:
+    to: http://authorization-api/v0/opa
+    auth: true
   admin:
     to: http://admin-api/v0
     auth: true
