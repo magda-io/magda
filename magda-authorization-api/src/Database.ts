@@ -8,11 +8,32 @@ import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
 import * as pg from "pg";
 import * as _ from "lodash";
+import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
+import { getUserId } from "@magda/typescript-common/dist/session/GetUserId";
 
 export interface DatabaseOptions {
     dbHost: string;
     dbPort: number;
 }
+
+const defaultAnonymousUserInfo: User = {
+    id: "",
+    displayName: "Anonymous User",
+    email: "",
+    photoURL: "",
+    source: "",
+    sourceId: "",
+    isAdmin: false,
+    roles: [
+        {
+            id: "00000000-0000-0001-0000-000000000000",
+            name: "Anonymous Users",
+            description: "Default role for unauthenticated users",
+            permissionIds: [] as string[]
+        }
+    ],
+    permissions: []
+};
 
 export default class Database {
     private pool: pg.Pool;
@@ -176,5 +197,35 @@ export default class Database {
         return {
             ready: true
         };
+    }
+
+    /**
+     * Return AnonymousUser info as fallback when system can't authenticate user
+     * Should capture call errors and return AnonymousUser info as fallback
+     */
+    async getDefaultAnonymousUserInfo(): Promise<User> {
+        const user = { ...defaultAnonymousUserInfo };
+        try {
+            user.permissions = await this.getRolePermissions(user.roles[0].id);
+            user.roles[0].permissionIds = user.permissions.map(item => item.id);
+            return user;
+        } catch (e) {
+            return user;
+        }
+    }
+
+    async getCurrentUserInfo(req: any, jwtSecret: string): Promise<User> {
+        const userId = getUserId(req, jwtSecret).valueOr(null);
+        if (!userId || userId === "") {
+            return await this.getDefaultAnonymousUserInfo();
+        }
+
+        const user = (await this.getUser(userId)).valueOr(null);
+        if (!user) {
+            throw new GenericError("Not Found User", 404);
+        }
+        user.roles = await this.getUserRoles(userId);
+        user.permissions = await this.getUserPermissions(userId);
+        return user;
     }
 }

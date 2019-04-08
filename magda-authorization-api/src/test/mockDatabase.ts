@@ -5,7 +5,9 @@ import {
     Permission
 } from "@magda/typescript-common/dist/authorization-api/model";
 import { Maybe } from "tsmonad";
+import * as sinon from "sinon";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
+import Database from "../Database";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
@@ -70,4 +72,14 @@ export default class MockDatabase {
     }
 
     check() {}
+
+    async getCurrentUserInfo(req: any, jwtSecret: string): Promise<User> {
+        const db = sinon.createStubInstance(Database);
+        db.getUserPermissions.callsFake(this.getUserPermissions);
+        db.getRolePermissions.callsFake(this.getRolePermissions);
+        db.getUserRoles.callsFake(this.getUserRoles);
+        db.getUser.callsFake(this.getUser);
+        db.getCurrentUserInfo.callThrough();
+        return await db.getCurrentUserInfo(req, jwtSecret);
+    }
 }

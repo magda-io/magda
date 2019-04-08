@@ -3,6 +3,8 @@ export interface PublicUser {
     displayName: string;
     photoURL?: string;
     isAdmin: boolean;
+    roles?: Role[];
+    permissions?: Permission[];
 }
 
 export interface User extends PublicUser {

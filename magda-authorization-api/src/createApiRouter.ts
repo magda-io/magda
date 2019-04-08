@@ -2,15 +2,8 @@ import * as express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
-import {
-    PublicUser,
-    Role,
-    Permission
-} from "@magda/typescript-common/dist/authorization-api/model";
-import {
-    getUserIdHandling,
-    getUserId
-} from "@magda/typescript-common/dist/session/GetUserId";
+import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
+import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
@@ -139,35 +132,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
 
-    interface WhoamiResponse {
-        id: string;
-        displayName: string;
-        email: string;
-        photoURL: string;
-        source: string;
-        isAdmin: boolean;
-        roles: Role[];
-        permissions: Permission[];
-    }
-
-    const defaultAnonymousUserInfo: WhoamiResponse = {
-        id: "",
-        displayName: "Anonymous User",
-        email: "",
-        photoURL: "",
-        source: "",
-        isAdmin: false,
-        roles: [
-            {
-                id: "00000000-0000-0001-0000-000000000000",
-                name: "Anonymous Users",
-                description: "Default role for unauthenticated users",
-                permissionIds: [] as string[]
-            }
-        ],
-        permissions: []
-    };
-
     router.get("/public/users/whoami", async function(req, res) {
         try {
             res.set({
@@ -175,28 +139,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 Pragma: "no-cache",
                 Expires: "0"
             });
+            const currentUserInfo = await database.getCurrentUserInfo(
+                req,
+                options.jwtSecret
+            );
 
-            const userId = getUserId(req, options.jwtSecret).valueOr(null);
-
-            if (!userId) {
-                const user = { ...defaultAnonymousUserInfo };
-                user.permissions = await database.getRolePermissions(
-                    user.roles[0].id
-                );
-                user.roles[0].permissionIds = user.permissions.map(
-                    item => item.id
-                );
-                res.json(user);
-                return;
-            }
-
-            const user = (await database.getUser(userId)).valueOr(null);
-            if (!user) {
-                throw new GenericError("Not Found User", 404);
-            }
-            user.roles = await database.getUserRoles(userId);
-            user.permissions = await database.getUserPermissions(userId);
-            res.json(user);
+            res.json(currentUserInfo);
         } catch (e) {
             if (e instanceof GenericError) {
                 res.json(e.toData());
