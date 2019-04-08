@@ -1,7 +1,8 @@
 image: {}
+replicas: 1
 resources:
   requests:
-    cpu: 50m
-    memory: 200Mi
+    cpu: 20m
+    memory: 50Mi
   limits:
     cpu: 100m
