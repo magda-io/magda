@@ -17,8 +17,9 @@
         "sourceMap": false,
         "lib": ["dom", "dom.iterable", "esnext"],
         "isolatedModules": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "baseUrl": "./src/"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["./src/**/*"],
     "exclude": ["**/node_modules/**/*"]
 }

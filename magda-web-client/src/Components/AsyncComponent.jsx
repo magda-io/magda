@@ -1,19 +1,7 @@
-import React, { Component, ReactNode, Fragment } from "react";
+import React, { Component, Fragment } from "react";
 
-type Props<C extends Component> = {
-    importComponent: () => Promise<new (...args: any[]) => C>;
-    children: (wrappedComponent: (new () => C) | undefined) => ReactNode;
-};
-
-type State<C extends Component> = {
-    component?: new () => C;
-};
-
-export default class AsyncComponent<C extends Component> extends Component<
-    Props<C>,
-    State<C>
-> {
-    state: State<C> = {
+export default class AsyncComponent extends Component {
+    state = {
         component: undefined
     };
 
