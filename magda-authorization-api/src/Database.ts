@@ -195,7 +195,6 @@ export default class Database {
         const userInfo = result.rows[0];
         const userId = userInfo.id;
 
-        console.log(userInfo);
         //--- add default authenticated role to the newly create user
         await this.pool.query(
             "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
