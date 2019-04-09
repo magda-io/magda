@@ -16,6 +16,10 @@ export interface DatabaseOptions {
     dbPort: number;
 }
 
+const ANONYMOUS_USERS_ROLE = "00000000-0000-0001-0000-000000000000";
+const AUTHENTICATED_USERS_ROLE = "00000000-0000-0002-0000-000000000000";
+const ADMIN_USERS_ROLE = "00000000-0000-0003-0000-000000000000";
+
 const defaultAnonymousUserInfo: User = {
     id: "",
     displayName: "Anonymous User",
@@ -26,7 +30,7 @@ const defaultAnonymousUserInfo: User = {
     isAdmin: false,
     roles: [
         {
-            id: "00000000-0000-0001-0000-000000000000",
+            id: ANONYMOUS_USERS_ROLE,
             name: "Anonymous Users",
             description: "Default role for unauthenticated users",
             permissionIds: [] as string[]
@@ -176,20 +180,37 @@ export default class Database {
             .then(res => arrayToMaybe(res.rows));
     }
 
-    createUser(user: User): Promise<User> {
-        return this.pool
-            .query(
-                'INSERT INTO users(id, "displayName", email, "photoURL", source, "sourceId", "isAdmin") VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6) RETURNING id',
-                [
-                    user.displayName,
-                    user.email,
-                    user.photoURL,
-                    user.source,
-                    user.sourceId,
-                    user.isAdmin
-                ]
-            )
-            .then(result => result.rows[0]);
+    async createUser(user: User): Promise<User> {
+        const result = await this.pool.query(
+            'INSERT INTO users(id, "displayName", email, "photoURL", source, "sourceId", "isAdmin") VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6) RETURNING id',
+            [
+                user.displayName,
+                user.email,
+                user.photoURL,
+                user.source,
+                user.sourceId,
+                user.isAdmin
+            ]
+        );
+        const userInfo = result.rows[0];
+        const userId = userInfo.id;
+
+        console.log(userInfo);
+        //--- add default authenticated role to the newly create user
+        await this.pool.query(
+            "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
+            [AUTHENTICATED_USERS_ROLE, userId]
+        );
+
+        //--- add default Admin role to the newly create user (if isAdmin is true)
+        if (user.isAdmin) {
+            await this.pool.query(
+                "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
+                [ADMIN_USERS_ROLE, userId]
+            );
+        }
+
+        return userInfo;
     }
 
     async check(): Promise<any> {
