@@ -5,12 +5,11 @@ import {
     magdaAdminPortalName,
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID,
-    multiTenantsMode,
-    tenantsTable
+    multiTenantsMode
 } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
-import reloadTenants from "./reloadTenants";
+import reloadTenants, { tenantsTable } from "./reloadTenants";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",

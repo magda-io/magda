@@ -1,10 +1,8 @@
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 import * as request from "request";
-import {
-    registryApi,
-    tenantsTable,
-    MAGDA_ADMIN_PORTAL_ID
-} from "./setupTenantMode";
+import { registryApi, MAGDA_ADMIN_PORTAL_ID } from "./setupTenantMode";
+
+export const tenantsTable = new Map<String, Tenant>();
 
 export default async function reloadTenants() {
     await new Promise<{}>((resolve, reject) => {

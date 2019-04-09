@@ -1,6 +1,6 @@
-import setupTenantMode, { tenantsTable } from "../setupTenantMode";
+import setupTenantMode from "../setupTenantMode";
 import { expect } from "chai";
-import reloadTenants from "../reloadTenants";
+import reloadTenants, { tenantsTable } from "../reloadTenants";
 import { MAGDA_TENANT_ID_HEADER } from "../setupTenantMode";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 
