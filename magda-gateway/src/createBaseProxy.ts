@@ -102,16 +102,19 @@ export default function createBaseProxy(): httpProxy {
                 );
             } else {
                 const tenant = tenantsTable.get(domainName);
-                if (tenant === undefined) {
-                    await reloadTenants();
-                }
 
                 if (tenant !== undefined) {
                     proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
                 } else {
+                    // If await reloadTenants() then set header, an error message will occur:
+                    //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
+                    // So we just let user try again.
+                    // See https://github.com/nodejitsu/node-http-proxy/issues/1328
+                    reloadTenants();
+
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
-                        `Unable to handle the domain name of ${domainName}.`
+                        `Unable to process ${domainName} right now. Please try again shortly.`
                     );
                 }
             }
