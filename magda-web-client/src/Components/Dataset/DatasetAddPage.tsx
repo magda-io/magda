@@ -7,7 +7,7 @@ import Spinner from "Components/Common/Spinner";
 
 import Styles from "./DatasetAddPage.module.scss";
 
-import { AlwaysEditor } from "../Editing/AlwaysEditor";
+import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 
 import {
     textEditor,
@@ -16,15 +16,15 @@ import {
     multiTextEditor,
     dateEditor,
     multiDateIntervalEditor
-} from "../Editing/Editors/textEditor";
+} from "Components/Editing/Editors/textEditor";
 
 import {
     codelistEditor,
     multiCodelistEditor
-} from "../Editing/Editors/codelistEditor";
+} from "Components/Editing/Editors/codelistEditor";
 
-import { bboxEditor } from "../Editing/Editors/spatialEditor";
-import { booleanEditor } from "../Editing/Editors/booleanEditor";
+import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
+import { booleanEditor } from "Components/Editing/Editors/booleanEditor";
 
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";

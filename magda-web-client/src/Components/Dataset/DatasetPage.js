@@ -32,19 +32,19 @@ import apiAccessIcon from "assets/apiAccess.svg";
 import downloadWhiteIcon from "assets/download-white.svg";
 import { get } from "lodash";
 
-import { ToggleEditor } from "../Editing/ToggleEditor";
+import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import {
     textEditor,
     multilineTextEditor,
     multiTextEditor,
     multiDateIntervalEditor
-} from "../Editing/Editors/textEditor";
+} from "Components/Editing/Editors/textEditor";
 import {
     codelistEditor,
     multiCodelistEditor
-} from "../Editing/Editors/codelistEditor";
-import { bboxEditor } from "../Editing/Editors/spatialEditor";
-import { booleanEditor } from "../Editing/Editors/booleanEditor";
+} from "Components/Editing/Editors/codelistEditor";
+import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
+import { booleanEditor } from "Components/Editing/Editors/booleanEditor";
 
 import * as codelists from "constants/DatasetConstants";
 import { config } from "config";

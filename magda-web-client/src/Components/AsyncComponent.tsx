@@ -50,6 +50,4 @@ export function makeAsync(importComponent: Function) {
             return <AsyncComponent importComponent={importComponent} />;
         }
     };
-
-    // return Loader;
 }
