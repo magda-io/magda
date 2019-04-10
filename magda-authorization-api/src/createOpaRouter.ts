@@ -5,6 +5,7 @@ import Database from "./Database";
 import { User } from "@magda/typescript-common/dist/authorization-api/model";
 import * as request from "request";
 import * as bodyParser from "body-parser";
+import * as objectPath from "object-path";
 
 export interface OpaRouterOptions {
     opaUrl: string;
@@ -89,6 +90,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             if (input && typeof input === "string" && input.length) {
+                // --- supply whole input object as JSON string through `input` query param
                 try {
                     const inputData = JSON.parse(input);
                     if (!reqData.input) {
@@ -97,6 +99,24 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         reqData.input = { ...reqData.input, ...inputData };
                     }
                 } catch (e) {}
+            } else {
+                /**
+                 * Supply input as JSON path notion.
+                 * e.g. input.companyName=ABC&input.people.0.name=Joe will be converted to
+                 * input = {
+                 *   "companyName": "ABC",
+                 *   "people": [{
+                 *      "name": Joe
+                 *   }]
+                 * }
+                 */
+                const data = {};
+                Object.keys(req.query)
+                    .filter(key => key.indexOf("input.") === 0)
+                    .forEach(key => {
+                        if (key.replace("input.", "").trim() === "") return;
+                        objectPath.set(data, key, req.query[key]);
+                    });
             }
 
             if (unknowns) {
