@@ -3,7 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import AUfooter, { AUfooterNav } from "../../pancake/react/footer";
 import { Link } from "react-router-dom";
-import { Small } from "../../UI/Responsive";
+import { Small } from "Components/Common/Responsive";
 
 import "./footer.scss";
 

@@ -1,7 +1,7 @@
-import Publisher from "./Components/SearchFacets/Publisher";
-import Format from "./Components/SearchFacets/Format";
-import Region from "./Components/SearchFacets/Region";
-import Temporal from "./Components/SearchFacets/Temporal";
+import Publisher from "./Components/Dataset/Search/Facets/Publisher";
+import Format from "./Components/Dataset/Search/Facets/Format";
+import Region from "./Components/Dataset/Search/Facets/Region";
+import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 
 declare global {
     interface Window {

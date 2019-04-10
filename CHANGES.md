@@ -26,6 +26,7 @@ UI:
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
+-   Refactored web client to group similar things togeather
 
 ## 0.0.55
 
