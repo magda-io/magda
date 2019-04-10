@@ -15,7 +15,8 @@ export default async function minion(options: MinionOptions): Promise<void> {
         baseUrl: options.argv.registryUrl,
         jwtSecret: options.argv.jwtSecret,
         userId: options.argv.userId,
-        maxRetries: options.maxRetries
+        maxRetries: options.maxRetries,
+        tenantId: options.tenantId
     });
 
     const crawler = new Crawler(registry, options);
@@ -73,6 +74,10 @@ export default async function minion(options: MinionOptions): Promise<void> {
 
         if (options.argv.userId === "") {
             throw new Error(`User id is unspecified`);
+        }
+
+        if (options.argv.tenantId === undefined) {
+            throw new Error(`Tenant id is unspecified`);
         }
 
         const containsBlank = (strings: string[]) =>

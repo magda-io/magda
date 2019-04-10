@@ -1,6 +1,7 @@
 import * as yargs from "yargs";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export type MinionArguments = {
     listenPort: string | number;
@@ -9,6 +10,7 @@ export type MinionArguments = {
     userId: string;
     registryUrl: string;
     retries: string | number;
+    tenantId: string | number;
 };
 
 /**
@@ -68,6 +70,16 @@ export default function commonYargs<
             describe: "The number of times to retry calling the registry",
             type: "number",
             default: process.env.RETRIES || 10
+        })
+        .option("tenantId", {
+            describe:
+                "The Tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true,
+            default:
+                process.env.TENANT_ID ||
+                process.env.npm_package_config_tenantId ||
+                MAGDA_ADMIN_PORTAL_ID
         });
 
     const returnValue = addJwtSecretFromEnvVar(additions(yarr).argv);

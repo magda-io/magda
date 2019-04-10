@@ -19,6 +19,7 @@ import minion from "../index";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "webhooks",
@@ -121,7 +122,8 @@ baseSpec(
                                     registryUrl,
                                     jwtSecret,
                                     userId,
-                                    listenPort: listenPort()
+                                    listenPort: listenPort(),
+                                    tenantId: MAGDA_ADMIN_PORTAL_ID
                                 }),
                                 id: "id",
                                 aspects: [],
@@ -217,7 +219,7 @@ baseSpec(
                                                 // The hook should only return 500 if it's failed synchronously.
                                                 .expect(
                                                     async ||
-                                                    batch.overallSuccess
+                                                        batch.overallSuccess
                                                         ? 201
                                                         : 500
                                                 )

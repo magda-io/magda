@@ -15,6 +15,7 @@ import fakeArgv from "./fakeArgv";
 import MinionOptions from "../MinionOptions";
 import minion from "../index";
 import baseSpec from "./baseSpec";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const aspectArb = jsc.record({
     id: jsc.string,
@@ -184,7 +185,8 @@ baseSpec(
                             registryUrl,
                             jwtSecret,
                             userId,
-                            listenPort: listenPort()
+                            listenPort: listenPort(),
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         }),
                         id,
                         aspects: hook.config.aspects,
@@ -208,7 +210,8 @@ baseSpec(
 
 function reqHeaders(jwtSecret: string, userId: string) {
     return {
-        "X-Magda-Session": buildJwt(jwtSecret, userId)
+        "X-Magda-Session": buildJwt(jwtSecret, userId),
+        "X-Magda-TenantId": "0"
     };
 }
 

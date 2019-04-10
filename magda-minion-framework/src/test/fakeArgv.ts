@@ -6,6 +6,7 @@ export default function fakeArgv(options: {
     jwtSecret: string;
     userId: string;
     listenPort: number;
+    tenantId: number;
 }): MinionArguments {
     return {
         ...options,

@@ -7,6 +7,7 @@ import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
 import organizationAspectBuilders from "./organizationAspectBuilders";
 import * as yargs from "yargs";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -69,13 +70,24 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe:
+                "The magda tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true,
+            default:
+                process.env.TENANT_ID ||
+                process.env.npm_package_config_tenantId ||
+                MAGDA_ADMIN_PORTAL_ID
         }).argv
 );
 
 const registry = new Registry({
     baseUrl: argv.registryUrl,
     jwtSecret: argv.jwtSecret,
-    userId: argv.userId
+    userId: argv.userId,
+    tenantId: Number(argv.tenantId)
 });
 
 const transformerOptions = {

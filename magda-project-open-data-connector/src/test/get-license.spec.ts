@@ -117,7 +117,8 @@ describe("when distributions have a license as a custom URL", function(this: Moc
         registry = new Registry({
             jwtSecret: "secret",
             userId: "",
-            baseUrl: "http://registry.example.com"
+            baseUrl: "http://registry.example.com",
+            tenantId: undefined
         });
 
         source = new ProjectOpenData({

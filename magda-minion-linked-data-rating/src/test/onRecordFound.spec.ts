@@ -26,7 +26,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
     const registry = new AuthorizedRegistryClient({
         baseUrl: registryUrl,
         jwtSecret: "secret",
-        userId: "1"
+        userId: "1",
+        tenantId: undefined
     });
     let registryScope: nock.Scope;
 

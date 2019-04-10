@@ -14,6 +14,7 @@ import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "Crawler",
@@ -50,11 +51,13 @@ baseSpec(
             registryDomainCounter++;
             const registryUrl = `http://${registryDomain}.com:80`;
             const registryScope = nock(registryUrl);
+            const tenantId = MAGDA_ADMIN_PORTAL_ID;
 
             const registry = new Registry({
                 baseUrl: registryUrl,
                 jwtSecret: jwtSecret,
-                userId: userId
+                userId: userId,
+                tenantId: tenantId
             });
 
             let context: any = {
@@ -65,7 +68,8 @@ baseSpec(
                 concurrency,
                 async,
                 registryScope,
-                registry
+                registry,
+                tenantId
             };
 
             const env = envInit.bind(context)();
@@ -78,7 +82,8 @@ baseSpec(
                     registryUrl,
                     jwtSecret,
                     userId,
-                    listenPort: listenPort()
+                    listenPort: listenPort(),
+                    tenantId: tenantId
                 }),
                 id: "id",
                 aspects: [],

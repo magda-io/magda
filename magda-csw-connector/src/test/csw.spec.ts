@@ -30,7 +30,8 @@ describe("csw connector", () => {
         const registry = new Registry({
             baseUrl: REGISTRY_URL,
             jwtSecret: "squirrel",
-            userId: "12345"
+            userId: "12345",
+            tenantId: undefined
         });
 
         const transformerOptions = {

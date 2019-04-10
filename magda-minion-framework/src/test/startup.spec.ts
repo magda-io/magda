@@ -18,6 +18,7 @@ import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "on startup",
@@ -99,7 +100,8 @@ baseSpec(
                         registryUrl,
                         jwtSecret,
                         userId,
-                        listenPort: listenPort()
+                        listenPort: listenPort(),
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     }),
                     id: "id",
                     aspects: aspects,
@@ -186,7 +188,8 @@ baseSpec(
                         listenPort: port,
                         registryUrl: "",
                         jwtSecret,
-                        userId
+                        userId,
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     }),
                     id: id,
                     aspects: aspects,
