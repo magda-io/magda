@@ -25,7 +25,8 @@ export interface Role {
 }
 
 export interface Operation {
-    id: number;
+    id: string;
+    uri: string;
     name: string;
     description?: string;
 }
@@ -34,7 +35,7 @@ export interface Permission {
     id: string;
     name: string;
     description?: string;
-    resourceId: number;
+    resourceId: string;
     resourceUri: string;
     userOwnershipConstraint: boolean;
     orgUnitOwnershipConstraint: boolean;

@@ -86,11 +86,13 @@ export default class Database {
 
     async getUserPermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
-            `SELECT p.id, p.name, p.resource_id, res.uri AS resource_uri, 
+            `SELECT DISTINCT ON (p.id, op.id)
+                p.id, p.name, p.resource_id, res.uri AS resource_uri, 
                 p.user_ownership_constraint,
                 p.org_unit_ownership_constraint,
                 p.pre_authorised_constraint,
                 op.id AS operation_id,
+                op.uri AS operation_uri,
                 op.name AS operation_name
                 FROM role_permissions rp
                 LEFT JOIN user_roles ur ON ur.role_id = rp.role_id
@@ -111,6 +113,7 @@ export default class Database {
         result.rows.forEach(item => {
             const {
                 operationId,
+                operationUri,
                 operationName,
                 ...permissionData
             } = _.zipObject(
@@ -127,6 +130,7 @@ export default class Database {
             if (operationId) {
                 list[item.id].operations.push({
                     id: operationId,
+                    uri: operationUri,
                     name: operationName
                 });
             }
@@ -136,11 +140,13 @@ export default class Database {
 
     async getRolePermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
-            `SELECT p.id, p.name, p.resource_id, res.uri AS resource_uri,
+            `SELECT  DISTINCT ON (p.id, op.id)
+            p.id, p.name, p.resource_id, res.uri AS resource_uri,
             p.user_ownership_constraint,
             p.org_unit_ownership_constraint,
             p.pre_authorised_constraint,
             op.id AS operation_id,
+            op.uri AS operation_uri,
             op.name AS operation_name
             FROM role_permissions rp 
             LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
