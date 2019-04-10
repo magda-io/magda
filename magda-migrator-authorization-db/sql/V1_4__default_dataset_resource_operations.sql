@@ -1,16 +1,28 @@
-INSERT INTO "public"."resources" ("id", "name", "uri", "description") 
+-- Resources & Operations for Draft Dataset
+WITH rows AS (
+	INSERT INTO "public"."resources" ("uri", "name", "description") 
+	VALUES 
+	('object/dataset/draft', 'Draft Datasets', 'Datasets in draft status')
+	RETURNING id
+)
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
-('1', 'Draft Datasets', 'object/dataset/draft', 'Datasets in draft status'),
-('2', 'Published Datasets', 'object/dataset/published', 'Datasets in non-draft (published) status');
+('object/dataset/draft/read','Read Draft Dataset', '', (SELECT id FROM rows)),
+('object/dataset/draft/create', 'Create Draft Dataset', '', (SELECT id FROM rows)),
+('object/dataset/draft/update', 'Update Draft Dataset', '', (SELECT id FROM rows)),
+('object/dataset/draft/delete', 'Delete Draft Dataset', '', (SELECT id FROM rows)),
+('object/dataset/draft/publish', 'Publish Draft Dataset', '', (SELECT id FROM rows));
 
-INSERT INTO "public"."operations" ("id", "name", "description", "resource_id") 
+-- Resources & Operations for Published Dataset
+WITH rows AS (
+	INSERT INTO "public"."resources" ("uri", "name", "description") 
+	VALUES 
+	('object/dataset/published', 'Published Datasets', 'Datasets in non-draft (published) status')
+	RETURNING id
+)
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
-('1', 'Read Draft Dataset', '', '1'),
-('2', 'Create Draft Dataset', '', '1'),
-('3', 'Update Draft Dataset', '', '1'),
-('4', 'Delete Draft Dataset', '', '1'),
-('5', 'Publish Draft Dataset', '', '1'),
-('6', 'Unpublish Published Dataset', '', '2'),
-('7', 'Update Published Dataset (License Info Only)', '', '2'),
-('8', 'Update Published Dataset (Non-License Info Only)', '', '2'),
-('9', 'Read Publish Dataset', '', '2');
+('object/dataset/published/unpublish','Unpublish Published Dataset', '', (SELECT id FROM rows)),
+('object/dataset/published/updateLicenseInfo', 'Update Published Dataset (License Info Only)', '', (SELECT id FROM rows)),
+('object/dataset/published/updateNonLicenseInfo', 'Update Published Dataset (Non-License Info Only)', '', (SELECT id FROM rows)),
+('object/dataset/published/read', 'Read Publish Dataset', '', (SELECT id FROM rows));

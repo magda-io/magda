@@ -2,8 +2,8 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 CREATE TABLE "public"."operations" (
     "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-    "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "uri" varchar(250) NOT NULL DEFAULT ''::character varying UNIQUE,
+    "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "description" text NOT NULL DEFAULT ''::text,
     "resource_id" uuid NOT NULL,
     PRIMARY KEY ("id")
@@ -30,11 +30,11 @@ CREATE TABLE "public"."permissions" (
     "org_unit_ownership_constraint" bool NOT NULL DEFAULT false,
     "pre_authorised_constraint" bool NOT NULL DEFAULT false,
     "description" text NOT NULL DEFAULT ''::text,
-    "owner_id" uuid,
-    "create_by" uuid,
-    "create_time" timestamptz NOT NULL DEFAULT now(),
-    "edit_by" uuid,
-    "edit_time" timestamptz NOT NULL DEFAULT now(),
+    "owner_id" uuid DEFAULT NULL,
+    "create_by" uuid DEFAULT NULL,
+    "create_time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "edit_by" uuid DEFAULT NULL,
+    "edit_time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
 ) WITH (
     OIDS = FALSE
@@ -42,8 +42,8 @@ CREATE TABLE "public"."permissions" (
 
 CREATE TABLE "public"."resources" (
     "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-    "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "uri" varchar(250) NOT NULL DEFAULT ''::character varying UNIQUE,
+    "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "description" text NOT NULL DEFAULT ''::text,
     PRIMARY KEY ("id")
 ) WITH (
@@ -64,13 +64,13 @@ CREATE TABLE "public"."roles" (
     "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "name" varchar(250) NOT NULL DEFAULT ''::character varying,
     "description" text NOT NULL DEFAULT ''::text,
-    "owner_id" uuid,
+    "owner_id" uuid DEFAULT NULL,
     -- whether a role is the user's default pre-authorized permissions target containers
     "is_adhoc" bool NOT NULL DEFAULT false,
-    "create_by" uuid,
-    "create_time" timestamptz NOT NULL DEFAULT now(),
-    "edit_by" uuid,
-    "edit_time" timestamptz NOT NULL DEFAULT now(),
+    "create_by" uuid DEFAULT NULL,
+    "create_time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "edit_by" uuid DEFAULT NULL,
+    "edit_time" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
 ) WITH (
     OIDS = FALSE
