@@ -41,6 +41,7 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
   @Path("/{aspectId}")
   @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[Aspect])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch.")))
   @ApiResponses(Array(

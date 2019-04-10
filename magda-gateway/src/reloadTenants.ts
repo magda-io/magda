@@ -1,6 +1,7 @@
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 import * as request from "request";
-import { registryApi, MAGDA_ADMIN_PORTAL_ID } from "./setupTenantMode";
+import { registryApi } from "./setupTenantMode";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export const tenantsTable = new Map<String, Tenant>();
 

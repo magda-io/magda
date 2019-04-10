@@ -41,6 +41,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
 
   @ApiOperation(value = "Get a list of all events affecting this record", nickname = "history", httpMethod = "GET", response = classOf[EventsPage])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch history.")
   ))
   def history: Route = get {
@@ -90,6 +91,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
   @Path("/{eventId}")
   @ApiOperation(value = "Get the version of a record that existed after a given event was applied", nickname = "version", httpMethod = "GET", response = classOf[Record])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to fetch."),
     new ApiImplicitParam(name = "eventId", required = true, dataType = "string", paramType = "path", value = "The ID of the last event to be applied to the record.  The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.")
   ))

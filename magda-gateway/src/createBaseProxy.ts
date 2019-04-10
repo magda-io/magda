@@ -1,15 +1,14 @@
 import * as httpProxy from "http-proxy";
 
 import * as URI from "urijs";
-import {
-    magdaAdminPortalName,
-    MAGDA_TENANT_ID_HEADER,
-    MAGDA_ADMIN_PORTAL_ID,
-    multiTenantsMode
-} from "./setupTenantMode";
+import { magdaAdminPortalName, multiTenantsMode } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
 import reloadTenants, { tenantsTable } from "./reloadTenants";
+import {
+    MAGDA_TENANT_ID_HEADER,
+    MAGDA_ADMIN_PORTAL_ID
+} from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",

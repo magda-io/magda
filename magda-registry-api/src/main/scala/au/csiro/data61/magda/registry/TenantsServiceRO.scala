@@ -41,6 +41,8 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     * @apiUse GenericError
     */
   @ApiOperation(value = "Get all tenants", nickname = "getAll", httpMethod = "GET", response = classOf[Tenant], responseContainer = "List")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "Don't know anything about tenants.", response = classOf[BadRequest])))
   def getAll: Route = get {
@@ -75,6 +77,7 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiOperation(value = "Get a tenant by its domain name", nickname = "getByDomainName", httpMethod = "GET",
     response = classOf[Tenant], notes = "Get all info about the tenant.")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "domainName", required = true, dataType = "string",
       paramType = "path", value = "Domain name of the tenant to be fetched.")))
   @ApiResponses(Array(

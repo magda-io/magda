@@ -315,7 +315,8 @@ describe("JsonConnector", () => {
                 baseUrl: "http://example.com",
                 jwtSecret: "squirrel",
                 userId: "1",
-                maxRetries: 0
+                maxRetries: 0,
+                tenantId: undefined
             });
 
             const source = new FakeConnectorSource(config);

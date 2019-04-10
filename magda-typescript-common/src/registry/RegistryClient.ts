@@ -12,11 +12,13 @@ import * as URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
+import { MAGDA_ADMIN_PORTAL_ID } from "./TenantConsts";
 
 export interface RegistryOptions {
     baseUrl: string;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    tenantId?: number;
 }
 
 export interface PutResult {
@@ -40,6 +42,7 @@ export default class RegistryClient {
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
     protected tenantsApi: TenantsApi;
+    protected tenantId: number;
 
     constructor({
         baseUrl,
@@ -57,6 +60,8 @@ export default class RegistryClient {
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
         this.tenantsApi = new TenantsApi(registryApiUrl);
+
+        if (this.tenantId === undefined) this.tenantId = MAGDA_ADMIN_PORTAL_ID;
     }
 
     getRecordUrl(id: string): string {
@@ -68,7 +73,8 @@ export default class RegistryClient {
     }
 
     getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
-        const operation = () => () => this.aspectDefinitionsApi.getAll();
+        const operation = () => () =>
+            this.aspectDefinitionsApi.getAll(this.tenantId.toString());
         return <any>retry(
             operation(),
             this.secondsBetweenRetries,
@@ -93,7 +99,13 @@ export default class RegistryClient {
         dereference?: boolean
     ): Promise<Record | Error> {
         const operation = (id: string) => () =>
-            this.recordsApi.getById(id, aspect, optionalAspect, dereference);
+            this.recordsApi.getById(
+                this.tenantId.toString(),
+                id,
+                aspect,
+                optionalAspect,
+                dereference
+            );
         return <any>retry(
             operation(id),
             this.secondsBetweenRetries,
@@ -117,6 +129,7 @@ export default class RegistryClient {
     ): Promise<RecordsPage<I> | Error> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
+                this.tenantId.toString(),
                 aspect,
                 optionalAspect,
                 pageToken,
@@ -141,7 +154,12 @@ export default class RegistryClient {
         aspect?: Array<string>,
         limit?: number
     ): Promise<string[] | Error> {
-        const operation = () => this.recordsApi.getPageTokens(aspect, limit);
+        const operation = () =>
+            this.recordsApi.getPageTokens(
+                this.tenantId.toString(),
+                aspect,
+                limit
+            );
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
@@ -161,7 +179,8 @@ export default class RegistryClient {
 
     getTenants(): Promise<Array<Tenant> | Error> {
         // return this.tenantsApi.getAll().then(result => result.body);
-        const operation = () => this.tenantsApi.getAll();
+        const operation = () =>
+            this.tenantsApi.getAll(this.tenantId.toString());
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
@@ -177,7 +196,11 @@ export default class RegistryClient {
 
     getTenant(domainName: string): Promise<Tenant | Error> {
         // return this.tenantsApi.getByDomainName(domainName).then(result => result.body);
-        const operation = () => this.tenantsApi.getByDomainName(domainName);
+        const operation = () =>
+            this.tenantsApi.getByDomainName(
+                this.tenantId.toString(),
+                domainName
+            );
         return <any>retry(
             operation,
             this.secondsBetweenRetries,

@@ -47,6 +47,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
    */
   @ApiOperation(value = "Get a list of all records", nickname = "getAll", httpMethod = "GET", response = classOf[Record], responseContainer = "List")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
@@ -97,6 +98,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @Path("/summary")
   @ApiOperation(value = "Get a list of all records as summaries", nickname = "getAllSummary", httpMethod = "GET", response = classOf[RecordSummary], responseContainer = "List")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "pageToken", required = false, dataType = "string", paramType = "query", value = "A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."),
     new ApiImplicitParam(name = "start", required = false, dataType = "number", paramType = "query", value = "The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.")))
@@ -133,6 +135,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @Path("/count")
   @ApiOperation(value = "Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.", nickname = "getCount", httpMethod = "GET", response = classOf[CountResponse])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "aspectQuery", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future")))
   def getCount: Route = get {
@@ -171,6 +174,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @Path("/pagetokens")
   @ApiOperation(value = "Get a list tokens for paging through the records", nickname = "getPageTokens", httpMethod = "GET", response = classOf[String], responseContainer = "List")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "limit", required = false, dataType = "number", paramType = "query", value = "The size of each page to get tokens for.")))
   def getPageTokens: Route = get {
@@ -215,6 +219,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiOperation(value = "Get a record by ID", nickname = "getById", httpMethod = "GET", response = classOf[Record],
     notes = "Gets a complete record, including data for all aspects.")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
     new ApiImplicitParam(name = "aspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response."),
     new ApiImplicitParam(name = "optionalAspect", required = false, dataType = "string", paramType = "query", allowMultiple = true, value = "The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects."),
@@ -259,6 +264,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiOperation(value = "Get a summary record by ID", nickname = "getByIdSummary", httpMethod = "GET", response = classOf[RecordSummary],
     notes = "Gets a summary record, including all the aspect ids for which this record has data.")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with that ID.", response = classOf[BadRequest])))

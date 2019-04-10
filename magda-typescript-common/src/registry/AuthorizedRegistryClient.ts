@@ -13,21 +13,29 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
+import { MAGDA_ADMIN_PORTAL_ID } from "./TenantConsts";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
     userId: string;
+    tenantId: number;
 }
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
     protected jwt: string;
+    protected tenantId: number;
 
     constructor(options: AuthorizedRegistryOptions) {
         super(options);
 
         this.options = options;
         this.jwt = buildJwt(options.jwtSecret, options.userId);
+        if (options.tenantId === undefined) {
+            this.tenantId = MAGDA_ADMIN_PORTAL_ID;
+        } else {
+            this.tenantId = options.tenantId;
+        }
     }
 
     putAspectDefinition(
@@ -37,7 +45,8 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             this.aspectDefinitionsApi.putById(
                 encodeURIComponent(aspectDefinition.id),
                 aspectDefinition,
-                this.jwt
+                this.jwt,
+                this.tenantId.toString()
             );
         return retry(
             operation,
@@ -121,19 +130,21 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         }
                     }
                 );
-        return <any>retry(
-            operation,
-            this.secondsBetweenRetries,
-            this.maxRetries,
-            (e, retriesLeft) =>
-                console.log(
-                    formatServiceError(
-                        `Failed to GET hook ${hookId}`,
-                        e,
-                        retriesLeft
+        return <any>(
+            retry(
+                operation,
+                this.secondsBetweenRetries,
+                this.maxRetries,
+                (e, retriesLeft) =>
+                    console.log(
+                        formatServiceError(
+                            `Failed to GET hook ${hookId}`,
+                            e,
+                            retriesLeft
+                        )
                     )
-                )
-        ).catch(createServiceError);
+            ).catch(createServiceError)
+        );
     }
 
     getHooks(): Promise<WebHook[] | Error> {
@@ -184,6 +195,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     putRecord(record: Record): Promise<Record | Error> {
         const operation = () =>
             this.recordsApi.putById(
+                this.tenantId.toString(),
                 encodeURIComponent(record.id),
                 record,
                 this.jwt
@@ -214,6 +226,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.putById(
+                this.tenantId.toString(),
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
@@ -243,6 +256,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.patchById(
+                this.tenantId.toString(),
                 encodeURIComponent(recordId),
                 aspectId,
                 aspectPatch,
@@ -271,7 +285,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<MultipleDeleteResult | "Processing" | Error> {
         const operation = () =>
             this.recordsApi
-                .trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt)
+                .trimBySourceTag(
+                    this.tenantId.toString(),
+                    sourceTagToPreserve,
+                    sourceId,
+                    this.jwt
+                )
                 .then(result => {
                     if (result.response.statusCode === 202) {
                         return "Processing" as "Processing";

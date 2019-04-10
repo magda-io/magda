@@ -1,8 +1,8 @@
 import setupTenantMode from "../setupTenantMode";
 import { expect } from "chai";
 import reloadTenants, { tenantsTable } from "../reloadTenants";
-import { MAGDA_TENANT_ID_HEADER } from "../setupTenantMode";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
+import { MAGDA_TENANT_ID_HEADER } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const mockServer = require("mockttp").getLocal();
 

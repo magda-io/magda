@@ -3,6 +3,7 @@ import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
 import createTransformer from "./createTransformer";
 import * as fs from "fs";
 import * as yargs from "yargs";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export const argv: any = addJwtSecretFromEnvVar(
     yargs
@@ -72,6 +73,16 @@ export const argv: any = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe:
+                "The magda tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true,
+            default:
+                process.env.TENANT_ID ||
+                process.env.npm_package_config_tenantId ||
+                MAGDA_ADMIN_PORTAL_ID
         }).argv
 );
 

@@ -47,8 +47,9 @@ class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     * @apiUse GenericError
     */
   @ApiOperation(value = "Create a new tenant", nickname = "create", httpMethod = "POST", response = classOf[Tenant])
-//  @ApiImplicitParams(Array(
-//    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A tenant already exists with the supplied domainName", response = classOf[BadRequest])))
   def create: Route = post {

@@ -8,6 +8,7 @@ import JsonConnector, {
 } from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import AspectBuilder from "@magda/typescript-common/src/AspectBuilder";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 describe("JsonTransformer", () => {
     before(() => {
@@ -54,7 +55,8 @@ describe("JsonTransformer", () => {
             baseUrl: "http://example.com",
             jwtSecret: "squirrel",
             userId: "1",
-            maxRetries: 0
+            maxRetries: 0,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         });
 
         const connector = new JsonConnector({
