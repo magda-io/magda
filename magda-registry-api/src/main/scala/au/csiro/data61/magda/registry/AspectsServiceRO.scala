@@ -73,8 +73,8 @@ class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorS
   @Path("/{id}")
   @ApiOperation(value = "Get an aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be fetched."),
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be fetched.")))
   def getById: Route = get {
     path(Segment) { id: String =>
       requiredTenantId { tenantId =>

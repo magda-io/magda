@@ -46,9 +46,9 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
    */
   @ApiOperation(value = "Create a new aspect", nickname = "create", httpMethod = "POST", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The definition of the new aspect."),
-    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id"),
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def create: Route = post {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
@@ -99,10 +99,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   @ApiOperation(value = "Modify an aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[AspectDefinition],
     notes = "Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$AspectDefinition", paramType = "body", value = "The aspect to save."),
-    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id"),
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById: Route = put {
     path(Segment) { id: String =>
       {
@@ -155,10 +155,10 @@ class AspectsService(config: Config, authClient: AuthApiClient, webHookActor: Ac
   @ApiOperation(value = "Modify an aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
-    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id"),
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>

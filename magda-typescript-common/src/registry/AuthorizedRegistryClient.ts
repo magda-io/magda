@@ -43,10 +43,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<AspectDefinition | Error> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
+                this.tenantId.toString(),
                 encodeURIComponent(aspectDefinition.id),
                 aspectDefinition,
-                this.jwt,
-                this.tenantId.toString()
+                this.jwt
             );
         return retry(
             operation,

@@ -308,19 +308,26 @@ export class AspectDefinitionsApi {
     /**
      * Create a new aspect
      *
+     * @param xMagdaTenantId Magda tenant id
      * @param aspect The definition of the new aspect.
      * @param xMagdaSession Magda internal session id
-     * @param xMagdaTenantId Magda tenant id
      */
     public create(
+        xMagdaTenantId: string,
         aspect: AspectDefinition,
-        xMagdaSession: string,
-        xMagdaTenantId: string
+        xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath = this.basePath + "/aspects";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling create."
+            );
+        }
 
         // verify required parameter 'aspect' is not null or undefined
         if (aspect === null || aspect === undefined) {
@@ -336,16 +343,9 @@ export class AspectDefinitionsApi {
             );
         }
 
-        // verify required parameter 'xMagdaTenantId' is not null or undefined
-        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
-            throw new Error(
-                "Required parameter xMagdaTenantId was null or undefined when calling create."
-            );
-        }
+        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
-
-        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -456,12 +456,12 @@ export class AspectDefinitionsApi {
     /**
      * Get an aspect by ID
      *
-     * @param id ID of the aspect to be fetched.
      * @param xMagdaTenantId Magda tenant id
+     * @param id ID of the aspect to be fetched.
      */
     public getById(
-        id: string,
-        xMagdaTenantId: string
+        xMagdaTenantId: string,
+        id: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
@@ -470,17 +470,17 @@ export class AspectDefinitionsApi {
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
-        // verify required parameter 'id' is not null or undefined
-        if (id === null || id === undefined) {
-            throw new Error(
-                "Required parameter id was null or undefined when calling getById."
-            );
-        }
-
         // verify required parameter 'xMagdaTenantId' is not null or undefined
         if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
             throw new Error(
                 "Required parameter xMagdaTenantId was null or undefined when calling getById."
+            );
+        }
+
+        // verify required parameter 'id' is not null or undefined
+        if (id === null || id === undefined) {
+            throw new Error(
+                "Required parameter id was null or undefined when calling getById."
             );
         }
 
@@ -529,16 +529,16 @@ export class AspectDefinitionsApi {
     /**
      * Modify an aspect by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+     * @param xMagdaTenantId Magda tenant id
      * @param id ID of the aspect to be saved.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
-     * @param xMagdaTenantId Magda tenant id
      */
     public patchById(
+        xMagdaTenantId: string,
         id: string,
         aspectPatch: Array<Operation>,
-        xMagdaSession: string,
-        xMagdaTenantId: string
+        xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
@@ -546,6 +546,13 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -568,16 +575,9 @@ export class AspectDefinitionsApi {
             );
         }
 
-        // verify required parameter 'xMagdaTenantId' is not null or undefined
-        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
-            throw new Error(
-                "Required parameter xMagdaTenantId was null or undefined when calling patchById."
-            );
-        }
+        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
-
-        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -623,16 +623,16 @@ export class AspectDefinitionsApi {
     /**
      * Modify an aspect by ID
      * Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.
+     * @param xMagdaTenantId Magda tenant id
      * @param id ID of the aspect to be saved.
      * @param aspect The aspect to save.
      * @param xMagdaSession Magda internal session id
-     * @param xMagdaTenantId Magda tenant id
      */
     public putById(
+        xMagdaTenantId: string,
         id: string,
         aspect: AspectDefinition,
-        xMagdaSession: string,
-        xMagdaTenantId: string
+        xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
@@ -640,6 +640,13 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -662,16 +669,9 @@ export class AspectDefinitionsApi {
             );
         }
 
-        // verify required parameter 'xMagdaTenantId' is not null or undefined
-        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
-            throw new Error(
-                "Required parameter xMagdaTenantId was null or undefined when calling putById."
-            );
-        }
+        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
-
-        headerParams["X-Magda-TenantId"] = xMagdaTenantId;
 
         let useFormData = false;
 
