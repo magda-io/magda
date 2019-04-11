@@ -14,13 +14,20 @@ import FallbackRouteHandlerPage from "Components/Error/FallbackRouteHandlerPage"
 import RouteNotFoundPage from "Components/Error/RouteNotFoundPage";
 import OrganisationsPage from "Components/Organisation/OrganisationsPage";
 import OrganisationPage from "Components/Organisation/OrganisationPage";
-import StaticPage from "Components/Static/StaticPage";
 
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
 const DatasetAddPage = makeAsync(() =>
     import("Components/Dataset/DatasetAddPage").then(module => module.default)
+);
+const StaticPage = makeAsync(() =>
+    import("Components/Static/StaticPage").then(module => module.default)
+);
+const ManageStaticPagesPage = makeAsync(() =>
+    import("Components/Static/ManageStaticPagesPage").then(
+        module => module.default
+    )
 );
 
 import { config } from "./config";
@@ -110,6 +117,10 @@ const Routes = () => {
             <Route
                 path="/page/:pageId"
                 component={withHeader(StaticPage, true)}
+            />
+            <Route
+                path="/pages"
+                component={withHeader(ManageStaticPagesPage, false)}
             />
             <Route
                 exact

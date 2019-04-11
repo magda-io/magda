@@ -2,6 +2,7 @@ import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 import { Action } from "../types";
+import request from "helpers/request";
 
 export function requestContent(): Action {
     return {
@@ -49,4 +50,23 @@ export function fetchContent() {
             );
         return undefined;
     };
+}
+
+export async function createContent(contentId, content) {
+    const contentIdUrl = config.contentApiURL + contentId;
+    try {
+        await request("GET", contentIdUrl);
+    } catch (e) {
+        await request("PUT", contentIdUrl, content, "application/json");
+    }
+}
+
+export async function listContent(contentIdPattern) {
+    const contentIdUrl = config.contentApiURL + "all?id=" + contentIdPattern;
+    return request("GET", contentIdUrl);
+}
+
+export async function deleteContent(contentId) {
+    const contentIdUrl = config.contentApiURL + contentId;
+    return request("DELETE", contentIdUrl);
 }
