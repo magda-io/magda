@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 
-import ManageContentPage from "./ManageContentPage";
+import ContentManagePage from "Components/Common/ContentManagePage";
 
 class ManageStaticPagesPage extends Component {
     render() {
         return (
-            <ManageContentPage
+            <ContentManagePage
                 title="Manage Pages"
                 itemTitle="Page"
                 newIdInput={true}

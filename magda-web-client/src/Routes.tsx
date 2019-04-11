@@ -29,6 +29,12 @@ const ManageStaticPagesPage = makeAsync(() =>
         module => module.default
     )
 );
+const StoriesManagePage = makeAsync(() =>
+    import("Components/Home/StoriesManagePage").then(module => module.default)
+);
+const StoriesEditPage = makeAsync(() =>
+    import("Components/Home/StoriesEditPage").then(module => module.default)
+);
 
 import { config } from "./config";
 
@@ -121,6 +127,15 @@ const Routes = () => {
             <Route
                 path="/pages"
                 component={withHeader(ManageStaticPagesPage, false)}
+            />
+            <Route
+                exact
+                path="/stories"
+                component={withHeader(StoriesManagePage, false)}
+            />
+            <Route
+                path="/stories/:id"
+                component={withHeader(StoriesEditPage, true)}
             />
             <Route
                 exact

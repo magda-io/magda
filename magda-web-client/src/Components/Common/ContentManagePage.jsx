@@ -25,9 +25,14 @@ class ManageContentPage extends Component {
     };
 
     refresh() {
-        listContent(this.props.pattern).then(list =>
-            this.updateState({ list, listLoading: false })
-        );
+        listContent(this.props.pattern).then(list => {
+            list.sort((a, b) => {
+                a = (a.content && a.content.order) || 0;
+                b = (b.content && b.content.order) || 0;
+                return a - b;
+            });
+            this.updateState({ list, listLoading: false });
+        });
     }
 
     updateState(update: any) {

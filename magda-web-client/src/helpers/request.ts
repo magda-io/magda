@@ -16,6 +16,11 @@ export default function request(
             fetchOptions.headers = {
                 "Content-type": "application/json"
             };
+        } else {
+            fetchOptions.body = body;
+            fetchOptions.headers = {
+                "Content-type": contentType
+            };
         }
     }
 

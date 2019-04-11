@@ -62,11 +62,29 @@ export async function createContent(contentId, content) {
 }
 
 export async function listContent(contentIdPattern) {
-    const contentIdUrl = config.contentApiURL + "all?id=" + contentIdPattern;
+    const contentIdUrl =
+        config.contentApiURL + "all?inline=true&id=" + contentIdPattern;
     return request("GET", contentIdUrl);
 }
 
 export async function deleteContent(contentId) {
     const contentIdUrl = config.contentApiURL + contentId;
     return request("DELETE", contentIdUrl);
+}
+
+export async function readContent(contentId) {
+    const contentIdUrl = config.contentApiURL + contentId + ".json";
+    return request("GET", contentIdUrl);
+}
+
+export async function updateContent(contentId, patch) {
+    const contentIdUrl = config.contentApiURL + contentId;
+    let content = await readContent(contentId);
+    Object.assign(content, patch);
+    await request("PUT", contentIdUrl, content, "application/json");
+}
+
+export async function writeContent(contentId, content, mime) {
+    const contentIdUrl = config.contentApiURL + contentId;
+    await request("PUT", contentIdUrl, content, mime);
 }
