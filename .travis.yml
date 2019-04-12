@@ -73,3 +73,10 @@ matrix:
       env:
         global:
           - CI=true
+    - language: node_js
+      node_js: "8"
+      services:
+        - docker
+      script:
+        - cd deploy/magda/charts/opa
+        - docker run openpolicyagent/opa:0.10.6 test -v ./policies
