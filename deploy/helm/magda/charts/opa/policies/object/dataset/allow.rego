@@ -7,10 +7,19 @@ getResourceUriFromOperationUri(operationUri) = resourceUri {
     resourceUri := concat("/", array.slice(parts, 0, count(parts)-1))
 }
 
+getLastResourceUriElement(resourceUri) = lastElement {
+    parts := split(resourceUri, "/")
+    lastElement := parts[count(parts)-1]
+}
+
 # if find a permission with no any constraints
 allow {
-    resourceUri = getResourceUriFromOperationUri(input.operationUri)
+    resourceUri := getResourceUriFromOperationUri(input.operationUri)
     
+    resourceType := getLastResourceUriElement(resourceUri)
+
+    input.object.dataset.publishingState = resourceType
+
     input.user.permissions[i].resourceUri = resourceUri
 
     input.user.permissions[i].userOwnershipConstraint = false
@@ -23,6 +32,10 @@ allow {
 # if find a permission with user ownership constraint
 allow {
     resourceUri = getResourceUriFromOperationUri(input.operationUri)
+
+    resourceType := getLastResourceUriElement(resourceUri)
+
+    input.object.dataset.publishingState = resourceType
 
     input.user.permissions[i].resourceUri = resourceUri
     
@@ -39,6 +52,10 @@ allow {
 allow {
     resourceUri = getResourceUriFromOperationUri(input.operationUri)
 
+    resourceType := getLastResourceUriElement(resourceUri)
+
+    input.object.dataset.publishingState = resourceType
+
     input.user.permissions[i].resourceUri = resourceUri
     
     input.user.permissions[i].userOwnershipConstraint = false
@@ -53,6 +70,11 @@ allow {
 # if find a permission with pre-authorised constraint
 allow {
     resourceUri = getResourceUriFromOperationUri(input.operationUri)
+
+    resourceType := getLastResourceUriElement(resourceUri)
+
+    input.object.dataset.publishingState = resourceType
+    trace(resourceType)
 
     input.user.permissions[i].resourceUri = resourceUri
     
