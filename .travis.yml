@@ -75,8 +75,15 @@ matrix:
           - CI=true
     - language: node_js
       node_js: "8"
+      cache:
+        directories:
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
       services:
         - docker
       script:
-        - cd deploy/magda/charts/opa
-        - docker run openpolicyagent/opa:0.10.6 test -v ./policies
+        - docker run -v $PWD/deploy/helm/magda/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
+      env:
+        global:
+          - CI=true
