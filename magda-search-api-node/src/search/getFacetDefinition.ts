@@ -7,7 +7,7 @@ export interface FacetDefinition {
 }
 
 export default function getFacetDefinition(facetType: FacetType) {
-    if (facetType === "Publisher") {
+    if (facetType === "publisher") {
         return {
             exactMatchQuery: (term: string) => ({
                 match: {

@@ -17,6 +17,7 @@ type LanguageField = {
     path: string;
     boost?: number;
 };
+
 const DATASETS_LANGUAGE_FIELDS: LanguageField[] = [
     { path: "title", boost: 50 },
     { path: "description", boost: 2 },
@@ -33,12 +34,17 @@ const NON_LANGUAGE_FIELDS: LanguageField[] = [
 ];
 
 export default class ElasticSearchQueryer implements SearchQueryer {
-    readonly datasetsIndex: string;
-    readonly regionsIndex: string;
+    constructor(
+        readonly datasetsIndexVersion: number,
+        readonly regionsIndexVersion: number
+    ) {}
 
-    constructor(datasetsIndex: string, regionsIndex: string) {
-        this.datasetsIndex = datasetsIndex;
-        this.regionsIndex = regionsIndex;
+    protected getDatasetsIndex(): string {
+        return "datasets" + this.datasetsIndexVersion;
+    }
+
+    protected getRegionsIndex(): string {
+        return "regions" + this.regionsIndexVersion;
     }
 
     async searchFacets(
@@ -107,12 +113,12 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 from: 0,
                 size: 0,
                 body: {
-                    query: this.buildESDatasetsQuery(
+                    query: await this.buildESDatasetsQuery(
                         facetDef.removeFromQuery(generalQuery)
                     ),
                     aggs: filters
                 },
-                index: this.datasetsIndex
+                index: this.getDatasetsIndex()
             };
             // console.log(JSON.stringify(generalEsQueryBody, null, 2));
             const resultWithout = await client.search(generalEsQueryBody);
@@ -148,11 +154,54 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         }
     }
 
-    buildESDatasetsQuery(query: Query): any {
-        const geomScorerQueries = query.boostRegions.map(
-            this.regionToGeoshapeQuery,
-            this
-        );
+    //   def augmentWithBoostRegions(query: Query)(implicit client: ElasticClient): Future[Query] = {
+    //     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
+    //       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+    //         query(matchQuery("regionSearchId", freeText).operator("or"))
+    //         limit 50
+    //       ).map {
+    //         case ESGenericException(e) => throw e
+    //         case results: RequestSuccess[SearchResponse] => {
+    //           results.result.totalHits match {
+    //             case 0 => Set[Region]() // If there's no hits, no need to do anything more
+    //             case _ => results.result.to[Region].toSet
+    //           }
+    //         }
+    //       }
+    //     ).getOrElse(Future(Set[Region]()))
+    //     regionsFuture.map(regions => query.copy(boostRegions = regions))
+    //   }
+
+    async getBoostRegions(query: Query): Promise<Region[]> {
+        if (!query.freeText || query.freeText === "") {
+            return [];
+        }
+
+        const regionsResult = await client.search({
+            index: this.getRegionsIndex(),
+            body: {
+                query: {
+                    match: {
+                        regionSearchId: {
+                            query: query.freeText,
+                            operator: "or"
+                        }
+                    }
+                }
+            },
+            size: 50
+        });
+
+        return regionsResult.body.hits.hits.map((x: any) => x._source);
+    }
+
+    async buildESDatasetsQuery(query: Query): Promise<any> {
+        const boostRegions = await this.getBoostRegions(query);
+
+        // const geomScorerQueries = boostRegions.map(
+        //     this.regionToGeoshapeQuery,
+        //     this
+        // );
 
         const qualityFactor = {
             filter: {
@@ -168,13 +217,15 @@ export default class ElasticSearchQueryer implements SearchQueryer {
 
         const esQuery = {
             function_score: {
-                query: this.queryToEsQuery(query),
+                query: this.queryToEsQuery(query, boostRegions),
                 functions: [
                     {
                         weight: 1
                     },
-                    qualityFactor,
-                    ...geomScorerQueries
+                    qualityFactor
+                    // ...geomScorerQueries.map(x => ({
+                    //     filter: x
+                    // }))
                 ],
                 score_mode: "sum"
             }
@@ -183,16 +234,16 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         return esQuery;
     }
 
-    queryToEsQuery(query: Query): any {
+    queryToEsQuery(query: Query, boostRegions: Region[]): any {
         const freeText = (() => {
             const sanitisedFreeText =
                 !query.freeText || query.freeText === "" ? "*" : query.freeText;
             const textQuery = this.textQuery(sanitisedFreeText);
 
-            if (query.boostRegions.length === 0) {
+            if (boostRegions.length === 0) {
                 return textQuery;
             } else {
-                const regionNames = _(query.boostRegions)
+                const regionNames = _(boostRegions)
                     .flatMap(region => [
                         region.regionName,
                         region.regionShortName
@@ -204,13 +255,14 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 // Remove these regions from the text
                 const textWithoutRegions = regionNames.reduce(
                     (soFar, currentRegion) =>
-                        soFar.split(currentRegion).join("")
+                        soFar.split(currentRegion).join(""),
+                    sanitisedFreeText
                 );
 
                 const textQueryNoRegions = this.textQuery(
                     textWithoutRegions.length > 0 ? textWithoutRegions : "*"
                 );
-                const geomScorerQuery = query.boostRegions.map(
+                const geomScorerQueries = boostRegions.map(
                     this.regionToGeoshapeQuery,
                     this
                 );
@@ -223,7 +275,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                                 bool: {
                                     must: [
                                         textQueryNoRegions,
-                                        ...geomScorerQuery
+                                        ...geomScorerQueries
                                     ]
                                 }
                             }
@@ -312,18 +364,14 @@ export default class ElasticSearchQueryer implements SearchQueryer {
 
     regionToGeoshapeQuery(region: Region) {
         return {
-            weight: 1,
-            filter: {
-                geo_shape: {
-                    location: {
-                        indexed_shape: {
-                            index: this.regionsIndex,
-                            type: "regions",
-                            id: region,
-                            path: "geometry"
-                        }
-                    },
-                    strategy: "INTERSECTS"
+            geo_shape: {
+                "spatial.geoJson": {
+                    indexed_shape: {
+                        index: this.getRegionsIndex(),
+                        type: "regions",
+                        id: region.regionSearchId,
+                        path: "geometry"
+                    }
                 }
             }
         };

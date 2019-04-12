@@ -1,13 +1,15 @@
 import * as express from "express";
 import * as _ from "lodash";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
-const validate = require("express-validation");
 import * as joi from "joi";
 
-import ElasticSearchQueryer from "./search/ElasticSearchQueryer";
-import { Query } from "./model";
+const validate = require("express-validation");
+const chrono = require("chrono-node");
 
-const searchQueryer = new ElasticSearchQueryer("datasets41", "regions23");
+import ElasticSearchQueryer from "./search/ElasticSearchQueryer";
+import { Query, QueryRegion } from "./model";
+
+const searchQueryer = new ElasticSearchQueryer(41, 23);
 
 // import {
 //     installStatusRouter,
@@ -39,8 +41,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 .array()
                 .items(joi.string())
                 .optional(),
-            dateFrom: joi.date().optional(),
-            dateTo: joi.date().optional(),
+            dateFrom: joi.string().optional(),
+            dateTo: joi.string().optional(),
             region: joi
                 .array()
                 .items(joi.string())
@@ -73,34 +75,35 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/facets/:facetId/options",
         validate(validation),
         async (req, res) => {
-            // const queryString = req.query;
+            const queryString = req.query;
 
             const processedQuery: Query = {
-                publishers: [],
-                regions: [],
-                boostRegions: [],
-                formats: [],
-                publishingState: []
-                // start: Number.parseInt(queryString.start),
-                // limit: Number.parseInt(queryString.limit),
-                // generalQuery: queryString.generalQuery,
-                // publisher: queryString.publisher,
-                // dateFrom: new Date(queryString)
+                freeText: queryString.generalQuery,
+                publishers: queryString.publisher,
+                dateFrom:
+                    queryString.dateFrom &&
+                    chrono.en_GB.parse(queryString.dateFrom)[0].end.date(),
+                dateTo:
+                    queryString.dateTo &&
+                    chrono.en_GB.parse(queryString.dateTo)[0].end.date(),
+                regions: processRegions(queryString.region),
+                formats: queryString.format,
+                publishingState: queryString.publishingState
             };
 
             try {
                 const results = await searchQueryer.searchFacets(
-                    "Publisher",
+                    req.params.facetId,
                     processedQuery,
-                    0,
-                    10,
-                    "asic"
+                    queryString.start,
+                    queryString.limit,
+                    queryString.facetQuery
                 );
 
                 res.status(200).send(results);
             } catch (e) {
                 console.error(e);
-                console.log(JSON.stringify(e.meta.body));
+                console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }
         }
@@ -122,4 +125,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
     }
 
     return router;
+}
+
+function processRegions(regions: string[] = []): QueryRegion[] {
+    return regions.map(regionString => {
+        const [regionType, regionId] = regionString.split(":");
+        return {
+            regionType,
+            regionId
+        };
+    });
 }

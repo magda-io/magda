@@ -11,10 +11,12 @@ export type BoundingBox = {
 };
 
 export type Region = {
-    queryRegion: QueryRegion;
-    regionName?: string;
-    boundingBox?: BoundingBox;
-    regionShortName?: string;
+    regionSearchId: string;
+    regionId: string;
+    regionType: string;
+    regionName: string;
+    boundingBox: BoundingBox;
+    regionShortName: string;
 };
 
 export type Query = {
@@ -22,13 +24,12 @@ export type Query = {
     publishers: string[];
     dateFrom?: Date;
     dateTo?: Date;
-    regions: Region[];
-    boostRegions: Region[];
+    regions: QueryRegion[];
     formats: string[];
     publishingState: string[];
 };
 
-export type FacetType = "Publisher" | "Format";
+export type FacetType = "publisher" | "format";
 
 export type FacetOption = {
     identifier: string;
