@@ -18,6 +18,7 @@ class StoriesManagePage extends Component {
                     content: "New Story Content",
                     titleUrl: "http://magda.io"
                 }}
+                hasOrder={true}
             />
         );
     }

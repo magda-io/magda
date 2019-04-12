@@ -48,6 +48,7 @@
     "react-app-polyfill": "^0.2.1",
     "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
+    "react-list-drag-and-drop": "^0.9.0",
     "react-simplemde-editor": "^4.0.0",
     "retext": "^6.0.1",
     "retext-keywords": "^4.0.2",

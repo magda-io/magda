@@ -17115,6 +17115,11 @@ react-lifecycles-compat@^3.0.0, react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
+react-list-drag-and-drop@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/react-list-drag-and-drop/-/react-list-drag-and-drop-0.9.0.tgz#f01417dabf7d2a9f8ce916d1614ef950f233e33f"
+  integrity sha512-CBIZ4jxoPEQh5I7ivi3iOBbl7pUfkzfjlWXVpk+v1I2ao8Zl7+XHo/hDInULJn8PQ95D/zpEN4OpnbwD/kq2qg==
+
 react-modal@^3.3.2, react-modal@^3.4.5:
   version "3.8.1"
   resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.8.1.tgz#7300f94a6f92a2e17994de0be6ccb61734464c9e"

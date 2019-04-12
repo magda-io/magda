@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
+import RLDD from "react-list-drag-and-drop/lib/RLDD";
 
 import Reveal from "Components/Common/Reveal";
 import Spinner from "Components/Common/Spinner";
@@ -10,7 +11,8 @@ import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import {
     createContent,
     listContent,
-    deleteContent
+    deleteContent,
+    updateContent
 } from "actions/contentActions";
 import humanFileSize from "helpers/humanFileSize";
 
@@ -21,7 +23,8 @@ class ManageContentPage extends Component {
         newIdAdded: false,
         deleteId: "",
         list: [],
-        listLoading: true
+        listLoading: true,
+        orderChanged: false
     };
 
     refresh() {
@@ -31,7 +34,7 @@ class ManageContentPage extends Component {
                 b = (b.content && b.content.order) || 0;
                 return a - b;
             });
-            this.updateState({ list, listLoading: false });
+            this.updateState({ list, listLoading: false, orderChanged: false });
         });
     }
 
@@ -76,17 +79,10 @@ class ManageContentPage extends Component {
             newIdInput,
             hasEditPermissions,
             link,
-            titleFromItem
+            hasOrder
         } = this.props;
 
-        const {
-            newId,
-            newIdValid,
-            newIdAdded,
-            deleteId,
-            list,
-            listLoading
-        } = this.state;
+        const { newId, newIdValid, newIdAdded, list, listLoading } = this.state;
         const canAddNew = !newIdInput || newIdValid;
 
         if (!hasEditPermissions) {
@@ -105,71 +101,9 @@ class ManageContentPage extends Component {
                         <p>No {itemTitle} fround.</p>
                     ) : (
                         <div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>{itemTitle}</th>
-                                        <th>Size</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {list.map(item => {
-                                        return (
-                                            <tr>
-                                                <td>{titleFromItem(item)}</td>
-                                                <td>
-                                                    {humanFileSize(item.length)}
-                                                </td>
-                                                <td>
-                                                    <Link to={link(item.id)}>
-                                                        View
-                                                    </Link>{" "}
-                                                    {item.id === deleteId ? (
-                                                        <div className="au-body au-page-alerts au-page-alerts--warning">
-                                                            <div>
-                                                                Do you really
-                                                                want to delete
-                                                                this item?
-                                                            </div>
-                                                            <div>
-                                                                <button
-                                                                    className="au-btn"
-                                                                    onClick={this.deleteItemConfirm.bind(
-                                                                        this,
-                                                                        item.id
-                                                                    )}
-                                                                >
-                                                                    Yes
-                                                                </button>{" "}
-                                                                <button
-                                                                    className="au-btn au-btn--secondary"
-                                                                    onClick={this.deleteItem.bind(
-                                                                        this,
-                                                                        ""
-                                                                    )}
-                                                                >
-                                                                    No
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <Link
-                                                            to="#"
-                                                            onClick={this.deleteItem.bind(
-                                                                this,
-                                                                item.id
-                                                            )}
-                                                        >
-                                                            Delete
-                                                        </Link>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                            {hasOrder
+                                ? this.renderOrdered()
+                                : this.renderUnordered()}
                         </div>
                     )}
 
@@ -215,6 +149,180 @@ class ManageContentPage extends Component {
                 </div>
             </MagdaDocumentTitle>
         );
+    }
+
+    renderUnordered() {
+        const { itemTitle, link, titleFromItem } = this.props;
+        const { deleteId, list } = this.state;
+        return (
+            <table>
+                <thead>
+                    <tr>
+                        <th>{itemTitle}</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {list.map(item => {
+                        return (
+                            <tr>
+                                <td>{titleFromItem(item)}</td>
+                                <td>{humanFileSize(item.length)}</td>
+                                <td>
+                                    <Link to={link(item.id)}>View</Link>{" "}
+                                    {item.id === deleteId ? (
+                                        <div className="au-body au-page-alerts au-page-alerts--warning">
+                                            <div>
+                                                Do you really want to delete
+                                                this item?
+                                            </div>
+                                            <div>
+                                                <button
+                                                    className="au-btn"
+                                                    onClick={this.deleteItemConfirm.bind(
+                                                        this,
+                                                        item.id
+                                                    )}
+                                                >
+                                                    Yes
+                                                </button>{" "}
+                                                <button
+                                                    className="au-btn au-btn--secondary"
+                                                    onClick={this.deleteItem.bind(
+                                                        this,
+                                                        ""
+                                                    )}
+                                                >
+                                                    No
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            to="#"
+                                            onClick={this.deleteItem.bind(
+                                                this,
+                                                item.id
+                                            )}
+                                        >
+                                            Delete
+                                        </Link>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        );
+    }
+
+    renderOrdered() {
+        const { link, titleFromItem } = this.props;
+        const { deleteId, list, orderChanged } = this.state;
+        const itemStyle = {
+            display: "block",
+            border: "1px solid black",
+            padding: ".5em",
+            cursor: "pointer"
+        };
+        return (
+            <div>
+                <RLDD
+                    items={list.map((item, id) => {
+                        return { id, item };
+                    })}
+                    itemRenderer={wrapper => {
+                        let item = wrapper.item;
+                        return (
+                            <div style={itemStyle}>
+                                <h3>
+                                    {titleFromItem(item)}{" "}
+                                    <small>
+                                        [{humanFileSize(item.length)}]
+                                    </small>
+                                </h3>
+                                <div>
+                                    <Link to={link(item.id)}>View</Link>{" "}
+                                    {item.id === deleteId ? (
+                                        <div className="au-body au-page-alerts au-page-alerts--warning">
+                                            <div>
+                                                Do you really want to delete
+                                                this item?
+                                            </div>
+                                            <div>
+                                                <button
+                                                    className="au-btn"
+                                                    onClick={this.deleteItemConfirm.bind(
+                                                        this,
+                                                        item.id
+                                                    )}
+                                                >
+                                                    Yes
+                                                </button>{" "}
+                                                <button
+                                                    className="au-btn au-btn--secondary"
+                                                    onClick={this.deleteItem.bind(
+                                                        this,
+                                                        ""
+                                                    )}
+                                                >
+                                                    No
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            to="#"
+                                            onClick={this.deleteItem.bind(
+                                                this,
+                                                item.id
+                                            )}
+                                        >
+                                            Delete
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    }}
+                    onChange={items => {
+                        this.updateState({
+                            list: items.map(item => item.item),
+                            orderChanged: true
+                        });
+                    }}
+                />
+                {orderChanged && (
+                    <React.Fragment>
+                        <button
+                            className="au-btn"
+                            onClick={this.saveOrder.bind(this)}
+                        >
+                            Save order
+                        </button>
+                        <button
+                            className="au-btn"
+                            onClick={this.refresh.bind(this)}
+                        >
+                            Cancel
+                        </button>
+                    </React.Fragment>
+                )}
+            </div>
+        );
+    }
+
+    async saveOrder() {
+        await Promise.all(
+            this.state.list.map(async (item, index) => {
+                if (item.content.order !== index) {
+                    await updateContent(item.id, { order: index });
+                }
+            })
+        );
+        this.refresh();
     }
 }
 
