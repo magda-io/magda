@@ -130,8 +130,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         const contentType = req.get("content-type");
 
         const reqOpts: request.CoreOptions = {
-            method: "post",
-            json: reqData
+            method: "post"
         };
 
         // --- merge userInfo into possible income input data via POST
@@ -157,6 +156,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
+
+        reqOpts.json = reqData;
 
         request(`${opaUrl}${req.path}`, reqOpts).pipe(res);
     }
