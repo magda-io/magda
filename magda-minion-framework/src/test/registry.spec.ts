@@ -210,8 +210,7 @@ baseSpec(
 
 function reqHeaders(jwtSecret: string, userId: string) {
     return {
-        "X-Magda-Session": buildJwt(jwtSecret, userId),
-        "X-Magda-TenantId": "0"
+        "X-Magda-Session": buildJwt(jwtSecret, userId)
     };
 }
 

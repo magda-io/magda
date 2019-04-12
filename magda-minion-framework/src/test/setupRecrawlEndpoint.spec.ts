@@ -13,7 +13,6 @@ import fakeArgv from "./fakeArgv";
 import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
 import setupRecrawlEndpoint from "../setupRecrawlEndpoint";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "Recrawl APIs",
@@ -38,7 +37,7 @@ baseSpec(
                     jwtSecret: "jwtSecret",
                     userId: "userId",
                     listenPort: listenPort(),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                    tenantId: undefined
                 }),
                 id: "id",
                 aspects: [],
@@ -81,7 +80,7 @@ baseSpec(
                     jwtSecret: "jwtSecret",
                     userId: "userId",
                     listenPort: listenPort(),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                    tenantId: undefined
                 }),
                 id: "id",
                 aspects: [],
@@ -152,7 +151,7 @@ baseSpec(
                                 jwtSecret: "jwtSecret",
                                 userId: "userId",
                                 listenPort: listenPort(),
-                                tenantId: MAGDA_ADMIN_PORTAL_ID
+                                tenantId: undefined
                             }),
                             id: "id",
                             aspects: [],

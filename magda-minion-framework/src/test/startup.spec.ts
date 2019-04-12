@@ -189,7 +189,7 @@ baseSpec(
                         registryUrl: "",
                         jwtSecret,
                         userId,
-                        tenantId: MAGDA_ADMIN_PORTAL_ID
+                        tenantId: undefined
                     }),
                     id: id,
                     aspects: aspects,

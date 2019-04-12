@@ -68,8 +68,7 @@ baseSpec(
                 concurrency,
                 async,
                 registryScope,
-                registry,
-                tenantId
+                registry
             };
 
             const env = envInit.bind(context)();
