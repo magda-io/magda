@@ -59,6 +59,43 @@ class Account extends React.Component {
                                     ? "Admin"
                                     : "Data User"}
                             </p>
+                            {this.props.user.isAdmin && (
+                                <div>
+                                    <h2>Administrate</h2>
+                                    <ul>
+                                        <li>
+                                            <a href="/admin/home">Site</a>
+                                        </li>
+                                        <li>
+                                            <a href="/stories">Home Stories</a>
+                                        </li>
+                                        <li>
+                                            <a href="/pages">Other Pages</a>
+                                        </li>
+                                        <li>
+                                            <a href="/header/navigation">
+                                                Header Navigation
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/footer/navigation">
+                                                Footer Navigation
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/accounts">
+                                                User Accounts
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/language">Language</a>
+                                        </li>
+                                        <li>
+                                            <a href="/connectors">Connectors</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

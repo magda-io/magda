@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import RLDD from "react-list-drag-and-drop/lib/RLDD";
 
@@ -12,7 +11,8 @@ import {
     createContent,
     listContent,
     deleteContent,
-    updateContent
+    updateContent,
+    writeContent
 } from "actions/contentActions";
 import humanFileSize from "helpers/humanFileSize";
 
@@ -22,6 +22,8 @@ class ManageContentPage extends Component {
         newIdValid: false,
         newIdAdded: false,
         deleteId: "",
+        editId: "",
+        viewId: "",
         list: [],
         listLoading: true,
         orderChanged: false
@@ -74,16 +76,14 @@ class ManageContentPage extends Component {
 
     render() {
         const {
+            edit,
             title,
             itemTitle,
-            newIdInput,
             hasEditPermissions,
-            link,
             hasOrder
         } = this.props;
 
-        const { newId, newIdValid, newIdAdded, list, listLoading } = this.state;
-        const canAddNew = !newIdInput || newIdValid;
+        const { editId, list, listLoading } = this.state;
 
         if (!hasEditPermissions) {
             return <span>For admins only</span>;
@@ -97,63 +97,32 @@ class ManageContentPage extends Component {
                 <div>
                     <h1>{title}</h1>
 
-                    {list.length === 0 ? (
-                        <p>No {itemTitle} fround.</p>
+                    {edit &&
+                    list.filter(item => item.id === editId).length > 0 ? (
+                        this.renderEdit(
+                            list.filter(item => item.id === editId)[0]
+                        )
                     ) : (
                         <div>
-                            {hasOrder
-                                ? this.renderOrdered()
-                                : this.renderUnordered()}
+                            {list.length === 0 ? (
+                                <p>No {itemTitle} fround.</p>
+                            ) : hasOrder ? (
+                                this.renderOrdered()
+                            ) : (
+                                this.renderUnordered()
+                            )}
+
+                            {this.renderNewForm()}
                         </div>
                     )}
-
-                    <div>
-                        <Reveal label={`Add New ${itemTitle}`}>
-                            <h2>Add New {itemTitle}</h2>
-                            <div>
-                                {newIdInput && (
-                                    <React.Fragment>
-                                        <p>
-                                            <label htmlFor="inputId">
-                                                Please insert an id for the{" "}
-                                                {itemTitle.toLowerCase()}. It
-                                                must be all lowercase and only
-                                                consist of alphanumeric
-                                                characters and dash.
-                                            </label>
-                                        </p>
-                                        <input
-                                            id="inputId"
-                                            className="au-text-input"
-                                            value={newId}
-                                            required
-                                            pattern="[a-z0-9-]+"
-                                            onChange={this.newIdChange.bind(
-                                                this
-                                            )}
-                                        />
-                                    </React.Fragment>
-                                )}
-                                {canAddNew && (
-                                    <button
-                                        class="au-btn"
-                                        onClick={this.addNew.bind(this)}
-                                    >
-                                        Add {itemTitle}
-                                    </button>
-                                )}
-                            </div>
-                            {newIdAdded && <Redirect to={link(newIdAdded)} />}
-                        </Reveal>
-                    </div>
                 </div>
             </MagdaDocumentTitle>
         );
     }
 
     renderUnordered() {
-        const { itemTitle, link, titleFromItem } = this.props;
-        const { deleteId, list } = this.state;
+        const { itemTitle, titleFromItem } = this.props;
+        const { list } = this.state;
         return (
             <table>
                 <thead>
@@ -169,47 +138,7 @@ class ManageContentPage extends Component {
                             <tr>
                                 <td>{titleFromItem(item)}</td>
                                 <td>{humanFileSize(item.length)}</td>
-                                <td>
-                                    <Link to={link(item.id)}>View</Link>{" "}
-                                    {item.id === deleteId ? (
-                                        <div className="au-body au-page-alerts au-page-alerts--warning">
-                                            <div>
-                                                Do you really want to delete
-                                                this item?
-                                            </div>
-                                            <div>
-                                                <button
-                                                    className="au-btn"
-                                                    onClick={this.deleteItemConfirm.bind(
-                                                        this,
-                                                        item.id
-                                                    )}
-                                                >
-                                                    Yes
-                                                </button>{" "}
-                                                <button
-                                                    className="au-btn au-btn--secondary"
-                                                    onClick={this.deleteItem.bind(
-                                                        this,
-                                                        ""
-                                                    )}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <Link
-                                            to="#"
-                                            onClick={this.deleteItem.bind(
-                                                this,
-                                                item.id
-                                            )}
-                                        >
-                                            Delete
-                                        </Link>
-                                    )}
-                                </td>
+                                <td>{this.renderItemControls(item)}</td>
                             </tr>
                         );
                     })}
@@ -219,8 +148,8 @@ class ManageContentPage extends Component {
     }
 
     renderOrdered() {
-        const { link, titleFromItem } = this.props;
-        const { deleteId, list, orderChanged } = this.state;
+        const { titleFromItem } = this.props;
+        const { list, orderChanged } = this.state;
         const itemStyle = {
             display: "block",
             border: "1px solid black",
@@ -243,47 +172,7 @@ class ManageContentPage extends Component {
                                         [{humanFileSize(item.length)}]
                                     </small>
                                 </h3>
-                                <div>
-                                    <Link to={link(item.id)}>View</Link>{" "}
-                                    {item.id === deleteId ? (
-                                        <div className="au-body au-page-alerts au-page-alerts--warning">
-                                            <div>
-                                                Do you really want to delete
-                                                this item?
-                                            </div>
-                                            <div>
-                                                <button
-                                                    className="au-btn"
-                                                    onClick={this.deleteItemConfirm.bind(
-                                                        this,
-                                                        item.id
-                                                    )}
-                                                >
-                                                    Yes
-                                                </button>{" "}
-                                                <button
-                                                    className="au-btn au-btn--secondary"
-                                                    onClick={this.deleteItem.bind(
-                                                        this,
-                                                        ""
-                                                    )}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <Link
-                                            to="#"
-                                            onClick={this.deleteItem.bind(
-                                                this,
-                                                item.id
-                                            )}
-                                        >
-                                            Delete
-                                        </Link>
-                                    )}
-                                </div>
+                                <div>{this.renderItemControls(item)}</div>
                             </div>
                         );
                     }}
@@ -314,6 +203,56 @@ class ManageContentPage extends Component {
         );
     }
 
+    renderNewForm() {
+        const { itemTitle, newIdInput, link } = this.props;
+
+        const { newId, newIdValid, newIdAdded } = this.state;
+        const canAddNew = !newIdInput || newIdValid;
+        return (
+            <div>
+                <Reveal label={`Add New ${itemTitle}`}>
+                    <h2>Add New {itemTitle}</h2>
+                    <div>
+                        {newIdInput && (
+                            <React.Fragment>
+                                <p>
+                                    <label htmlFor="inputId">
+                                        Please insert an id for the{" "}
+                                        {itemTitle.toLowerCase()}. It must be
+                                        all lowercase and only consist of
+                                        alphanumeric characters and dash.
+                                    </label>
+                                </p>
+                                <input
+                                    id="inputId"
+                                    className="au-text-input"
+                                    value={newId}
+                                    required
+                                    pattern="[a-z0-9-]+"
+                                    onChange={this.newIdChange.bind(this)}
+                                />
+                            </React.Fragment>
+                        )}
+                        {canAddNew && (
+                            <button
+                                className="au-btn"
+                                onClick={this.addNew.bind(this)}
+                            >
+                                Add {itemTitle}
+                            </button>
+                        )}
+                    </div>
+                    {newIdAdded &&
+                        (link ? (
+                            <Redirect to={link(newIdAdded)} />
+                        ) : (
+                            <span>Added!</span>
+                        ))}
+                </Reveal>
+            </div>
+        );
+    }
+
     async saveOrder() {
         await Promise.all(
             this.state.list.map(async (item, index) => {
@@ -323,6 +262,77 @@ class ManageContentPage extends Component {
             })
         );
         this.refresh();
+    }
+
+    renderItemControls(item) {
+        const { link, edit } = this.props;
+        const { deleteId, viewId } = this.state;
+        return (
+            <div>
+                {edit ? (
+                    <button
+                        onClick={() => this.updateState({ editId: item.id })}
+                    >
+                        Edit
+                    </button>
+                ) : item.id === viewId ? (
+                    <Redirect to={link(item.id)} />
+                ) : (
+                    <button
+                        onClick={() => this.updateState({ viewId: item.id })}
+                    >
+                        View
+                    </button>
+                )}{" "}
+                {item.id === deleteId ? (
+                    <div className="au-body au-page-alerts au-page-alerts--warning">
+                        <div>Do you really want to delete this item?</div>
+                        <div>
+                            <button
+                                className="au-btn"
+                                onClick={this.deleteItemConfirm.bind(
+                                    this,
+                                    item.id
+                                )}
+                            >
+                                Yes
+                            </button>{" "}
+                            <button
+                                className="au-btn au-btn--secondary"
+                                onClick={() =>
+                                    this.updateState({ deleteId: "" })
+                                }
+                            >
+                                No
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => this.updateState({ deleteId: item.id })}
+                    >
+                        Delete
+                    </button>
+                )}
+            </div>
+        );
+    }
+    renderEdit(item) {
+        const { itemTitle } = this.props;
+        const save = async data => {
+            data.order = item.content.order;
+            await writeContent(item.id, data, "application/json");
+            this.refresh();
+        };
+        return (
+            <div>
+                <h2>Edit {itemTitle}</h2>
+                {this.props.edit(item, save)}
+                <button onClick={() => this.updateState({ editId: "" })}>
+                    Done
+                </button>
+            </div>
+        );
     }
 }
 

@@ -18,6 +18,14 @@ import OrganisationPage from "Components/Organisation/OrganisationPage";
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
+const HeaderNavigationManagePage = makeAsync(() =>
+    import("Components/Header/HeaderNavigationManagePage").then(
+        module => module.default
+    )
+);
+const HomeAdminPage = makeAsync(() =>
+    import("Components/Home/HomeAdminPage").then(module => module.default)
+);
 const DatasetAddPage = makeAsync(() =>
     import("Components/Dataset/DatasetAddPage").then(module => module.default)
 );
@@ -42,6 +50,21 @@ const Routes = () => {
     return (
         <Switch>
             <Route exact path="/" component={HomePage} />
+            <Route
+                exact
+                path="/admin/home"
+                component={withHeader(HomeAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/header/navigation"
+                component={withHeader(HeaderNavigationManagePage, true)}
+            />
+            <Route
+                exact
+                path="/header/navigation/:id"
+                component={withHeader(HeaderNavigationManagePage, true)}
+            />
             <Route
                 exact
                 path="/organisations"
