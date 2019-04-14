@@ -33,6 +33,12 @@ const FooterNavigationLinksManagePage = makeAsync(() =>
         module => module.default
     )
 );
+const FooterCopyrightManagePage = makeAsync(() =>
+    import("Components/Footer/FooterCopyrightManagePage").then(
+        module => module.default
+    )
+);
+
 const HomeAdminPage = makeAsync(() =>
     import("Components/Home/HomeAdminPage").then(module => module.default)
 );
@@ -77,6 +83,11 @@ const Routes = () => {
             <Route
                 path="/footer/navigation-links/:size/:category"
                 component={withHeader(FooterNavigationLinksManagePage, true)}
+            />
+            <Route
+                exact
+                path="/footer/copyright"
+                component={withHeader(FooterCopyrightManagePage, true)}
             />
             <Route
                 exact

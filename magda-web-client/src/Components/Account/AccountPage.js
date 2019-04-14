@@ -83,6 +83,11 @@ class Account extends React.Component {
                                             </a>
                                         </li>
                                         <li>
+                                            <a href="/footer/copyright">
+                                                Footer Copyright
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a href="/accounts">
                                                 User Accounts
                                             </a>
