@@ -63,6 +63,7 @@ class ManageContentPage extends Component {
         await createContent(newId, this.props.newContent);
 
         this.updateState({ newId: "", newIdValid: false, newIdAdded: newId });
+        this.refresh();
     }
 
     async deleteItemConfirm(id) {

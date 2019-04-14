@@ -23,6 +23,16 @@ const HeaderNavigationManagePage = makeAsync(() =>
         module => module.default
     )
 );
+const FooterNavigationManagePage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationManagePage").then(
+        module => module.default
+    )
+);
+const FooterNavigationLinksManagePage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationLinksManagePage").then(
+        module => module.default
+    )
+);
 const HomeAdminPage = makeAsync(() =>
     import("Components/Home/HomeAdminPage").then(module => module.default)
 );
@@ -61,9 +71,12 @@ const Routes = () => {
                 component={withHeader(HeaderNavigationManagePage, true)}
             />
             <Route
-                exact
-                path="/header/navigation/:id"
-                component={withHeader(HeaderNavigationManagePage, true)}
+                path="/footer/navigation/:size"
+                component={withHeader(FooterNavigationManagePage, true)}
+            />
+            <Route
+                path="/footer/navigation-links/:size/:category"
+                component={withHeader(FooterNavigationLinksManagePage, true)}
             />
             <Route
                 exact

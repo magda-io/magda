@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 
 import ContentManagePage from "Components/Common/ContentManagePage";
-// import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { codelistEditor } from "Components/Editing/Editors/codelistEditor";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";

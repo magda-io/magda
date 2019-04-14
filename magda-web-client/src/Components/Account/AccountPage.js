@@ -78,7 +78,7 @@ class Account extends React.Component {
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="/footer/navigation">
+                                            <a href="/footer/navigation/medium">
                                                 Footer Navigation
                                             </a>
                                         </li>
