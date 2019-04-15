@@ -49,6 +49,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           limit 1""".map(rs => rs.long("eventId")).headOption().apply()
   }
 
+
+  //  If tenantId is NONE, will get all events of all tenants.
   def getEvents(implicit session: DBSession,
                 pageToken: Option[Long] = None,
                 start: Option[Int] = None,
@@ -57,7 +59,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                 recordId: Option[String] = None,
                 aspectIds: Set[String] = Set(),
                 eventTypes: Set[EventType] = Set(),
-                tenantId: Option[BigInt] = Some(0)): EventsPage = {
+                tenantId: Option[BigInt] = None): EventsPage = {
     val filters = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
