@@ -187,7 +187,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     new SearchResult(
       strategy = Some(strategy),
-      query = query,
+      query = query.copy(jwtToken = None), //--- avoid JWT token being included in response
       hitCount = response.totalHits,
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(
@@ -440,7 +440,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       setToOption(query.formats)(seq =>
         should(seq.map(formatQuery(strategy))).boost(2)),
       Some(
-        should(publishingStateQuery(strategy)(query.publishingState)).boost(2)),
+        should(publishingStateQuery(strategy)(query.publishingState))),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq =>
         should(seq.map(region => regionIdQuery(region, indices))).boost(2)))
