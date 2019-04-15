@@ -66,6 +66,12 @@ const StoriesEditPage = makeAsync(() =>
     import("Components/Home/StoriesEditPage").then(module => module.default)
 );
 
+const LanguageManagementPage = makeAsync(() =>
+    import("Components/i18n/LanguageManagementPage").then(
+        module => module.default
+    )
+);
+
 import { config } from "./config";
 
 const Routes = () => {
@@ -190,6 +196,11 @@ const Routes = () => {
                 exact
                 path="/stories"
                 component={withHeader(StoriesManagePage, false)}
+            />
+            <Route
+                exact
+                path="/i18n"
+                component={withHeader(LanguageManagementPage, false)}
             />
             <Route
                 path="/stories/:id"

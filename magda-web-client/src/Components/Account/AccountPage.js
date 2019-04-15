@@ -93,7 +93,7 @@ class Account extends React.Component {
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="/language">Language</a>
+                                            <a href="/i18n">Language</a>
                                         </li>
                                         <li>
                                             <a href="/connectors">Connectors</a>
