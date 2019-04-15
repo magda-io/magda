@@ -18,6 +18,12 @@ import OrganisationPage from "Components/Organisation/OrganisationPage";
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
+const AccountsManagePage = makeAsync(() =>
+    import("Components/Account/AccountsManagePage").then(
+        module => module.default
+    )
+);
+
 const HeaderNavigationManagePage = makeAsync(() =>
     import("Components/Header/HeaderNavigationManagePage").then(
         module => module.default
@@ -132,6 +138,11 @@ const Routes = () => {
                 exact
                 path="/account"
                 component={withHeader(AccountPage, false)}
+            />
+            <Route
+                exact
+                path="/accounts"
+                component={withHeader(AccountsManagePage, false)}
             />
             <Route
                 exact
