@@ -164,6 +164,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
     async function proxyRequest(req: express.Request, res: express.Response) {
         try {
+            res.set({
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0"
+            });
             await appendUserInfoToInput(req, res);
         } catch (e) {
             res.status(500).send(`Failed to proxy OPA request: ${e}`);
