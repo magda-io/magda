@@ -24,6 +24,12 @@ const AccountsManagePage = makeAsync(() =>
     )
 );
 
+const ConnectorsAdminPage = makeAsync(() =>
+    import("Components/Dataset/ConnectorsAdminPage").then(
+        module => module.default
+    )
+);
+
 const HeaderNavigationManagePage = makeAsync(() =>
     import("Components/Header/HeaderNavigationManagePage").then(
         module => module.default
@@ -106,6 +112,11 @@ const Routes = () => {
                 exact
                 path="/footer/copyright"
                 component={withHeader(FooterCopyrightManagePage, true)}
+            />
+            <Route
+                exact
+                path="/connectors"
+                component={withHeader(ConnectorsAdminPage, true)}
             />
             <Route
                 exact
