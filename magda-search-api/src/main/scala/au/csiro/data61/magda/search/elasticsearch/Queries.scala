@@ -4,25 +4,34 @@ import java.time.OffsetDateTime
 
 import com.sksamuel.elastic4s.searches.ScoreMode
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.queries.{NestedQuery => NestedQueryDefinition}
+import com.sksamuel.elastic4s.searches.queries.{RangeQuery, NestedQuery => NestedQueryDefinition, Query => QueryDefinition}
 import com.typesafe.config.Config
-
 import au.csiro.data61.magda.model.misc.QueryRegion
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.{
-//import au.csiro.data61.magda.search.elasticsearch.QueryDefinitions.{
-  ShapeRelation,
-  PreindexedShape,
-  GeoShapeQuery => GeoShapeQueryDefinition
-}
+import com.sksamuel.elastic4s.searches.queries.geo.{PreindexedShape, ShapeRelation, GeoShapeQuery => GeoShapeQueryDefinition}
 import au.csiro.data61.magda.api.FilterValue
-import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.SearchStrategy
+import scalaj.http.Http
+import au.csiro.data61.magda.AppConfig
+import akka.actor.{Actor, ActorLogging, ActorSystem, DeadLetter, Props}
+import akka.event.Logging
+import com.typesafe.config.Config
+import spray.json._
+import DefaultJsonProtocol._
+import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
+import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 
 object Queries {
+
+  implicit val config = AppConfig.conf()
+  implicit val system = ActorSystem("search-api-opa", config)
+  implicit val logger = Logging(system, getClass)
+
+  val opaUrl:String = config.getConfig("opa").getString("baseUrl")
+
   def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
@@ -54,22 +63,171 @@ object Queries {
     }
   }
 
-  def publishingStateQuery(strategy: SearchStrategy)(publishingStateValue: Set[FilterValue[String]]): QueryDefinition = {
-    var filteredValue = publishingStateValue.filter(value => {
-        value match {
-          case Specified(inner) => true
-          case _ => false
+  val RegoOperators = Map(
+    "eq" -> "=",
+    "equal" -> "=",
+    "neq" -> "!=",
+    "lt" -> "<",
+    "gt" -> ">",
+    "lte" -> "<=",
+    "gte" -> ">="
+  )
+
+  private def ruleToQueryDef(ruleJson:JsValue):QueryDefinition = {
+    ruleJson match {
+      case JsObject(rule) =>
+        val isDefault:Boolean = rule.get("default").flatMap{
+          case JsBoolean(v) => Some(v)
+          case _ => None
+        }.getOrElse(false)
+
+        var defaultValue:Option[JsValue] = rule.get("head").flatMap{
+          case JsObject(head) => head.get("value").flatMap(_.asJsObject.fields.get("value"))
+          case _ => None
         }
-      }).map(value => {
+
+        if(isDefault) {
+          //--- it's a default rule; rule body can be ignored
+          defaultValue match {
+            case Some(JsTrue) => MatchAllQuery()
+            case _ => MatchNoneQuery()
+          }
+        } else {
+          val ruleExps = rule.get("body").toSeq.flatMap(_.asInstanceOf[JsArray].elements.map(_.asJsObject))
+          val ruleExpQueries = ruleExps.map(ruleExpressionToQueryDef(_))
+          if(ruleExpQueries.isEmpty){
+            MatchNoneQuery()
+          } else {
+            if(ruleExpQueries.size == 0) MatchNoneQuery()
+            else boolQuery().must(ruleExpQueries)
+          }
+        }
+      case _ => MatchNoneQuery()
+    }
+  }
+
+  private def jsValueToRefString(refJson: JsValue):Option[String] = {
+    refJson match {
+      case JsObject(ref) =>
+        ref.get("type") match {
+          case Some(JsString("ref")) =>
+            ref.get("value") match {
+              case Some(JsArray(values)) =>
+                val refStr:String = values
+                  .flatMap(_.asJsObject.fields.get("value"))
+                  .flatMap{
+                    case JsString(v) => Some(v)
+                    case _ => None
+                  }.mkString(".")
+                Some(refStr)
+              case _ => None
+            }
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+
+  private def jsValueJsValue(refJson: JsValue):Option[JsValue] = {
+    refJson match {
+      case JsObject(ref) => ref.get("value")
+      case _ => None
+    }
+  }
+
+  private def ruleExpressionToQueryDef(expJson:JsValue):QueryDefinition = {
+
+    expJson match {
+      case JsObject(exp) =>
+        val terms = exp.get("terms").toArray.flatMap(_.asInstanceOf[JsArray].elements)
+        if(terms.size != 3) {
+          // --- all our policy residual should be in form of 'left term' operator 'right term'
+          MatchNoneQuery()
+        } else {
+          val operatorRef: String = jsValueToRefString(terms(0)).getOrElse("")
+          val operator: String = RegoOperators.get(operatorRef).getOrElse("")
+          val value: Option[JsValue] = jsValueJsValue(terms(2))
+          var datasetRef: String = jsValueToRefString(terms(1)).getOrElse("").replaceFirst("^input\\.object\\.dataset\\.", "")
+          value match {
+            case Some(JsString(v)) =>
+              operator match {
+                case "=" => TermQuery(datasetRef, v)
+                case "!=" => boolQuery().not(TermQuery(datasetRef, v))
+                case _ => MatchNoneQuery()
+              }
+            case Some(JsBoolean(v)) =>
+              operator match {
+                case "=" => TermQuery(datasetRef, v)
+                case "!=" => boolQuery().not(TermQuery(datasetRef, v))
+                case _ => MatchNoneQuery()
+              }
+            case  Some(JsNumber(v)) =>
+              val q = RangeQuery(datasetRef)
+              operator match {
+                case "=" => q.lte(v.toDouble).gte(v.toDouble)
+                case ">" => q.gt(v.toDouble)
+                case "<" => q.lt(v.toDouble)
+                case ">=" => q.gte(v.toDouble)
+                case "<=" => q.lte(v.toDouble)
+                case _ => MatchNoneQuery()
+              }
+          }
+        }
+      case _ => MatchNoneQuery()
+    }
+  }
+
+
+  def publishingStateQuery(publishingStateValue: Set[FilterValue[String]], jwtToken: Option[String])(implicit config: Config): QueryDefinition = {
+
+    var filteredValue = publishingStateValue.map(value => {
         value match {
           case Specified(inner) => inner
           case Unspecified() => ""
         }
-      });
-    filteredValue.isEmpty match {
-      case true => termQuery("publishingState", "published")
-      case _ => termsQuery("publishingState", filteredValue)
+      }).filter(_ == "").toSeq
+
+    filteredValue = if(!filteredValue.isEmpty) filteredValue else List("draft", "published", "archived")
+
+    val residualRules = filteredValue.map{ datasetType =>
+      Http(s"${opaUrl}compile")
+        .postData(s"""{
+                    |  "query": "data.object.dataset.allow",
+                    |  "input": {
+                    |    "operationUri": "object/dataset/${datasetType}/read"
+                    |  },
+                    |  "unknowns": [
+                    |    "input.object.dataset"
+                    |  ]
+                    |}""".stripMargin)
+        .header("X-Magda-Session", jwtToken.getOrElse(""))
+        .header("content-type", "application/json")
+        .asString
+    }.map{res =>
+      if(res.code != 200) {
+        logger.error(s"OPA failed to process the request: {}", res.body)
+        matchNoneQuery()
+      } else {
+        val json = res.body.parseJson.asJsObject
+        // --- default rule value
+        var defaultValue:Boolean = false
+        val ruleQuries = json
+          .fields
+          .get("result")
+          .flatMap(_.asJsObject.fields.get("support"))
+          .flatMap(_.asInstanceOf[JsArray].elements.headOption)
+          .flatMap(_.asJsObject.fields.get("rules"))
+          .toSeq
+          .flatMap(_.asInstanceOf[JsArray].elements)
+          .map(ruleToQueryDef(_))
+
+        if(ruleQuries.size == 0) MatchNoneQuery()
+        else boolQuery().should(ruleQuries).minimumShouldMatch(1)
+      }
     }
+
+    if(residualRules.size == 0) MatchNoneQuery()
+    else boolQuery().should(residualRules).minimumShouldMatch(1)
   }
 
   def regionToGeoShapeQuery(region: Region, indices: Indices)(implicit config: Config) = new GeoShapeQueryDefinition(

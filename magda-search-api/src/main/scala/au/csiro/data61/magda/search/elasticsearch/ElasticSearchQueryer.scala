@@ -440,12 +440,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       setToOption(query.formats)(seq =>
         should(seq.map(formatQuery(strategy))).boost(2)),
       Some(
-        should(publishingStateQuery(strategy)(query.publishingState))),
+        should(publishingStateQuery(query.publishingState, query.jwtToken))),
       dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
       setToOption(query.regions)(seq =>
         should(seq.map(region => regionIdQuery(region, indices))).boost(2)))
 
-    strategyToCombiner(strategy)(clauses.flatten)
+    must(Seq(
+      publishingStateQuery(query.publishingState, query.jwtToken),
+      strategyToCombiner(strategy)(clauses.flatten)
+    ))
   }
 
   override def searchFacets(
