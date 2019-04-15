@@ -73,6 +73,11 @@ class Account extends React.Component {
                                             <a href="/pages">Other Pages</a>
                                         </li>
                                         <li>
+                                            <a href="/admin/home/highlights">
+                                                Home Highlights
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a href="/header/navigation">
                                                 Header Navigation
                                             </a>

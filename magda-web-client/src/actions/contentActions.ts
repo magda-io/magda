@@ -61,9 +61,11 @@ export async function createContent(contentId, content) {
     }
 }
 
-export async function listContent(contentIdPattern) {
+export async function listContent(...contentIdPattern) {
     const contentIdUrl =
-        config.contentApiURL + "all?inline=true&id=" + contentIdPattern;
+        config.contentApiURL +
+        "all?inline=true&" +
+        contentIdPattern.map(id => `id=${id}`).join("&");
     return request("GET", contentIdUrl);
 }
 

@@ -45,6 +45,12 @@ const FooterCopyrightManagePage = makeAsync(() =>
     )
 );
 
+const HomeHighlightsManage = makeAsync(() =>
+    import("Components/Home/HighlightsManagePage").then(
+        module => module.default
+    )
+);
+
 const HomeAdminPage = makeAsync(() =>
     import("Components/Home/HomeAdminPage").then(module => module.default)
 );
@@ -201,6 +207,11 @@ const Routes = () => {
                 exact
                 path="/i18n"
                 component={withHeader(LanguageManagementPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/home/highlights"
+                component={withHeader(HomeHighlightsManage, false)}
             />
             <Route
                 path="/stories/:id"
