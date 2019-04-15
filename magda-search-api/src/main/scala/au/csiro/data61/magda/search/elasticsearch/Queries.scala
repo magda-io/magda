@@ -128,7 +128,7 @@ object Queries {
     }
   }
 
-  private def jsValueJsValue(refJson: JsValue):Option[JsValue] = {
+  private def jsValueToJsValue(refJson: JsValue):Option[JsValue] = {
     refJson match {
       case JsObject(ref) => ref.get("value")
       case _ => None
@@ -139,15 +139,30 @@ object Queries {
 
     expJson match {
       case JsObject(exp) =>
-        val terms = exp.get("terms").toArray.flatMap(_.asInstanceOf[JsArray].elements)
+        val terms = exp.get("terms").toArray.flatMap(_.asInstanceOf[JsArray].elements.map(_.asJsObject))
         if(terms.size != 3) {
           // --- all our policy residual should be in form of 'left term' operator 'right term'
           MatchNoneQuery()
         } else {
-          val operatorRef: String = jsValueToRefString(terms(0)).getOrElse("")
-          val operator: String = RegoOperators.get(operatorRef).getOrElse("")
-          val value: Option[JsValue] = jsValueJsValue(terms(2))
-          var datasetRef: String = jsValueToRefString(terms(1)).getOrElse("").replaceFirst("^input\\.object\\.dataset\\.", "")
+          var operator: String = ""
+          var datasetRef: String = ""
+          var value: Option[JsValue] = None
+
+          terms.foreach{ term =>
+            term.fields.get("type") match {
+              case Some(JsString("ref")) =>
+                val refString = jsValueToRefString(term).getOrElse("")
+                RegoOperators.get(refString) match {
+                  case Some(str) =>
+                    operator = str
+                  case _ =>
+                    datasetRef = refString.replaceFirst("^input\\.object\\.dataset\\.", "")
+                }
+              case _ => value = jsValueToJsValue(term)
+
+            }
+          }
+
           value match {
             case Some(JsString(v)) =>
               operator match {

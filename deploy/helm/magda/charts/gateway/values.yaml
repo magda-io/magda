@@ -28,6 +28,7 @@ resources:
 defaultRoutes:
   search:
     to: http://search-api/v0
+    auth: true
   registry:
     to: http://registry-api-read-only/v0
   registry-auth:
