@@ -25,7 +25,7 @@ spec:
             "--listenPort", "80",
             "--dbHost", "authorization-db",
             "--dbPort", "5432",
-            "--opaUrl", "http://opa/v1"
+            "--opaUrl", "http://opa/"
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

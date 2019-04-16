@@ -29,7 +29,7 @@ const argv = addJwtSecretFromEnvVar(
         .option("opaUrl", {
             describe: "The access endpoint URL of the Open Policy Agent",
             type: "string",
-            default: "http://localhost:8181/v1"
+            default: "http://localhost:8181/"
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
