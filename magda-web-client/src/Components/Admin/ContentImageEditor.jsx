@@ -18,10 +18,12 @@ class ContentImageEditor extends Component {
 
     async changeImage() {
         if (this.props.hasEditPermissions) {
+            console.log("Reading file");
             const { data, file } = await readFile(
                 this.props.accept,
                 "ArrayBuffer"
             );
+            console.log("Saving file", this.props.imageItemId);
             await writeContent(
                 this.props.imageItemId,
                 new Blob([new Uint8Array(data)]),

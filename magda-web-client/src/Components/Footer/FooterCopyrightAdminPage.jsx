@@ -1,17 +1,17 @@
 import React, { Component } from "react";
 
-import ContentManagePage from "Components/Common/ContentManagePage";
+import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { base64ImageEditor } from "Components/Editing/Editors/imageEditor";
 import { withRouter } from "react-router";
 
-class StoriesManagePage extends Component {
+class StoriesAdminPage extends Component {
     render() {
         const pathPrefix = `footer/copyright`;
         return (
-            <ContentManagePage
-                title="Manage Footer Copyright"
+            <ContentAdminPage
+                title="Footer Copyright"
                 itemTitle="Copyright"
                 generateNewId={id => `${pathPrefix}/${Date.now()}`}
                 titleFromItem={item =>
@@ -78,4 +78,4 @@ class StoriesManagePage extends Component {
     }
 }
 
-export default withRouter(StoriesManagePage);
+export default withRouter(StoriesAdminPage);

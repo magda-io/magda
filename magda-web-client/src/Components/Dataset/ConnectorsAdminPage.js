@@ -8,8 +8,9 @@ import {
     stopConnector,
     deleteConnector
 } from "actions/adminActions";
+import AdminHeader from "Components/Admin/AdminHeader";
 
-class StoriesManagePage extends Component {
+class StoriesAdminPage extends Component {
     state = {
         connectors: []
     };
@@ -34,7 +35,7 @@ class StoriesManagePage extends Component {
         );
         return (
             <div>
-                <h1>Connectors</h1>
+                <AdminHeader title="Connectors" />
                 <button className="au-btn" onClick={() => this.refresh()}>
                     Refresh
                 </button>
@@ -112,4 +113,4 @@ class StoriesManagePage extends Component {
     }
 }
 
-export default StoriesManagePage;
+export default StoriesAdminPage;

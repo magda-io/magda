@@ -18,8 +18,12 @@ import OrganisationPage from "Components/Organisation/OrganisationPage";
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
-const AccountsManagePage = makeAsync(() =>
-    import("Components/Account/AccountsManagePage").then(
+const AdminPage = makeAsync(() =>
+    import("Components/Admin/AdminPage").then(module => module.default)
+);
+
+const AccountsAdminPage = makeAsync(() =>
+    import("Components/Account/AccountsAdminPage").then(
         module => module.default
     )
 );
@@ -30,31 +34,29 @@ const ConnectorsAdminPage = makeAsync(() =>
     )
 );
 
-const HeaderNavigationManagePage = makeAsync(() =>
-    import("Components/Header/HeaderNavigationManagePage").then(
+const HeaderNavigationAdminPage = makeAsync(() =>
+    import("Components/Header/HeaderNavigationAdminPage").then(
         module => module.default
     )
 );
-const FooterNavigationManagePage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationManagePage").then(
+const FooterNavigationAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationAdminPage").then(
         module => module.default
     )
 );
-const FooterNavigationLinksManagePage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationLinksManagePage").then(
+const FooterNavigationLinksAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationLinksAdminPage").then(
         module => module.default
     )
 );
-const FooterCopyrightManagePage = makeAsync(() =>
-    import("Components/Footer/FooterCopyrightManagePage").then(
+const FooterCopyrightAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterCopyrightAdminPage").then(
         module => module.default
     )
 );
 
-const HomeHighlightsManage = makeAsync(() =>
-    import("Components/Home/HighlightsManagePage").then(
-        module => module.default
-    )
+const HighlightsAdminPage = makeAsync(() =>
+    import("Components/Home/HighlightsAdminPage").then(module => module.default)
 );
 
 const HomeAdminPage = makeAsync(() =>
@@ -66,22 +68,17 @@ const DatasetAddPage = makeAsync(() =>
 const StaticPage = makeAsync(() =>
     import("Components/Static/StaticPage").then(module => module.default)
 );
-const ManageStaticPagesPage = makeAsync(() =>
-    import("Components/Static/ManageStaticPagesPage").then(
+const AdminStaticPagesPage = makeAsync(() =>
+    import("Components/Static/StaticPagesAdminPage").then(
         module => module.default
     )
 );
-const StoriesManagePage = makeAsync(() =>
-    import("Components/Home/StoriesManagePage").then(module => module.default)
-);
-const StoriesEditPage = makeAsync(() =>
-    import("Components/Home/StoriesEditPage").then(module => module.default)
+const StoriesAdminPage = makeAsync(() =>
+    import("Components/Home/StoriesAdminPage").then(module => module.default)
 );
 
-const LanguageManagementPage = makeAsync(() =>
-    import("Components/i18n/LanguageManagementPage").then(
-        module => module.default
-    )
+const LanguageAdminmentPage = makeAsync(() =>
+    import("Components/i18n/LanguageAdminPage").then(module => module.default)
 );
 
 import { config } from "./config";
@@ -92,31 +89,60 @@ const Routes = () => {
             <Route exact path="/" component={HomePage} />
             <Route
                 exact
+                path="/admin"
+                component={withHeader(AdminPage, true)}
+            />
+            <Route
+                exact
                 path="/admin/home"
                 component={withHeader(HomeAdminPage, true)}
             />
             <Route
                 exact
-                path="/header/navigation"
-                component={withHeader(HeaderNavigationManagePage, true)}
-            />
-            <Route
-                path="/footer/navigation/:size"
-                component={withHeader(FooterNavigationManagePage, true)}
-            />
-            <Route
-                path="/footer/navigation-links/:size/:category"
-                component={withHeader(FooterNavigationLinksManagePage, true)}
+                path="/admin/home-stories"
+                component={withHeader(StoriesAdminPage, false)}
             />
             <Route
                 exact
-                path="/footer/copyright"
-                component={withHeader(FooterCopyrightManagePage, true)}
+                path="/admin/home-highlights"
+                component={withHeader(HighlightsAdminPage, false)}
             />
             <Route
                 exact
-                path="/connectors"
+                path="/admin/header-navigation"
+                component={withHeader(HeaderNavigationAdminPage, true)}
+            />
+            <Route
+                path="/admin/footer-navigation/:size"
+                component={withHeader(FooterNavigationAdminPage, true)}
+            />
+            <Route
+                path="/admin/footer-navigation-links/:size/:category"
+                component={withHeader(FooterNavigationLinksAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/footer-copyright"
+                component={withHeader(FooterCopyrightAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/connectors"
                 component={withHeader(ConnectorsAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/accounts"
+                component={withHeader(AccountsAdminPage, false)}
+            />
+            <Route
+                path="/admin/pages"
+                component={withHeader(AdminStaticPagesPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/i18n"
+                component={withHeader(LanguageAdminmentPage, false)}
             />
             <Route
                 exact
@@ -162,11 +188,7 @@ const Routes = () => {
                 path="/account"
                 component={withHeader(AccountPage, false)}
             />
-            <Route
-                exact
-                path="/accounts"
-                component={withHeader(AccountsManagePage, false)}
-            />
+
             <Route
                 exact
                 path="/login"
@@ -204,29 +226,6 @@ const Routes = () => {
             <Route
                 path="/page/:pageId"
                 component={withHeader(StaticPage, true)}
-            />
-            <Route
-                path="/pages"
-                component={withHeader(ManageStaticPagesPage, false)}
-            />
-            <Route
-                exact
-                path="/stories"
-                component={withHeader(StoriesManagePage, false)}
-            />
-            <Route
-                exact
-                path="/i18n"
-                component={withHeader(LanguageManagementPage, false)}
-            />
-            <Route
-                exact
-                path="/admin/home/highlights"
-                component={withHeader(HomeHighlightsManage, false)}
-            />
-            <Route
-                path="/stories/:id"
-                component={withHeader(StoriesEditPage, true)}
             />
             <Route
                 exact

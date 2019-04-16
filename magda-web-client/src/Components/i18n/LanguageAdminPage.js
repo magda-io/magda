@@ -1,9 +1,9 @@
 import React from "react";
-import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
 import { listContent, writeContent } from "actions/contentActions";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
+import AdminHeader from "Components/Admin/AdminHeader";
 
 class Account extends React.Component {
     state = {
@@ -24,29 +24,27 @@ class Account extends React.Component {
         items.sort((a, b) => (a.id > b.id ? 1 : -1));
 
         return (
-            <MagdaDocumentTitle prefixes={["I18N"]}>
-                <div>
-                    <h1>I18N</h1>
-                    {items.length === 0 ? (
-                        <p>No users</p>
-                    ) : (
-                        <div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Section</th>
-                                        <th>Item</th>
-                                        <th>Text</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {items.map(this.renderItem.bind(this))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            </MagdaDocumentTitle>
+            <div>
+                <AdminHeader title={"Language"} />
+                {items.length === 0 ? (
+                    <p>No users</p>
+                ) : (
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Section</th>
+                                    <th>Item</th>
+                                    <th>Text</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map(this.renderItem.bind(this))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
         );
     }
 

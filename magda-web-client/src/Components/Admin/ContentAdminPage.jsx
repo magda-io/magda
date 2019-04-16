@@ -5,7 +5,6 @@ import RLDD from "react-list-drag-and-drop/lib/RLDD";
 
 import Reveal from "Components/Common/Reveal";
 import Spinner from "Components/Common/Spinner";
-import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
 import {
     createContent,
@@ -15,8 +14,9 @@ import {
     writeContent
 } from "actions/contentActions";
 import humanFileSize from "helpers/humanFileSize";
+import AdminHeader from "./AdminHeader";
 
-class ManageContentPage extends Component {
+class ContentAdminPage extends Component {
     state = {
         newId: "",
         newIdValid: false,
@@ -94,30 +94,25 @@ class ManageContentPage extends Component {
         }
 
         return (
-            <MagdaDocumentTitle prefixes={[title]}>
-                <div>
-                    <h1>{title}</h1>
+            <div>
+                <AdminHeader title={title} />
 
-                    {edit &&
-                    list.filter(item => item.id === editId).length > 0 ? (
-                        this.renderEdit(
-                            list.filter(item => item.id === editId)[0]
-                        )
-                    ) : (
-                        <div>
-                            {list.length === 0 ? (
-                                <p>No {itemTitle} fround.</p>
-                            ) : hasOrder ? (
-                                this.renderOrdered()
-                            ) : (
-                                this.renderUnordered()
-                            )}
+                {edit && list.filter(item => item.id === editId).length > 0 ? (
+                    this.renderEdit(list.filter(item => item.id === editId)[0])
+                ) : (
+                    <div>
+                        {list.length === 0 ? (
+                            <p>No {itemTitle} fround.</p>
+                        ) : hasOrder ? (
+                            this.renderOrdered()
+                        ) : (
+                            this.renderUnordered()
+                        )}
 
-                            {this.renderNewForm()}
-                        </div>
-                    )}
-                </div>
-            </MagdaDocumentTitle>
+                        {this.renderNewForm()}
+                    </div>
+                )}
+            </div>
         );
     }
 
@@ -339,13 +334,13 @@ class ManageContentPage extends Component {
 
 function mapStateToProps(state, old) {
     const hasEditPermissions =
-        state.userManagement &&
-        state.userManagement.user &&
-        state.userManagement.user.isAdmin;
+        (state.userManagement &&
+            state.userManagement.user &&
+            state.userManagement.user.isAdmin) ||
+        undefined;
     return {
-        strings: state.content.strings,
         hasEditPermissions
     };
 }
 
-export default connect(mapStateToProps)(ManageContentPage);
+export default connect(mapStateToProps)(ContentAdminPage);

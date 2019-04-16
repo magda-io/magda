@@ -1,10 +1,9 @@
 import React from "react";
-import "./AccountPage.scss";
-import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
 import { listUsers, updateUser } from "actions/userManagementActions";
+import AdminHeader from "Components/Admin/AdminHeader";
 
-class Account extends React.Component {
+export default class AccountsAdminPage extends React.Component {
     state = {
         items: []
     };
@@ -23,31 +22,29 @@ class Account extends React.Component {
         items.sort((a, b) => (a.displayName > b.displayName ? 1 : -1));
 
         return (
-            <MagdaDocumentTitle prefixes={["Accounts"]}>
-                <div>
-                    <h1>Manage Accounts</h1>
-                    {items.length === 0 ? (
-                        <p>No users</p>
-                    ) : (
-                        <div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Image</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Source</th>
-                                        <th>Admin</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {items.map(this.renderUser.bind(this))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            </MagdaDocumentTitle>
+            <div>
+                <AdminHeader title="Accounts" />
+                {items.length === 0 ? (
+                    <p>No users</p>
+                ) : (
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Source</th>
+                                    <th>Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map(this.renderUser.bind(this))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
         );
     }
 
@@ -86,5 +83,3 @@ class Account extends React.Component {
         );
     }
 }
-
-export default Account;

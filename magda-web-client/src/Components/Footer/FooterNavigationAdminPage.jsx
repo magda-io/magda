@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 
-import ContentManagePage from "Components/Common/ContentManagePage";
+import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { withRouter } from "react-router";
 
-class StoriesManagePage extends Component {
+class FooterNavigationAdminPage extends Component {
     render() {
         const size = this.props.match.params.size;
         const label = { medium: "Desktop", small: "Mobile" }[size];
@@ -14,8 +14,8 @@ class StoriesManagePage extends Component {
         const pathPrefix = `footer/navigation/${size}/category`;
         return (
             <div>
-                <ContentManagePage
-                    title={`Manage ${label} Footer Navigation`}
+                <ContentAdminPage
+                    title={`${label} Footer Navigation`}
                     itemTitle="Footer Navigation"
                     generateNewId={id => `${pathPrefix}/${Date.now()}`}
                     titleFromItem={item => item.content.label}
@@ -25,14 +25,14 @@ class StoriesManagePage extends Component {
                         label: "Menu Category"
                     }}
                     link={id =>
-                        `/footer/navigation-links/${size}/${id.substr(
+                        `/admin/footer-navigation-links/${size}/${id.substr(
                             id.lastIndexOf("/") + 1
                         )}`
                     }
                     hasOrder={true}
                 />
                 <p>
-                    <a href={`/footer/navigation/${otherSize}`}>
+                    <a href={`/admin/footer-navigation/${otherSize}`}>
                         Switch to {otherSizeLabel} Footer Navigation
                     </a>
                 </p>
@@ -41,4 +41,4 @@ class StoriesManagePage extends Component {
     }
 }
 
-export default withRouter(StoriesManagePage);
+export default withRouter(FooterNavigationAdminPage);

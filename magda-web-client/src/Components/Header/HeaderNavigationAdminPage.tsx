@@ -1,15 +1,15 @@
 import React, { Component } from "react";
 
-import ContentManagePage from "Components/Common/ContentManagePage";
+import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { codelistEditor } from "Components/Editing/Editors/codelistEditor";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 
-class StoriesManagePage extends Component {
+export default class HeaderNavigationAdminPage extends Component {
     render() {
         return (
-            <ContentManagePage
-                title="Manage Header Navigation"
+            <ContentAdminPage
+                title="Header Navigation"
                 itemTitle="Header Navigation"
                 generateNewId={id => `header/navigation/${Date.now()}`}
                 titleFromItem={item =>
@@ -109,5 +109,3 @@ class StoriesManagePage extends Component {
         );
     }
 }
-
-export default StoriesManagePage;

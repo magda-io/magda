@@ -60,51 +60,9 @@ class Account extends React.Component {
                                     : "Data User"}
                             </p>
                             {this.props.user.isAdmin && (
-                                <div>
-                                    <h2>Administrate</h2>
-                                    <ul>
-                                        <li>
-                                            <a href="/admin/home">Site</a>
-                                        </li>
-                                        <li>
-                                            <a href="/stories">Home Stories</a>
-                                        </li>
-                                        <li>
-                                            <a href="/pages">Other Pages</a>
-                                        </li>
-                                        <li>
-                                            <a href="/admin/home/highlights">
-                                                Home Highlights
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/header/navigation">
-                                                Header Navigation
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/footer/navigation/medium">
-                                                Footer Navigation
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/footer/copyright">
-                                                Footer Copyright
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/accounts">
-                                                User Accounts
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/i18n">Language</a>
-                                        </li>
-                                        <li>
-                                            <a href="/connectors">Connectors</a>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <a href="/admin" class="au-btn">
+                                    Administrate
+                                </a>
                             )}
                         </div>
                     )}

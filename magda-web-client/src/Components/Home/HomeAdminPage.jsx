@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router";
 import { connect } from "react-redux";
-import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
-import ContentImageEditor from "Components/Common/ContentImageEditor";
+import ContentImageEditor from "Components/Admin/ContentImageEditor";
 
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 
 import { writeContent } from "actions/contentActions";
+import AdminHeader from "Components/Admin/AdminHeader";
 
 class HomeAdminPage extends Component {
     render() {
@@ -19,51 +19,49 @@ class HomeAdminPage extends Component {
             };
         };
         return (
-            <MagdaDocumentTitle prefixes={["Configure Site"]}>
-                <div>
-                    <h1>Configure Site</h1>
-                    <h2>Logos</h2>
-                    <h3>Desktop Logo</h3>
-                    <p>
-                        <ContentImageEditor
-                            imageItemId={"header/logo"}
-                            hasEditPermissions={hasEditPermissions}
-                            accept="image/*"
-                        />
-                    </p>
-                    <h3>Mobile Logo</h3>
-                    <p>
-                        <ContentImageEditor
-                            imageItemId={"header/logo-mobile"}
-                            hasEditPermissions={hasEditPermissions}
-                            accept="image/*"
-                        />
-                    </p>
-                    <h3>Icon</h3>
-                    <p>
-                        <ContentImageEditor
-                            imageItemId={"favicon.ico"}
-                            hasEditPermissions={hasEditPermissions}
-                            accept="image/x-icon"
-                        />
-                    </p>
-                    <h2>Taglines</h2>
-                    <h3>Desktop Tagline</h3>
-                    <ToggleEditor
-                        enabled={hasEditPermissions}
-                        value={content.desktopTagLine}
-                        onChange={save("home/tagline/desktop")}
-                        editor={textEditor}
+            <div>
+                <AdminHeader title="Home" />
+                <h2>Logos</h2>
+                <h3>Desktop Logo</h3>
+                <p>
+                    <ContentImageEditor
+                        imageItemId={"header/logo"}
+                        hasEditPermissions={hasEditPermissions}
+                        accept="image/*"
                     />
-                    <h3>Mobile Tagline</h3>
-                    <ToggleEditor
-                        enabled={hasEditPermissions}
-                        value={content.mobileTagLine}
-                        onChange={save("home/tagline/mobile")}
-                        editor={textEditor}
+                </p>
+                <h3>Mobile Logo</h3>
+                <p>
+                    <ContentImageEditor
+                        imageItemId={"header/logo-mobile"}
+                        hasEditPermissions={hasEditPermissions}
+                        accept="image/*"
                     />
-                </div>
-            </MagdaDocumentTitle>
+                </p>
+                <h3>Icon</h3>
+                <p>
+                    <ContentImageEditor
+                        imageItemId={"favicon.ico"}
+                        hasEditPermissions={hasEditPermissions}
+                        accept="image/x-icon"
+                    />
+                </p>
+                <h2>Taglines</h2>
+                <h3>Desktop Tagline</h3>
+                <ToggleEditor
+                    enabled={hasEditPermissions}
+                    value={content.desktopTagLine}
+                    onChange={save("home/tagline/desktop")}
+                    editor={textEditor}
+                />
+                <h3>Mobile Tagline</h3>
+                <ToggleEditor
+                    enabled={hasEditPermissions}
+                    value={content.mobileTagLine}
+                    onChange={save("home/tagline/mobile")}
+                    editor={textEditor}
+                />
+            </div>
         );
     }
 }

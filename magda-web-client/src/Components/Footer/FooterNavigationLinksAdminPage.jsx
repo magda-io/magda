@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 
-import ContentManagePage from "Components/Common/ContentManagePage";
+import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { withRouter } from "react-router";
 
 import { readContent, updateContent } from "actions/contentActions";
 
-class StoriesManagePage extends Component {
+class StoriesAdminPage extends Component {
     state = {
         category: null
     };
@@ -36,14 +36,8 @@ class StoriesManagePage extends Component {
         };
         return (
             <div>
-                <ContentManagePage
-                    title={
-                        <ToggleEditor
-                            editor={textEditor}
-                            value={categoryLabel}
-                            onChange={saveCategoryLabel}
-                        />
-                    }
+                <ContentAdminPage
+                    title={categoryLabel}
                     itemTitle="Link"
                     generateNewId={id => `${pathPrefix}/${Date.now()}`}
                     titleFromItem={item => item.content.label}
@@ -57,7 +51,17 @@ class StoriesManagePage extends Component {
                     edit={this.edit.bind(this)}
                 />
                 <p>
-                    <a href={`/footer/navigation/${size}`}>Back to Menus</a>
+                    Edit Label:{" "}
+                    <ToggleEditor
+                        editor={textEditor}
+                        value={categoryLabel}
+                        onChange={saveCategoryLabel}
+                    />
+                </p>
+                <p>
+                    <a href={`/admin/footer-navigation/${size}`}>
+                        Back to Footer Navigation
+                    </a>
                 </p>
             </div>
         );
@@ -96,4 +100,4 @@ class StoriesManagePage extends Component {
     }
 }
 
-export default withRouter(StoriesManagePage);
+export default withRouter(StoriesAdminPage);
