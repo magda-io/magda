@@ -183,13 +183,5 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         }
     });
 
-    //--- router for gateway status checker
-    router.get(
-        "/status/ready",
-        (req: express.Request, res: express.Response) => {
-            request.get(`${opaUrl}health`).pipe(res);
-        }
-    );
-
     return router;
 }

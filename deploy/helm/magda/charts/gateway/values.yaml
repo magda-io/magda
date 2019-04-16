@@ -40,6 +40,7 @@ defaultRoutes:
   opa:
     to: http://authorization-api/v0/opa
     auth: true
+    statusCheck: false
   admin:
     to: http://admin-api/v0
     auth: true
