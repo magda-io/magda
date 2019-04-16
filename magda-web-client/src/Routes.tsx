@@ -188,7 +188,6 @@ const Routes = () => {
                 path="/account"
                 component={withHeader(AccountPage, false)}
             />
-
             <Route
                 exact
                 path="/login"

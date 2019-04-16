@@ -27,6 +27,7 @@ UI:
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
 -   Refactored web client to group similar things togeather
+-   Implemented basic admin pages in react ui
 
 ## 0.0.55
 
