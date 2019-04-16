@@ -159,7 +159,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqOpts.json = reqData;
 
-        request(`${opaUrl}v1/${req.path}`, reqOpts).pipe(res);
+        request(`${opaUrl}v1${req.path}`, reqOpts).pipe(res);
     }
 
     async function proxyRequest(req: express.Request, res: express.Response) {

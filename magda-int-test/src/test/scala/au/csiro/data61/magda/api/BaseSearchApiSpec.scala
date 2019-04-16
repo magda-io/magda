@@ -27,6 +27,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
 import scala.collection.mutable
 import au.csiro.data61.magda.model.Registry.RegistryConverters
+import org.mockserver.client.MockServerClient
+import org.mockserver.model.{HttpRequest => MockRequest, HttpResponse => MockResponse}
 
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols   {
   val INSERTION_WAIT_TIME = 500 seconds
@@ -172,8 +174,108 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
     cleanUpIndexes()
   }
+
 }
 
 object BaseSearchApiSpec {
   val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
+
+  mockOpaServer()
+
+  def mockOpaServer(): Unit ={
+
+    new MockServerClient("localhost", 6104)
+      .when(
+        MockRequest.request()
+          .withHeader("content-type", "application/json")
+          .withPath("/v0/opa/compile")
+      )
+      .respond(
+        MockResponse.response()
+          .withStatusCode(200)
+          //--- always allow response
+          .withBody("""{
+                      |    "result": {
+                      |        "queries": [
+                      |            [
+                      |                {
+                      |                    "index": 0,
+                      |                    "terms": {
+                      |                        "type": "ref",
+                      |                        "value": [
+                      |                            {
+                      |                                "type": "var",
+                      |                                "value": "data"
+                      |                            },
+                      |                            {
+                      |                                "type": "string",
+                      |                                "value": "partial"
+                      |                            },
+                      |                            {
+                      |                                "type": "string",
+                      |                                "value": "object"
+                      |                            },
+                      |                            {
+                      |                                "type": "string",
+                      |                                "value": "dataset"
+                      |                            },
+                      |                            {
+                      |                                "type": "string",
+                      |                                "value": "allow"
+                      |                            }
+                      |                        ]
+                      |                    }
+                      |                }
+                      |            ]
+                      |        ],
+                      |        "support": [
+                      |            {
+                      |                "package": {
+                      |                    "path": [
+                      |                        {
+                      |                            "type": "var",
+                      |                            "value": "data"
+                      |                        },
+                      |                        {
+                      |                            "type": "string",
+                      |                            "value": "partial"
+                      |                        },
+                      |                        {
+                      |                            "type": "string",
+                      |                            "value": "object"
+                      |                        },
+                      |                        {
+                      |                            "type": "string",
+                      |                            "value": "dataset"
+                      |                        }
+                      |                    ]
+                      |                },
+                      |                "rules": [
+                      |                    {
+                      |                        "default": true,
+                      |                        "head": {
+                      |                            "name": "allow",
+                      |                            "value": {
+                      |                                "type": "boolean",
+                      |                                "value": true
+                      |                            }
+                      |                        },
+                      |                        "body": [
+                      |                            {
+                      |                                "index": 0,
+                      |                                "terms": {
+                      |                                    "type": "boolean",
+                      |                                    "value": true
+                      |                                }
+                      |                            }
+                      |                        ]
+                      |                    }
+                      |                ]
+                      |            }
+                      |        ]
+                      |    }
+                      |}""")
+      )
+  }
+
 }
