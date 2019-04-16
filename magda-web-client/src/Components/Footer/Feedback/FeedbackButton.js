@@ -2,9 +2,9 @@ import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
-import { showFeedbackForm } from "../../../actions/feedbackActions";
+import { showFeedbackForm } from "actions/feedbackActions";
 
-import feedback from "../../../assets/feedback.svg";
+import feedback from "assets/feedback.svg";
 
 import "./FeedbackButton.scss";
 

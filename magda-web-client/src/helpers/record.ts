@@ -1,5 +1,5 @@
 import getDateString from "./getDateString";
-import { isSupportedFormat as isSupportedMapPreviewFormat } from "../UI/DataPreviewMap";
+import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
 // dataset query:
