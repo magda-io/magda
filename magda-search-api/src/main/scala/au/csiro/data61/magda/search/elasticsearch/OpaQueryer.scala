@@ -16,6 +16,12 @@ import spray.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+case class RegoRef(refString:String, isOperator:Boolean = true, isCollection:Boolean = false){
+  def apply(): Unit = {
+    
+  }
+}
+
 class OpaQueryer(
 
   implicit val config: Config,
@@ -70,13 +76,14 @@ class OpaQueryer(
     }
   }
 
-  private def jsValueToRefString(refJson: JsValue):Option[String] = {
+  private def jsValueToRegoRef(refJson: JsValue):Option[RegoRef] = {
     refJson match {
       case JsObject(ref) =>
         ref.get("type") match {
           case Some(JsString("ref")) =>
             ref.get("value") match {
               case Some(JsArray(values)) =>
+                //val removedLast
                 val refStr:String = values
                   .flatMap(_.asJsObject.fields.get("value"))
                   .flatMap{
@@ -115,8 +122,8 @@ class OpaQueryer(
           terms.foreach{ term =>
             term.fields.get("type") match {
               case Some(JsString("ref")) =>
-                val refString = jsValueToRefString(term).getOrElse("")
-                RegoOperators.get(refString) match {
+                val refString:Option[RegoRef] = jsValueToRegoRef(term)
+                RegoOperators.get(refString.getOrElse("")) match {
                   case Some(str) =>
                     operator = str
                   case _ =>
