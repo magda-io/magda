@@ -57,7 +57,7 @@ trait Protocols extends DefaultJsonProtocol with Temporal.Protocols with misc.Pr
   implicit def queryRegionFilterValueFormat(implicit config: Config) = new FilterValueFormat[Region]()(apiRegionFormat, config)
   implicit def queryFormat(implicit config: Config) = {
     implicit val regionFormat = apiRegionFormat
-    jsonFormat9(Query.apply)
+    jsonFormat8(Query.apply)
   }
   implicit def searchResultFormat(implicit config: Config) = jsonFormat7(SearchResult.apply)
   implicit val regionSearchResultFormat = {

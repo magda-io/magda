@@ -63,25 +63,35 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
        *    }
        */
         pathPrefix("facets") {
-          path(Segment / "options") { facetId ⇒
-            (get & parameters(
-              'facetQuery?,
-              "start" ? 0,
-              "limit" ? 10,
-              'generalQuery?,
-              'publisher*,
-              'dateFrom?,
-              'dateTo?,
-              'region*,
-              'format*,
-              'publishingState*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
-                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
+          extractRequest { request =>
+            path(Segment / "options") { facetId ⇒
+              (get & parameters(
+                'facetQuery?,
+                "start" ? 0,
+                "limit" ? 10,
+                'generalQuery?,
+                'publisher*,
+                'dateFrom?,
+                'dateTo?,
+                'region*,
+                'format*,
+                'publishingState*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
+                  val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
-                FacetType.fromId(facetId) match {
-                  case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, query, start, limit))
-                  case None            ⇒ complete(NotFound)
+                  FacetType.fromId(facetId) match {
+                    case Some(facetType) ⇒ complete(
+                      searchQueryer.searchFacets(
+                        request.headers.find(_.is("x-magda-session")).map(_.value()),
+                        facetType,
+                        facetQuery,
+                        query,
+                        start,
+                        limit
+                    ))
+                    case None            ⇒ complete(NotFound)
+                  }
                 }
-              }
+            }
           }
         } ~
         /**
@@ -187,11 +197,16 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 'region *,
                 'format *,
                 'publishingState *)) { (generalQuery, start, limit, facetSize, publishers, dateFrom, dateTo, regions, formats, publishingState) ⇒
-                val query = Query
-                              .fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
-                              .copy(jwtToken = request.headers.find(_.is("x-magda-session")).map(_.value()))
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
-                onSuccess(searchQueryer.search(query, start, limit, facetSize)) { result =>
+                onSuccess(
+                  searchQueryer.search(
+                    request.headers.find(_.is("x-magda-session")).map(_.value()),
+                    query,
+                    start,
+                    limit,
+                    facetSize))
+                { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                   pathPrefix("datasets") {

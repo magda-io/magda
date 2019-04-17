@@ -36,8 +36,7 @@ case class Query(
   regions: Set[FilterValue[Region]] = Set(),
   boostRegions: Set[Region] = Set(),
   formats: Set[FilterValue[String]] = Set(),
-  publishingState: Set[FilterValue[String]] = Set(),
-  jwtToken: Option[String] = None)
+  publishingState: Set[FilterValue[String]] = Set())
 
 object Query {
   val quoteRegex = """"(.*)""".r
