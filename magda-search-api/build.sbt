@@ -10,8 +10,7 @@ libraryDependencies ++= {
        "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,
        "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
        "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
-       "org.scalaz" %% "scalaz-core" % "7.2.8",
-       "org.scalaj" %% "scalaj-http" % "2.4.1"
+       "org.scalaz" %% "scalaz-core" % "7.2.8"
      )
 }
 
