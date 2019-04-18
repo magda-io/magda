@@ -192,7 +192,22 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
   private val logger = system.log
   private val opaUrl:String = config.getConfig("opa").getString("baseUrl")
 
+  var hasErrors = false
+  var errors:List[String] = List()
+
   unknownDataRefs = unknownDataRefs.map(_.trim).filter(_.length > 0).sortWith(_.length > _.length)
+
+  private def reportErrorWithMatchNoneQuery(message:String) = {
+    hasErrors = true
+    errors = message :: errors
+    logger.warning(message)
+    MatchNoneQuery()
+  }
+
+  private def resetErrors() = {
+    errors = List()
+    hasErrors = false
+  }
 
   private def ruleToQueryDef(ruleJson:JsValue):QueryDefinition = {
     ruleJson match {
@@ -202,7 +217,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
           case _ => None
         }.getOrElse(false)
 
-        var defaultValue:Option[JsValue] = rule.get("head").flatMap{
+        val defaultValue:Option[JsValue] = rule.get("head").flatMap{
           case JsObject(head) => head.get("value").flatMap(_.asJsObject.fields.get("value"))
           case _ => None
         }
@@ -223,7 +238,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
             else boolQuery().must(ruleExpQueries)
           }
         }
-      case _ => MatchNoneQuery()
+      case _ => reportErrorWithMatchNoneQuery(s"Rule should be JsObject: ${ruleJson}")
     }
   }
 
@@ -247,13 +262,10 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
       if(datasetRef.isSimpleCollectionLookup){
         value.asString match {
           case Some(valueStr:String) => MatchQuery(actualDataRefString,valueStr)
-          case _ =>
-            logger.warning("Invalid value type for simple Opa collection lookup: {}", value)
-            MatchNoneQuery()
+          case _ => reportErrorWithMatchNoneQuery(s"Invalid value type for simple Opa collection lookup: ${value}")
         }
       } else {
-        logger.warning("Non-simple Opa collection lookup is not supported: {}", datasetRef.fullRefString)
-        MatchNoneQuery()
+        reportErrorWithMatchNoneQuery(s"Non-simple Opa collection lookup is not supported: ${datasetRef.fullRefString}")
       }
     } else {
 
@@ -264,8 +276,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         } match {
           case Some(q) => q
           case _ =>
-            logger.warning("Invalid value type or operator for Opa expression: {} operator: {} value: {}", datasetRef.refString, operator, value)
-            MatchNoneQuery()
+            reportErrorWithMatchNoneQuery(s"Invalid value type or operator for Opa expression: ${datasetRef.refString} operator: ${operator} value: ${value}")
         }
       } else if(operator == ">" || operator == "<" || operator == ">=" || operator == "<=") {
         value.asString.flatMap{ v =>
@@ -280,12 +291,10 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         } match {
           case Some(q) => q
           case _ =>
-            logger.warning("Invalid value type or operator for Opa expression: {} operator: {} value: {}", datasetRef.refString, operator, value)
-            MatchNoneQuery()
+            reportErrorWithMatchNoneQuery(s"Invalid value type or operator for Opa expression: ${datasetRef.refString} operator: ${operator} value: ${value}")
         }
       } else {
-        logger.warning("Invalid value type or operator for Opa expression: {} operator: {} value: {}", datasetRef.refString, operator, value)
-        MatchNoneQuery()
+        reportErrorWithMatchNoneQuery(s"Invalid value type or operator for Opa expression: ${datasetRef.refString} operator: ${operator} value: ${value}")
       }
     }
 
@@ -304,12 +313,10 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
               if(!r.isOperator && !r.hasCollectionLookup){
                 ExistsQuery(r.fullRefString)
               } else {
-                logger.warning("Invalid single Opa term, ref: {}", r.fullRefString)
-                MatchNoneQuery()
+                reportErrorWithMatchNoneQuery(s"Invalid single Opa term, ref: ${r.fullRefString}")
               }
             case _ => {
-              logger.warning("Invalid single Opa term: {}", terms.head)
-              MatchNoneQuery()
+              reportErrorWithMatchNoneQuery(s"Invalid single Opa term: ${terms.head}")
             }
           }
         } else if(terms.size == 3){
@@ -323,23 +330,20 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
                 if(ref.isOperator) operator = ref.asOperator
                 else datasetRef = Some(ref)
               case RegoValue(v) => value = Some(v)
-              case _ =>
-                logger.warning("Invalid opa term: {}", term)
+              case _ => reportErrorWithMatchNoneQuery(s"Invalid opa term: ${term}")
             }
           }
           if(datasetRef.isEmpty || operator.isEmpty || value.isEmpty) {
-            logger.warning("Invalid opa expression (can't locate datasetRef, operator or value): {}", expJson)
-            MatchNoneQuery()
+            reportErrorWithMatchNoneQuery(s"Invalid opa expression (can't locate datasetRef, operator or value): ${expJson}")
           } else {
             createEsQueryForThreeTermsExpression(datasetRef.get, operator.get, value.get)
           }
         } else {
           // --- we only support 1 or 3 terms expression
           // --- 2 terms expression are very rare (or unlikely) to produce in rego
-          logger.warning("Invalid {} Opa terms expression: ", terms.size, expJson)
-          MatchNoneQuery()
+          reportErrorWithMatchNoneQuery(s"Invalid ${terms.size} Opa terms expression: ${expJson}")
         }
-      case _ => MatchNoneQuery()
+      case _ => reportErrorWithMatchNoneQuery(s"Rule expression should be JsObject: ${expJson}")
     }
   }
 
@@ -395,6 +399,8 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
   private def unknownDataRefsJson = JsArray(unknownDataRefs.map(JsString(_)).toVector)
 
   def publishingStateQuery(publishingStateValue: Set[FilterValue[String]], jwtToken: Option[String]): Future[QueryDefinition] = {
+
+    resetErrors()
 
     var filteredValue = publishingStateValue.map(value => {
       value match {
