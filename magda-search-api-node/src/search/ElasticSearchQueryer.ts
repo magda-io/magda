@@ -6,7 +6,8 @@ import {
     FacetType,
     FacetSearchResult,
     Region,
-    FacetOption
+    FacetOption,
+    SearchResult
 } from "../model";
 import SearchQueryer from "./SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
@@ -153,24 +154,14 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             };
         }
     }
-
-    //   def augmentWithBoostRegions(query: Query)(implicit client: ElasticClient): Future[Query] = {
-    //     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
-    //       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-    //         query(matchQuery("regionSearchId", freeText).operator("or"))
-    //         limit 50
-    //       ).map {
-    //         case ESGenericException(e) => throw e
-    //         case results: RequestSuccess[SearchResponse] => {
-    //           results.result.totalHits match {
-    //             case 0 => Set[Region]() // If there's no hits, no need to do anything more
-    //             case _ => results.result.to[Region].toSet
-    //           }
-    //         }
-    //       }
-    //     ).getOrElse(Future(Set[Region]()))
-    //     regionsFuture.map(regions => query.copy(boostRegions = regions))
-    //   }
+    search(
+        query: Query,
+        start: number,
+        limit: number,
+        facetSize: number
+    ): Promise<SearchResult> {
+        return Promise.resolve(null);
+    }
 
     async getBoostRegions(query: Query): Promise<Region[]> {
         if (!query.freeText || query.freeText === "") {
@@ -294,8 +285,12 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         return {
             bool: {
                 must: [
-                    freeText
-                    //TODO: Put other queries in here
+                    freeText,
+                    ...query.regions.map(queryRegion =>
+                        this.regionIdToGeoshapeQuery(
+                            queryRegion.regionType + "/" + queryRegion.regionId
+                        )
+                    )
                 ]
             }
         };
@@ -368,13 +363,17 @@ export default class ElasticSearchQueryer implements SearchQueryer {
     }
 
     regionToGeoshapeQuery(region: Region) {
+        return this.regionIdToGeoshapeQuery(region.regionSearchId);
+    }
+
+    regionIdToGeoshapeQuery(id: string) {
         return {
             geo_shape: {
                 "spatial.geoJson": {
                     indexed_shape: {
                         index: this.getRegionsIndex(),
                         type: "regions",
-                        id: region.regionSearchId,
+                        id,
                         path: "geometry"
                     }
                 }

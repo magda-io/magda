@@ -31,64 +31,103 @@ export default function createApiRouter(options: ApiRouterOptions) {
     // };
     // installStatusRouter(router, status);
 
-    const validation = {
+    const baseValidators = {
+        start: joi.number().default(0),
+        limit: joi.number().default(10),
+        publisher: joi
+            .array()
+            .items(joi.string())
+            .optional(),
+        dateFrom: joi.string().optional(),
+        dateTo: joi.string().optional(),
+        region: joi
+            .array()
+            .items(joi.string())
+            .optional(),
+        format: joi
+            .array()
+            .items(joi.string())
+            .optional(),
+        publishingState: joi
+            .array()
+            .items(joi.string())
+            .optional()
+    };
+
+    const facetQueryValidation = {
         query: {
             facetQuery: joi.string().optional(),
-            start: joi.number().default(0),
-            limit: joi.number().default(10),
             generalQuery: joi.string().optional(),
-            publisher: joi
-                .array()
-                .items(joi.string())
-                .optional(),
-            dateFrom: joi.string().optional(),
-            dateTo: joi.string().optional(),
-            region: joi
-                .array()
-                .items(joi.string())
-                .optional(),
-            format: joi
-                .array()
-                .items(joi.string())
-                .optional(),
-            publishingState: joi
-                .array()
-                .items(joi.string())
-                .optional()
+            ...baseValidators
         }
     };
 
-    // type Query = {
-    //     facetQuery?: string;
-    //     start: number;
-    //     limit: number;
-    //     generalQuery?: string;
-    //     publisher?: string[];
-    //     dateFrom?: Date;
-    //     dateTo?: Date;
-    //     region?: string[];
-    //     format?: string[];
-    //     publishingState?: string[];
-    // };
+    function parseBaseQuery(queryStringObj: any): Query {
+        return {
+            freeText: queryStringObj.generalQuery,
+            publishers: queryStringObj.publisher,
+            dateFrom:
+                queryStringObj.dateFrom &&
+                chrono.en_GB.parse(queryStringObj.dateFrom)[0].end.date(),
+            dateTo:
+                queryStringObj.dateTo &&
+                chrono.en_GB.parse(queryStringObj.dateTo)[0].end.date(),
+            regions: processRegions(queryStringObj.region),
+            formats: queryStringObj.format,
+            publishingState: queryStringObj.publishingState
+        };
+    }
 
     router.get(
         "/facets/:facetId/options",
-        validate(validation),
+        validate(facetQueryValidation),
         async (req, res) => {
             const queryString = req.query;
 
             const processedQuery: Query = {
-                freeText: queryString.generalQuery,
-                publishers: queryString.publisher,
-                dateFrom:
-                    queryString.dateFrom &&
-                    chrono.en_GB.parse(queryString.dateFrom)[0].end.date(),
-                dateTo:
-                    queryString.dateTo &&
-                    chrono.en_GB.parse(queryString.dateTo)[0].end.date(),
-                regions: processRegions(queryString.region),
-                formats: queryString.format,
-                publishingState: queryString.publishingState
+                ...parseBaseQuery(queryString),
+                freeText: queryString.generalQuery
+            };
+
+            try {
+                const results = await searchQueryer.searchFacets(
+                    req.params.facetId,
+                    processedQuery,
+                    queryString.start,
+                    queryString.limit,
+                    queryString.facetQuery
+                );
+
+                res.status(200).send(results);
+            } catch (e) {
+                console.error(e);
+                console.log(JSON.stringify(e.meta && e.meta.body));
+                res.status(500).send("Error");
+            }
+        }
+    );
+
+    const datasetQueryValidation = {
+        query: {
+            ...baseValidators,
+
+            query: joi.string().optional(),
+            facetSize: joi
+                .number()
+                .optional()
+                .default(10)
+        }
+    };
+
+    router.get(
+        "/datasets",
+        validate(datasetQueryValidation),
+        async (req, res) => {
+            const queryString = req.query;
+
+            const processedQuery: Query = {
+                ...parseBaseQuery(queryString),
+                freeText: queryString.query
             };
 
             try {

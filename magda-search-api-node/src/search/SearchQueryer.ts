@@ -1,4 +1,4 @@
-import { Query, FacetType, FacetSearchResult } from "../model";
+import { Query, FacetType, SearchResult, FacetSearchResult } from "../model";
 
 export default interface SearchQueryer {
     searchFacets(
@@ -8,4 +8,11 @@ export default interface SearchQueryer {
         limit: number,
         facetQuery: string | undefined
     ): Promise<FacetSearchResult>;
+
+    search(
+        query: Query,
+        start: number,
+        limit: number,
+        facetSize: number
+    ): Promise<SearchResult>;
 }
