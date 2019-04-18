@@ -198,10 +198,10 @@ export default class ElasticSearchQueryer implements SearchQueryer {
     async buildESDatasetsQuery(query: Query): Promise<any> {
         const boostRegions = await this.getBoostRegions(query);
 
-        // const geomScorerQueries = boostRegions.map(
-        //     this.regionToGeoshapeQuery,
-        //     this
-        // );
+        const geomScorerQueries = boostRegions.map(
+            this.regionToGeoshapeQuery,
+            this
+        );
 
         const qualityFactor = {
             filter: {
@@ -222,10 +222,15 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                     {
                         weight: 1
                     },
-                    qualityFactor
-                    // ...geomScorerQueries.map(x => ({
-                    //     filter: x
-                    // }))
+                    qualityFactor,
+                    {
+                        filter: {
+                            bool: {
+                                should: geomScorerQueries
+                            }
+                        },
+                        weight: 1
+                    }
                 ],
                 score_mode: "sum"
             }
