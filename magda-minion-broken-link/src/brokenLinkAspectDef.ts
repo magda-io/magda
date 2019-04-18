@@ -1,7 +1,8 @@
 export default {
     id: "source-link-status",
     name: "Details about the downloadURL link status of a distribution",
-    jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json")
+    jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json"),
+    tenantId: "id-of-tenant"
 };
 
 export interface BrokenLinkAspect {

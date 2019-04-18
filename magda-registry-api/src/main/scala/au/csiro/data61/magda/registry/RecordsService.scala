@@ -171,17 +171,15 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ => {
         requiredTenantId { tenantId =>
-            entity(as[Record]) { record =>
+            entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
-                recordPersistence.putRecordById(session, id, tenantId, record) match {
-                  case Success(_) =>
-                    // TODO: Check if this is really what we want!
-                    // A scala test expects this though.
-                    complete(record)
+                recordPersistence.putRecordById(session, id, tenantId, recordIn) match {
+                  case Success(recordOut) =>
+                    complete(recordOut)
                   case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
                 }
               }
-              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(recordIn.aspects.keys.toList))
               result
             }
           }

@@ -14,18 +14,18 @@ import au.csiro.data61.magda.model.Registry._
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession, tenantId: BigInt): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema from Aspects where tenantId = $tenantId".map(rowToAspect).list.apply()
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects where tenantId = $tenantId".map(rowToAspect).list.apply()
   }
 
   def getById(implicit session: DBSession, id: String, tenantId: BigInt): Option[AspectDefinition] = {
-    sql"""select aspectId, name, jsonSchema from Aspects where aspectId=$id and tenantId=$tenantId""".map(rowToAspect).single.apply()
+    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and tenantId=$tenantId""".map(rowToAspect).single.apply()
   }
 
   def getByIds(implicit session: DBSession, ids: Iterable[String]): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
     else
-      sql"select aspectId, name, jsonSchema from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
+      sql"select aspectId, name, jsonSchema, tenantId from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
   }
 
   def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
@@ -92,7 +92,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
           0
         }
       }
-    } yield patchedAspect
+    } yield patchedAspect.copy(tenantId = tenantId.toString())
   }
 
   def create(implicit session: DBSession, aspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
@@ -107,7 +107,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         case None => null
       }
       sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, $tenantId, ${aspect.name}, $eventId, $jsonString::json)".update.apply()
-      Success(aspect)
+      Success(aspect.copy(tenantId = tenantId.toString()))
     } catch {
       case e: SQLException => Failure(new RuntimeException("An aspect with the specified ID already exists."))
     }
@@ -118,6 +118,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     AspectDefinition(
       rs.string("aspectId"),
       rs.string("name"),
-      jsonSchema)
+      jsonSchema,
+      rs.string("tenantId"))
   }
 }

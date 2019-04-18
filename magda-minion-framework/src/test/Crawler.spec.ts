@@ -150,7 +150,8 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID.toString()
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -234,7 +235,8 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID.toString()
                         }));
                     return {
                         totalCrawledRecordsNumber,

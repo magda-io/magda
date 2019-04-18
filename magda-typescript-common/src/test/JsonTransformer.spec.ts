@@ -5,6 +5,7 @@ import "mocha";
 import AspectBuilder from "src/AspectBuilder";
 import * as fs from "fs";
 import { Record } from "src/generated/registry/api";
+import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 
 describe("JsonTransformer", () => {
     describe("organizationJsonToRecord", () => {
@@ -16,7 +17,8 @@ describe("JsonTransformer", () => {
                     aspectDefinition: {
                         id: "organization-details",
                         name: "Organization",
-                        jsonSchema: require("@magda/registry-aspects/organization-details.schema.json")
+                        jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
+                        tenantId: MAGDA_ADMIN_PORTAL_ID.toString()
                     },
                     builderFunctionString: fs.readFileSync(
                         "src/test/aspect-templates/organization-details.js",

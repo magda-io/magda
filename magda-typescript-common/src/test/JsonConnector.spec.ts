@@ -16,6 +16,7 @@ import JsonConnector, {
 import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
 import ConnectorRecordId from "src/ConnectorRecordId";
 import { Record } from "src/generated/registry/api";
+import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 // ConnectorSource,
 
 describe("JsonConnector", () => {
@@ -233,7 +234,8 @@ describe("JsonConnector", () => {
                             aspectDefinition: {
                                 id: "test-aspect-id",
                                 name: "test-aspect-id",
-                                jsonSchema: testAspectJsonSchema
+                                jsonSchema: testAspectJsonSchema,
+                                tenantId: MAGDA_ADMIN_PORTAL_ID.toString()
                             },
                             builderFunctionString: `return {"test-aspect-data1":"${datasetRandomValue1}"};`
                         }

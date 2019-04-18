@@ -101,7 +101,7 @@ export default async function onRecordFound(
     // Record a broken links aspect for each distribution.
     const brokenLinksAspectPromise = Promise.all(
         bestResultPerDistribution.map((result: BrokenLinkSleuthingResult) => {
-            return recordBrokenLinkAspect(registry, result);
+            return recordBrokenLinkAspect(registry, record, result);
         })
     );
 
@@ -110,13 +110,17 @@ export default async function onRecordFound(
 
 function recordBrokenLinkAspect(
     registry: Registry,
+    record: Record,
     result: BrokenLinkSleuthingResult
 ): Promise<Record> {
+    const theTenantId = record.tenantId;
+
     return registry
         .putRecordAspect(
             result.distribution.id,
             "source-link-status",
-            result.aspect
+            result.aspect,
+            Number(theTenantId)
         )
         .then(unionToThrowable);
 }

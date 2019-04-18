@@ -106,7 +106,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val recordClause: SQLSyntax = sqls"Records.tenantId = $tenantId"
+    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
     val selectors = Iterable(Some(recordClause)) ++ aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
@@ -133,7 +133,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
 
-    val selector = List(Some(sqls"recordId=$id and tenantId=$tenantId"))
+    val selector = if (tenantId == MAGDA_SYSTEM_ID) List(None) else List(Some(sqls"recordId=$id and tenantId=$tenantId"))
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, selector).records.headOption
   }
 
@@ -228,6 +228,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           }
         }
       }
+
       recordPatch <- Try {
         // Diff the old record and the new one, ignoring aspects
         val oldRecordJson = oldRecordWithoutAspects.toJson
@@ -249,7 +250,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
       resultAspects <- Try { patchedAspects.mapValues(_.get) }
-    } yield result.copy(aspects = resultAspects)
+    } yield result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
   }
 
   def patchRecordById(implicit session: DBSession, id: String, tenantId: BigInt, recordPatch: JsonPatch): Try[Record] = {
@@ -342,7 +343,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         case (_, Success(JsNull)) => false // aspect was deleted
         case _                    => true
       }).map(aspect => (aspect._1, aspect._2.get.asJsObject)))
-    } yield Record(patchedRecord.id, patchedRecord.name, aspects)
+    } yield Record(patchedRecord.id, patchedRecord.name, aspects, tenantId=tenantId.toString())
   }
 
   def patchRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
@@ -430,7 +431,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
       hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, tenantId, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record)
+        case _                => Success(record.copy(tenantId = tenantId.toString()))
       }
     } yield hasAspectFailure
   }
@@ -457,7 +458,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
   def trimRecordsBySource(sourceTagToPreserve: String, sourceId: String, tenantId: BigInt, logger: Option[LoggingAdapter] = None)(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = $tenantId"
         .map(rs => rs.string("recordId")).list.apply()
     }
 
@@ -570,7 +571,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where (recordId, tenantId)=(Records.recordId, $tenantId)) as aspects
+                   (select array_agg(aspectId) from RecordAspects where (recordId, tenantId)=(Records.recordId, $tenantId)) as aspects,
+                   Records.tenantId as tenantId
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by sequence
@@ -619,7 +621,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     val result =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
-                   Records.name as recordName
+                   Records.name as recordName,
+                   Records.tenantId as tenantId
                    ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors" else SQLSyntax.empty},
                    Records.sourcetag as sourceTag
             from Records
@@ -670,7 +673,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
-    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()))
+    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), rs.string("tenantId"))
   }
 
   private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
@@ -682,7 +685,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         .map {
           case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
         }
-        .toMap, rs.stringOpt("sourceTag"))
+        .toMap, rs.stringOpt("sourceTag"),
+      rs.string("tenantId"))
   }
 
   private def rowToAspect(rs: WrappedResultSet): JsObject = {
@@ -797,13 +801,13 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
-    val filteredByTenant = if (tenantId == MAGDA_ADMIN_PORTAL_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
+    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
     Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))")
   }
 
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
-    val filteredByTenant = if (tenantId == MAGDA_ADMIN_PORTAL_ID || tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
+    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
     sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }

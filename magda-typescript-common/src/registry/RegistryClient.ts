@@ -177,10 +177,11 @@ export default class RegistryClient {
             .catch(createServiceError);
     }
 
-    getTenants(): Promise<Array<Tenant> | Error> {
+    getTenants(
+        tenantId: number = this.tenantId
+    ): Promise<Array<Tenant> | Error> {
         // return this.tenantsApi.getAll().then(result => result.body);
-        const operation = () =>
-            this.tenantsApi.getAll(this.tenantId.toString());
+        const operation = () => this.tenantsApi.getAll(tenantId.toString());
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
@@ -194,13 +195,13 @@ export default class RegistryClient {
             .catch(createServiceError);
     }
 
-    getTenant(domainName: string): Promise<Tenant | Error> {
+    getTenant(
+        domainName: string,
+        tenantId: number = this.tenantId
+    ): Promise<Tenant | Error> {
         // return this.tenantsApi.getByDomainName(domainName).then(result => result.body);
         const operation = () =>
-            this.tenantsApi.getByDomainName(
-                this.tenantId.toString(),
-                domainName
-            );
+            this.tenantsApi.getByDomainName(tenantId.toString(), domainName);
         return <any>retry(
             operation,
             this.secondsBetweenRetries,

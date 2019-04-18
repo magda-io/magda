@@ -19,13 +19,15 @@ object Registry {
   val MAGDA_ADMIN_PORTAL_ID: BigInt = 0
   val MAGDA_SYSTEM_ID: BigInt = -1
 
-  @ApiModel(description = "A type of aspect in the registry.")
+  @ApiModel(description = "A type of aspect in the registry, unique for a tenant.")
   case class AspectDefinition(
-    @(ApiModelProperty @field)(value = "The unique identifier for the aspect type.", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier for the aspect type.", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the aspect.", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject])
+    @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject],
+
+    @(ApiModelProperty @field)(value = "The identifier of the tenant for the aspect type.", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString())
 
   case class WebHookPayload(
     action: String,
@@ -53,16 +55,18 @@ object Registry {
     val enabled: Boolean
   }
 
-  @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
+  @ApiModel(description = "A record in the registry, usually including data for one or more aspects, unique for a tenant.")
   case class Record(
-    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
     @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
 
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
-      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None,
+
+    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString()) extends RecordType
 
 
   @ApiModel(description = "A tenant in the registry.")
@@ -74,11 +78,13 @@ object Registry {
 
   @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
   case class RecordSummary(
-    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String]) extends RecordType
+    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String],
+
+    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString()) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -159,9 +165,9 @@ object Registry {
       def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
-    implicit val recordFormat = jsonFormat4(Record.apply)
+    implicit val recordFormat = jsonFormat5(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
-    implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
+    implicit val aspectFormat = jsonFormat4(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
     implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
     implicit val webHookFormat = jsonFormat14(WebHook.apply)
@@ -169,7 +175,7 @@ object Registry {
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
     implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
-    implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
+    implicit val recordSummaryFormat = jsonFormat4(RecordSummary.apply)
     implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
     implicit val tenantFormat = jsonFormat3(Tenant.apply)
 

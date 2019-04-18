@@ -22,11 +22,11 @@ let defaultBasePath = "http://localhost/api/v0/registry/";
 /* tslint:disable:no-unused-variable */
 
 /**
- * A type of aspect in the registry.
+ * A type of aspect in the registry, unique for a tenant.
  */
 export class AspectDefinition {
     /**
-     * The unique identifier for the aspect type.
+     * The identifier for the aspect type.
      */
     "id": string;
     /**
@@ -37,6 +37,10 @@ export class AspectDefinition {
      * The JSON Schema of this aspect.
      */
     "jsonSchema": any;
+    /**
+     * The identifier of the tenant for the aspect type.
+     */
+    "tenantId": string;
 }
 
 export class BadRequest {
@@ -96,11 +100,11 @@ export class MultipleDeleteResult {
 export class Operation {}
 
 /**
- * A record in the registry, usually including data for one or more aspects.
+ * A record in the registry, usually including data for one or more aspects, unique for a tenant.
  */
 export class Record {
     /**
-     * The unique identifier of the record
+     * The identifier of the record
      */
     "id": string;
     /**
@@ -115,6 +119,10 @@ export class Record {
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
     "sourceTag": string;
+    /**
+     * The identifier of a tenant
+     */
+    "tenantId": string;
 }
 
 /**
@@ -122,7 +130,7 @@ export class Record {
  */
 export class RecordSummary {
     /**
-     * The unique identifier of the record
+     * The identifier of the record
      */
     "id": string;
     /**
@@ -133,6 +141,10 @@ export class RecordSummary {
      * The list of aspect IDs for which this record has data
      */
     "aspects": Array<string>;
+    /**
+     * The identifier of the tenant
+     */
+    "tenantId": string;
 }
 
 export class RegistryEvent {

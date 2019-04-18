@@ -39,11 +39,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     }
 
     putAspectDefinition(
-        aspectDefinition: AspectDefinition
+        aspectDefinition: AspectDefinition,
+        tenantId: number = this.tenantId
     ): Promise<AspectDefinition | Error> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
-                this.tenantId.toString(),
+                tenantId.toString(),
                 encodeURIComponent(aspectDefinition.id),
                 aspectDefinition,
                 this.jwt
@@ -192,10 +193,13 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(createServiceError);
     }
 
-    putRecord(record: Record): Promise<Record | Error> {
+    putRecord(
+        record: Record,
+        tenantId: number = this.tenantId
+    ): Promise<Record | Error> {
         const operation = () =>
             this.recordsApi.putById(
-                this.tenantId.toString(),
+                tenantId.toString(),
                 encodeURIComponent(record.id),
                 record,
                 this.jwt
@@ -222,11 +226,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     putRecordAspect(
         recordId: string,
         aspectId: string,
-        aspect: any
+        aspect: any,
+        tenantId: number = this.tenantId
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.putById(
-                this.tenantId.toString(),
+                tenantId.toString(),
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
@@ -252,11 +257,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     patchRecordAspect(
         recordId: string,
         aspectId: string,
-        aspectPatch: Operation[]
+        aspectPatch: Operation[],
+        tenantId: number = this.tenantId
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.patchById(
-                this.tenantId.toString(),
+                tenantId.toString(),
                 encodeURIComponent(recordId),
                 aspectId,
                 aspectPatch,
@@ -281,12 +287,13 @@ export default class AuthorizedRegistryClient extends RegistryClient {
 
     deleteBySource(
         sourceTagToPreserve: string,
-        sourceId: string
+        sourceId: string,
+        tenantId: number = this.tenantId
     ): Promise<MultipleDeleteResult | "Processing" | Error> {
         const operation = () =>
             this.recordsApi
                 .trimBySourceTag(
-                    this.tenantId.toString(),
+                    tenantId.toString(),
                     sourceTagToPreserve,
                     sourceId,
                     this.jwt
