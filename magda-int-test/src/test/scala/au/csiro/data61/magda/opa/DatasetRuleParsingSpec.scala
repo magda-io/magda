@@ -4,7 +4,7 @@ package au.csiro.data61.magda.opa
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.stream.ActorMaterializer
-import org.scalatest.{ FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers}
 import au.csiro.data61.magda.test.util.TestActorSystem
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.{HttpRequest => MockRequest, HttpResponse => MockResponse}
@@ -13,8 +13,11 @@ import scala.concurrent.Future
 import au.csiro.data61.magda.search.elasticsearch.OpaQueryer
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util.TestActorSystem.config
+import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+import com.sksamuel.elastic4s.searches.queries.{BoolQuery, Query}
 import com.typesafe.config.ConfigValueFactory
 import org.scalatest.concurrent.ScalaFutures._
+
 import scala.concurrent.duration._
 
 
@@ -41,9 +44,40 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
       val opaQueryer = new OpaQueryer()
       whenReady(opaQueryer.publishingStateQuery(Set(), Some(""))){q =>
         opaQueryer.hasErrors shouldBe false
+        getShouldFromBoolQuery(q).size shouldBe 8
+        getMinMatchFromBoolQuery(q).isEmpty shouldBe false
+        getMinMatchFromBoolQuery(q).get shouldBe "1"
       }
     }
+  }
 
+  def destructBoolQuery(q:Query): Tuple4[Seq[Query], Seq[Query], Seq[Query], Option[String]] = q match {
+    case BoolQuery(
+    adjustPureNegative: Option[Boolean],
+    boost: Option[Double],
+    minimumShouldMatch: Option[String],
+    queryName: Option[String],
+    filters: Seq[Query],
+    must: Seq[Query],
+    not: Seq[Query],
+    should: Seq[Query]) => (must, should, not, minimumShouldMatch)
+    case _ => throw new Error("Failed to match BoolQuery")
+  }
+
+  def getShouldFromBoolQuery(q:Query): Seq[Query] = {
+    destructBoolQuery(q)._2
+  }
+
+  def getMustFromBoolQuery(q:Query): Seq[Query] = {
+    destructBoolQuery(q)._1
+  }
+
+  def getNotFromBoolQuery(q:Query): Seq[Query] = {
+    destructBoolQuery(q)._3
+  }
+
+  def getMinMatchFromBoolQuery(q:Query): Option[String] = {
+    destructBoolQuery(q)._4
   }
 
   def createExpections(): Unit ={
