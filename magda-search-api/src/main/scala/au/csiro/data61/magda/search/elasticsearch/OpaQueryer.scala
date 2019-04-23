@@ -191,6 +191,11 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
   private val http = Http(system)
   private val logger = system.log
   private val opaUrl:String = config.getConfig("opa").getString("baseUrl")
+  private val testSessionId:Option[String] = if(config.hasPath("opa.testSessionId")) {
+    Some(config.getString("opa.testSessionId"))
+  } else {
+    None
+  }
 
   var hasErrors = false
   var errors:List[String] = List()
@@ -423,11 +428,17 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
                                  |  "unknowns": ${unknownDataRefsJson.toString()}
                                  |}""".stripMargin
 
+      var headers = List(RawHeader("X-Magda-Session", jwtToken.getOrElse("")))
+      if(!testSessionId.isEmpty) {
+        // --- only used for testing so that MockServer can server different tests in parallel
+        headers = RawHeader("x-test-session-id", testSessionId.get) :: headers
+      }
+
       val httpRequest = HttpRequest(
         uri = s"${opaUrl}compile",
         method = HttpMethods.POST,
         entity = HttpEntity(ContentTypes.`application/json`, requestData),
-        headers = List(RawHeader("X-Magda-Session", jwtToken.getOrElse("")))
+        headers = headers
       )
 
       Http().singleRequest(httpRequest).flatMap(parseOpaResponse(_))

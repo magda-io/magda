@@ -1,54 +1,52 @@
 package au.csiro.data61.magda.opa
 
 
-import java.util.concurrent.ConcurrentHashMap
-
+import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.server.Route
-import au.csiro.data61.magda.model.misc.DataSet
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
+import akka.stream.ActorMaterializer
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import au.csiro.data61.magda.test.util.TestActorSystem
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.{HttpRequest => MockRequest, HttpResponse => MockResponse}
-import org.mockserver.integration.ClientAndServer
 
 import scala.concurrent.Future
+import au.csiro.data61.magda.search.elasticsearch.OpaQueryer
+import au.csiro.data61.magda.test.MockServer
+import au.csiro.data61.magda.test.util.TestActorSystem.config
+import com.typesafe.config.ConfigValueFactory
 
 
 
-class DatasetRuleParsingSpec extends FunSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
+class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
 
-  val system = TestActorSystem.actorSystem
-  val logger = Logging(system, getClass)
+  implicit val config = TestActorSystem.config
+    .withValue("opa.testSessionId", ConfigValueFactory.fromAnyRef("DatasetRuleParsingSpec"))
+    .withValue("opa.baseUrl", ConfigValueFactory.fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/"))
 
-  java.lang.System.setProperty("mockserver.logLevel", "WARN")
+  implicit val system = ActorSystem("DatasetRuleParsingSpec", config)
+  implicit val logger = Logging(system, getClass)
 
-  var mockServerOption:Option[ClientAndServer] = None
-
-  override def beforeAll= {
-    logger.info("beforeAll...")
-    mockServerOption = Some(ClientAndServer.startClientAndServer(6104))
-  }
-
-  override def afterAll= {
-    logger.info("beforeAll...")
-    mockServerOption.get.stop()
-  }
-
-  override def afterEach(): Unit = {
-    mockServerOption.get.reset()
-  }
+  implicit val executor = system.dispatcher
+  implicit val materializer = ActorMaterializer()
 
   describe("Should parse sample OPA response with no any issues") {
-    
+
+    // --- set Opa response
+    createExpections()
+
+    val opaQueryer = new OpaQueryer()
+    opaQueryer.publishingStateQuery(Set(), Some("")).map{ q =>
+      opaQueryer.hasErrors shouldBe false
+    }
   }
 
   def createExpections(): Unit ={
 
-    new MockServerClient("localhost", 6104)
+    new MockServerClient("localhost", mockServer.getLocalPort)
       .when(
         MockRequest.request()
           .withHeader("content-type", "application/json")
+          .withHeader("x-test-session-id", "DatasetRuleParsingSpec")
           .withPath("/v0/opa/compile")
       )
       .respond(

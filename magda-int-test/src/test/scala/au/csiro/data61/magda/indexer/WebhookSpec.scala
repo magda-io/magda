@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 import com.typesafe.config.ConfigFactory
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.Accepted
@@ -31,16 +30,19 @@ import spray.json._
 import spray.json.JsNull
 import spray.json.JsObject
 import au.csiro.data61.magda.model.Temporal.ApiDate
+
 import scala.concurrent.duration._
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
 import au.csiro.data61.magda.search.SearchQueryer
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import akka.stream.scaladsl.Source
+
 import scala.concurrent.Await
 import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 
-class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols {
+class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols with ResponseDatasetAllowAll {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 

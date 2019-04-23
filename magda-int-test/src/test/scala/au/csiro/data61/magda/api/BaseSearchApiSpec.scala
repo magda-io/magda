@@ -1,20 +1,20 @@
 package au.csiro.data61.magda.api
 
 import java.net.URL
+
 import org.scalacheck.Arbitrary._
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
 
+import akka.event.Logging
+
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
-
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.ElasticDsl
-
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
@@ -24,14 +24,16 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
-import au.csiro.data61.magda.test.util.Generators
+import au.csiro.data61.magda.test.util.{Generators, TestActorSystem}
+
 import scala.collection.mutable
 import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.test.MockServer
+import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import org.mockserver.client.MockServerClient
-import org.mockserver.model.{HttpRequest => MockRequest, HttpResponse => MockResponse}
-import org.mockserver.integration.ClientAndServer
+import org.mockserver.model.{HttpRequest, HttpResponse}
 
-trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols   {
+trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
   val INSERTION_WAIT_TIME = 500 seconds
 
   val cleanUpQueue = new ConcurrentLinkedQueue[String]()
@@ -172,7 +174,6 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
   override def afterEach() {
     super.afterEach()
-
     cleanUpIndexes()
   }
 
@@ -180,108 +181,6 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
 object BaseSearchApiSpec {
 
-  java.lang.System.setProperty("mockserver.logLevel", "WARN")
-
   val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
-  val mockServer = ClientAndServer.startClientAndServer(6104)
-
-  createExpections()
-
-  def createExpections(): Unit ={
-
-    new MockServerClient("localhost", 6104)
-        .when(
-          MockRequest.request()
-            .withHeader("content-type", "application/json")
-            .withPath("/v0/opa/compile")
-        )
-        .respond(
-          MockResponse.response()
-            .withStatusCode(200)
-            //--- always allow response
-            .withBody(
-            """{
-              |    "result": {
-              |        "queries": [
-              |            [
-              |                {
-              |                    "index": 0,
-              |                    "terms": {
-              |                        "type": "ref",
-              |                        "value": [
-              |                            {
-              |                                "type": "var",
-              |                                "value": "data"
-              |                            },
-              |                            {
-              |                                "type": "string",
-              |                                "value": "partial"
-              |                            },
-              |                            {
-              |                                "type": "string",
-              |                                "value": "object"
-              |                            },
-              |                            {
-              |                                "type": "string",
-              |                                "value": "dataset"
-              |                            },
-              |                            {
-              |                                "type": "string",
-              |                                "value": "allow"
-              |                            }
-              |                        ]
-              |                    }
-              |                }
-              |            ]
-              |        ],
-              |        "support": [
-              |            {
-              |                "package": {
-              |                    "path": [
-              |                        {
-              |                            "type": "var",
-              |                            "value": "data"
-              |                        },
-              |                        {
-              |                            "type": "string",
-              |                            "value": "partial"
-              |                        },
-              |                        {
-              |                            "type": "string",
-              |                            "value": "object"
-              |                        },
-              |                        {
-              |                            "type": "string",
-              |                            "value": "dataset"
-              |                        }
-              |                    ]
-              |                },
-              |                "rules": [
-              |                    {
-              |                        "default": true,
-              |                        "head": {
-              |                            "name": "allow",
-              |                            "value": {
-              |                                "type": "boolean",
-              |                                "value": true
-              |                            }
-              |                        },
-              |                        "body": [
-              |                            {
-              |                                "index": 0,
-              |                                "terms": {
-              |                                    "type": "boolean",
-              |                                    "value": true
-              |                                }
-              |                            }
-              |                        ]
-              |                    }
-              |                ]
-              |            }
-              |        ]
-              |    }
-              |}""".stripMargin)
-        )
-  }
 
 }

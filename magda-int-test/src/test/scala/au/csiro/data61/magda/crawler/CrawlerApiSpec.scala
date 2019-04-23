@@ -33,10 +33,11 @@ import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
+import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import com.sksamuel.elastic4s.http.search.SearchResponse
 
-class CrawlerApiSpec extends BaseApiSpec with Protocols {
+class CrawlerApiSpec extends BaseApiSpec with Protocols with ResponseDatasetAllowAll {
 
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   implicit val ec = system.dispatcher
