@@ -33,7 +33,7 @@ object RegoRefPart{
         case _ => None
       }
       if(refTypeOption.isEmpty || refValueOption.isEmpty) None
-      else Some(RegoRefPart(refTypeOption.get, refValueOption.get))
+      else Some(RegoRefPart(refValueOption.get, refTypeOption.get))
     case _ => None
   }
 }
@@ -51,8 +51,8 @@ case class RegoRef(refParts:Seq[RegoRefPart]){
   )
 
   def fullRefString: String = {
-    var isFirstPart = false
-    refParts.map { part =>
+    var isFirstPart = true
+    val refStrParts = refParts.map { part =>
       var partStr = ""
       if(isFirstPart) {
         partStr = part.refString
@@ -66,13 +66,13 @@ case class RegoRef(refParts:Seq[RegoRefPart]){
         }
       }
 
-      if(!isFirstPart) {
-        isFirstPart = true
+      if(isFirstPart) {
+        isFirstPart = false
       }
       partStr
     }
     // --- a.[_].[_] should be a[_][_]
-    refParts.mkString(".").replace(".[", "[")
+    refStrParts.mkString(".").replace(".[", "[")
   }
 
   // --- strip the possible [_]
@@ -254,7 +254,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         case _ => true
       }
     } match {
-      case Some(prefix:String) => refString.replaceFirst(s"^${prefix}", "")
+      case Some(prefix:String) => "dataset" + refString.replaceFirst(s"^${prefix}", "")
       case _ => refString
     }
   }

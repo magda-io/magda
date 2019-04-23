@@ -4,7 +4,7 @@ package au.csiro.data61.magda.opa
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.stream.ActorMaterializer
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
+import org.scalatest.{ FunSpec, Matchers}
 import au.csiro.data61.magda.test.util.TestActorSystem
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.{HttpRequest => MockRequest, HttpResponse => MockResponse}
@@ -14,6 +14,8 @@ import au.csiro.data61.magda.search.elasticsearch.OpaQueryer
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util.TestActorSystem.config
 import com.typesafe.config.ConfigValueFactory
+import org.scalatest.concurrent.ScalaFutures._
+import scala.concurrent.duration._
 
 
 
@@ -28,16 +30,20 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
 
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
+  implicit val patienceConfig = PatienceConfig(30.second)
 
-  describe("Should parse sample OPA response with no any issues") {
+  describe("Sample OPA response") {
 
     // --- set Opa response
     createExpections()
 
-    val opaQueryer = new OpaQueryer()
-    opaQueryer.publishingStateQuery(Set(), Some("")).map{ q =>
-      opaQueryer.hasErrors shouldBe false
+    it("Should be parsed with no any issues") {
+      val opaQueryer = new OpaQueryer()
+      whenReady(opaQueryer.publishingStateQuery(Set(), Some(""))){q =>
+        opaQueryer.hasErrors shouldBe false
+      }
     }
+
   }
 
   def createExpections(): Unit ={
