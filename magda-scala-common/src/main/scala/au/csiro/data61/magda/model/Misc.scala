@@ -64,6 +64,11 @@ package misc {
      isOpenData: Option[Boolean] = None,
      affiliatedOrganisation: Option[String] = None)
 
+  case class AccessControl(
+     ownerId: Option[String] = None,
+     orgUnitOwnerId: Option[String] = None,
+     preAuthoisedPermissionIds: Option[Seq[String]] = None)
+
   case class DataSet(
       identifier: String,
       title: Option[String] = None,
@@ -88,7 +93,8 @@ package misc {
       source: Option[DataSouce] = None,
       creation: Option[DcatCreation] = None,
       score: Option[Float],
-      publishingState: Option[String] = None) {
+      publishingState: Option[String] = None,
+      accessControl: Option[AccessControl] = None) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
 
@@ -453,6 +459,8 @@ package misc {
 
     implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
 
+    implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
+
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters
       */
@@ -482,7 +490,8 @@ package misc {
           "creation" -> dataSet.creation.toJson,
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
-          "publishingState" -> dataSet.publishingState.toJson
+          "publishingState" -> dataSet.publishingState.toJson,
+          "accessControl" -> dataSet.accessControl.toJson
         )
 
       def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
@@ -521,7 +530,8 @@ package misc {
           source = convertOptionField[DataSouce]("source", json),
           creation = convertOptionField[DcatCreation]("creation", json),
           score = convertOptionField[Float]("score", json),
-          publishingState = convertOptionField[String]("publishingState", json)
+          publishingState = convertOptionField[String]("publishingState", json),
+          accessControl = convertOptionField[AccessControl]("accessControl", json)
         )
       }
     }
