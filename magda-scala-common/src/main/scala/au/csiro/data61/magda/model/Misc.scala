@@ -504,6 +504,14 @@ package misc {
 
       def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
 
+      def convertCollectionField[T:JsonReader](fieldName: String, json: JsValue): Seq[T] = json match {
+        case JsObject(jsData) => jsData.get(fieldName) match {
+          case Some(JsArray(items)) => items.map(_.convertTo[T])
+          case _ => Seq()
+        }
+        case _ => Seq()
+      }
+
       override def read(json: JsValue): DataSet= {
 
         DataSet(
@@ -518,10 +526,10 @@ package misc {
           accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
           spatial = convertOptionField[Location]("spatial", json),
           temporal = convertOptionField[PeriodOfTime]("temporal", json),
-          themes = convertField[Seq[String]]("themes", json),
-          keywords = convertField[Seq[String]]("keywords", json),
+          themes = convertCollectionField[String]("themes", json),
+          keywords = convertCollectionField[String]("keywords", json),
           contactPoint = convertOptionField[Agent]("contactPoint", json),
-          distributions = convertField[Seq[Distribution]]("distributions", json),
+          distributions = convertCollectionField[Distribution]("distributions", json),
           landingPage = convertOptionField[String]("landingPage", json),
           years = convertOptionField[String]("years", json),
           indexed = convertOptionField[OffsetDateTime]("indexed", json),
