@@ -254,7 +254,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         case _ => true
       }
     } match {
-      case Some(prefix:String) => "dataset" + refString.replaceFirst(s"^${prefix}", "")
+      case Some(prefix:String) => refString.replaceFirst(s"^${prefix}\\.", "")
       case _ => refString
     }
   }
