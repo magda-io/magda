@@ -85,7 +85,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
         getMinMatchFromBoolQuery(should(3)) shouldBe None
 
         getMustFromBoolQuery(should(4)).size shouldBe 2
-        getMustFromBoolQuery(should(4))(0) shouldBe TermQuery("dpublishingState", "draft")
+        getMustFromBoolQuery(should(4))(0) shouldBe TermQuery("publishingState", "draft")
         getMustFromBoolQuery(should(4))(1) shouldBe TermQuery("accessControl.orgUnitOwnerId", "OU03")
         getShouldFromBoolQuery(should(4)).size shouldBe 0
         getNotFromBoolQuery(should(4)).size shouldBe 0
