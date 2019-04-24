@@ -76,7 +76,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 41,
+    version = 42,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -157,6 +157,11 @@ object IndexDefinition extends DefaultJsonProtocol {
               magdaTextField("likelihoodOfRelease"),
               booleanField("isOpenData"),
               magdaTextField("affiliatedOrganisation")
+            ),
+            objectField("accessControl").fields(
+              keywordField("ownerId"),
+              keywordField("orgUnitOwnerId"),
+              keywordField("preAuthoisedPermissionIds")
             ),
             keywordField("years"),
             /*

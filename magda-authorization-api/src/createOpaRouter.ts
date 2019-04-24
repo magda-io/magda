@@ -130,8 +130,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         const contentType = req.get("content-type");
 
         const reqOpts: request.CoreOptions = {
-            method: "post",
-            json: reqData
+            method: "post"
         };
 
         // --- merge userInfo into possible income input data via POST
@@ -158,11 +157,18 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqData.input.user = userInfo;
 
-        request(`${opaUrl}${req.path}`, reqOpts).pipe(res);
+        reqOpts.json = reqData;
+
+        request(`${opaUrl}v1${req.path}`, reqOpts).pipe(res);
     }
 
     async function proxyRequest(req: express.Request, res: express.Response) {
         try {
+            res.set({
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0"
+            });
             await appendUserInfoToInput(req, res);
         } catch (e) {
             res.status(500).send(`Failed to proxy OPA request: ${e}`);

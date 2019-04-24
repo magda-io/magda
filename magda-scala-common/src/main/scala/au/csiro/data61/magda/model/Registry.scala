@@ -225,6 +225,26 @@ object Registry {
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
+      val accessControl = hit.aspects.get("dataset-access-control") match {
+        case Some(JsObject(accessControlData)) => Some(AccessControl(
+          ownerId = accessControlData.get("ownerId") match {
+            case Some(JsString(ownerId)) => Some(ownerId)
+            case _ => None
+          },
+          orgUnitOwnerId = accessControlData.get("orgUnitOwnerId") match {
+            case Some(JsString(orgUnitOwnerId)) => Some(orgUnitOwnerId)
+            case _ => None
+          },
+          preAuthoisedPermissionIds = accessControlData.get("preAuthoisedPermissionIds") match {
+            case Some(JsArray(preAuthoisedPermissionIds)) => Some(preAuthoisedPermissionIds.toArray.flatMap{
+              case JsString(permissionId) => Some(permissionId)
+              case _ => None
+            })
+            case _ => None
+          }
+        ))
+        case _ => None
+      }
 
       val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -269,7 +289,7 @@ object Registry {
       }
 
       val publishing = hit.aspects.getOrElse("publishing", JsObject())
-      
+
       DataSet(
         identifier = hit.id,
         title = dcatStrings.extract[String]('title.?),
@@ -295,7 +315,8 @@ object Registry {
           case JsNull => false
           case _ => true
         }.map(_.convertTo[DcatCreation]),
-        publishingState = Some(publishing.extract[String]('state.?).getOrElse("published"))) // assume not set means published
+        publishingState = Some(publishing.extract[String]('state.?).getOrElse("published")), // assume not set means published
+        accessControl = accessControl)
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
