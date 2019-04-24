@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
 import { bindActionCreators } from "redux";
-import { requestSignOut } from "../../actions/userManagementActions";
+import { requestSignOut } from "actions/userManagementActions";
 
 class AccountNavbar extends React.Component {
     signOut(event) {

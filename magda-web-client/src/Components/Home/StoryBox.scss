@@ -1,0 +1,67 @@
+@import "variables";
+
+.homepage-stories {
+    .story-box {
+        background: #ffffff;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        border-radius: 4px;
+    }
+
+    .story-title-link:hover {
+        color: $AU-color-foreground-action;
+        background-color: $AU-color-background;
+    }
+
+    .story-title-link {
+        border: none;
+    }
+
+    .story-title {
+        @include AU-fontgrid(lg, heading);
+        margin-top: 0;
+    }
+
+    .story-title-image {
+        width: 100%;
+        height: auto;
+    }
+
+    .story-box-body {
+        padding: 16px;
+
+        a {
+            text-decoration: none;
+        }
+        .markdown {
+            font-family: inherit;
+            font-style: normal;
+            font-weight: normal;
+        }
+    }
+
+    @media (max-width: $medium) {
+        .story-box-text {
+            padding: 16px;
+        }
+
+        .story-box-body {
+            padding: 0;
+        }
+
+        .story-box {
+            margin-bottom: 16px;
+            padding: 0px;
+        }
+
+        .story-title-image {
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .story-box-2 {
+            .story-title {
+                margin-top: 0px;
+            }
+        }
+    }
+}

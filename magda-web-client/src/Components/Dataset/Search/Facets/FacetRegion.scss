@@ -1,0 +1,28 @@
+@import "variables";
+
+.facet-region__preview {
+    height: 270px;
+    width: 100%;
+}
+
+.facet-region__preview .map {
+    height: 100%;
+}
+
+.facet-region.facet-body {
+    @media (min-width: $medium) {
+        width: 460px;
+    }
+}
+
+.facet-option__region-type {
+    opacity: 0.5;
+    font-size: 12px;
+    line-height: 20px;
+}
+
+.facet-option__region-name {
+    opacity: 0.75;
+    font-size: 14px;
+    line-height: 20px;
+}
