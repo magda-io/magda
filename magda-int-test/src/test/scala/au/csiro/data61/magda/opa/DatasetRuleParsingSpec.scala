@@ -13,6 +13,7 @@ import scala.concurrent.Future
 import au.csiro.data61.magda.search.elasticsearch.OpaQueryer
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util.TestActorSystem.config
+import com.sksamuel.elastic4s.searches.queries.matches.MatchQuery
 import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 import com.sksamuel.elastic4s.searches.queries.{BoolQuery, Query}
 import com.typesafe.config.ConfigValueFactory
@@ -44,9 +45,76 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
       val opaQueryer = new OpaQueryer()
       whenReady(opaQueryer.publishingStateQuery(Set(), Some(""))){q =>
         opaQueryer.hasErrors shouldBe false
-        getShouldFromBoolQuery(q).size shouldBe 8
+
+        val should = getShouldFromBoolQuery(q)
+        should.size shouldBe 8
         getMinMatchFromBoolQuery(q).isEmpty shouldBe false
         getMinMatchFromBoolQuery(q).get shouldBe "1"
+        getMustFromBoolQuery(q).size shouldBe 0
+        getNotFromBoolQuery(q).size shouldBe 0
+
+        // --- test unconditional permission for draft dataset
+        getMustFromBoolQuery(should(0)).size shouldBe 1
+        getMustFromBoolQuery(should(0))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getShouldFromBoolQuery(should(0)).size shouldBe 0
+        getNotFromBoolQuery(should(0)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(0)) shouldBe None
+
+        // --- test unconditional permission for published dataset
+        getMustFromBoolQuery(should(1)).size shouldBe 1
+        getMustFromBoolQuery(should(1))(0) shouldBe TermQuery("dataset.publishingState", "published")
+        getShouldFromBoolQuery(should(1)).size shouldBe 0
+        getNotFromBoolQuery(should(1)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(1)) shouldBe None
+
+        // --- test draft dataset permission with ownership constraint
+        getMustFromBoolQuery(should(2)).size shouldBe 2
+        getMustFromBoolQuery(should(2))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(2))(1) shouldBe TermQuery("dataset.accessControl.ownerId", "eeb0b93d-580e-4238-8322-8fbff88f9d47")
+        getShouldFromBoolQuery(should(2)).size shouldBe 0
+        getNotFromBoolQuery(should(2)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(2)) shouldBe None
+
+        // --- test draft dataset permission with organisation ownership constraint
+        // --- TODO: can improve the parse by merge multiple TermQuery into one TermsQuery
+        getMustFromBoolQuery(should(3)).size shouldBe 2
+        getMustFromBoolQuery(should(3))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(3))(1) shouldBe TermQuery("dataset.accessControl.orgUnitOwnerId", "OU01")
+        getShouldFromBoolQuery(should(3)).size shouldBe 0
+        getNotFromBoolQuery(should(3)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(3)) shouldBe None
+
+        getMustFromBoolQuery(should(4)).size shouldBe 2
+        getMustFromBoolQuery(should(4))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(4))(1) shouldBe TermQuery("dataset.accessControl.orgUnitOwnerId", "OU03")
+        getShouldFromBoolQuery(should(4)).size shouldBe 0
+        getNotFromBoolQuery(should(4)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(4)) shouldBe None
+
+        getMustFromBoolQuery(should(5)).size shouldBe 2
+        getMustFromBoolQuery(should(5))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(5))(1) shouldBe TermQuery("dataset.accessControl.orgUnitOwnerId", "OU04")
+        getShouldFromBoolQuery(should(5)).size shouldBe 0
+        getNotFromBoolQuery(should(5)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(5)) shouldBe None
+
+        // --- test draft dataset permission with pre-authorisation constraint
+        // --- Elastic field support Array structure natively
+        // --- dataset.accessControl.preAuthoisedPermissionIds needs to be a keyword field
+        getMustFromBoolQuery(should(6)).size shouldBe 2
+        getMustFromBoolQuery(should(6))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(6))(1) shouldBe MatchQuery("dataset.accessControl.preAuthoisedPermissionIds", "57cbbfad-5755-4b19-989e-7d76ae37ee70")
+        getShouldFromBoolQuery(should(6)).size shouldBe 0
+        getNotFromBoolQuery(should(6)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(6)) shouldBe None
+
+        getMustFromBoolQuery(should(7)).size shouldBe 2
+        getMustFromBoolQuery(should(7))(0) shouldBe TermQuery("dataset.publishingState", "draft")
+        getMustFromBoolQuery(should(7))(1) shouldBe MatchQuery("dataset.accessControl.preAuthoisedPermissionIds", "79d71b9e-ea5c-4e07-bb5b-4e86704f9883")
+        getShouldFromBoolQuery(should(7)).size shouldBe 0
+        getNotFromBoolQuery(should(7)).size shouldBe 0
+        getMinMatchFromBoolQuery(should(7)) shouldBe None
+
       }
     }
   }
