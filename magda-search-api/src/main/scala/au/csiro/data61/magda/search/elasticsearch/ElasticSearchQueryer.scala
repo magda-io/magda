@@ -272,6 +272,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     addAggregations(
       buildQuery(query, publishingStatusQuery, start, limit, strategy),
       query,
+      publishingStatusQuery,
       strategy,
       facetSize
     ).sourceExclude("accessControl") // --- do not include accessControl metadata
@@ -288,6 +289,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   def addAggregations(
     searchDef: SearchRequest,
     query: Query,
+    publishingStatusQuery: QueryDefinition,
     strategy: SearchStrategy,
     facetSize: Int) = {
     val facetAggregations: List[AggregationDefinition] =
@@ -296,6 +298,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           facetType =>
             aggsForFacetType(
               query,
+              publishingStatusQuery,
               facetType,
               strategy,
               idealFacetSize(facetType, query, facetSize)))
@@ -310,6 +313,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
     query: Query,
+    publishingStatusQuery: QueryDefinition,
     facetType: FacetType,
     strategy: SearchStrategy,
     facetSize: Int): List[AggregationDefinition] = {
@@ -320,6 +324,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       globalAggregation(facetType.id + "-global")
         .subAggregations(alternativesAggregation(
           query,
+          publishingStatusQuery,
           facetDef,
           strategy,
           facetSize))
@@ -335,12 +340,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
    */
   def alternativesAggregation(
     query: Query,
+    publishingStatusQuery: QueryDefinition,
     facetDef: FacetDefinition,
     strategy: SearchStrategy,
-    facetSize: Int) =
+    facetSize: Int) = {
+
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
+      .query(must(
+        Seq(
+          publishingStatusQuery,
+          queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
+        )
+      ))
       .subAggregations(facetDef.aggregationDefinition(query, facetSize))
+  }
+
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
