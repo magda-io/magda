@@ -6,7 +6,7 @@ type Props = {
     location: Location;
 };
 
-export default function SearchPageDraftOnly(props: Props) {
+export default function SearchPageDraftOnly(props: Props & any) {
     const newProps = {
         ...props,
         publishingState: "draft"

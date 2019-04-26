@@ -201,6 +201,12 @@ class Search extends Component<Props & any> {
                             {!this.props.isFetching && !this.props.error && (
                                 <div className="sub-heading">
                                     {" "}
+                                    {this.props.publishingState &&
+                                    this.props.publishingState !== "published"
+                                        ? `${
+                                              this.props.publishingState
+                                          } dataset `
+                                        : ""}
                                     results {this.filterCount()} (
                                     {this.props.hitCount})
                                 </div>

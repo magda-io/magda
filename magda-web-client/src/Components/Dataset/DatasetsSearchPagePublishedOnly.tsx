@@ -6,7 +6,7 @@ type Props = {
     location: Location;
 };
 
-export default function SearchPagePublishedOnly(props: Props) {
+export default function SearchPagePublishedOnly(props: Props & any) {
     const newProps = {
         ...props,
         publishingState: "published"
