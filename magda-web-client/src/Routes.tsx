@@ -59,7 +59,7 @@ const Routes = () => {
             />
             <Route
                 exact
-                path="/draft"
+                path="/drafts"
                 component={withHeader(DatasetsSearchPageDraftOnly, true)}
             />
             <Route
