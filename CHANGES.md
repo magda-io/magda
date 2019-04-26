@@ -4,6 +4,10 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 
+Indexer:
+
+-   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
+
 Others:
 
 -   Made registry-api DB pool settings configurable via Helm
