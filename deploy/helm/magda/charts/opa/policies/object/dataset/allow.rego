@@ -95,7 +95,7 @@ allow {
     
     input.user.permissions[i].operations[_].uri = input.operationUri
 
-    input.object.dataset.accessControl.preAuthoisedPermissionIds[_] = input.user.permissions[i].id
+    input.object.dataset.accessControl.preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }
 
 ##### Rules for wildcard resouce type e.g. object.dataset.*
@@ -179,5 +179,5 @@ allow {
     input.user.permissions[i].operations[_].uri = operationUri
 
     input.object.dataset.publishingState = permissionResourceType
-    input.object.dataset.accessControl.preAuthoisedPermissionIds[_] = input.user.permissions[i].id
+    input.object.dataset.accessControl.preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }

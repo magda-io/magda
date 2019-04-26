@@ -67,7 +67,7 @@ package misc {
   case class AccessControl(
      ownerId: Option[String] = None,
      orgUnitOwnerId: Option[String] = None,
-     preAuthoisedPermissionIds: Option[Seq[String]] = None)
+     preAuthorisedPermissionIds: Option[Seq[String]] = None)
 
   case class DataSet(
       identifier: String,

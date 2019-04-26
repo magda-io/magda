@@ -235,8 +235,8 @@ object Registry {
             case Some(JsString(orgUnitOwnerId)) => Some(orgUnitOwnerId)
             case _ => None
           },
-          preAuthoisedPermissionIds = accessControlData.get("preAuthoisedPermissionIds") match {
-            case Some(JsArray(preAuthoisedPermissionIds)) => Some(preAuthoisedPermissionIds.toArray.flatMap{
+          preAuthorisedPermissionIds = accessControlData.get("preAuthorisedPermissionIds") match {
+            case Some(JsArray(preAuthorisedPermissionIds)) => Some(preAuthorisedPermissionIds.toArray.flatMap{
               case JsString(permissionId) => Some(permissionId)
               case _ => None
             })

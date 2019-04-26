@@ -16,7 +16,7 @@
             "minLength": 36,
             "maxLength": 36
         },
-        "preAuthoisedPermissionIds": {
+        "preAuthorisedPermissionIds": {
             "title": "A collection of permission Ids that are granted to access this dataset",
             "type": "array",
             "items": {

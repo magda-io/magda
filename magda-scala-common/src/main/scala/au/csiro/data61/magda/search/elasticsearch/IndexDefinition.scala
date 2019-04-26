@@ -161,7 +161,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("accessControl").fields(
               keywordField("ownerId"),
               keywordField("orgUnitOwnerId"),
-              keywordField("preAuthoisedPermissionIds")
+              keywordField("preAuthorisedPermissionIds")
             ),
             keywordField("years"),
             /*

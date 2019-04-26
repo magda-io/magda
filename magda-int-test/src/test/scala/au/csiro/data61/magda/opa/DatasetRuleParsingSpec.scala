@@ -100,17 +100,17 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
 
         // --- test draft dataset permission with pre-authorisation constraint
         // --- Elastic field support Array structure natively
-        // --- dataset.accessControl.preAuthoisedPermissionIds needs to be a keyword field
+        // --- dataset.accessControl.preAuthorisedPermissionIds needs to be a keyword field
         getMustFromBoolQuery(should(6)).size shouldBe 2
         getMustFromBoolQuery(should(6))(0) shouldBe TermQuery("publishingState", "draft")
-        getMustFromBoolQuery(should(6))(1) shouldBe MatchQuery("accessControl.preAuthoisedPermissionIds", "57cbbfad-5755-4b19-989e-7d76ae37ee70")
+        getMustFromBoolQuery(should(6))(1) shouldBe MatchQuery("accessControl.preAuthorisedPermissionIds", "57cbbfad-5755-4b19-989e-7d76ae37ee70")
         getShouldFromBoolQuery(should(6)).size shouldBe 0
         getNotFromBoolQuery(should(6)).size shouldBe 0
         getMinMatchFromBoolQuery(should(6)) shouldBe None
 
         getMustFromBoolQuery(should(7)).size shouldBe 2
         getMustFromBoolQuery(should(7))(0) shouldBe TermQuery("publishingState", "draft")
-        getMustFromBoolQuery(should(7))(1) shouldBe MatchQuery("accessControl.preAuthoisedPermissionIds", "79d71b9e-ea5c-4e07-bb5b-4e86704f9883")
+        getMustFromBoolQuery(should(7))(1) shouldBe MatchQuery("accessControl.preAuthorisedPermissionIds", "79d71b9e-ea5c-4e07-bb5b-4e86704f9883")
         getShouldFromBoolQuery(should(7)).size shouldBe 0
         getNotFromBoolQuery(should(7)).size shouldBe 0
         getMinMatchFromBoolQuery(should(7)) shouldBe None
@@ -776,7 +776,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
             |                      },
             |                      {
             |                        "type": "string",
-            |                        "value": "preAuthoisedPermissionIds"
+            |                        "value": "preAuthorisedPermissionIds"
             |                      },
             |                      {
             |                        "type": "var",
@@ -873,7 +873,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
             |                      },
             |                      {
             |                        "type": "string",
-            |                        "value": "preAuthoisedPermissionIds"
+            |                        "value": "preAuthorisedPermissionIds"
             |                      },
             |                      {
             |                        "type": "var",
