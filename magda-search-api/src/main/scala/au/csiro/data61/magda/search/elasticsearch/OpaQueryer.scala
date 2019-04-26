@@ -412,7 +412,7 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         case Specified(inner) => inner
         case Unspecified() => ""
       }
-    }).filter(_ == "").toSeq
+    }).filter(_ != "").toSeq
 
     // --- if "*" means all possible publishingState, should ignore all other options
     if(filteredValue.exists(_ == "*")) filteredValue = List("*")
