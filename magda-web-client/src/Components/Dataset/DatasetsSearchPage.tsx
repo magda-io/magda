@@ -18,9 +18,11 @@ import queryString from "query-string";
 import ProgressBar from "Components/Common/ProgressBar";
 import stripFiltersFromQuery from "./Search/stripFiltersFromQuery";
 import PropTypes from "prop-types";
+import { Location } from "history";
 
 type Props = {
-    location: URL;
+    location: Location;
+    publishingState: string;
 };
 
 class Search extends Component<Props & any> {
@@ -50,16 +52,26 @@ class Search extends Component<Props & any> {
     }
 
     componentDidMount() {
+        const query = queryString.parse(this.props.location.search);
+        if (
+            this.props.publishingState &&
+            this.props.publishingState.trim() !== ""
+        ) {
+            query["publishingState"] = this.props.publishingState;
+        }
         this.props.resetDatasetSearch();
-        this.props.fetchSearchResultsIfNeeded(
-            queryString.parse(this.props.location.search)
-        );
+        this.props.fetchSearchResultsIfNeeded(query);
     }
 
     componentDidUpdate() {
-        this.props.fetchSearchResultsIfNeeded(
-            queryString.parse(this.props.location.search)
-        );
+        const query = queryString.parse(this.props.location.search);
+        if (
+            this.props.publishingState &&
+            this.props.publishingState.trim() !== ""
+        ) {
+            query["publishingState"] = this.props.publishingState;
+        }
+        this.props.fetchSearchResultsIfNeeded(query);
     }
 
     componentWillUnmount() {
