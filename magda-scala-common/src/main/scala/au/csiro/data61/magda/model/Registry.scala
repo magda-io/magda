@@ -270,8 +270,26 @@ object Registry {
         case _ => 1d
       }
 
-      val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
-      val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
+      // --- intervals could be an empty array
+      // --- put in a Try to avoid exceptions
+      val coverageStart = ApiDate(tryParseDate(
+        Try[Option[String]]{
+          temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)
+        } match {
+          case Success(Some(v)) => Some(v)
+          case _ => None
+        }
+      ), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
+
+      val coverageEnd = ApiDate(tryParseDate(
+        Try[Option[String]]{
+          temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)
+        } match {
+          case Success(Some(v)) => Some(v)
+          case _ => None
+        }
+      ), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
+
       val temporal = (coverageStart, coverageEnd) match {
         case (ApiDate(None, ""), ApiDate(None, "")) => None
         case (ApiDate(None, ""), end)               => Some(PeriodOfTime(None, Some(end)))
