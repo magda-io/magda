@@ -5,6 +5,7 @@ import HomePage from "Components/Home/HomePage";
 import AccountPage from "Components/Account/AccountPage";
 import AccountLoginPage from "Components/Account/AccountLoginPage";
 import AccountSignInRedirectPage from "Components/Account/AccountSignInRedirectPage";
+import DatasetsSearchPage from "Components/Dataset/DatasetsSearchPage";
 import DatasetsSearchPageDraftOnly from "Components/Dataset/DatasetsSearchPageDraftOnly";
 import DatasetsSearchPagePublishedOnly from "Components/Dataset/DatasetsSearchPagePublishedOnly";
 import DatasetPage from "Components/Dataset/DatasetPage";
@@ -61,6 +62,11 @@ const Routes = () => {
                 exact
                 path="/drafts"
                 component={withHeader(DatasetsSearchPageDraftOnly, true)}
+            />
+            <Route
+                exact
+                path="/all-datasets"
+                component={withHeader(DatasetsSearchPage, true)}
             />
             <Route
                 exact

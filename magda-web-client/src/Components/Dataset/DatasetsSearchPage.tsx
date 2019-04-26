@@ -183,6 +183,16 @@ class Search extends Component<Props & any> {
         const searchResultsPerPage = this.props.configuration
             .searchResultsPerPage;
 
+        const publishingState = this.props.publishingState
+            ? this.props.publishingState.trim()
+            : "";
+        let resultTitle = "";
+        if (publishingState === "" || publishingState === "*") {
+            resultTitle = "all datasets ";
+        } else if (publishingState !== "published") {
+            resultTitle = `${publishingState} datasets `;
+        }
+
         return (
             <MagdaDocumentTitle
                 prefixes={[
@@ -201,12 +211,7 @@ class Search extends Component<Props & any> {
                             {!this.props.isFetching && !this.props.error && (
                                 <div className="sub-heading">
                                     {" "}
-                                    {this.props.publishingState &&
-                                    this.props.publishingState !== "published"
-                                        ? `${
-                                              this.props.publishingState
-                                          } dataset `
-                                        : ""}
+                                    {resultTitle}
                                     results {this.filterCount()} (
                                     {this.props.hitCount})
                                 </div>
