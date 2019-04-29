@@ -29,6 +29,35 @@ test_allow_any_non_header_footer_content_items {
     }
 }
 
+test_allow_wildcard_uri_with_wrong_content_id {
+    not allow with input as {
+        "operationUri": "object/header/**",
+        "object": {
+            "content": {
+                "id": "lang/en/global/appName"
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "isAdmin": false,
+            "permissions": [],
+            "photoURL": "//www.gravatar.com/avatar/bed026a33c154abec6852b4e313bf1ce",
+            "roles": [
+                {
+                    "id": "00000000-0000-0002-0000-000000000000",
+                    "name": "Authenticated Users",
+                    "permissionIds": [
+                        "e5ce2fc4-9f38-4f52-8190-b770ed2074e6"
+                    ]
+                }
+            ],
+            "source": "ckan"
+        }
+    }
+}
+
 test_allow_header_items_with_wildcard {
     allow with input as {
         "operationUri": "object/content/header/**",

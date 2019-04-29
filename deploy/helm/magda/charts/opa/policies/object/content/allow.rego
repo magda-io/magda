@@ -11,13 +11,9 @@ getContentIdFromOperationUri(operationUri) = contentId {
     contentId := concat("/", array.slice(parts, 2, count(parts)))
 }
 
-createRegexFromUri(uri) = regex {
-    strpSlash := replace(uri, "/", "\\/")
-    regex := replace(uri, "*", ".+")
-}
-
 ## Only limit the access to header or footer items
 allow {
+    startswith(input.operationUri, "object/content")
     ## if uri not start with object/content/header
     startswith(input.operationUri, "object/content/header") != true
     ## and uri not start with object/content/footer then always allowed
