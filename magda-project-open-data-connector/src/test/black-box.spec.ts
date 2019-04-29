@@ -50,7 +50,8 @@ const TEST_CASES = [
                         name: "Connector"
                     }
                 },
-                sourceTag: "stag"
+                sourceTag: "stag",
+                tenantId: "0"
             },
             "dist-connector-dataset-id-1": {
                 id: "dist-connector-dataset-id-1",
@@ -73,7 +74,8 @@ const TEST_CASES = [
                         name: "Connector"
                     }
                 },
-                sourceTag: "stag"
+                sourceTag: "stag",
+                tenantId: "0"
             },
             "org-connector-": {
                 id: "org-connector-",
@@ -86,7 +88,8 @@ const TEST_CASES = [
                     },
                     "organization-details": {}
                 },
-                sourceTag: "stag"
+                sourceTag: "stag",
+                tenantId: "0"
             },
             "ds-connector-dataset-id": {
                 id: "ds-connector-dataset-id",
@@ -118,7 +121,8 @@ const TEST_CASES = [
                     },
                     "dataset-publisher": { publisher: "org-connector-" }
                 },
-                sourceTag: "stag"
+                sourceTag: "stag",
+                tenantId: "0"
             }
         }
     }
