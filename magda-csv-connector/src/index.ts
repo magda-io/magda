@@ -99,7 +99,8 @@ const transformerOptions = {
     registryUrl: argv.registryUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    tenantId: Number(argv.tenantId)
 };
 
 const transformer = createTransformer(transformerOptions);

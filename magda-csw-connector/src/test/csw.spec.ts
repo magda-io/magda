@@ -8,6 +8,7 @@ import createTransformer from "../createTransformer";
 import datasetAspectBuilders from "../datasetAspectBuilders";
 import distributionAspectBuilders from "../distributionAspectBuilders";
 import organizationAspectBuilders from "../organizationAspectBuilders";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const ID = "CSW";
 const BASE_CSW_URL = "https://csw.example.com";
@@ -31,7 +32,7 @@ describe("csw connector", () => {
             baseUrl: REGISTRY_URL,
             jwtSecret: "squirrel",
             userId: "12345",
-            tenantId: undefined
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         });
 
         const transformerOptions = {
@@ -43,7 +44,8 @@ describe("csw connector", () => {
             registryUrl: REGISTRY_URL,
             datasetAspectBuilders,
             distributionAspectBuilders,
-            organizationAspectBuilders
+            organizationAspectBuilders,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         };
 
         const transformer = createTransformer(transformerOptions);

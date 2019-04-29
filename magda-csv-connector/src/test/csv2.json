@@ -19,7 +19,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-1-1-json": {
         "id": "dist-connector-1-1-json",
@@ -41,7 +42,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-1-2-excel": {
         "id": "dist-connector-1-2-excel",
@@ -63,7 +65,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-1-3-other": {
         "id": "dist-connector-1-3-other",
@@ -85,7 +88,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-a94089507837f9062056995b14324baa": {
         "id": "org-connector-a94089507837f9062056995b14324baa",
@@ -101,7 +105,8 @@
                 "title": "Sourced from a chicken farm"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-1": {
         "id": "ds-connector-1",
@@ -146,7 +151,8 @@
                 "publisher": "org-connector-a94089507837f9062056995b14324baa"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-3-0-shapefile": {
         "id": "dist-connector-3-0-shapefile",
@@ -159,8 +165,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Shape File",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -169,7 +174,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-3-1-other": {
         "id": "dist-connector-3-1-other",
@@ -182,8 +188,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Other",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -192,7 +197,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-634437f607a8f344c444482c3c831cc5": {
         "id": "org-connector-634437f607a8f344c444482c3c831cc5",
@@ -208,7 +214,8 @@
                 "title": "Internally produced by Agency"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-3": {
         "id": "ds-connector-3",
@@ -217,8 +224,7 @@
             "csv-dataset": {},
             "dcat-dataset-strings": {
                 "title": "DATASET TITLE 2",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
@@ -251,16 +257,15 @@
                 "publisher": "org-connector-634437f607a8f344c444482c3c831cc5"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-4-0-csv": {
         "id": "dist-connector-4-0-csv",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "dcat-distribution-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "license": "No Licence",
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
@@ -275,16 +280,15 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-4-1-other": {
         "id": "dist-connector-4-1-other",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "dcat-distribution-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "license": "No Licence",
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
@@ -299,7 +303,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-e44009afeecf1fe914c6c84488c4280a": {
         "id": "org-connector-e44009afeecf1fe914c6c84488c4280a",
@@ -315,17 +320,16 @@
                 "title": "Produced with magic"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-4": {
         "id": "ds-connector-4",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "csv-dataset": {},
             "dcat-dataset-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],
@@ -360,6 +364,7 @@
                 "publisher": "org-connector-e44009afeecf1fe914c6c84488c4280a"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     }
 }

@@ -5,7 +5,8 @@ export default [
         aspectDefinition: {
             id: "csv-dataset",
             name: "Spreadsheet sourced dataset",
-            jsonSchema: require("@magda/registry-aspects/csv-dataset.schema.json")
+            jsonSchema: require("@magda/registry-aspects/csv-dataset.schema.json"),
+            tenantId: "tenant id in number string"
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/csv-dataset.js",
@@ -16,7 +17,8 @@ export default [
         aspectDefinition: {
             id: "dcat-dataset-strings",
             name: "DCAT Dataset properties as strings",
-            jsonSchema: require("@magda/registry-aspects/dcat-dataset-strings.schema.json")
+            jsonSchema: require("@magda/registry-aspects/dcat-dataset-strings.schema.json"),
+            tenantId: "tenant id in number string"
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dcat-dataset-strings.js",
@@ -27,7 +29,8 @@ export default [
         aspectDefinition: {
             id: "source",
             name: "Source",
-            jsonSchema: require("@magda/registry-aspects/source.schema.json")
+            jsonSchema: require("@magda/registry-aspects/source.schema.json"),
+            tenantId: "tenant id in number string"
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dataset-source.js",

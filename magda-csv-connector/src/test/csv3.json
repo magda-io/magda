@@ -18,7 +18,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-ea0436e1fdca43c22e55809b9a4f3475": {
         "id": "org-connector-ea0436e1fdca43c22e55809b9a4f3475",
@@ -34,7 +35,8 @@
                 "title": "D - B - S"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-row-1": {
         "id": "ds-connector-row-1",
@@ -81,7 +83,8 @@
                 "publisher": "org-connector-ea0436e1fdca43c22e55809b9a4f3475"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-row-2-0-pdf": {
         "id": "dist-connector-row-2-0-pdf",
@@ -101,7 +104,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca": {
         "id": "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca",
@@ -117,7 +121,8 @@
                 "title": "Engineering"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-row-2": {
         "id": "ds-connector-row-2",
@@ -157,7 +162,8 @@
                 "publisher": "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "dist-connector-row-3": {
         "id": "dist-connector-row-3",
@@ -176,7 +182,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "org-connector-967ef2eb34634ba418db94dab610ba6f": {
         "id": "org-connector-967ef2eb34634ba418db94dab610ba6f",
@@ -192,7 +199,8 @@
                 "title": "Gaming"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     },
     "ds-connector-row-3": {
         "id": "ds-connector-row-3",
@@ -236,6 +244,7 @@
                 "publisher": "org-connector-967ef2eb34634ba418db94dab610ba6f"
             }
         },
-        "sourceTag": "stag"
+        "sourceTag": "stag",
+        "tenantId": "0"
     }
 }
