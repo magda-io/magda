@@ -411,7 +411,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
     type StarCountArgs = {
         record: Record;
         starCount?: number;
-        starCountFn?: ((num: number) => boolean);
+        starCountFn?: (num: number) => boolean;
     };
 
     function expectStarCount({
@@ -460,7 +460,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                           ]
                 }
             },
-            sourceTag: undefined
+            sourceTag: undefined,
+            tenantId: "0"
         };
     }
 });
