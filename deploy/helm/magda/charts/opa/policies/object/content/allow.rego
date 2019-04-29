@@ -4,11 +4,16 @@ default allow = false
 
 ## unknowns input.content
 
-getContentIdFromOperationUri(operationUri) = [contentId] {
+getContentIdFromOperationUri(operationUri) = contentId {
     parts := split(operationUri, "/")
     # Getting ContentId from Resource URI e.g.
     # e.g. object/content/header/* to header/*
     contentId := concat("/", array.slice(parts, 2, count(parts)))
+}
+
+createRegexFromUri(uri) = regex {
+    strpSlash := replace(uri, "/", "\\/")
+    regex := replace(uri, "*", ".+")
 }
 
 ## Only limit the access to header or footer items
@@ -22,15 +27,15 @@ allow {
 allow {
     ## when uri contains *
     contains(input.operationUri, "*")
-    matchRegex := replace(input.operationUri, "*", "[^/]+")
-    re_match(input.user.permissions[i].operations[_].uri, matchRegex)
+    ## Use glob match rules
+    glob.match(input.operationUri, ["/"], input.user.permissions[i].operations[_].uri)
     # content resource doesn't support any the folowing features at this moment
     input.user.permissions[i].userOwnershipConstraint = false
     input.user.permissions[i].orgUnitOwnershipConstraint = false
     input.user.permissions[i].preAuthorisedConstraint = false
 
     # lookup dataset
-    input.content.id = getContentIdFromOperationUri(input.user.permissions[i].operations[_].uri)
+    input.object.content.id = getContentIdFromOperationUri(input.user.permissions[i].operations[_].uri)
 }
 
 allow {
@@ -44,5 +49,5 @@ allow {
     input.user.permissions[i].preAuthorisedConstraint = false
 
     # lookup dataset
-    input.content.id = getContentIdFromOperationUri(input.user.permissions[i].operations[_].uri)
+    input.object.content.id = getContentIdFromOperationUri(input.user.permissions[i].operations[_].uri)
 }
