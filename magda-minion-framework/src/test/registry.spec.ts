@@ -20,7 +20,8 @@ import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/Te
 const aspectArb = jsc.record({
     id: jsc.string,
     name: jsc.string,
-    jsonSchema: jsc.json
+    jsonSchema: jsc.json,
+    tenantId: jsc.string
 });
 
 baseSpec(
@@ -50,6 +51,7 @@ baseSpec(
 
                 registryScope.get(/hooks\/.*/).reply(200, hook);
                 registryScope.post(/hooks\/.*/).reply(201, {});
+                registryScope.get("/tenants").reply(200, []);
             }
         );
 
@@ -86,6 +88,8 @@ baseSpec(
                     .get("/records")
                     .query(true)
                     .reply(200, { totalCount: 0, records: [], hasMore: false });
+
+                registryScope.get("/tenants").reply(200, []);
             }
         );
 
@@ -122,20 +126,20 @@ baseSpec(
                     .reply(201, {
                         lastEventIdReceived: 1
                     });
+
+                registryScope.get("/tenants").reply(200, []);
             }
         );
 
         function doStartupTest(
             caption: string,
-            fn: (
-                x: {
-                    aspectDefs: AspectDefinition[];
-                    registryScope: nock.Scope;
-                    jwtSecret: string;
-                    userId: string;
-                    hook: WebHook;
-                }
-            ) => void
+            fn: (x: {
+                aspectDefs: AspectDefinition[];
+                registryScope: nock.Scope;
+                jwtSecret: string;
+                userId: string;
+                hook: WebHook;
+            }) => void
         ) {
             jsc.property(
                 caption,

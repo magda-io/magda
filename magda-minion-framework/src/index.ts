@@ -119,7 +119,7 @@ export default async function minion(options: MinionOptions): Promise<void> {
                     registry.putAspectDefinition(aspectDef, id)
                 );
             } else {
-                registry.putAspectDefinition(aspectDef, MAGDA_SYSTEM_ID);
+                registry.putAspectDefinition(aspectDef, MAGDA_ADMIN_PORTAL_ID);
             }
         });
 

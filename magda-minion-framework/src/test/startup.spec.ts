@@ -51,6 +51,7 @@ baseSpec(
                 const registryScope = nock(registryUrl);
                 registryScope.get(/\/hooks\/.*/).reply(404);
                 registryScope.put(/\/hooks\/.*/).reply(201);
+                registryScope.get("/tenants").reply(200, []);
 
                 let index = 0;
                 const pages = _.groupBy(records, (element: any) => {

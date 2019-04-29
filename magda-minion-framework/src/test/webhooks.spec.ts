@@ -162,6 +162,8 @@ baseSpec(
                             });
                             registryScope.post(/\/hooks\/.*/).reply(201, {});
 
+                            registryScope.get("/tenants").reply(200, []);
+
                             return minion(options)
                                 .then(() =>
                                     Promise.all(
