@@ -293,7 +293,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       indices.getIndex(config, Indices.FormatsIndex)
     )
 
-    indexer.ready.await(60 seconds)
+    indexer.ready.await(120 seconds)
 
     indexNames.foreach { idxName =>
       blockUntilIndexExists(idxName)
@@ -472,6 +472,6 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
         }
       )
 
-      record
+      record.copy(tenantId = MAGDA_ADMIN_PORTAL_ID.toString())
   }
 }

@@ -11,7 +11,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.model.Registry.{EventType, RegistryConverters, WebHookPayload}
+import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_ADMIN_PORTAL_ID, RegistryConverters, WebHookPayload}
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
@@ -62,7 +62,8 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
             case None | Some(Nil) => Future.successful(Unit)
             case Some(list) =>
               val dataSets = list.map(record => try {
-                Some(convertRegistryDataSet(record, Some(system.log)))
+                val theRecord = record.copy(tenantId = MAGDA_ADMIN_PORTAL_ID.toString())
+                Some(convertRegistryDataSet(theRecord, Some(system.log)))
               } catch {
                 case CausedBy(e: spray.json.DeserializationException) =>
                   system.log.error(e, "When converting {}", record.id)
