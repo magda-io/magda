@@ -209,7 +209,6 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
                 [2160, 2160, 1353]
             ]) {
                 const [dim, width, height] = w;
-                // status.text(` [ resizing image ${dim}w ]`);
                 if (image.width >= width) {
                     images[`${dim}w`] = resizeImage(image, width, height);
                 }

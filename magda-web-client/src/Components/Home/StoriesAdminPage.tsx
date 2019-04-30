@@ -32,12 +32,9 @@ export default class StoriesAdminPage extends Component {
 
 function editStory(item, onChange) {
     const itemId = item.id;
-    // itemId, item, hasEditPermissions, save
-    const save = field => {
-        return value => {
-            item.content[field] = value;
-            onChange(item.content);
-        };
+    const save = field => value => {
+        item.content[field] = value;
+        onChange(item.content);
     };
     return (
         <div>

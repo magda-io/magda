@@ -8,7 +8,7 @@ import starIcon from "assets/star.svg";
 // Had a lot of trouble getting DraftJS from here to work: https://github.com/magda-io/magda/issues/1825
 // Not planning to waste any more time on it so
 // I've just put simpleMDE here. It is simple and I know that it works readily with react.
-import MDEditor from "react-simplemde-editor";
+import AsyncComponent from "Components/AsyncComponent";
 import "easymde/dist/easymde.min.css";
 
 export const markdownEditor: Editor = {
@@ -16,7 +16,16 @@ export const markdownEditor: Editor = {
         const callback = text => {
             onChange(text);
         };
-        return <MDEditor value={value} onChange={callback} />;
+        return (
+            <AsyncComponent
+                value={value}
+                onChange={callback}
+                importComponent={() =>
+                    import("react-simplemde-editor").then(x => x.default)
+                }
+            />
+        );
+        // return <MDEditor value={value} onChange={callback} />;
     },
     view: (value: any) => {
         let html = markdownToHtml(value || "");
