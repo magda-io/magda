@@ -22,6 +22,8 @@ export default async function onRecordFound(
     record: Record,
     registry: AuthorizedRegistryClient
 ) {
+    const theTenantId = record.tenantId;
+
     const distributions = _(
         record.aspects["dataset-distributions"]
             ? record.aspects["dataset-distributions"].distributions
@@ -60,18 +62,28 @@ export default async function onRecordFound(
     const best = _.max(processed) || 0;
 
     const starsAspectPromise = registry
-        .putRecordAspect(record.id, linkedDataAspectDef.id, {
-            stars: best || 0
-        })
+        .putRecordAspect(
+            record.id,
+            linkedDataAspectDef.id,
+            {
+                stars: best || 0
+            },
+            Number(theTenantId)
+        )
         .then(result => unionToThrowable(result));
 
     const qualityPromise = registry
-        .putRecordAspect(record.id, datasetQualityAspectDef.id, {
-            [linkedDataAspectDef.id]: {
-                score: best / 5,
-                weighting: 1
-            }
-        })
+        .putRecordAspect(
+            record.id,
+            datasetQualityAspectDef.id,
+            {
+                [linkedDataAspectDef.id]: {
+                    score: best / 5,
+                    weighting: 1
+                }
+            },
+            Number(theTenantId)
+        )
         .then(result => unionToThrowable(result));
 
     return Promise.all([starsAspectPromise, qualityPromise]).then(() => {});
