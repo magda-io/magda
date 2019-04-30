@@ -3,9 +3,10 @@ import { config } from "config";
 import readFile from "helpers/readFile";
 import { writeContent } from "actions/contentActions";
 
-class ContentImageEditor extends Component {
+class ContentImageEditor extends Component<any, any> {
     state = {
-        imageItemId: ""
+        imageItemId: "",
+        imageAlt: "LOADING; CLICK TO SET;"
     };
 
     updateState(update: any) {
@@ -37,21 +38,23 @@ class ContentImageEditor extends Component {
 
     render() {
         const { hasEditPermissions } = this.props;
-        const { imageItemId } = this.state;
+        const { imageItemId, imageAlt } = this.state;
         return (
             <React.Fragment>
                 <img
                     src={config.contentApiURL + imageItemId}
-                    alt="LOADING; CLICK TO SET;"
+                    alt={imageAlt}
                     style={{
                         maxHeight: "70px",
                         maxWidth: "367px",
                         cursor: "pointer"
                     }}
-                    onError={function(e) {
-                        e.target.alt = hasEditPermissions
-                            ? "CLICK TO SET"
-                            : "NODE";
+                    onError={e => {
+                        this.updateState({
+                            imageAlt: hasEditPermissions
+                                ? "CLICK TO SET"
+                                : "NODE"
+                        });
                     }}
                     onClick={this.changeImage.bind(this)}
                 />

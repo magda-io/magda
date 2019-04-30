@@ -5,7 +5,7 @@ import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import AdminHeader from "Components/Admin/AdminHeader";
 
-class Account extends React.Component {
+class Account extends React.Component<any, any> {
     state = {
         items: []
     };
@@ -21,7 +21,7 @@ class Account extends React.Component {
     render() {
         const { items } = this.state;
 
-        items.sort((a, b) => (a.id > b.id ? 1 : -1));
+        items.sort((a: any, b: any) => (a.id > b.id ? 1 : -1));
 
         return (
             <div>

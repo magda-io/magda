@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 
 import { readContent, updateContent } from "actions/contentActions";
 
-class ContentEditPage extends Component {
+class ContentEditPage extends Component<any, any> {
     state = {
         item: null
     };

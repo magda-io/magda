@@ -10,7 +10,7 @@ import { textEditor } from "Components/Editing/Editors/textEditor";
 import { writeContent } from "actions/contentActions";
 import AdminHeader from "Components/Admin/AdminHeader";
 
-class HomeAdminPage extends Component {
+class HomeAdminPage extends Component<any, any> {
     render() {
         const { hasEditPermissions, content } = this.props;
         const save = field => {

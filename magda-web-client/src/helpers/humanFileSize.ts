@@ -1,4 +1,4 @@
-export default function humanFileSize(bytes, si) {
+export default function humanFileSize(bytes, si = false) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
         return bytes + " B";

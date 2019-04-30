@@ -77,7 +77,7 @@ const StoriesAdminPage = makeAsync(() =>
     import("Components/Home/StoriesAdminPage").then(module => module.default)
 );
 
-const LanguageAdminmentPage = makeAsync(() =>
+const LanguageAdminPage = makeAsync(() =>
     import("Components/i18n/LanguageAdminPage").then(module => module.default)
 );
 
@@ -136,13 +136,14 @@ const Routes = () => {
                 component={withHeader(AccountsAdminPage, false)}
             />
             <Route
+                exact
                 path="/admin/pages"
                 component={withHeader(AdminStaticPagesPage, false)}
             />
             <Route
                 exact
                 path="/admin/i18n"
-                component={withHeader(LanguageAdminmentPage, false)}
+                component={withHeader(LanguageAdminPage, false)}
             />
             <Route
                 exact

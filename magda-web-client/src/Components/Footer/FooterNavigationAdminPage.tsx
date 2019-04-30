@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { withRouter } from "react-router";
 
-class FooterNavigationAdminPage extends Component {
+class FooterNavigationAdminPage extends Component<any, any> {
     render() {
         const size = this.props.match.params.size;
         const label = { medium: "Desktop", small: "Mobile" }[size];

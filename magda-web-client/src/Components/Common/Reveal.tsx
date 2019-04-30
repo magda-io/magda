@@ -1,7 +1,10 @@
 import React from "react";
-import PropTypes from "prop-types";
 
-class Reveal extends React.Component {
+class Reveal extends React.Component<{ label: string }, { reveal: boolean }> {
+    static defaultProps = {
+        label: "Click to reveal"
+    };
+
     state = { reveal: false };
 
     onRevealButtonClick = () => {
@@ -11,29 +14,23 @@ class Reveal extends React.Component {
     };
 
     render() {
+        const { reveal } = this.state;
+        const { children, label } = this.props;
         return (
-            <React.Fragment ns={["datasetPage"]}>
-                {this.state.reveal ? (
-                    this.props.children
+            <React.Fragment>
+                {reveal ? (
+                    children
                 ) : (
                     <button
                         className="au-btn au-btn--secondary"
                         onClick={this.onRevealButtonClick}
                     >
-                        <span>{this.props.label}</span>
+                        <span>{label}</span>
                     </button>
                 )}
             </React.Fragment>
         );
     }
 }
-
-Reveal.propTypes = {
-    label: PropTypes.string
-};
-
-Reveal.defaultProps = {
-    label: "Click to reveal"
-};
 
 export default Reveal;

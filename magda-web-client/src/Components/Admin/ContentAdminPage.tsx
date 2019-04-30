@@ -16,7 +16,7 @@ import {
 import humanFileSize from "helpers/humanFileSize";
 import AdminHeader from "./AdminHeader";
 
-class ContentAdminPage extends Component {
+class ContentAdminPage extends Component<any, any> {
     state = {
         newId: "",
         newIdValid: false,
@@ -97,8 +97,11 @@ class ContentAdminPage extends Component {
             <div>
                 <AdminHeader title={title} />
 
-                {edit && list.filter(item => item.id === editId).length > 0 ? (
-                    this.renderEdit(list.filter(item => item.id === editId)[0])
+                {edit &&
+                list.filter((item: any) => item.id === editId).length > 0 ? (
+                    this.renderEdit(
+                        list.filter((item: any) => item.id === editId)[0]
+                    )
                 ) : (
                     <div>
                         {list.length === 0 ? (
@@ -129,7 +132,7 @@ class ContentAdminPage extends Component {
                     </tr>
                 </thead>
                 <tbody>
-                    {list.map(item => {
+                    {list.map((item: any) => {
                         return (
                             <tr>
                                 <td>{titleFromItem(item)}</td>
@@ -158,7 +161,7 @@ class ContentAdminPage extends Component {
                     items={list.map((item, id) => {
                         return { id, item };
                     })}
-                    itemRenderer={wrapper => {
+                    itemRenderer={(wrapper: any) => {
                         let item = wrapper.item;
                         return (
                             <div style={itemStyle}>
@@ -174,7 +177,7 @@ class ContentAdminPage extends Component {
                     }}
                     onChange={items => {
                         this.updateState({
-                            list: items.map(item => item.item),
+                            list: items.map((item: any) => item.item),
                             orderChanged: true
                         });
                     }}
@@ -251,7 +254,7 @@ class ContentAdminPage extends Component {
 
     async saveOrder() {
         await Promise.all(
-            this.state.list.map(async (item, index) => {
+            this.state.list.map(async (item: any, index) => {
                 if (item.content.order !== index) {
                     await updateContent(item.id, { order: index });
                 }

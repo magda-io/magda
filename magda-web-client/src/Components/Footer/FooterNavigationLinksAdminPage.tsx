@@ -7,7 +7,7 @@ import { withRouter } from "react-router";
 
 import { readContent, updateContent } from "actions/contentActions";
 
-class StoriesAdminPage extends Component {
+class StoriesAdminPage extends Component<any, any> {
     state = {
         category: null
     };
@@ -25,9 +25,9 @@ class StoriesAdminPage extends Component {
     render() {
         const { category, size } = this.props.match.params;
         const pathPrefix = `footer/navigation/${size}/category-links/${category}`;
-        const categoryLabel = this.state.category
-            ? this.state.category.label
-            : "Loading...";
+
+        let cat: any = this.state.category;
+        const categoryLabel = cat ? cat.label : "Loading...";
         const categoryPathPrefix = `footer/navigation/${size}/category/${category}`;
         const saveCategoryLabel = value => {
             updateContent(categoryPathPrefix, {

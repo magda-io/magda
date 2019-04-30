@@ -4,9 +4,9 @@ import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
-export default class AdminHeader extends Component {
+export default class AdminHeader extends Component<any, any> {
     render() {
-        const crumbs = [];
+        const crumbs: any[] = [];
         let title = ["Admin"];
         if (this.props.title) {
             crumbs.push(

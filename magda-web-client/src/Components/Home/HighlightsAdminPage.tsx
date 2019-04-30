@@ -14,7 +14,7 @@ import readImage from "helpers/readImage";
 import resizeImage from "helpers/resizeImage";
 import AdminHeader from "Components/Admin/AdminHeader";
 
-export default class HighlightsAdminPage extends React.Component {
+export default class HighlightsAdminPage extends React.Component<any, any> {
     state = {
         deleteId: "",
         items: []
@@ -44,7 +44,6 @@ export default class HighlightsAdminPage extends React.Component {
                     let [id, body] = params;
                     return Object.assign(body, { id });
                 });
-                console.log(items);
                 this.updateState({ items });
             }
         );
@@ -57,7 +56,7 @@ export default class HighlightsAdminPage extends React.Component {
     render() {
         const { items } = this.state;
 
-        items.sort((a, b) => (a.id > b.id ? 1 : -1));
+        items.sort((a: any, b: any) => (a.id > b.id ? 1 : -1));
 
         return (
             <div>
@@ -107,7 +106,6 @@ export default class HighlightsAdminPage extends React.Component {
         };
 
         const { deleteId } = this.state;
-        console.log(item, deleteId);
         return (
             <tr>
                 <td>
@@ -217,7 +215,7 @@ export default class HighlightsAdminPage extends React.Component {
                 }
             }
 
-            if (Object.keys(images) < 2) {
+            if (Object.keys(images).length < 2) {
                 throw new Error(
                     " [ Less than two images could be generated. Please try a different image. ]"
                 );
