@@ -10,4 +10,14 @@ describe("OpaCompileResultParser", function() {
         expect(parser.hasWarns).to.be.equal(false);
         expect(data).to.be.an("array");
     });
+
+    it("Should evalute rule `allowRead` from parse result correctly", function() {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testData));
+        const result = parser.evaluateRule(
+            "data.partial.object.content.allowRead"
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.residualRules).to.be.an("array");
+    });
 });
