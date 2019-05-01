@@ -369,6 +369,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       val record = Record(
         id = dataSet.identifier,
         name = dataSet.title.getOrElse("No Title"),
+        tenantId = MAGDA_ADMIN_PORTAL_ID.toString(),
         aspects = {
           val aspects: Map[String, JsObject] = Map(
             "dcat-dataset-strings" -> modifyJson(
@@ -400,6 +401,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
                       modifyJson(dist.toJson.asJsObject, Map(
                         "license" -> dist.license.flatMap(_.name).map(_.toJson).getOrElse(JsNull)))))).toJson),
             "source" -> dataSet.source.toJson,
+            "tenantId" -> MAGDA_ADMIN_PORTAL_ID.toString(),
             "dataset-publisher" -> dataSet.publisher.map(publisher => JsObject(
               "publisher" -> JsObject(
                 "id" -> publisher.identifier.toJson,

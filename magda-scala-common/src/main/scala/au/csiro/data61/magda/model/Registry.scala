@@ -241,7 +241,12 @@ object Registry {
       val source = hit.aspects("source")
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
-      val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
+      val publisher: Option[Record] = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?)
+        .map((dataSet: JsObject) => {
+          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsString(hit.tenantId)))
+          val record = theDataSet.convertTo[Record]
+          record
+        })
 
       val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -313,7 +318,8 @@ object Registry {
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
-      val distributionRecord = distribution.convertTo[Record]
+      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsString(hit.tenantId)))
+      val distributionRecord: Record = theDistribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
       val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())
 
