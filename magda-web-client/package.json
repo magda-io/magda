@@ -16,6 +16,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "dependencies": {
+    "@craco/craco": "^5.0.2",
     "@gov.au/accordion": "^7.0.7",
     "@gov.au/animate": "^1.0.0",
     "@gov.au/body": "^2.1.1",

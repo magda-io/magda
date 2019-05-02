@@ -29,7 +29,7 @@ class AddDataset extends React.Component<never, never> {
 
                 <div className="row">
                     <div className="col-sm-12">
-                        <h1>Add a Dataset</h1>
+                        <h1>Review and add metadata</h1>
                     </div>
                 </div>
 
@@ -137,7 +137,7 @@ class AddDataset extends React.Component<never, never> {
                         <div className="option-wrapper">
                             <a
                                 className="option option-normal"
-                                href="add/metadata/1"
+                                href="add/metadata/-/0"
                             >
                                 <span className="option-question">
                                     No files to upload?
