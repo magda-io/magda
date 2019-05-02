@@ -9,6 +9,7 @@ interface RegoRuleOptions {
     value: RegoValue;
     expressions: RegoExp[];
     isCompleteEvaluated?: boolean;
+    parser: OpaCompileResponseParser;
 }
 
 class RegoRule {
@@ -20,6 +21,8 @@ class RegoRule {
     // --- whether this rule is matched
     public isMatched: boolean;
     public isCompleteEvaluated: boolean;
+
+    private parser: OpaCompileResponseParser;
 
     constructor(options: RegoRuleOptions) {
         this.isCompleteEvaluated = false;
@@ -35,6 +38,7 @@ class RegoRule {
         this.isCompleteEvaluated = _.isBoolean(options.isCompleteEvaluated)
             ? options.isCompleteEvaluated
             : false;
+        this.parser = options.parser;
 
         if (this.name === "") {
             throw new Error("Rule name can't be empty");
@@ -42,6 +46,10 @@ class RegoRule {
 
         if (this.fullName === "") {
             throw new Error("Rule fullName can't be empty");
+        }
+
+        if (!(this.parser instanceof OpaCompileResponseParser)) {
+            throw new Error("Require parser parameter to create a RegoRule");
         }
     }
 
@@ -52,7 +60,8 @@ class RegoRule {
             isDefault: this.isDefault,
             value: this.value,
             isCompleteEvaluated: this.isCompleteEvaluated,
-            expressions: this.expressions.map(e => e.clone())
+            expressions: this.expressions.map(e => e.clone()),
+            parser: this.parser
         });
         regoRule.isMatched = this.isMatched;
         return regoRule;
@@ -61,9 +70,11 @@ class RegoRule {
     evaluate() {
         this.expressions = this.expressions.map(exp => exp.evaluate());
         const falseExpression = this.expressions.find(
-            exp => exp.isCompleteEvaluated && exp.value === false
+            exp => exp.isMatch() === false
         );
         if (!_.isUndefined(falseExpression)) {
+            // --- rule expressions are always evaluated in the context of AND
+            // --- any false expression will make the rule not match
             this.isCompleteEvaluated = true;
             this.isMatched = false;
         } else {
@@ -75,12 +86,22 @@ class RegoRule {
             if (idx === -1) {
                 this.isCompleteEvaluated = true;
                 this.isMatched = true;
+            } else {
+                // --- further dry the rule if the rule has unsolved exps
+                // --- if a exp is matched (i.e. true) it can be strip out as true AND xxxx = xxxx
+                this.expressions = this.expressions.filter(
+                    exp => exp.isMatch() !== true
+                );
             }
         }
         return this;
     }
 
-    static parseFromData(r: any, packageName: string): RegoRule {
+    static parseFromData(
+        r: any,
+        packageName: string,
+        parser: OpaCompileResponseParser
+    ): RegoRule {
         const ruleName = r.head && r.head.name ? r.head.name : "";
         const ruleFullName = [packageName, ruleName].join(".");
         const ruleIsDefault = r.default === true;
@@ -93,18 +114,25 @@ class RegoRule {
             fullName: ruleFullName,
             isDefault: ruleIsDefault,
             value: ruleValue,
-            expressions: RegoRule.createExpressionsFromRuleBodyData(r.body)
+            expressions: RegoRule.createExpressionsFromRuleBodyData(
+                r.body,
+                parser
+            ),
+            parser
         };
         const regoRule = new RegoRule(ruleOptions);
         regoRule.evaluate();
         return regoRule;
     }
 
-    static createExpressionsFromRuleBodyData(data: any): RegoExp[] {
+    static createExpressionsFromRuleBodyData(
+        data: any,
+        parser: OpaCompileResponseParser
+    ): RegoExp[] {
         if (!_.isArray(data) || !data.length) {
             throw new Error(`Encountered empty rule body.`);
         }
-        return data.map(expData => RegoExp.parseFromData(expData));
+        return data.map(expData => RegoExp.parseFromData(expData, parser));
     }
 }
 
@@ -132,42 +160,152 @@ interface RegoTerm {
     value: RegoTermValue;
 }
 
+class RegoTerm {
+    public type: string;
+    public value: RegoTermValue;
+    private parser: OpaCompileResponseParser;
+
+    constructor(
+        type: string,
+        value: RegoTermValue,
+        parser: OpaCompileResponseParser
+    ) {
+        this.type = type;
+        this.value = value;
+        this.parser = parser;
+    }
+
+    clone() {
+        return new RegoTerm(this.type, this.value, this.parser);
+    }
+
+    asString() {
+        if (this.value instanceof RegoRef) return this.value.fullRefString();
+        else return this.value;
+    }
+
+    isRef(): boolean {
+        if (this.value instanceof RegoRef) return true;
+        return false;
+    }
+
+    fullRefString(): string {
+        if (this.value instanceof RegoRef) {
+            return this.value.fullRefString();
+        } else {
+            throw new Error("Tried to call `fullRefString` on non Ref term.");
+        }
+    }
+
+    refString(): string {
+        if (this.value instanceof RegoRef) {
+            return this.value.refString();
+        } else {
+            throw new Error("Tried to call `refString` on non Ref term.");
+        }
+    }
+
+    asOperator(): string {
+        if (this.value instanceof RegoRef) {
+            return this.value.asOperator();
+        } else {
+            throw new Error("Tried to call `asOperator` on non Ref term.");
+        }
+    }
+
+    isOperator(): boolean {
+        if (this.value instanceof RegoRef) {
+            return this.value.isOperator();
+        } else {
+            return false;
+        }
+    }
+
+    getValue(): RegoValue {
+        if (!this.isRef()) {
+            return this.value;
+        } else {
+            if (this.isOperator()) {
+                return undefined;
+            } else {
+                const fullName = this.fullRefString();
+                const result = this.parser.completeRuleResults[fullName];
+                if (_.isUndefined(result)) return undefined;
+                return result.value;
+            }
+        }
+    }
+
+    static parseFromData(
+        data: any,
+        parser: OpaCompileResponseParser
+    ): RegoTerm {
+        if (data.type === "ref") {
+            return new RegoTerm(data.type, RegoRef.parseFromData(data), parser);
+        } else {
+            return new RegoTerm(data.type, data.value, parser);
+        }
+    }
+}
+
 class RegoExp {
     public terms: RegoTerm[];
     public isNegated: boolean;
     public isCompleteEvaluated: boolean = false;
     public value: RegoValue = null;
+    private parser: OpaCompileResponseParser;
 
     constructor(
         terms: RegoTerm[],
         isNegated: boolean = false,
         isCompleteEvaluated: boolean = false,
-        value: RegoValue = null
+        value: RegoValue = null,
+        parser: OpaCompileResponseParser
     ) {
         this.terms = terms;
         this.isNegated = isNegated;
         this.isCompleteEvaluated = isCompleteEvaluated;
         this.value = value;
+        this.parser = parser;
     }
 
     clone(): RegoExp {
         const regoExp = new RegoExp(
-            this.terms.map(t => this.cloneRegoTerm(t)),
-            this.isNegated
+            this.terms.map(t => t.clone()),
+            this.isNegated,
+            this.isCompleteEvaluated,
+            this.value,
+            this.parser
         );
-        regoExp.isCompleteEvaluated = this.isCompleteEvaluated;
-        regoExp.value = this.value;
         return regoExp;
     }
 
-    cloneRegoTerm(term: RegoTerm): RegoTerm {
-        if (term.value instanceof RegoRef) {
-            return {
-                type: term.type,
-                value: term.value.clone()
-            };
+    termsAsString() {
+        return this.terms.map(t => t.asString());
+    }
+
+    getValue() {
+        this.evaluate();
+        if (!this.isCompleteEvaluated) return undefined;
+        if (this.isNegated) {
+            return this.value === false ? true : false;
         } else {
-            return { ...term };
+            // --- undefined is a common value in Rego similar to false
+            // --- we set to false here to tell the difference between
+            // --- real undefined (not full resolved) and undefined value
+            if (_.isUndefined(this.value)) return false;
+            else return this.value;
+        }
+    }
+
+    isMatch() {
+        const value = this.getValue();
+        if (_.isUndefined(value)) {
+            return undefined;
+        } else {
+            if (value === false || _.isUndefined(value)) return false;
+            // --- 0 is a match
+            return true;
         }
     }
 
@@ -181,13 +319,11 @@ class RegoExp {
             this.isNegated = false;
         }
         if (this.terms.length === 1) {
-            if (this.terms[0].value instanceof RegoRef) return this;
-            this.value = this.terms[0].value;
-            // --- try to normalise
-            if (this.isNegated) {
-                this.value = this.value === false ? true : false;
-                this.isNegated = false;
-            }
+            const term = this.terms[0];
+            const value = term.getValue();
+            if (_.isUndefined(value)) return this;
+
+            this.value = value;
             this.isCompleteEvaluated = true;
             return this;
         } else if (this.terms.length === 3) {
@@ -196,32 +332,23 @@ class RegoExp {
             const operands: RegoTermValue[] = [];
             let operator = null;
             this.terms.forEach(t => {
-                if (t instanceof RegoRef) {
-                    if (t.isOperator()) {
-                        operator = t.asOperator();
-                        return;
-                    } else {
-                        operands.push(t.value);
-                    }
+                if (t.isOperator()) {
+                    operator = t.asOperator();
                 } else {
-                    operands.push(t.value);
+                    operands.push(t.getValue());
                 }
             });
             if (!operator) {
                 throw new Error(
-                    `Invalid 3 terms rego expression, can't locate operator: ${
-                        this.terms
-                    }`
+                    `Invalid 3 terms rego expression, can't locate operator: ${this.termsAsString()}`
                 );
             }
             if (operands.length !== 2) {
                 throw new Error(
-                    `Invalid 3 terms rego expression, the number of operands should be 2: ${
-                        this.terms
-                    }`
+                    `Invalid 3 terms rego expression, the number of operands should be 2: ${this.termsAsString()}`
                 );
             }
-            if (operands.findIndex(op => op instanceof RegoRef) !== -1) {
+            if (operands.findIndex(op => _.isUndefined(op)) !== -1) {
                 // --- this expression involve unknown no need to evalute
                 return this;
             } else {
@@ -247,17 +374,11 @@ class RegoExp {
                         break;
                     default:
                         throw new Error(
-                            `Invalid 3 terms rego expression, Unknown operator "${operator}": ${
-                                this.terms
-                            }`
+                            `Invalid 3 terms rego expression, Unknown operator "${operator}": ${this.termsAsString()}`
                         );
                 }
                 this.isCompleteEvaluated = true;
                 this.value = value;
-                if (this.isNegated) {
-                    this.value = this.value === false ? true : false;
-                    this.isNegated = false;
-                }
                 return this;
             }
         }
@@ -267,11 +388,14 @@ class RegoExp {
         return this;
     }
 
-    static parseFromData(expData: any): RegoExp {
+    static parseFromData(
+        expData: any,
+        parser: OpaCompileResponseParser
+    ): RegoExp {
         const isNegated = expData.negated === true;
         if (_.isEmpty(expData.terms)) {
             if (isNegated) throw new Error("Invalid negated empty term!");
-            return new RegoExp([], isNegated);
+            return new RegoExp([], isNegated, false, null, parser);
         }
 
         let termsData: any[] = [];
@@ -281,21 +405,11 @@ class RegoExp {
             termsData.push(expData.terms);
         }
 
-        const terms: RegoTerm[] = termsData.map((termData: any) => {
-            if (termData.type === "ref") {
-                return {
-                    type: termData.type,
-                    value: RegoRef.parseFromData(termData)
-                };
-            } else {
-                return {
-                    type: termData.type,
-                    value: termData.value
-                };
-            }
-        });
+        const terms: RegoTerm[] = termsData.map((termData: any) =>
+            RegoTerm.parseFromData(termData, parser)
+        );
 
-        const exp = new RegoExp(terms, isNegated);
+        const exp = new RegoExp(terms, isNegated, false, null, parser);
         exp.evaluate();
         return exp;
     }
@@ -422,7 +536,7 @@ export default class OpaCompileResponseParser {
 
             const rules: any[] = p.rules;
             rules.forEach(r => {
-                const regoRule = RegoRule.parseFromData(r, packageName);
+                const regoRule = RegoRule.parseFromData(r, packageName, this);
                 this.completeRules.push(regoRule);
                 // --- only save matched rules
                 if (!regoRule.isCompleteEvaluated) {
@@ -436,9 +550,6 @@ export default class OpaCompileResponseParser {
         });
         this.calculateCompleteRuleResult();
         this.reduceDependencies();
-        // --- first call doesn't solve the dependencies
-        // --- i.e. a reply on b but b is true thus a should be true
-        this.calculateCompleteRuleResult();
         return this.rules;
     }
 
@@ -490,29 +601,13 @@ export default class OpaCompileResponseParser {
         if (!rules.length) return;
         for (let i = 0; i < rules.length; i++) {
             const rule = rules[i];
-            rule.expressions = rule.expressions.map(e => {
-                e.terms = e.terms.map(t => {
-                    if (t instanceof RegoRef) {
-                        const result: CompleteRuleResult = this
-                            .completeRuleResults[t.fullRefString()];
-                        if (!_.isUndefined(result)) {
-                            return {
-                                type: typeof result.value,
-                                value: result.value
-                            };
-                        }
-                    }
-                    return t;
-                });
-                return e.evaluate();
-            });
+            rule.expressions = rule.expressions.map(e => e.evaluate());
             rule.evaluate();
-            if (rule.isCompleteEvaluated) {
-                rules[i].isMatched = rule.isMatched;
-                rules[i].isCompleteEvaluated = rule.isCompleteEvaluated;
-                rules[i].value = rule.value;
-            }
         }
+        // --- unmatched non-default rule can be stripped out
+        this.rules = this.rules.filter(
+            r => !(r.isCompleteEvaluated && !r.isMatched && !r.isDefault)
+        );
     }
 
     evaluateRule(fullName: string): CompleteRuleResult {
