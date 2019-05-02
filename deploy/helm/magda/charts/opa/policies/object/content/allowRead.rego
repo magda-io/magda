@@ -30,7 +30,7 @@ getContentIdFromOperationUri(operationUri) = contentId {
 
 ### Define content items always allowed to access
 allowRead {
-    isValidAllowReadUri
+    isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
     not glob.match(contentId, ["/"], "header/navigation/drafts")
     not glob.match(contentId, ["/"], "header/navigation/datasets")
@@ -42,11 +42,11 @@ allowRead {
 ## example: header/** or header/*/drafts or header/navigation/drafts
 ## Please note: header/* won't match header/navigation/drafts
 allowRead {
-    isValidAllowReadUri
+    isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
     trace(sprintf("Hello There! %v", [contentId]))
     glob.match(contentId, ["/"], "header/navigation/drafts")
-    hasAnyDraftReadPermission
+    hasAnyDraftReadPermission == true
     input.object.content.id = "header/navigation/drafts"
 }
 
@@ -57,9 +57,9 @@ allowRead {
 ## example: header/** or header/*/datasets or header/navigation/datasets
 ## Please note: header/* won't match header/navigation/datasets
 allowRead {
-    isValidAllowReadUri
+    isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
     glob.match(contentId, ["/"], "header/navigation/datasets")
-    hasAnyPublishedReadPermission
+    hasAnyPublishedReadPermission == true
     input.object.content.id = "header/navigation/datasets"
 }
