@@ -22,7 +22,7 @@
 const bodyParser = require("body-parser");
 const djv = require("djv");
 const env = djv();
-const schemas = require("./schemas");
+const schemas = require("@magda/content-schemas");
 const wildcard = require("wildcard");
 
 /**

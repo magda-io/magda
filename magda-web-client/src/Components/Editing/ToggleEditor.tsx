@@ -70,14 +70,14 @@ export class ToggleEditor extends React.Component<ToggleEditorProps> {
                                     className="edit-button"
                                     onClick={this.save.bind(this)}
                                 >
-                                    &#128428;
+                                    Save
                                 </button>
                             )}
                         <button
                             className="edit-button"
                             onClick={this.cancel.bind(this)}
                         >
-                            &#215;
+                            Cancel
                         </button>
                     </React.Fragment>
                 ) : (
