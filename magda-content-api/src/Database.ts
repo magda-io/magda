@@ -1,6 +1,9 @@
 import createPool from "./createPool";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
+import OpaCompileResponseParser from "@magda/typescript-common/dist/OpaCompileResponseParser";
+import SimpleOpaSQLTranslator from "@magda/typescript-common/dist/SimpleOpaSQLTranslator";
+import * as request from "request-promise-native";
 import * as pg from "pg";
 import * as _ from "lodash";
 import { Content } from "./model";
@@ -12,6 +15,7 @@ export interface DatabaseOptions {
     dbHost: string;
     dbPort: number;
     dbName: string;
+    opaUrl: string;
 }
 export interface Database {
     getContentById(id: string): Promise<Maybe<Content>>;
@@ -34,14 +38,50 @@ export type Query = {
 
 export default class PostgresDatabase implements Database {
     private pool: pg.Pool;
+    private opaUrl: string;
 
     constructor(options: DatabaseOptions) {
         this.pool = createPool(options);
+        this.opaUrl = options.opaUrl;
     }
 
-    getContentById(id: string): Promise<Maybe<Content>> {
-        return this.pool
-            .query('SELECT * FROM content WHERE "id" = $1', [id])
+    async getSqlConditionsFromOpaByContentId(
+        id: string,
+        sqlValues: any[]
+    ): Promise<string> {
+        const response = await request.post(`${this.opaUrl}compile`, {
+            json: {
+                query: "data.object.content.allowRead == true",
+                input: {
+                    operationUri: id
+                },
+                unknowns: ["input.object.content"]
+            }
+        });
+
+        const parser = new OpaCompileResponseParser();
+        parser.parse(response);
+
+        const result = parser.evaluateRule(
+            "data.partial.object.content.allowRead"
+        );
+
+        const translator = new SimpleOpaSQLTranslator(["input.object.content"]);
+        return translator.parse(result, sqlValues);
+    }
+
+    async getContentById(id: string): Promise<Maybe<Content>> {
+        const sqlParameters: any[] = [id];
+        const sqlConditions = await this.getSqlConditionsFromOpaByContentId(
+            id,
+            sqlParameters
+        );
+        console.log(sqlConditions);
+        return await this.pool
+            .query(
+                `SELECT * FROM content WHERE "id" = $1 AND (${sqlConditions})`,
+                sqlParameters
+            )
             .then(res => arrayToMaybe(res.rows));
     }
 

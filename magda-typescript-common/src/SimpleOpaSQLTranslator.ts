@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { CompleteRuleResult } from "./OpaCompileResponseParser";
+import { CompleteRuleResult, unknown2Ref } from "./OpaCompileResponseParser";
 
 /**
  * This is a generic, simple OPA result to SQL translator
@@ -8,16 +8,12 @@ import { CompleteRuleResult } from "./OpaCompileResponseParser";
  * rather than write a generic one for all solution here.
  */
 class SimpleOpaSQLTranslator {
-    private unknowns: string[] = [];
+    private refPrefixs: string[] = [];
 
     constructor(unknowns: string[] = []) {
-        this.unknowns = unknowns;
-    }
-
-    getSqlParameterName(sqlParametersArray: any[], value: any): string {
-        sqlParametersArray.push(value);
-        const idx = sqlParametersArray.length;
-        return `$${idx}`;
+        this.refPrefixs = unknowns.map(s => {
+            return unknown2Ref(s) + ".";
+        });
     }
 
     parse(result: CompleteRuleResult, sqlParametersArray: any[] = []) {
@@ -36,12 +32,14 @@ class SimpleOpaSQLTranslator {
                         const term = e.terms[0];
                         if (term.isRef()) {
                             if (!e.isNegated) {
-                                return term.fullRefString(this.unknowns);
+                                return term.fullRefString(this.refPrefixs);
                             } else {
-                                return "!" + term.fullRefString(this.unknowns);
+                                return (
+                                    "!" + term.fullRefString(this.refPrefixs)
+                                );
                             }
                         } else {
-                            return this.getSqlParameterName(
+                            return getSqlParameterName(
                                 sqlParametersArray,
                                 term.getValue()
                             );
@@ -53,9 +51,9 @@ class SimpleOpaSQLTranslator {
                         ] = e.toOperatorOperandsArray();
                         const identifiers = operands.map(op => {
                             if (op.isRef())
-                                return `"${op.fullRefString(this.unknowns)}"`;
+                                return `"${op.fullRefString(this.refPrefixs)}"`;
                             else
-                                return this.getSqlParameterName(
+                                return getSqlParameterName(
                                     sqlParametersArray,
                                     op.getValue()
                                 );
@@ -79,6 +77,15 @@ class SimpleOpaSQLTranslator {
 
         return ruleConditions.join(" OR ");
     }
+}
+
+export function getSqlParameterName(
+    sqlParametersArray: any[],
+    value: any
+): string {
+    sqlParametersArray.push(value);
+    const idx = sqlParametersArray.length;
+    return `$${idx}`;
 }
 
 export default SimpleOpaSQLTranslator;

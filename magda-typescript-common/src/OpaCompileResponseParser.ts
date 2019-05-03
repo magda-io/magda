@@ -594,8 +594,12 @@ export default class OpaCompileResponseParser {
 
     constructor() {}
 
-    parse(json: string): RegoRule[] {
-        this.data = JSON.parse(json);
+    parse(json: any): RegoRule[] {
+        if (_.isString(json)) {
+            this.data = JSON.parse(json);
+        } else {
+            this.data = json;
+        }
         if (!this.data.result) {
             // --- mean no rule matched
             return [];
@@ -752,4 +756,9 @@ export default class OpaCompileResponseParser {
         this.warns.push(msg);
         this.hasWarns = true;
     }
+}
+
+export function unknown2Ref(unknown: string) {
+    const prefix = unknown.replace(/^input\./, "");
+    return `data.partial.${prefix}`;
 }

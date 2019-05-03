@@ -35,6 +35,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
+        .option("opaUrl", {
+            describe: "The base URL of the opa API",
+            type: "string",
+            default: "http://localhost:6104/v0/opa/"
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -53,7 +58,8 @@ app.use(
         database: new Database({
             dbHost: argv.dbHost,
             dbPort: argv.dbPort,
-            dbName: argv.dbName
+            dbName: argv.dbName,
+            opaUrl: argv.opaUrl
         })
     })
 );
