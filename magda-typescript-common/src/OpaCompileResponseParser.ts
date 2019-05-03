@@ -1,8 +1,8 @@
 import * as _ from "lodash";
 
-type RegoValue = string | boolean | number | Array<any> | Object;
+export type RegoValue = string | boolean | number | Array<any> | Object;
 
-interface RegoRuleOptions {
+export interface RegoRuleOptions {
     name: string;
     fullName: string;
     isDefault: boolean;
@@ -12,7 +12,7 @@ interface RegoRuleOptions {
     parser: OpaCompileResponseParser;
 }
 
-class RegoRule {
+export class RegoRule {
     public name: string;
     public fullName: string;
     public isDefault: boolean;
@@ -149,12 +149,12 @@ class RegoRule {
     }
 }
 
-interface RegoRefPart {
+export interface RegoRefPart {
     type: string;
     value: string;
 }
 
-const RegoOperators: {
+export const RegoOperators: {
     [k: string]: string;
 } = {
     eq: "=", // --- eq & equal are different in rego but no difference for value evluation.
@@ -166,14 +166,9 @@ const RegoOperators: {
     gte: ">="
 };
 
-type RegoTermValue = RegoRef | RegoValue;
+export type RegoTermValue = RegoRef | RegoValue;
 
-interface RegoTerm {
-    type: string;
-    value: RegoTermValue;
-}
-
-class RegoTerm {
+export class RegoTerm {
     public type: string;
     public value: RegoTermValue;
     private parser: OpaCompileResponseParser;
@@ -261,7 +256,7 @@ class RegoTerm {
     }
 }
 
-class RegoExp {
+export class RegoExp {
     public terms: RegoTerm[];
     public isNegated: boolean;
     public isCompleteEvaluated: boolean = false;
@@ -473,7 +468,7 @@ class RegoExp {
     }
 }
 
-class RegoRef {
+export class RegoRef {
     public parts: RegoRefPart[];
 
     constructor(parts: RegoRefPart[]) {
@@ -552,7 +547,7 @@ class RegoRef {
     }
 }
 
-interface CompleteRuleResult {
+export interface CompleteRuleResult {
     fullName: string;
     name: string;
     value: RegoValue;
@@ -560,7 +555,7 @@ interface CompleteRuleResult {
     residualRules?: RegoRule[];
 }
 
-function value2String(value: RegoValue) {
+export function value2String(value: RegoValue) {
     if (_.isBoolean(value) || _.isNumber(value)) return value.toString();
     else return JSON.stringify(value);
 }
