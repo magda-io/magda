@@ -49,11 +49,13 @@ export default class PostgresDatabase implements Database {
         id: string,
         sqlValues: any[]
     ): Promise<string> {
+        // --- operationUri should be `object/content/header/**/read` etc.
+        const operationUri = `object/${id}/read`;
         const response = await request.post(`${this.opaUrl}compile`, {
             json: {
                 query: "data.object.content.allowRead == true",
                 input: {
-                    operationUri: id
+                    operationUri
                 },
                 unknowns: ["input.object.content"]
             }
@@ -76,7 +78,6 @@ export default class PostgresDatabase implements Database {
             id,
             sqlParameters
         );
-        console.log(sqlConditions);
         return await this.pool
             .query(
                 `SELECT * FROM content WHERE "id" = $1 AND (${sqlConditions})`,

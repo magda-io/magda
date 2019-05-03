@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { CompleteRuleResult, unknown2Ref } from "./OpaCompileResponseParser";
+import { CompleteRuleResult } from "./OpaCompileResponseParser";
 
 /**
  * This is a generic, simple OPA result to SQL translator
@@ -11,9 +11,7 @@ class SimpleOpaSQLTranslator {
     private refPrefixs: string[] = [];
 
     constructor(unknowns: string[] = []) {
-        this.refPrefixs = unknowns.map(s => {
-            return unknown2Ref(s) + ".";
-        });
+        this.refPrefixs = unknowns.map(s => s + ".");
     }
 
     parse(result: CompleteRuleResult, sqlParametersArray: any[] = []) {
