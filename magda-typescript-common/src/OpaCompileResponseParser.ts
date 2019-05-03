@@ -363,11 +363,11 @@ export class RegoExp {
                 operator = t.asOperator();
             } else {
                 const value = t.getValue();
-                if (_.isUndefined(value))
+                if (!_.isUndefined(value)) {
                     operands.push(
                         new RegoTerm(typeof value, value, this.parser)
                     );
-                else operands.push(t);
+                } else operands.push(t);
             }
         });
         if (!operator) {
