@@ -9,7 +9,12 @@ export const base64ImageEditor: Editor = {
             value = value.data;
             onChange(value);
         };
-        return <img src={value} onClick={change} />;
+        return (
+            <React.Fragment>
+                <img src={value} onClick={change} />
+                <button onClick={change}>Change</button>
+            </React.Fragment>
+        );
     },
     view: (value: any) => {
         return <img src={value} />;
