@@ -1,7 +1,7 @@
 import { config } from "config";
 import fetch from "isomorphic-fetch";
 
-export default function request(
+export default async function request(
     method: string,
     url: string,
     body: any = undefined,
@@ -24,11 +24,20 @@ export default function request(
         }
     }
 
-    console.log(method, url, fetchOptions);
-    return fetch(url, fetchOptions).then(async response => {
-        if (response.status >= 200 && response.status < 300) {
-            return response.json();
+    const response = await fetch(url, fetchOptions);
+
+    if (response.status >= 200 && response.status < 300) {
+        // wrapping this in try/catch as the request succeeded
+        // this is just haggling over response content
+        try {
+            return await response.json();
+        } catch (e) {
+            try {
+                return await response.text();
+            } catch (e) {
+                return;
+            }
         }
-        throw new Error(await response.text());
-    });
+    }
+    throw new Error(await response.text());
 }
