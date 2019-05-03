@@ -197,17 +197,17 @@ export class RegoTerm {
         return false;
     }
 
-    fullRefString(): string {
+    fullRefString(removalPrefixs: string[] = []): string {
         if (this.value instanceof RegoRef) {
-            return this.value.fullRefString();
+            return this.value.fullRefString(removalPrefixs);
         } else {
             throw new Error("Tried to call `fullRefString` on non Ref term.");
         }
     }
 
-    refString(): string {
+    refString(removalPrefixs: string[] = []): string {
         if (this.value instanceof RegoRef) {
-            return this.value.refString();
+            return this.value.refString(removalPrefixs);
         } else {
             throw new Error("Tried to call `refString` on non Ref term.");
         }
@@ -307,16 +307,16 @@ export class RegoExp {
         } else if (this.terms.length === 3) {
             const [operator, operands] = this.toOperatorOperandsArray();
             const parts = [];
-            if (operands[0] instanceof RegoRef) {
-                parts.push((operands[0] as RegoRef).fullRefString());
+            if (operands[0].isRef()) {
+                parts.push(operands[0].fullRefString());
             } else {
-                parts.push(value2String(operands[0]));
+                parts.push(value2String(operands[0].getValue()));
             }
             parts.push(operator);
-            if (operands[1] instanceof RegoRef) {
-                parts.push((operands[1] as RegoRef).fullRefString());
+            if (operands[1].isRef()) {
+                parts.push(operands[1].fullRefString());
             } else {
-                parts.push(value2String(operands[1]));
+                parts.push(value2String(operands[1].getValue()));
             }
             const expStr = parts.join(" ");
             if (this.isNegated) return `NOT (${expStr})`;
@@ -350,21 +350,24 @@ export class RegoExp {
         }
     }
 
-    toOperatorOperandsArray(): [string, RegoTermValue[]] {
+    toOperatorOperandsArray(): [string, RegoTerm[]] {
         if (this.terms.length !== 3) {
             throw new Error(
                 `Can't get Operator & Operands from non 3 terms expression: ${this.termsAsString()}`
             );
         }
-        const operands: RegoTermValue[] = [];
+        const operands: RegoTerm[] = [];
         let operator = null;
         this.terms.forEach(t => {
             if (t.isOperator()) {
                 operator = t.asOperator();
             } else {
                 const value = t.getValue();
-                if (_.isUndefined(value)) operands.push(t.value);
-                else operands.push(value);
+                if (_.isUndefined(value))
+                    operands.push(
+                        new RegoTerm(typeof value, value, this.parser)
+                    );
+                else operands.push(t);
             }
         });
         if (!operator) {
@@ -401,29 +404,30 @@ export class RegoExp {
             // --- 3 terms expression e.g. true == true or x >= 3
             // --- we only evalute some redundant expression e.g. true == true or false != true
             const [operator, operands] = this.toOperatorOperandsArray();
-            if (operands.findIndex(op => op instanceof RegoRef) !== -1) {
+            if (operands.findIndex(op => op.isRef()) !== -1) {
                 // --- this expression involve unknown no need to evalute
                 return this;
             } else {
+                const operandsValues = operands.map(op => op.getValue());
                 let value = null;
                 switch (operator) {
                     case "=":
-                        value = operands[0] === operands[1];
+                        value = operandsValues[0] === operandsValues[1];
                         break;
                     case ">":
-                        value = operands[0] > operands[1];
+                        value = operandsValues[0] > operandsValues[1];
                         break;
                     case "<":
-                        value = operands[0] < operands[1];
+                        value = operandsValues[0] < operandsValues[1];
                         break;
                     case ">=":
-                        value = operands[0] >= operands[1];
+                        value = operandsValues[0] >= operandsValues[1];
                         break;
                     case "<=":
-                        value = operands[0] <= operands[1];
+                        value = operandsValues[0] <= operandsValues[1];
                         break;
                     case "!=":
-                        value = operands[0] != operands[1];
+                        value = operandsValues[0] != operandsValues[1];
                         break;
                     default:
                         throw new Error(
@@ -491,9 +495,24 @@ export class RegoRef {
         return new RegoRef(parts).fullRefString();
     }
 
-    fullRefString(): string {
+    removeAllPrefixs(str: string, removalPrefixs: string[] = []) {
+        if (!removalPrefixs.length) return str;
+        let result = str;
+        removalPrefixs
+            // --- starts from longest prefix
+            .sort((a: string, b: string) => b.length - a.length)
+            .forEach(prefix => {
+                if (!prefix) return;
+                const idx = result.indexOf(prefix);
+                if (idx === -1) return;
+                result = result.substring(prefix.length);
+            });
+        return result;
+    }
+
+    fullRefString(removalPrefixs: string[] = []): string {
         let isFirstPart = true;
-        return this.parts
+        const str = this.parts
             .map(part => {
                 let partStr = "";
                 if (isFirstPart) {
@@ -513,10 +532,11 @@ export class RegoRef {
             })
             .join(".")
             .replace(".[", "[");
+        return this.removeAllPrefixs(str, removalPrefixs);
     }
 
-    refString(): string {
-        return this.fullRefString().replace("\\[_\\]$", "");
+    refString(removalPrefixs: string[] = []): string {
+        return this.fullRefString(removalPrefixs).replace("\\[_\\]$", "");
     }
 
     isOperator(): boolean {
