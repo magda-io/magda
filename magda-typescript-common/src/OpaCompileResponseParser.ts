@@ -97,6 +97,19 @@ class RegoRule {
         return this;
     }
 
+    toHumanReadableString(): string {
+        if (this.isCompleteEvaluated) {
+            if (this.isMatched) {
+                return value2String(this.value);
+            } else {
+                return "";
+            }
+        } else {
+            const parts = this.expressions.map(e => e.toHumanReadableString());
+            return parts.join(" AND \n");
+        }
+    }
+
     static parseFromData(
         r: any,
         packageName: string,
@@ -284,6 +297,39 @@ class RegoExp {
         return this.terms.map(t => t.asString());
     }
 
+    toHumanReadableString(): string {
+        if (this.terms.length === 1) {
+            const value = this.terms[0].getValue();
+            const parts = [];
+            if (this.isNegated) parts.push("NOT");
+
+            if (!_.isUndefined(value)) {
+                parts.push(value2String(value));
+            } else {
+                parts.push(this.terms[0].fullRefString());
+            }
+            return parts.join(" ");
+        } else if (this.terms.length === 3) {
+            const [operator, operands] = this.toOperatorOperandsArray();
+            const parts = [];
+            if (operands[0] instanceof RegoRef) {
+                parts.push((operands[0] as RegoRef).fullRefString());
+            } else {
+                parts.push(value2String(operands[0]));
+            }
+            parts.push(operator);
+            if (operands[1] instanceof RegoRef) {
+                parts.push((operands[1] as RegoRef).fullRefString());
+            } else {
+                parts.push(value2String(operands[1]));
+            }
+            const expStr = parts.join(" ");
+            if (this.isNegated) return `NOT (${expStr})`;
+            return expStr;
+        }
+        throw new Error(`Invalid rego expression: ${this.termsAsString()}`);
+    }
+
     getValue() {
         this.evaluate();
         if (!this.isCompleteEvaluated) return undefined;
@@ -309,6 +355,36 @@ class RegoExp {
         }
     }
 
+    toOperatorOperandsArray(): [string, RegoTermValue[]] {
+        if (this.terms.length !== 3) {
+            throw new Error(
+                `Can't get Operator & Operands from non 3 terms expression: ${this.termsAsString()}`
+            );
+        }
+        const operands: RegoTermValue[] = [];
+        let operator = null;
+        this.terms.forEach(t => {
+            if (t.isOperator()) {
+                operator = t.asOperator();
+            } else {
+                const value = t.getValue();
+                if (_.isUndefined(value)) operands.push(t.value);
+                else operands.push(value);
+            }
+        });
+        if (!operator) {
+            throw new Error(
+                `Invalid 3 terms rego expression, can't locate operator: ${this.termsAsString()}`
+            );
+        }
+        if (operands.length !== 2) {
+            throw new Error(
+                `Invalid 3 terms rego expression, the number of operands should be 2: ${this.termsAsString()}`
+            );
+        }
+        return [operator, operands];
+    }
+
     evaluate() {
         if (this.terms.length === 0) {
             // --- exp should be considered as matched (true)
@@ -329,26 +405,8 @@ class RegoExp {
         } else if (this.terms.length === 3) {
             // --- 3 terms expression e.g. true == true or x >= 3
             // --- we only evalute some redundant expression e.g. true == true or false != true
-            const operands: RegoTermValue[] = [];
-            let operator = null;
-            this.terms.forEach(t => {
-                if (t.isOperator()) {
-                    operator = t.asOperator();
-                } else {
-                    operands.push(t.getValue());
-                }
-            });
-            if (!operator) {
-                throw new Error(
-                    `Invalid 3 terms rego expression, can't locate operator: ${this.termsAsString()}`
-                );
-            }
-            if (operands.length !== 2) {
-                throw new Error(
-                    `Invalid 3 terms rego expression, the number of operands should be 2: ${this.termsAsString()}`
-                );
-            }
-            if (operands.findIndex(op => _.isUndefined(op)) !== -1) {
+            const [operator, operands] = this.toOperatorOperandsArray();
+            if (operands.findIndex(op => op instanceof RegoRef) !== -1) {
                 // --- this expression involve unknown no need to evalute
                 return this;
             } else {
@@ -498,7 +556,13 @@ interface CompleteRuleResult {
     fullName: string;
     name: string;
     value: RegoValue;
+    isCompleteEvaluated: boolean;
     residualRules?: RegoRule[];
+}
+
+function value2String(value: RegoValue) {
+    if (_.isBoolean(value) || _.isNumber(value)) return value.toString();
+    else return JSON.stringify(value);
 }
 
 export default class OpaCompileResponseParser {
@@ -611,26 +675,61 @@ export default class OpaCompileResponseParser {
     }
 
     evaluateRule(fullName: string): CompleteRuleResult {
-        const rules = this.rules.filter(r => r.fullName === fullName);
+        let rules = this.rules.filter(r => r.fullName === fullName);
         if (!rules.length) {
-            throw new Error(
-                `Can't locate rule ${fullName} for evaluation from parse result!`
-            );
+            // --- no any rule matched; often (depends on your policy) it means a overall non-matched (false)
+            return null;
+        }
+
+        const defaultRule = rules.find(r => r.isDefault);
+        const defaultValue = _.isUndefined(defaultRule)
+            ? undefined
+            : defaultRule.value;
+
+        // --- filter out default rules & unmatched
+        rules = rules.filter(
+            r => !r.isDefault && !(r.isCompleteEvaluated && !r.isMatched)
+        );
+
+        if (!rules.length) {
+            return {
+                fullName,
+                name: defaultRule ? defaultRule.name : "",
+                value: defaultValue,
+                isCompleteEvaluated: true,
+                residualRules: []
+            };
         }
 
         return {
             fullName,
             name: rules[0].name,
-            value: rules[0].value,
-            residualRules: []
+            value: undefined,
+            isCompleteEvaluated: false,
+            residualRules: rules
         };
+    }
+
+    evaluateRuleAsHumanReadableString(fullName: string): string {
+        const result = this.evaluateRule(fullName);
+        if (result === null) return "null";
+        if (result.isCompleteEvaluated) {
+            return value2String(result.value);
+        }
+        let parts = result.residualRules.map(r => r.toHumanReadableString());
+        if (parts.length > 1) {
+            parts = parts.map(p => `( ${p} )`);
+        }
+        return parts.join("\nOR\n");
     }
 
     createCompleteRuleResult(rule: RegoRule): CompleteRuleResult {
         return {
             fullName: rule.fullName,
             name: rule.name,
-            value: rule.value
+            value: rule.value,
+            isCompleteEvaluated: true,
+            residualRules: []
         };
     }
 
