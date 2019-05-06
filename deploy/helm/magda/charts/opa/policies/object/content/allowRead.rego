@@ -3,6 +3,25 @@ package object.content
 import data.object.dataset.hasAnyDraftReadPermission
 import data.object.dataset.hasAnyPublishedReadPermission
 
+getContentIdFromOperationUri(operationUri) = contentId {
+    parts := split(operationUri, "/")
+    contentId := concat("/", array.slice(parts, 2, count(parts)-1))
+}
+
+controlledItems[item] {
+    item := {
+        "uri": "header/navigation/drafts",
+        "allow": hasAnyDraftReadPermission
+    }
+}
+
+controlledItems[item] {
+    item := {
+        "uri": "header/navigation/datasets",
+        "allow": hasAnyPublishedReadPermission
+    }
+}
+
 default allowRead = false
 
 default isValidAllowReadUri = false
@@ -21,90 +40,20 @@ isValidAllowReadUri {
     count(parts) >= 4
 }
 
-getContentIdFromOperationUri(operationUri) = contentId {
-    parts := split(operationUri, "/")
-    contentId := concat("/", array.slice(parts, 2, count(parts)-1))
-}
-
 ## unknowns input.content
 
 ### Define content items always allowed to access
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    not glob.match(contentId, ["/"], "header/navigation/drafts")
-    not glob.match(contentId, ["/"], "header/navigation/datasets")
-}
-
-### Define whether a user has access to header/navigation/drafts
-allowRead {
-    isValidAllowReadUri == true
-    contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's not a pattern
-    contentId == "header/navigation/drafts"
-    hasAnyDraftReadPermission == true
-    input.object.content.id = "header/navigation/drafts"
-}
-
-### Define whether a user has access to header/navigation/datasets
-allowRead {
-    isValidAllowReadUri == true
-    contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's not a pattern
-    contentId == "header/navigation/datasets"
-    hasAnyPublishedReadPermission == true
-    input.object.content.id = "header/navigation/datasets"
-}
-
-### Define combined logic
-## Use generic glob parttern to match contentId
-## example: header/** or header/*/datasets or header/navigation/datasets
-## Please note: header/* won't match header/navigation/datasets
-
-allowRead {
-    isValidAllowReadUri == true
-    contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
-    contains(contentId, "*") == true
-    glob.match(contentId, ["/"], "header/navigation/drafts")
-    glob.match(contentId, ["/"], "header/navigation/datasets")
-    hasAnyDraftReadPermission != true
-    hasAnyPublishedReadPermission != true
-    input.object.content.id != "header/navigation/drafts"
-    input.object.content.id != "header/navigation/datasets"
+    controlledItems[itemHasNoAccess].allow = false
+    glob.match(contentId, ["/"], itemHasNoAccess.uri) == true
+    input.object.content.id != itemHasNoAccess.uri
 }
 
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
-    contains(contentId, "*") == true
-    glob.match(contentId, ["/"], "header/navigation/drafts")
-    glob.match(contentId, ["/"], "header/navigation/datasets")
-    hasAnyDraftReadPermission == true
-    hasAnyPublishedReadPermission != true
-    input.object.content.id != "header/navigation/datasets"
-}
-
-allowRead {
-    isValidAllowReadUri == true
-    contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
-    contains(contentId, "*") == true
-    glob.match(contentId, ["/"], "header/navigation/drafts")
-    glob.match(contentId, ["/"], "header/navigation/datasets")
-    hasAnyDraftReadPermission != true
-    hasAnyPublishedReadPermission == true
-    input.object.content.id != "header/navigation/drafts"
-}
-
-allowRead {
-    isValidAllowReadUri == true
-    contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
-    contains(contentId, "*") == true
-    glob.match(contentId, ["/"], "header/navigation/drafts")
-    glob.match(contentId, ["/"], "header/navigation/datasets")
-    hasAnyDraftReadPermission == true
-    hasAnyPublishedReadPermission == true
+    uris := [uri | uri := controlledItems[_].uri; glob.match(contentId, ["/"], uri) == true ]
+    count(uris) == 0
 }
