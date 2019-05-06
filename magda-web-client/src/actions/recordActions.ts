@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
+import request from "helpers/request";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -262,36 +263,6 @@ export function createRecord(
             );
         }
     };
-}
-
-// import { config } from "../../../config";
-// import fetch from "isomorphic-fetch";
-
-function request(
-    method: string,
-    url: string,
-    body: any = undefined,
-    contentType: string = "application/json"
-) {
-    const fetchOptions = Object.assign({}, config.fetchOptions, {
-        method
-    });
-    if (body !== undefined) {
-        if (contentType === "application/json") {
-            fetchOptions.body = JSON.stringify(body);
-            fetchOptions.headers = {
-                "Content-type": "application/json"
-            };
-        }
-    }
-
-    console.log(method, url, fetchOptions);
-    return fetch(url, fetchOptions).then(async response => {
-        if (response.status === 200) {
-            return response.json();
-        }
-        throw new Error(await response.text());
-    });
 }
 
 async function ensureAspectExists(id: string, jsonSchema: any) {

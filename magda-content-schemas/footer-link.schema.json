@@ -1,0 +1,18 @@
+{
+    "type": "object",
+    "properties": {
+        "order": {
+            "type": "number",
+            "default": 1
+        },
+        "label": {
+            "type": "string",
+            "minLength": 1
+        },
+        "href": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "required": ["order", "label", "href"]
+}

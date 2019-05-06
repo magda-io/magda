@@ -2,6 +2,7 @@ import { actionTypes } from "../constants/ActionTypes";
 import fetch from "isomorphic-fetch";
 import GenericError from "../helpers/GenericError";
 import { config } from "../config";
+import request from "helpers/request";
 
 const contentBaseUrl = `${config.contentApiURL}page/`;
 
@@ -61,6 +62,22 @@ export function requestStaticPageError(pageName, error) {
         payload: {
             pageName,
             error
+        }
+    };
+}
+
+export function updateStaticPage(pageName, content) {
+    return async (dispatch, getState) => {
+        try {
+            await request(
+                "PUT",
+                contentBaseUrl + pageName,
+                content,
+                "application/json"
+            );
+            dispatch(receiveStaticPage(pageName, content));
+        } catch (e) {
+            dispatch(requestStaticPageError(pageName, e));
         }
     };
 }

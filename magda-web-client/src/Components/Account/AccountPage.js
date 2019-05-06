@@ -59,6 +59,11 @@ class Account extends React.Component {
                                     ? "Admin"
                                     : "Data User"}
                             </p>
+                            {this.props.user.isAdmin && (
+                                <a href="/admin" class="au-btn">
+                                    Administrate
+                                </a>
+                            )}
                         </div>
                     )}
                 </div>
