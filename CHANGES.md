@@ -32,6 +32,7 @@ UI:
 -   Replaced star emoji in static page markdown with quality star icon
 -   Refactored web client to group similar things togeather
 -   Implemented basic admin pages in react ui
+-   Started implementing new add dataset flow design changes
 
 ## 0.0.55
 

@@ -22,10 +22,25 @@ export const extractors: Extractor[] = [
     extractKeywords
 ];
 
-export async function runExtractors(input: ExtractorInput, output: any) {
+function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+
+export async function runExtractors(input: ExtractorInput, update: any) {
     for (const extractor of extractors) {
+        const index = extractors.indexOf(extractor);
         try {
+            console.log("Processing", index + 1, "of", extractors.length);
+            const output: any = {};
+            output._progress =
+                ((extractors.indexOf(extractor) + 0.1) / extractors.length) *
+                100;
+            update(output);
             await extractor(input, output);
+            output._progress =
+                ((extractors.indexOf(extractor) + 1) / extractors.length) * 100;
+            update(output);
+            await delay(1000);
         } catch (e) {
             // even if one of the modules fail, we keep going
             console.error(e);

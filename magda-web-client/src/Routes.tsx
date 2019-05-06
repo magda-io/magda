@@ -62,9 +62,27 @@ const HighlightsAdminPage = makeAsync(() =>
 const HomeAdminPage = makeAsync(() =>
     import("Components/Home/HomeAdminPage").then(module => module.default)
 );
+
 const DatasetAddPage = makeAsync(() =>
     import("Components/Dataset/DatasetAddPage").then(module => module.default)
 );
+
+const DatasetAddFilesPage = makeAsync(() =>
+    import("Components/Dataset/DatasetAddFilesPage").then(
+        module => module.default
+    )
+);
+
+const DatasetListPage = makeAsync(() =>
+    import("Components/Dataset/DatasetListPage").then(module => module.default)
+);
+
+const DatasetAddMetadataPage = makeAsync(() =>
+    import("Components/Dataset/DatasetAddMetadataPage").then(
+        module => module.default
+    )
+);
+
 const StaticPage = makeAsync(() =>
     import("Components/Static/StaticPage").then(module => module.default)
 );
@@ -206,7 +224,47 @@ const Routes = () => {
             {config.featureFlags.cataloguing && (
                 <Route
                     exact
-                    path="/dataset/new"
+                    path="/dataset/add"
+                    component={withHeader(DatasetAddPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    exact
+                    path="/dataset/add/files"
+                    component={withHeader(DatasetAddFilesPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    path="/dataset/add/files/:dataset"
+                    component={withHeader(DatasetAddFilesPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    exact
+                    path="/dataset/list"
+                    component={withHeader(DatasetListPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    exact
+                    path="/dataset/add/urls"
+                    component={withHeader(DatasetAddPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    path="/dataset/add/metadata/:dataset/:step"
+                    component={withHeader(DatasetAddMetadataPage, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    exact
+                    path="/dataset/add/bulk"
                     component={withHeader(DatasetAddPage, false)}
                 />
             )}

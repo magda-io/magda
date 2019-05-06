@@ -535,7 +535,10 @@ export const disseminationLimits = {
     "Sensitive: Personal": "Sensitive: Personal",
     "Sensitive: Legal": "Sensitive: Legal",
     "Sensitive: Cabinet": "Sensitive: Cabinet",
-    "Sensitive: Commercial": "Sensitive: Commercial"
+    "Sensitive: Commercial": "Sensitive: Commercial",
+    "Sensitive: Cultural": "Sensitive: Cultural",
+    "Sensitive: Legal Privilege": "Sensitive: Legal Privilege",
+    "Sensitive: Legislative secrecy": "Sensitive: Legislative secrecy"
 };
 
 export const classification = {
@@ -544,4 +547,16 @@ export const classification = {
     CONFIDENTIAL: "CONFIDENTIAL",
     SECRET: "SECRET",
     "TOP SECRET": "TOP SECRET"
+};
+
+export const contactPointDisplay = {
+    role: "Display contact point(s) role (recommended)",
+    name: "Display contact point(s) name",
+    organisation: "Display responsible organisation"
+};
+
+export const publishingLevel = {
+    agency: "Everyone in my organisation",
+    team: "My team only",
+    public: "Everyone (Open Data)"
 };
