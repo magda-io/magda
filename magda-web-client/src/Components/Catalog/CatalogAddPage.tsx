@@ -5,6 +5,7 @@ import { Medium } from "Components/Common/Responsive";
 
 import WebsiteIcon from "Components/Catalog/website.svg";
 import CSVIcon from "Components/Catalog/csv.svg";
+import UploadIcon from "Components/Catalog/upload.svg";
 
 import Styles from "Components/Catalog/CatalogAddPage.module.scss";
 
@@ -17,12 +18,18 @@ type ChoiceProps = {
     blurb: string;
     href: string;
     icon: string;
+    secondary?: boolean;
 };
 
 function Choice(props: ChoiceProps) {
     return (
-        <div className="col-sm-12 col-md-6">
-            <a href={props.href} className="au-btn">
+        <div className={`col-sm-12 col-md-6 ${Styles.choiceCol}`}>
+            <a
+                href={props.href}
+                className={`au-btn ${
+                    props.secondary ? "au-btn--secondary" : ""
+                } ${Styles.choiceButton}`}
+            >
                 <h2 className={Styles.buttonHeading}>{props.heading}</h2>{" "}
                 <div className={Styles.choiceIconRow}>
                     <img className={Styles.choiceIcon} src={props.icon} />
@@ -62,7 +69,7 @@ class AddCatalog extends React.Component<Props, State> {
                     </div>
                 </div>
 
-                <div className={`row ${Styles.buttonRow}`}>
+                <div className={`row`}>
                     <Choice
                         heading="Static catalogue?"
                         blurb="Create and upload a CSV of all your datasets"
@@ -72,8 +79,15 @@ class AddCatalog extends React.Component<Props, State> {
                     <Choice
                         heading="Online catalogue?"
                         blurb="Connect to an existing open data portal"
-                        href="/catalog/add/"
+                        href="/catalog/add/connector"
                         icon={WebsiteIcon}
+                    />
+                    <Choice
+                        secondary
+                        heading="Have a single dataset made up of multiple files?"
+                        blurb="Add your dataset files to pre-populate metadata using the Magda Publishing Tools"
+                        href="/dataset/add"
+                        icon={UploadIcon}
                     />
                 </div>
             </div>

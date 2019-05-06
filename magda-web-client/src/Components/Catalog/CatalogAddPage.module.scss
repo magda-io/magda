@@ -1,7 +1,3 @@
-.buttonRow {
-    margin-top: 1em;
-}
-
 .buttonHeading {
     font-size: 0.9em;
     margin: 0 0 1em 0;
@@ -17,6 +13,15 @@
 }
 
 .choiceIcon {
-    width: 100px;
-    height: 100px;
+    width: 5em;
+    padding-right: 2em;
+    height: 5em;
+}
+
+.choiceButton {
+    width: 90%;
+}
+
+.choiceCol {
+    margin-top: 1em;
 }
