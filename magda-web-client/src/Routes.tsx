@@ -23,6 +23,10 @@ const DatasetAddPage = makeAsync(() =>
     import("Components/Dataset/DatasetAddPage").then(module => module.default)
 );
 
+const CatalogRoutes = makeAsync(() =>
+    import("Components/Catalog/Routes").then(module => module.default)
+);
+
 import { config } from "./config";
 
 const Routes = () => {
@@ -88,11 +92,17 @@ const Routes = () => {
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/new"
-                    component={withHeader(DatasetAddPage, false)}
-                />
+                <React.Fragment>
+                    <Route
+                        exact
+                        path="/dataset/new"
+                        component={withHeader(DatasetAddPage, false)}
+                    />
+                    <Route
+                        path="/catalog"
+                        component={withHeader(CatalogRoutes, false)}
+                    />
+                </React.Fragment>
             )}
             <Route
                 path="/dataset/:datasetId"
