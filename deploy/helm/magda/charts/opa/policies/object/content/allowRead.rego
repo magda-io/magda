@@ -34,6 +34,7 @@ allowRead {
     contentId := getContentIdFromOperationUri(input.operationUri)
     not glob.match(contentId, ["/"], "header/navigation/drafts")
     not glob.match(contentId, ["/"], "header/navigation/datasets")
+    
 }
 
 ### Define whether a user has access to header/navigation/drafts
@@ -44,7 +45,6 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    trace(sprintf("Hello There! %v", [contentId]))
     glob.match(contentId, ["/"], "header/navigation/drafts")
     hasAnyDraftReadPermission == true
     input.object.content.id = "header/navigation/drafts"
