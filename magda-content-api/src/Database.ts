@@ -52,6 +52,7 @@ export default class PostgresDatabase implements Database {
         jwtToken: string = null
     ): Promise<string> {
         // --- incoming id could be `header/navigation/datasets.json` or `header/logo-mobile`
+        // --- or a pattern header/*
         // --- operationUri should be `object/content/header/**/read` etc.
         const operationUri = `object/content/${id.replace(
             /\.[^\.\/$]/,
@@ -115,9 +116,10 @@ export default class PostgresDatabase implements Database {
         };
     }
 
-    getContentSummary(
+    async getContentSummary(
         queries: Query[],
-        inlineContentIfType: string[]
+        inlineContentIfType: string[],
+        jwtToken: string = null
     ): Promise<any> {
         for (const query of queries) {
             if (!allowableQueryFieldLookup[query.field]) {
@@ -148,16 +150,43 @@ export default class PostgresDatabase implements Database {
             AS content`;
         }
 
-        const whereClauses = _.flatMap(queries, query =>
-            query.patterns.map((pattern: string) => {
-                params.push(PostgresDatabase.createWildcardMatch(pattern));
+        const whereClauses: string[] = [];
 
-                return `${query.field} LIKE $${getParamIndex()}`;
-            })
-        ).join(" OR ");
+        for (let i = 0; i < queries.length; i++) {
+            const query = queries[i];
+            const field = query.field;
+            const patterns = query.patterns;
+
+            for (let j = 0; j < patterns.length; j++) {
+                const pattern = patterns[j];
+                params.push(PostgresDatabase.createWildcardMatch(pattern));
+                const patternLookupSql = `${field} LIKE $${getParamIndex()}`;
+                if (field !== "id") {
+                    whereClauses.push(patternLookupSql);
+                } else {
+                    const patternConditions = [];
+                    patternConditions.push(patternLookupSql);
+
+                    const accessControlSql = await this.getSqlConditionsFromOpaByContentId(
+                        // --- we used glob pattern in opa policy
+                        // --- header/* should be header/** to match header/navigation/datasets
+                        pattern.replace(/\/\*$/, "\/\*\*"),
+                        params,
+                        jwtToken
+                    );
+                    patternConditions.push(accessControlSql);
+
+                    whereClauses.push(
+                        patternConditions.map(c => `(${c})`).join(" AND ")
+                    );
+                }
+            }
+        }
 
         const sql = `SELECT id, type, length(content) as length ${inline} FROM content ${
-            whereClauses.length > 0 ? "WHERE " + whereClauses : ""
+            whereClauses.length
+                ? `WHERE ${whereClauses.map(c => `(${c})`).join(" OR ")} `
+                : ""
         }`;
 
         return this.pool

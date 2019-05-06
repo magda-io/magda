@@ -34,7 +34,6 @@ allowRead {
     contentId := getContentIdFromOperationUri(input.operationUri)
     not glob.match(contentId, ["/"], "header/navigation/drafts")
     not glob.match(contentId, ["/"], "header/navigation/datasets")
-    
 }
 
 ### Define whether a user has access to header/navigation/drafts
@@ -50,6 +49,14 @@ allowRead {
     input.object.content.id = "header/navigation/drafts"
 }
 
+allowRead {
+    isValidAllowReadUri == true
+    contentId := getContentIdFromOperationUri(input.operationUri)
+    glob.match(contentId, ["/"], "header/navigation/drafts")
+    hasAnyDraftReadPermission != true
+    input.object.content.id != "header/navigation/drafts"
+}
+
 
 ### Define whether a user has access to header/navigation/datasets
 
@@ -62,4 +69,12 @@ allowRead {
     glob.match(contentId, ["/"], "header/navigation/datasets")
     hasAnyPublishedReadPermission == true
     input.object.content.id = "header/navigation/datasets"
+}
+
+allowRead {
+    isValidAllowReadUri == true
+    contentId := getContentIdFromOperationUri(input.operationUri)
+    glob.match(contentId, ["/"], "header/navigation/datasets")
+    hasAnyPublishedReadPermission != true
+    input.object.content.id != "header/navigation/datasets"
 }

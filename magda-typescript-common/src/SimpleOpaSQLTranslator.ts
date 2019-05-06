@@ -15,10 +15,10 @@ class SimpleOpaSQLTranslator {
     }
 
     parse(result: CompleteRuleResult, sqlParametersArray: any[] = []) {
-        if (result === null) return "FALSE"; // --- no matched rules
+        if (result === null) return "false"; // --- no matched rules
         if (result.isCompleteEvaluated) {
-            if (result.value === false) return "FALSE";
-            else return "TRUE";
+            if (result.value === false) return "false";
+            else return "true";
         }
         if (!result.residualRules.length) {
             throw new Error("residualRules cannot be empty array!");
@@ -30,17 +30,20 @@ class SimpleOpaSQLTranslator {
                         const term = e.terms[0];
                         if (term.isRef()) {
                             if (!e.isNegated) {
-                                return term.fullRefString(this.refPrefixs);
+                                return (
+                                    term.fullRefString(this.refPrefixs) +
+                                    " = true"
+                                );
                             } else {
                                 return (
-                                    "!" + term.fullRefString(this.refPrefixs)
+                                    term.fullRefString(this.refPrefixs) +
+                                    " != true"
                                 );
                             }
                         } else {
-                            return getSqlParameterName(
-                                sqlParametersArray,
-                                term.getValue()
-                            );
+                            const value = term.getValue();
+                            // --- we convert any value to boolean before generate sql
+                            return !!value ? "true" : "false";
                         }
                     } else if (e.terms.length === 3) {
                         const [
