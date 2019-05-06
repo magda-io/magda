@@ -7,6 +7,7 @@ import * as request from "request-promise-native";
 import * as pg from "pg";
 import * as _ from "lodash";
 import { Content } from "./model";
+import AccessControlError from "@magda/typescript-common/src/authorization-api/AccessControlError";
 
 const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
 const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);
@@ -47,11 +48,16 @@ export default class PostgresDatabase implements Database {
 
     async getSqlConditionsFromOpaByContentId(
         id: string,
-        sqlValues: any[]
+        sqlValues: any[],
+        jwtToken: string = null
     ): Promise<string> {
+        // --- incoming id could be `header/navigation/datasets.json` or `header/logo-mobile`
         // --- operationUri should be `object/content/header/**/read` etc.
-        const operationUri = `object/${id}/read`;
-        const response = await request.post(`${this.opaUrl}compile`, {
+        const operationUri = `object/content/${id.replace(
+            /\.[^\.\/$]/,
+            ""
+        )}/read`;
+        const requestOptions: any = {
             json: {
                 query: "data.object.content.allowRead == true",
                 input: {
@@ -59,7 +65,16 @@ export default class PostgresDatabase implements Database {
                 },
                 unknowns: ["input.object.content"]
             }
-        });
+        };
+        if (jwtToken) {
+            requestOptions.headers = {
+                "X-Magda-Session": jwtToken
+            };
+        }
+        const response = await request.post(
+            `${this.opaUrl}compile`,
+            requestOptions
+        );
 
         const parser = new OpaCompileResponseParser();
         parser.parse(response);
@@ -72,12 +87,19 @@ export default class PostgresDatabase implements Database {
         return translator.parse(result, sqlValues);
     }
 
-    async getContentById(id: string): Promise<Maybe<Content>> {
+    async getContentById(
+        id: string,
+        jwtToken: string = null
+    ): Promise<Maybe<Content>> {
         const sqlParameters: any[] = [id];
         const sqlConditions = await this.getSqlConditionsFromOpaByContentId(
             id,
-            sqlParameters
+            sqlParameters,
+            jwtToken
         );
+        if (sqlConditions === "FALSE") {
+            throw new AccessControlError();
+        }
         return await this.pool
             .query(
                 `SELECT * FROM content WHERE "id" = $1 AND (${sqlConditions})`,
