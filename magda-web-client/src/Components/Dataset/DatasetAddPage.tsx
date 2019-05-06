@@ -1,5 +1,7 @@
 import React from "react";
 
+import { Link } from "react-router-dom";
+
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 
@@ -100,72 +102,74 @@ class AddDataset extends React.Component<never, never> {
                 <div className="row">
                     <div className="col-sm-12 options">
                         <div className="option-wrapper">
-                            <a
-                                className="option option-highlighted"
-                                href="add/files"
-                            >
-                                <span className="option-question">
-                                    Have a single dataset made up of one or more
-                                    files?
-                                </span>
-                                <img src={iconUpload} className="option-icon" />
-                                <span className="option-label">
-                                    Add your dataset file(s) to pre-populate
-                                    metadata using the Magda Publishing Tool
-                                </span>
-                            </a>
+                            <Link to="/dataset/add/files">
+                                <a className="option option-highlighted">
+                                    <span className="option-question">
+                                        Have a single dataset made up of one or
+                                        more files?
+                                    </span>
+                                    <img
+                                        src={iconUpload}
+                                        className="option-icon"
+                                    />
+                                    <span className="option-label">
+                                        Add your dataset file(s) to pre-populate
+                                        metadata using the Magda Publishing Tool
+                                    </span>
+                                </a>
+                            </Link>
                         </div>
                         <div className="option-wrapper">
-                            <a
-                                className="option  option-highlighted"
-                                href="add/urls"
-                            >
-                                <span className="option-question">
-                                    Dataset exists elsewhere online?
-                                </span>
-                                <img
-                                    src={iconWebsite}
-                                    className="option-icon"
-                                />
-                                <span className="option-label">
-                                    Enter the URL of an online dataset to
-                                    pre-populate metadata using the Magda
-                                    Publishing Tool.
-                                </span>
-                            </a>
+                            <Link to="/dataset/add/urls">
+                                <a className="option  option-highlighted">
+                                    <span className="option-question">
+                                        Dataset exists elsewhere online?
+                                    </span>
+                                    <img
+                                        src={iconWebsite}
+                                        className="option-icon"
+                                    />
+                                    <span className="option-label">
+                                        Enter the URL of an online dataset to
+                                        pre-populate metadata using the Magda
+                                        Publishing Tool.
+                                    </span>
+                                </a>
+                            </Link>
                         </div>
                         <div className="option-wrapper">
-                            <a
-                                className="option option-normal"
-                                href="add/metadata/-/0"
-                            >
-                                <span className="option-question">
-                                    No files to upload?
-                                </span>
-                                <img
-                                    src={iconDataEntry}
-                                    className="option-icon"
-                                />
-                                <span className="option-label">
-                                    Manually add the dataset record and the
-                                    metadata
-                                </span>
-                            </a>
+                            <Link to="/dataset/add/metadata/-/0">
+                                <a className="option option-normal">
+                                    <span className="option-question">
+                                        No files to upload?
+                                    </span>
+                                    <img
+                                        src={iconDataEntry}
+                                        className="option-icon"
+                                    />
+                                    <span className="option-label">
+                                        Manually add the dataset record and the
+                                        metadata
+                                    </span>
+                                </a>
+                            </Link>
                         </div>
                         <div className="option-wrapper">
-                            <a className="option option-normal" href="add/bulk">
-                                <span className="option-question">
-                                    Adding multiple datasets?
-                                </span>
-                                <img
-                                    src={iconFolders}
-                                    className="option-icon"
-                                />
-                                <span className="option-label">
-                                    Add your entire dataset catalogue using our
-                                    bulk CSV tool or open data catalogue
-                                </span>
-                            </a>
+                            <Link to="/dataset/add/bulk">
+                                <a className="option option-normal">
+                                    <span className="option-question">
+                                        Adding multiple datasets?
+                                    </span>
+                                    <img
+                                        src={iconFolders}
+                                        className="option-icon"
+                                    />
+                                    <span className="option-label">
+                                        Add your entire dataset catalogue using
+                                        our bulk CSV tool or open data catalogue
+                                    </span>
+                                </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

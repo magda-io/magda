@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Design infers the home page.
@@ -18,7 +19,7 @@ class DatasetListPage extends React.Component<never, never> {
                 } catch (e) {}
             }
         }
-        console.log(datasets);
+
         return (
             <div className="container-fluid">
                 <div className="row">
@@ -29,9 +30,11 @@ class DatasetListPage extends React.Component<never, never> {
 
                 <div className="row">
                     <div className="col-xs-12 col-sm-6 col-lg-4">
-                        <a href="add">
-                            <h3>Add a dataset to your catalogue</h3>
-                        </a>
+                        <Link to="/dataset/add">
+                            <a>
+                                <h3>Add a dataset to your catalogue</h3>
+                            </a>
+                        </Link>
                         <p>
                             Get your data off your harddrive and out in the wold
                             where others can find it too by using our quick data
@@ -49,19 +52,22 @@ class DatasetListPage extends React.Component<never, never> {
                                     return (
                                         <tr>
                                             <td>
-                                                <a
-                                                    href={`add/files/${
+                                                <Link
+                                                    to={`add/files/${
                                                         dataset.id
                                                     }`}
                                                 >
-                                                    {dataset.dataset &&
-                                                    dataset.dataset.dataset &&
-                                                    dataset.dataset.dataset
-                                                        .title
-                                                        ? dataset.dataset
-                                                              .dataset.title
-                                                        : dataset.id}
-                                                </a>
+                                                    <a>
+                                                        {dataset.dataset &&
+                                                        dataset.dataset
+                                                            .dataset &&
+                                                        dataset.dataset.dataset
+                                                            .title
+                                                            ? dataset.dataset
+                                                                  .dataset.title
+                                                            : dataset.id}
+                                                    </a>
+                                                </Link>
                                             </td>
                                             <td>
                                                 Created{" "}

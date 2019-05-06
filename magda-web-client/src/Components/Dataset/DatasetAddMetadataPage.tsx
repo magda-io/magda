@@ -27,7 +27,7 @@ import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import ProgressBar2 from "Components/Common/ProgressBar2";
+import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -105,7 +105,6 @@ class NewDataset extends React.Component<Prop, State> {
         this.setState(state => {
             const item = Object.assign({}, state[aspectField]);
             item[field] = newValue;
-            console.log("CHANGED", aspectField, field, newValue);
             return Object.assign({}, state, { [aspectField]: item });
         });
     };
@@ -120,7 +119,7 @@ class NewDataset extends React.Component<Prop, State> {
         const nextIsPublish = step + 1 >= this.steps.length;
 
         if (lastDatasetId) {
-            window.location.href = `/dataset/${lastDatasetId}`;
+            this.props.history.push(`/dataset/${lastDatasetId}`);
         }
         return (
             <div className={Styles.root}>
@@ -139,7 +138,7 @@ class NewDataset extends React.Component<Prop, State> {
                             Review and add metadata (step {step + 1} of{" "}
                             {this.steps.length})
                         </h1>
-                        <ProgressBar2
+                        <DeterminateProgressBar
                             progress={((step + 1) / this.steps.length) * 100}
                         />
                     </div>
@@ -147,7 +146,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <div className="row">
                     <div className="col-sm-12">
                         <p>
-                            Magda has reviewd your files and pre-populated
+                            Magda has reviewed your files and pre-populated
                             metadata fields based on the contents.
                         </p>
                         <p>
@@ -192,12 +191,12 @@ class NewDataset extends React.Component<Prop, State> {
 
     saveAndExit() {
         saveState(this.state, this.props.dataset);
-        window.location.href = `/dataset/list`;
+        this.props.history.push(`/dataset/list`);
     }
 
     gotoStep(step) {
         saveState(this.state, this.props.dataset);
-        window.location.href = "../" + this.props.dataset + "/" + step;
+        this.props.history.push("../" + this.props.dataset + "/" + step);
     }
 
     renderBasicDetails() {

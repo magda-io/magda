@@ -1,6 +1,9 @@
 import React from "react";
 
-function ProgressBar(props) {
+/**
+ * Progress bar that changes its width based on progress passed in props
+ */
+function DeterminateProgressBar(props) {
     const progress = Math.min(Math.max(props.progress || 0, 0), 100);
     return (
         <div
@@ -20,4 +23,4 @@ function ProgressBar(props) {
     );
 }
 
-export default ProgressBar;
+export default DeterminateProgressBar;

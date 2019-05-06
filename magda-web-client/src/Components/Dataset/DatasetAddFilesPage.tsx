@@ -2,10 +2,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
+import { Link } from "react-router-dom";
 
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
-import ProgressBar2 from "Components/Common/ProgressBar2";
+import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import humanFileSize from "helpers/humanFileSize";
 import { getFiles } from "helpers/readFile";
@@ -96,8 +97,8 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                     break;
                                 case "keywords":
                                 case "themes":
-                                    let value1: string[] = dataset[key] || [];
-                                    let value2: string[] = file[key] || [];
+                                    const value1: string[] = dataset[key] || [];
+                                    const value2: string[] = file[key] || [];
                                     dataset[key] = value1.concat(value2);
                                     file[key] = undefined;
                                     break;
@@ -271,7 +272,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                             </div>
                                         ) : (
                                             <div>
-                                                <ProgressBar2
+                                                <DeterminateProgressBar
                                                     progress={file._progress}
                                                     text={
                                                         FileState[file._state]
@@ -308,12 +309,11 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             </React.Fragment>
                         )}
                         <br />
-                        <a
-                            className="au-btn au-btn--tertiary"
-                            href="/dataset/add"
-                        >
-                            Escape Hatch
-                        </a>
+                        <Link to="/dataset/add">
+                            <a className="au-btn au-btn--tertiary">
+                                Escape Hatch
+                            </a>
+                        </Link>
                     </div>
                 </div>
             </div>
