@@ -54,10 +54,8 @@ export default class PostgresDatabase implements Database {
         // --- incoming id could be `header/navigation/datasets.json` or `header/logo-mobile`
         // --- or a pattern header/*
         // --- operationUri should be `object/content/header/**/read` etc.
-        const operationUri = `object/content/${id.replace(
-            /\.[^\.\/$]/,
-            ""
-        )}/read`;
+        const resourceId = id.replace(/\.[^\.\/$]/, "");
+        const operationUri = `object/content/${resourceId}/read`;
         const requestOptions: any = {
             json: {
                 query: "data.object.content.allowRead == true",
@@ -88,24 +86,51 @@ export default class PostgresDatabase implements Database {
         return translator.parse(result, sqlValues);
     }
 
+    async getContentDecisionById(
+        id: string,
+        jwtToken: string = null
+    ): Promise<boolean> {
+        // --- incoming id could be `header/navigation/datasets.json` or `header/logo-mobile`
+        // --- operationUri should be `object/content/header/header/navigation/datasets/read` etc.
+        const resourceId = id.replace(/\.[^\.\/$]/, "");
+        const operationUri = `object/content/${resourceId}/read`;
+        const requestOptions: any = {
+            json: {
+                input: {
+                    operationUri,
+                    object: {
+                        content: {
+                            id: resourceId
+                        }
+                    }
+                }
+            }
+        };
+        if (jwtToken) {
+            requestOptions.headers = {
+                "X-Magda-Session": jwtToken
+            };
+        }
+        // --- we don't need partial evaluation as we only need the decision for a particular resource
+        const response = await request.post(
+            `${this.opaUrl}data/object/content/allowRead`,
+            requestOptions
+        );
+
+        if (response && response.result === true) return true;
+        else return false;
+    }
+
     async getContentById(
         id: string,
         jwtToken: string = null
     ): Promise<Maybe<Content>> {
+        const isAllow = await this.getContentDecisionById(id, jwtToken);
+        if (!isAllow) throw new AccessControlError(`Access denied for ${id}`);
+
         const sqlParameters: any[] = [id];
-        const sqlConditions = await this.getSqlConditionsFromOpaByContentId(
-            id,
-            sqlParameters,
-            jwtToken
-        );
-        if (sqlConditions === "FALSE") {
-            throw new AccessControlError();
-        }
         return await this.pool
-            .query(
-                `SELECT * FROM content WHERE "id" = $1 AND (${sqlConditions})`,
-                sqlParameters
-            )
+            .query(`SELECT * FROM content WHERE "id" = $1`, sqlParameters)
             .then(res => arrayToMaybe(res.rows));
     }
 
@@ -170,7 +195,7 @@ export default class PostgresDatabase implements Database {
                     const accessControlSql = await this.getSqlConditionsFromOpaByContentId(
                         // --- we used glob pattern in opa policy
                         // --- header/* should be header/** to match header/navigation/datasets
-                        pattern.replace(/\/\*$/, "\/\*\*"),
+                        pattern.replace(/\/\*$/, "/**"),
                         params,
                         jwtToken
                     );
