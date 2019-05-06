@@ -7,7 +7,7 @@ import * as request from "request-promise-native";
 import * as pg from "pg";
 import * as _ from "lodash";
 import { Content } from "./model";
-import AccessControlError from "@magda/typescript-common/src/authorization-api/AccessControlError";
+import AccessControlError from "@magda/typescript-common/dist/authorization-api/AccessControlError";
 
 const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
 const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);
