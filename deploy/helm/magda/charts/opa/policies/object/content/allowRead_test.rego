@@ -2,25 +2,45 @@ package object.content
 
 test_allowRead_incorrect_res_uri {
     not allowRead with input as {
-        "operationUri" : "object/dataset/draft/read"
+        "operationUri" : "object/dataset/draft/read",
+        "object": {
+            "content": {
+                "id": "draft"
+            }
+        }
     }
 }
 
 test_allowRead_incorrect_operation_type {
     not allowRead with input as {
-        "operationUri" : "object/content/aaaaa/write"
+        "operationUri" : "object/content/aaaaa/write",
+        "object": {
+            "content": {
+                "id": "aaaaa"
+            }
+        }
     }
 }
 
 test_allowRead_incorrect_uri_length {
     not allowRead with input as {
-        "operationUri" : "object/content/xxxx"
+        "operationUri" : "object/content/xxxx",
+        "object": {
+            "content": {
+                "id": "xxxx"
+            }
+        }
     }
 }
 
 test_allowRead_non_access_controlled_item {
     allowRead with input as {
-        "operationUri" : "object/content/xxxx/sssss/read"
+        "operationUri" : "object/content/xxxx/sssss/read",
+        "object": {
+            "content": {
+                "id": "xxxx/sssss"
+            }
+        }
     }
 }
 

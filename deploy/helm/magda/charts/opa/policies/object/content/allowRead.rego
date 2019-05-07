@@ -46,14 +46,44 @@ isValidAllowReadUri {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    controlledItems[itemHasNoAccess].allow = false
-    glob.match(contentId, ["/"], itemHasNoAccess.uri) == true
-    input.object.content.id != itemHasNoAccess.uri
+    
+    ## It's not a pattern
+    contains(contentId, "*") != true
+
+    disallowedUris := [uri | uri := controlledItems[i].uri; controlledItems[i].allow = false]
+
+    disallowedUris[_] != contentId
+    
+    input.object.content.id == contentId
 }
 
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    uris := [uri | uri := controlledItems[_].uri; glob.match(contentId, ["/"], uri) == true ]
-    count(uris) == 0
+    
+    ## It's a pattern
+    contains(contentId, "*") == true
+
+    disallowedUris := [uri | uri := controlledItems[i].uri; 
+                             glob.match(contentId, ["/"], uri) == true;
+                             controlledItems[i].allow = false]
+
+    count(disallowedUris) == 0
+    # No matched disallowedUris found, thus, allow
+}
+
+allowRead {
+    isValidAllowReadUri == true
+    contentId := getContentIdFromOperationUri(input.operationUri)
+    
+    ## It's a pattern
+    contains(contentId, "*") == true
+
+    disallowedUris := [uri | uri := controlledItems[i].uri; 
+                             glob.match(contentId, ["/"], uri) == true;
+                             controlledItems[i].allow = false]
+
+    count(disallowedUris) > 0
+    
+    input.object.content.id != disallowedUris[_]
 }
