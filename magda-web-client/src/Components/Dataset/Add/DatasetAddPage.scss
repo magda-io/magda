@@ -1,0 +1,68 @@
+@import "variables";
+
+.instruction-icon {
+    width: 2em;
+    padding: 1em;
+}
+
+.options {
+    padding: 4em;
+}
+
+.option-wrapper {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 49%;
+    @media only screen and (max-width: 600px) {
+        width: 100%;
+    }
+    padding: 0.5em;
+}
+
+.option {
+    display: block;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    text-decoration: none !important;
+    min-height: 5em;
+}
+
+.option:hover {
+    cursor: pointer;
+    border: 1px solid $AU-color-foreground-focus;
+}
+
+.option-highlighted,
+.option-normal:hover {
+    border: 1px solid $AU-color-background;
+    background-color: $AU-color-foreground-action !important;
+    color: $AU-color-background !important;
+    img {
+        filter: invert(100%);
+    }
+}
+
+.option-highlighted:hover,
+.option-normal {
+    border: 1px solid $AU-color-foreground-action;
+    background-color: $AU-color-background !important;
+    color: $AU-color-foreground-action !important;
+}
+
+.option-question {
+    padding: 0 2em 0 2em;
+    display: block;
+    font-size: 0.8em;
+}
+
+.option-icon {
+    float: left;
+    clear: left;
+    width: 3.5em;
+    padding: 0.5em 1em 1em 2em;
+}
+
+.option-label {
+    padding: 2em 2em 1em 0em;
+    font-size: 1.1em;
+}

@@ -16,13 +16,72 @@ import FallbackRouteHandlerPage from "Components/Error/FallbackRouteHandlerPage"
 import RouteNotFoundPage from "Components/Error/RouteNotFoundPage";
 import OrganisationsPage from "Components/Organisation/OrganisationsPage";
 import OrganisationPage from "Components/Organisation/OrganisationPage";
-import StaticPage from "Components/Static/StaticPage";
 
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
-const DatasetAddPage = makeAsync(() =>
-    import("Components/Dataset/DatasetAddPage").then(module => module.default)
+const AdminPage = makeAsync(() =>
+    import("Components/Admin/AdminPage").then(module => module.default)
+);
+
+const AccountsAdminPage = makeAsync(() =>
+    import("Components/Account/AccountsAdminPage").then(
+        module => module.default
+    )
+);
+
+const ConnectorsAdminPage = makeAsync(() =>
+    import("Components/Dataset/ConnectorsAdminPage").then(
+        module => module.default
+    )
+);
+
+const HeaderNavigationAdminPage = makeAsync(() =>
+    import("Components/Header/HeaderNavigationAdminPage").then(
+        module => module.default
+    )
+);
+const FooterNavigationAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationAdminPage").then(
+        module => module.default
+    )
+);
+const FooterNavigationLinksAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterNavigationLinksAdminPage").then(
+        module => module.default
+    )
+);
+const FooterCopyrightAdminPage = makeAsync(() =>
+    import("Components/Footer/FooterCopyrightAdminPage").then(
+        module => module.default
+    )
+);
+
+const HighlightsAdminPage = makeAsync(() =>
+    import("Components/Home/HighlightsAdminPage").then(module => module.default)
+);
+const HomeAdminPage = makeAsync(() =>
+    import("Components/Home/HomeAdminPage").then(module => module.default)
+);
+const StaticPage = makeAsync(() =>
+    import("Components/Static/StaticPage").then(module => module.default)
+);
+const AdminStaticPagesPage = makeAsync(() =>
+    import("Components/Static/StaticPagesAdminPage").then(
+        module => module.default
+    )
+);
+const StoriesAdminPage = makeAsync(() =>
+    import("Components/Home/StoriesAdminPage").then(module => module.default)
+);
+const LanguageAdminPage = makeAsync(() =>
+    import("Components/i18n/LanguageAdminPage").then(module => module.default)
+);
+const DatasetRoutes = makeAsync(() =>
+    import("Components/Dataset/Add/Routes").then(module => module.default)
+);
+const CatalogRoutes = makeAsync(() =>
+    import("Components/Catalog/Routes").then(module => module.default)
 );
 
 import { config } from "./config";
@@ -31,6 +90,64 @@ const Routes = () => {
     return (
         <Switch>
             <Route exact path="/" component={HomePage} />
+            <Route
+                exact
+                path="/admin"
+                component={withHeader(AdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/home"
+                component={withHeader(HomeAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/home-stories"
+                component={withHeader(StoriesAdminPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/home-highlights"
+                component={withHeader(HighlightsAdminPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/header-navigation"
+                component={withHeader(HeaderNavigationAdminPage, true)}
+            />
+            <Route
+                path="/admin/footer-navigation/:size"
+                component={withHeader(FooterNavigationAdminPage, true)}
+            />
+            <Route
+                path="/admin/footer-navigation-links/:size/:category"
+                component={withHeader(FooterNavigationLinksAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/footer-copyright"
+                component={withHeader(FooterCopyrightAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/connectors"
+                component={withHeader(ConnectorsAdminPage, true)}
+            />
+            <Route
+                exact
+                path="/admin/accounts"
+                component={withHeader(AccountsAdminPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/pages"
+                component={withHeader(AdminStaticPagesPage, false)}
+            />
+            <Route
+                exact
+                path="/admin/i18n"
+                component={withHeader(LanguageAdminPage, false)}
+            />
             <Route
                 exact
                 path="/organisations"
@@ -100,12 +217,18 @@ const Routes = () => {
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/new"
-                    component={withHeader(DatasetAddPage, false)}
-                />
+                <React.Fragment>
+                    <Route
+                        path="/catalog"
+                        component={withHeader(CatalogRoutes, false)}
+                    />
+                    <Route
+                        path="/dataset/add"
+                        component={withHeader(DatasetRoutes, false)}
+                    />
+                </React.Fragment>
             )}
+
             <Route
                 path="/dataset/:datasetId"
                 component={withHeader(DatasetPage, true)}

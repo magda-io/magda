@@ -11,40 +11,51 @@ class AccountNavbar extends React.Component {
     }
 
     render() {
-        return (
-            <React.Fragment>
-                {this.props.user.id ? (
-                    [
-                        <li
-                            key="/account"
-                            id={this.props.skipLink ? "nav" : undefined}
-                        >
-                            <NavLink to={`/account`}>
-                                <span>{this.props.user.displayName}</span>
-                            </NavLink>
-                        </li>,
-                        <li key="/signOut">
-                            <button
-                                className="link-button"
-                                href="/signout"
-                                onClick={this.signOut.bind(this)}
-                            >
-                                <span>Sign Out</span>
-                            </button>
-                        </li>
-                    ]
-                ) : (
-                    <li key="/account">
-                        <NavLink
-                            to={`/account`}
-                            id={this.props.skipLink ? "nav" : undefined}
-                        >
-                            <span>Sign In</span>
+        let menu = [];
+        if (this.props.user.id) {
+            menu.push(
+                <li key="/account" id={this.props.skipLink ? "nav" : undefined}>
+                    <NavLink to={`/account`}>
+                        <span>{this.props.user.displayName}</span>
+                    </NavLink>
+                </li>
+            );
+            if (this.props.user.isAdmin) {
+                menu.push(
+                    <li
+                        key="/admin"
+                        id={this.props.skipLink ? "nav" : undefined}
+                    >
+                        <NavLink to={`/admin`}>
+                            <span>Admin</span>
                         </NavLink>
                     </li>
-                )}
-            </React.Fragment>
-        );
+                );
+            }
+            menu.push(
+                <li key="/signOut">
+                    <button
+                        className="link-button"
+                        href="/signout"
+                        onClick={this.signOut.bind(this)}
+                    >
+                        <span>Sign Out</span>
+                    </button>
+                </li>
+            );
+        } else {
+            menu.push(
+                <li key="/account">
+                    <NavLink
+                        to={`/account`}
+                        id={this.props.skipLink ? "nav" : undefined}
+                    >
+                        <span>Sign In</span>
+                    </NavLink>
+                </li>
+            );
+        }
+        return menu;
     }
 }
 

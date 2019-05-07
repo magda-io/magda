@@ -82,7 +82,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
 function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     return (
         <AUfooter dark className="au-body au-body--dark footer">
-            <div className="container">
+            <div className="container-fluid">
                 <Small>
                     {matched => (
                         <FooterNavs

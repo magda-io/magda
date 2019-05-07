@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-0",
+    "@magda/content-schemas": "^0.0.56-0",
     "body-parser": "^1.13.2",
     "djv": "^2.1.1",
     "express": "^4.13.1",

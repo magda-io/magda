@@ -103,6 +103,11 @@ class Account extends React.Component {
                             <p>Display Name: {this.props.user.displayName}</p>
                             <p>Email: {this.props.user.email}</p>
                             {this.renderRoles()}
+                            {this.props.user.isAdmin && (
+                                <a href="/admin" class="au-btn">
+                                    Administrate
+                                </a>
+                            )}
                         </div>
                     )}
                 </div>
