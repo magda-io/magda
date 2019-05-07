@@ -177,21 +177,6 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     </div>
                 </div>
 
-                <div className="row justify-content-center">
-                    <div
-                        className="col-xs-12"
-                        onClick={this.onBrowse.bind(this)}
-                    >
-                        <FileDrop
-                            onDrop={this.onDrop.bind(this)}
-                            className={Styles.dropZone}
-                            targetClassName={Styles.dropTarget}
-                        >
-                            <span>Drag your files or click here</span>
-                        </FileDrop>
-                    </div>
-                </div>
-
                 <div className="row">
                     <div className="col-xs-12">
                         <ul>
@@ -284,6 +269,21 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                 );
                             })}
                         </ul>
+                    </div>
+                </div>
+
+                <div className="row justify-content-center">
+                    <div
+                        className="col-xs-12"
+                        onClick={this.onBrowse.bind(this)}
+                    >
+                        <FileDrop
+                            onDrop={this.onDrop.bind(this)}
+                            className={Styles.dropZone}
+                            targetClassName={Styles.dropTarget}
+                        >
+                            <span>Drag your files or click here</span>
+                        </FileDrop>
                     </div>
                 </div>
 
