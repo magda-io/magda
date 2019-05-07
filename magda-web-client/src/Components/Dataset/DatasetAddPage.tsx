@@ -36,6 +36,7 @@ import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.sche
 import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
 import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -43,7 +44,8 @@ const aspects = {
     "spatial-coverage": spatialCoverageAspect,
     "temporal-coverage": temporalCoverageAspect,
     "dataset-distributions": datasetDistributionsAspect,
-    "dcat-distribution-strings": dcatDistributionStringsAspect
+    "dcat-distribution-strings": dcatDistributionStringsAspect,
+    "dataset-access-control": datasetAccessControlAspect
 };
 
 import uuidv1 from "uuid/v1";
@@ -113,6 +115,7 @@ type Prop = {
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
+    user: any;
 };
 
 type State = {
@@ -293,6 +296,9 @@ class NewDataset extends React.Component<Prop, State> {
                 "temporal-coverage": temporalCoverage,
                 "dataset-distributions": {
                     distributions: inputDistributions.map(d => d.id)
+                },
+                "dataset-access-control": {
+                    ownerId: this.props.user.id
                 }
             }
         };
@@ -632,7 +638,12 @@ function mapStateToProps(state) {
         state.record.newDataset &&
         state.record.newDataset.dataset &&
         state.record.newDataset.dataset.id;
-    return { isCreating, creationError, lastDatasetId };
+    return {
+        isCreating,
+        creationError,
+        lastDatasetId,
+        user: state.userManagement.user
+    };
 }
 
 const mapDispatchToProps = dispatch => {

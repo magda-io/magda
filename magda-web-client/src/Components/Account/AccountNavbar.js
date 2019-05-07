@@ -13,7 +13,7 @@ class AccountNavbar extends React.Component {
     render() {
         return (
             <React.Fragment>
-                {this.props.user ? (
+                {this.props.user.id ? (
                     [
                         <li
                             key="/account"

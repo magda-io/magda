@@ -298,6 +298,19 @@ buildtest:connectors:
       - "*/dist"
     expire_in: 30 days
 
+buildtest:opa-policies:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  retry: 1
+  dependencies:
+    - builders-and-yarn
+  cache:
+    paths: []
+  services:
+    - docker:dind
+  script:
+    - docker run -v $PWD/deploy/helm/magda/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
+
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG

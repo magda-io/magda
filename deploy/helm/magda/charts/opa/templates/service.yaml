@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8181
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30120
+  type: NodePort
+{{- end }}
+  selector:
+    service: opa

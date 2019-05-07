@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "opa-policies"
+data:
+{{- range $path, $bytes := .Files.Glob "policies/**/*" }}
+{{- $str := toString $bytes }}
+{{- $lines := splitList "\n" $str }}
+  {{ base $path }}: |-
+  {{- range $lines }}
+  {{ . | indent 2 }}
+  {{- end }}
+{{- end }}
