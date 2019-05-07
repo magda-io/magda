@@ -1,17 +1,17 @@
 import React from "react";
 
-import { Link } from "react-router-dom";
-
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
+import Choice from "Components/Common/Choice";
 
 import iconSearch from "assets/search-dark.svg";
 import iconDocument from "assets/data-types/document.svg";
-import iconUpload from "assets/upload.svg";
-import iconWebsite from "assets/website.svg";
-import iconDataEntry from "assets/data-entry.svg";
 import iconSave from "assets/save.svg";
-import iconFolders from "assets/folders.svg";
+
+import iconUpload from "assets/upload-white.svg";
+import iconWebsite from "assets/website-white.svg";
+import iconDataEntry from "assets/data-entry-purple.svg";
+import iconFolders from "assets/folders-purple.svg";
 
 import "./DatasetAddPage.scss";
 
@@ -100,78 +100,32 @@ class AddDataset extends React.Component<never, never> {
                 </div>
 
                 <div className="row">
-                    <div className="col-sm-12 options">
-                        <div className="option-wrapper">
-                            <Link to="/dataset/add/files">
-                                <a className="option option-highlighted">
-                                    <span className="option-question">
-                                        Have a single dataset made up of one or
-                                        more files?
-                                    </span>
-                                    <img
-                                        src={iconUpload}
-                                        className="option-icon"
-                                    />
-                                    <span className="option-label">
-                                        Add your dataset file(s) to pre-populate
-                                        metadata using the Magda Publishing Tool
-                                    </span>
-                                </a>
-                            </Link>
-                        </div>
-                        <div className="option-wrapper">
-                            <Link to="/dataset/add/urls">
-                                <a className="option  option-highlighted">
-                                    <span className="option-question">
-                                        Dataset exists elsewhere online?
-                                    </span>
-                                    <img
-                                        src={iconWebsite}
-                                        className="option-icon"
-                                    />
-                                    <span className="option-label">
-                                        Enter the URL of an online dataset to
-                                        pre-populate metadata using the Magda
-                                        Publishing Tool.
-                                    </span>
-                                </a>
-                            </Link>
-                        </div>
-                        <div className="option-wrapper">
-                            <Link to="/dataset/add/metadata/-/0">
-                                <a className="option option-normal">
-                                    <span className="option-question">
-                                        No files to upload?
-                                    </span>
-                                    <img
-                                        src={iconDataEntry}
-                                        className="option-icon"
-                                    />
-                                    <span className="option-label">
-                                        Manually add the dataset record and the
-                                        metadata
-                                    </span>
-                                </a>
-                            </Link>
-                        </div>
-                        <div className="option-wrapper">
-                            <Link to="/dataset/add/bulk">
-                                <a className="option option-normal">
-                                    <span className="option-question">
-                                        Adding multiple datasets?
-                                    </span>
-                                    <img
-                                        src={iconFolders}
-                                        className="option-icon"
-                                    />
-                                    <span className="option-label">
-                                        Add your entire dataset catalogue using
-                                        our bulk CSV tool or open data catalogue
-                                    </span>
-                                </a>
-                            </Link>
-                        </div>
-                    </div>
+                    <Choice
+                        heading="Have a single dataset made up of one or more files?"
+                        icon={iconUpload}
+                        blurb="Add your dataset file(s) to pre-populate metadata using the Magda Publishing Tool"
+                        href="/dataset/add/files"
+                    />
+                    <Choice
+                        heading="Dataset exists elsewhere online?"
+                        icon={iconWebsite}
+                        blurb="Enter the URL of an online dataset to pre-populate metadata using the Magda Publishing Tool."
+                        href="/dataset/add/urls"
+                    />
+                    <Choice
+                        heading="No files to upload?"
+                        icon={iconDataEntry}
+                        blurb="Manually add the dataset record and the metadata."
+                        href="/dataset/add/metadata/-/0"
+                        secondary
+                    />
+                    <Choice
+                        heading="Adding multiple datasets?"
+                        icon={iconFolders}
+                        blurb="Add your entire dataset catalogue using our bulk CSV tool or open data catalogue"
+                        href="/catalog/add"
+                        secondary
+                    />
                 </div>
             </div>
         );
