@@ -23,6 +23,7 @@ Cataloging:
 -   Updated new dataset demo UI page to support adding new datasets
 -   Updated dataset ui page to be able to edit fields
 -   Added editor / editor type abstraction for making state management simpler for large forms.
+-   Added "Add Catalog" page
 
 UI:
 

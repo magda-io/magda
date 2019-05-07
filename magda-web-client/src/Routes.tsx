@@ -58,31 +58,9 @@ const FooterCopyrightAdminPage = makeAsync(() =>
 const HighlightsAdminPage = makeAsync(() =>
     import("Components/Home/HighlightsAdminPage").then(module => module.default)
 );
-
 const HomeAdminPage = makeAsync(() =>
     import("Components/Home/HomeAdminPage").then(module => module.default)
 );
-
-const DatasetAddPage = makeAsync(() =>
-    import("Components/Dataset/DatasetAddPage").then(module => module.default)
-);
-
-const DatasetAddFilesPage = makeAsync(() =>
-    import("Components/Dataset/DatasetAddFilesPage").then(
-        module => module.default
-    )
-);
-
-const DatasetListPage = makeAsync(() =>
-    import("Components/Dataset/DatasetListPage").then(module => module.default)
-);
-
-const DatasetAddMetadataPage = makeAsync(() =>
-    import("Components/Dataset/DatasetAddMetadataPage").then(
-        module => module.default
-    )
-);
-
 const StaticPage = makeAsync(() =>
     import("Components/Static/StaticPage").then(module => module.default)
 );
@@ -94,9 +72,14 @@ const AdminStaticPagesPage = makeAsync(() =>
 const StoriesAdminPage = makeAsync(() =>
     import("Components/Home/StoriesAdminPage").then(module => module.default)
 );
-
 const LanguageAdminPage = makeAsync(() =>
     import("Components/i18n/LanguageAdminPage").then(module => module.default)
+);
+const DatasetRoutes = makeAsync(() =>
+    import("Components/Dataset/Add/Routes").then(module => module.default)
+);
+const CatalogRoutes = makeAsync(() =>
+    import("Components/Catalog/Routes").then(module => module.default)
 );
 
 import { config } from "./config";
@@ -222,52 +205,18 @@ const Routes = () => {
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/add"
-                    component={withHeader(DatasetAddPage, false)}
-                />
+                <React.Fragment>
+                    <Route
+                        path="/catalog"
+                        component={withHeader(CatalogRoutes, false)}
+                    />
+                    <Route
+                        path="/dataset/add"
+                        component={withHeader(DatasetRoutes, false)}
+                    />
+                </React.Fragment>
             )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/add/files"
-                    component={withHeader(DatasetAddFilesPage, false)}
-                />
-            )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    path="/dataset/add/files/:dataset"
-                    component={withHeader(DatasetAddFilesPage, false)}
-                />
-            )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/list"
-                    component={withHeader(DatasetListPage, false)}
-                />
-            )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/add/urls"
-                    component={withHeader(DatasetAddPage, false)}
-                />
-            )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    path="/dataset/add/metadata/:dataset/:step"
-                    component={withHeader(DatasetAddMetadataPage, false)}
-                />
-            )}
-            {config.featureFlags.cataloguing && (
-                <Route
-                    exact
-                    path="/dataset/add/bulk"
-                    component={withHeader(DatasetAddPage, false)}
-                />
-            )}
+
             <Route
                 path="/dataset/:datasetId"
                 component={withHeader(DatasetPage, true)}
