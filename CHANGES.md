@@ -34,6 +34,7 @@ UI:
 -   Refactored web client to group similar things togeather
 -   Implemented basic admin pages in react ui
 -   Started implementing new add dataset flow design changes
+-   Fixed web-client code loaded & run twice
 
 ## 0.0.55
 
