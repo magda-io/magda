@@ -40,7 +40,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's not a pattern
+    ## This rule handles the situation when contentId is not a pattern
+    ## i.e. contentId doesn't contain '*' e.g. "header/navigation/drafts"
     contentId == "header/navigation/drafts"
     hasAnyDraftReadPermission == true
     input.object.content.id = "header/navigation/drafts"
@@ -50,7 +51,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's not a pattern
+    ## This rule handles the situation when contentId is not a pattern
+    ## i.e. contentId doesn't contain '*' e.g. "header/navigation/datasets"
     contentId == "header/navigation/datasets"
     hasAnyPublishedReadPermission == true
     input.object.content.id = "header/navigation/datasets"
@@ -64,7 +66,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
+    ## This rule handles the situation when contentId is a pattern
+    ## i.e. contentId contains '*' e.g. header/**
     contains(contentId, "*") == true
     glob.match(contentId, ["/"], "header/navigation/drafts")
     glob.match(contentId, ["/"], "header/navigation/datasets")
@@ -77,7 +80,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
+    ## This rule handles the situation when contentId is a pattern
+    ## i.e. contentId contains '*' e.g. header/**
     contains(contentId, "*") == true
     glob.match(contentId, ["/"], "header/navigation/drafts")
     glob.match(contentId, ["/"], "header/navigation/datasets")
@@ -89,7 +93,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
+    ## This rule handles the situation when contentId is a pattern
+    ## i.e. contentId contains '*' e.g. header/**
     contains(contentId, "*") == true
     glob.match(contentId, ["/"], "header/navigation/drafts")
     glob.match(contentId, ["/"], "header/navigation/datasets")
@@ -101,7 +106,8 @@ allowRead {
 allowRead {
     isValidAllowReadUri == true
     contentId := getContentIdFromOperationUri(input.operationUri)
-    ## It's a pattern
+    ## This rule handles the situation when contentId is a pattern
+    ## i.e. contentId contains '*' e.g. header/**
     contains(contentId, "*") == true
     glob.match(contentId, ["/"], "header/navigation/drafts")
     glob.match(contentId, ["/"], "header/navigation/datasets")
