@@ -12,16 +12,89 @@ export interface RegoRuleOptions {
     parser: OpaCompileResponseParser;
 }
 
+/**
+ * @class RegoRule
+ * @export
+ *
+ * RegoRule represents [Rule](https://www.openpolicyagent.org/docs/latest/how-do-i-write-policies/#rules) concept in Rego language.
+ * - A simple rule is made up of Rule head, Rule value & Rule body
+ * - The Rule value defines the final result of the rule if the rule is matched (i.e. all expressions in rule body are true)
+ * - If you didn't sepcify the rule value, it will be assume as boolean value `true`
+ * - The rule body is made up of one of more rego expressions (see @class RegoExp) and each of the expression is made up of terms (see @class RegoTerm)
+ * - The rule is considered as matched if all expressions in rule body are `true`
+ * You can opt to define a `default` rule. A default rule has no rule body and will only considered as matched if all other rules are not matched.
+ */
 export class RegoRule {
+    /**
+     * the local name of the rule. i.e. doesn't include full package path
+     * e.g. `allow`
+     *
+     * @type {string}
+     * @memberof RegoRule
+     */
     public name: string;
+
+    /**
+     * Full name of the rule. Includes fulle package path
+     * e.g. `data.object.content.allowRead`
+     *
+     * @type {string}
+     * @memberof RegoRule
+     */
     public fullName: string;
+
+    /**
+     * Whether a rule is a default Rule
+     * Its value only be used if any other residual rules are not matched (or no other residual rules)
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
     public isDefault: boolean;
+
+    /**
+     * Rule value. Rule value is this value if all expression in rule body are true
+     * It can be any type. e.g. can be object or array etc. But a simple policy normally outputs a boolean true or false
+     *
+     * @type {RegoValue}
+     * @memberof RegoRule
+     */
     public value: RegoValue;
+
+    /**
+     * All Rego expressions in this rule's rule body. @see RegoExp
+     *
+     * @type {RegoExp[]}
+     * @memberof RegoRule
+     */
     public expressions: RegoExp[];
-    // --- whether this rule is matched
+
+    /**
+     * If the rule is matched or not
+     * Default to undefined
+     * Its value is only set when `isCompleteEvaluated` is true
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
     public isMatched: boolean;
+
+    /**
+     * If the rule is fully evaluate
+     * Default to false
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
     public isCompleteEvaluated: boolean;
 
+    /**
+     * Reference to OpaParser
+     *
+     * @private
+     * @type {OpaCompileResponseParser}
+     * @memberof RegoRule
+     */
     private parser: OpaCompileResponseParser;
 
     constructor(options: RegoRuleOptions) {
@@ -67,6 +140,13 @@ export class RegoRule {
         return regoRule;
     }
 
+    /**
+     * Re-evaluate this rule
+     * If fully evaluated, this.isCompleteEvaluated will be set to true
+     *
+     * @returns
+     * @memberof RegoRule
+     */
     evaluate() {
         this.expressions = this.expressions.map(exp => exp.evaluate());
         const falseExpression = this.expressions.find(
@@ -97,6 +177,14 @@ export class RegoRule {
         return this;
     }
 
+    /**
+     * Generate Human Readable string of this rule
+     * If it's fully evaluated, the output will be true or false (or actual rule value)
+     * Otherwise, will generate expressions concate with `AND`
+     *
+     * @returns {string}
+     * @memberof RegoRule
+     */
     toHumanReadableString(): string {
         if (this.isCompleteEvaluated) {
             if (this.isMatched) {
@@ -110,6 +198,16 @@ export class RegoRule {
         }
     }
 
+    /**
+     * Create RegoRule from Opa response data
+     *
+     * @static
+     * @param {*} r
+     * @param {string} packageName
+     * @param {OpaCompileResponseParser} parser
+     * @returns {RegoRule}
+     * @memberof RegoRule
+     */
     static parseFromData(
         r: any,
         packageName: string,
@@ -168,6 +266,16 @@ export const RegoOperators: {
 
 export type RegoTermValue = RegoRef | RegoValue;
 
+/**
+ * RegoTerm represent the basic elements that creates an expressions.
+ * e.g. An expression `a > 4` is made up of 3 terms
+ * - Reference Term: `a`
+ * - Operator Term `>`
+ * - Value Term: `4`
+ *
+ * @export
+ * @class RegoTerm
+ */
 export class RegoTerm {
     public type: string;
     public value: RegoTermValue;
@@ -187,16 +295,36 @@ export class RegoTerm {
         return new RegoTerm(this.type, this.value, this.parser);
     }
 
+    /**
+     * If it's a reference term, return its full string representation
+     *
+     * @returns
+     * @memberof RegoTerm
+     */
     asString() {
         if (this.value instanceof RegoRef) return this.value.fullRefString();
         else return this.value;
     }
 
+    /**
+     * If it's a reference term. A operator is an Reference term as well
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
     isRef(): boolean {
         if (this.value instanceof RegoRef) return true;
         return false;
     }
 
+    /**
+     * If it's a reference term, return its full string representation
+     * Otherwise, throw exception
+     *
+     * @param {string[]} [removalPrefixs=[]]
+     * @returns {string}
+     * @memberof RegoTerm
+     */
     fullRefString(removalPrefixs: string[] = []): string {
         if (this.value instanceof RegoRef) {
             return this.value.fullRefString(removalPrefixs);
@@ -205,6 +333,14 @@ export class RegoTerm {
         }
     }
 
+    /**
+     * If it's a reference term, return its string representation (not include ending [_])
+     * Otherwise, throw exception
+     *
+     * @param {string[]} [removalPrefixs=[]]
+     * @returns {string}
+     * @memberof RegoTerm
+     */
     refString(removalPrefixs: string[] = []): string {
         if (this.value instanceof RegoRef) {
             return this.value.refString(removalPrefixs);
@@ -213,6 +349,12 @@ export class RegoTerm {
         }
     }
 
+    /**
+     * Return term as operator string e.g. `=`, `>=` etc.
+     *
+     * @returns {string}
+     * @memberof RegoTerm
+     */
     asOperator(): string {
         if (this.value instanceof RegoRef) {
             return this.value.asOperator();
@@ -221,6 +363,12 @@ export class RegoTerm {
         }
     }
 
+    /**
+     * If it's a operator term
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
     isOperator(): boolean {
         if (this.value instanceof RegoRef) {
             return this.value.isOperator();
@@ -229,6 +377,12 @@ export class RegoTerm {
         }
     }
 
+    /**
+     * Tried to determine the value of the term
+     *
+     * @returns {RegoValue}
+     * @memberof RegoTerm
+     */
     getValue(): RegoValue {
         if (!this.isRef()) {
             return this.value;
@@ -256,11 +410,53 @@ export class RegoTerm {
     }
 }
 
+/**
+ * Represents Rego expression
+ *
+ * @export
+ * @class RegoExp
+ */
 export class RegoExp {
+    /**
+     * All RegoTerms belongs to this expression
+     *
+     * @type {RegoTerm[]}
+     * @memberof RegoExp
+     */
     public terms: RegoTerm[];
+
+    /**
+     * Whether this expression is a negative expression
+     * i.e. it's final evaluation result should be `false` if result is `true`
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
     public isNegated: boolean;
+
+    /**
+     * If it's complete evaluated
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
     public isCompleteEvaluated: boolean = false;
+
+    /**
+     * The value of the expression
+     *
+     * @type {RegoValue}
+     * @memberof RegoExp
+     */
     public value: RegoValue = null;
+
+    /**
+     * Ref to Opa Parser
+     *
+     * @private
+     * @type {OpaCompileResponseParser}
+     * @memberof RegoExp
+     */
     private parser: OpaCompileResponseParser;
 
     constructor(
@@ -288,10 +484,22 @@ export class RegoExp {
         return regoExp;
     }
 
+    /**
+     * For debug usage, print terms as easy to ready short string
+     *
+     * @returns
+     * @memberof RegoExp
+     */
     termsAsString() {
         return this.terms.map(t => t.asString());
     }
 
+    /**
+     * Output human readable string
+     *
+     * @returns {string}
+     * @memberof RegoExp
+     */
     toHumanReadableString(): string {
         if (this.terms.length === 1) {
             const value = this.terms[0].getValue();
@@ -325,6 +533,12 @@ export class RegoExp {
         throw new Error(`Invalid rego expression: ${this.termsAsString()}`);
     }
 
+    /**
+     * Try to determins its value
+     *
+     * @returns
+     * @memberof RegoExp
+     */
     getValue() {
         this.evaluate();
         if (!this.isCompleteEvaluated) return undefined;
@@ -350,6 +564,13 @@ export class RegoExp {
         }
     }
 
+    /**
+     * Convert operator term to string and put rest operands into an array.
+     * And then return a [Operator, Operands] structure
+     *
+     * @returns {[string, RegoTerm[]]}
+     * @memberof RegoExp
+     */
     toOperatorOperandsArray(): [string, RegoTerm[]] {
         if (this.terms.length !== 3) {
             throw new Error(
@@ -383,6 +604,12 @@ export class RegoExp {
         return [operator, operands];
     }
 
+    /**
+     * Try to evaluate the expression
+     *
+     * @returns
+     * @memberof RegoExp
+     */
     evaluate() {
         if (this.terms.length === 0) {
             // --- exp should be considered as matched (true)
@@ -438,6 +665,12 @@ export class RegoExp {
                 this.value = value;
                 return this;
             }
+        } else {
+            throw new Error(
+                `Invalid ${
+                    this.terms.length
+                } terms rego expression: ${this.termsAsString()}`
+            );
         }
         // --- so far there is no 2 terms expression e.g. ! x
         // --- builtin function should never be included in residual rule
@@ -472,6 +705,13 @@ export class RegoExp {
     }
 }
 
+/**
+ * Represents a special Rego Term type: reference term
+ * You shouldn't use this class directly
+ *
+ * @export
+ * @class RegoRef
+ */
 export class RegoRef {
     public parts: RegoRefPart[];
 
@@ -580,20 +820,69 @@ export function value2String(value: RegoValue) {
     else return JSON.stringify(value);
 }
 
+/**
+ * OPA result Parser
+ *
+ * @export
+ * @class OpaCompileResponseParser
+ */
 export default class OpaCompileResponseParser {
+    /**
+     * If a warning is produced during the parsing
+     *
+     * @type {boolean}
+     * @memberof OpaCompileResponseParser
+     */
     public hasWarns: boolean = false;
+
+    /**
+     * Any warnings produced during the parsing
+     *
+     * @type {string[]}
+     * @memberof OpaCompileResponseParser
+     */
     public warns: string[] = [];
 
     private data: any = null;
+
+    /**
+     * Inital Rules parsed from result
+     * Only for debug purpose
+     *
+     * @type {RegoRule[]}
+     * @memberof OpaCompileResponseParser
+     */
     public completeRules: RegoRule[] = [];
+
+    /**
+     * Parsed, compressed & evaluated rules
+     *
+     * @type {RegoRule[]}
+     * @memberof OpaCompileResponseParser
+     */
     public rules: RegoRule[] = [];
 
+    /**
+     * A cache of all resolved rule result
+     *
+     * @type {{
+     *         [fullName: string]: CompleteRuleResult;
+     *     }}
+     * @memberof OpaCompileResponseParser
+     */
     public completeRuleResults: {
         [fullName: string]: CompleteRuleResult;
     } = {};
 
     constructor() {}
 
+    /**
+     * Parse OPA result Response
+     *
+     * @param {*} json
+     * @returns {RegoRule[]}
+     * @memberof OpaCompileResponseParser
+     */
     parse(json: any): RegoRule[] {
         if (_.isString(json)) {
             this.data = JSON.parse(json);
@@ -640,8 +929,13 @@ export default class OpaCompileResponseParser {
      * Tried to merge rules outcome so that the ref value can be established easier
      * After this step, any rules doesn't involve unknown should be merged to one value
      * This will help to generate more concise query later
+     *
+     * Only for internal usage
+     *
+     * @private
+     * @memberof OpaCompileResponseParser
      */
-    calculateCompleteRuleResult() {
+    private calculateCompleteRuleResult() {
         const fullNames = this.rules.map(r => r.fullName);
         fullNames.forEach(fullName => {
             const rules = this.rules.filter(r => r.fullName === fullName);
@@ -679,7 +973,14 @@ export default class OpaCompileResponseParser {
         });
     }
 
-    reduceDependencies() {
+    /**
+     * Only for internal usage
+     *
+     * @returns
+     * @private
+     * @memberof OpaCompileResponseParser
+     */
+    private reduceDependencies() {
         const rules = this.rules.filter(r => !r.isCompleteEvaluated);
         if (!rules.length) return;
         for (let i = 0; i < rules.length; i++) {
@@ -693,6 +994,13 @@ export default class OpaCompileResponseParser {
         );
     }
 
+    /**
+     * Call to evaluate a rule
+     *
+     * @param {string} fullName
+     * @returns {CompleteRuleResult}
+     * @memberof OpaCompileResponseParser
+     */
     evaluateRule(fullName: string): CompleteRuleResult {
         let rules = this.rules.filter(r => r.fullName === fullName);
         if (!rules.length) {
@@ -729,6 +1037,13 @@ export default class OpaCompileResponseParser {
         };
     }
 
+    /**
+     * evaluate a rule and returned as human readable string
+     *
+     * @param {string} fullName
+     * @returns {string}
+     * @memberof OpaCompileResponseParser
+     */
     evaluateRuleAsHumanReadableString(fullName: string): string {
         const result = this.evaluateRule(fullName);
         if (result === null) return "null";
@@ -742,7 +1057,15 @@ export default class OpaCompileResponseParser {
         return parts.join("\nOR\n");
     }
 
-    createCompleteRuleResult(rule: RegoRule): CompleteRuleResult {
+    /**
+     * Only for internal usage
+     *
+     * @param {RegoRule} rule
+     * @returns {CompleteRuleResult}
+     * @private
+     * @memberof OpaCompileResponseParser
+     */
+    private createCompleteRuleResult(rule: RegoRule): CompleteRuleResult {
         return {
             fullName: rule.fullName,
             name: rule.name,
