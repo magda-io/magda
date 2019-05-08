@@ -217,16 +217,16 @@ const Routes = () => {
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
-                <React.Fragment>
-                    <Route
-                        path="/catalog"
-                        component={withHeader(CatalogRoutes, false)}
-                    />
-                    <Route
-                        path="/dataset/add"
-                        component={withHeader(DatasetRoutes, false)}
-                    />
-                </React.Fragment>
+                <Route
+                    path="/catalog"
+                    component={withHeader(CatalogRoutes, false)}
+                />
+            )}
+            {config.featureFlags.cataloguing && (
+                <Route
+                    path="/dataset/add"
+                    component={withHeader(DatasetRoutes, false)}
+                />
             )}
 
             <Route
