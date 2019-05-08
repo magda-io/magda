@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
+import { fetchContent } from "actions/contentActions";
 import request from "helpers/request";
 
 export function requestWhoAmI() {
@@ -84,7 +85,8 @@ export function requestSignOut() {
                 }
             })
             .then(() => {
-                return requestWhoAmI()(dispatch, getState);
+                fetchContent()(dispatch, getState);
+                requestWhoAmI()(dispatch, getState);
             });
         return undefined;
     };

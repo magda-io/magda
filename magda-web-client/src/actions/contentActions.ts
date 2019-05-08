@@ -27,7 +27,7 @@ export function requestContentError(error: any): Action {
 export function fetchContent() {
     return (dispatch: Function, getState: Function) => {
         // check if we need to fetch
-        if (getState().content.isFetching || getState().content.isFetched) {
+        if (getState().content.isFetching) {
             return false;
         }
         fetch(config.contentUrl, config.fetchOptions)
