@@ -6,7 +6,7 @@ import { textEditor } from "Components/Editing/Editors/textEditor";
 import { base64ImageEditor } from "Components/Editing/Editors/imageEditor";
 import { withRouter } from "react-router";
 
-class StoriesAdminPage extends Component {
+class StoriesAdminPage extends Component<any, any> {
     render() {
         const pathPrefix = `footer/copyright`;
         return (

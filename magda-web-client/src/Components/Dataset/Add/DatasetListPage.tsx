@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
  * I made it into a separate page for now.
  * Maybe this can turn into a component that is visible on homepage
  */
-class DatasetListPage extends React.Component<never, never> {
+class DatasetListPage extends React.Component<any, any> {
     render() {
         const datasets: any[] = [];
         for (const [id, dataset] of Object.entries(localStorage)) {
