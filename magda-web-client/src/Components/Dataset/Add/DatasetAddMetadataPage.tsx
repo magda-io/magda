@@ -57,6 +57,8 @@ import {
     saveState
 } from "./DatasetAddCommon";
 
+import "./DatasetAddMetadataPage.scss";
+
 type Prop = {
     createRecord: Function;
     isCreating: boolean;
@@ -283,6 +285,13 @@ class NewDataset extends React.Component<Prop, State> {
                     onChange={editSpatialCoverage("bbox")}
                     editor={bboxEditor}
                 />
+
+                <h4>Would you like to show a spatial preview?</h4>
+
+                <YesNoToggle>
+                    <p>Map preview: </p>
+                    <BBOXPreview bbox={spatialCoverage.bbox} />
+                </YesNoToggle>
             </div>
         );
     }
@@ -487,4 +496,56 @@ function denormalise(values) {
     }
 
     return output;
+}
+
+class YesNoToggle extends React.Component<any, any> {
+    state = {
+        yes: false
+    };
+    updateState(update: any) {
+        this.setState(Object.assign({}, this.state, update));
+    }
+    render() {
+        const { yes } = this.state;
+        return (
+            <div>
+                <p>
+                    <button
+                        className={"au-btn " + (yes || "au-btn--secondary")}
+                        onClick={this.updateState.bind(this, {
+                            yes: true
+                        })}
+                    >
+                        Yes
+                    </button>
+                    <button
+                        className={"au-btn " + (!yes || "au-btn--secondary")}
+                        onClick={this.updateState.bind(this, {
+                            yes: false
+                        })}
+                    >
+                        No
+                    </button>
+                </p>
+                {yes && this.props.children}
+            </div>
+        );
+    }
+}
+
+import { Map, TileLayer, Rectangle } from "react-leaflet";
+
+function BBOXPreview(props) {
+    let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
+    let [minlon, minlat, maxlon, maxlat] = bbox;
+    const bounds = [[minlat, minlon], [maxlat, maxlon]];
+    return (
+        <Map bounds={bounds} animate={true}>
+            <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Rectangle bounds={bounds} />
+        </Map>
+    );
 }
