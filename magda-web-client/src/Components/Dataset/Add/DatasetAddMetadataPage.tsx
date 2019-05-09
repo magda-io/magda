@@ -500,7 +500,7 @@ function denormalise(values) {
 
 class YesNoToggle extends React.Component<any, any> {
     state = {
-        yes: false
+        yes: true
     };
     updateState(update: any) {
         this.setState(Object.assign({}, this.state, update));
@@ -538,14 +538,24 @@ import { Map, TileLayer, Rectangle } from "react-leaflet";
 function BBOXPreview(props) {
     let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
     let [minlon, minlat, maxlon, maxlat] = bbox;
+    const isValid =
+        !isNaN(minlon) && !isNaN(minlat) && !isNaN(maxlon) && !isNaN(maxlat);
     const bounds = [[minlat, minlon], [maxlat, maxlon]];
     return (
-        <Map bounds={bounds} animate={true}>
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <Rectangle bounds={bounds} />
-        </Map>
+        <div>
+            {isValid ? (
+                <Map bounds={bounds} animate={true}>
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Rectangle bounds={bounds} />
+                </Map>
+            ) : (
+                <div className={"leaflet-container"}>
+                    Please enter valid coordinates
+                </div>
+            )}
+        </div>
     );
 }
