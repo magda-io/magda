@@ -109,6 +109,52 @@ class NestedSetModelQueryer {
         if (!result || !result.rows || !result.rows.length) return null;
         return result.rows;
     }
+
+    /**
+     * Get all nodes at level n from top
+     * e.g. get all nodes at level 3:
+     * this.getAllNodesAtLevel(3)
+     * Root node is at level 1
+     *
+     * @param {number} level
+     * @returns {Promise<NodeRecord[]>}
+     * @memberof NestedSetModelQueryer
+     */
+    async getAllNodesAtLevel(level: number): Promise<NodeRecord[]> {
+        const tbl = this.tableName;
+        const result = await this.pool.query(
+            `SELECT ${this.selectFields("t2")}
+            FROM "${tbl}" AS t1, "${tbl}" AS t2
+            WHERE t2.left BETWEEN t1.left AND t1.right 
+            GROUP BY t2.id 
+            HAVING COUNT(t1.id) = $1`,
+            [level]
+        );
+        if (!result || !result.rows || !result.rows.length) return null;
+        return result.rows;
+    }
+
+    /**
+     * Get total height (no. of the levels) of the tree
+     * Starts with 1 level
+     *
+     * @returns {Promise<number>}
+     * @memberof NestedSetModelQueryer
+     */
+    async getTreeHeight(): Promise<number> {
+        const tbl = this.tableName;
+        const result = await this.pool.query(
+            `SELECT MAX(level) AS height 
+             FROM(
+                SELECT COUNT(t1.id)
+                FROM "${tbl}" AS t1, "${tbl}" AS t2
+                WHERE t2.left BETWEEN t1.left AND t1.right 
+                GROUP BY t2.id 
+             ) AS L(level)`
+        );
+        if (!result || !result.rows || !result.rows.length) return null;
+        return result.rows[0]["height"];
+    }
 }
 
 export default NestedSetModelQueryer;
