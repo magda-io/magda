@@ -17,6 +17,7 @@ CREATE TABLE "public"."org_units" (
 -- add index
 CREATE INDEX org_units_left_idx ON "public"."org_units" USING btree ("left");
 CREATE INDEX org_units_right_idx ON "public"."org_units" USING btree ("right");
+CREATE INDEX org_units_left_ight_idx ON "public"."org_units" USING btree ("left", "right");
 
 ALTER TABLE "public"."org_units" ADD FOREIGN KEY ("create_by") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "public"."org_units" ADD FOREIGN KEY ("edit_by") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
