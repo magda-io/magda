@@ -288,7 +288,7 @@ class NewDataset extends React.Component<Prop, State> {
 
                 <h4>Would you like to show a spatial preview?</h4>
 
-                <YesNoToggle>
+                <YesNoToggle yes={!!spatialCoverage.bbox}>
                     <p>Map preview: </p>
                     <BBOXPreview bbox={spatialCoverage.bbox} />
                 </YesNoToggle>
@@ -499,9 +499,13 @@ function denormalise(values) {
 }
 
 class YesNoToggle extends React.Component<any, any> {
-    state = {
-        yes: true
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            yes: !!props.yes
+        };
+    }
+
     updateState(update: any) {
         this.setState(Object.assign({}, this.state, update));
     }
