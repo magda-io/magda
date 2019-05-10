@@ -15,7 +15,7 @@ import iconFolders from "assets/folders-purple.svg";
 
 import "./DatasetAddPage.scss";
 
-class AddDataset extends React.Component<never, never> {
+class AddDataset extends React.Component<any, any> {
     render() {
         return (
             <div className="container-fluid">

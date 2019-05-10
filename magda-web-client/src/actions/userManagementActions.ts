@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
+import { fetchContent } from "actions/contentActions";
 import request from "helpers/request";
 
 export function requestWhoAmI() {
@@ -24,9 +25,6 @@ export function requestWhoAmI() {
                     const res = await response.json();
                     if (res.isError) {
                         switch (res.errorCode) {
-                            case 401:
-                                dispatch(receiveWhoAmISignedOut());
-                                break;
                             default:
                                 throw new Error(
                                     "Error when fetching current user: " +
@@ -34,7 +32,7 @@ export function requestWhoAmI() {
                                 );
                         }
                     } else {
-                        dispatch(receiveWhoAmISignedIn(res));
+                        dispatch(receiveWhoAmIUserInfo(res));
                     }
                 } else {
                     throw new Error(
@@ -47,16 +45,10 @@ export function requestWhoAmI() {
     };
 }
 
-export function receiveWhoAmISignedIn(user: any): any {
+export function receiveWhoAmIUserInfo(user: any): any {
     return {
-        type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_IN,
+        type: actionTypes.RECEIVE_WHO_AM_I_USER_INFO,
         user
-    };
-}
-
-export function receiveWhoAmISignedOut(): any {
-    return {
-        type: actionTypes.RECEIVE_WHO_AM_I_SIGNED_OUT
     };
 }
 
@@ -80,18 +72,22 @@ export function requestSignOut() {
         fetch(config.baseUrl + "auth/logout", {
             ...config.fetchOptions,
             credentials: "include"
-        }).then(response => {
-            if (response.status <= 400) {
-                dispatch(completedSignOut());
-                return;
-            } else {
-                dispatch(
-                    signOutError(
-                        new Error("Error signing out: " + response.status)
-                    )
-                );
-            }
-        });
+        })
+            .then(response => {
+                if (response.status <= 400) {
+                    dispatch(completedSignOut());
+                } else {
+                    dispatch(
+                        signOutError(
+                            new Error("Error signing out: " + response.status)
+                        )
+                    );
+                }
+            })
+            .then(() => {
+                fetchContent()(dispatch, getState);
+                requestWhoAmI()(dispatch, getState);
+            });
         return undefined;
     };
 }

@@ -221,6 +221,8 @@ app.use(express.static(clientBuild));
 const topLevelRoutes = [
     "admin",
     "search",
+    "drafts",
+    "all-datasets",
     "feedback",
     "contact",
     "account",

@@ -20,6 +20,7 @@ import {
     installStatusRouter,
     createServiceProbe
 } from "@magda/typescript-common/dist/express/status";
+import AccessControlError from "@magda/typescript-common/dist/authorization-api/AccessControlError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -85,7 +86,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // get summary
             let all: any[] = await database.getContentSummary(
                 [idQuery, typeQuery],
-                inlineContentIfType
+                inlineContentIfType,
+                req.header("X-Magda-Session")
             );
 
             // filter out privates and non-configurable
@@ -169,7 +171,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
         try {
             const contentPromise = await database.getContentById(
-                requestContentId
+                requestContentId,
+                req.header("X-Magda-Session")
             );
             const { content, format } = (await contentPromise.caseOf({
                 just: content =>
@@ -219,7 +222,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
             res.status(e.statusCode || 500).json({
                 result: "FAILED"
             });
-            console.error(e);
+            if (e instanceof AccessControlError) {
+                console.log(e);
+            } else {
+                console.error(e);
+            }
         }
     }
 

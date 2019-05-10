@@ -23,7 +23,9 @@ libraryDependencies ++= {
     "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+    "org.mock-server" % "mockserver-client-java" % "5.5.1" % "test",
+    "org.mock-server" % "mockserver-netty" % "5.5.1" % "test"
   )
 }
 

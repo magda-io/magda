@@ -1,0 +1,173 @@
+{
+    "result": {
+        "queries": [
+            [
+                {
+                    "index": 0,
+                    "terms": [
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "equal"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "data"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "partial"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "object"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "content"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "allowRead"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "boolean",
+                            "value": true
+                        }
+                    ]
+                }
+            ]
+        ],
+        "support": [
+            {
+                "package": {
+                    "path": [
+                        {
+                            "type": "var",
+                            "value": "data"
+                        },
+                        {
+                            "type": "string",
+                            "value": "partial"
+                        },
+                        {
+                            "type": "string",
+                            "value": "object"
+                        },
+                        {
+                            "type": "string",
+                            "value": "content"
+                        }
+                    ]
+                },
+                "rules": [
+                    {
+                        "head": {
+                            "name": "allowRead",
+                            "value": {
+                                "type": "boolean",
+                                "value": true
+                            }
+                        },
+                        "body": [
+                            {
+                                "index": 0,
+                                "negated": true,
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                }
+                            },
+                            {
+                                "index": 1,
+                                "negated": true,
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "head": {
+                            "name": "allowRead",
+                            "value": {
+                                "type": "boolean",
+                                "value": true
+                            }
+                        },
+                        "body": [
+                            {
+                                "index": 0,
+                                "terms": [
+                                    {
+                                        "type": "ref",
+                                        "value": [
+                                            {
+                                                "type": "var",
+                                                "value": "eq"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "ref",
+                                        "value": [
+                                            {
+                                                "type": "var",
+                                                "value": "input"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "object"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "content"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "id"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "string",
+                                        "value": "header/navigation/datasets"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "default": true,
+                        "head": {
+                            "name": "allowRead",
+                            "value": {
+                                "type": "boolean",
+                                "value": false
+                            }
+                        },
+                        "body": [
+                            {
+                                "index": 0,
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

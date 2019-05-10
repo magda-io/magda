@@ -12,7 +12,7 @@ class AccountNavbar extends React.Component {
 
     render() {
         let menu = [];
-        if (this.props.user) {
+        if (this.props.user.id) {
             menu.push(
                 <li key="/account" id={this.props.skipLink ? "nav" : undefined}>
                     <NavLink to={`/account`}>
