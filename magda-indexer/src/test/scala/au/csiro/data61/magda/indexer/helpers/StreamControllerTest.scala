@@ -154,7 +154,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     range.foldLeft(Seq[DataSet]()){
       case (acc, e) =>
         acc ++ Seq(
-          DataSet(identifier = s"d$e", catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
+          DataSet(identifier = s"d$e", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
     }
   }
 

@@ -25,11 +25,11 @@ class StreamSourceControllerTest extends FlatSpec with Matchers with BeforeAndAf
   private var source: Source[DataSet, NotUsed] = None.orNull
 
   private val dataSet1 =
-    DataSet(identifier = "d1", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d1", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
   private val dataSet2 =
-    DataSet(identifier = "d2", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d2", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
   private val dataSet3 =
-    DataSet(identifier = "d3", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d3", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
 
   private val dataSets: Seq[DataSet] = List(dataSet1, dataSet2, dataSet3)
 

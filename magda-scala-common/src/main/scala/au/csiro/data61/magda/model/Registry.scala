@@ -292,6 +292,7 @@ object Registry {
 
       DataSet(
         identifier = hit.id,
+        tenantId = hit.tenantId,
         title = dcatStrings.extract[String]('title.?),
         catalog = source.extract[String]('name.?),
         description = getNullableStringField(dcatStrings, "description"),

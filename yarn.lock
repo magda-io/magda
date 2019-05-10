@@ -1132,7 +1132,17 @@
     node-sass "^4.9.0"
     postcss "6.0.14"
 
-"@gov.au/pancake-sass@^2.3.4", "@gov.au/pancake-sass@~2":
+"@gov.au/pancake-sass@^2.3.7":
+  version "2.3.7"
+  resolved "https://registry.yarnpkg.com/@gov.au/pancake-sass/-/pancake-sass-2.3.7.tgz#5bd0bc78a339332ddac99f4ce5249e50c1f2c271"
+  integrity sha512-RoQtXURh76M/awpOeH9X9HERf6vHiVAyzg2Z814DYHyShmWoNsc4rmwPPJCvdvjY1sXBo5vPxsBW2B4w6vrgRw==
+  dependencies:
+    "@gov.au/pancake" "~1"
+    autoprefixer "9.4.10"
+    node-sass "^4.11.0"
+    postcss "7.0.14"
+
+"@gov.au/pancake-sass@~2":
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/@gov.au/pancake-sass/-/pancake-sass-2.3.4.tgz#ca7c6a0fd60025a6008eb72b4303eae1a342281a"
   integrity sha512-AL8FJ88tsrebf/rF7ieCTckAyW+wDJ7sNDRG+kvr9CnBH8ktZkxvzWDCsYtN7PZjT0nyIQYf8gwdLPTfAOT83A==
@@ -13792,7 +13802,7 @@ mocha@^5.1.1:
     mkdirp "0.5.1"
     supports-color "5.4.0"
 
-mockttp@0.13.0:
+mockttp@^0.13.0:
   version "0.13.0"
   resolved "https://registry.yarnpkg.com/mockttp/-/mockttp-0.13.0.tgz#35a3edf6dd2f7152682c5f6be413b17dc7397b5b"
   integrity sha512-hr9qTFh6knkO3hI4XOn8DmiZDdy1TL2oiMkZtaYh0aLIwUDIWoQbvsUdw0Vv3jPyoZSDFPFvgV7fOKpDDWC4OQ==

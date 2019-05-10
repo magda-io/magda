@@ -1,20 +1,21 @@
 package au.csiro.data61.magda.api
 
+import java.io
 import java.net.URL
+
 import org.scalacheck.Arbitrary._
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
 
+import akka.http.scaladsl.model.headers.RawHeader
+
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
-
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.ElasticDsl
-
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
@@ -25,8 +26,10 @@ import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
+
 import scala.collection.mutable
-import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, RegistryConverters}
+import cats.instances.future
 
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols   {
   val INSERTION_WAIT_TIME = 500 seconds
@@ -75,27 +78,42 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     }
   def mediumIndexGen: Gen[(String, List[DataSet], Route)] = indexGen
 
-  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
+  def tenantsIndexGen(tenantIds: List[BigInt]): Gen[(String, List[DataSet], Route)]  =
+    Gen.delay {
+      Gen.choose(0, 10).flatMap { size =>
+        genIndexForSize(size, tenantIds)
+      }
+    }
+
+  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
+    RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
+  }
+
+  def addSingleTenantIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+  }
+
+  def genIndexForSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
     val size = rawSize % 100
 
     getFromIndexCache(size) match {
-      case (cacheKey, None) ⇒
+      case (_, None) ⇒
         val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
 
-        val future = Future {
+        if (tenantIds.nonEmpty){
+          val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
+            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId.toString)).retryUntil(_ => true).sample.get
+          )
+          putDataSetsInIndex(dataSets)
+        }
+        else {
           val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
           putDataSetsInIndex(dataSets)
         }
 
-        BaseSearchApiSpec.genCache.put(cacheKey, future)
-        logger.debug("Cache miss for {}", cacheKey)
-
-        future.await(INSERTION_WAIT_TIME)
       case (cacheKey, Some(cachedValue)) ⇒
         logger.debug("Cache hit for {}", cacheKey)
-
-        val value = cachedValue.await(INSERTION_WAIT_TIME)
-
+        val value: (String, List[DataSet], Route) = cachedValue.await(INSERTION_WAIT_TIME)
         value
     }
   }

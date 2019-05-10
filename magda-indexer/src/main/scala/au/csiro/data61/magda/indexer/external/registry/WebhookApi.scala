@@ -62,8 +62,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
             case None | Some(Nil) => Future.successful(Unit)
             case Some(list) =>
               val dataSets = list.map(record => try {
-                val theRecord = record.copy(tenantId = MAGDA_ADMIN_PORTAL_ID.toString())
-                Some(convertRegistryDataSet(theRecord, Some(system.log)))
+                Some(convertRegistryDataSet(record, Some(system.log)))
               } catch {
                 case CausedBy(e: spray.json.DeserializationException) =>
                   system.log.error(e, "When converting {}", record.id)

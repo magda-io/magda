@@ -66,6 +66,7 @@ package misc {
 
   case class DataSet(
       identifier: String,
+      tenantId: String,
       title: Option[String] = None,
       catalog: Option[String],
       description: Option[String] = None,
@@ -89,9 +90,9 @@ package misc {
       creation: Option[DcatCreation] = None,
       score: Option[Float]) {
 
-    def uniqueId: String = DataSet.registryIdToIdentifier(identifier)
+    def uniqueId: String = DataSet.registryIdToIdentifier(identifier + tenantId)
 
-    override def toString: String = s"Dataset(identifier = $identifier, title=$title)"
+    override def toString: String = s"Dataset(identifier = $identifier, tenantId = $tenantId, title=$title)"
 
     def normalToString: String = ScalaRunTime._toString(this)
   }
@@ -459,6 +460,7 @@ package misc {
       override def write(dataSet: DataSet):JsValue =
         JsObject(
           "identifier" -> dataSet.identifier.toJson,
+          "tenantId" -> dataSet.tenantId.toJson,
           "title" -> dataSet.title.toJson,
           "catalog" -> dataSet.catalog.toJson,
           "description" -> dataSet.description.toJson,
@@ -497,6 +499,7 @@ package misc {
 
         DataSet(
           identifier = convertField[String]("identifier", json),
+          tenantId = convertField[String]("tenantId", json),
           title = convertOptionField[String]("title", json),
           catalog = convertOptionField[String]("catalog", json),
           description = convertOptionField[String]("description", json),

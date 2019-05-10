@@ -8,9 +8,9 @@ import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.searches.SearchRequest
-import com.sksamuel.elastic4s.searches.aggs.{ Aggregation => AggregationDefinition }
-import com.sksamuel.elastic4s.searches.aggs.{ FilterAggregation => FilterAggregationDefinition }
-import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, QueryStringQuery => QueryStringQueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
+import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
+import com.sksamuel.elastic4s.searches.aggs.{FilterAggregation => FilterAggregationDefinition}
+import com.sksamuel.elastic4s.searches.queries.{BoolQuery, CommonTermsQuery, InnerHit => InnerHitDefinition, Query => QueryDefinition, QueryStringQuery => QueryStringQueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
 import com.typesafe.config.Config
 import spray.json._
 import akka.actor.ActorSystem
@@ -45,7 +45,7 @@ import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
-import com.sksamuel.elastic4s.searches.queries.funcscorer.{ ScoreFunction => ScoreFunctionDefinition}
+import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit
@@ -83,14 +83,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     inputQuery: Query,
     start: Long,
     limit: Int,
-    requestedFacetSize: Int) = {
+    requestedFacetSize: Int,
+    tenantId: String) = {
     val inputRegionsList = inputQuery.regions.toList
 
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
       augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
-        val query = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
+        val aggQuery: SearchRequest = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
+        val tenantTermQuery: CommonTermsQuery = commonTermsQuery("tenantId", tenantId)
+        val query: SearchRequest = aggQuery.query(tenantTermQuery)
         Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
           case results: RequestSuccess[SearchResponse] => Future.successful((results.result, MatchAll))
           case IllegalArgumentException(e) => throw e
