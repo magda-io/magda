@@ -212,7 +212,7 @@ const Routes = () => {
             )}
             {config.featureFlags.cataloguing && (
                 <Route
-                    path="/dataset/add"
+                    path="/dataset/(add|list)"
                     component={withHeader(DatasetRoutes, false)}
                 />
             )}

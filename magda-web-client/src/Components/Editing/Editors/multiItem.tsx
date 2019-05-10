@@ -1,5 +1,6 @@
 import React from "react";
 import Editor from "./Editor";
+import "./multiItem.scss";
 
 export abstract class MultiItemEditor extends React.Component<
     {
@@ -35,6 +36,7 @@ export abstract class MultiItemEditor extends React.Component<
         let newValue = this.state.newValue;
         if (newValue) {
             value.push(newValue);
+            newValue = "";
         }
         this.updateState({ value, newValue });
         if (this.props.onChange) {
@@ -71,10 +73,10 @@ export class ListMultiItemEditor extends MultiItemEditor {
 
         return (
             <React.Fragment>
-                <ul>
+                <div className="multi-list-item-editor-container">
                     {value.map((val, i) => {
                         return (
-                            <li key={i}>
+                            <div className="multi-list-item-editor-item">
                                 {editor.view(val)}
                                 {enabled && (
                                     <button
@@ -84,19 +86,21 @@ export class ListMultiItemEditor extends MultiItemEditor {
                                         &#215;
                                     </button>
                                 )}
-                            </li>
+                            </div>
                         );
                     })}
-                </ul>
+                </div>
                 {enabled && (
                     <React.Fragment>
-                        {editor.edit(newValue, this.change.bind(this))}
-                        <button
-                            className="edit-button"
-                            onClick={this.add.bind(this)}
-                        >
-                            Add
-                        </button>
+                        {editor.edit(newValue, this.change.bind(this), value)}
+                        {newValue && (
+                            <button
+                                className="edit-button"
+                                onClick={this.add.bind(this)}
+                            >
+                                Add
+                            </button>
+                        )}
                     </React.Fragment>
                 )}
             </React.Fragment>

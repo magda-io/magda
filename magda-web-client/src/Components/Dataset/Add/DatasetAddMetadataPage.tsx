@@ -4,6 +4,8 @@ import { withRouter } from "react-router";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 
+import FileIcon from "Components/Common/FileIcon";
+
 import Styles from "./DatasetAddFilesPage.module.scss";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -12,7 +14,7 @@ import {
     textEditor,
     textEditorEx,
     multilineTextEditor,
-    multiTextEditor,
+    multiTextEditorEx,
     dateEditor,
     multiDateIntervalEditor
 } from "Components/Editing/Editors/textEditor";
@@ -147,22 +149,32 @@ class NewDataset extends React.Component<Prop, State> {
                 </div>
                 <div className="row">
                     <div className="col-sm-12">
-                        <p>
-                            Magda has reviewed your files and pre-populated
-                            metadata fields based on the contents.
-                        </p>
-                        <p>
-                            Please review carefully, and update any fields as
-                            required.
-                        </p>
-                        <ul>
-                            {files.map((file, i) => (
-                                <li key={i}>{file.title}</li>
-                            ))}
-                        </ul>
+                        <div className="dataset-add-files">
+                            <p>
+                                Magda has reviewed your files and pre-populated
+                                metadata fields based on the contents.
+                            </p>
+                            <p>
+                                Please review carefully, and update any fields
+                                as required.
+                            </p>
+                            <div>
+                                {files.map(file => (
+                                    <p>
+                                        &nbsp; &nbsp;
+                                        <FileIcon width="1em" />
+                                        &nbsp; &nbsp;
+                                        {file.title}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {this.steps[step].render()}
+                <br />
+                <br />
+                <br />
                 <div className="row">
                     <div className="col-sm-12">
                         <button
@@ -210,88 +222,114 @@ class NewDataset extends React.Component<Prop, State> {
         return (
             <div>
                 <h2>Dataset details and contents</h2>
+                <hr />
                 <h3>Title and language</h3>
-                <h4>What is the title of the dataset?*</h4>
-                <AlwaysEditor
-                    value={dataset.title}
-                    onChange={editDataset("title")}
-                    editor={textEditorEx({ required: true })}
-                />
+                <h4>What is the title of the dataset?</h4>
+                <p>
+                    <AlwaysEditor
+                        value={dataset.title}
+                        onChange={editDataset("title")}
+                        editor={textEditorEx({ required: true })}
+                    />
+                </p>
+                <br />
                 <h4>What language(s) is the dataset available in?</h4>
-                <AlwaysEditor
-                    value={dataset.languages}
-                    onChange={editDataset("languages")}
-                    editor={multiCodelistEditor(codelists.languages, true)}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.languages}
+                        onChange={editDataset("languages")}
+                        editor={multiCodelistEditor(codelists.languages, true)}
+                    />
+                </p>
                 <hr />
                 <h3>Contents</h3>
                 <h4>What keywords best describe this dataset?</h4>
-                <p>
+                <ToolTip>
                     Keywords are specific words that your dataset contains, and
                     they help people search for specific datasets. We recommend
                     keywords and kept to 10-15 words. We've identified the top
                     keywords from your document.
-                </p>
-                <AlwaysEditor
-                    value={dataset.keywords}
-                    onChange={editDataset("keywords")}
-                    editor={multiTextEditor}
-                />
-                <h4>Which themes does this dataset cover?</h4>
+                </ToolTip>
                 <p>
+                    <AlwaysEditor
+                        value={dataset.keywords}
+                        onChange={editDataset("keywords")}
+                        editor={multiTextEditorEx({
+                            placeholder: "Add a keyword"
+                        })}
+                    />
+                </p>
+                <h4>Which themes does this dataset cover?</h4>
+                <ToolTip>
                     Themes are the topics your dataset covers and they help
                     people find related datasets within a topic. We recommend
                     themes are kept to 5-10 topics. We've identified themes from
                     your document, that are consistent with similar datasets.
+                </ToolTip>
+                <p>
+                    <AlwaysEditor
+                        value={dataset.themes}
+                        onChange={editDataset("themes")}
+                        editor={multiTextEditorEx({
+                            placeholder: "Add a theme"
+                        })}
+                    />
                 </p>
-                <AlwaysEditor
-                    value={dataset.themes}
-                    onChange={editDataset("themes")}
-                    editor={multiTextEditor}
-                />
                 <hr />
                 <h3>Dates and updates</h3>
                 <h4>When was the dataset was published or issued?</h4>
-                <AlwaysEditor
-                    value={dataset.issued}
-                    onChange={editDataset("issued")}
-                    editor={dateEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.issued}
+                        onChange={editDataset("issued")}
+                        editor={dateEditor}
+                    />
+                </p>
                 <h4>When was the dataset most recently modified?</h4>
-                <AlwaysEditor
-                    value={dataset.modified}
-                    onChange={editDataset("modified")}
-                    editor={dateEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.modified}
+                        onChange={editDataset("modified")}
+                        editor={dateEditor}
+                    />
+                </p>
                 <h4>How frequency is the dataset updated?</h4>
-                <AlwaysEditor
-                    value={dataset.accrualPeriodicity}
-                    onChange={editDataset("accrualPeriodicity")}
-                    editor={codelistEditor(codelists.accrualPeriodicity)}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.accrualPeriodicity}
+                        onChange={editDataset("accrualPeriodicity")}
+                        editor={codelistEditor(codelists.accrualPeriodicity)}
+                    />
+                </p>
                 <h4>What time period does the dataset cover?</h4>
-                <AlwaysEditor
-                    value={temporalCoverage.intervals}
-                    onChange={editTemporalCoverage("intervals")}
-                    editor={multiDateIntervalEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={temporalCoverage.intervals}
+                        onChange={editTemporalCoverage("intervals")}
+                        editor={multiDateIntervalEditor}
+                    />
+                </p>
                 <hr />
                 <h3>Spatial area</h3>
                 <h4>
                     We've determined that the spatial extent of your data is:
                 </h4>
-                <AlwaysEditor
-                    value={spatialCoverage.bbox}
-                    onChange={editSpatialCoverage("bbox")}
-                    editor={bboxEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={spatialCoverage.bbox}
+                        onChange={editSpatialCoverage("bbox")}
+                        editor={bboxEditor}
+                    />
+                </p>
 
                 <h4>Would you like to show a spatial preview?</h4>
 
-                <YesNoToggle yes={!!spatialCoverage.bbox}>
-                    <p>Map preview: </p>
-                    <BBOXPreview bbox={spatialCoverage.bbox} />
-                </YesNoToggle>
+                <p>
+                    <YesNoToggle yes={!!spatialCoverage.bbox}>
+                        <p>Map preview: </p>
+                        <BBOXPreview bbox={spatialCoverage.bbox} />
+                    </YesNoToggle>
+                </p>
             </div>
         );
     }
@@ -561,5 +599,16 @@ function BBOXPreview(props) {
                 </div>
             )}
         </div>
+    );
+}
+
+import LightBulbIcon from "assets/light-bulb.svg";
+
+function ToolTip(props) {
+    return (
+        <p>
+            <img src={LightBulbIcon} style={{ width: "2em", float: "left" }} />
+            {props.children}
+        </p>
     );
 }

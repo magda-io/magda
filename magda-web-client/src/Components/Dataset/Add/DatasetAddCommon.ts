@@ -92,7 +92,8 @@ export function createBlankState(): State {
         files: [],
         processing: false,
         dataset: {
-            title: "Untitled"
+            title: "Untitled",
+            languages: ["eng"]
         },
         datasetPublishing: {
             state: "draft",

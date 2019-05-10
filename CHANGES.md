@@ -35,6 +35,7 @@ UI:
 -   Implemented basic admin pages in react ui
 -   Started implementing new add dataset flow design changes
 -   Added basic spatial preview to add dataset
+-   Revised add dataset first metadata page for conformance with design
 
 ## 0.0.55
 
