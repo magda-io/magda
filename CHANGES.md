@@ -23,6 +23,7 @@ Cataloging:
 -   Updated new dataset demo UI page to support adding new datasets
 -   Updated dataset ui page to be able to edit fields
 -   Added editor / editor type abstraction for making state management simpler for large forms.
+-   Added "Add Catalog" page
 
 UI:
 
@@ -31,6 +32,17 @@ UI:
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
 -   Refactored web client to group similar things togeather
+-   Implemented basic admin pages in react ui
+-   Started implementing new add dataset flow design changes
+-   Fixed web-client code loaded & run twice
+
+Access Control:
+
+-   Introduced Role & Permission Structure
+-   Recognise unauthenticated users as anonymous users role
+-   Introduced Open Policy Agent as policy evaluation engine
+-   Search API will return datasets based on user's Roles & Permissions
+-   Users with access to draft datasets can see a new `drafts` tab
 
 ## 0.0.55
 

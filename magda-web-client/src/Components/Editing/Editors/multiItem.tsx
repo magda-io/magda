@@ -28,7 +28,9 @@ export abstract class MultiItemEditor extends React.Component<
         });
     }
 
-    add() {
+    add(event) {
+        event.preventDefault();
+
         const value = this.value();
         let newValue = this.state.newValue;
         if (newValue) {

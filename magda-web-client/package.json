@@ -16,6 +16,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "dependencies": {
+    "@craco/craco": "^5.0.2",
     "@gov.au/accordion": "^7.0.7",
     "@gov.au/animate": "^1.0.0",
     "@gov.au/body": "^2.1.1",
@@ -48,6 +49,8 @@
     "react-app-polyfill": "^0.2.1",
     "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
+    "react-list-drag-and-drop": "^0.9.0",
+    "react-simplemde-editor": "^4.0.0",
     "retext": "^6.0.1",
     "retext-keywords": "^4.0.2",
     "source-map-explorer": "^1.7.0",
@@ -55,8 +58,8 @@
   },
   "devDependencies": {
     "@craco/craco": "^3.6.0",
-    "@magda/scripts": "^0.0.56-0",
     "@magda/registry-aspects": "^0.0.56-0",
+    "@magda/scripts": "^0.0.56-0",
     "@storybook/addon-actions": "^3.3.3",
     "@storybook/addon-links": "^3.3.3",
     "@storybook/addons": "^3.3.3",

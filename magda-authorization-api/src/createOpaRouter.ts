@@ -118,13 +118,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         req: express.Request,
         res: express.Response
     ) {
-        let userInfo: User;
-
-        try {
-            userInfo = await database.getCurrentUserInfo(req, jwtSecret);
-        } catch (e) {
-            userInfo = await database.getDefaultAnonymousUserInfo();
-        }
+        const userInfo: User = await database.getCurrentUserInfo(
+            req,
+            jwtSecret
+        );
 
         let reqData: any = {};
         const contentType = req.get("content-type");
@@ -171,7 +168,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             });
             await appendUserInfoToInput(req, res);
         } catch (e) {
-            res.status(500).send(`Failed to proxy OPA request: ${e}`);
+            res.status(e.statusCode || 500).send(
+                `Failed to proxy OPA request: ${e}`
+            );
         }
     }
 

@@ -3,6 +3,8 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
+import { fetchContent } from "actions/contentActions";
+import request from "helpers/request";
 
 export function requestWhoAmI() {
     return (dispatch: Dispatch, getState: GetState) => {
@@ -83,7 +85,8 @@ export function requestSignOut() {
                 }
             })
             .then(() => {
-                return requestWhoAmI()(dispatch, getState);
+                fetchContent()(dispatch, getState);
+                requestWhoAmI()(dispatch, getState);
             });
         return undefined;
     };
@@ -143,4 +146,17 @@ export function receiveAuthProvidersError(err: any): any {
         type: actionTypes.RECEIVE_AUTH_PROVIDERS_ERROR,
         err
     };
+}
+
+export function listUsers() {
+    return request("GET", config.authApiUrl + "users/all");
+}
+
+export function updateUser(user, patch) {
+    return request(
+        "PUT",
+        config.authApiUrl + "users/" + user,
+        patch,
+        "application/json"
+    );
 }
