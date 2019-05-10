@@ -35,6 +35,7 @@ UI:
 -   Implemented basic admin pages in react ui
 -   Started implementing new add dataset flow design changes
 -   Fixed web-client code loaded & run twice
+-   Added basic spatial preview to add dataset
 
 ## 0.0.55
 
