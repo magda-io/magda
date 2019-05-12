@@ -59,7 +59,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     modified: new Date(thisFile.lastModified)
                         .toISOString()
                         .substr(0, 10),
-                    format: thisFile.type,
+                    format: fileFormat(thisFile),
                     _state: FileState.Added
                 };
 
@@ -388,6 +388,16 @@ function mapStateToProps(state, old) {
     return {
         dataset
     };
+}
+
+function fileFormat(file): string {
+    const extensionIndex = file.name.lastIndexOf(".");
+    const extensionLength = file.name.length - extensionIndex - 1;
+    if (extensionIndex !== -1 && extensionLength > 0 && extensionLength < 5) {
+        return file.name.substr(extensionIndex + 1).toUpperCase();
+    } else {
+        return file.type || "unknown";
+    }
 }
 
 export default withRouter(connect(mapStateToProps)(DatasetAddFilesPage));

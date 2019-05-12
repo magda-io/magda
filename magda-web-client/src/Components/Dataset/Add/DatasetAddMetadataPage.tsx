@@ -162,7 +162,10 @@ class NewDataset extends React.Component<Prop, State> {
                                 {files.map(file => (
                                     <p>
                                         &nbsp; &nbsp;
-                                        <FileIcon width="1em" />
+                                        <FileIcon
+                                            width="1em"
+                                            text={file.format}
+                                        />
                                         &nbsp; &nbsp;
                                         {file.title}
                                     </p>

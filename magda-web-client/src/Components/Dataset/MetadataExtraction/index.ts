@@ -40,7 +40,7 @@ export async function runExtractors(input: ExtractorInput, update: any) {
             output._progress =
                 ((extractors.indexOf(extractor) + 1) / extractors.length) * 100;
             update(output);
-            await delay(1000);
+            await delay(100);
         } catch (e) {
             // even if one of the modules fail, we keep going
             console.error(e);

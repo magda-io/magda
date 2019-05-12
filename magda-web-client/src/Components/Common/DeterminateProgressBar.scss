@@ -8,6 +8,8 @@
 
 .determinate-pb-progress {
     background-color: $AU-color-foreground-action;
-    height: 0.75em;
+    color: $AU-color-background;
+    min-height: 0.75em;
+    padding: 0.25em;
     border-radius: 0.5em;
 }
