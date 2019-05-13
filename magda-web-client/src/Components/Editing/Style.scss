@@ -1,5 +1,75 @@
 @import "variables";
 
+.toggle-editor-container {
+    position: relative;
+    .toggle-edit-button {
+        display: none;
+    }
+}
+
+.toggle-editor-container {
+    input,
+    textarea,
+    select {
+        margin-bottom: 5px;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+}
+
+.toggle-editor-container {
+    .full-width-ctrl {
+        width: 98%;
+        max-width: none;
+    }
+}
+
+.toggle-editor-container {
+    .non-full-width-ctrl {
+        margin-right: 10px;
+    }
+}
+
+.toggle-editor-container {
+    textarea {
+        height: 250px;
+    }
+}
+
+.toggle-editor-container {
+    .save-button,
+    .add-button {
+        margin-right: 5px;
+    }
+}
+
+.toggle-editor-container:hover {
+    .toggle-edit-button {
+        display: block;
+    }
+}
+
+.toggle-edit-button {
+    font-weight: bold;
+    font-size: 1.5rem;
+    border: 1px solid $AU-colordark-background;
+    border-radius: 5px;
+    padding-left: 10px;
+    padding-right: 13px;
+    background-color: #ffffff;
+    color: $AU-colordark-background;
+    position: absolute;
+    right: 10px;
+    top: 2px;
+    z-index: 999;
+}
+
+.toggle-edit-button:hover {
+    cursor: pointer;
+    background-color: $AU-colordark-background;
+    color: $AU-colordark-foreground-action;
+}
+
 .edit-button {
     margin-left: 0.5em;
     margin-top: 0.5em;

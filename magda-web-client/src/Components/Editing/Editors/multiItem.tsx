@@ -73,29 +73,31 @@ export class ListMultiItemEditor extends MultiItemEditor {
 
         return (
             <React.Fragment>
-                <div className="multi-list-item-editor-container">
-                    {value.map((val, i) => {
-                        return (
-                            <div className="multi-list-item-editor-item">
-                                {editor.view(val)}
-                                {enabled && (
-                                    <button
-                                        className="edit-button"
-                                        onClick={this.deleteIndex(i)}
-                                    >
-                                        &#215;
-                                    </button>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+                {!enabled && (!value || !value.length) ? null : (
+                    <div className="multi-list-item-editor-container">
+                        {value.map((val, i) => {
+                            return (
+                                <div className="multi-list-item-editor-item">
+                                    {editor.view(val)}
+                                    {enabled && (
+                                        <button
+                                            className="edit-button"
+                                            onClick={this.deleteIndex(i)}
+                                        >
+                                            &#215;
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
                 {enabled && (
                     <React.Fragment>
                         {editor.edit(newValue, this.change.bind(this), value)}
                         {newValue && (
                             <button
-                                className="edit-button"
+                                className="au-btn add-button"
                                 onClick={this.add.bind(this)}
                             >
                                 Add
@@ -103,6 +105,7 @@ export class ListMultiItemEditor extends MultiItemEditor {
                         )}
                     </React.Fragment>
                 )}
+                {!enabled && (!value || !value.length) && "NOT SET"}
             </React.Fragment>
         );
     }
