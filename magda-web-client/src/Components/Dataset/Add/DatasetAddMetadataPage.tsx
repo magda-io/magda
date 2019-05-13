@@ -21,8 +21,11 @@ import {
 
 import {
     codelistEditor,
+    codelistRatioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
+
+import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 
@@ -344,51 +347,82 @@ class NewDataset extends React.Component<Prop, State> {
         return (
             <div>
                 <h2>People and production</h2>
+                <hr />
+                <h3>People</h3>
                 <h4>
                     What organisation is responsible for publishing this
                     dataset?
                 </h4>
-                <AlwaysEditor
-                    value={dataset.publisher}
-                    onChange={editDataset("publisher")}
-                    editor={textEditor}
-                />
-                <h4>Who is the primary contact point for this dataset?</h4>
-                <AlwaysEditor
-                    value={dataset.contactPoint}
-                    onChange={editDataset("contactPoint")}
-                    editor={multilineTextEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.publisher}
+                        onChange={editDataset("publisher")}
+                        editor={textEditor}
+                    />
+                </p>
+                <h4>Who is the primary contact point(s) for this dataset?</h4>
+                <p>
+                    <AlwaysEditor
+                        value={dataset.contactPoint2}
+                        onChange={editDataset("contactPoint2")}
+                        editor={multiContactEditor({})}
+                    />
+                </p>
                 <h4>
                     How should the contact point(s) be referenced in the
                     metadata?
                 </h4>
-                <AlwaysEditor
-                    value={dataset.contactPointDisplay}
-                    onChange={editDataset("contactPointDisplay")}
-                    editor={codelistEditor(codelists.contactPointDisplay)}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.contactPointDisplay}
+                        onChange={editDataset("contactPointDisplay")}
+                        editor={codelistRatioEditor(
+                            codelists.contactPointDisplay
+                        )}
+                    />
+                </p>
+                <hr />
+                <h3>Production</h3>
                 <h4>
                     Was this dataset produced collaborating with other
                     organisations?
                 </h4>
-                <AlwaysEditor
-                    value={dataset.creation_affiliatedOrganisation}
-                    onChange={editDataset("creation_affiliatedOrganisation")}
-                    editor={multilineTextEditor}
-                />
+                <p>
+                    <YesNoEditReveal
+                        value={dataset.creation_affiliatedOrganisation}
+                        defaultValue={[]}
+                        nullValue={null}
+                        onChange={editDataset(
+                            "creation_affiliatedOrganisation"
+                        )}
+                    >
+                        <AlwaysEditor
+                            value={dataset.creation_affiliatedOrganisation}
+                            onChange={editDataset(
+                                "creation_affiliatedOrganisation"
+                            )}
+                            editor={multiTextEditorEx({
+                                placeholder: "Add an organisation"
+                            })}
+                        />
+                    </YesNoEditReveal>
+                </p>
                 <h4>How was the dataset produced?</h4>
-                <AlwaysEditor
-                    value={dataset.creation_mechanism}
-                    onChange={editDataset("creation_mechanism")}
-                    editor={multilineTextEditor}
-                />
-                <h4>What system was the dataset produced with?</h4>
-                <AlwaysEditor
-                    value={dataset.creation_sourceSystem}
-                    onChange={editDataset("creation_sourceSystem")}
-                    editor={textEditor}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={dataset.creation_mechanism}
+                        onChange={editDataset("creation_mechanism")}
+                        editor={multilineTextEditor}
+                    />
+                </p>
+                <h4>What system was used to create this dataset?</h4>
+                <p>
+                    <AlwaysEditor
+                        value={dataset.creation_sourceSystem}
+                        onChange={editDataset("creation_sourceSystem")}
+                        editor={textEditor}
+                    />
+                </p>
             </div>
         );
     }
@@ -613,5 +647,65 @@ function ToolTip(props) {
             <img src={LightBulbIcon} style={{ width: "2em", float: "left" }} />
             {props.children}
         </p>
+    );
+}
+
+function YesNoEditReveal(props) {
+    const yes = !!props.value;
+    const name = Math.random() + "";
+    const yesOpts: any = {
+        name,
+        value: "yes"
+    };
+    const noOpts: any = { name, value: "no" };
+    if (yes) {
+        yesOpts.checked = "checked";
+    } else {
+        noOpts.checked = true;
+    }
+    yesOpts.onChange = noOpts.onChange = e => {
+        console.log(e.target.value);
+        if (e.target.value === "yes") {
+            props.onChange(props.defaultValue);
+        } else {
+            props.onChange(props.nullValue);
+        }
+    };
+    return (
+        <div>
+            <div>
+                <div className="au-control-input">
+                    <input
+                        className="au-control-input__input"
+                        type="radio"
+                        id={name + "-no"}
+                        {...noOpts}
+                    />
+                    <label
+                        htmlFor={name + "-no"}
+                        className="au-control-input__text"
+                    >
+                        No
+                    </label>
+                </div>
+            </div>
+            <div>
+                <div className="au-control-input">
+                    <input
+                        className="au-control-input__input"
+                        type="radio"
+                        id={name + "-yes"}
+                        {...yesOpts}
+                    />
+                    <label
+                        className="au-control-input__text"
+                        htmlFor={name + "-yes"}
+                    >
+                        Yes
+                    </label>
+                </div>
+            </div>
+            {yes && props.children}
+        </div>
     );
 }

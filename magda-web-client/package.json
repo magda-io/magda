@@ -22,6 +22,7 @@
     "@gov.au/body": "^2.1.1",
     "@gov.au/breadcrumbs": "^3.0.4",
     "@gov.au/buttons": "^3.0.6",
+    "@gov.au/control-input": "^3.0.1",
     "@gov.au/core": "^3.2.0",
     "@gov.au/cta-link": "^2.1.9",
     "@gov.au/footer": "^3.0.3",

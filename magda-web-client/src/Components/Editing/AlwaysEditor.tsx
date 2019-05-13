@@ -24,8 +24,4 @@ export class AlwaysEditor extends React.Component<AlwaysEditorProps> {
         let { value, editor } = this.props;
         return editor.edit(value, this.change.bind(this));
     }
-
-    componentWillReceiveProps(nextProps) {
-        this.forceUpdate();
-    }
 }

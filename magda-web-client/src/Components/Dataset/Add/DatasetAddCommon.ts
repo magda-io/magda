@@ -1,5 +1,7 @@
 import uuidv4 from "uuid/v4";
 
+import { Contact } from "Components/Editing/Editors/contactEditor";
+
 export type File = {
     title: string;
     description?: string;
@@ -43,13 +45,13 @@ type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPoint?: string;
+    contactPoint2?: Contact[];
     contactPointDisplay?: string;
     publisher?: string;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
-    creation_affiliatedOrganisation?: string;
+    creation_affiliatedOrganisation?: string[];
     creation_sourceSystem?: string;
     creation_mechanism?: string;
     creation_isOpenData?: boolean;
