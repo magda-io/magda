@@ -1029,6 +1029,17 @@
     "@gov.au/pancake-react" "~1"
     "@gov.au/pancake-sass" "~2"
 
+"@gov.au/control-input@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@gov.au/control-input/-/control-input-3.0.1.tgz#030c54cb18f241e93d31b8f537d324c3a96faf61"
+  integrity sha512-zLw89E5gQ+s5kq7c+eTFwOv72JTImOx9SQmkQef/kF8ifIDeSrVDH10KPi3xoqqG6q7c93zA4tlvfY89IKgmXw==
+  dependencies:
+    "@gov.au/core" "^3.0.0"
+    "@gov.au/pancake" "~1"
+    "@gov.au/pancake-json" "~1"
+    "@gov.au/pancake-react" "~1"
+    "@gov.au/pancake-sass" "~2"
+
 "@gov.au/core@^3.0.0", "@gov.au/core@^3.2.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@gov.au/core/-/core-3.4.0.tgz#f5bfc8552280f4d7c9ff647bce848e9de604d847"

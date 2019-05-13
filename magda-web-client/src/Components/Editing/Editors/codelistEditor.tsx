@@ -44,6 +44,57 @@ export function codelistEditor(options: any, reorder = false): Editor {
     };
 }
 
+export function codelistRatioEditor(options: any, reorder = false): Editor {
+    return {
+        edit: (value: any, onChange: Function) => {
+            const callback = event => {
+                onChange(event.target.value);
+            };
+            value = value || "";
+            let keys = Object.keys(options);
+            if (reorder) {
+                keys = keys.sort(alphaLabelSort(options));
+            }
+            const name = Math.random() + ".";
+            return (
+                <div>
+                    {keys.map(val => {
+                        return (
+                            <div>
+                                <div className="au-control-input">
+                                    <input
+                                        className="au-control-input__input"
+                                        type="radio"
+                                        value={val}
+                                        name={name}
+                                        id={name + val}
+                                        onChange={callback}
+                                    />{" "}
+                                    <label
+                                        className="au-control-input__text"
+                                        htmlFor={name + val}
+                                    >
+                                        {options[val]}
+                                    </label>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        },
+        view: (value: any) => {
+            return (
+                <React.Fragment>
+                    {(options[value] && `${options[value]}`) ||
+                        value ||
+                        "NOT SET"}
+                </React.Fragment>
+            );
+        }
+    };
+}
+
 function alphaLabelSort(labels, order = 1) {
     return (a, b) => {
         a = labels[a].toLowerCase();

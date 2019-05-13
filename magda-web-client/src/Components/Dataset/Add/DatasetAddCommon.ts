@@ -1,5 +1,7 @@
 import uuidv4 from "uuid/v4";
 
+import { Contact } from "Components/Editing/Editors/contactEditor";
+
 export type File = {
     title: string;
     description?: string;
@@ -43,19 +45,18 @@ type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPoint?: string;
+    contactPointFull?: Contact[];
     contactPointDisplay?: string;
     publisher?: string;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
-    creation_affiliatedOrganisation?: string;
+    creation_affiliatedOrganisation?: string[];
     creation_sourceSystem?: string;
     creation_mechanism?: string;
     creation_isOpenData?: boolean;
     accessLevel?: string;
-    informationSecurity_disseminationLimits?: string[];
-    informationSecurity_classification?: string;
+    accessNotesTemp?: string;
 };
 
 type DatasetPublishing = {
@@ -74,6 +75,8 @@ export type State = {
     processing: boolean;
     spatialCoverage: SpatialCoverage;
     temporalCoverage: TemporalCoverage;
+    datasetUsage: Usage;
+    datasetAccess: Access;
     _lastModifiedDate: string;
     _createdDate: string;
 };
@@ -85,6 +88,19 @@ type TemporalCoverage = {
 type Interval = {
     start?: string;
     end?: string;
+};
+
+type Usage = {
+    licenseLevel?: string;
+    license?: string;
+    disseminationLimits?: string[];
+    securityClassification?: string;
+};
+
+type Access = {
+    url?: string;
+    notes?: string;
+    downloadURL?: string;
 };
 
 export function createBlankState(): State {
@@ -103,6 +119,8 @@ export function createBlankState(): State {
         temporalCoverage: {
             intervals: []
         },
+        datasetUsage: {},
+        datasetAccess: {},
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString()
     };

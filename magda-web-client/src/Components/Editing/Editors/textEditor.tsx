@@ -14,7 +14,11 @@ export function textEditorEx(options: any = {}) {
             }
             return (
                 <input
-                    className="au-text-input"
+                    className={
+                        options.fullWidth
+                            ? "au-text-input full-width-ctrl"
+                            : "au-text-input non-full-width-ctrl"
+                    }
                     defaultValue={value as string}
                     onChange={callback}
                     {...options}
@@ -22,12 +26,13 @@ export function textEditorEx(options: any = {}) {
             );
         },
         view: (value: any) => {
-            return <React.Fragment>{value}</React.Fragment>;
+            return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;
         }
     };
 }
 
 export const textEditor = textEditorEx({});
+export const textEditorFullWidth = textEditorEx({ fullWidth: true });
 
 export const multilineTextEditor: Editor = {
     edit: (value: any, onChange: Function) => {
@@ -36,7 +41,7 @@ export const multilineTextEditor: Editor = {
         };
         return (
             <textarea
-                className="au-text-input"
+                className="au-text-input full-width-ctrl au-text-input--block"
                 style={{ width: "100%" }}
                 onChange={callback}
                 defaultValue={value as string}
@@ -44,7 +49,7 @@ export const multilineTextEditor: Editor = {
         ); //<input defaultValue={value as string} onChange={callback} />;
     },
     view: (value: any) => {
-        return <React.Fragment>{value}</React.Fragment>;
+        return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;
     }
 };
 
