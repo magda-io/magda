@@ -262,14 +262,15 @@ class NestedSetModelQueryer {
             [nodeId]
         );
         if (!result || !result.rows || !result.rows.length) return null;
-        const level: number = result.rows[0]["level"];
-        if (typeof level !== "number" || level < 1) return null;
+        const level: number = parseInt(result.rows[0]["level"]);
+        if (!_.isNumber(level) || _.isNaN(level) || level < 1) return null;
         return level;
     }
 
     /**
      * Get total height (no. of the levels) of the tree
      * Starts with 1 level
+     * If no tree found, return null
      *
      * @returns {Promise<number>}
      * @memberof NestedSetModelQueryer
@@ -285,8 +286,10 @@ class NestedSetModelQueryer {
                 GROUP BY t2.id 
              ) AS L(level)`
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0]["height"];
+        if (!result || !result.rows || !result.rows.length) return 0;
+        const height: number = parseInt(result.rows[0]["height"]);
+        if (!_.isNumber(height) || _.isNaN(height) || height < 0) return 0;
+        return height;
     }
 
     /**
@@ -337,13 +340,13 @@ class NestedSetModelQueryer {
      *
      * @param {string} higherNodeId
      * @param {string} lowerNodeId
-     * @returns {Promise<NodeRecord>}
+     * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
     async getTopDownPathBetween(
         higherNodeId: string,
         lowerNodeId: string
-    ): Promise<NodeRecord> {
+    ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("t2")}
@@ -375,7 +378,7 @@ class NestedSetModelQueryer {
         const result = await this.pool.query(
             `SELECT (
                 CASE
-                    WHEN $1 = $2 
+                    WHEN CAST($1 AS varchar) = CAST($2 AS varchar)
                     THEN 0
                     WHEN t1.left BETWEEN t2.left AND t2.right 
                     THEN -1
@@ -385,7 +388,7 @@ class NestedSetModelQueryer {
                 END
             ) AS "result"
             FROM "${tbl}" AS t1, "${tbl}" AS t2
-            WHERE t1.id = $1 AND t2.id = $2`,
+            WHERE t1.id = CAST($1 AS uuid) AND t2.id = CAST($2 AS uuid)`,
             [node1Id, node2Id]
         );
         if (!result || !result.rows || !result.rows.length) return null;

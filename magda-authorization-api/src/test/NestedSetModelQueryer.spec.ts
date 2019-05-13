@@ -1,7 +1,7 @@
 import "mocha";
 import * as pg from "pg";
 import { expect } from "chai";
-import NestedSetModelQueryer from "../NestedSetModelQueryer";
+import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
 
 describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -66,16 +66,16 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
      *         |  Albert |
      *         | 1     12|
      *         +----+----+
-     *             |
+     *              |
      *     +--------+--------+
      *     |                 |
      * +----+----+       +----+----+
      * |   Bert  |       |  Chuck  |
      * | 2     3 |       | 4     11|
      * +---------+       +----+----+
-     *                     |
+     *                        |
      *         +-------------------------+
-     *         |            |            |
+     *         |             |            |
      *     +----+----+  +----+----+  +----+----+
      *     |  Donna  |  |  Eddie  |  |   Fred  |
      *     | 5     6 |  | 7     8 |  | 9     10|
@@ -237,5 +237,217 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Albert")
         );
         expect(node).be.null;
+    });
+
+    it("Test `getAllNodesAtLevel`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let nodes = await queryer.getAllNodesAtLevel(1);
+        expect(nodes.length).to.equal(1);
+        expect(nodes[0].name).to.equal("Albert");
+
+        nodes = await queryer.getAllNodesAtLevel(2);
+        expect(nodes.map(n => n.name)).to.have.members(["Bert", "Chuck"]);
+
+        nodes = await queryer.getAllNodesAtLevel(3);
+        expect(nodes.map(n => n.name)).to.have.members([
+            "Donna",
+            "Eddie",
+            "Fred"
+        ]);
+
+        nodes = await queryer.getAllNodesAtLevel(4);
+        expect(nodes).be.null;
+    });
+
+    it("Test `getLevelOfNode`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let level: number;
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Albert")
+        );
+        expect(level).to.equal(1);
+
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(level).to.equal(2);
+
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Chuck")
+        );
+        expect(level).to.equal(2);
+
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Donna")
+        );
+        expect(level).to.equal(3);
+
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Fred")
+        );
+        expect(level).to.equal(3);
+
+        level = await queryer.getLevelOfNode(
+            await getNodeIdFromName(tableName, "Eddie")
+        );
+        expect(level).to.equal(3);
+    });
+
+    it("Test `getTreeHeight`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let height = await queryer.getTreeHeight();
+        expect(height).to.equal(3);
+    });
+
+    it("Test `getLeftMostImmediateChild`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let node: NodeRecord;
+        node = await queryer.getLeftMostImmediateChild(
+            await getNodeIdFromName(tableName, "Albert")
+        );
+        expect(node.name).to.equal("Bert");
+
+        node = await queryer.getLeftMostImmediateChild(
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(node).be.null;
+
+        node = await queryer.getLeftMostImmediateChild(
+            await getNodeIdFromName(tableName, "Chuck")
+        );
+        expect(node.name).to.equal("Donna");
+
+        node = await queryer.getLeftMostImmediateChild(
+            await getNodeIdFromName(tableName, "Eddie")
+        );
+        expect(node).be.null;
+    });
+
+    it("Test `getRightMostImmediateChild`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let node: NodeRecord;
+        node = await queryer.getRightMostImmediateChild(
+            await getNodeIdFromName(tableName, "Albert")
+        );
+        expect(node.name).to.equal("Chuck");
+
+        node = await queryer.getRightMostImmediateChild(
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(node).be.null;
+
+        node = await queryer.getRightMostImmediateChild(
+            await getNodeIdFromName(tableName, "Chuck")
+        );
+        expect(node.name).to.equal("Fred");
+
+        node = await queryer.getRightMostImmediateChild(
+            await getNodeIdFromName(tableName, "Eddie")
+        );
+        expect(node).be.null;
+    });
+
+    it("Test `getTopDownPathBetween`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let nodes: NodeRecord[];
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Albert"),
+            await getNodeIdFromName(tableName, "Donna")
+        );
+        expect(nodes.map(n => n.name)).to.have.members([
+            "Albert",
+            "Chuck",
+            "Donna"
+        ]);
+
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Albert"),
+            await getNodeIdFromName(tableName, "Eddie")
+        );
+        expect(nodes.map(n => n.name)).to.have.members([
+            "Albert",
+            "Chuck",
+            "Eddie"
+        ]);
+
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Chuck"),
+            await getNodeIdFromName(tableName, "Fred")
+        );
+        expect(nodes.map(n => n.name)).to.have.members(["Chuck", "Fred"]);
+
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Albert"),
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(nodes.map(n => n.name)).to.have.members(["Albert", "Bert"]);
+
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Bert"),
+            await getNodeIdFromName(tableName, "Fred")
+        );
+        // --- there is no path between Bert and Fred
+        expect(nodes).be.null;
+    });
+
+    it("Test `compareNodes`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        let compareResult: number;
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Albert"),
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(compareResult).to.equal(1);
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Bert"),
+            await getNodeIdFromName(tableName, "Albert")
+        );
+        expect(compareResult).to.equal(-1);
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Bert"),
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(compareResult).to.equal(0);
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Bert"),
+            await getNodeIdFromName(tableName, "Eddie")
+        );
+        // --- as there is no path between Bert & Eddie
+        // --- i.e. Eddie is not Bert's subordinate
+        expect(compareResult).be.null;
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Eddie"),
+            await getNodeIdFromName(tableName, "Bert")
+        );
+        expect(compareResult).be.null;
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Chuck"),
+            await getNodeIdFromName(tableName, "Donna")
+        );
+        expect(compareResult).to.equal(1);
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Chuck"),
+            await getNodeIdFromName(tableName, "Donna")
+        );
+        expect(compareResult).to.equal(1);
+
+        compareResult = await queryer.compareNodes(
+            await getNodeIdFromName(tableName, "Chuck"),
+            "60194a60-aaaa-aaaa-aaaa-3e4d3c2cfefc" //--- non exists node
+        );
+        expect(compareResult).be.null;
     });
 });
