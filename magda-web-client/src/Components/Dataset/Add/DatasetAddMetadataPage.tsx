@@ -443,7 +443,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <h3>User access</h3>
                 <h4>Who can see the dataset once it is published?</h4>
                 <ToolTip>
-                    We recommend you publish yout data to everyone in your
+                    We recommend you publish your data to everyone in your
                     organisation to help prevent data silos.
                 </ToolTip>
                 <p>
