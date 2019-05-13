@@ -40,6 +40,8 @@ import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.sche
 import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
 import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
+import usageAspect from "@magda/registry-aspects/usage.schema.json";
+import accessAspect from "@magda/registry-aspects/access.schema.json";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -47,7 +49,9 @@ const aspects = {
     "spatial-coverage": spatialCoverageAspect,
     "temporal-coverage": temporalCoverageAspect,
     "dataset-distributions": datasetDistributionsAspect,
-    "dcat-distribution-strings": dcatDistributionStringsAspect
+    "dcat-distribution-strings": dcatDistributionStringsAspect,
+    usage: usageAspect,
+    access: accessAspect
 };
 
 import uuidv1 from "uuid/v1";
@@ -363,8 +367,8 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>Who is the primary contact point(s) for this dataset?</h4>
                 <p>
                     <AlwaysEditor
-                        value={dataset.contactPoint2}
-                        onChange={editDataset("contactPoint2")}
+                        value={dataset.contactPointFull}
+                        onChange={editDataset("contactPointFull")}
                         editor={multiContactEditor({})}
                     />
                 </p>
@@ -427,33 +431,95 @@ class NewDataset extends React.Component<Prop, State> {
         );
     }
     renderRestriction() {
-        const { dataset, datasetPublishing } = this.state;
+        const { datasetAccess, datasetUsage, datasetPublishing } = this.state;
 
-        const editDataset = this.edit("dataset");
         const editDatasetPublishing = this.edit("datasetPublishing");
+        const editDatasetAccess = this.edit("datasetAccess");
+        const editDatasetUsage = this.edit("datasetUsage");
         return (
             <div>
-                <h2>Dataset visibility, access and control</h2>
+                <h2>Dataset access and use</h2>
+                <hr />
+                <h3>User access</h3>
                 <h4>Who can see the dataset once it is published?</h4>
-                <AlwaysEditor
-                    value={datasetPublishing.level}
-                    onChange={editDatasetPublishing("level")}
-                    editor={codelistEditor(codelists.publishingLevel)}
-                />
+                <ToolTip>
+                    We recommend you publish yout data to everyone in your
+                    organisation to help prevent data silos.
+                </ToolTip>
+                <p>
+                    <AlwaysEditor
+                        value={datasetPublishing.level}
+                        onChange={editDatasetPublishing("level")}
+                        editor={codelistRatioEditor(codelists.publishingLevel)}
+                    />
+                </p>
+                <h4>Where can users access this dataset from?</h4>
+                <ToolTip>
+                    Select the best location for this file based on it's
+                    contents and your organisation file structure.
+                    <br />
+                    You can choose from a number of pre-defined file storage
+                    location.
+                </ToolTip>
+                <p>
+                    <AlwaysEditor
+                        value={datasetAccess.notes}
+                        onChange={editDatasetAccess("notes")}
+                        editor={textEditor}
+                    />
+                </p>
+                <hr />
+                <h3>Dataset use</h3>
+                <h4>What type of license should be applied to these files?</h4>
+
+                <ToolTip>
+                    By default, Magda adds Licenses at the Dataset Level (i.e.
+                    to all files), but this can be overriden to apply at a
+                    Distribution (each file or URL) level if desired.
+                </ToolTip>
+
+                <h4>What license restrictions should be applied?</h4>
+
+                <ToolTip>
+                    We recommend a Whole of Government License be applkied to
+                    encourage inter-department data sharing in the future.
+                </ToolTip>
+                <p>
+                    <AlwaysEditor
+                        value={datasetUsage.licenseLevel}
+                        onChange={editDatasetUsage("licenseLevel")}
+                        editor={codelistEditor(codelists.licenseLevel)}
+                    />
+                </p>
+                {datasetUsage.licenseLevel === "custom" && (
+                    <p>
+                        <AlwaysEditor
+                            value={datasetUsage.license}
+                            onChange={editDatasetUsage("license")}
+                            editor={textEditorEx({
+                                placeholder: "Please specify a license"
+                            })}
+                        />
+                    </p>
+                )}
                 <h4>What is the security classification of this dataset?</h4>
-                <AlwaysEditor
-                    value={dataset.informationSecurity_classification}
-                    onChange={editDataset("informationSecurity_classification")}
-                    editor={codelistEditor(codelists.classification)}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={datasetUsage.securityClassification}
+                        onChange={editDatasetUsage("securityClassification")}
+                        editor={codelistEditor(codelists.classification)}
+                    />
+                </p>
                 <h4>What is the sensitivity of this dataset?</h4>
-                <AlwaysEditor
-                    value={dataset.informationSecurity_disseminationLimits}
-                    onChange={editDataset(
-                        "informationSecurity_disseminationLimits"
-                    )}
-                    editor={multiCodelistEditor(codelists.disseminationLimits)}
-                />
+                <p>
+                    <AlwaysEditor
+                        value={datasetUsage.disseminationLimits}
+                        onChange={editDatasetUsage("disseminationLimits")}
+                        editor={multiCodelistEditor(
+                            codelists.disseminationLimits
+                        )}
+                    />
+                </p>
             </div>
         );
     }
@@ -464,11 +530,23 @@ class NewDataset extends React.Component<Prop, State> {
         return (
             <div>
                 <h2>Dataset description</h2>
-                <AlwaysEditor
-                    value={dataset.description}
-                    onChange={editDataset("description")}
-                    editor={multilineTextEditor}
-                />
+                <h3>Please describe the dataset</h3>
+                <ToolTip>
+                    A good dataset description clearly and succinctly explains
+                    the contantes, purpose and value of the dataset. <br />
+                    This is how users primarily identify and select your dataset
+                    from others
+                    <br />
+                    Here you can also include information that you have not
+                    already covered in the metadata.
+                </ToolTip>
+                <p>
+                    <AlwaysEditor
+                        value={dataset.description}
+                        onChange={editDataset("description")}
+                        editor={multilineTextEditor}
+                    />
+                </p>
             </div>
         );
     }
@@ -644,8 +722,11 @@ import LightBulbIcon from "assets/light-bulb.svg";
 function ToolTip(props) {
     return (
         <p>
-            <img src={LightBulbIcon} style={{ width: "2em", float: "left" }} />
-            {props.children}
+            <img
+                src={LightBulbIcon}
+                style={{ width: "2em", padding: "1em", float: "left" }}
+            />
+            <span style={{ display: "inline-block" }}>{props.children}</span>
         </p>
     );
 }
@@ -664,7 +745,6 @@ function YesNoEditReveal(props) {
         noOpts.checked = true;
     }
     yesOpts.onChange = noOpts.onChange = e => {
-        console.log(e.target.value);
         if (e.target.value === "yes") {
             props.onChange(props.defaultValue);
         } else {

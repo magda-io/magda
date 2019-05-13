@@ -1,6 +1,8 @@
 import React from "react";
 import Editor from "./Editor";
 
+import "./contactEditor.scss";
+
 export type Contact = {
     name?: string;
     role?: string;
@@ -46,7 +48,6 @@ class ContactsSearch extends React.Component<any, any> {
         searched: false
     };
     updateState(update: any) {
-        console.log("UPDATE", update);
         this.setState((state, props) => Object.assign({}, state, update));
     }
 
@@ -95,11 +96,7 @@ class ContactsSearch extends React.Component<any, any> {
                     <div>
                         {results.map((val: Contact) => {
                             return (
-                                <div
-                                    style={{
-                                        padding: ".5em"
-                                    }}
-                                >
+                                <div className="contactList-searchResult">
                                     {val.name} ({val.role}, {val.organisation}){" "}
                                     <button
                                         onClick={() => {
@@ -139,20 +136,10 @@ export function multiContactEditor(options: any): Editor {
             };
             return (
                 <div>
-                    <div
-                        style={{
-                            display: "table"
-                        }}
-                    >
+                    <div className="contactList">
                         {value.map(val => {
                             return (
-                                <div
-                                    style={{
-                                        border: "1px solid grey",
-                                        borderRadius: ".5em",
-                                        padding: ".5em"
-                                    }}
-                                >
+                                <div className="contactList-item">
                                     {val.name} ({val.role}, {val.organisation}){" "}
                                     <button onClick={() => remove(val)}>
                                         &#x2715;
