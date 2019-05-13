@@ -36,7 +36,7 @@ export const multilineTextEditor: Editor = {
         };
         return (
             <textarea
-                className="au-text-input"
+                className="au-text-input au-text-input--block"
                 style={{ width: "100%" }}
                 onChange={callback}
                 defaultValue={value as string}
