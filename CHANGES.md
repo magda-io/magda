@@ -37,6 +37,7 @@ UI:
 -   Fixed web-client code loaded & run twice
 -   Added basic spatial preview to add dataset
 -   Revised add dataset first metadata page for conformance with design
+-   Improved edit dataset page overall styling & editor behaviour
 
 Access Control:
 
