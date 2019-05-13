@@ -1,0 +1,19 @@
+.root {
+    //TODO: Get values from variables
+    border: 1px solid #ccc;
+    padding: 1em;
+    max-width: 48em;
+    border-radius: 5px;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.fileTitle {
+    margin: 0 0 0.5em 0;
+}
+
+.editButton {
+    font-size: 20px;
+    padding: 0px 7px;
+}

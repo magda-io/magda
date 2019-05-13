@@ -6,16 +6,13 @@ import { Link } from "react-router-dom";
 
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
+import ToolTip from "Components/Dataset/Add/ToolTip";
+import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
-import humanFileSize from "helpers/humanFileSize";
 import { getFiles } from "helpers/readFile";
 
 import Styles from "./DatasetAddFilesPage.module.scss";
-
-import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-
-import { textEditor } from "Components/Editing/Editors/textEditor";
 
 import {
     State,
@@ -56,9 +53,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     ).trim(),
                     title: thisFile.name,
                     byteSize: thisFile.size,
-                    modified: new Date(thisFile.lastModified)
-                        .toISOString()
-                        .substr(0, 10),
+                    modified: new Date(thisFile.lastModified),
                     format: fileFormat(thisFile),
                     _state: FileState.Added
                 };
@@ -138,10 +133,10 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
         }
     };
 
-    editFile = (index: number, field: string) => (newName: string) => {
+    editFile = (index: number) => (file: File) => {
         this.setState(state => {
             const newFiles = state.files.concat();
-            newFiles[index][field] = newName;
+            newFiles[index] = file;
             return {
                 files: newFiles
             };
@@ -179,82 +174,22 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
 
                 <div className="row">
                     <div className="col-xs-12">
+                        {this.state.files.length > 0 && (
+                            <ToolTip>
+                                We recommend ensuring dataset file names are
+                                descriptive so users can easily understand the
+                                contents
+                            </ToolTip>
+                        )}
                         <ul>
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li key={i}>
-                                        <h3>
-                                            <AlwaysEditor
-                                                value={file.title}
-                                                onChange={this.editFile(
-                                                    i,
-                                                    "title"
-                                                )}
-                                                editor={textEditor}
-                                            />
-                                        </h3>
-
+                                    <li key={i} className={Styles.fileListItem}>
                                         {file._state === FileState.Ready ? (
-                                            <div>
-                                                <div>
-                                                    <strong>Size: </strong>{" "}
-                                                    {humanFileSize(
-                                                        file.byteSize,
-                                                        false
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <strong>
-                                                        Last Modified:{" "}
-                                                    </strong>{" "}
-                                                    {file.modified}
-                                                </div>
-                                                <div>
-                                                    <strong>License: </strong>{" "}
-                                                    <AlwaysEditor
-                                                        value={file.license}
-                                                        onChange={this.editFile(
-                                                            i,
-                                                            "license"
-                                                        )}
-                                                        editor={textEditor}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <strong>Format: </strong>{" "}
-                                                    <AlwaysEditor
-                                                        value={file.format}
-                                                        onChange={this.editFile(
-                                                            i,
-                                                            "format"
-                                                        )}
-                                                        editor={textEditor}
-                                                    />
-                                                </div>
-                                                {file.equalHash && (
-                                                    <div>
-                                                        <strong>
-                                                            Exact Hash:
-                                                        </strong>{" "}
-                                                        {file.equalHash}
-                                                    </div>
-                                                )}
-
-                                                {file.similarFingerprint && (
-                                                    <div>
-                                                        <strong>
-                                                            Fingerprint
-                                                        </strong>{" "}
-                                                        {Object.values(
-                                                            file.similarFingerprint
-                                                        )
-                                                            .filter(
-                                                                x => x !== 0
-                                                            )
-                                                            .join(" ")}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <DatasetFile
+                                                file={file}
+                                                onChange={this.editFile(i)}
+                                            />
                                         ) : (
                                             <div>
                                                 <DeterminateProgressBar

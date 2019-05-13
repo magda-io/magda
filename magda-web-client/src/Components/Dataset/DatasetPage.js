@@ -228,7 +228,7 @@ class RecordHandler extends React.Component {
                                 src={getFormatIcon(this.props.distribution)}
                                 alt="distribution icon"
                             />
-                            bb
+
                             <h1>{this.props.distribution.title}</h1>
                         </span>
                         <div className="distribution-meta">
