@@ -9,6 +9,9 @@ export function textEditorEx(options: any = {}) {
             const callback = event => {
                 onChange(event.target.value);
             };
+            if (options.redrawOnEmpty && !value) {
+                options.key = Math.random();
+            }
             return (
                 <input
                     className="au-text-input"
@@ -49,6 +52,11 @@ export const multiTextEditor: Editor = ListMultiItemEditor.create(
     textEditor,
     () => ""
 );
+
+export const multiTextEditorEx = options => {
+    options.redrawOnEmpty = true;
+    return ListMultiItemEditor.create(textEditorEx(options), () => "");
+};
 
 export const dateEditor = textEditorEx({ type: "date" });
 export const dateIntervalEditor = {

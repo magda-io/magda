@@ -1,4 +1,13 @@
+@import "variables";
+
 .leaflet-container {
     height: 400px;
     width: 100%;
+}
+
+.dataset-add-files {
+    box-sizing: border-box;
+    padding: 1em;
+    margin: 1em 0 1em 0;
+    border: 1px solid $AU-color-foreground-action;
 }

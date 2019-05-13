@@ -283,3 +283,7 @@ h4 {
 
     @include AU-focus();
 }
+
+.au-body p {
+    max-width: 100%;
+}

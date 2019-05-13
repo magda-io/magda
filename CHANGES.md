@@ -36,6 +36,7 @@ UI:
 -   Started implementing new add dataset flow design changes
 -   Fixed web-client code loaded & run twice
 -   Added basic spatial preview to add dataset
+-   Revised add dataset first metadata page for conformance with design
 
 Access Control:
 
