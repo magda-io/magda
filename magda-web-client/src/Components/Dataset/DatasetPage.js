@@ -35,6 +35,7 @@ import { get } from "lodash";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import {
     textEditor,
+    textEditorFullWidth,
     multilineTextEditor,
     multiTextEditor,
     multiDateIntervalEditor
@@ -432,7 +433,7 @@ class RecordHandler extends React.Component {
                                         enabled={hasEditPermissions}
                                         value={this.props.dataset.title}
                                         onChange={datasetChange("title")}
-                                        editor={textEditor}
+                                        editor={textEditorFullWidth}
                                     />
                                 </h1>
                                 <div className="publisher-basic-info-row">

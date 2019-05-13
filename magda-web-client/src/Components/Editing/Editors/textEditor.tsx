@@ -14,7 +14,11 @@ export function textEditorEx(options: any = {}) {
             }
             return (
                 <input
-                    className="au-text-input"
+                    className={
+                        options.fullWidth
+                            ? "au-text-input full-width-ctrl"
+                            : "au-text-input non-full-width-ctrl"
+                    }
                     defaultValue={value as string}
                     onChange={callback}
                     {...options}
@@ -28,6 +32,7 @@ export function textEditorEx(options: any = {}) {
 }
 
 export const textEditor = textEditorEx({});
+export const textEditorFullWidth = textEditorEx({ fullWidth: true });
 
 export const multilineTextEditor: Editor = {
     edit: (value: any, onChange: Function) => {
@@ -36,7 +41,7 @@ export const multilineTextEditor: Editor = {
         };
         return (
             <textarea
-                className="au-text-input"
+                className="au-text-input full-width-ctrl"
                 style={{ width: "100%" }}
                 onChange={callback}
                 defaultValue={value as string}

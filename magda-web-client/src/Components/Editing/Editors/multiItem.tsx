@@ -95,7 +95,7 @@ export class ListMultiItemEditor extends MultiItemEditor {
                         {editor.edit(newValue, this.change.bind(this), value)}
                         {newValue && (
                             <button
-                                className="edit-button"
+                                className="au-btn add-button"
                                 onClick={this.add.bind(this)}
                             >
                                 Add
