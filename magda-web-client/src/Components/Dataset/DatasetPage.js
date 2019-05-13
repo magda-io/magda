@@ -45,7 +45,6 @@ import {
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
-import { booleanEditor } from "Components/Editing/Editors/booleanEditor";
 
 import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
@@ -177,10 +176,6 @@ class RecordHandler extends React.Component {
         const datasetChange = this.change(
             this.props.dataset.identifier,
             "dcat-dataset-strings"
-        );
-        const publishingChange = this.change(
-            this.props.dataset.identifier,
-            "publishing"
         );
 
         const spatialChange = this.change(
