@@ -508,165 +508,6 @@ class RecordHandler extends React.Component {
                                             </Medium>
                                         </ToggleEditor>
                                     </div>
-                                    {hasEditPermissions && (
-                                        <div className="au-body au-body--alt">
-                                            <h4>State: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={dataset.publishingState}
-                                                onChange={publishingChange(
-                                                    "state"
-                                                )}
-                                                editor={codelistEditor(
-                                                    codelists.status
-                                                )}
-                                            />
-                                            <h4>Priority: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={dataset.importance}
-                                                onChange={datasetChange(
-                                                    "importance"
-                                                )}
-                                                editor={codelistEditor(
-                                                    codelists.importance
-                                                )}
-                                            />
-                                            <h4>Affiliated Organisations: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.creationAffiliatedOrganisation
-                                                }
-                                                onChange={datasetChange(
-                                                    "creation/affiliatedOrganisation"
-                                                )}
-                                                editor={multilineTextEditor}
-                                            />
-                                            <h4>Update frequency: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.accrualPeriodicity
-                                                }
-                                                onChange={datasetChange(
-                                                    "accrualPeriodicity"
-                                                )}
-                                                editor={codelistEditor(
-                                                    codelists.accrualPeriodicity
-                                                )}
-                                            />
-                                            <h4>Spatial coverage: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.spatialCoverageBbox
-                                                }
-                                                onChange={spatialChange("bbox")}
-                                                editor={bboxEditor}
-                                            />
-                                            <h4>Temporal coverage: </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.temporalCoverage
-                                                        .intervals
-                                                }
-                                                onChange={temporalChange(
-                                                    "intervals"
-                                                )}
-                                                editor={multiDateIntervalEditor}
-                                            >
-                                                <div className="dataset-details-temporal-coverage">
-                                                    <TemporalAspectViewer
-                                                        data={
-                                                            dataset.temporalCoverage
-                                                        }
-                                                    />
-                                                </div>
-                                            </ToggleEditor>
-                                            <h4>Access level:</h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={dataset.accessLevel}
-                                                onChange={datasetChange(
-                                                    "accessLevel"
-                                                )}
-                                                editor={codelistEditor(
-                                                    codelists.accessLevel
-                                                )}
-                                            />
-                                            <h4>
-                                                Dataset security classification:
-                                            </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.informationSecurity
-                                                        .disseminationLimits
-                                                }
-                                                onChange={datasetChange(
-                                                    "informationSecurity/disseminationLimits"
-                                                )}
-                                                editor={multiCodelistEditor(
-                                                    codelists.disseminationLimits
-                                                )}
-                                            />
-                                            <h4>
-                                                Dataset security
-                                                classification2:
-                                            </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.informationSecurity
-                                                        .classification
-                                                }
-                                                onChange={datasetChange(
-                                                    "informationSecurity/classification"
-                                                )}
-                                                editor={codelistEditor(
-                                                    codelists.classification
-                                                )}
-                                            />
-                                            <h4>Is this public open data?</h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.creation.isOpenData
-                                                }
-                                                onChange={datasetChange(
-                                                    "creation/isOpenData"
-                                                )}
-                                                editor={booleanEditor}
-                                            />
-                                            <h4>
-                                                How was the dataset produced?
-                                            </h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.creation.mechanism
-                                                }
-                                                onChange={datasetChange(
-                                                    "creation/mechanism"
-                                                )}
-                                                editor={multilineTextEditor}
-                                            />
-                                            <h4>Source system:</h4>
-                                            <ToggleEditor
-                                                enabled={hasEditPermissions}
-                                                value={
-                                                    dataset.creation
-                                                        .sourceSystem
-                                                }
-                                                onChange={datasetChange(
-                                                    "creation/sourceSystem"
-                                                )}
-                                                editor={textEditor}
-                                            />
-                                        </div>
-                                    )}
                                     {this.props.dataset.hasQuality ? (
                                         <div className="quality-rating-box">
                                             <QualityIndicator
@@ -702,6 +543,172 @@ class RecordHandler extends React.Component {
                                             tags={this.props.dataset.tags}
                                         />
                                     </ToggleEditor>
+                                    {hasEditPermissions && (
+                                        <div>
+                                            <br />
+                                            <hr />
+                                            <h2>Dates and updates</h2>
+                                            <h4>
+                                                How frequently is the dataset
+                                                updated?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.accrualPeriodicity
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "accrualPeriodicity"
+                                                    )}
+                                                    editor={codelistEditor(
+                                                        codelists.accrualPeriodicity
+                                                    )}
+                                                />
+                                            </p>
+                                            <h4>
+                                                What time period does the
+                                                dataset cover?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.temporalCoverage
+                                                            .intervals
+                                                    }
+                                                    onChange={temporalChange(
+                                                        "intervals"
+                                                    )}
+                                                    editor={
+                                                        multiDateIntervalEditor
+                                                    }
+                                                >
+                                                    <div className="dataset-details-temporal-coverage">
+                                                        <TemporalAspectViewer
+                                                            data={
+                                                                dataset.temporalCoverage
+                                                            }
+                                                        />
+                                                    </div>
+                                                </ToggleEditor>
+                                            </p>
+                                            <hr />
+                                            <h3>Spatial area</h3>
+                                            <h4>
+                                                We've determined that the
+                                                spatial extent of your data is:
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.spatialCoverageBbox
+                                                    }
+                                                    onChange={spatialChange(
+                                                        "bbox"
+                                                    )}
+                                                    editor={bboxEditor}
+                                                />
+                                            </p>
+                                            <hr />
+                                            <h2>People and production</h2>
+                                            <h4>
+                                                Was this dataset produced
+                                                collaborating with other
+                                                organisations?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.creationAffiliatedOrganisation
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "creation/affiliatedOrganisation"
+                                                    )}
+                                                    editor={multilineTextEditor}
+                                                />
+                                            </p>
+                                            <h4>
+                                                How was the dataset produced?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.creation
+                                                            .mechanism
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "creation/mechanism"
+                                                    )}
+                                                    editor={multilineTextEditor}
+                                                />
+                                            </p>
+                                            <h4>Source system:</h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset.creation
+                                                            .sourceSystem
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "creation/sourceSystem"
+                                                    )}
+                                                    editor={textEditor}
+                                                />
+                                            </p>
+                                            <hr />
+                                            <h2>
+                                                Dataset visibility, access and
+                                                control
+                                            </h2>
+                                            <h4>
+                                                What is the security
+                                                classification of this dataset?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset
+                                                            .informationSecurity
+                                                            .disseminationLimits
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "informationSecurity/disseminationLimits"
+                                                    )}
+                                                    editor={multiCodelistEditor(
+                                                        codelists.disseminationLimits
+                                                    )}
+                                                />
+                                            </p>
+
+                                            <h4>
+                                                What is the sensitivity of this
+                                                dataset?
+                                            </h4>
+                                            <p>
+                                                <ToggleEditor
+                                                    enabled={hasEditPermissions}
+                                                    value={
+                                                        dataset
+                                                            .informationSecurity
+                                                            .classification
+                                                    }
+                                                    onChange={datasetChange(
+                                                        "informationSecurity/classification"
+                                                    )}
+                                                    editor={codelistEditor(
+                                                        codelists.classification
+                                                    )}
+                                                />
+                                            </p>
+                                            <hr />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div

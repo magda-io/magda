@@ -26,7 +26,7 @@ export function textEditorEx(options: any = {}) {
             );
         },
         view: (value: any) => {
-            return <React.Fragment>{value}</React.Fragment>;
+            return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;
         }
     };
 }
@@ -49,7 +49,7 @@ export const multilineTextEditor: Editor = {
         ); //<input defaultValue={value as string} onChange={callback} />;
     },
     view: (value: any) => {
-        return <React.Fragment>{value}</React.Fragment>;
+        return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;
     }
 };
 

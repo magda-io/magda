@@ -93,7 +93,8 @@ export class ToggleEditor extends React.Component<ToggleEditorProps> {
                         )}
                         {this.props.children
                             ? this.props.children
-                            : editor.view(value)}{" "}
+                            : editor.view(value)}
+                        {""}
                     </React.Fragment>
                 )}
             </div>
