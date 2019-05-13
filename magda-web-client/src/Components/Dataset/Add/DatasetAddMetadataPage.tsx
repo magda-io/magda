@@ -296,7 +296,7 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={dateEditor}
                     />
                 </p>
-                <h4>How frequency is the dataset updated?</h4>
+                <h4>How frequently is the dataset updated?</h4>
                 <p>
                     <AlwaysEditor
                         value={dataset.accrualPeriodicity}
