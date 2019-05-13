@@ -481,7 +481,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>What license restrictions should be applied?</h4>
 
                 <ToolTip>
-                    We recommend a Whole of Government License be applkied to
+                    We recommend a Whole of Government License be applied to
                     encourage inter-department data sharing in the future.
                 </ToolTip>
                 <p>
