@@ -40,12 +40,14 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.Instant
 
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
+import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit
@@ -91,9 +93,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
       augmentWithBoostRegions(inputQuery).flatMap { queryWithBoostRegions =>
-        val aggQuery: SearchRequest = buildQueryWithAggregations(queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
-        val tenantTermQuery: CommonTermsQuery = commonTermsQuery("tenantId", tenantId)
-        val query: SearchRequest = aggQuery.query(tenantTermQuery)
+        val query: SearchRequest = buildQueryWithAggregations(tenantId, queryWithBoostRegions, start, limit, MatchAll, requestedFacetSize)
         Future.sequence(Seq(fullRegionsFuture, client.execute(query).flatMap {
           case results: RequestSuccess[SearchResponse] => Future.successful((results.result, MatchAll))
           case IllegalArgumentException(e) => throw e
@@ -246,26 +246,29 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(
-    query: Query,
-    start: Long,
-    limit: Int,
-    strategy: SearchStrategy) = {
+                  tenantId: String,
+                  query: Query,
+                  start: Long,
+                  limit: Int,
+                  strategy: SearchStrategy) = {
     ElasticDsl
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
-      .query(buildEsQuery(query, strategy))
+      .query(buildEsQuery(tenantId, query, strategy))
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(
-    query: Query,
-    start: Long,
-    limit: Int,
-    strategy: SearchStrategy,
-    facetSize: Int) =
+                                  tenantId: String,
+                                  query: Query,
+                                  start: Long,
+                                  limit: Int,
+                                  strategy: SearchStrategy,
+                                  facetSize: Int) =
     addAggregations(
-      buildQuery(query, start, limit, strategy),
+      tenantId,
+      buildQuery(tenantId, query, start, limit, strategy),
       query,
       strategy,
       facetSize)
@@ -280,15 +283,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
-    searchDef: SearchRequest,
-    query: Query,
-    strategy: SearchStrategy,
-    facetSize: Int) = {
+                       tenantId: String,
+                       searchDef: SearchRequest,
+                       query: Query,
+                       strategy: SearchStrategy,
+                       facetSize: Int) = {
     val facetAggregations: List[AggregationDefinition] =
       FacetType.all
         .flatMap(
           facetType =>
             aggsForFacetType(
+              tenantId,
               query,
               facetType,
               strategy,
@@ -303,16 +308,18 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
-    query: Query,
-    facetType: FacetType,
-    strategy: SearchStrategy,
-    facetSize: Int): List[AggregationDefinition] = {
+                        tenantId: String,
+                        query: Query,
+                        facetType: FacetType,
+                        strategy: SearchStrategy,
+                        facetSize: Int): List[AggregationDefinition] = {
     val facetDef = facetDefForType(facetType)
 
     // Sub-aggregations of "global" aggregate on all datasets independently of the query passed in.
     val globalAgg =
       globalAggregation(facetType.id + "-global")
         .subAggregations(alternativesAggregation(
+          tenantId,
           query,
           facetDef,
           strategy,
@@ -323,18 +330,24 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /**
-   * The alternatives aggregation shows what other choices are available if the user wasn't
-   * filtering on this facet - e.g. if I was searching for datasets from a certain publisher,
-   * this shows me other publishers I could search on instead
-   */
+    * The alternatives aggregation shows what other choices are available if the user wasn't
+    * filtering on this facet - e.g. if I was searching for datasets from a certain publisher,
+    * this shows me other publishers I could search on instead
+    */
   def alternativesAggregation(
-    query: Query,
-    facetDef: FacetDefinition,
-    strategy: SearchStrategy,
-    facetSize: Int) =
+                               tenantId: String,
+                               query: Query,
+                               facetDef: FacetDefinition,
+                               strategy: SearchStrategy,
+                               facetSize: Int) = {
+    val tenantIdTermQuery = termQuery("tenantId", tenantId)
     filterAggregation("filter")
-      .query(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true))
+      .query(must(
+        Seq(queryToQueryDef(facetDef.removeFromQuery(query), strategy, true),
+          tenantIdTermQuery
+        )))
       .subAggregations(facetDef.aggregationDefinition(query, facetSize))
+    }
 
   /**
    * Accepts a seq - if the seq is not empty, runs the passed fn over it and returns the result as Some, otherwise returns None.
@@ -345,7 +358,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case x => Some(fn(x))
     }
 
-  private def buildEsQuery(query: Query, strategy: SearchStrategy) : QueryDefinition = {
+  private def buildEsQuery(tenantId: String, query: Query, strategy: SearchStrategy) : QueryDefinition = {
     val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
     val geomScorer: Option[ScoreFunctionDefinition] = geomScorerQuery.map(weightScore(1).filter(_))
     val qualityScorers = Seq(fieldFactorScore("quality")
@@ -363,13 +376,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       */
     val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ geomScorer.toSeq
 
+    val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
+    val q: QueryDefinition = queryToQueryDef(query, strategy)
     functionScoreQuery()
-      .query(queryToQueryDef(query, strategy))
+      .query(must(Seq(queryToQueryDef(query, strategy), tenantTermQuery)))
       .functions(allScorers).scoreMode("sum")
   }
 
   private def createInputTextQuery(inputText: String):QueryDefinition = {
-    val queryString = new SimpleStringQueryDefinition(inputText)
+    val queryString = SimpleStringQueryDefinition(inputText)
       .defaultOperator("and")
       .quoteFieldSuffix(".quote")
 
@@ -454,7 +469,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     facetQuery: Option[String],
     generalQuery: Query,
     start: Int,
-    limit: Int): Future[FacetSearchResult] = {
+    limit: Int,
+    tenantId: String): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
@@ -495,6 +511,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
                 client.execute {
                   buildQuery(
+                    tenantId,
                     facetDef.removeFromQuery(generalQuery),
                     0,
                     0,
@@ -535,7 +552,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchRegions(
     query: Option[String],
     start: Long,
-    limit: Int): Future[RegionSearchResult] = {
+    limit: Int,
+    tenantId: String): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
       client
         .execute(
@@ -574,7 +592,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchOrganisations(
     queryString: Option[String],
     start: Int,
-    limit: Int): Future[OrganisationsSearchResult] = {
+    limit: Int,
+    tenantId: String): Future[OrganisationsSearchResult] = {
 
     clientFuture.flatMap { client =>
       val queryStringContent = queryString.getOrElse("*").trim

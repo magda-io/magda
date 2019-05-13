@@ -402,7 +402,7 @@ object Generators {
 
   val twoDigitDoubleGen = Gen.choose(0, 1d).flatMap(x => Math.round(x * 100).toDouble / 100)
 
-  def dataSetGen(inputCache: mutable.Map[String, List[_]]) = for {
+  def dataSetGen(inputCache: mutable.Map[String, List[_]], tenantId: String = "0") = for {
     identifier <- Gen.delay {
       incrementer.incrementAndGet()
     }
@@ -424,6 +424,7 @@ object Generators {
     hasQuality <- arbitrary[Boolean]
   } yield DataSet(
     identifier = identifier.toString,
+    tenantId = tenantId,
     source = Some(DataSouce(id = "connector-id", name = Some("test-catalog"))),
     catalog = Some("test-catalog"),
     title = title,

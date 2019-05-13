@@ -8,9 +8,9 @@ import scala.concurrent.Future
 
 trait SearchQueryer {
   def search(query: Query, start: Long, limit: Int, facetSize: Int, tenantId: String): Future[SearchResult]
-  def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int): Future[FacetSearchResult]
-  def searchRegions(query: Option[String], start: Long, limit: Int): Future[RegionSearchResult]
-  def searchOrganisations(query: Option[String], start: Int, limit: Int): Future[OrganisationsSearchResult]
+  def searchFacets(facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int, tenantId: String): Future[FacetSearchResult]
+  def searchRegions(query: Option[String], start: Long, limit: Int, tenantId: String): Future[RegionSearchResult]
+  def searchOrganisations(query: Option[String], start: Int, limit: Int, tenantId: String): Future[OrganisationsSearchResult]
 }
 
 sealed trait SearchStrategy {

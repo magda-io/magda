@@ -63,25 +63,26 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
        *       ]
        *    }
        */
-        pathPrefix("facets") {
+        pathPrefix("facets") {requiredTenantId { tenantId =>
           path(Segment / "options") { facetId ⇒
             (get & parameters(
-              'facetQuery?,
+              'facetQuery ?,
               "start" ? 0,
               "limit" ? 10,
-              'generalQuery?,
-              'publisher*,
-              'dateFrom?,
-              'dateTo?,
-              'region*,
-              'format*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats) =>
-                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
+              'generalQuery ?,
+              'publisher *,
+              'dateFrom ?,
+              'dateTo ?,
+              'region *,
+              'format *)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats) =>
+              val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
 
-                FacetType.fromId(facetId) match {
-                  case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, query, start, limit))
-                  case None            ⇒ complete(NotFound)
-                }
+              FacetType.fromId(facetId) match {
+                case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, query, start, limit, tenantId.toString))
+                case None ⇒ complete(NotFound)
               }
+            }
+          }
           }
         } ~
         /**
@@ -244,17 +245,18 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *       ]
            *    }
            */
-          pathPrefix("organisations") {
+          pathPrefix("organisations") {requiredTenantId { tenantId =>
             (get & parameters(
-              'query?,
+              'query ?,
               "start" ? 0,
               "limit" ? 10
-              )) { (generalQuery, start, limit) ⇒
-              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit)) { result =>
+            )) { (generalQuery, start, limit) ⇒
+              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit, tenantId.toString)) { result =>
                 val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
                 complete(status, result)
               }
             }
+          }
           } ~
           /**
            * @apiGroup Search
@@ -296,10 +298,11 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *        "regions": []
            *    }
            */
-          path("regions") {
-            (get & parameters('query?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-              complete(searchQueryer.searchRegions(query, start, limit))
+          path("regions") {requiredTenantId { tenantId =>
+            (get & parameters('query ?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, start, limit, tenantId.toString))
             }
+          }
           } ~
           pathPrefix("status") {
             path("live") { complete("OK") } ~

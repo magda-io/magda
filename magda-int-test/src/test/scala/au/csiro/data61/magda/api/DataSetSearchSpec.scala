@@ -108,7 +108,6 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-        // TODO: Check the cause of failure. Got all datasets but not sorted by quality.
       it("should sort results by pure quality") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
@@ -257,278 +256,274 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
   }
 
-  // TODO: Check the cause of failure. Is it related to quality field?
-//  it("for a region in query text should boost results from that region") {
-//    // 3 fake datasets. One that relates to Queensland, the other to all of Australia
-//    // (but one of those has `queensland` in title otherwise only one document will be matched)
-//    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
-//    //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
-//
-//    val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))
-//
-//    val qldDataset = DataSet(
-//        identifier="ds-region-in-query-test-1",
-//        tenantId="0",
-//        title=Some("Wildlife density in rural areas"),
-//        description=Some("Wildlife density as measured by the state survey"),
-//        catalog=Some("region-in-query-test-catalog"),
-//        spatial=Some(Location(geoJson=qldGeometry)),
-//        quality = 0.6,
-//        score = None)
-//    val nationalDataset1 = DataSet(
-//      identifier="ds-region-in-query-test-2",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//
-//    val nationalDataset2 = DataSet(
-//      identifier="ds-region-in-query-test-3",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//
-//    val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
-//
-//    val (indexName, _, routes) = putDataSetsInIndex(datasets)
-//    val indices = new FakeIndices(indexName)
-//
-//    try {
-//      blockUntilExactCount(3, indexName)
-//
-//      // Verify that national dataset is usually more relevant
-//      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 3
-//        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//        response.dataSets(2).identifier shouldEqual qldDataset.identifier
-//
-//      }
-//
-//      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 2
-//        response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//      }
-//
-//    } finally {
-//      this.deleteIndex(indexName)
-//    }
-//  }
+  it("for a region in query text should boost results from that region") {
+    // 3 fake datasets. One that relates to Queensland, the other to all of Australia
+    // (but one of those has `queensland` in title otherwise only one document will be matched)
+    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
-  // TODO: Check the cause of failure. Got all datasets but not sorted by quality.
-//  it("for a region in query text should boost results from that region by acronym") {
-//    val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
-//
-//    val saDataset = DataSet(
-//      identifier="ds-region-in-query-test-1",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas south"),
-//      description=Some("Wildlife density as measured by the state survey"),
-//      catalog=Some("region-in-query-test-catalog"),
-//      spatial=Some(Location(geoJson=saGeometry)),
-//      quality = 0.6,
-//      score = None)
-//    val nationalDataset1 = DataSet(
-//      identifier="ds-region-in-query-test-2",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas south"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//    val nationalDataset2 = DataSet(
-//      identifier="ds-region-in-query-test-3",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas south"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//
-//    val datasets = List(nationalDataset1, nationalDataset2, saDataset)
-//
-//    val (indexName, _, routes) = putDataSetsInIndex(datasets)
-//    val indices = new FakeIndices(indexName)
-//
-//    try {
-//      blockUntilExactCount(3, indexName)
-//
-//      // Verify that national dataset is usually more relevant
-//      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 3
-//        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//        response.dataSets(2).identifier shouldEqual saDataset.identifier
-//
-//      }
-//
-//      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 2
-//        response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//      }
-//
-//      // Verify that half the name doesn't boost results
-//      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 3
-//        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//        response.dataSets(2).identifier shouldEqual saDataset.identifier
-//
-//      }
-//
-//    } finally {
-//      this.deleteIndex(indexName)
-//    }
-//  }
+    val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))
 
-  // TODO: Check the cause of failure. Got all datasets but not sorted by quality.
-//  it("for a region in query text should boost results from that region in Alfredton") {
-//    // 3 fake datasets. One that relates to Alfredton, the other to all of Australia
-//    // (but one of those has `Alfredton` in title otherwise only one document will be matched)
-//    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
-//    //  Alfredton dataset should be boosted if a user searches for wildlife density in Alfredton
-//
-//    val alfGeometry = Location.fromBoundingBox(Seq(BoundingBox(-37.555, 143.81, -37.56, 143.80)))
-//
-//    val alfDataset = DataSet(
-//      identifier="ds-region-in-query-test-1",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas"),
-//      description=Some("Wildlife density as measured by the state survey"),
-//      catalog=Some("region-in-query-test-catalog"),
-//      spatial=Some(Location(geoJson=alfGeometry)),
-//      quality = 0.6,
-//      score = None)
-//    val nationalDataset1 = DataSet(
-//      identifier="ds-region-in-query-test-2",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//    val nationalDataset2 = DataSet(
-//      identifier="ds-region-in-query-test-3",
-//      tenantId="0",
-//      title=Some("Wildlife density in rural areas"),
-//      description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
-//      catalog=Some("region-in-query-test-catalog"),
-//      quality = 0.6,
-//      score = None)
-//
-//    val datasets = List(nationalDataset1, nationalDataset2, alfDataset)
-//
-//    val (indexName, _, routes) = putDataSetsInIndex(datasets)
-//    val indices = new FakeIndices(indexName)
-//
-//    try {
-//      blockUntilExactCount(3, indexName)
-//
-//      // Verify that national dataset is usually more relevant
-//      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 3
-//        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//        response.dataSets(2).identifier shouldEqual alfDataset.identifier
-//
-//      }
-//
-//      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//        status shouldBe OK
-//        val response = responseAs[SearchResult]
-//        response.dataSets.size shouldEqual 2
-//        response.dataSets.head.identifier shouldEqual alfDataset.identifier
-//        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-//      }
-//
-//    } finally {
-//      this.deleteIndex(indexName)
-//    }
-//  }
+    val qldDataset = DataSet(
+        identifier="ds-region-in-query-test-1",
+        tenantId="0",
+        title=Some("Wildlife density in rural areas"),
+        description=Some("Wildlife density as measured by the state survey"),
+        catalog=Some("region-in-query-test-catalog"),
+        spatial=Some(Location(geoJson=qldGeometry)),
+        quality = 0.6,
+        score = None)
+    val nationalDataset1 = DataSet(
+      identifier="ds-region-in-query-test-2",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
 
-  // TODO: Check the cause of failure for some quotes.
-//  describe("quotes") {
-//    it("should be able to be found verbatim somewhere in a dataset") {
-//
-//      implicit val stringShrink: Shrink[String] = Shrink { string =>
-//        Stream.empty
-//      }
-//
-//      implicit val disableShrink: Shrink[(List[DataSet], Route, String, String, DataSet)] = Shrink { _ =>
-//        Stream.empty
-//      }
-//
-//      val quoteGen = for {
-//        (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
-//        dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
-//        dataSet <- Gen.oneOf(dataSetsWithDesc)
-//        description = dataSet.description.get
-//        descWords = description.split(" ")
-//        start <- Gen.choose(0, Math.max(descWords.length - 1, 0))
-//        end <- Gen.choose(start + 1, descWords.length)
-//        quoteWords = descWords.slice(start, end)
-//        quote <- randomCaseGen(quoteWords.mkString(" ").trim)
-//        reverseOrderWords = quoteWords.reverse
-//        reverseOrderQuote <- randomCaseGen(reverseOrderWords.mkString(" ").trim)
-//      } yield (dataSetsWithDesc, routes, quote, reverseOrderQuote, dataSet)
-//
-//      forAll(quoteGen) {
-//        case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
-//          whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
-//            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//              status shouldBe OK
-//              val response = responseAs[SearchResult]
-//
-//              response.strategy.get should equal(MatchAll)
-//              response.dataSets.isEmpty should be(false)
-//
-//              response.dataSets.exists(_.identifier == sourceDataSet.identifier)
-//
-//              response.dataSets.foreach { dataSet =>
-//                withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
-//                  MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
-//                    MagdaMatchers.extractAlphaNum(quote)) should be(true)
-//                }
-//              }
-//            }
-//
-//            // Just to make sure we're matching on the quote in order, run it backwards.
-//            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-//              status shouldBe OK
-//              val response = responseAs[SearchResult]
-//
-//              if (response.strategy.get == MatchAll) {
-//                response.dataSets.foreach { dataSet =>
-//                  withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
-//                    MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
-//                      MagdaMatchers.extractAlphaNum(reverseOrderQuote)) should be(true)
-//                  }
-//                }
-//              }
-//            }
-//          }
-//      }
-//    }
-//  }
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+
+    val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(3, indexName)
+
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual qldDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
+    }
+  }
+
+  it("for a region in query text should boost results from that region by acronym") {
+    val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
+
+    val saDataset = DataSet(
+      identifier="ds-region-in-query-test-1",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas south"),
+      description=Some("Wildlife density as measured by the state survey"),
+      catalog=Some("region-in-query-test-catalog"),
+      spatial=Some(Location(geoJson=saGeometry)),
+      quality = 0.6,
+      score = None)
+    val nationalDataset1 = DataSet(
+      identifier="ds-region-in-query-test-2",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas south"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas south"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+
+    val datasets = List(nationalDataset1, nationalDataset2, saDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(3, indexName)
+
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual saDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      }
+
+      // Verify that half the name doesn't boost results
+      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual saDataset.identifier
+
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
+    }
+  }
+
+  it("for a region in query text should boost results from that region in Alfredton") {
+    // 3 fake datasets. One that relates to Alfredton, the other to all of Australia
+    // (but one of those has `Alfredton` in title otherwise only one document will be matched)
+    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    //  Alfredton dataset should be boosted if a user searches for wildlife density in Alfredton
+
+    val alfGeometry = Location.fromBoundingBox(Seq(BoundingBox(-37.555, 143.81, -37.56, 143.80)))
+
+    val alfDataset = DataSet(
+      identifier="ds-region-in-query-test-1",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density as measured by the state survey"),
+      catalog=Some("region-in-query-test-catalog"),
+      spatial=Some(Location(geoJson=alfGeometry)),
+      quality = 0.6,
+      score = None)
+    val nationalDataset1 = DataSet(
+      identifier="ds-region-in-query-test-2",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+    val nationalDataset2 = DataSet(
+      identifier="ds-region-in-query-test-3",
+      tenantId="0",
+      title=Some("Wildlife density in rural areas"),
+      description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
+      catalog=Some("region-in-query-test-catalog"),
+      quality = 0.6,
+      score = None)
+
+    val datasets = List(nationalDataset1, nationalDataset2, alfDataset)
+
+    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val indices = new FakeIndices(indexName)
+
+    try {
+      blockUntilExactCount(3, indexName)
+
+      // Verify that national dataset is usually more relevant
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 3
+        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+        response.dataSets(2).identifier shouldEqual alfDataset.identifier
+
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 2
+        response.dataSets.head.identifier shouldEqual alfDataset.identifier
+        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      }
+
+    } finally {
+      this.deleteIndex(indexName)
+    }
+  }
+
+  describe("quotes") {
+    it("should be able to be found verbatim somewhere in a dataset") {
+
+      implicit val stringShrink: Shrink[String] = Shrink { string =>
+        Stream.empty
+      }
+
+      implicit val disableShrink: Shrink[(List[DataSet], Route, String, String, DataSet)] = Shrink { _ =>
+        Stream.empty
+      }
+
+      val quoteGen = for {
+        (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
+        dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
+        dataSet <- Gen.oneOf(dataSetsWithDesc)
+        description = dataSet.description.get
+        descWords = description.split(" ")
+        start <- Gen.choose(0, Math.max(descWords.length - 1, 0))
+        end <- Gen.choose(start + 1, descWords.length)
+        quoteWords = descWords.slice(start, end)
+        quote <- randomCaseGen(quoteWords.mkString(" ").trim)
+        reverseOrderWords = quoteWords.reverse
+        reverseOrderQuote <- randomCaseGen(reverseOrderWords.mkString(" ").trim)
+      } yield (dataSetsWithDesc, routes, quote, reverseOrderQuote, dataSet)
+
+      forAll(quoteGen) {
+        case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
+          whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+
+              response.strategy.get should equal(MatchAll)
+              response.dataSets.isEmpty should be(false)
+
+              response.dataSets.exists(_.identifier == sourceDataSet.identifier)
+
+              response.dataSets.foreach { dataSet =>
+                withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                  MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
+                    MagdaMatchers.extractAlphaNum(quote)) should be(true)
+                }
+              }
+            }
+
+            // Just to make sure we're matching on the quote in order, run it backwards.
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+
+              if (response.strategy.get == MatchAll) {
+                response.dataSets.foreach { dataSet =>
+                  withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                    MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
+                      MagdaMatchers.extractAlphaNum(reverseOrderQuote)) should be(true)
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
+  }
 
   describe("filtering") {
     it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
