@@ -104,9 +104,11 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                     break;
 
                                 case "author":
-                                    dataset.contactPoint =
-                                        dataset.contactPoint || "";
-                                    dataset.contactPoint += file.author;
+                                    dataset.contactPointFull =
+                                        dataset.contactPointFull || [];
+                                    dataset.contactPointFull.push({
+                                        name: file.author
+                                    });
                                     file[key] = undefined;
                                     break;
 

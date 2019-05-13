@@ -164,6 +164,10 @@ function extractCreation() {
         "affiliated organisation"
     );
 
+    if (affiliatedOrganisation) {
+        affiliatedOrganisation = [affiliatedOrganisation];
+    }
+
     let creation = undefined;
 
     if (

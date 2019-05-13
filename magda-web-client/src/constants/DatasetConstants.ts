@@ -538,7 +538,7 @@ export const disseminationLimits = {
     "Sensitive: Commercial": "Sensitive: Commercial",
     "Sensitive: Cultural": "Sensitive: Cultural",
     "Sensitive: Legal Privilege": "Sensitive: Legal Privilege",
-    "Sensitive: Legislative secrecy": "Sensitive: Legislative secrecy"
+    "Sensitive: Legislative Secrecy": "Sensitive: Legislative Secrecy"
 };
 
 export const classification = {
@@ -557,6 +557,16 @@ export const contactPointDisplay = {
 
 export const publishingLevel = {
     agency: "Everyone in my organisation",
-    team: "My team only",
-    public: "Everyone (Open Data)"
+    team: "My team only"
+    // public: "Everyone (Open Data)"
+};
+
+// TODO: this is a preconfigured agency level configured license lookup feature being faked here
+export const licenseLevel = {
+    world: "For the entire world use (Creative Commons CC BY4.0)",
+    government: "For all of government use (Whole of Government license)",
+    agency: "For just my department use (Other organisation-specific license)",
+    section: "For just my section use (Other organisation-specific license)",
+    team: "For just my team use (Other organisation-specific license)",
+    custom: "Other custom license"
 };

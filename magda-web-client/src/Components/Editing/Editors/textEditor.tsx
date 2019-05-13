@@ -41,7 +41,7 @@ export const multilineTextEditor: Editor = {
         };
         return (
             <textarea
-                className="au-text-input full-width-ctrl"
+                className="au-text-input full-width-ctrl au-text-input--block"
                 style={{ width: "100%" }}
                 onChange={callback}
                 defaultValue={value as string}
