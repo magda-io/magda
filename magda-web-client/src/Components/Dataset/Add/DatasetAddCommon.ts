@@ -110,7 +110,8 @@ export function createBlankState(): State {
         processing: false,
         dataset: {
             title: "Untitled",
-            languages: ["eng"]
+            languages: ["eng"],
+            contactPointDisplay: "role"
         },
         datasetPublishing: {
             state: "draft",
