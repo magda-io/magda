@@ -6,6 +6,7 @@ import CompassIcon from "assets/compass.svg";
 export const bboxEditor: Editor<[number, number, number, number]> = {
     edit: (value: any, onChange: Function) => {
         value = value || [-180.0, -90.0, 180.0, 90.0];
+        const strValues = value.map(v => v.toString());
         const callback = (valueIndex, minValue, maxValue) => event => {
             value[valueIndex] = Math.min(
                 Math.max(parseFloat(event.target.value), minValue),
@@ -17,7 +18,7 @@ export const bboxEditor: Editor<[number, number, number, number]> = {
             <input
                 type="number"
                 className="au-text-input"
-                value={value[valueIndex]}
+                defaultValue={strValues[valueIndex]}
                 min={minValue}
                 max={maxValue}
                 step="any"

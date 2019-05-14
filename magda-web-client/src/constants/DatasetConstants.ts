@@ -516,7 +516,6 @@ export const accrualPeriodicity = {
     quinquennialy: "Every 5 years",
     decennially: "Every 10 years",
     centennially: "Every 100 years",
-    millennially: "Every 1000 years",
     asNeeded: "As Needed",
     notUpdated: "Not Updated"
 };
@@ -564,9 +563,15 @@ export const publishingLevel = {
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here
 export const licenseLevel = {
     world: "For the entire world use (Creative Commons CC BY4.0)",
-    government: "For all of government use (Whole of Government license)",
+    government:
+        "For all of government use (Whole of Australian Government license)",
     agency: "For just my department use (Other organisation-specific license)",
     section: "For just my section use (Other organisation-specific license)",
     team: "For just my team use (Other organisation-specific license)",
     custom: "Other custom license"
+};
+
+export const datasetLicenseLevel = {
+    dataset: "Dataset level license",
+    distribution: "Distribution level license"
 };
