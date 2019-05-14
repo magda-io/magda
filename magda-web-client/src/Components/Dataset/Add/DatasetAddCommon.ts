@@ -65,7 +65,7 @@ type DatasetPublishing = {
 };
 
 type SpatialCoverage = {
-    bbox?: number[];
+    bbox?: [number, number, number, number];
 };
 
 export type State = {
@@ -86,9 +86,9 @@ type TemporalCoverage = {
     intervals: Interval[];
 };
 
-type Interval = {
-    start?: string;
-    end?: string;
+export type Interval = {
+    start?: Date;
+    end?: Date;
 };
 
 type Usage = {

@@ -40,7 +40,7 @@ export function textEditorEx(options: any = {}) {
 export const textEditor = textEditorEx({});
 export const textEditorFullWidth = textEditorEx({ fullWidth: true });
 
-export const multilineTextEditor: Editor = {
+export const multilineTextEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
         const callback = event => {
             onChange(event.target.value);
@@ -59,7 +59,7 @@ export const multilineTextEditor: Editor = {
     }
 };
 
-export const multiTextEditor: Editor = ListMultiItemEditor.create(
+export const multiTextEditor: Editor<string[]> = ListMultiItemEditor.create(
     textEditor,
     () => ""
 );
@@ -68,38 +68,3 @@ export const multiTextEditorEx = options => {
     options.redrawOnEmpty = true;
     return ListMultiItemEditor.create(textEditorEx(options), () => "");
 };
-
-export const dateEditor = textEditorEx({ type: "date" });
-export const dateIntervalEditor = {
-    edit: (value: any, onChange: Function) => {
-        value = Object.assign({}, value || {});
-
-        const change = field => newValue => {
-            value = Object.assign({}, value, { [field]: newValue });
-            onChange(value);
-        };
-        return (
-            <React.Fragment>
-                {dateEditor.edit(value.start, change("start"))} -
-                {dateEditor.edit(value.end, change("end"))}
-            </React.Fragment>
-        );
-    },
-    view: (value: any) => {
-        value = value || {};
-        let start = value.start || "unknown";
-        let end = value.end || "unknown";
-        return (
-            <React.Fragment>
-                {start}-{end}
-            </React.Fragment>
-        );
-    }
-};
-
-export const multiDateIntervalEditor: Editor = ListMultiItemEditor.create(
-    dateIntervalEditor,
-    () => {
-        return {};
-    }
-);

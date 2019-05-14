@@ -18,10 +18,10 @@ export default function DatasetFile({
     file: File;
     onChange: (file: File) => void;
 }) {
-    const editFormat = (newValue: string) =>
+    const editFormat = (newValue: string | undefined) =>
         onChange({ ...file, format: newValue });
-    const editModified = (newValue: Date) =>
-        onChange({ ...file, modified: newValue });
+    const editModified = (newValue: Date | undefined) =>
+        onChange({ ...file, modified: newValue! });
     const [editMode, setEditMode] = useState(false);
 
     return (

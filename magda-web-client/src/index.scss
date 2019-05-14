@@ -6,6 +6,9 @@ body {
     overflow-y: scroll;
     min-width: $minimum;
 }
+* {
+    box-sizing: border-box;
+}
 .au-body .au-grid {
     p,
     input,
@@ -126,10 +129,6 @@ a.au-btn:hover:not(:disabled) {
     &:focus {
         outline: 3px solid $AU-color-foreground-focus;
     }
-}
-
-div {
-    box-sizing: border-box;
 }
 
 button {

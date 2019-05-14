@@ -3,7 +3,7 @@ import Editor from "./Editor";
 
 import CompassIcon from "assets/compass.svg";
 
-export const bboxEditor: Editor = {
+export const bboxEditor: Editor<[number, number, number, number]> = {
     edit: (value: any, onChange: Function) => {
         value = value || [-180.0, -90.0, 180.0, 90.0];
         const strValues = value.map(v => v.toString());

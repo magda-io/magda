@@ -38,9 +38,9 @@ import {
     textEditor,
     textEditorFullWidth,
     multilineTextEditor,
-    multiTextEditor,
-    multiDateIntervalEditor
+    multiTextEditor
 } from "Components/Editing/Editors/textEditor";
+import { multiDateIntervalEditor } from "Components/Editing/Editors/dateEditor";
 import {
     codelistEditor,
     multiCodelistEditor

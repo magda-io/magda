@@ -2,12 +2,28 @@ import React, { useState } from "react";
 import "react-dates/initialize";
 import "react-dates/lib/css/_datepicker.css";
 
-import Styles from "Components/Editing/Editors/dateEditor.module.scss";
-
-import { SingleDatePicker } from "react-dates";
+import { SingleDatePicker, DateRangePicker } from "react-dates";
 import Moment from "moment";
 
-function DatePicker({ date, callback }: { date: Date; callback: Function }) {
+import Editor from "./Editor";
+import { ListMultiItemEditor } from "./multiItem";
+import { Interval } from "Components/Dataset/Add/DatasetAddCommon";
+
+import Styles from "Components/Editing/Editors/dateEditor.module.scss";
+
+const FORMAT = "DD/MM/YYYY";
+
+function formatDateForOutput(date: Date | undefined | null) {
+    return date ? Moment(date).format(FORMAT) : "Unknown";
+}
+
+function MagdaSingleDatePicker({
+    date,
+    callback
+}: {
+    date?: Date;
+    callback: Function;
+}) {
     const [focused, setFocused] = useState(false);
 
     const onDateChange = (moment: Moment.Moment | null) => {
@@ -23,7 +39,7 @@ function DatePicker({ date, callback }: { date: Date; callback: Function }) {
                 focused={focused}
                 onFocusChange={state => setFocused(!!state.focused)}
                 isOutsideRange={() => false}
-                displayFormat="DD/MM/YYYY"
+                displayFormat={FORMAT}
                 showClearDate
                 noBorder
                 small
@@ -33,52 +49,89 @@ function DatePicker({ date, callback }: { date: Date; callback: Function }) {
     );
 }
 
-export const dateEditor = {
-    edit: (value: Date, onChange: Function) => {
-        return (
-            // <input
-            //     className="au-text-input"
-            //     defaultValue={value as string}
-            //     onChange={callback}
-            //     {...options}
-            // />
-            <DatePicker callback={onChange} date={value} />
-        );
+export const dateEditor: Editor<Date> = {
+    edit: (value: Date | undefined, onChange: (date: Date) => void) => {
+        return <MagdaSingleDatePicker callback={onChange} date={value} />;
     },
-    view: (value: Date) => {
-        return <React.Fragment>{value.toString()}</React.Fragment>;
+    view: (value: Date | undefined) => {
+        return <React.Fragment>{formatDateForOutput(value)}</React.Fragment>;
     }
 };
-// export const dateIntervalEditor = {
-//     edit: (value: any, onChange: Function) => {
-//         value = Object.assign({}, value || {});
 
-//         const change = field => newValue => {
-//             value = Object.assign({}, value, { [field]: newValue });
-//             onChange(value);
-//         };
-//         return (
-//             <React.Fragment>
-//                 {dateEditor.edit(value.start, change("start"))} -
-//                 {dateEditor.edit(value.end, change("end"))}
-//             </React.Fragment>
-//         );
-//     },
-//     view: (value: any) => {
-//         value = value || {};
-//         let start = value.start || "unknown";
-//         let end = value.end || "unknown";
-//         return (
-//             <React.Fragment>
-//                 {start}-{end}
-//             </React.Fragment>
-//         );
-//     }
-// };
+function MagdaDateRangePicker(props: {
+    value: Interval | undefined;
+    onChange: Function;
+}) {
+    const [focusedInput, setFocusedInput] = useState(null as (
+        | "startDate"
+        | "endDate"
+        | null));
 
-// export const multiDateIntervalEditor: Editor = ListMultiItemEditor.create(
-//     dateIntervalEditor,
-//     () => {
-//         return {};
-//     }
-// );
+    const onDatesChange = ({
+        startDate,
+        endDate
+    }: {
+        startDate: Moment.Moment | null;
+        endDate: Moment.Moment | null;
+    }) => {
+        props.onChange({
+            start: startDate && startDate.toDate(),
+            end: endDate && endDate.toDate()
+        });
+    };
+
+    return (
+        <span className={Styles.wrapper}>
+            <DateRangePicker
+                startDate={
+                    props.value && props.value.start
+                        ? Moment(props.value.start)
+                        : null
+                }
+                endDate={
+                    props.value && props.value.end
+                        ? Moment(props.value.end)
+                        : null
+                }
+                onDatesChange={onDatesChange}
+                startDateId={Math.random().toString()}
+                endDateId={Math.random().toString()}
+                focusedInput={focusedInput}
+                onFocusChange={focusedInput => setFocusedInput(focusedInput)}
+                isOutsideRange={() => false}
+                displayFormat={FORMAT}
+                noBorder
+                small
+                showDefaultInputIcon
+            />
+        </span>
+    );
+}
+
+export const dateIntervalEditor: Editor<Interval> = {
+    edit: (value: Interval | undefined, onChange: Function) => {
+        return <MagdaDateRangePicker value={value} onChange={onChange} />;
+    },
+    view: (value: Interval | undefined) => {
+        return (
+            <React.Fragment>
+                {formatDateForOutput(value && value.start)} -{" "}
+                {formatDateForOutput(value && value.end)}
+            </React.Fragment>
+        );
+    }
+};
+
+export const multiDateIntervalEditor: Editor<
+    Interval[]
+> = ListMultiItemEditor.create(
+    dateIntervalEditor,
+    () => {
+        return {
+            start: undefined,
+            end: undefined
+        };
+    },
+    (value: Interval) => !!value.start && !!value.end,
+    true
+);
