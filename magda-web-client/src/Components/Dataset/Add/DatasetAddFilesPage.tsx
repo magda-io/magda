@@ -13,7 +13,6 @@ import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 import { getFiles } from "helpers/readFile";
 
 import Styles from "./DatasetAddFilesPage.module.scss";
-import dateParse from "date-fns/parse";
 
 import {
     State,
@@ -45,7 +44,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
         this.setState(state => {
             const modifiedDates = state.files
                 .filter(f => f.modified)
-                .map(f => dateParse(f.modified))
+                .map(f => new Date(f.modified))
                 .filter(d => !isNaN(d.getTime()))
                 .map(d => d.getTime())
                 .sort((a, b) => b - a);
