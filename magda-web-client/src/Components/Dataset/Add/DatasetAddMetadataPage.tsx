@@ -38,6 +38,9 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 
+import dateParse from "date-fns/parse";
+import dateFormat from "date-fns/format";
+
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -169,8 +172,8 @@ class NewDataset extends React.Component<Prop, State> {
                                 as required.
                             </p>
                             <div>
-                                {files.map(file => (
-                                    <p>
+                                {files.map((file, i) => (
+                                    <p key={i}>
                                         &nbsp; &nbsp;
                                         <FileIcon
                                             width="1em"
@@ -228,7 +231,6 @@ class NewDataset extends React.Component<Prop, State> {
 
     renderBasicDetails() {
         const { dataset, spatialCoverage, temporalCoverage } = this.state;
-
         const editDataset = this.edit("dataset");
         const editTemporalCoverage = this.edit("temporalCoverage");
         const editSpatialCoverage = this.edit("spatialCoverage");
@@ -305,7 +307,14 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>When was the dataset most recently modified?</h4>
                 <p>
                     <AlwaysEditor
-                        value={dataset.modified}
+                        value={
+                            dataset.modified
+                                ? dateFormat(
+                                      dateParse(dataset.modified),
+                                      "YYYY-MM-DD"
+                                  )
+                                : ""
+                        }
                         onChange={editDataset("modified")}
                         editor={dateEditor}
                     />
