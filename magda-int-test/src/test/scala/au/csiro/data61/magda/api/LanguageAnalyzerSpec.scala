@@ -61,7 +61,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
-        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
+        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val result = responseAs[SearchResult]
 
@@ -81,7 +81,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
+      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
 
@@ -103,7 +103,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
         val formats = termExtractor(dataSet)

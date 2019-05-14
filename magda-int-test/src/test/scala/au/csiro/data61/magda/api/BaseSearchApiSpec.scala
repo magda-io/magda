@@ -85,14 +85,6 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
       }
     }
 
-  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
-    RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
-  }
-
-  def addSingleTenantIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
-  }
-
   def genIndexForSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
     val size = rawSize % 100
 

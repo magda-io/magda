@@ -158,7 +158,7 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
           throw e
       }
 
-      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> api.routes ~> check {
+      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> addSingleTenantIdHeader ~> api.routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
 

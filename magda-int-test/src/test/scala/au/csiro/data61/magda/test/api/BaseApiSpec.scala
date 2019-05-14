@@ -5,8 +5,10 @@ import java.util.Properties
 
 import akka.actor.ActorSystem
 import akka.event.Logging
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.util.{Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
@@ -32,6 +34,14 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   implicit val config = buildConfig
 
   val clientProvider = new DefaultClientProvider
+
+  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
+    RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
+  }
+
+  def addSingleTenantIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+  }
 
   override def client(): ElasticClient = clientProvider.getClient().await
 

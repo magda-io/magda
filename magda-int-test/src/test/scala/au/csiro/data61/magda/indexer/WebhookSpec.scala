@@ -149,7 +149,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
         dataSetsToDelete <- Generators.subListGen(dataSets)
       } yield (dataSets, dataSetsToDelete)
 
-      forAll(gen) {
+      var counter = 0
+      forAll(gen, workers(1), minSuccessful(2), maxDiscardedFactor(2.0), minSize(1), sizeRange(2)) {
         case (dataSets, dataSetsToDelete) =>
           val builtIndex = buildIndex()
           Await.result(builtIndex.indexer.index(Source.fromIterator(() => dataSets.iterator)), 30 seconds)
@@ -182,14 +183,20 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             status shouldBe Accepted
           }
 
+
+          Thread.sleep(5000)
+//          Await.result(builtIndex.indexer.ready, 120 seconds)
           val expectedDataSets = dataSets.filter(dataSet => !dataSetsToDelete.contains(dataSet))
 
           builtIndex.indexNames.foreach { idxName =>
             refresh(idxName)
           }
+
+          counter += 1
+          println(s"    ***** counter = $counter")
           blockUntilExactCount(expectedDataSets.size, builtIndex.indexId)
 
-          Get("/v0/datasets?query=*&limit=10000") ~> builtIndex.searchApi.routes ~> check {
+          Get("/v0/datasets?query=*&limit=10000") ~> addSingleTenantIdHeader ~> builtIndex.searchApi.routes ~> check {
             status shouldBe OK
             val result = responseAs[SearchResult]
 
@@ -237,7 +244,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             deferredResponseUrl = None
           )
 
-          Post("/", payload) ~> builtIndex.webhookApi.routes ~> check {
+          Post("/", payload) ~> addSingleTenantIdHeader ~> builtIndex.webhookApi.routes ~> check {
             status shouldBe Accepted
           }
 
@@ -248,7 +255,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           }
           blockUntilExactCount(expectedDataSets.size, builtIndex.indexId)
 
-          Get("/v0/datasets?query=*&limit=10000") ~> builtIndex.searchApi.routes ~> check {
+          Get("/v0/datasets?query=*&limit=10000") ~> addSingleTenantIdHeader ~> builtIndex.searchApi.routes ~> check {
             status shouldBe OK
             val result = responseAs[SearchResult]
 
@@ -273,7 +280,11 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
     val qualityGen = Gen.listOfN(dataSets.size, Gen.nonEmptyListOf(qualityFacetGen))
 
-    qualityGen.map { case x => dataSets.zip(x) }
+    val dsg = qualityGen.map { case x =>
+      dataSets.zip(x)
+    }
+
+    dsg
   }
 
   case class TestIndex(indexId: String, indices: Indices, indexer: SearchIndexer, webhookApi: WebhookApi, searchQueryer: SearchQueryer, searchApi: SearchApi, indexNames: List[String])
@@ -324,7 +335,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
       }
 
       val responses = posts.map { post =>
-        post ~> routes ~> check {
+        post ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe Accepted
         }
       }
@@ -336,7 +347,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
       blockUntilExactCount(allDataSets.size, builtIndex.indexId)
 
-      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> builtIndex.searchApi.routes ~> check {
+      Get(s"/v0/datasets?query=*&limit=${allDataSets.size}") ~> addSingleTenantIdHeader ~> builtIndex.searchApi.routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
 

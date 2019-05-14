@@ -59,7 +59,7 @@ class FacetSpec extends BaseSearchApiSpec {
           val facetSize = Math.max(rawFacetSize, 1)
 
           whenever(start >= 0 && limit >= 0) {
-            Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               inner(dataSets, facetSize)
             }
@@ -84,7 +84,7 @@ class FacetSpec extends BaseSearchApiSpec {
           val (textQuery, objQuery) = query
           val facetSize = Math.max(rawFacetSize, 1)
 
-          Get(s"/v0/datasets?${textQuery}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
             inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
           }
@@ -113,7 +113,7 @@ class FacetSpec extends BaseSearchApiSpec {
       whenever(!queryWithoutFilter.equals(Query())) {
         val textQueryWithoutFacet = queryToText(queryWithoutFilter)
 
-        Get(s"/v0/datasets?${textQueryWithoutFacet}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
+        Get(s"/v0/datasets?${textQueryWithoutFacet}&start=0&limit=${allDataSets.size}&facetSize=1") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val innerResult = responseAs[SearchResult]
           val innerDataSets = innerResult.dataSets
@@ -382,7 +382,7 @@ class FacetSpec extends BaseSearchApiSpec {
                 val publisherLookup = publishers
                   .groupBy(_.name.get.toLowerCase)
 
-                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> addSingleTenantIdHeader ~> routes ~> check {
                   status shouldBe OK
 
                   val result = responseAs[SearchResult]
