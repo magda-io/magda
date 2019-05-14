@@ -395,7 +395,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <hr />
                 <h3>Production</h3>
                 <h4>
-                    Was this dataset produced collaborating with other
+                    Was this dataset produced in collaboration with with other
                     organisations?
                 </h4>
                 <p>
@@ -424,14 +424,6 @@ class NewDataset extends React.Component<Prop, State> {
                         value={dataset.creation_mechanism}
                         onChange={editDataset("creation_mechanism")}
                         editor={multilineTextEditor}
-                    />
-                </p>
-                <h4>What system was used to create this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.creation_sourceSystem}
-                        onChange={editDataset("creation_sourceSystem")}
-                        editor={textEditor}
                     />
                 </p>
             </div>
@@ -470,9 +462,6 @@ class NewDataset extends React.Component<Prop, State> {
                 <ToolTip>
                     Select the best location for this file based on it's
                     contents and your organisation file structure.
-                    <br />
-                    You can choose from a number of pre-defined file storage
-                    location.
                 </ToolTip>
                 <p>
                     <AlwaysEditor

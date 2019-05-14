@@ -516,7 +516,6 @@ export const accrualPeriodicity = {
     quinquennialy: "Every 5 years",
     decennially: "Every 10 years",
     centennially: "Every 100 years",
-    millennially: "Every 1000 years",
     asNeeded: "As Needed",
     notUpdated: "Not Updated"
 };
