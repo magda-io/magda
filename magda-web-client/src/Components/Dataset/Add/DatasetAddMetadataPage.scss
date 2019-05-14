@@ -11,3 +11,24 @@
     margin: 1em 0 1em 0;
     border: 1px solid $AU-color-foreground-action;
 }
+
+.fileBlock {
+    border: 1px solid #cccccc;
+    overflow: auto;
+    line-height: 100%;
+}
+
+.fileBlock-icon {
+    float: left;
+    padding: 0.8em;
+}
+
+.fileBlock-control {
+    float: right;
+    padding: 0.5em;
+}
+
+.fileBlock-text {
+    display: inline-block;
+    padding: 1em;
+}
