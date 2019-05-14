@@ -40,9 +40,6 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 
-import dateParse from "date-fns/parse";
-import dateFormat from "date-fns/format";
-
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -309,14 +306,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>When was the dataset most recently modified?</h4>
                 <p>
                     <AlwaysEditor
-                        value={
-                            dataset.modified
-                                ? dateFormat(
-                                      dateParse(dataset.modified),
-                                      "YYYY-MM-DD"
-                                  )
-                                : ""
-                        }
+                        value={dataset.modified}
                         onChange={editDataset("modified")}
                         editor={dateEditor}
                     />
