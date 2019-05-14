@@ -4,6 +4,7 @@ import { withRouter } from "react-router";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import FileIcon from "Components/Common/FileIcon";
+
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
     textEditor,
@@ -21,6 +22,7 @@ import {
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import HelpSnippet from "Components/Common/HelpSnippet";
 
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
@@ -506,6 +508,56 @@ class NewDataset extends React.Component<Prop, State> {
                     />
                 </p>
                 <h4>What is the sensitivity of this dataset?</h4>
+                <HelpSnippet>
+                    <p>
+                        Magda security classification refers to the
+                        Attorney-General Department's Sensitive and
+                        Classification policy.
+                        <br />
+                        It is important that the appropriate security
+                        classification level is selected to protect the
+                        confidentiality, integrity and availability of the data.
+                        The framework is as follows:
+                    </p>
+                    <p>
+                        UNCLASSIFIED: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>low or no business impact.</b>
+                    </p>
+                    <p>
+                        PROTECTED: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            limited damage to an individual, organisation or
+                            government generally if compromised.
+                        </b>
+                    </p>
+                    <p>
+                        CONFIDENTIAL: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            damage to the national interest, organisations or
+                            individuals.
+                        </b>
+                    </p>
+                    <p>
+                        SECRET: Compromise of information confidentiality would
+                        be expected to cause{" "}
+                        <b>
+                            serious damage to national interest, organisations
+                            or individuals.
+                        </b>
+                    </p>
+                    <p>
+                        TOP SECRET: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            exceptionally grave damage to te national interest,
+                            organisations or individuals.
+                        </b>
+                    </p>
+                </HelpSnippet>
+
                 <p>
                     <AlwaysEditor
                         value={datasetUsage.disseminationLimits}
