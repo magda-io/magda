@@ -7,7 +7,6 @@ export type File = {
     description?: string;
     issued?: string;
     modified: Date;
-    license?: string;
     rights?: string;
     accessURL?: string;
     accessNotes?: string;
@@ -22,6 +21,7 @@ export type File = {
     themes?: string[];
     temporalCoverage?: any;
     spatialCoverage?: any;
+    usage: Usage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -77,6 +77,7 @@ export type State = {
     temporalCoverage: TemporalCoverage;
     datasetUsage: Usage;
     datasetAccess: Access;
+    _licenseLevel: string;
     _lastModifiedDate: string;
     _createdDate: string;
 };
@@ -122,7 +123,8 @@ export function createBlankState(): State {
         datasetUsage: {},
         datasetAccess: {},
         _createdDate: new Date().toISOString(),
-        _lastModifiedDate: new Date().toISOString()
+        _lastModifiedDate: new Date().toISOString(),
+        _licenseLevel: "dataset"
     };
 }
 
@@ -140,6 +142,11 @@ export function loadState(id) {
 export function saveState(state: State, id = "") {
     id = id || `dataset-${uuidv4()}`;
     state = Object.assign({}, state);
+
+    if (state.files.length === 0 && state._licenseLevel !== "dataset") {
+        state._licenseLevel = "dataset";
+    }
+
     state._lastModifiedDate = new Date().toISOString();
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;

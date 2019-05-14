@@ -115,6 +115,12 @@ class NewDataset extends React.Component<Prop, State> {
         });
     };
 
+    editState = (field: string) => (newValue: any) => {
+        this.setState(state => {
+            return Object.assign({}, state, { [field]: newValue });
+        });
+    };
+
     render() {
         const { files } = this.state;
 
@@ -426,7 +432,13 @@ class NewDataset extends React.Component<Prop, State> {
         );
     }
     renderRestriction() {
-        const { datasetAccess, datasetUsage, datasetPublishing } = this.state;
+        let {
+            files,
+            datasetAccess,
+            datasetUsage,
+            datasetPublishing,
+            _licenseLevel
+        } = this.state;
 
         const editDatasetPublishing = this.edit("datasetPublishing");
         const editDatasetAccess = this.edit("datasetAccess");
@@ -465,38 +477,106 @@ class NewDataset extends React.Component<Prop, State> {
                 </p>
                 <hr />
                 <h3>Dataset use</h3>
-                <h4>What type of license should be applied to these files?</h4>
+                {files.length !== 0 && (
+                    <React.Fragment>
+                        <h4>
+                            What type of license should be applied to these
+                            files?
+                        </h4>
 
-                <ToolTip>
-                    By default, Magda adds Licenses at the Dataset Level (i.e.
-                    to all files), but this can be overriden to apply at a
-                    Distribution (each file or URL) level if desired.
-                </ToolTip>
+                        <ToolTip>
+                            By default, Magda adds Licenses at the Dataset Level
+                            (i.e. to all files), but this can be overriden to
+                            apply at a Distribution (each file or URL) level if
+                            desired.
+                        </ToolTip>
 
+                        <p>
+                            <AlwaysEditor
+                                value={_licenseLevel}
+                                onChange={this.editState("_licenseLevel")}
+                                editor={codelistEditor(
+                                    codelists.datasetLicenseLevel
+                                )}
+                            />
+                        </p>
+                    </React.Fragment>
+                )}
                 <h4>What license restrictions should be applied?</h4>
-
                 <ToolTip>
                     We recommend a Whole of Government License be applied to
                     encourage inter-department data sharing in the future.
                 </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={datasetUsage.licenseLevel}
-                        onChange={editDatasetUsage("licenseLevel")}
-                        editor={codelistEditor(codelists.licenseLevel)}
-                    />
-                </p>
-                {datasetUsage.licenseLevel === "custom" && (
-                    <p>
-                        <AlwaysEditor
-                            value={datasetUsage.license}
-                            onChange={editDatasetUsage("license")}
-                            editor={textEditorEx({
-                                placeholder: "Please specify a license"
-                            })}
-                        />
-                    </p>
+                {_licenseLevel === "dataset" ? (
+                    <div>
+                        <p>
+                            <AlwaysEditor
+                                value={datasetUsage.licenseLevel}
+                                onChange={editDatasetUsage("licenseLevel")}
+                                editor={codelistEditor(codelists.licenseLevel)}
+                            />
+                        </p>
+                        {datasetUsage.licenseLevel === "custom" && (
+                            <p>
+                                <AlwaysEditor
+                                    value={datasetUsage.license}
+                                    onChange={editDatasetUsage("license")}
+                                    editor={textEditorEx({
+                                        placeholder: "Please specify a license"
+                                    })}
+                                />
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <div>
+                        {files.map((file, fileIndex) => {
+                            const edit = field => value => {
+                                file.usage[field] = value;
+                                this.editState("files")(files);
+                            };
+                            return (
+                                <div className="fileBlock">
+                                    <span className="fileBlock-icon">
+                                        <FileIcon
+                                            text={file.format}
+                                            width="1.5em"
+                                        />
+                                    </span>
+                                    <span className="fileBlock-text">
+                                        {file.title}
+                                    </span>
+
+                                    <div className="fileBlock-control">
+                                        <p>
+                                            <AlwaysEditor
+                                                value={file.usage.licenseLevel}
+                                                onChange={edit("licenseLevel")}
+                                                editor={codelistEditor(
+                                                    codelists.licenseLevel
+                                                )}
+                                            />
+                                        </p>
+                                        {file.usage.licenseLevel ===
+                                            "custom" && (
+                                            <p>
+                                                <AlwaysEditor
+                                                    value={file.usage.license}
+                                                    onChange={edit("license")}
+                                                    editor={textEditorEx({
+                                                        placeholder:
+                                                            "Please specify a license"
+                                                    })}
+                                                />
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 )}
+
                 <h4>What is the security classification of this dataset?</h4>
                 <p>
                     <AlwaysEditor
@@ -555,17 +635,31 @@ class NewDataset extends React.Component<Prop, State> {
             datasetPublishing,
             spatialCoverage,
             temporalCoverage,
-            files
+            files,
+            _licenseLevel,
+            datasetUsage,
+            datasetAccess
         } = this.state;
         const inputDistributions = files.map(file => {
+            let usage: any = undefined;
+            if (_licenseLevel !== "dataset") {
+                usage = file.usage;
+            }
             return {
                 id: createId("dist"),
                 name: file.title,
                 aspects: {
-                    "dcat-distribution-strings": file
+                    "dcat-distribution-strings": Object.assign(file, {
+                        usage: undefined
+                    }),
+                    usage
                 }
             };
         });
+        let usage: any = undefined;
+        if (_licenseLevel === "dataset") {
+            usage = datasetUsage;
+        }
         const inputDataset = {
             id,
             name: dataset.title,
@@ -576,7 +670,9 @@ class NewDataset extends React.Component<Prop, State> {
                 "temporal-coverage": temporalCoverage,
                 "dataset-distributions": {
                     distributions: inputDistributions.map(d => d.id)
-                }
+                },
+                access: datasetAccess,
+                usage
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
