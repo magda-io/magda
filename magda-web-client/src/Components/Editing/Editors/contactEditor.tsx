@@ -42,7 +42,7 @@ export const contacts: Contact[] = [
     }
 ];
 
-class ContactsSearch extends React.Component<any, any> {
+class ContactEditorComponent extends React.Component<any, any> {
     state = {
         results: [],
         searched: false
@@ -80,7 +80,18 @@ class ContactsSearch extends React.Component<any, any> {
     }
 
     render() {
+        let { existing, onChange } = this.props;
         const { results, searched } = this.state;
+
+        const add = item => {
+            existing = existing.slice(0);
+            existing.push(item);
+            onChange(existing);
+        };
+        const remove = item => {
+            existing = existing.filter(i => i !== item);
+            onChange(existing);
+        };
 
         return (
             <div>
@@ -88,19 +99,34 @@ class ContactsSearch extends React.Component<any, any> {
                     <input
                         className="au-text-input"
                         type="search"
-                        placeholder="Add another contact point"
+                        placeholder="Search for a contact"
                         onChange={this.search.bind(this)}
                     />
                 </div>
-                {searched && (
-                    <div>
-                        {results.map((val: Contact) => {
+
+                <div className="contactList">
+                    {existing.map(val => {
+                        return (
+                            <div className="contactList-item">
+                                {val.name} ({val.role}, {val.organisation}){" "}
+                                <button
+                                    className="contactList-item-btn"
+                                    onClick={() => remove(val)}
+                                >
+                                    &#x2715;
+                                </button>
+                            </div>
+                        );
+                    })}
+                    {searched &&
+                        results.map((val: Contact) => {
                             return (
-                                <div className="contactList-searchResult">
+                                <div className="contactList-item">
                                     {val.name} ({val.role}, {val.organisation}){" "}
                                     <button
+                                        className="contactList-item-btn"
                                         onClick={() => {
-                                            this.props.addCallback(val);
+                                            add(val);
                                             this.updateState({
                                                 results: this.state.results.filter(
                                                     (result: Contact) =>
@@ -114,8 +140,7 @@ class ContactsSearch extends React.Component<any, any> {
                                 </div>
                             );
                         })}
-                    </div>
-                )}
+                </div>
             </div>
         );
     }
@@ -125,32 +150,14 @@ export function multiContactEditor(options: any): Editor<Contact[]> {
     return {
         edit: (value: any, onChange: Function) => {
             value = value || [];
-            const add = item => {
-                value = value.slice(0);
-                value.push(item);
-                onChange(value);
-            };
-            const remove = item => {
-                value = value.filter(i => i !== item);
-                onChange(value);
-            };
+
             return (
                 <div>
-                    <div className="contactList">
-                        {value.map(val => {
-                            return (
-                                <div className="contactList-item">
-                                    {val.name} ({val.role}, {val.organisation}){" "}
-                                    <button onClick={() => remove(val)}>
-                                        &#x2715;
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <br />
                     <div>
-                        <ContactsSearch existing={value} addCallback={add} />
+                        <ContactEditorComponent
+                            existing={value}
+                            onChange={onChange}
+                        />
                     </div>
                 </div>
             );

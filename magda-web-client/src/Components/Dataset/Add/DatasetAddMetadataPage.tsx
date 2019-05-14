@@ -4,6 +4,7 @@ import { withRouter } from "react-router";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import FileIcon from "Components/Common/FileIcon";
+
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
     textEditor,
@@ -23,6 +24,7 @@ import {
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import HelpSnippet from "Components/Common/HelpSnippet";
 
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
@@ -37,6 +39,8 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+
+import dateParse from "date-fns/parse";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -117,6 +121,12 @@ class NewDataset extends React.Component<Prop, State> {
         });
     };
 
+    editState = (field: string) => (newValue: any) => {
+        this.setState(state => {
+            return Object.assign({}, state, { [field]: newValue });
+        });
+    };
+
     render() {
         const { files } = this.state;
 
@@ -163,8 +173,8 @@ class NewDataset extends React.Component<Prop, State> {
                                 as required.
                             </p>
                             <div>
-                                {files.map(file => (
-                                    <p>
+                                {files.map((file, i) => (
+                                    <p key={i}>
                                         &nbsp; &nbsp;
                                         <FileIcon
                                             width="1em"
@@ -222,7 +232,6 @@ class NewDataset extends React.Component<Prop, State> {
 
     renderBasicDetails() {
         const { dataset, spatialCoverage, temporalCoverage } = this.state;
-
         const editDataset = this.edit("dataset");
         const editTemporalCoverage = this.edit("temporalCoverage");
         const editSpatialCoverage = this.edit("spatialCoverage");
@@ -299,7 +308,11 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>When was the dataset most recently modified?</h4>
                 <p>
                     <AlwaysEditor
-                        value={dataset.modified}
+                        value={
+                            dataset.modified
+                                ? dateParse(dataset.modified)
+                                : undefined
+                        }
                         onChange={editDataset("modified")}
                         editor={dateEditor}
                     />
@@ -389,7 +402,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <hr />
                 <h3>Production</h3>
                 <h4>
-                    Was this dataset produced collaborating with other
+                    Was this dataset produced in collaboration with with other
                     organisations?
                 </h4>
                 <p>
@@ -420,19 +433,17 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={multilineTextEditor}
                     />
                 </p>
-                <h4>What system was used to create this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.creation_sourceSystem}
-                        onChange={editDataset("creation_sourceSystem")}
-                        editor={textEditor}
-                    />
-                </p>
             </div>
         );
     }
     renderRestriction() {
-        const { datasetAccess, datasetUsage, datasetPublishing } = this.state;
+        let {
+            files,
+            datasetAccess,
+            datasetUsage,
+            datasetPublishing,
+            _licenseLevel
+        } = this.state;
 
         const editDatasetPublishing = this.edit("datasetPublishing");
         const editDatasetAccess = this.edit("datasetAccess");
@@ -458,9 +469,6 @@ class NewDataset extends React.Component<Prop, State> {
                 <ToolTip>
                     Select the best location for this file based on it's
                     contents and your organisation file structure.
-                    <br />
-                    You can choose from a number of pre-defined file storage
-                    location.
                 </ToolTip>
                 <p>
                     <AlwaysEditor
@@ -471,38 +479,106 @@ class NewDataset extends React.Component<Prop, State> {
                 </p>
                 <hr />
                 <h3>Dataset use</h3>
-                <h4>What type of license should be applied to these files?</h4>
+                {files.length !== 0 && (
+                    <React.Fragment>
+                        <h4>
+                            What type of license should be applied to these
+                            files?
+                        </h4>
 
-                <ToolTip>
-                    By default, Magda adds Licenses at the Dataset Level (i.e.
-                    to all files), but this can be overriden to apply at a
-                    Distribution (each file or URL) level if desired.
-                </ToolTip>
+                        <ToolTip>
+                            By default, Magda adds Licenses at the Dataset Level
+                            (i.e. to all files), but this can be overriden to
+                            apply at a Distribution (each file or URL) level if
+                            desired.
+                        </ToolTip>
 
+                        <p>
+                            <AlwaysEditor
+                                value={_licenseLevel}
+                                onChange={this.editState("_licenseLevel")}
+                                editor={codelistEditor(
+                                    codelists.datasetLicenseLevel
+                                )}
+                            />
+                        </p>
+                    </React.Fragment>
+                )}
                 <h4>What license restrictions should be applied?</h4>
-
                 <ToolTip>
                     We recommend a Whole of Government License be applied to
                     encourage inter-department data sharing in the future.
                 </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={datasetUsage.licenseLevel}
-                        onChange={editDatasetUsage("licenseLevel")}
-                        editor={codelistEditor(codelists.licenseLevel)}
-                    />
-                </p>
-                {datasetUsage.licenseLevel === "custom" && (
-                    <p>
-                        <AlwaysEditor
-                            value={datasetUsage.license}
-                            onChange={editDatasetUsage("license")}
-                            editor={textEditorEx({
-                                placeholder: "Please specify a license"
-                            })}
-                        />
-                    </p>
+                {_licenseLevel === "dataset" ? (
+                    <div>
+                        <p>
+                            <AlwaysEditor
+                                value={datasetUsage.licenseLevel}
+                                onChange={editDatasetUsage("licenseLevel")}
+                                editor={codelistEditor(codelists.licenseLevel)}
+                            />
+                        </p>
+                        {datasetUsage.licenseLevel === "custom" && (
+                            <p>
+                                <AlwaysEditor
+                                    value={datasetUsage.license}
+                                    onChange={editDatasetUsage("license")}
+                                    editor={textEditorEx({
+                                        placeholder: "Please specify a license"
+                                    })}
+                                />
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <div>
+                        {files.map((file, fileIndex) => {
+                            const edit = field => value => {
+                                file.usage[field] = value;
+                                this.editState("files")(files);
+                            };
+                            return (
+                                <div className="fileBlock">
+                                    <span className="fileBlock-icon">
+                                        <FileIcon
+                                            text={file.format}
+                                            width="1.5em"
+                                        />
+                                    </span>
+                                    <span className="fileBlock-text">
+                                        {file.title}
+                                    </span>
+
+                                    <div className="fileBlock-control">
+                                        <p>
+                                            <AlwaysEditor
+                                                value={file.usage.licenseLevel}
+                                                onChange={edit("licenseLevel")}
+                                                editor={codelistEditor(
+                                                    codelists.licenseLevel
+                                                )}
+                                            />
+                                        </p>
+                                        {file.usage.licenseLevel ===
+                                            "custom" && (
+                                            <p>
+                                                <AlwaysEditor
+                                                    value={file.usage.license}
+                                                    onChange={edit("license")}
+                                                    editor={textEditorEx({
+                                                        placeholder:
+                                                            "Please specify a license"
+                                                    })}
+                                                />
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 )}
+
                 <h4>What is the security classification of this dataset?</h4>
                 <p>
                     <AlwaysEditor
@@ -512,6 +588,56 @@ class NewDataset extends React.Component<Prop, State> {
                     />
                 </p>
                 <h4>What is the sensitivity of this dataset?</h4>
+                <HelpSnippet>
+                    <p>
+                        Magda security classification refers to the
+                        Attorney-General Department's Sensitive and
+                        Classification policy.
+                        <br />
+                        It is important that the appropriate security
+                        classification level is selected to protect the
+                        confidentiality, integrity and availability of the data.
+                        The framework is as follows:
+                    </p>
+                    <p>
+                        UNCLASSIFIED: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>low or no business impact.</b>
+                    </p>
+                    <p>
+                        PROTECTED: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            limited damage to an individual, organisation or
+                            government generally if compromised.
+                        </b>
+                    </p>
+                    <p>
+                        CONFIDENTIAL: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            damage to the national interest, organisations or
+                            individuals.
+                        </b>
+                    </p>
+                    <p>
+                        SECRET: Compromise of information confidentiality would
+                        be expected to cause{" "}
+                        <b>
+                            serious damage to national interest, organisations
+                            or individuals.
+                        </b>
+                    </p>
+                    <p>
+                        TOP SECRET: Compromise of information confidentiality
+                        would be expected to cause{" "}
+                        <b>
+                            exceptionally grave damage to te national interest,
+                            organisations or individuals.
+                        </b>
+                    </p>
+                </HelpSnippet>
+
                 <p>
                     <AlwaysEditor
                         value={datasetUsage.disseminationLimits}
@@ -561,17 +687,31 @@ class NewDataset extends React.Component<Prop, State> {
             datasetPublishing,
             spatialCoverage,
             temporalCoverage,
-            files
+            files,
+            _licenseLevel,
+            datasetUsage,
+            datasetAccess
         } = this.state;
         const inputDistributions = files.map(file => {
+            let usage: any = undefined;
+            if (_licenseLevel !== "dataset") {
+                usage = file.usage;
+            }
             return {
                 id: createId("dist"),
                 name: file.title,
                 aspects: {
-                    "dcat-distribution-strings": file
+                    "dcat-distribution-strings": Object.assign(file, {
+                        usage: undefined
+                    }),
+                    usage
                 }
             };
         });
+        let usage: any = undefined;
+        if (_licenseLevel === "dataset") {
+            usage = datasetUsage;
+        }
         const inputDataset = {
             id,
             name: dataset.title,
@@ -582,7 +722,9 @@ class NewDataset extends React.Component<Prop, State> {
                 "temporal-coverage": temporalCoverage,
                 "dataset-distributions": {
                     distributions: inputDistributions.map(d => d.id)
-                }
+                },
+                access: datasetAccess,
+                usage
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);

@@ -82,6 +82,7 @@ export function codelistRadioEditor(
                                         name={name}
                                         id={name + val}
                                         onChange={callback}
+                                        checked={value === val}
                                     />{" "}
                                     <label
                                         className="au-control-input__text"

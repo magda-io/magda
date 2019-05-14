@@ -8,7 +8,7 @@ export default function ToolTip(props: any) {
     return (
         <p className={Styles.root}>
             <img src={LightBulbIcon} className={Styles.image} />
-            {props.children}
+            <span>{props.children}</span>
         </p>
     );
 }
