@@ -243,7 +243,11 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={dataset.languages}
                         onChange={editDataset("languages")}
-                        editor={multiCodelistEditor(codelists.languages, true)}
+                        editor={multiCodelistEditor(
+                            codelists.languages,
+                            true,
+                            "Add another language"
+                        )}
                     />
                 </p>
                 <hr />
