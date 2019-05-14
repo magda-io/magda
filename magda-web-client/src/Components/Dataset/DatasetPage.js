@@ -558,7 +558,7 @@ class RecordHandler extends React.Component {
                                                 How frequently is the dataset
                                                 updated?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -571,12 +571,12 @@ class RecordHandler extends React.Component {
                                                         codelists.accrualPeriodicity
                                                     )}
                                                 />
-                                            </p>
+                                            </div>
                                             <h4>
                                                 What time period does the
                                                 dataset cover?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -598,14 +598,14 @@ class RecordHandler extends React.Component {
                                                         />
                                                     </div>
                                                 </ToggleEditor>
-                                            </p>
+                                            </div>
                                             <hr />
                                             <h3>Spatial area</h3>
                                             <h4>
                                                 We've determined that the
                                                 spatial extent of your data is:
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -616,7 +616,7 @@ class RecordHandler extends React.Component {
                                                     )}
                                                     editor={bboxEditor}
                                                 />
-                                            </p>
+                                            </div>
                                             <hr />
                                             <h2>People and production</h2>
                                             <h4>
@@ -624,7 +624,7 @@ class RecordHandler extends React.Component {
                                                 collaborating with other
                                                 organisations?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -635,11 +635,11 @@ class RecordHandler extends React.Component {
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
-                                            </p>
+                                            </div>
                                             <h4>
                                                 How was the dataset produced?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -651,9 +651,9 @@ class RecordHandler extends React.Component {
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
-                                            </p>
+                                            </div>
                                             <h4>Source system:</h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -665,7 +665,7 @@ class RecordHandler extends React.Component {
                                                     )}
                                                     editor={textEditor}
                                                 />
-                                            </p>
+                                            </div>
                                             <hr />
                                             <h2>
                                                 Dataset visibility, access and
@@ -675,7 +675,7 @@ class RecordHandler extends React.Component {
                                                 What is the security
                                                 classification of this dataset?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -690,13 +690,13 @@ class RecordHandler extends React.Component {
                                                         codelists.disseminationLimits
                                                     )}
                                                 />
-                                            </p>
+                                            </div>
 
                                             <h4>
                                                 What is the sensitivity of this
                                                 dataset?
                                             </h4>
-                                            <p>
+                                            <div>
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
@@ -711,7 +711,7 @@ class RecordHandler extends React.Component {
                                                         codelists.classification
                                                     )}
                                                 />
-                                            </p>
+                                            </div>
                                             <hr />
                                         </div>
                                     )}
