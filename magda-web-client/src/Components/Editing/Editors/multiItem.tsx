@@ -82,14 +82,36 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
         const { editor, enabled } = this.props;
         const { newValue } = this.state;
         const value = this.value();
-
         return (
             <React.Fragment>
+                {enabled && (
+                    <React.Fragment>
+                        {editor.edit(newValue, this.change.bind(this), value, {
+                            onKeyUp: (e: any) => {
+                                if (e.keyCode !== 13) return;
+                                this.addHandler(e);
+                            }
+                        })}
+                        {!this.props.addOnChange && (
+                            <button
+                                className="au-btn add-button"
+                                onClick={this.addHandler.bind(this)}
+                                disabled={!this.props.canBeAdded(newValue)}
+                            >
+                                Add
+                            </button>
+                        )}
+                    </React.Fragment>
+                )}
+                {!enabled && (!value || !value.length) && "NOT SET"}
                 {!enabled && (!value || !value.length) ? null : (
                     <div className="multi-list-item-editor-container">
                         {value.map((val, i) => {
                             return (
-                                <div className="multi-list-item-editor-item">
+                                <div
+                                    key={i}
+                                    className="multi-list-item-editor-item"
+                                >
                                     {editor.view(val)}
                                     {enabled && (
                                         <button
@@ -104,21 +126,6 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                         })}
                     </div>
                 )}
-                {enabled && (
-                    <React.Fragment>
-                        {editor.edit(newValue, this.change.bind(this))}
-                        {!this.props.addOnChange && (
-                            <button
-                                className="au-btn add-button"
-                                onClick={this.addHandler.bind(this)}
-                                disabled={!this.props.canBeAdded(newValue)}
-                            >
-                                Add
-                            </button>
-                        )}
-                    </React.Fragment>
-                )}
-                {!enabled && (!value || !value.length) && "NOT SET"}
             </React.Fragment>
         );
     }

@@ -5,7 +5,12 @@ import { ListMultiItemEditor } from "./multiItem";
 
 export function textEditorEx(options: any = {}) {
     return {
-        edit: (value: any, onChange: Function) => {
+        edit: (
+            value: any,
+            onChange: Function,
+            multiValues: any = null,
+            extraProps: any = {}
+        ) => {
             const callback = event => {
                 onChange(event.target.value);
             };
@@ -16,12 +21,13 @@ export function textEditorEx(options: any = {}) {
                 <input
                     className={
                         options.fullWidth
-                            ? "au-text-input full-width-ctrl"
-                            : "au-text-input non-full-width-ctrl"
+                            ? "au-text-input full-width-ctrl textEditorEx"
+                            : "au-text-input non-full-width-ctrl textEditorEx"
                     }
                     defaultValue={value as string}
                     onChange={callback}
                     {...options}
+                    {...extraProps}
                 />
             );
         },
