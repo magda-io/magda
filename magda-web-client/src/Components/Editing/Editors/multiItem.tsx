@@ -2,15 +2,17 @@ import React from "react";
 import Editor from "./Editor";
 import "./multiItem.scss";
 
-export abstract class MultiItemEditor extends React.Component<
+export abstract class MultiItemEditor<V> extends React.Component<
     {
-        value?: any[];
-        editor: Editor;
+        value?: V[];
+        editor: Editor<V>;
         enabled?: boolean;
-        createNewValue?: Function;
+        createNewValue: Function;
         onChange?: Function;
+        canBeAdded: (value: V) => boolean;
+        addOnChange: boolean;
     },
-    { value?: any[]; newValue: any }
+    { value?: V[]; newValue: V }
 > {
     constructor(props) {
         super(props);
@@ -19,26 +21,36 @@ export abstract class MultiItemEditor extends React.Component<
         };
     }
 
-    updateState(update: any) {
-        this.setState((state, props) => Object.assign({}, state, update));
-    }
-
     change(newValueFromControl) {
-        this.updateState({
-            newValue: newValueFromControl
-        });
+        this.setState(
+            {
+                newValue: newValueFromControl
+            },
+            () => {
+                if (
+                    this.props.addOnChange &&
+                    this.props.canBeAdded(newValueFromControl)
+                ) {
+                    this.add();
+                }
+            }
+        );
     }
 
-    add(event) {
+    addHandler(event) {
         event.preventDefault();
 
+        this.add();
+    }
+
+    add() {
         const value = this.value();
         let newValue = this.state.newValue;
         if (newValue) {
             value.push(newValue);
-            newValue = "";
+            newValue = this.props.createNewValue();
         }
-        this.updateState({ value, newValue });
+        this.setState({ value, newValue });
         if (this.props.onChange) {
             this.props.onChange(value);
         }
@@ -48,7 +60,7 @@ export abstract class MultiItemEditor extends React.Component<
         return () => {
             const value = this.value();
             value.splice(index, 1);
-            this.updateState({ value });
+            this.setState({ value });
             if (this.props.onChange) {
                 this.props.onChange(value);
             }
@@ -65,7 +77,7 @@ export abstract class MultiItemEditor extends React.Component<
     }
 }
 
-export class ListMultiItemEditor extends MultiItemEditor {
+export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
     render() {
         const { editor, enabled } = this.props;
         const { newValue } = this.state;
@@ -94,11 +106,12 @@ export class ListMultiItemEditor extends MultiItemEditor {
                 )}
                 {enabled && (
                     <React.Fragment>
-                        {editor.edit(newValue, this.change.bind(this), value)}
-                        {newValue && (
+                        {editor.edit(newValue, this.change.bind(this))}
+                        {!this.props.addOnChange && (
                             <button
                                 className="au-btn add-button"
-                                onClick={this.add.bind(this)}
+                                onClick={this.addHandler.bind(this)}
+                                disabled={!this.props.canBeAdded(newValue)}
                             >
                                 Add
                             </button>
@@ -110,26 +123,38 @@ export class ListMultiItemEditor extends MultiItemEditor {
         );
     }
 
-    static create(singleEditor: Editor, createNewValue: Function): Editor {
+    static create<V>(
+        singleEditor: Editor<V>,
+        createNewValue: () => V,
+        canBeAdded: (value: V) => boolean = value => !!value,
+        addOnChange: boolean = false
+    ): Editor<V[]> {
         return {
-            edit: (value: any, onChange: Function) => {
+            edit: (
+                outerMultiValue: V[] | undefined,
+                onChange: (innerMultiValue: V[] | undefined) => void
+            ) => {
                 return (
-                    <ListMultiItemEditor
-                        value={value}
+                    <ListMultiItemEditor<V>
+                        value={outerMultiValue}
                         editor={singleEditor}
                         enabled={true}
                         createNewValue={createNewValue}
                         onChange={onChange}
+                        canBeAdded={canBeAdded}
+                        addOnChange={addOnChange}
                     />
                 );
             },
-            view: (value: any) => {
+            view: (value: V[] | undefined) => {
                 return (
-                    <ListMultiItemEditor
+                    <ListMultiItemEditor<V>
                         value={value}
                         editor={singleEditor}
                         enabled={false}
                         createNewValue={createNewValue}
+                        canBeAdded={canBeAdded}
+                        addOnChange={addOnChange}
                     />
                 );
             }

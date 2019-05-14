@@ -2,7 +2,7 @@ import React from "react";
 import Editor from "./Editor";
 import { ListMultiItemEditor } from "./multiItem";
 
-export function codelistEditor(options: any, reorder = false): Editor {
+export function codelistEditor(options: any, reorder = false): Editor<string> {
     return {
         edit: (value: any, onChange: Function, valuesToAvoid?: any) => {
             const callback = event => {
@@ -44,7 +44,10 @@ export function codelistEditor(options: any, reorder = false): Editor {
     };
 }
 
-export function codelistRatioEditor(options: any, reorder = false): Editor {
+export function codelistRadioEditor(
+    options: any,
+    reorder = false
+): Editor<string> {
     return {
         edit: (value: any, onChange: Function) => {
             const callback = event => {
@@ -109,7 +112,10 @@ function alphaLabelSort(labels, order = 1) {
     };
 }
 
-export function multiCodelistEditor(options: any, reorder = false): Editor {
+export function multiCodelistEditor(
+    options: { [key: string]: string },
+    reorder = false
+): Editor<string[]> {
     const single = codelistEditor(options, reorder);
     return ListMultiItemEditor.create(single, () => "");
 }

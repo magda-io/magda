@@ -11,7 +11,7 @@ import starIcon from "assets/star.svg";
 import AsyncComponent from "Components/AsyncComponent";
 import "easymde/dist/easymde.min.css";
 
-export const markdownEditor: Editor = {
+export const markdownEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
         const callback = text => {
             onChange(text);

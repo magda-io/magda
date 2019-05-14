@@ -9,13 +9,15 @@ import {
     textEditor,
     textEditorEx,
     multilineTextEditor,
-    multiTextEditorEx,
-    dateEditor,
-    multiDateIntervalEditor
+    multiTextEditorEx
 } from "Components/Editing/Editors/textEditor";
 import {
+    dateEditor,
+    multiDateIntervalEditor
+} from "Components/Editing/Editors/dateEditor";
+import {
     codelistEditor,
-    codelistRatioEditor,
+    codelistRadioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
@@ -107,7 +109,7 @@ class NewDataset extends React.Component<Prop, State> {
         }
     ];
 
-    edit = (aspectField: string) => (field: string) => (newValue: string) => {
+    edit = (aspectField: string) => (field: string) => (newValue: any) => {
         this.setState(state => {
             const item = Object.assign({}, state[aspectField]);
             item[field] = newValue;
@@ -306,7 +308,7 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={codelistEditor(codelists.accrualPeriodicity)}
                     />
                 </p>
-                <h4>What time period does the dataset cover?</h4>
+                <h4>What time period(s) does the dataset cover?</h4>
                 <p>
                     <AlwaysEditor
                         value={temporalCoverage.intervals}
@@ -375,7 +377,7 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={dataset.contactPointDisplay}
                         onChange={editDataset("contactPointDisplay")}
-                        editor={codelistRatioEditor(
+                        editor={codelistRadioEditor(
                             codelists.contactPointDisplay
                         )}
                     />
@@ -445,7 +447,7 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={datasetPublishing.level}
                         onChange={editDatasetPublishing("level")}
-                        editor={codelistRatioEditor(codelists.publishingLevel)}
+                        editor={codelistRadioEditor(codelists.publishingLevel)}
                     />
                 </p>
                 <h4>Where can users access this dataset from?</h4>

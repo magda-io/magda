@@ -2,10 +2,10 @@ import React from "react";
 import Editor from "./Editors/Editor";
 import "./Style.scss";
 
-interface ToggleEditorProps {
+interface ToggleEditorProps<V> {
     value: any;
     onChange: Function;
-    editor: Editor;
+    editor: Editor<V>;
     enabled?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface ToggleEditorProps {
  * Can specify custom viewer by specifying children which will be rendered instead of viewer of the editor.
  * Interchangable with AlwaysEditor.
  */
-export class ToggleEditor extends React.Component<ToggleEditorProps> {
+export class ToggleEditor<V> extends React.Component<ToggleEditorProps<V>> {
     state = {
         value: undefined,
         isEditing: false

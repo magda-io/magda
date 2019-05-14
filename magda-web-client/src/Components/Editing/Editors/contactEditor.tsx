@@ -121,7 +121,7 @@ class ContactsSearch extends React.Component<any, any> {
     }
 }
 
-export function multiContactEditor(options: any): Editor {
+export function multiContactEditor(options: any): Editor<Contact[]> {
     return {
         edit: (value: any, onChange: Function) => {
             value = value || [];
