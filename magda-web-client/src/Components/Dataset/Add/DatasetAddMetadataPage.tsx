@@ -209,7 +209,9 @@ class NewDataset extends React.Component<Prop, State> {
                         >
                             Next:{" "}
                             {nextIsPublish
-                                ? "Publish draft dataset"
+                                ? this.state.isPublishing
+                                    ? "Publishing as draft..."
+                                    : "Publish draft dataset"
                                 : this.steps[step + 1].label}
                         </button>
                     </div>
@@ -459,16 +461,16 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={codelistRadioEditor(codelists.publishingLevel)}
                     />
                 </p>
-                <h4>Where can users access this dataset from?</h4>
+                <h4>How can other users access this dataset?</h4>
                 <ToolTip>
-                    Select the best location for this file based on it's
-                    contents and your organisation file structure.
+                    Include locations on share drives, URLs of databases, how to
+                    arrange access etc.
                 </ToolTip>
                 <p>
                     <AlwaysEditor
                         value={datasetAccess.notes}
                         onChange={editDatasetAccess("notes")}
-                        editor={textEditor}
+                        editor={multilineTextEditor}
                     />
                 </p>
                 <hr />
@@ -581,7 +583,9 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={codelistEditor(codelists.classification)}
                     />
                 </p>
-                <h4>What is the sensitivity of this dataset?</h4>
+                <h4 className="snippet-heading">
+                    What is the sensitivity of this dataset?
+                </h4>
                 <HelpSnippet>
                     <p>
                         Magda security classification refers to the
@@ -654,12 +658,12 @@ class NewDataset extends React.Component<Prop, State> {
                 <h3>Please describe the dataset</h3>
                 <ToolTip>
                     A good dataset description clearly and succinctly explains
-                    the contantes, purpose and value of the dataset. <br />
+                    the contents, purpose and value of the dataset. <br />
                     This is how users primarily identify and select your dataset
                     from others
                     <br />
                     Here you can also include information that you have not
-                    already covered in the metadata.
+                    already covered in the other metadata.
                 </ToolTip>
                 <p>
                     <AlwaysEditor
@@ -722,6 +726,10 @@ class NewDataset extends React.Component<Prop, State> {
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
+
+        this.setState({
+            isPublishing: true
+        });
     }
 }
 
