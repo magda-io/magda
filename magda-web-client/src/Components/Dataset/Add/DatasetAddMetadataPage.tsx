@@ -40,8 +40,6 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 
-import dateParse from "date-fns/parse";
-
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -310,7 +308,7 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={
                             dataset.modified
-                                ? dateParse(dataset.modified)
+                                ? new Date(dataset.modified)
                                 : undefined
                         }
                         onChange={editDataset("modified")}
