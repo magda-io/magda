@@ -70,14 +70,35 @@ export class ListMultiItemEditor extends MultiItemEditor {
         const { editor, enabled } = this.props;
         const { newValue } = this.state;
         const value = this.value();
-
         return (
             <React.Fragment>
+                {enabled && (
+                    <React.Fragment>
+                        {editor.edit(newValue, this.change.bind(this), value, {
+                            onKeyUp: e => {
+                                if (e.keyCode !== 13) return;
+                                this.add(e);
+                            }
+                        })}
+                        {newValue && (
+                            <button
+                                className="au-btn add-button"
+                                onClick={this.add.bind(this)}
+                            >
+                                Add
+                            </button>
+                        )}
+                    </React.Fragment>
+                )}
+                {!enabled && (!value || !value.length) && "NOT SET"}
                 {!enabled && (!value || !value.length) ? null : (
                     <div className="multi-list-item-editor-container">
                         {value.map((val, i) => {
                             return (
-                                <div className="multi-list-item-editor-item">
+                                <div
+                                    key={i}
+                                    className="multi-list-item-editor-item"
+                                >
                                     {editor.view(val)}
                                     {enabled && (
                                         <button
@@ -92,20 +113,6 @@ export class ListMultiItemEditor extends MultiItemEditor {
                         })}
                     </div>
                 )}
-                {enabled && (
-                    <React.Fragment>
-                        {editor.edit(newValue, this.change.bind(this), value)}
-                        {newValue && (
-                            <button
-                                className="au-btn add-button"
-                                onClick={this.add.bind(this)}
-                            >
-                                Add
-                            </button>
-                        )}
-                    </React.Fragment>
-                )}
-                {!enabled && (!value || !value.length) && "NOT SET"}
             </React.Fragment>
         );
     }

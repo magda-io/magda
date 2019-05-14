@@ -2,7 +2,11 @@ import React from "react";
 import Editor from "./Editor";
 import { ListMultiItemEditor } from "./multiItem";
 
-export function codelistEditor(options: any, reorder = false): Editor {
+export function codelistEditor(
+    options: any,
+    reorder = false,
+    defaultOptionText: string = ""
+): Editor {
     return {
         edit: (value: any, onChange: Function, valuesToAvoid?: any) => {
             const callback = event => {
@@ -22,12 +26,18 @@ export function codelistEditor(options: any, reorder = false): Editor {
                     key={valuesToAvoid.join("-")}
                 >
                     <option value="" disabled>
-                        Please select one
+                        {defaultOptionText
+                            ? defaultOptionText
+                            : "Please select one"}
                     </option>
                     {keys
                         .filter(item => valuesToAvoid.indexOf(item) === -1)
-                        .map(val => {
-                            return <option value={val}>{options[val]}</option>;
+                        .map((val, i) => {
+                            return (
+                                <option key={i} value={val}>
+                                    {options[val]}
+                                </option>
+                            );
                         })}
                 </select>
             );
@@ -109,7 +119,11 @@ function alphaLabelSort(labels, order = 1) {
     };
 }
 
-export function multiCodelistEditor(options: any, reorder = false): Editor {
-    const single = codelistEditor(options, reorder);
+export function multiCodelistEditor(
+    options: any,
+    reorder = false,
+    defaultOptionText: string = ""
+): Editor {
+    const single = codelistEditor(options, reorder, defaultOptionText);
     return ListMultiItemEditor.create(single, () => "");
 }
