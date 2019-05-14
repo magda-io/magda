@@ -32,8 +32,12 @@ export function codelistEditor(
                     </option>
                     {keys
                         .filter(item => valuesToAvoid.indexOf(item) === -1)
-                        .map(val => {
-                            return <option value={val}>{options[val]}</option>;
+                        .map((val, i) => {
+                            return (
+                                <option key={i} value={val}>
+                                    {options[val]}
+                                </option>
+                            );
                         })}
                 </select>
             );
