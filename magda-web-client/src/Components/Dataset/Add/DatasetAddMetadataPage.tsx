@@ -3,13 +3,8 @@ import { withRouter } from "react-router";
 
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
-
 import FileIcon from "Components/Common/FileIcon";
-
-import Styles from "./DatasetAddFilesPage.module.scss";
-
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-
 import {
     textEditor,
     textEditorEx,
@@ -18,16 +13,14 @@ import {
     dateEditor,
     multiDateIntervalEditor
 } from "Components/Editing/Editors/textEditor";
-
 import {
     codelistEditor,
     codelistRatioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
-
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
-
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
+import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
@@ -58,6 +51,8 @@ import uuidv1 from "uuid/v1";
 import uuidv4 from "uuid/v4";
 
 import * as codelists from "constants/DatasetConstants";
+
+import Styles from "./DatasetAddFilesPage.module.scss";
 
 import {
     State,
@@ -714,20 +709,6 @@ function BBOXPreview(props) {
                 </div>
             )}
         </div>
-    );
-}
-
-import LightBulbIcon from "assets/light-bulb.svg";
-
-function ToolTip(props) {
-    return (
-        <p>
-            <img
-                src={LightBulbIcon}
-                style={{ width: "2em", padding: "1em", float: "left" }}
-            />
-            <span style={{ display: "inline-block" }}>{props.children}</span>
-        </p>
     );
 }
 

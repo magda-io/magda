@@ -6,7 +6,7 @@ export type File = {
     title: string;
     description?: string;
     issued?: string;
-    modified?: string;
+    modified: Date;
     license?: string;
     rights?: string;
     accessURL?: string;
