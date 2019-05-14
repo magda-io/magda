@@ -31,6 +31,7 @@ import { getFormatIcon } from "./View/DistributionIcon";
 import apiAccessIcon from "assets/apiAccess.svg";
 import downloadWhiteIcon from "assets/download-white.svg";
 import { get } from "lodash";
+import AUpageAlert from "@gov.au/page-alerts";
 
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import {
@@ -421,6 +422,16 @@ class RecordHandler extends React.Component {
                         <Medium>
                             <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
                         </Medium>
+                        {dataset.publishingState === "draft" ? (
+                            <AUpageAlert as="info">
+                                <h3>Draft Dataset</h3>
+                                <p>
+                                    This dataset is a draft and has not been
+                                    published yet. Once the dataset is approved,
+                                    it will appear in your catalogue.
+                                </p>
+                            </AUpageAlert>
+                        ) : null}
                         <div className="row">
                             <div className="col-sm-8">
                                 <h1 itemProp="name">
