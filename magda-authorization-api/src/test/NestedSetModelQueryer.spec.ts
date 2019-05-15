@@ -2,18 +2,17 @@ import "mocha";
 import * as pg from "pg";
 import { expect } from "chai";
 import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
+import getTestDBConfig from "./getTestDBConfig";
 
 describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     let pool: pg.Pool = null;
     const createTables: string[] = [];
+    const dbConfig = getTestDBConfig();
 
     before(async function() {
         // --- you have to supply a db name to connect to pg
-        pool = new pg.Pool({
-            database: "postgres",
-            user: "postgres"
-        });
+        pool = new pg.Pool({ ...dbConfig });
         try {
             await pool.query("CREATE database test");
         } catch (e) {
@@ -25,10 +24,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         }
         // --- end the current one & create a new one
         await pool.end();
-        pool = new pg.Pool({
-            database: "test",
-            user: "postgres"
-        });
+        pool = new pg.Pool({ ...dbConfig, database: "test" });
         await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     });
 
