@@ -153,6 +153,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
                * */
             keywordField("identifier"),
+            keywordField("tenantId"),
             objectField("contactPoint").fields(keywordField("identifier")),
             dateField("indexed")
           )
