@@ -46,6 +46,18 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
   blockUntilNotRed()
 
+  override def afterEach(): Unit ={
+    super.afterEach()
+    blockUntilNotRed()
+    client.execute(ElasticDsl.deleteIndex("*")).await(500 seconds)
+  }
+
+  override def afterAll(): Unit ={
+    super.afterAll()
+    blockUntilNotRed()
+    client.execute(ElasticDsl.deleteIndex("*")).await(500 seconds)
+  }
+
   /**
    * Cleanses the Location in such a way that it's the same for both input data and output data. In particular
    * it stops the tests failing because input polygons have bogus multiple-decimal-point coordinates (1.2.3 vs 1.23).
@@ -184,7 +196,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
           }
 
 
-          Thread.sleep(5000)
+//          Thread.sleep(5000)
 //          Await.result(builtIndex.indexer.ready, 120 seconds)
           val expectedDataSets = dataSets.filter(dataSet => !dataSetsToDelete.contains(dataSet))
 
