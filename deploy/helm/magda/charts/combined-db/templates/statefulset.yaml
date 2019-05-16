@@ -42,7 +42,7 @@ spec:
 # After that, you need to run `CREATE EXTENSION pldbgapi;` 
 # in the database that you want to debug to turn it on database level
 {{- if .Values.debug }}
-        - name: debug
+        - name: DEBUG
           value: "1"
 {{- end }}
         - name: PGDATA
