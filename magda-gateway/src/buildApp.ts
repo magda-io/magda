@@ -62,8 +62,8 @@ type Config = {
     googleClientSecret?: string;
     aafClientUri?: string;
     aafClientSecret?: string;
-    arcgisClientId: string;
-    arcgisClientSecret: string;
+    arcgisClientId?: string;
+    arcgisClientSecret?: string;
     ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
