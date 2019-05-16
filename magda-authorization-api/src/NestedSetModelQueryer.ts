@@ -5,6 +5,11 @@ export interface NodeRecord {
     [key: string]: any;
 }
 
+function isNonEmptyArray(v: any): boolean {
+    if (!v || !_.isArray(v) || !v.length) return false;
+    return true;
+}
+
 class NestedSetModelQueryer {
     private pool: pg.Pool;
     private tableName: string;
@@ -15,7 +20,22 @@ class NestedSetModelQueryer {
      * @type {string[]}
      * @memberof NestedSetModelQueryer
      */
-    public defaultSelectFieldList: string[] = [];
+    public defaultSelectFieldList: string[] = ["id", "name"];
+
+    /**
+     * Default field list that will be used when insert nodes into tree.
+     * By default, only `name` field will be saved to database
+     * e.g. If your tree nodes have three properties (besides `id`, `left`, `right` --- they auto generated):
+     * - name
+     * - description
+     * - fullName
+     *
+     * Then you should set `defaultInsertFieldList` to ["name", "description", "fullName"]
+     *
+     * @type {string[]}
+     * @memberof NestedSetModelQueryer
+     */
+    public defaultInsertFieldList: string[] = ["name"];
 
     /**
      * Creates an instance of NestedSetModelQueryer.
@@ -27,7 +47,8 @@ class NestedSetModelQueryer {
     constructor(
         dbPool: pg.Pool,
         tableName: string,
-        defaultSelectFieldList: string[] = ["id", "name"]
+        defaultSelectFieldList: string[] = null,
+        defaultInsertFieldList: string[] = null
     ) {
         if (!dbPool) throw new Error("dbPool cannot be empty!");
         if (!tableName) throw new Error("tableName cannot be empty!");
@@ -35,11 +56,26 @@ class NestedSetModelQueryer {
         this.pool = dbPool;
         this.tableName = tableName;
 
-        if (!defaultSelectFieldList) return;
-        if (!_.isArray(defaultSelectFieldList))
-            throw new Error("defaultSelectFieldList should be an array");
+        if (defaultSelectFieldList) {
+            if (!_.isArray(defaultSelectFieldList))
+                throw new Error("defaultSelectFieldList should be an array");
 
-        this.defaultSelectFieldList = defaultSelectFieldList;
+            this.defaultSelectFieldList = defaultSelectFieldList;
+        }
+
+        if (defaultSelectFieldList) {
+            if (!_.isArray(defaultSelectFieldList))
+                throw new Error("defaultSelectFieldList should be an array");
+
+            this.defaultSelectFieldList = defaultSelectFieldList;
+        }
+
+        if (defaultInsertFieldList) {
+            if (!_.isArray(defaultInsertFieldList))
+                throw new Error("defaultInsertFieldList should be an array");
+
+            this.defaultInsertFieldList = defaultInsertFieldList;
+        }
     }
 
     private selectFields(tableAliasOrName: string = "") {
@@ -395,6 +431,102 @@ class NestedSetModelQueryer {
         const comparisonResult: number = result.rows[0]["result"];
         if (typeof comparisonResult === "number") return comparisonResult;
         return null;
+    }
+
+    private getInsertFields(insertFieldList: string[] = null) {
+        const fieldList = isNonEmptyArray(insertFieldList)
+            ? insertFieldList
+            : this.defaultInsertFieldList;
+        if (!isNonEmptyArray(fieldList)) {
+            throw new Error("Insert fields must be an non-empty array!");
+        }
+        return fieldList;
+    }
+
+    private getNodesInsertSql(
+        nodes: NodeRecord[],
+        sqlValues: any[],
+        insertFieldList: string[] = null,
+        tableAliasOrName: string = ""
+    ) {
+        if (!isNonEmptyArray(nodes)) {
+            throw new Error(
+                "`sqlValues` parameter should be an non-empty array!"
+            );
+        }
+        if (!isNonEmptyArray(sqlValues)) {
+            throw new Error(
+                "`sqlValues` parameter should be an non-empty array!"
+            );
+        }
+        const tbl = this.tableName;
+        const fieldList = this.getInsertFields(insertFieldList);
+
+        const columnsList = fieldList
+            .map(f =>
+                tableAliasOrName == "" ? `"${f}"` : `${tableAliasOrName}."${f}"`
+            )
+            .join(", ");
+
+        const valuesList = nodes
+            .map(
+                node =>
+                    "(" +
+                    fieldList
+                        .map(f => {
+                            sqlValues.push(node[f]);
+                            return `$${sqlValues.length}`;
+                        })
+                        .join(", ") +
+                    ")"
+            )
+            .join(", ");
+
+        return `INSERT INTO "${tbl}" (${columnsList}) VALUES ${valuesList}`;
+    }
+
+    /**
+     * Create the root node of the tree.
+     * If a root node already exists, an error will be thrown.
+     *
+     * @param {NodeRecord} node
+     * @param {string[]} [fields=null]
+     * @returns
+     * @memberof NestedSetModelQueryer
+     */
+    async createRootNode(node: NodeRecord, fields: string[] = null) {
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        let node_id: string;
+        try {
+            await client.query("BEGIN");
+            let result = await client.query(
+                `SELECT id FROM "${tbl}" WHERE "left" = 1 LIMIT 1`
+            );
+            if (result && isNonEmptyArray(result.rows)) {
+                throw new Error(
+                    `A root node with id: ${
+                        result.rows[0]["id"]
+                    } already exists`
+                );
+            }
+            const sqlValues: any[] = [];
+            result = await client.query(
+                this.getNodesInsertSql([node], sqlValues, fields) +
+                    " RETURNING id"
+            );
+            if (!result || !isNonEmptyArray(result.rows)) {
+                throw new Error("Cannot locate create root node ID!");
+            }
+            await client.query("COMMIT");
+            node_id = result.rows[0]["id"];
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+        return node_id;
     }
 }
 
