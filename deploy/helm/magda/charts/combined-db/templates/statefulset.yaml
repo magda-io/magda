@@ -38,6 +38,13 @@ spec:
         {{- template "magda.postgresLivenessProbe" . }}
         {{- template "magda.postgresLifecycle" . }}
         env:
+# whether turn on the debug module for plsql debug through pgAdmin
+# After that, you need to run `CREATE EXTENSION pldbgapi;` 
+# in the database that you want to debug to turn it on database level
+{{- if .Values.debug }}
+        - name: debug
+          value: 1
+{{- end }}
         - name: PGDATA
           value: /var/pv/data
         {{- template "magda.postgres-env" . }}

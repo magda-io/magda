@@ -7,6 +7,14 @@ RUN apt-get update && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install wal-e[aws,google,swift]
 
+# Install postgresql pl debugger
+# The debugger module won't be loaded until you modify the postgresql.conf with:
+# shared_preload_libraries = ‘$libdir/other_libraries/plugin_debugger’
+# We will do it in start.sh depends on env var switch
+# After that, you need to run `CREATE EXTENSION pldbgapi;` 
+# in the database that you want to debug to turn it on database level
+RUN apt-get install -y postgresql-9.6-pldebugger
+
 COPY component/start.sh /usr/local/bin/
 
 # docker-entrypoint.sh (from the parent image) frustratingly only creates the database
