@@ -43,7 +43,7 @@ spec:
 # in the database that you want to debug to turn it on database level
 {{- if .Values.debug }}
         - name: debug
-          value: 1
+          value: "1"
 {{- end }}
         - name: PGDATA
           value: /var/pv/data
