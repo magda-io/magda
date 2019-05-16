@@ -167,15 +167,14 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
   def cleanUpIndexes() = {
     blockUntilNotRed()
-    client.execute(ElasticDsl.deleteIndex("*")).await(INSERTION_WAIT_TIME)
-//    cleanUpQueue.iterator().forEachRemaining(
-//      new Consumer[String] {
-//        override def accept(indexName: String) = {
-//          logger.debug(s"Deleting index $indexName")
-//          client.execute(ElasticDsl.deleteIndex(indexName)).await(INSERTION_WAIT_TIME)
-//          cleanUpQueue.remove()
-//        }
-//      })
+    cleanUpQueue.iterator().forEachRemaining(
+      new Consumer[String] {
+        override def accept(indexName: String) = {
+          logger.debug(s"Deleting index $indexName")
+          client.execute(ElasticDsl.deleteIndex(indexName)).await(INSERTION_WAIT_TIME)
+          cleanUpQueue.remove()
+        }
+      })
   }
 
   override def afterEach() {
@@ -183,6 +182,13 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
     cleanUpIndexes()
   }
+
+  override def afterAll(): Unit ={
+    super.afterAll()
+    blockUntilNotRed()
+    client.execute(ElasticDsl.deleteIndex("*")).await(INSERTION_WAIT_TIME)
+  }
+
 }
 
 object BaseSearchApiSpec {
