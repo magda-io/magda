@@ -62,8 +62,10 @@ import spray.json.JsObject
 
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
-
-  blockUntilNotRed()
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {

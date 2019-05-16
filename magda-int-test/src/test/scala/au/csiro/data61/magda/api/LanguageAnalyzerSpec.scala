@@ -18,8 +18,11 @@ import au.csiro.data61.magda.util.Regex._
 import scala.util.Random
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
-  blockUntilNotRed()
 
   describe("should return the right dataset when searching for that dataset's") {
     describe("title") {

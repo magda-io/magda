@@ -48,8 +48,11 @@ import scala.reflect.internal.util.Statistics.View
 import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
-  blockUntilNotRed()
 
   describe("facets") {
     def checkFacetsNoQuery(indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit) = {

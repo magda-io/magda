@@ -44,7 +44,10 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
-  blockUntilNotRed()
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
   override def afterEach(): Unit ={
     super.afterEach()

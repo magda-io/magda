@@ -75,8 +75,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def afterAll() {
-    sys.process.Process(Seq("docker-compose","down", "-d"), new java.io.File("./magda-elastic-search")).!!
-    Thread.sleep(30000)
+    println("-------------- calling docker-compose down ------------")
+    sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
+    println("-------------- docker-compose down called ------------")
+//    Thread.sleep(30000)
     System.gc()
   }
 

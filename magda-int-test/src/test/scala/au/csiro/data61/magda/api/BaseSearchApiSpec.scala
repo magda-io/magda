@@ -182,13 +182,6 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
     cleanUpIndexes()
   }
-
-  override def afterAll(): Unit ={
-    super.afterAll()
-    blockUntilNotRed()
-    client.execute(ElasticDsl.deleteIndex("*")).await(INSERTION_WAIT_TIME)
-  }
-
 }
 
 object BaseSearchApiSpec {
