@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.test.api
 
+import java.io.File
 import java.net.URL
 import java.util.Properties
 
@@ -23,8 +24,9 @@ import spray.json.JsObject
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with MagdaGeneratorTest with BeforeAndAfterEach with BeforeAndAfterAll{
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
   def buildConfig = TestActorSystem.config
   override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
@@ -46,6 +48,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
+
+    sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
+
+    Thread.sleep(30000)
 
     blockUntilNotRed()
 
@@ -69,6 +75,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def afterAll() {
+    sys.process.Process(Seq("docker-compose","down", "-d"), new java.io.File("./magda-elastic-search")).!!
+    Thread.sleep(30000)
     System.gc()
   }
 

@@ -8,7 +8,11 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
-  blockUntilNotRed()
+
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
   describe("searching") {
     describe("*") {
