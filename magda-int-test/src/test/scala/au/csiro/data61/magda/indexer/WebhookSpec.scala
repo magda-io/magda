@@ -51,14 +51,10 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
   override def afterEach(): Unit ={
     super.afterEach()
-    blockUntilNotRed()
-    client.execute(ElasticDsl.deleteIndex("*")).await(500 seconds)
   }
 
   override def afterAll(): Unit ={
     super.afterAll()
-    blockUntilNotRed()
-    client.execute(ElasticDsl.deleteIndex("*")).await(500 seconds)
   }
 
   /**

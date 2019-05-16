@@ -48,11 +48,11 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
-
+    println("******** calling docker-compose up *********")
     sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
 
     Thread.sleep(30000)
-
+    println("******** Have waited 30 seconds for docker-compose up *********")
     blockUntilNotRed()
 
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
@@ -78,7 +78,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     println("-------------- calling docker-compose down ------------")
     sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
     println("-------------- docker-compose down called ------------")
-//    Thread.sleep(30000)
     System.gc()
   }
 

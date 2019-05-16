@@ -41,7 +41,10 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols {
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   implicit val ec = system.dispatcher
 
-  blockUntilNotRed()
+  override def beforeAll() = {
+    super.beforeAll()
+    blockUntilNotRed()
+  }
 
   it("should correctly store new datasets when reindexed") {
     // When shrinking, shrink the datasets only and put them in a new index.
