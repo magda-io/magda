@@ -115,6 +115,24 @@ class NestedSetModelQueryer {
     }
 
     /**
+     * Get a node by its id
+     *
+     * @param {string} id
+     * @returns {Promise<NodeRecord>}
+     * @memberof NestedSetModelQueryer
+     */
+    async getNodeById(id: string): Promise<NodeRecord> {
+        const result = await this.pool.query(
+            `SELECT ${this.selectFields()} FROM "${
+                this.tableName
+            }" WHERE "id" = $1`,
+            [id]
+        );
+        if (!result || !result.rows || !result.rows.length) return null;
+        return result.rows[0];
+    }
+
+    /**
      * Get the root node of the tree
      * Return null if empty tree
      *
@@ -454,10 +472,8 @@ class NestedSetModelQueryer {
                 "`sqlValues` parameter should be an non-empty array!"
             );
         }
-        if (!isNonEmptyArray(sqlValues)) {
-            throw new Error(
-                "`sqlValues` parameter should be an non-empty array!"
-            );
+        if (!_.isArray(sqlValues)) {
+            throw new Error("`sqlValues` parameter should be an array!");
         }
         const tbl = this.tableName;
         const fieldList = this.getInsertFields(insertFieldList);
@@ -490,13 +506,18 @@ class NestedSetModelQueryer {
      * If a root node already exists, an error will be thrown.
      *
      * @param {NodeRecord} node
-     * @param {string[]} [fields=null]
-     * @returns
+     * @returns {Promise<string>} newly created node ID
      * @memberof NestedSetModelQueryer
      */
-    async createRootNode(node: NodeRecord, fields: string[] = null) {
+    async createRootNode(node: NodeRecord): Promise<string> {
         const tbl = this.tableName;
         const client = await this.pool.connect();
+        const fields = Object.keys(node);
+        if (!fields.length) {
+            throw new Error(
+                "`node` parameter cannot be an empty object with no key."
+            );
+        }
         let node_id: string;
         try {
             await client.query("BEGIN");
@@ -512,11 +533,186 @@ class NestedSetModelQueryer {
             }
             const sqlValues: any[] = [];
             result = await client.query(
-                this.getNodesInsertSql([node], sqlValues, fields) +
-                    " RETURNING id"
+                this.getNodesInsertSql(
+                    [
+                        {
+                            ...node,
+                            left: node.left ? node.left : 1,
+                            right: node.right ? node.right : 2
+                        }
+                    ],
+                    sqlValues,
+                    fields.concat(["left", "right"])
+                ) + " RETURNING id",
+                sqlValues
             );
             if (!result || !isNonEmptyArray(result.rows)) {
                 throw new Error("Cannot locate create root node ID!");
+            }
+            await client.query("COMMIT");
+            node_id = result.rows[0]["id"];
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+        return node_id;
+    }
+
+    private async getNodeDataWithinTx(
+        client: pg.Client,
+        nodeId: string,
+        fields: string[]
+    ): Promise<NodeRecord> {
+        const tbl = this.tableName;
+        const fieldsList = fields.map(f => `"${f}"`).join(", ");
+        const result = await client.query(
+            `SELECT ${fieldsList} FROM "${tbl}" WHERE "id" = $1`,
+            [nodeId]
+        );
+        if (!result || !isNonEmptyArray(result.rows)) {
+            throw new Error(
+                `Cannot locate tree node record with id: ${nodeId}`
+            );
+        }
+        return result.rows[0];
+    }
+
+    /**
+     * Insert a node to the tree under a parent node
+     *
+     * @param {NodeRecord} node
+     * @param {string} parentNodeId
+     * @returns {Promise<string>}
+     * @memberof NestedSetModelQueryer
+     */
+    async insertNode(node: NodeRecord, parentNodeId: string): Promise<string> {
+        if (!parentNodeId) {
+            throw new Error("`parentNodeId` cannot be empty!");
+        }
+        const fields = Object.keys(node);
+        if (!fields.length) {
+            throw new Error(
+                "`node` parameter cannot be an empty object with no key."
+            );
+        }
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        let node_id: string;
+        try {
+            await client.query("BEGIN");
+            const { right: parentRight } = await this.getNodeDataWithinTx(
+                client,
+                parentNodeId,
+                ["right"]
+            );
+
+            await client.query(
+                `UPDATE "${tbl}" 
+                SET 
+                    "left" = CASE WHEN "left" > $1 THEN "left" + 2 ELSE "left" END,
+                    "right" = CASE WHEN "right" >= $1 THEN "right" + 2 ELSE "right" END
+                WHERE "right" >= $1`,
+                [parentRight]
+            );
+
+            const sqlValues: any[] = [];
+            const result = await client.query(
+                this.getNodesInsertSql(
+                    [
+                        {
+                            ...node,
+                            left: parentRight,
+                            right: parentRight + 1
+                        }
+                    ],
+                    sqlValues,
+                    fields.concat(["left", "right"])
+                ) + " RETURNING id",
+                sqlValues
+            );
+
+            if (!result || !isNonEmptyArray(result.rows)) {
+                throw new Error("Cannot locate created node ID!");
+            }
+            await client.query("COMMIT");
+            node_id = result.rows[0]["id"];
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+        return node_id;
+    }
+
+    /**
+     * Insert a node to the right of its sibling
+     * If `siblingNodeId` belongs to a root node, an error will be thrown
+     *
+     * @param {NodeRecord} node
+     * @param {string} siblingNodeId
+     * @returns {Promise<string>}
+     * @memberof NestedSetModelQueryer
+     */
+    async insertNodeToRightOfSibling(
+        node: NodeRecord,
+        siblingNodeId: string
+    ): Promise<string> {
+        if (!siblingNodeId) {
+            throw new Error("`siblingNodeId` cannot be empty!");
+        }
+        const fields = Object.keys(node);
+        if (!fields.length) {
+            throw new Error(
+                "`node` parameter cannot be an empty object with no key."
+            );
+        }
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        let node_id: string;
+        try {
+            await client.query("BEGIN");
+            const {
+                left: siblingLeft,
+                right: siblingRight
+            } = await this.getNodeDataWithinTx(client, siblingNodeId, [
+                "left",
+                "right"
+            ]);
+
+            if (siblingLeft === 1) {
+                throw new Error("Cannot add sibling to the Root node!");
+            }
+
+            await client.query(
+                `UPDATE "${tbl}" 
+                SET 
+                    "left" = CASE WHEN "left" < $1 THEN "left" ELSE "left" + 2 END,
+                    "right" = CASE WHEN "right" < $1 THEN "right" ELSE "right" + 2 END
+                WHERE "right" > $1`,
+                [siblingRight]
+            );
+
+            const sqlValues: any[] = [];
+            const result = await client.query(
+                this.getNodesInsertSql(
+                    [
+                        {
+                            ...node,
+                            left: siblingRight + 1,
+                            right: siblingRight + 2
+                        }
+                    ],
+                    sqlValues,
+                    fields.concat(["left", "right"])
+                ) + " RETURNING id",
+                sqlValues
+            );
+
+            if (!result || !isNonEmptyArray(result.rows)) {
+                throw new Error("Cannot locate created node ID!");
             }
             await client.query("COMMIT");
             node_id = result.rows[0]["id"];

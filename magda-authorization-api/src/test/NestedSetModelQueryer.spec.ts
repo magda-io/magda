@@ -1,8 +1,13 @@
 import "mocha";
 import * as pg from "pg";
-import { expect } from "chai";
+import * as _ from "lodash";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
 import getTestDBConfig from "./getTestDBConfig";
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -45,6 +50,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await pool.query(`CREATE TABLE "${tableName}" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "name" varchar(250) NOT NULL DEFAULT ''::character varying,
+            "desc" varchar(250) NOT NULL DEFAULT ''::character varying,
             "left" int4 NOT NULL,
             "right" int4 NOT NULL,
             PRIMARY KEY ("id")
@@ -104,6 +110,16 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         const nodes = await queryer.getNodesByName("Chuck");
         expect(nodes.length).to.equal(1);
         expect(nodes[0]["name"]).to.equal("Chuck");
+    });
+
+    it("Test `getNodeById`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        const nodes = await queryer.getNodesByName("Chuck");
+        expect(nodes.length).to.equal(1);
+        expect(nodes[0]["name"]).to.equal("Chuck");
+        const testNode = await queryer.getNodeById(nodes[0]["id"]);
+        expect(testNode.name).to.equal("Chuck");
     });
 
     it("Test `getRootNode`", async () => {
@@ -445,5 +461,128 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             "60194a60-aaaa-aaaa-aaaa-3e4d3c2cfefc" //--- non exists node
         );
         expect(compareResult).be.null;
+    });
+
+    it("Test `createRootNode`", async () => {
+        const tableName = await createTestTable();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        const nodeId = await queryer.createRootNode({
+            name: "test root node name",
+            desc: "test root node description"
+        });
+        expect(typeof nodeId).to.equal("string");
+        expect(nodeId.length).to.equal(36);
+
+        const result = await pool.query(
+            `SELECT * FROM "${tableName}" WHERE "id" = $1`,
+            [nodeId]
+        );
+        expect(_.isArray(result.rows)).to.equal(true);
+        expect(result.rows[0].name).to.equal("test root node name");
+        expect(result.rows[0].desc).to.equal("test root node description");
+        expect(result.rows[0].left).to.equal(1);
+        expect(result.rows[0].right).to.equal(2);
+
+        expect(queryer.createRootNode({ name: "abc" })).be.rejectedWith(
+            `A root node with id: ${nodeId} already exists`
+        );
+    });
+
+    it("Test `insertNode`", async () => {
+        const tableName = await createTestTable();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        const nodeId = await queryer.createRootNode({
+            name: "Albert"
+        });
+        expect(typeof nodeId).to.equal("string");
+        expect(nodeId.length).to.equal(36);
+
+        const rootNode = await queryer.getRootNode();
+        await queryer.insertNode({ name: "Bert" }, rootNode["id"]);
+
+        const lv3ParentNodeId = await queryer.insertNode(
+            { name: "Chuck" },
+            nodeId
+        );
+
+        expect(typeof lv3ParentNodeId).to.equal("string");
+        expect(lv3ParentNodeId.length).to.equal(36);
+
+        await queryer.insertNode({ name: "Donna" }, lv3ParentNodeId);
+        await queryer.insertNode({ name: "Eddie" }, lv3ParentNodeId);
+        await queryer.insertNode({ name: "Fred" }, lv3ParentNodeId);
+
+        let testNode = (await queryer.getNodesByName("Albert"))[0];
+        expect(testNode.left).to.equal(1);
+        expect(testNode.right).to.equal(12);
+
+        testNode = (await queryer.getNodesByName("Bert"))[0];
+        expect(testNode.left).to.equal(2);
+        expect(testNode.right).to.equal(3);
+
+        testNode = (await queryer.getNodesByName("Chuck"))[0];
+        expect(testNode.left).to.equal(4);
+        expect(testNode.right).to.equal(11);
+
+        testNode = (await queryer.getNodesByName("Donna"))[0];
+        expect(testNode.left).to.equal(5);
+        expect(testNode.right).to.equal(6);
+
+        testNode = (await queryer.getNodesByName("Eddie"))[0];
+        expect(testNode.left).to.equal(7);
+        expect(testNode.right).to.equal(8);
+
+        testNode = (await queryer.getNodesByName("Fred"))[0];
+        expect(testNode.left).to.equal(9);
+        expect(testNode.right).to.equal(10);
+    });
+
+    it("Test `insertNodeToRightOfSibling`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        const bertId = (await queryer.getNodesByName("Bert"))[0]["id"];
+        const bert1nodeId = await queryer.insertNodeToRightOfSibling(
+            { name: "Bert1" },
+            bertId
+        );
+        expect(typeof bert1nodeId).to.equal("string");
+        expect(bert1nodeId.length).to.equal(36);
+
+        const lv2Nodes = await queryer.getAllNodesAtLevel(2);
+        const bert1 = lv2Nodes.find(n => n.id === bert1nodeId);
+        expect(_.isUndefined(bert1)).to.equal(false);
+
+        const bert = lv2Nodes.find(n => n.id === bertId);
+        expect(_.isUndefined(bert)).to.equal(false);
+
+        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        const chuck = lv2Nodes.find(n => n.id === chuckId);
+        expect(_.isUndefined(chuck)).to.equal(false);
+
+        // --- test bert1 is between bert and chuck
+        expect(bert.left < bert1.left).to.equal(true);
+        expect(bert.right < bert1.right).to.equal(true);
+
+        expect(chuck.left > bert1.left).to.equal(true);
+        expect(chuck.right > bert1.right).to.equal(true);
+
+        // --- Chuck's childrens should still be his children
+        const childrens = await queryer.getAllChildren(chuckId, false);
+        expect(childrens.length).to.equal(3);
+        expect(childrens.findIndex(n => n.name === "Donna") !== -1).to.equal(
+            true
+        );
+        expect(childrens.findIndex(n => n.name === "Eddie") !== -1).to.equal(
+            true
+        );
+        expect(childrens.findIndex(n => n.name === "Fred") !== -1).to.equal(
+            true
+        );
     });
 });
