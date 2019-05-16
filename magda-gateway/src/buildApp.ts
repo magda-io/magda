@@ -62,6 +62,8 @@ type Config = {
     googleClientSecret?: string;
     aafClientUri?: string;
     aafClientSecret?: string;
+    arcgisClientId: string;
+    arcgisClientSecret: string;
     ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
@@ -152,6 +154,8 @@ export default function buildApp(config: Config) {
                 googleClientSecret: config.googleClientSecret,
                 aafClientUri: config.aafClientUri,
                 aafClientSecret: config.aafClientSecret,
+                arcgisClientId: config.arcgisClientId,
+                arcgisClientSecret: config.arcgisClientSecret,
                 ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
