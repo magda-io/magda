@@ -154,6 +154,17 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
 
     it("should delete datasets mentioned in deletion events") {
 
+      println("-------------- calling docker-compose down ------------")
+      sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
+      println("-------------- docker-compose down called ------------")
+
+      println("******** calling docker-compose up *********")
+      sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
+
+      Thread.sleep(30000)
+      println("******** Have waited 30 seconds for docker-compose up *********")
+      blockUntilNotRed()
+
       val gen = for {
         gennedDataSets <- dataSetsGen
         dataSets = gennedDataSets.map(_._1)
