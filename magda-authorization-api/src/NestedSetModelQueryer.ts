@@ -1,5 +1,6 @@
 import * as pg from "pg";
 import * as _ from "lodash";
+const textTree = require("text-treeview");
 
 export interface NodeRecord {
     [key: string]: any;
@@ -9,6 +10,13 @@ function isNonEmptyArray(v: any): boolean {
     if (!v || !_.isArray(v) || !v.length) return false;
     return true;
 }
+
+export type TextTreeNode =
+    | string
+    | {
+          text: string;
+          children?: TextTreeNode[];
+      };
 
 class NestedSetModelQueryer {
     private pool: pg.Pool;
@@ -969,6 +977,57 @@ class NestedSetModelQueryer {
         } finally {
             client.release();
         }
+    }
+
+    private async getChildTextTreeNodes(
+        parentId: string
+    ): Promise<TextTreeNode[]> {
+        const nodes = await this.getImmediateChildren(parentId);
+        if (!nodes || !nodes.length) return [];
+        const textNodeList: TextTreeNode[] = [];
+        for (let i = 0; i < nodes.length; i++) {
+            const nodeChildren = await this.getChildTextTreeNodes(nodes[i].id);
+            if (nodeChildren.length) {
+                textNodeList.push({
+                    text: nodes[i].name,
+                    children: nodeChildren
+                });
+            } else {
+                textNodeList.push(nodes[i].name);
+            }
+        }
+        return textNodeList;
+    }
+
+    /**
+     * Generate the Text View of the tree
+     * Provided as Dev tool only
+     *
+     * E.g. output could be:
+     * └─ Albert
+     *      ├─ Chuck
+     *      │  ├─ Fred
+     *      │  ├─ Eddie
+     *      │  └─ Donna
+     *      └─ Bert
+     *
+     * @returns {Promise<string>}
+     * @memberof NestedSetModelQueryer
+     */
+    async getTreeTextView(): Promise<string> {
+        const rootNode: NodeRecord = await this.getRootNode();
+        if (!rootNode) return "Empty Tree";
+        const tree: TextTreeNode[] = [];
+        const children = await this.getChildTextTreeNodes(rootNode.id);
+        if (children.length) {
+            tree.push({
+                text: rootNode.name,
+                children
+            });
+        } else {
+            tree.push(rootNode.name);
+        }
+        return textTree(tree);
     }
 }
 
