@@ -10,13 +10,16 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
   override def beforeAll() = {
+    println("Testing TenantDataSetSearchSpec")
     super.beforeAll()
-    blockUntilNotRed()
   }
 
   describe("searching") {
+    println("Testing searching")
     describe("*") {
+      println("  - Testing *")
       it("should return all datasets of the specified tenant") {
+        println("    - Testing should return all datasets of the specified tenant")
         val tenant_0 = BigInt("0")
         val tenant_1 = BigInt("1")
         val tenant_2 = BigInt("2")
@@ -25,7 +28,6 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
           case (_, dataSets, route) ⇒
             tenants.flatMap( theTenant =>
               Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(theTenant) ~> route ~> check {
-                println(s"********** Checking the results for tenant $theTenant *********")
                 status shouldBe OK
                 contentType shouldBe `application/json`
                 val response = responseAs[SearchResult]

@@ -49,12 +49,12 @@ import au.csiro.data61.magda.search.SearchStrategy
 
 class FacetSpec extends BaseSearchApiSpec {
   override def beforeAll() = {
+    println("Testing FacetSpec")
     super.beforeAll()
-    blockUntilNotRed()
   }
 
-
   describe("facets") {
+    println("Testing facets")
     def checkFacetsNoQuery(indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit) = {
       try {
         forAll(indexGen, facetSizeGen, Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
@@ -339,6 +339,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("should never generate a facet size bigger than what was asked for") {
+      println("  - Testing should never generate a facet size bigger than what was asked for")
       checkFacetsBoth() { (dataSets: List[DataSet], facetSize: Int) ⇒
         val result = responseAs[SearchResult]
         val facets = FacetType.all.flatMap(facetType ⇒ result.facets.get.find(facet => facetType.id.equals(facet.id)))
@@ -352,6 +353,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("publisher") {
+      println("  - Testing publisher")
       def reducer(dataSet: DataSet) = Set(dataSet.publisher.flatMap(_.name)).flatten
       def queryToInt(query: Query) = query.publishers.size
 
@@ -364,11 +366,13 @@ class FacetSpec extends BaseSearchApiSpec {
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
 
       describe("should have identifiers except user selected option with 0 hitCount") {
+        println("  - Testing should have identifiers except user selected option with 0 hitCount")
         implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
           Stream.empty
         }
 
         it("in general") {
+          println("    - Testing in general")
           val gen = for {
             index <- indexGen
             textQuery <- textQueryGen(queryGen(index._2))
@@ -414,6 +418,7 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("format") {
+      println("  - Testing format")
       def reducer(dataSet: DataSet) = dataSet.distributions.flatMap(_.format.map(_.toLowerCase)).toSet
       def queryToInt(query: Query) = query.formats.size
 
@@ -424,13 +429,16 @@ class FacetSpec extends BaseSearchApiSpec {
     }
 
     describe("year") {
+      println("  - Testing year")
       it("with no query") {
+        println("    - Testing with no query")
         checkFacetsNoQuery() { (dataSets, facetSize) =>
           checkDataSetResult(dataSets, responseAs[SearchResult])
         }
       }
 
       it("with a query") {
+        println("    - Testing with a query")
         val queryGen = for {
           dateFrom <- dateFromGen
           dateTo <- dateToGen

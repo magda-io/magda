@@ -62,13 +62,16 @@ import spray.json.JsObject
 
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
+
   override def beforeAll() = {
+    println("Testing DataSetSearchSpec")
     super.beforeAll()
-    blockUntilNotRed()
   }
 
   describe("meta") {
+    println("Testing meta")
     it("Mwundo <--> JTS conversions should work") {
+      println("  - Testing Mwundo <--> JTS conversions should work")
       val geoFactory = new GeometryFactory()
       forAll(regionGen(geometryGen(5, coordGen()))) { regionRaw =>
         val preConversion = regionRaw._2.fields("geometry").convertTo[Geometry]
@@ -82,8 +85,11 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   describe("searching") {
+    println("Testing searching")
     describe("*") {
+      println("  - Testing *")
       it("should return all results") {
+        println("    -- Testing should return all results")
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -98,6 +104,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       it("hitCount should reflect all hits in the system, not just what is returned") {
+        println("    - Testing hitCount should reflect all hits in the system, not just what is returned")
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -111,6 +118,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       it("should sort results by pure quality") {
+        println("    - Testing should sort results by pure quality")
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -126,7 +134,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     describe("searching for a dataset should return that datasets contains the keyword & it's synonyms") {
+      println("  - Testing searching for a dataset should return that datasets contains the keyword & it's synonyms")
       it("for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`") {
+        println("    - Testing for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`")
         case class GenResult(searchKeyword: String, synonym: String, datasetWithSynonym: DataSet)
 
         val synonyms = List("agile", "nimble", "quick", "spry")
@@ -179,7 +189,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     describe("searching for a dataset publisher's acronym should return that dataset eventually") {
+      println("  - Testing searching for a dataset publisher's acronym should return that dataset eventually")
       it("for pre-defined pairs") {
+        println("    - Testing for pre-defined pairs")
         case class GenResult(acronym: String, datasetWithPublisher: DataSet)
 
         val pairs = Seq(
@@ -235,6 +247,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       it("for auto-generated publishers") {
+        println("    - Testing for auto-generated publishers")
         def dataSetToQuery(dataSet: DataSet) = {
           dataSet.publisher
             .flatMap(d => getAcronymFromPublisherName(d.name))
@@ -259,6 +272,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region") {
+    println("  - Testing for a region in query text should boost results from that region")
     // 3 fake datasets. One that relates to Queensland, the other to all of Australia
     // (but one of those has `queensland` in title otherwise only one document will be matched)
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
@@ -326,6 +340,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region by acronym") {
+    println("  - Testing for a region in query text should boost results from that region by acronym")
     val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
 
     val saDataset = DataSet(
@@ -398,6 +413,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   it("for a region in query text should boost results from that region in Alfredton") {
+    println("  - Testing for a region in query text should boost results from that region in Alfredton")
     // 3 fake datasets. One that relates to Alfredton, the other to all of Australia
     // (but one of those has `Alfredton` in title otherwise only one document will be matched)
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
@@ -464,8 +480,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   describe("quotes") {
+    println("Testing quotes")
     it("should be able to be found verbatim somewhere in a dataset") {
-
+      println("  - Testing should be able to be found verbatim somewhere in a dataset")
       implicit val stringShrink: Shrink[String] = Shrink { string =>
         Stream.empty
       }
@@ -528,7 +545,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   describe("filtering") {
+    println("Testing filtering")
     it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
+      println("  - Testing should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart")
       try {
         //        val filterQueryGen = queryGen
         //          .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
@@ -640,7 +659,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     describe("format") {
+      println("  - Testing format")
       it("exact") {
+        println("    - Testing exact")
         def dataSetToQuery(dataSet: DataSet) = {
           val formats = dataSet.distributions
             .map(_.format.map(Specified.apply).getOrElse(Unspecified()))
@@ -680,6 +701,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       it("unspecified") {
+        println("    - Testing unspecified")
         val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
 
         doUnspecifiedTest(pubQueryGen) { response =>
@@ -694,7 +716,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     describe("publisher") {
+      println("  - Testing publisher")
       it("exact") {
+        println("    - Testing exact")
         def dataSetToQuery(dataSet: DataSet) = {
 
           val publishers = Set(
@@ -733,6 +757,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       it("unspecified") {
+        println("    - Testing unspecified")
         val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
 
         doUnspecifiedTest(pubQueryGen) { response =>
@@ -808,7 +833,9 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   describe("pagination") {
+    println("Testing pagination")
     it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
+      println("  - Testing should match the result of getting all datasets and using .drop(start).take(limit) to select a subset")
       val gen = for {
         (indexName, dataSets, routes) <- indexGen
         dataSetCount = dataSets.size
@@ -837,6 +864,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   def sortByQuality(dataSets: List[DataSet]): List[DataSet] = dataSets.sortWith { case (ds1, ds2) => ds1.quality.compare(ds2.quality) > 0 }
 
   describe("query") {
+    println("Testing query")
     def queryEquals(outputQuery: Query, inputQuery: Query) = {
       def caseInsensitiveMatch(field: String, output: Traversable[String], input: Traversable[String]) = withClue(field) {
         output.map(_.trim.toLowerCase) should equal(input.map(_.trim.toLowerCase))
@@ -877,6 +905,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     it("should parse a randomly generated query correctly") {
+      println("  - Testing should parse a randomly generated query correctly")
       forAll(emptyIndexGen, textQueryGen(queryGen(List[DataSet]()))) { (indexTuple, queryTuple) ⇒
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
@@ -895,6 +924,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     it("should resolve valid regions") {
+      println("  - Testing should resolve valid regions")
       val thisQueryGen = set(innerRegionQueryGen).map(queryRegions => new Query(regions = queryRegions.map(Specified.apply)))
 
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) { (indexTuple, queryTuple) ⇒
@@ -946,6 +976,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     it("should not fail for queries that are full of arbitrary characters") {
+      println("  - Testing should not fail for queries that are full of arbitrary characters")
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
@@ -956,6 +987,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
     }
 
     it("should return scores, and they should be in order") {
+      println("  - Testing should return scores, and they should be in order")
       val gen = for {
         index <- mediumIndexGen
         query <- textQueryGen(queryGen(index._2))

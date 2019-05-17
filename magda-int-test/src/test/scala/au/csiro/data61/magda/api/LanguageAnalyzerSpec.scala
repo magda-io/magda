@@ -19,29 +19,35 @@ import scala.util.Random
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   override def beforeAll() = {
+    println("Testing LanguageAnalyzerSpec")
     super.beforeAll()
-    blockUntilNotRed()
   }
 
 
   describe("should return the right dataset when searching for that dataset's") {
+    println("Testing should return the right dataset when searching for that dataset's")
     describe("title") {
+      println("  - Testing title")
       testDataSetSearch(dataSet => dataSet.title.toSeq)
     }
 
     describe("description") {
+      println("  - Testing description")
       testDataSetSearch(dataSet => dataSet.description.toSeq, true)
     }
 
     describe("keywords") {
+      println("  - Testing keywords")
       testDataSetSearch(dataSet => dataSet.keywords)
     }
 
     describe("publisher name") {
+      println("  - Testing publisher name")
       testDataSetSearch(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq))
     }
 
     describe("distribution title") {
+      println("  - Testing distribution title")
       testDataSetSearch(dataSet => {
         // --- only randomly pick one distribution to test as now it's AND operator in simple_string_query
         Random.shuffle(dataSet.distributions).take(1).map(_.title)
@@ -49,12 +55,14 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     describe("distribution description") {
+      println("  - Testing distribution description")
       testDataSetSearch(dataSet => {
         Random.shuffle(dataSet.distributions).take(1).flatMap(_.description.toSeq)
       }, true)
     }
 
     describe("theme") {
+      println("  - Testing theme")
       testDataSetSearch(dataSet => dataSet.themes, true)
     }
 
@@ -81,6 +89,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right publisher when searching by publisher name") {
+    println("Testing should return the right publisher when searching by publisher name")
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -103,6 +112,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
   }
 
   describe("should return the right format when searching by format value") {
+    println("Testing should return the right format when searching by format value")
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -132,6 +142,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
   def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false, useLightEnglishStemmer: Boolean = false) = {
     it("when searching for it directly") {
+      println("  - Testing when searching for it directly")
       def innerTermExtractor(dataSet: DataSet) = if (keepOrder) {
         outerTermExtractor(dataSet).map(term => MagdaMatchers.tokenize(term).map(_.trim)).flatMap(getAllSlices).map(_.mkString(" "))
       } else {
@@ -142,6 +153,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     }
 
     it(s"regardless of pluralization/depluralization") {
+      println("  - Testing regardless of pluralization/depluralization")
 
       def innerTermExtractor(dataSet: DataSet) =
         if (keepOrder) {

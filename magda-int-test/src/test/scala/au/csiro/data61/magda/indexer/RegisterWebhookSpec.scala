@@ -33,7 +33,10 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
   implicit val config = TestActorSystem.config
 
   describe("on startup") {
+    println("Testing RegisterWebhookSpec")
+    println("Testing on startup")
     it("should register itself if not already registered") { param =>
+      println("  - Testing should register itself if not already registered")
       expectWebHookGet(param)
 
       // Expect the new hook to be posted
@@ -73,6 +76,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
     }
 
     it("should resume the webhook if already registered") { param =>
+      println("  - Testing should resume the webhook if already registered")
       val webhookId = config.getString("registry.webhookId")
 
       // Create an existing webhook

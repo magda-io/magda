@@ -45,15 +45,26 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
 
-  override def client(): ElasticClient = clientProvider.getClient().await
-
-  override def beforeAll() {
+  def setupES(): Unit ={
     println("******** calling docker-compose up *********")
     sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
 
-    Thread.sleep(30000)
-    println("******** Have waited 30 seconds for docker-compose up *********")
+    Thread.sleep(20000)
+    println("******** Have waited 20 seconds for docker-compose up *********")
     blockUntilNotRed()
+  }
+
+  def tearDownES(): Unit ={
+    println("-------------- calling docker-compose down ------------")
+    sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
+    println("-------------- docker-compose down completed ------------")
+  }
+
+  override def client(): ElasticClient = clientProvider.getClient().await
+
+  override def beforeAll() {
+    tearDownES()
+    setupES()
 
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
       deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
@@ -75,9 +86,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def afterAll() {
-    println("-------------- calling docker-compose down ------------")
-    sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
-    println("-------------- docker-compose down called ------------")
+    tearDownES()
     System.gc()
   }
 

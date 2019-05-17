@@ -45,8 +45,8 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
   override def beforeAll() = {
+    println("Testing WebhookSpec")
     super.beforeAll()
-    blockUntilNotRed()
   }
 
   override def afterEach(): Unit ={
@@ -76,7 +76,9 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
   }
 
   describe("when webhook received") {
+    println("Testing when webhook received")
     it("should index new datasets") {
+      println("  - Testing should index new datasets")
       loadDatasetsThroughEvents() { (allDataSets: List[DataSet], response: SearchResult) =>
         val cleanedInputDataSets = allDataSets.map(dataSet => dataSet.copy(
           // The registry only looks for the duration text so copy the actual duration into the text
@@ -153,17 +155,10 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
     }
 
     it("should delete datasets mentioned in deletion events") {
+      println("  - Testing should delete datasets mentioned in deletion events")
 
-      println("-------------- calling docker-compose down ------------")
-      sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
-      println("-------------- docker-compose down called ------------")
-
-      println("******** calling docker-compose up *********")
-      sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
-
-      Thread.sleep(30000)
-      println("******** Have waited 30 seconds for docker-compose up *********")
-      blockUntilNotRed()
+      tearDownES()
+      setupES()
 
       val gen = for {
         gennedDataSets <- dataSetsGen
@@ -205,9 +200,6 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
             status shouldBe Accepted
           }
 
-
-//          Thread.sleep(5000)
-//          Await.result(builtIndex.indexer.ready, 120 seconds)
           val expectedDataSets = dataSets.filter(dataSet => !dataSetsToDelete.contains(dataSet))
 
           builtIndex.indexNames.foreach { idxName =>
@@ -233,6 +225,7 @@ class WebhookSpec extends BaseApiSpec with RegistryConverters with ModelProtocol
     }
 
     it("given a combination of deletions and insertions, it should not delete anything that was included as a record") {
+      println("  - Testing given a combination of deletions and insertions, it should not delete anything that was included as a record")
       val gen = for {
         gennedDataSets <- dataSetsGen
         dataSets = gennedDataSets.map(_._1)

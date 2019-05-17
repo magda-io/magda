@@ -246,7 +246,7 @@ class ElasticSearchIndexer(
    */
   private def getIndexDefinitions(client: ElasticClient) = {
     def indexNotFound(indexDef: IndexDefinition, inner: RuntimeException) = {
-      logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
+      logger.info("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
     }
 
