@@ -6,7 +6,7 @@ export function codelistEditor(
     options: any,
     reorder = false,
     defaultOptionText: string = ""
-): Editor {
+): Editor<string> {
     return {
         edit: (value: any, onChange: Function, valuesToAvoid?: any) => {
             const callback = event => {
@@ -54,7 +54,10 @@ export function codelistEditor(
     };
 }
 
-export function codelistRatioEditor(options: any, reorder = false): Editor {
+export function codelistRadioEditor(
+    options: any,
+    reorder = false
+): Editor<string> {
     return {
         edit: (value: any, onChange: Function) => {
             const callback = event => {
@@ -121,10 +124,10 @@ function alphaLabelSort(labels, order = 1) {
 }
 
 export function multiCodelistEditor(
-    options: any,
+    options: { [key: string]: string },
     reorder = false,
     defaultOptionText: string = ""
-): Editor {
+): Editor<string[]> {
     const single = codelistEditor(options, reorder, defaultOptionText);
     return ListMultiItemEditor.create(single, () => "");
 }

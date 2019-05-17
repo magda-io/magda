@@ -1,6 +1,7 @@
 import uuidv4 from "uuid/v4";
 
 import { Contact } from "Components/Editing/Editors/contactEditor";
+import { licenseLevel } from "constants/DatasetConstants";
 
 export type File = {
     title: string;
@@ -65,7 +66,7 @@ type DatasetPublishing = {
 };
 
 type SpatialCoverage = {
-    bbox?: number[];
+    bbox?: [number, number, number, number];
 };
 
 export type State = {
@@ -80,15 +81,16 @@ export type State = {
     _licenseLevel: string;
     _lastModifiedDate: string;
     _createdDate: string;
+    isPublishing: boolean;
 };
 
 type TemporalCoverage = {
     intervals: Interval[];
 };
 
-type Interval = {
-    start?: string;
-    end?: string;
+export type Interval = {
+    start?: Date;
+    end?: Date;
 };
 
 type Usage = {
@@ -121,8 +123,11 @@ export function createBlankState(): State {
         temporalCoverage: {
             intervals: []
         },
-        datasetUsage: {},
+        datasetUsage: {
+            license: licenseLevel.government
+        },
         datasetAccess: {},
+        isPublishing: false,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString(),
         _licenseLevel: "dataset"

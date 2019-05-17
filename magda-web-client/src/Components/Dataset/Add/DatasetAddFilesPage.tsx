@@ -12,7 +12,7 @@ import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import { getFiles } from "helpers/readFile";
 
-import Styles from "./DatasetAddFilesPage.module.scss";
+import "./DatasetAddFilesPage.scss";
 
 import {
     State,
@@ -38,6 +38,26 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
 
     async onDrop(fileList: FileList) {
         this.addFiles(fileList);
+    }
+
+    updateLastModifyDate() {
+        this.setState(state => {
+            const modifiedDates = state.files
+                .filter(f => f.modified)
+                .map(f => new Date(f.modified))
+                .filter(d => !isNaN(d.getTime()))
+                .map(d => d.getTime())
+                .sort((a, b) => b - a);
+            return {
+                ...state,
+                dataset: {
+                    ...state.dataset,
+                    modified: modifiedDates.length
+                        ? new Date(modifiedDates[0])
+                        : new Date()
+                }
+            };
+        });
     }
 
     addFiles = async (fileList: FileList) => {
@@ -134,6 +154,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                 });
             }
         }
+        this.updateLastModifyDate();
     };
 
     editFile = (index: number) => (file: File) => {
@@ -144,6 +165,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                 files: newFiles
             };
         });
+        this.updateLastModifyDate();
     };
 
     render() {
@@ -187,7 +209,10 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                         <ul>
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li key={i} className={Styles.fileListItem}>
+                                    <li
+                                        key={i}
+                                        className="dataset-add-files-fileListItem"
+                                    >
                                         {file._state === FileState.Ready ? (
                                             <DatasetFile
                                                 file={file}
@@ -217,8 +242,8 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     >
                         <FileDrop
                             onDrop={this.onDrop.bind(this)}
-                            className={Styles.dropZone}
-                            targetClassName={Styles.dropTarget}
+                            className="dataset-add-files-dropZone"
+                            targetClassName="dataset-add-files-dropTarget"
                         >
                             <span>Drag your files or click here</span>
                         </FileDrop>
