@@ -78,17 +78,19 @@ class NestedSetModelQueryer {
         }
     }
 
-    private selectFields(tableAliasOrName: string = "") {
-        if (
-            !this.defaultSelectFieldList ||
-            !_.isArray(this.defaultSelectFieldList) ||
-            !this.defaultSelectFieldList.length
-        ) {
+    private selectFields(
+        tableAliasOrName: string = "",
+        fields: string[] = null
+    ) {
+        const fieldList = isNonEmptyArray(fields)
+            ? fields
+            : this.defaultSelectFieldList;
+        if (!isNonEmptyArray(fieldList)) {
             return "*";
         }
         // --- do not double quote `tableAliasOrName`
         // --- or you will get missing FROM-clause entry for table error
-        return this.defaultSelectFieldList
+        return fieldList
             .map(f =>
                 tableAliasOrName == "" ? `"${f}"` : `${tableAliasOrName}."${f}"`
             )
@@ -100,12 +102,18 @@ class NestedSetModelQueryer {
      * You hardly need this one --- only for write test case (you can get a id from name)
      *
      * @param {string} name
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
-    async getNodesByName(name: string): Promise<NodeRecord[]> {
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields()} FROM "${
+    async getNodesByName(
+        name: string,
+        fields: string[] = null,
+        client: pg.Client = null
+    ): Promise<NodeRecord[]> {
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "name" = $1`,
             [name]
@@ -115,15 +123,21 @@ class NestedSetModelQueryer {
     }
 
     /**
-     * Get a node by its id
      *
+     * Get a node by its id
      * @param {string} id
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord>}
      * @memberof NestedSetModelQueryer
      */
-    async getNodeById(id: string): Promise<NodeRecord> {
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields()} FROM "${
+    async getNodeById(
+        id: string,
+        fields: string[] = null,
+        client: pg.Client = null
+    ): Promise<NodeRecord> {
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "id" = $1`,
             [id]
@@ -136,12 +150,17 @@ class NestedSetModelQueryer {
      * Get the root node of the tree
      * Return null if empty tree
      *
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord>}
      * @memberof NestedSetModelQueryer
      */
-    async getRootNode(): Promise<NodeRecord> {
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields()} FROM "${
+    async getRootNode(
+        fields: string[] = null,
+        client: pg.Client = null
+    ): Promise<NodeRecord> {
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "left" = 1`
         );
@@ -254,13 +273,19 @@ class NestedSetModelQueryer {
      * If the node has no parent (i.e. a root node), null will be returned
      *
      * @param {string} childNodeId
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord>}
      * @memberof NestedSetModelQueryer
      */
-    async getImmediateParent(childNodeId: string): Promise<NodeRecord> {
+    async getImmediateParent(
+        childNodeId: string,
+        fields: string[] = null,
+        client: pg.Client = null
+    ): Promise<NodeRecord> {
         const tbl = this.tableName;
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields("Parents")} 
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("Parents", fields)} 
             FROM "${tbl}" AS Parents, "${tbl}" AS Children
             WHERE Children.left BETWEEN Parents.left AND Parents.right 
             AND Parents.left = (
@@ -424,12 +449,17 @@ class NestedSetModelQueryer {
      *
      * @param {string} node1Id
      * @param {string} node2Id
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<number>}
      * @memberof NestedSetModelQueryer
      */
-    async compareNodes(node1Id: string, node2Id: string): Promise<number> {
+    async compareNodes(
+        node1Id: string,
+        node2Id: string,
+        client: pg.Client = null
+    ): Promise<number> {
         const tbl = this.tableName;
-        const result = await this.pool.query(
+        const result = await (client ? client : this.pool).query(
             `SELECT (
                 CASE
                     WHEN CAST($1 AS varchar) = CAST($2 AS varchar)
@@ -565,18 +595,13 @@ class NestedSetModelQueryer {
         nodeId: string,
         fields: string[]
     ): Promise<NodeRecord> {
-        const tbl = this.tableName;
-        const fieldsList = fields.map(f => `"${f}"`).join(", ");
-        const result = await client.query(
-            `SELECT ${fieldsList} FROM "${tbl}" WHERE "id" = $1`,
-            [nodeId]
-        );
-        if (!result || !isNonEmptyArray(result.rows)) {
+        const node = await this.getNodeById(nodeId, fields, client);
+        if (!node) {
             throw new Error(
                 `Cannot locate tree node record with id: ${nodeId}`
             );
         }
-        return result.rows[0];
+        return node;
     }
 
     /**
@@ -723,6 +748,108 @@ class NestedSetModelQueryer {
             client.release();
         }
         return node_id;
+    }
+
+    /**
+     * Move a subtree (the specified root node and all its subordinates)
+     * to under a new parent.
+     *
+     * If the specifed sub tree root node is a child of the new parent node,
+     * an error will be be thrown
+     *
+     * @param {string} subTreeRootNodeId
+     * @param {string} newParentId
+     * @returns {Promise<void>}
+     * @memberof NestedSetModelQueryer
+     */
+    async moveSubTreeTo(
+        subTreeRootNodeId: string,
+        newParentId: string
+    ): Promise<void> {
+        if (!subTreeRootNodeId) {
+            throw new Error("`subTreeRootNodeId` cannot be empty!");
+        }
+        if (!newParentId) {
+            throw new Error("`newParentId` cannot be empty!");
+        }
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const comparisonResult = await this.compareNodes(
+                subTreeRootNodeId,
+                newParentId,
+                client
+            );
+            if (comparisonResult === 1) {
+                throw new Error(
+                    `Cannot move a higher level node (id: ${subTreeRootNodeId})to its subordinate (id: ${newParentId})`
+                );
+            }
+            const {
+                left: originRootLeft,
+                right: originRootRight
+            } = await this.getNodeDataWithinTx(client, subTreeRootNodeId, [
+                "left",
+                "right"
+            ]);
+
+            if (originRootLeft === "1") {
+                throw new Error("Cannot move Tree root node as substree.");
+            }
+
+            const { right: newParentRight } = await this.getNodeDataWithinTx(
+                client,
+                newParentId,
+                ["right"]
+            );
+
+            await client.query(
+                `
+            UPDATE "${tbl}" 
+            SET 
+            "left" = "left" + CASE
+                WHEN $3::int4 < $1::int4
+                THEN CASE 
+                    WHEN "left" BETWEEN $1 AND $2
+                    THEN $3 - $1
+                    WHEN "left" BETWEEN $3 AND ($1 - 1)
+                    THEN $2 - $1 + 1
+                    ELSE 0 END
+                WHEN $3::int4 > $2::int4
+                THEN CASE
+                    WHEN "left" BETWEEN $1 AND $2
+                    THEN $3 - $2 - 1
+                    WHEN "left" BETWEEN ($2 + 1) AND ($3 - 1)
+                    THEN $1 - $2 - 1
+                    ELSE 0 END
+                ELSE 0 END,
+            "right" = "right" + CASE
+                WHEN $3::int4 < $1::int4
+                THEN CASE 
+                    WHEN "right" BETWEEN $1 AND $2
+                    THEN $3 - $1
+                    WHEN "right" BETWEEN $3 AND ($1 - 1)
+                    THEN $2 - $1 + 1
+                    ELSE 0 END
+                WHEN $3::int4 > $2::int4
+                THEN CASE
+                    WHEN "right" BETWEEN $1 AND $2
+                    THEN $3 - $2 - 1
+                    WHEN "right" BETWEEN ($2 + 1) AND ($3 - 1)
+                    THEN $1 - $2 - 1
+                    ELSE 0 END
+                ELSE 0 END
+            `,
+                [originRootLeft, originRootRight, newParentRight]
+            );
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
     }
 }
 

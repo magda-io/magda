@@ -585,4 +585,105 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             true
         );
     });
+
+    it("Test `moveSubTreeTo` No.1", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        const bertId = (await queryer.getNodesByName("Bert"))[0]["id"];
+
+        // --- move Chuck under Bert
+        await queryer.moveSubTreeTo(chuckId, bertId);
+
+        // --- checking three structure after the chanhes
+        let rootNode = await queryer.getRootNode();
+        expect(rootNode.name).to.equal("Albert");
+
+        let lv2Nodes = await queryer.getAllNodesAtLevel(2);
+        expect(lv2Nodes.length).to.equal(1);
+        expect(lv2Nodes[0].name).to.equal("Bert");
+
+        let lv3Nodes = await queryer.getAllNodesAtLevel(3);
+        expect(lv3Nodes.length).to.equal(1);
+        expect(lv3Nodes[0].name).to.equal("Chuck");
+
+        let lv4Nodes = await queryer.getAllNodesAtLevel(4);
+        expect(lv4Nodes.length).to.equal(3);
+        expect(lv4Nodes.map(n => n.name)).to.have.members([
+            "Donna",
+            "Eddie",
+            "Fred"
+        ]);
+
+        // --- continue to move `Donna` to `Bert`
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Donna"))[0]["id"],
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking three structure after the chanhes
+        rootNode = await queryer.getRootNode();
+        expect(rootNode.name).to.equal("Albert");
+
+        lv2Nodes = await queryer.getAllNodesAtLevel(2);
+        expect(lv2Nodes.length).to.equal(1);
+        expect(lv2Nodes[0].name).to.equal("Bert");
+
+        lv3Nodes = await queryer.getAllNodesAtLevel(3);
+        expect(lv3Nodes.length).to.equal(2);
+        expect(lv3Nodes.map(n => n.name)).to.have.members(["Chuck", "Donna"]);
+
+        lv4Nodes = await queryer.getAllNodesAtLevel(4);
+        expect(lv4Nodes.length).to.equal(2);
+        expect(lv4Nodes.map(n => n.name)).to.have.members(["Eddie", "Fred"]);
+
+        // --- we shouldn't allow to move Bert's sub stree to Eddie
+        // --- as Eddie is one of Bert's subordinate
+        let eddieId = (await queryer.getNodesByName("Eddie"))[0]["id"];
+
+        expect(queryer.moveSubTreeTo(bertId, eddieId)).be.rejectedWith(
+            `Cannot move a higher level node (id: ${bertId})to its subordinate (id: ${eddieId})`
+        );
+    });
+
+    it("Test `moveSubTreeTo` No.2", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        expect(
+            (await queryer.getImmediateParent(
+                (await queryer.getNodesByName("Donna"))[0]["id"]
+            )).name
+        ).to.equal("Chuck");
+
+        // --- move `Donna` to `Bert`: there is no path from Donna to Bert
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Donna"))[0]["id"],
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking three structure after the chanhes
+        let rootNode = await queryer.getRootNode();
+        expect(rootNode.name).to.equal("Albert");
+
+        let lv2Nodes = await queryer.getAllNodesAtLevel(2);
+        expect(lv2Nodes.map(n => n.name)).to.have.members(["Bert", "Chuck"]);
+
+        let lv3Nodes = await queryer.getAllNodesAtLevel(3);
+        expect(lv3Nodes.map(n => n.name)).to.have.members([
+            "Eddie",
+            "Donna",
+            "Fred"
+        ]);
+        expect(
+            (await queryer.getImmediateParent(
+                (await queryer.getNodesByName("Donna"))[0]["id"]
+            )).name
+        ).to.equal("Bert");
+    });
 });
