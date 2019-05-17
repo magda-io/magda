@@ -851,6 +851,125 @@ class NestedSetModelQueryer {
             client.release();
         }
     }
+
+    /**
+     * Delete a subtree (and all its dependents)
+     * If you sent in a root node id (and `allowRootNodeId` is true), the whole tree will be removed
+     * When `allowRootNodeId` is false and you passed a root node id, an error will be thrown
+     *
+     * @param {string} subTreeRootNodeId
+     * @param {boolean} [allowRootNodeId=false]
+     * @returns {Promise<void>}
+     * @memberof NestedSetModelQueryer
+     */
+    async deleteSubTree(
+        subTreeRootNodeId: string,
+        allowRootNodeId: boolean = false
+    ): Promise<void> {
+        if (!subTreeRootNodeId) {
+            throw new Error("`subTreeRootNodeId` cannot be empty!");
+        }
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const {
+                left: subTreeRootLeft,
+                right: subTreeRootRight
+            } = await this.getNodeDataWithinTx(client, subTreeRootNodeId, [
+                "left",
+                "right"
+            ]);
+
+            if (subTreeRootLeft === 1 && !allowRootNodeId) {
+                throw new Error("Root node id is not allowed!");
+            }
+
+            // --- delete the sub tree nodes
+            await client.query(
+                `DELETE FROM "${tbl}" WHERE "left" BETWEEN $1 AND $2`,
+                [subTreeRootLeft, subTreeRootRight]
+            );
+            // --- closing the gap after deletion
+            await client.query(
+                `
+                UPDATE "${tbl}"
+                SET "left" = CASE
+                        WHEN "left" > $1
+                            THEN "left" - ($2 - $1 + 1)
+                        ELSE "left" END, 
+                    "right" = CASE
+                        WHEN "right" > $1
+                            THEN "right" - ($2 - $1 + 1) 
+                        ELSE "right" END
+                WHERE "left" > $1 OR "right" > $1
+                `,
+                [subTreeRootLeft, subTreeRootRight]
+            );
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
+
+    /**
+     * Delete a single node from the tree
+     * Its childrens will become its parent's children
+     *
+     * @param {string} nodeId
+     * @returns {Promise<void>}
+     * @memberof NestedSetModelQueryer
+     */
+    async deleteNode(nodeId: string): Promise<void> {
+        if (!nodeId) {
+            throw new Error("`nodeId` cannot be empty!");
+        }
+        const tbl = this.tableName;
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const {
+                left: subTreeRootLeft,
+                right: subTreeRootRight
+            } = await this.getNodeDataWithinTx(client, nodeId, [
+                "left",
+                "right"
+            ]);
+
+            // --- delete the node
+            // --- In nested set model, children are still bind to the deleted node's parent after deletion
+            await client.query(`DELETE FROM "${tbl}" WHERE "id" = $1`, [
+                nodeId
+            ]);
+            // --- closing the gap after deletion
+            await client.query(
+                `
+                UPDATE "${tbl}"
+                SET "left" = CASE
+                        WHEN "left" > $1 AND "right" < $2
+                            THEN "left" - 1
+                        WHEN "left" > $1 AND "right" > $2
+                            THEN "left" - 2
+                        ELSE "left" END, 
+                    "right" = CASE
+                        WHEN "left" > $1 AND "right" < $2
+                            THEN "right" - 1
+                        ELSE ("right" - 2) END
+                WHERE "left" > $1 OR "right" > $1
+                `,
+                [subTreeRootLeft, subTreeRootRight]
+            );
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 export default NestedSetModelQueryer;

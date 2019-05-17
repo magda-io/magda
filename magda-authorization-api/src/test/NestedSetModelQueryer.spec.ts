@@ -9,6 +9,18 @@ import getTestDBConfig from "./getTestDBConfig";
 chai.use(chaiAsPromised);
 const { expect } = chai;
 
+async function checkNodeLeftRight(
+    queryer: NestedSetModelQueryer,
+    nodeName: string,
+    expectedLeft: number,
+    expectedRight: number
+) {
+    queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+    const testNode = (await queryer.getNodesByName(nodeName))[0];
+    expect(testNode.left).to.equal(expectedLeft);
+    expect(testNode.right).to.equal(expectedRight);
+}
+
 describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     let pool: pg.Pool = null;
@@ -685,5 +697,180 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
                 (await queryer.getNodesByName("Donna"))[0]["id"]
             )).name
         ).to.equal("Bert");
+    });
+
+    it("Test `deleteSubTree` No.1", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        await queryer.deleteSubTree(chuckId);
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 4);
+        await checkNodeLeftRight(queryer, "Bert", 2, 3);
+
+        const results = await pool.query(`SELECT * FROM "${tableName}"`);
+        expect(results.rows.length).to.equal(2);
+    });
+
+    it("Test `deleteSubTree` No.2 allow delete root node", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- try delete root stree
+        const rootNodeId = (await queryer.getNodesByName("Albert"))[0]["id"];
+        await queryer.deleteSubTree(rootNodeId, true);
+
+        const results = await pool.query(`SELECT * FROM "${tableName}"`);
+        expect(results.rows.length).to.equal(0);
+    });
+
+    it("Test `deleteSubTree` No.3 not allow delete root node", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- try delete root stree
+        const rootNodeId = (await queryer.getNodesByName("Albert"))[0]["id"];
+
+        expect(queryer.deleteSubTree(rootNodeId)).be.rejectedWith(
+            "Root node id is not allowed!"
+        );
+    });
+
+    it("Test `deleteSubTree` no.4 delete a leaf node", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- move Bert under Eddie
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Donna"))[0]["id"],
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 12);
+        await checkNodeLeftRight(queryer, "Bert", 2, 5);
+        await checkNodeLeftRight(queryer, "Chuck", 6, 11);
+        await checkNodeLeftRight(queryer, "Donna", 3, 4);
+        await checkNodeLeftRight(queryer, "Eddie", 7, 8);
+        await checkNodeLeftRight(queryer, "Fred", 9, 10);
+
+        // --- delete Eddie
+        await queryer.deleteSubTree(
+            (await queryer.getNodesByName("Eddie"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 10);
+        await checkNodeLeftRight(queryer, "Bert", 2, 5);
+        await checkNodeLeftRight(queryer, "Chuck", 6, 9);
+        await checkNodeLeftRight(queryer, "Donna", 3, 4);
+        await checkNodeLeftRight(queryer, "Fred", 7, 8);
+    });
+
+    it("Test `deleteNode` no. 1", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+
+        // --- delete chuck
+        await queryer.deleteNode(chuckId);
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 10);
+        await checkNodeLeftRight(queryer, "Bert", 2, 3);
+        await checkNodeLeftRight(queryer, "Donna", 4, 5);
+        await checkNodeLeftRight(queryer, "Eddie", 6, 7);
+        await checkNodeLeftRight(queryer, "Fred", 8, 9);
+    });
+
+    it("Test `deleteNode` no.2", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- move Bert under Eddie
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Bert"))[0]["id"],
+            (await queryer.getNodesByName("Eddie"))[0]["id"]
+        );
+
+        // --- move Donna under Bert
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Donna"))[0]["id"],
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 12);
+        await checkNodeLeftRight(queryer, "Chuck", 2, 11);
+        await checkNodeLeftRight(queryer, "Eddie", 3, 8);
+        await checkNodeLeftRight(queryer, "Bert", 4, 7);
+        await checkNodeLeftRight(queryer, "Donna", 5, 6);
+        await checkNodeLeftRight(queryer, "Fred", 9, 10);
+
+        // --- delete Eddie
+        await queryer.deleteNode(
+            (await queryer.getNodesByName("Eddie"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 10);
+        await checkNodeLeftRight(queryer, "Chuck", 2, 9);
+        await checkNodeLeftRight(queryer, "Bert", 3, 6);
+        await checkNodeLeftRight(queryer, "Donna", 4, 5);
+        await checkNodeLeftRight(queryer, "Fred", 7, 8);
+    });
+
+    it("Test `deleteNode` no.3", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- move Bert under Eddie
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Bert"))[0]["id"],
+            (await queryer.getNodesByName("Eddie"))[0]["id"]
+        );
+
+        // --- move Donna under Bert
+        await queryer.moveSubTreeTo(
+            (await queryer.getNodesByName("Donna"))[0]["id"],
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 12);
+        await checkNodeLeftRight(queryer, "Chuck", 2, 11);
+        await checkNodeLeftRight(queryer, "Eddie", 3, 8);
+        await checkNodeLeftRight(queryer, "Bert", 4, 7);
+        await checkNodeLeftRight(queryer, "Donna", 5, 6);
+        await checkNodeLeftRight(queryer, "Fred", 9, 10);
+
+        // --- delete Eddie
+        await queryer.deleteNode(
+            (await queryer.getNodesByName("Bert"))[0]["id"]
+        );
+
+        // --- checking left nodes data
+        await checkNodeLeftRight(queryer, "Albert", 1, 10);
+        await checkNodeLeftRight(queryer, "Chuck", 2, 9);
+        await checkNodeLeftRight(queryer, "Eddie", 3, 6);
+        await checkNodeLeftRight(queryer, "Donna", 4, 5);
+        await checkNodeLeftRight(queryer, "Fred", 7, 8);
     });
 });
