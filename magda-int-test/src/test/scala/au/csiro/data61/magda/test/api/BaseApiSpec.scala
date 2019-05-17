@@ -46,18 +46,17 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   def setupES(): Unit ={
-    println("******** calling docker-compose up *********")
+    logger.debug("******** calling docker-compose up *********")
     sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
-
+    logger.debug("******** Waiting 20 seconds for docker-compose up *********")
     Thread.sleep(20000)
-    println("******** Have waited 20 seconds for docker-compose up *********")
     blockUntilNotRed()
   }
 
   def tearDownES(): Unit ={
-    println("-------------- calling docker-compose down ------------")
+    logger.debug("-------------- calling docker-compose down ------------")
     sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
-    println("-------------- docker-compose down completed ------------")
+    logger.debug("-------------- docker-compose down completed ------------")
   }
 
   override def client(): ElasticClient = clientProvider.getClient().await

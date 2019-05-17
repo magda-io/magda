@@ -1,20 +1,13 @@
 package au.csiro.data61.magda.api
-import org.scalacheck._
-import org.scalacheck.Shrink
-import org.scalatest._
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy
-import au.csiro.data61.magda.test.util.ApiGenerators._
-import au.csiro.data61.magda.test.util.MagdaMatchers
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import au.csiro.data61.magda.test.util.Generators
-import au.csiro.data61.magda.util.Regex._
+import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
+import org.scalacheck.{Shrink, _}
+
 import scala.util.Random
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
@@ -25,48 +18,41 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
 
   describe("should return the right dataset when searching for that dataset's") {
-    println("Testing should return the right dataset when searching for that dataset's")
+    val testWhat = "should return the right dataset when searching for that dataset's"
     describe("title") {
-      println("  - Testing title")
-      testDataSetSearch(dataSet => dataSet.title.toSeq)
+      testDataSetSearch(dataSet => dataSet.title.toSeq, testWhat = s"$testWhat -- title")
     }
 
     describe("description") {
-      println("  - Testing description")
-      testDataSetSearch(dataSet => dataSet.description.toSeq, true)
+      testDataSetSearch(dataSet => dataSet.description.toSeq, true, testWhat = s"$testWhat -- description")
     }
 
     describe("keywords") {
-      println("  - Testing keywords")
-      testDataSetSearch(dataSet => dataSet.keywords)
+      testDataSetSearch(dataSet => dataSet.keywords, testWhat = s"$testWhat -- keywords")
     }
 
     describe("publisher name") {
-      println("  - Testing publisher name")
-      testDataSetSearch(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq))
+      testDataSetSearch(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq), testWhat = s"$testWhat -- publisher name")
     }
 
     describe("distribution title") {
-      println("  - Testing distribution title")
       testDataSetSearch(dataSet => {
         // --- only randomly pick one distribution to test as now it's AND operator in simple_string_query
         Random.shuffle(dataSet.distributions).take(1).map(_.title)
-      })
+      }, testWhat = s"$testWhat -- distribution title")
     }
 
     describe("distribution description") {
-      println("  - Testing distribution description")
       testDataSetSearch(dataSet => {
         Random.shuffle(dataSet.distributions).take(1).flatMap(_.description.toSeq)
-      }, true)
+      }, true, s"$testWhat -- distribution description")
     }
 
     describe("theme") {
-      println("  - Testing theme")
-      testDataSetSearch(dataSet => dataSet.themes, true)
+      testDataSetSearch(dataSet => dataSet.themes, true, s"$testWhat -- theme")
     }
 
-    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String], useLightEnglishStemmer: Boolean = false) = {
+    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String], useLightEnglishStemmer: Boolean = false, testWhat: String) = {
       def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
         .filter(term => term.matches(".*[A-Za-z].*"))
         .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
@@ -84,12 +70,11 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         }
       }
 
-      testLanguageFieldSearch(outerTermExtractor, test, false, useLightEnglishStemmer)
+      testLanguageFieldSearch(outerTermExtractor, test, false, useLightEnglishStemmer, testWhat)
     }
   }
 
   describe("should return the right publisher when searching by publisher name") {
-    println("Testing should return the right publisher when searching by publisher name")
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -108,11 +93,10 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       }
     }
 
-    testLanguageFieldSearch(termExtractor, test, true)
+    testLanguageFieldSearch(termExtractor, test, true, testWhat = "should return the right publisher when searching by publisher name")
   }
 
   describe("should return the right format when searching by format value") {
-    println("Testing should return the right format when searching by format value")
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
@@ -129,7 +113,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
       }
     }
 
-    testLanguageFieldSearch(termExtractor, test, true)
+    testLanguageFieldSearch(termExtractor, test, true, testWhat = "should return the right format when searching by format value")
   }
 
   def isAStopWord(term: String) = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
@@ -140,20 +124,21 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     combinations = terms.drop(start).take(len)
   } yield combinations
 
-  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false, useLightEnglishStemmer: Boolean = false) = {
+  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String],
+                              test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false,
+                              useLightEnglishStemmer: Boolean = false,
+                              testWhat: String) = {
     it("when searching for it directly") {
-      println("  - Testing when searching for it directly")
       def innerTermExtractor(dataSet: DataSet) = if (keepOrder) {
         outerTermExtractor(dataSet).map(term => MagdaMatchers.tokenize(term).map(_.trim)).flatMap(getAllSlices).map(_.mkString(" "))
       } else {
         outerTermExtractor(dataSet).flatMap(MagdaMatchers.tokenize)
       }
 
-      doTest(innerTermExtractor, keepOrder)
+      doTest(innerTermExtractor, keepOrder, s"$testWhat, when searching for it directly")
     }
 
     it(s"regardless of pluralization/depluralization") {
-      println("  - Testing regardless of pluralization/depluralization")
 
       def innerTermExtractor(dataSet: DataSet) =
         if (keepOrder) {
@@ -229,10 +214,12 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
             .filterNot(isAStopWord)
         }
 
-      doTest(innerTermExtractor, keepOrder)
+      doTest(innerTermExtractor, keepOrder, s"$testWhat, regardless of pluralization/depluralization")
     }
 
-    def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean) = {
+    def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean, testWhat: String) = {
+      println(s"    ---- doTest: $testWhat")
+
       def getIndividualTerms(terms: Seq[String]) = terms.map(MagdaMatchers.tokenize)
 
       /** Checks that there's at least one searchable term in this seq of strings */
@@ -306,8 +293,11 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           }
       }
 
+      var counter = 0
       forAll(indexAndTermsGen) {
         case (indexName, tuples, routes) =>
+          counter += 1
+          println(s" *** iteration = $counter")
           whenever(!tuples.isEmpty) {
             tuples.foreach {
               case (dataSet, term) => test(dataSet, term, routes, tuples)
