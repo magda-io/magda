@@ -1,0 +1,21 @@
+@import "_variables";
+@import "../../../../../../node_modules/leaflet/dist/leaflet.css";
+
+.region-map {
+    width: 100%;
+    height: 100%;
+}
+
+.region-map__map {
+    margin-top: 0;
+    height: 270px;
+    margin-top: 10px;
+}
+
+.region-map .leaflet-left .leaflet-control {
+    margin-top: 50px;
+}
+
+.leaflet-bar a {
+    text-decoration: none !important;
+}

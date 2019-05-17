@@ -2,7 +2,62 @@ import React from "react";
 import Editor from "./Editor";
 import { ListMultiItemEditor } from "./multiItem";
 
-export function codelistEditor(options: any, reorder = false): Editor {
+export function codelistEditor(
+    options: any,
+    reorder = false,
+    defaultOptionText: string = ""
+): Editor<string> {
+    return {
+        edit: (value: any, onChange: Function, valuesToAvoid?: any) => {
+            const callback = event => {
+                onChange(event.target.value);
+            };
+            value = value || "";
+            valuesToAvoid = valuesToAvoid || [];
+            let keys = Object.keys(options);
+            if (reorder) {
+                keys = keys.sort(alphaLabelSort(options));
+            }
+            return (
+                <select
+                    className="au-select"
+                    defaultValue={value}
+                    onChange={callback}
+                    key={valuesToAvoid.join("-")}
+                >
+                    <option value="" disabled>
+                        {defaultOptionText
+                            ? defaultOptionText
+                            : "Please select one"}
+                    </option>
+                    {keys
+                        .filter(item => valuesToAvoid.indexOf(item) === -1)
+                        .map((val, i) => {
+                            return (
+                                <option key={i} value={val}>
+                                    {options[val]}
+                                </option>
+                            );
+                        })}
+                </select>
+            );
+        },
+        view: (value: any) => {
+            return (
+                <React.Fragment>
+                    {(options[value] && `${options[value]}`) ||
+                        value ||
+                        "NOT SET"}
+                </React.Fragment>
+            );
+        }
+    };
+}
+
+export function codelistRadioEditor(
+    options: any,
+    reorder = false
+): Editor<string> {
     return {
         edit: (value: any, onChange: Function) => {
             const callback = event => {
@@ -13,30 +68,39 @@ export function codelistEditor(options: any, reorder = false): Editor {
             if (reorder) {
                 keys = keys.sort(alphaLabelSort(options));
             }
+            const name = Math.random() + ".";
             return (
-                <select
-                    className="au-select"
-                    defaultValue={value}
-                    onChange={callback}
-                >
-                    <option value="" disabled>
-                        Please select one
-                    </option>
+                <div>
                     {keys.map(val => {
-                        return <option value={val}>{options[val]}</option>;
+                        return (
+                            <div>
+                                <div className="au-control-input">
+                                    <input
+                                        className="au-control-input__input"
+                                        type="radio"
+                                        value={val}
+                                        name={name}
+                                        id={name + val}
+                                        onChange={callback}
+                                        checked={value === val}
+                                    />{" "}
+                                    <label
+                                        className="au-control-input__text"
+                                        htmlFor={name + val}
+                                    >
+                                        {options[val]}
+                                    </label>
+                                </div>
+                            </div>
+                        );
                     })}
-                </select>
+                </div>
             );
         },
         view: (value: any) => {
             return (
                 <React.Fragment>
-                    {(options[value] &&
-                        `${options[value]}${
-                            value.toLowerCase() === options[value].toLowerCase()
-                                ? ""
-                                : " [" + value + "]"
-                        }`) ||
+                    {(options[value] && `${options[value]}`) ||
                         value ||
                         "NOT SET"}
                 </React.Fragment>
@@ -59,7 +123,11 @@ function alphaLabelSort(labels, order = 1) {
     };
 }
 
-export function multiCodelistEditor(options: any, reorder = false): Editor {
-    const single = codelistEditor(options, reorder);
+export function multiCodelistEditor(
+    options: { [key: string]: string },
+    reorder = false,
+    defaultOptionText: string = ""
+): Editor<string[]> {
+    const single = codelistEditor(options, reorder, defaultOptionText);
     return ListMultiItemEditor.create(single, () => "");
 }

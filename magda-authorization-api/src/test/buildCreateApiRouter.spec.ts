@@ -493,8 +493,17 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
+
+                            const {
+                                roles,
+                                permissions,
+                                ...bodyUserData
+                            } = res.body;
+
+                            expect(res.body.roles).to.be.a("array");
+                            expect(res.body.permissions).to.be.a("array");
                             expect({ id: userId, ...userData }).to.deep.include(
-                                res.body
+                                bodyUserData
                             );
 
                             return true;

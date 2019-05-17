@@ -1,0 +1,69 @@
+@import "variables";
+
+.homepage-stories {
+    margin-top: 1rem;
+
+    @media (min-width: $medium) {
+        margin-bottom: 2rem;
+    }
+
+    .stories-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+    .col-3 {
+        width: calc(100% / 3 - 20px);
+        & > div {
+            height: calc(100% - 13px);
+        }
+    }
+
+    .row-2 {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .col-2 {
+        width: calc(100% / 2 - 8px);
+        & > div {
+            height: calc(100%);
+        }
+    }
+
+    .row.stories {
+        margin-bottom: 12px;
+    }
+
+    .homepage-stories-show-stories-button-container {
+        text-align: center;
+    }
+    .homepage-stories-show-stories-button {
+        border: none;
+        bottom: 0px;
+        background: $AU-colordark-background;
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16),
+            0px 3px 6px rgba(0, 0, 0, 0.23);
+        font-weight: 500;
+        @include AU-fontgrid(xs);
+        text-align: center;
+        color: $AU-colordark-foreground-text;
+        width: 134px;
+        padding-left: 24.5px;
+        padding-right: 24.5px;
+        padding-top: 12px;
+        padding-bottom: 10px;
+
+        z-index: 1000;
+    }
+
+    .animation-appear {
+        margin-top: 500px;
+    }
+
+    .animation-appear.animation-appear-active {
+        margin-top: 0px;
+        transition: margin-top 0.65s linear;
+    }
+}

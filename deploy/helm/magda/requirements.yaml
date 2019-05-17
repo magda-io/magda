@@ -71,6 +71,10 @@ dependencies:
     tags:
       - all
       - admin-api
+  - name: opa
+    tags:
+      - all
+      - opa
 
 # Minions
   - name: minion-broken-link

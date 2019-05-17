@@ -1,0 +1,37 @@
+@import "variables";
+.login {
+    &__providers {
+        list-style: none;
+        padding: 0;
+        a {
+            border-bottom: 0;
+        }
+    }
+
+    &__logo {
+        height: 3em;
+        width: 3em;
+        padding: 0.5em;
+        display: inline-block;
+        vertical-align: middle;
+
+        &--email {
+            padding: 0.5em 0.7em;
+        }
+    }
+
+    &__email-icon {
+        color: $AU-color-foreground-action;
+        @include AU-fontgrid(lg);
+    }
+    &__input-group {
+        margin-bottom: 10px;
+    }
+    &__form {
+        padding-top: 15px;
+    }
+}
+
+.au-cta-link {
+    font-size: 1rem !important;
+}

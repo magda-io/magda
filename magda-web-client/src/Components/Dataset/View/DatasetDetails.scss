@@ -1,0 +1,25 @@
+@import "variables";
+.record-details__sidebar {
+    margin-bottom: 10px;
+}
+
+.dataset-discussion {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.tags {
+    .badge {
+        display: block;
+    }
+}
+
+.temporal-aspect-viewer {
+    th {
+        font-weight: 400;
+    }
+}
+
+.tab-content {
+    margin-bottom: 24px;
+}

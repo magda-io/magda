@@ -9,6 +9,12 @@
             "type": "string",
             "default": "published",
             "enum": ["draft", "published", "archived"]
+        },
+        "level": {
+            "title": "Level dataset is visible at",
+            "type": "string",
+            "default": "agency",
+            "enum": ["agency", "team", "public", "personal"]
         }
     }
 }

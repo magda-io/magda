@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 1
+        },
+        "titleUrl": {
+            "type": "string",
+            "minLength": 1
+        },
+        "order": {
+            "type": "number"
+        },
+        "content": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "required": ["title", "order", "content"]
+}

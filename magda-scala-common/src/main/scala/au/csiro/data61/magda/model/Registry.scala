@@ -225,6 +225,26 @@ object Registry {
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
+      val accessControl = hit.aspects.get("dataset-access-control") match {
+        case Some(JsObject(accessControlData)) => Some(AccessControl(
+          ownerId = accessControlData.get("ownerId") match {
+            case Some(JsString(ownerId)) => Some(ownerId)
+            case _ => None
+          },
+          orgUnitOwnerId = accessControlData.get("orgUnitOwnerId") match {
+            case Some(JsString(orgUnitOwnerId)) => Some(orgUnitOwnerId)
+            case _ => None
+          },
+          preAuthorisedPermissionIds = accessControlData.get("preAuthorisedPermissionIds") match {
+            case Some(JsArray(preAuthorisedPermissionIds)) => Some(preAuthorisedPermissionIds.toArray.flatMap{
+              case JsString(permissionId) => Some(permissionId)
+              case _ => None
+            })
+            case _ => None
+          }
+        ))
+        case _ => None
+      }
 
       val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -250,8 +270,26 @@ object Registry {
         case _ => 1d
       }
 
-      val coverageStart = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
-      val coverageEnd = ApiDate(tryParseDate(temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
+      // --- intervals could be an empty array
+      // --- put in a Try to avoid exceptions
+      val coverageStart = ApiDate(tryParseDate(
+        Try[Option[String]]{
+          temporalCoverage.extract[String]('intervals.? / element(0) / 'start.?)
+        } match {
+          case Success(Some(v)) => Some(v)
+          case _ => None
+        }
+      ), dcatStrings.extract[String]('temporal.? / 'start.?).getOrElse(""))
+
+      val coverageEnd = ApiDate(tryParseDate(
+        Try[Option[String]]{
+          temporalCoverage.extract[String]('intervals.? / element(0) / 'end.?)
+        } match {
+          case Success(Some(v)) => Some(v)
+          case _ => None
+        }
+      ), dcatStrings.extract[String]('temporal.? / 'end.?).getOrElse(""))
+
       val temporal = (coverageStart, coverageEnd) match {
         case (ApiDate(None, ""), ApiDate(None, "")) => None
         case (ApiDate(None, ""), end)               => Some(PeriodOfTime(None, Some(end)))
@@ -269,7 +307,7 @@ object Registry {
       }
 
       val publishing = hit.aspects.getOrElse("publishing", JsObject())
-      
+
       DataSet(
         identifier = hit.id,
         title = dcatStrings.extract[String]('title.?),
@@ -295,7 +333,8 @@ object Registry {
           case JsNull => false
           case _ => true
         }.map(_.convertTo[DcatCreation]),
-        publishingState = Some(publishing.extract[String]('state.?).getOrElse("published"))) // assume not set means published
+        publishingState = Some(publishing.extract[String]('state.?).getOrElse("published")), // assume not set means published
+        accessControl = accessControl)
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {

@@ -6,10 +6,10 @@ import {
     resetFeedback,
     hideFeedbackForm,
     showFeedbackForm
-} from "../../../actions/feedbackActions";
-import close from "../../../assets/close.svg";
-import success from "../../../assets/success.svg";
-import Notification from "../../../UI/Notification";
+} from "actions/feedbackActions";
+import close from "assets/close.svg";
+import success from "assets/success.svg";
+import Notification from "Components/Common/Notification";
 
 import "./FeedbackForm.scss";
 

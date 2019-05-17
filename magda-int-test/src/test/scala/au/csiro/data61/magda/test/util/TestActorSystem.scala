@@ -29,6 +29,10 @@ object TestActorSystem {
       maxRetryTimeout = 30000
       serverUrl = "elasticsearch://localhost:9201"
     }
+    opa {
+      baseUrl = "http://localhost:8888/v0/opa/"
+      testSessionId = "general-search-api-tests"
+    }
     auth.userId = "1"
   """).resolve().withFallback(AppConfig.conf())
 
