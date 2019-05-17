@@ -1,4 +1,4 @@
-.root {
+.dataset-file-root {
     //TODO: Get values from variables
     border: 1px solid #ccc;
     padding: 1em;
@@ -9,11 +9,11 @@
     justify-content: space-between;
 }
 
-.fileTitle {
+.dataset-file-fileTitle {
     margin: 0 0 0.5em 0;
 }
 
-.editButton {
+.dataset-file-editButton {
     font-size: 20px;
     padding: 0px 7px;
 }

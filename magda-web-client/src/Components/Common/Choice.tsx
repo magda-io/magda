@@ -1,5 +1,5 @@
 import React from "react";
-import Styles from "Components/Common/Choice.module.scss";
+import "Components/Common/Choice.scss";
 
 type ChoiceProps = {
     heading: string;
@@ -11,16 +11,16 @@ type ChoiceProps = {
 
 export default function Choice(props: ChoiceProps) {
     return (
-        <div className={`col-sm-12 col-md-6 ${Styles.choiceCol}`}>
+        <div className={`col-sm-12 col-md-6 choice-Col`}>
             <a
                 href={props.href}
                 className={`au-btn ${
                     props.secondary ? "au-btn--secondary" : ""
-                } ${Styles.choiceButton}`}
+                } choice-Button`}
             >
-                <h2 className={Styles.buttonHeading}>{props.heading}</h2>{" "}
-                <div className={Styles.choiceIconRow}>
-                    <img className={`${Styles.choiceIcon}`} src={props.icon} />
+                <h2 className="choice-buttonHeading">{props.heading}</h2>{" "}
+                <div className="choice-IconRow">
+                    <img className="choice-Icon" src={props.icon} />
                     {props.blurb}
                 </div>
             </a>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "react-dates/initialize";
-import "react-dates/lib/css/_datepicker.css";
 
 import { SingleDatePicker, DateRangePicker } from "react-dates";
 import Moment from "moment";
@@ -9,7 +8,10 @@ import Editor from "./Editor";
 import { ListMultiItemEditor } from "./multiItem";
 import { Interval } from "Components/Dataset/Add/DatasetAddCommon";
 
-import Styles from "Components/Editing/Editors/dateEditor.module.scss";
+import "Components/Editing/Editors/dateEditor.scss";
+// Copy this in locally so the SCSS job can pick it up
+// TODO: Fix the SCSS Job to pick up node modules css!
+import "./datepicker.scss";
 
 const FORMAT = "DD/MM/YYYY";
 
@@ -31,7 +33,7 @@ function MagdaSingleDatePicker({
     };
 
     return (
-        <span className={Styles.wrapper}>
+        <span className="date-editor-wrapper">
             <SingleDatePicker
                 date={Moment(date)}
                 onDateChange={onDateChange}
@@ -81,7 +83,7 @@ function MagdaDateRangePicker(props: {
     };
 
     return (
-        <span className={Styles.wrapper}>
+        <span className="date-editor-wrapper">
             <DateRangePicker
                 startDate={
                     props.value && props.value.start

@@ -1,27 +1,27 @@
-.buttonHeading {
+.choice-buttonHeading {
     font-size: 0.9em;
     margin: 0 0 1em 0;
     text-align: left;
     font-style: italic;
 }
 
-.choiceIconRow {
+.choice-IconRow {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
 }
 
-.choiceIcon {
+.choice-Icon {
     width: 5em;
     padding-right: 2em;
     height: 5em;
 }
 
-.choiceButton {
+.choice-Button {
     width: 90%;
 }
 
-.choiceCol {
+.choice-Col {
     margin-top: 1em;
 }
