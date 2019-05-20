@@ -379,7 +379,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
     val q: QueryDefinition = queryToQueryDef(query, strategy)
     functionScoreQuery()
-      .query(must(Seq(queryToQueryDef(query, strategy), tenantTermQuery)))
+      .query(must(Seq(tenantTermQuery, queryToQueryDef(query, strategy))))
       .functions(allScorers).scoreMode("sum")
   }
 
@@ -474,16 +474,20 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
+      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
       // First do a normal query search on the type we created for values in this facet
       client
         .execute(
           ElasticDsl
             .search(indices.indexForFacet(facetType))
-            .query(dismax(
-              Seq(
-                matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
-                matchPhrasePrefixQuery("acronym", facetQuery.getOrElse(""))))
-              .tieBreaker(0))
+            .query( must(
+              tenantTermQuery,
+              dismax(
+                Seq(
+                  matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
+                  matchPhrasePrefixQuery("acronym", facetQuery.getOrElse(""))))
+                .tieBreaker(0))
+            )
             .limit(limit))
         .flatMap {
           case ESGenericException(e) => throw e
@@ -555,10 +559,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     limit: Int,
     tenantId: String): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
+      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
       client
         .execute(
           ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-            query {
+            query {must(
+              tenantTermQuery,
               boolQuery().should(
                 matchPhrasePrefixQuery(
                 "regionShortName",
@@ -566,7 +572,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 matchPhrasePrefixQuery(
                   "regionName",
                   query.getOrElse("*")))
-            }
+            )}
             start start.toInt
             limit limit
             sortBy (fieldSort("order") order SortOrder.ASC,
@@ -597,11 +603,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     clientFuture.flatMap { client =>
       val queryStringContent = queryString.getOrElse("*").trim
+      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
       val query = ElasticDsl
         .search(indices.getIndex(config, Indices.DataSetsIndex))
         .start(start)
         .limit(limit)
-        .query {
+        .query { must(
+          tenantTermQuery,
           simpleStringQuery(queryStringContent)
             .field("publisher.name^20")
             .field("publisher.acronym^20")
@@ -609,7 +617,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             .field("publisher.addrStreet")
             .field("publisher.addrSuburb")
             .field("publisher.addrState")
-        }
+        )}
         .aggs(cardinalityAgg("totalCount", "publisher.identifier"))
         .collapse(new CollapseRequest(
           "publisher.aggKeywords.keyword",
