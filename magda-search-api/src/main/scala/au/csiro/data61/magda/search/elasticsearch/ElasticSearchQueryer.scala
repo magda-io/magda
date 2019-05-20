@@ -540,12 +540,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     limit: Int,
     tenantId: String): Future[RegionSearchResult] = {
     clientFuture.flatMap { client =>
-      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
       client
         .execute(
           ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-            query {must(
-              tenantTermQuery,
+            query {
               boolQuery().should(
                 matchPhrasePrefixQuery(
                 "regionShortName",
@@ -553,7 +551,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 matchPhrasePrefixQuery(
                   "regionName",
                   query.getOrElse("*")))
-            )}
+            }
             start start.toInt
             limit limit
             sortBy (fieldSort("order") order SortOrder.ASC,
