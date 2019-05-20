@@ -24,9 +24,6 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
   describe("query") {
     println("Testing query")
     def queryEquals(outputQuery: Query, inputQuery: Query) = {
-      def caseInsensitiveMatch(field: String, output: Traversable[String], input: Traversable[String]) = withClue(field) {
-        output.map(_.trim.toLowerCase) should equal(input.map(_.trim.toLowerCase))
-      }
       def caseInsensitiveMatchFv(field: String, output: Traversable[FilterValue[String]], input: Traversable[FilterValue[String]]) = withClue(field) {
         output.map(_.map(_.toLowerCase)) should equal(input.map(_.map(_.toLowerCase)))
       }
@@ -76,6 +73,12 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
             val response = responseAs[SearchResult]
 
             queryEquals(response.query, query)
+          }
+
+          Get(s"/v0/datasets?${textQuery}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            response.dataSets shouldBe empty
           }
         }
       }
@@ -129,6 +132,13 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
                 responseBoundingBox should equal(indexedBoundingBox)
               }
           }
+        }
+
+        Get(s"/v0/datasets?${textQuery}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
+
+          response.dataSets shouldBe empty
         }
       }
     }

@@ -20,10 +20,8 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
       println("  - Testing *")
       it("should return all datasets of the specified tenant") {
         println("    - Testing should return all datasets of the specified tenant")
-        val tenant_0 = BigInt("0")
-        val tenant_1 = BigInt("1")
-        val tenant_2 = BigInt("2")
-        val tenants = List(tenant_0, tenant_1, tenant_2)
+
+        val tenants = List(tenant_1, tenant_2)
         forAll(tenantsIndexGen(tenants)) {
           case (_, dataSets, route) ⇒
             tenants.flatMap( theTenant =>

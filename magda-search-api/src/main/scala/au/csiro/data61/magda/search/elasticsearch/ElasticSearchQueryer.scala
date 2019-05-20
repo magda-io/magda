@@ -1,53 +1,36 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import com.sksamuel.elastic4s.searches.sort.SortOrder
-import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.SearchRequest
-import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
-import com.sksamuel.elastic4s.searches.aggs.{FilterAggregation => FilterAggregationDefinition}
-import com.sksamuel.elastic4s.searches.queries.{BoolQuery, CommonTermsQuery, InnerHit => InnerHitDefinition, Query => QueryDefinition, QueryStringQuery => QueryStringQueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
-import com.typesafe.config.Config
-import spray.json._
+import java.time.OffsetDateTime
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.FilterValue
-import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.api.Specified
-import au.csiro.data61.magda.api.Unspecified
+import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.search.{SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.search.SearchStrategy._
-import au.csiro.data61.magda.search.SearchQueryer
-import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
+import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IllegalArgumentException}
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
-import org.elasticsearch.search.aggregations.support.AggregationPath.PathElement
-
-import scala.collection.JavaConversions._
-import org.elasticsearch.search.aggregations.InternalAggregation
-import com.sksamuel.elastic4s.analyzers.CustomAnalyzerDefinition
-import com.sksamuel.elastic4s.searches.ScoreMode
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.Instant
-
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.search.SearchResponse
+import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
+import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
+import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
 import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
-import au.csiro.data61.magda.model.Temporal
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
 import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
+import com.sksamuel.elastic4s.searches.sort.SortOrder
+import com.typesafe.config.Config
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit
@@ -474,19 +457,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val facetDef = facetDefForType(facetType)
 
     clientFuture.flatMap { client =>
-      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
       // First do a normal query search on the type we created for values in this facet
       client
         .execute(
           ElasticDsl
             .search(indices.indexForFacet(facetType))
-            .query( must(
-              tenantTermQuery,
+            .query(
               dismax(
                 Seq(
                   matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
                   matchPhrasePrefixQuery("acronym", facetQuery.getOrElse(""))))
-                .tieBreaker(0))
+                .tieBreaker(0)
             )
             .limit(limit))
         .flatMap {
