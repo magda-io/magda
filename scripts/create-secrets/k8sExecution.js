@@ -143,6 +143,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         if (
             configData["use-oauth-secrets-google"] === true ||
             configData["use-oauth-secrets-facebook"] === true ||
+            configData["use-oauth-secrets-arcgis"] === true ||
             configData["use-oauth-secrets-aaf"] === true
         ) {
             const data = {};
@@ -155,6 +156,11 @@ function doK8sExecution(config, shouldNotAsk = false) {
             if (configData["use-oauth-secrets-facebook"]) {
                 data["facebook-client-secret"] =
                     configData["oauth-secrets-facebook"];
+            }
+
+            if (configData["use-oauth-secrets-arcgis"]) {
+                data["arcgis-client-secret"] =
+                    configData["oauth-secrets-arcgis"];
             }
 
             if (configData["use-oauth-secrets-aaf"]) {

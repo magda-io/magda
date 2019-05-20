@@ -121,6 +121,21 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.GOOGLE_CLIENT_SECRET ||
                 process.env.npm_package_config_googleClientSecret
         })
+        .option("arcgisClientId", {
+            describe: "The client ID to use for ArcGIS OAuth.",
+            type: "string",
+            default:
+                process.env.ARCGIS_CLIENT_ID ||
+                process.env.npm_package_config_arcgisClientId
+        })
+        .option("arcgisClientSecret", {
+            describe:
+                "The secret to use for ArcGIS OAuth.  This can also be specified with the ARCGIS_CLIENT_SECRET environment variable.",
+            type: "string",
+            default:
+                process.env.ARCGIS_CLIENT_SECRET ||
+                process.env.npm_package_config_arcgisClientSecret
+        })
         .option("aafClientUri", {
             describe: "The aaf client Uri to use for AAF Auth.",
             type: "string",
