@@ -199,17 +199,21 @@ class NestedSetModelQueryer {
      *
      * @param {string} parentNodeId
      * @param {boolean} [includeMyself=false]
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
     async getAllChildren(
         parentNodeId: string,
-        includeMyself: boolean = false
+        includeMyself: boolean = false,
+        fields: string[] = null,
+        client: pg.Client = null
     ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
 
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields("Children")} 
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("Children", fields)} 
              FROM "${tbl}" AS Parents,  "${tbl}" AS Children
              WHERE Children."left" ${
                  includeMyself ? ">=" : ">"
@@ -229,16 +233,20 @@ class NestedSetModelQueryer {
      *
      * @param {string} childNodeId
      * @param {boolean} [includeMyself=false]
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
     async getAllParents(
         childNodeId: string,
-        includeMyself: boolean = false
+        includeMyself: boolean = false,
+        fields: string[] = null,
+        client: pg.Client = null
     ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields("Parents")} 
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("Parents", fields)} 
              FROM "${tbl}" AS Parents,  "${tbl}" AS Children
              WHERE Children."left" ${
                  includeMyself ? ">=" : ">"

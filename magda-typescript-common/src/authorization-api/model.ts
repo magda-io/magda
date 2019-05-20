@@ -5,6 +5,7 @@ export interface PublicUser {
     isAdmin: boolean;
     roles?: Role[];
     permissions?: Permission[];
+    managingOrgUnitIds?: string[];
 }
 
 export interface User extends PublicUser {
