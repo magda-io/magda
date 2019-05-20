@@ -5144,6 +5144,14 @@ caseless@~0.6.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.6.0.tgz#8167c1ab8397fb5bb95f96d28e5a81c50f247ac4"
   integrity sha1-gWfBq4OX+1u5X5bSjlqBxQ8kesQ=
 
+casual@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/casual/-/casual-1.6.0.tgz#30dff7d3202a60ec5da9e36296a58dac62f14ae4"
+  integrity sha512-UmOIqc09KMrGIOKbLsb8GfPHDW8E+hdI1AjmJ8BYhQazTj8BHX3y6zEXj5lT7v7T4ZBkO180HXXF8ZACf3qANA==
+  dependencies:
+    mersenne-twister "^1.0.1"
+    moment "^2.15.2"
+
 catharsis@~0.8.9:
   version "0.8.9"
   resolved "https://registry.yarnpkg.com/catharsis/-/catharsis-0.8.9.tgz#98cc890ca652dd2ef0e70b37925310ff9e90fc8b"
@@ -13543,6 +13551,11 @@ merge@^1.2.0:
   resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.1.tgz#38bebf80c3220a8a487b6fcfb3941bb11720c145"
   integrity sha512-VjFo4P5Whtj4vsLzsYBu5ayHhoHJ0UqNm7ibvShmbmoz7tGi0vXaoJbGdB+GmDMLUdg8DpQXEIeVDAe8MaABvQ==
 
+mersenne-twister@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/mersenne-twister/-/mersenne-twister-1.1.0.tgz#f916618ee43d7179efcf641bec4531eb9670978a"
+  integrity sha1-+RZhjuQ9cXnvz2Qb7EUx65Zwl4o=
+
 methods@^1.1.1, methods@^1.1.2, methods@~1.1.1, methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
@@ -13912,7 +13925,7 @@ moment@2.21.0:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.21.0.tgz#2a114b51d2a6ec9e6d83cf803f838a878d8a023a"
   integrity sha512-TCZ36BjURTeFTM/CwRcViQlfkMvL1/vFISuNLO5GkcVm1+QHfbSiNqZuWeMFjj1/3+uAjXswgRk30j1kkLYJBQ==
 
-moment@>=1.6.0, moment@>=2.14.0, moment@>=2.17.1, moment@^2.17.1, moment@^2.19.1, moment@^2.19.4, moment@^2.21.0, moment@^2.6.0:
+moment@>=1.6.0, moment@>=2.14.0, moment@>=2.17.1, moment@^2.15.2, moment@^2.17.1, moment@^2.19.1, moment@^2.19.4, moment@^2.21.0, moment@^2.6.0:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
