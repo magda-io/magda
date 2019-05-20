@@ -25,6 +25,20 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Debug Current Node Script",
+            "program": "${file}",
+            "cwd": "${workspaceRoot}",
+            "args": [],
+            "env": {
+                "JWT_SECRET": "squirrel",
+                "SESSION_SECRET": "keyboard cat",
+                "USER_ID": "00000000-0000-4000-8000-000000000000"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Admin API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {

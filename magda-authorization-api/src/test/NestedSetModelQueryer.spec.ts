@@ -500,6 +500,38 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
     });
 
+    it("Test `createRootNode` should set right correctly", async () => {
+        // --- create a non empty table
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        queryer.defaultSelectFieldList = [
+            "id",
+            "name",
+            "desc",
+            "left",
+            "right"
+        ];
+
+        const originalRootNode = await queryer.getRootNode();
+        // --- delete the root node
+        await pool.query(`DELETE FROM "${tableName}" WHERE "id" = $1`, [
+            originalRootNode.id
+        ]);
+
+        const nodeId = await queryer.createRootNode({
+            name: "test root node name",
+            desc: "test root node description"
+        });
+        expect(typeof nodeId).to.equal("string");
+        expect(nodeId.length).to.equal(36);
+
+        const newRootNode = await queryer.getRootNode();
+        expect(newRootNode.name).to.equal("test root node name");
+        expect(newRootNode.desc).to.equal("test root node description");
+        expect(newRootNode.left).to.equal(1);
+        expect(newRootNode.right).to.equal(12); // --- right should be 12
+    });
+
     it("Test `insertNode`", async () => {
         const tableName = await createTestTable();
         const queryer = new NestedSetModelQueryer(pool, tableName);
@@ -872,5 +904,47 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Eddie", 3, 6);
         await checkNodeLeftRight(queryer, "Donna", 4, 5);
         await checkNodeLeftRight(queryer, "Fred", 7, 8);
+    });
+
+    it("Test `deleteNode` no.4", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
+
+        // --- delete Albert (root Node)
+        expect(
+            queryer.deleteNode(
+                (await queryer.getNodesByName("Albert"))[0]["id"]
+            )
+        ).be.rejectedWith("Delete a root node is not allowed!");
+    });
+
+    it("Test `updateNode`", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+
+        queryer.defaultSelectFieldList = [
+            "id",
+            "name",
+            "desc",
+            "left",
+            "right"
+        ];
+        const albertId = (await queryer.getNodesByName("Albert"))[0]["id"];
+        await queryer.updateNode(albertId, {
+            id: "testId", // --- should be ignored
+            left: 14, // --- should be ignored
+            right: 16, // --- should be ignored
+            name: "test name",
+            desc: "test desc"
+        });
+
+        const albertNode = await queryer.getNodeById(albertId);
+        expect(albertNode.id).to.equal(albertId);
+        expect(albertNode.left).to.equal(1);
+        expect(albertNode.right).to.equal(12);
+        expect(albertNode.name).to.equal("test name");
+        expect(albertNode.desc).to.equal("test desc");
     });
 });
