@@ -30,12 +30,6 @@ program
             "\tIf the node name is given instead of the node Id, the first located node (and its dependents) will be removed.\n"
     )
     .command(
-        "delete-one <nodeNameOrId> ",
-        "\n\tDelete the node specified only from the tree. \n" +
-            "\tthe deleted node's dependents (if any) will become the specifed node's parent's children. \n" +
-            "\tIf the node name is given instead of the node Id, the first located node will be removed.\n"
-    )
-    .command(
         "move <nodeNameOrId> <parentNodeNameOrId>",
         "\n\tMove the node specified and all its dependents to the specified parent node. \n" +
             "\tIf the node name is given instead of the node Id, the first located node (and its dependents) will be moved.\n" +

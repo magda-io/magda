@@ -14,6 +14,9 @@ program
     .version(pkg.version)
     .action(async nodeName => {
         try {
+            if (!process.argv.slice(2).length) {
+                program.help();
+            }
             nodeName = nodeName.trim();
             if (nodeName === "") throw new Error("Node Name can't be empty!");
             const pool = getDBPool();
