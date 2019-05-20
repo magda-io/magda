@@ -3,7 +3,7 @@ import Editor from "./Editor";
 
 import "./booleanEditor.scss";
 
-export const booleanEditor: Editor = {
+export const booleanEditor: Editor<boolean> = {
     edit: (value: any, onChange: Function) => {
         const change = event => {
             value = !value;

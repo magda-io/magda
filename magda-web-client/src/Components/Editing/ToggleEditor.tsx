@@ -2,10 +2,10 @@ import React from "react";
 import Editor from "./Editors/Editor";
 import "./Style.scss";
 
-interface ToggleEditorProps {
+interface ToggleEditorProps<V> {
     value: any;
     onChange: Function;
-    editor: Editor;
+    editor: Editor<V>;
     enabled?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface ToggleEditorProps {
  * Can specify custom viewer by specifying children which will be rendered instead of viewer of the editor.
  * Interchangable with AlwaysEditor.
  */
-export class ToggleEditor extends React.Component<ToggleEditorProps> {
+export class ToggleEditor<V> extends React.Component<ToggleEditorProps<V>> {
     state = {
         value: undefined,
         isEditing: false
@@ -60,21 +60,21 @@ export class ToggleEditor extends React.Component<ToggleEditorProps> {
         const isEditing = enabled && this.state.isEditing;
 
         return (
-            <React.Fragment>
+            <div className="toggle-editor-container">
                 {isEditing ? (
                     <React.Fragment>
                         {editor.edit(value, this.change.bind(this))}
                         {this.state.value !== undefined &&
                             this.props.value !== this.state.value && (
                                 <button
-                                    className="edit-button"
+                                    className="au-btn save-button"
                                     onClick={this.save.bind(this)}
                                 >
                                     Save
                                 </button>
                             )}
                         <button
-                            className="edit-button"
+                            className="au-btn cancel-button"
                             onClick={this.cancel.bind(this)}
                         >
                             Cancel
@@ -82,21 +82,22 @@ export class ToggleEditor extends React.Component<ToggleEditorProps> {
                     </React.Fragment>
                 ) : (
                     <React.Fragment>
-                        {this.props.children
-                            ? this.props.children
-                            : editor.view(value)}{" "}
                         {enabled && (
                             <button
-                                className="edit-button"
+                                className="toggle-edit-button"
                                 title="Edit data item"
                                 onClick={this.edit.bind(this)}
                             >
                                 &#9998;
                             </button>
                         )}
+                        {this.props.children
+                            ? this.props.children
+                            : editor.view(value)}
+                        {""}
                     </React.Fragment>
                 )}
-            </React.Fragment>
+            </div>
         );
     }
 }

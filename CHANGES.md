@@ -35,6 +35,17 @@ UI:
 -   Implemented basic admin pages in react ui
 -   Started implementing new add dataset flow design changes
 -   Fixed web-client code loaded & run twice
+-   Added basic spatial preview to add dataset
+-   Revised add dataset first metadata page for conformance with design
+-   Improved edit dataset page overall styling & editor behaviour
+
+Access Control:
+
+-   Introduced Role & Permission Structure
+-   Recognise unauthenticated users as anonymous users role
+-   Introduced Open Policy Agent as policy evaluation engine
+-   Search API will return datasets based on user's Roles & Permissions
+-   Users with access to draft datasets can see a new `drafts` tab
 
 ## 0.0.55
 

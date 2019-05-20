@@ -91,7 +91,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
         let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing";
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing";
         const url =
             config.registryApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
@@ -137,7 +137,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             config.registryApiUrl +
             `records/${encodeURIComponent(
                 id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
+            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
         return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {

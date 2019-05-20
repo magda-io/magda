@@ -6,16 +6,13 @@ import { Link } from "react-router-dom";
 
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
+import ToolTip from "Components/Dataset/Add/ToolTip";
+import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
-import humanFileSize from "helpers/humanFileSize";
 import { getFiles } from "helpers/readFile";
 
-import Styles from "./DatasetAddFilesPage.module.scss";
-
-import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-
-import { textEditor } from "Components/Editing/Editors/textEditor";
+import "./DatasetAddFilesPage.scss";
 
 import {
     State,
@@ -43,6 +40,26 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
         this.addFiles(fileList);
     }
 
+    updateLastModifyDate() {
+        this.setState(state => {
+            const modifiedDates = state.files
+                .filter(f => f.modified)
+                .map(f => new Date(f.modified))
+                .filter(d => !isNaN(d.getTime()))
+                .map(d => d.getTime())
+                .sort((a, b) => b - a);
+            return {
+                ...state,
+                dataset: {
+                    ...state.dataset,
+                    modified: modifiedDates.length
+                        ? new Date(modifiedDates[0])
+                        : new Date()
+                }
+            };
+        });
+    }
+
     addFiles = async (fileList: FileList) => {
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
@@ -56,11 +73,10 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     ).trim(),
                     title: thisFile.name,
                     byteSize: thisFile.size,
-                    modified: new Date(thisFile.lastModified)
-                        .toISOString()
-                        .substr(0, 10),
-                    format: thisFile.type,
-                    _state: FileState.Added
+                    modified: new Date(thisFile.lastModified),
+                    format: fileFormat(thisFile),
+                    _state: FileState.Added,
+                    usage: {}
                 };
 
                 processFile(thisFile, update => {
@@ -104,9 +120,11 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                     break;
 
                                 case "author":
-                                    dataset.contactPoint =
-                                        dataset.contactPoint || "";
-                                    dataset.contactPoint += file.author;
+                                    dataset.contactPointFull =
+                                        dataset.contactPointFull || [];
+                                    dataset.contactPointFull.push({
+                                        name: file.author
+                                    });
                                     file[key] = undefined;
                                     break;
 
@@ -136,16 +154,18 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                 });
             }
         }
+        this.updateLastModifyDate();
     };
 
-    editFile = (index: number, field: string) => (newName: string) => {
+    editFile = (index: number) => (file: File) => {
         this.setState(state => {
             const newFiles = state.files.concat();
-            newFiles[index][field] = newName;
+            newFiles[index] = file;
             return {
                 files: newFiles
             };
         });
+        this.updateLastModifyDate();
     };
 
     render() {
@@ -179,82 +199,25 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
 
                 <div className="row">
                     <div className="col-xs-12">
+                        {this.state.files.length > 0 && (
+                            <ToolTip>
+                                We recommend ensuring dataset file names are
+                                descriptive so users can easily understand the
+                                contents
+                            </ToolTip>
+                        )}
                         <ul>
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li key={i}>
-                                        <h3>
-                                            <AlwaysEditor
-                                                value={file.title}
-                                                onChange={this.editFile(
-                                                    i,
-                                                    "title"
-                                                )}
-                                                editor={textEditor}
-                                            />
-                                        </h3>
-
+                                    <li
+                                        key={i}
+                                        className="dataset-add-files-fileListItem"
+                                    >
                                         {file._state === FileState.Ready ? (
-                                            <div>
-                                                <div>
-                                                    <strong>Size: </strong>{" "}
-                                                    {humanFileSize(
-                                                        file.byteSize,
-                                                        false
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <strong>
-                                                        Last Modified:{" "}
-                                                    </strong>{" "}
-                                                    {file.modified}
-                                                </div>
-                                                <div>
-                                                    <strong>License: </strong>{" "}
-                                                    <AlwaysEditor
-                                                        value={file.license}
-                                                        onChange={this.editFile(
-                                                            i,
-                                                            "license"
-                                                        )}
-                                                        editor={textEditor}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <strong>Format: </strong>{" "}
-                                                    <AlwaysEditor
-                                                        value={file.format}
-                                                        onChange={this.editFile(
-                                                            i,
-                                                            "format"
-                                                        )}
-                                                        editor={textEditor}
-                                                    />
-                                                </div>
-                                                {file.equalHash && (
-                                                    <div>
-                                                        <strong>
-                                                            Exact Hash:
-                                                        </strong>{" "}
-                                                        {file.equalHash}
-                                                    </div>
-                                                )}
-
-                                                {file.similarFingerprint && (
-                                                    <div>
-                                                        <strong>
-                                                            Fingerprint
-                                                        </strong>{" "}
-                                                        {Object.values(
-                                                            file.similarFingerprint
-                                                        )
-                                                            .filter(
-                                                                x => x !== 0
-                                                            )
-                                                            .join(" ")}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <DatasetFile
+                                                file={file}
+                                                onChange={this.editFile(i)}
+                                            />
                                         ) : (
                                             <div>
                                                 <DeterminateProgressBar
@@ -279,8 +242,8 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     >
                         <FileDrop
                             onDrop={this.onDrop.bind(this)}
-                            className={Styles.dropZone}
-                            targetClassName={Styles.dropTarget}
+                            className="dataset-add-files-dropZone"
+                            targetClassName="dataset-add-files-dropTarget"
                         >
                             <span>Drag your files or click here</span>
                         </FileDrop>
@@ -388,6 +351,16 @@ function mapStateToProps(state, old) {
     return {
         dataset
     };
+}
+
+function fileFormat(file): string {
+    const extensionIndex = file.name.lastIndexOf(".");
+    const extensionLength = file.name.length - extensionIndex - 1;
+    if (extensionIndex !== -1 && extensionLength > 0 && extensionLength < 5) {
+        return file.name.substr(extensionIndex + 1).toUpperCase();
+    } else {
+        return file.type || "unknown";
+    }
 }
 
 export default withRouter(connect(mapStateToProps)(DatasetAddFilesPage));

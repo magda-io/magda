@@ -6,6 +6,9 @@ body {
     overflow-y: scroll;
     min-width: $minimum;
 }
+* {
+    box-sizing: border-box;
+}
 .au-body .au-grid {
     p,
     input,
@@ -128,10 +131,6 @@ a.au-btn:hover:not(:disabled) {
     }
 }
 
-div {
-    box-sizing: border-box;
-}
-
 button {
     background: transparent;
 }
@@ -208,8 +207,10 @@ h4 {
     font-weight: 400;
 }
 
-.au-text-input {
+.au-text-input,
+.au-text-input--block {
     border: 3px solid $AU-color-foreground-action;
+    max-width: 480px !important;
 }
 
 .au-body ::selection {
@@ -282,4 +283,8 @@ h4 {
     }
 
     @include AU-focus();
+}
+
+.au-body p {
+    max-width: 100%;
 }
