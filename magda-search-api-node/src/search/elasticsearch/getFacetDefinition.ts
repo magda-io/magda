@@ -1,4 +1,4 @@
-import { FacetType, Query } from "../model";
+import { FacetType, Query } from "../../model";
 
 export interface FacetDefinition {
     facetType: FacetType;

@@ -6,10 +6,8 @@ import * as joi from "joi";
 const validate = require("express-validation");
 const chrono = require("chrono-node");
 
-import ElasticSearchQueryer from "./search/ElasticSearchQueryer";
+import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
-
-const searchQueryer = new ElasticSearchQueryer(41, 23);
 
 // import {
 //     installStatusRouter,
@@ -18,10 +16,18 @@ const searchQueryer = new ElasticSearchQueryer(41, 23);
 
 export interface ApiRouterOptions {
     jwtSecret: string;
+    datasetsIndexId: string;
+    regionsIndexId: string;
+    publishersIndexId: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
+    const searchQueryer = new ElasticSearchQueryer(
+        options.datasetsIndexId,
+        options.regionsIndexId,
+        options.publishersIndexId
+    );
 
     // const status = {
     //     probes: {
@@ -131,8 +137,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             };
 
             try {
-                const results = await searchQueryer.searchFacets(
-                    req.params.facetId,
+                const results = await searchQueryer.search(
                     processedQuery,
                     queryString.start,
                     queryString.limit,

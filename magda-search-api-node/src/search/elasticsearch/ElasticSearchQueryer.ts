@@ -8,8 +8,8 @@ import {
     Region,
     FacetOption,
     SearchResult
-} from "../model";
-import SearchQueryer from "./SearchQueryer";
+} from "../../model";
+import SearchQueryer from "../SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
 
 const client = new Client({ node: "http://localhost:9200" });
@@ -36,17 +36,10 @@ const NON_LANGUAGE_FIELDS: LanguageField[] = [
 
 export default class ElasticSearchQueryer implements SearchQueryer {
     constructor(
-        readonly datasetsIndexVersion: number,
-        readonly regionsIndexVersion: number
+        readonly datasetsIndexId: string,
+        readonly regionsIndexId: string,
+        readonly publishersIndexId: string
     ) {}
-
-    protected getDatasetsIndex(): string {
-        return "datasets" + this.datasetsIndexVersion;
-    }
-
-    protected getRegionsIndex(): string {
-        return "regions" + this.regionsIndexVersion;
-    }
 
     async searchFacets(
         facetType: FacetType,
@@ -58,7 +51,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         const facetDef = getFacetDefinition(facetType);
 
         const esQueryBody = {
-            index: "publishers4",
+            index: this.publishersIndexId,
             body: {
                 query: {
                     dis_max: {
@@ -109,7 +102,6 @@ export default class ElasticSearchQueryer implements SearchQueryer {
 
             // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
             // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
-
             const generalEsQueryBody = {
                 from: 0,
                 size: 0,
@@ -119,12 +111,10 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                     ),
                     aggs: filters
                 },
-                index: this.getDatasetsIndex()
+                index: this.datasetsIndexId
             };
-            // console.log(JSON.stringify(generalEsQueryBody, null, 2));
-            const resultWithout = await client.search(generalEsQueryBody);
 
-            console.log(JSON.stringify(resultWithout.body, null, 2));
+            const resultWithout = await client.search(generalEsQueryBody);
 
             const aggregationsResult = _(resultWithout.body.aggregations as {
                 [aggName: string]: any;
@@ -154,13 +144,43 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             };
         }
     }
-    search(
+
+    async search(
         query: Query,
         start: number,
         limit: number,
         facetSize: number
     ): Promise<SearchResult> {
-        return Promise.resolve(null);
+        const response: ApiResponse = await client.search({
+            from: start,
+            size: limit,
+            body: {
+                query: await this.buildESDatasetsQuery(query)
+                // aggs: filters
+            },
+            index: this.datasetsIndexId
+        });
+
+        return {
+            query,
+            hitCount: response.body.hits.total,
+            datasets: response.body.hits.hits.map((hit: any) => ({
+                ...hit._source,
+                years: undefined
+            })),
+            temporal: {
+                start: {
+                    date: new Date().toISOString(), //TODO
+                    text: new Date().toString()
+                },
+                end: {
+                    date: new Date().toISOString(), //TODO
+                    text: new Date().toString()
+                }
+            },
+            facets: [],
+            strategy: "match-all"
+        };
     }
 
     async getBoostRegions(query: Query): Promise<Region[]> {
@@ -169,7 +189,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         }
 
         const regionsResult = await client.search({
-            index: this.getRegionsIndex(),
+            index: this.regionsIndexId,
             body: {
                 query: {
                     match: {
@@ -371,7 +391,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             geo_shape: {
                 "spatial.geoJson": {
                     indexed_shape: {
-                        index: this.getRegionsIndex(),
+                        index: this.regionsIndexId,
                         type: "regions",
                         id,
                         path: "geometry"
