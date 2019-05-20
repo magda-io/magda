@@ -25,11 +25,10 @@ class DataSetSearch_4_Spec extends DataSetSearchSpecBase {
       } yield (indexName, dataSets, routes, start, limit)
 
       forAll(gen) {
-        case (indexName, dataSets, routes, start, limit) =>
+        case (_, dataSets, routes, start, limit) =>
           whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
-            val sortedDataSets =
 
-              Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addSingleTenantIdHeader ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val result = responseAs[SearchResult]
                 val sortedDataSets = sortByQuality(dataSets)
@@ -37,6 +36,12 @@ class DataSetSearch_4_Spec extends DataSetSearchSpecBase {
                 val expectedResultIdentifiers = sortedDataSets.drop(start).take(limit).map(_.identifier)
                 expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
               }
+
+            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val result = responseAs[SearchResult]
+              result.hitCount shouldBe 0
+            }
           }
       }
     }

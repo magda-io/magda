@@ -219,6 +219,12 @@ class LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
           result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
         }
       }
+
+      Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val result = responseAs[SearchResult]
+        result.hitCount shouldBe 0
+      }
     }
 
     testLanguageFieldSearch(outerTermExtractor, test, keepOrder = false, useLightEnglishStemmer = useLightEnglishStemmer, testWhat)

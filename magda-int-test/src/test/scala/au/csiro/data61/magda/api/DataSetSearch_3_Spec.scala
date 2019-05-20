@@ -125,6 +125,14 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
                 }
               }
             }
+
+            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              whenever(response.strategy.get == MatchAll) {
+                response.hitCount shouldBe 0
+              }
+            }
         }
       } catch {
         case e: Throwable =>

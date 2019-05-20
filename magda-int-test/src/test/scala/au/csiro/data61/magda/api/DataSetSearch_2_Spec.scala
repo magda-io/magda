@@ -64,6 +64,12 @@ class DataSetSearch_2_Spec extends DataSetSearchSpecBase {
               }
             }
 
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              response.dataSets.isEmpty should be(true)
+            }
+
             // Just to make sure we're matching on the quote in order, run it backwards.
             Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
@@ -77,6 +83,12 @@ class DataSetSearch_2_Spec extends DataSetSearchSpecBase {
                   }
                 }
               }
+            }
+
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              response.hitCount shouldBe 0
             }
           }
       }

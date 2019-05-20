@@ -45,7 +45,7 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
       it("should return all results") {
         println("    -- Testing should return all results")
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
@@ -54,13 +54,18 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldEqual dataSets.length
               MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets)
             }
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              response.hitCount shouldEqual 0
+            }
         }
       }
 
       it("hitCount should reflect all hits in the system, not just what is returned") {
         println("    - Testing hitCount should reflect all hits in the system, not just what is returned")
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
@@ -68,13 +73,18 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldEqual dataSets.length
               MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets.take(dataSets.length / 2))
             }
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              response.hitCount shouldEqual 0
+            }
         }
       }
 
       it("should sort results by pure quality") {
         println("    - Testing should sort results by pure quality")
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
@@ -82,6 +92,11 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
 
               response.hitCount shouldEqual dataSets.length
               MagdaMatchers.dataSetsEqual(response.dataSets, sortByQuality(dataSets))
+            }
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
+              response.hitCount shouldEqual 0
             }
         }
       }
@@ -133,6 +148,11 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
                   response.dataSets.size should be > 0
                   response.dataSets.exists(_.identifier == datasetWithSynonym.identifier) shouldBe true
                 }
+              }
+              Get(s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+                response.hitCount shouldBe 0
               }
           }
         } finally {
@@ -193,6 +213,11 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
                   response.dataSets.size should be > 0
                   response.dataSets.exists(_.identifier == datasetWithPublisher.identifier) shouldBe true
                 }
+              }
+              Get(s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+                response.hitCount shouldBe 0
               }
           }
         } finally {
@@ -280,12 +305,24 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
 
       }
 
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
+      }
+
       Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
         response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
       }
 
     } finally {
@@ -350,6 +387,12 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
+      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
+      }
+
       // Verify that half the name doesn't boost results
       Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
@@ -359,6 +402,12 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
         response.dataSets(2).identifier shouldEqual saDataset.identifier
 
+      }
+
+      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
       }
 
     } finally {
@@ -420,6 +469,12 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
 
       }
 
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
+      }
+
       Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
@@ -428,6 +483,11 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
+      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val response = responseAs[SearchResult]
+        response.dataSets.size shouldEqual 0
+      }
     } finally {
       this.deleteIndex(indexName)
     }

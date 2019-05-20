@@ -26,6 +26,12 @@ class LanguageAnalyzer_4_Spec extends LanguageAnalyzerSpecBase {
               value.value.equalsIgnoreCase(format))) should be(true)
         }
       }
+
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        status shouldBe OK
+        val result = responseAs[FacetSearchResult]
+        result.hitCount shouldBe 0
+      }
     }
 
     testLanguageFieldSearch(termExtractor, test, keepOrder = true, testWhat = "should return the right format when searching by format value")
