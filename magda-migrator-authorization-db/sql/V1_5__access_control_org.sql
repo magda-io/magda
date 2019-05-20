@@ -24,5 +24,5 @@ ALTER TABLE "public"."org_units" ADD FOREIGN KEY ("edit_by") REFERENCES "public"
 
 -- End Organisation Unit Tree Structure  -------------------------------------------------
 -- Add org_unit_id field to user table ---------------------------------------------------
-ALTER TABLE "public"."users" ADD COLUMN "org_unit_id" uuid DEFAULT NULL;
-ALTER TABLE "public"."users" ADD FOREIGN KEY ("org_unit_id") REFERENCES "public"."org_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."users" ADD COLUMN "orgUnitId" uuid DEFAULT NULL;
+ALTER TABLE "public"."users" ADD FOREIGN KEY ("orgUnitId") REFERENCES "public"."org_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
