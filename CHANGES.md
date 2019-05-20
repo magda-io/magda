@@ -1,3 +1,9 @@
+## Next
+
+Gateway:
+
+-   Add ArcGIS/ESRI Authentication provider
+
 ## 0.0.56
 
 Search:
