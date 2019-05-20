@@ -39,6 +39,7 @@ const defaultAnonymousUserInfo: User = {
         }
     ],
     permissions: [],
+    orgUnit: null,
     managingOrgUnitIds: []
 };
 
@@ -271,7 +272,9 @@ export default class Database {
         user.permissions = await this.getUserPermissions(userId);
         if (!isUuid(user.orgUnitId)) {
             user.managingOrgUnitIds = [];
+            user.orgUnit = null;
         } else {
+            user.orgUnit = await this.orgQueryer.getNodeById(user.orgUnitId);
             user.managingOrgUnitIds = (await this.orgQueryer.getAllChildren(
                 user.orgUnitId,
                 true,
