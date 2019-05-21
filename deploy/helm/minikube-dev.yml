@@ -12,9 +12,6 @@ global:
   useCombinedDb: true
   enablePriorityClass: false
 
-combined-db:
-  debug: true
-
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
