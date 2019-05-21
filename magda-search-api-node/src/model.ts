@@ -1,13 +1,14 @@
+import { GeoJSON } from "geojson";
+
 export type QueryRegion = {
     regionType: string;
     regionId: string;
 };
 
-export type BoundingBox = {
-    north: number;
-    east: number;
-    south: number;
-    west: number;
+export type Envelope = {
+    type: "envelope";
+    /** [[west, north], [east, south]] */
+    coordinates: [[number, number], [number, number]];
 };
 
 export type Region = {
@@ -15,7 +16,7 @@ export type Region = {
     regionId: string;
     regionType: string;
     regionName: string;
-    boundingBox: BoundingBox;
+    boundingBox: Envelope;
     regionShortName: string;
 };
 
@@ -121,6 +122,11 @@ export type DcatCreation = {
     likelihoodOfRelease?: string;
     isOpenData?: boolean;
     affiliatedOrganisation?: string;
+};
+
+export type Location = {
+    text?: string;
+    geoJson?: GeoJSON;
 };
 
 export type Dataset = {

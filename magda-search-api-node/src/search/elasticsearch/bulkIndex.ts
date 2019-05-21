@@ -2,7 +2,7 @@ import _ from "lodash";
 import { Client } from "@elastic/elasticsearch";
 import handleESError from "./handleESError";
 
-export default function bulkIndex(
+export default async function bulkIndex(
     client: Client,
     indexId: string,
     documents: any[],
@@ -19,7 +19,7 @@ export default function bulkIndex(
         dataset
     ]);
 
-    return handleESError(
+    const result: any = await handleESError(
         client.bulk({
             body:
                 bulkCommands
@@ -28,4 +28,12 @@ export default function bulkIndex(
             refresh: refresh ? "true" : "false"
         })
     );
+
+    if (result.body.errors) {
+        const itemsString = JSON.stringify(result.body.items, null, 2);
+        console.error(itemsString);
+        throw new Error(`Failed when bulk indexing: ${itemsString}`);
+    }
+
+    return result;
 }
