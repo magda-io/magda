@@ -35,4 +35,10 @@ program
             "\tIf the node name is given instead of the node Id, the first located node (and its dependents) will be moved.\n" +
             "\tIf the parent node name is given instead of the parent node Id, the specifed node will be moved to the first located parent node.\n"
     )
+    .command(
+        "assign <userNameOrId> <nodeNameOrId>",
+        "\n\tAssign the specified user to the nominated node. \n" +
+            "\tBoth `userNameOrId` & `nodeNameOrId` can be either entity name or Id.\n" +
+            "\tIf more than one entities are located by entity name, the first one will be used."
+    )
     .parse(process.argv);
