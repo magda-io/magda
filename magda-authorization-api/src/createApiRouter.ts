@@ -270,6 +270,122 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    router.get(
+        "/public/orgUnits/getNodeById/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const node = await orgQueryer.getNodeById(nodeId);
+                if (!node)
+                    throw new Error(
+                        "Cannot locate node record with ID: " + nodeId
+                    );
+                res.status(200).json(node);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.get(
+        "/public/orgUnits/getNodesByName/:nodeName",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeName = req.params.nodeName;
+                const nodes = await orgQueryer.getNodesByName(nodeName);
+                res.status(200).json(nodes);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.post(
+        "/public/orgUnits/createRootNode",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = await orgQueryer.createRootNode(req.body);
+                res.status(200).json(nodeId);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.post(
+        "/public/orgUnits/insertNode/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const newNodeId = await orgQueryer.insertNode(nodeId, req.body);
+                res.status(200).json(newNodeId);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.put(
+        "/public/orgUnits/updateNode/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                await orgQueryer.updateNode(nodeId, req.body);
+                res.status(200).json(nodeId);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.post(
+        "/public/orgUnits/deleteSubTree/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                await orgQueryer.deleteSubTree(nodeId, true);
+                res.status(200).json(true);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.post(
+        "/public/orgUnits/deleteNode/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                await orgQueryer.deleteNode(nodeId);
+                res.status(200).json(true);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.post(
+        "/public/orgUnits/moveSubTreeTo/:nodeId/:newParentId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const newParentId = req.params.newParentId;
+                await orgQueryer.moveSubTreeTo(nodeId, newParentId);
+                res.status(200).json(true);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
         router.get("public/jwt", function(req, res) {
