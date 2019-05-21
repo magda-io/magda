@@ -189,7 +189,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         nodes = await queryer.getAllChildren(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes).be.null;
+        expect(nodes.length).to.equal(0);
     });
 
     it("Test `getImmediateChildren`", async () => {
@@ -212,7 +212,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         nodes = await queryer.getImmediateChildren(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes).be.null;
+        expect(nodes.length).to.equal(0);
     });
 
     it("Test `getAllParents`", async () => {
@@ -236,7 +236,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         nodes = await queryer.getAllParents(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(nodes).be.null;
+        expect(nodes.length).to.equal(0);
     });
 
     it("Test `getImmediateParent`", async () => {
@@ -281,7 +281,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         ]);
 
         nodes = await queryer.getAllNodesAtLevel(4);
-        expect(nodes).be.null;
+        expect(nodes.length).to.equal(0);
     });
 
     it("Test `getLevelOfNode`", async () => {

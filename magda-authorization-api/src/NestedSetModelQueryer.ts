@@ -126,7 +126,7 @@ class NestedSetModelQueryer {
             }" WHERE "name" = $1`,
             [name]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
@@ -188,7 +188,7 @@ class NestedSetModelQueryer {
                 this.tableName
             }" WHERE "left" = ( "right" - 1 )`
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
@@ -222,7 +222,7 @@ class NestedSetModelQueryer {
             } Parents."right" AND Parents."id" = $1`,
             [parentNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
@@ -255,7 +255,7 @@ class NestedSetModelQueryer {
             } Parents."right" AND Children."id" = $1`,
             [childNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
@@ -264,13 +264,19 @@ class NestedSetModelQueryer {
      * If the node has no child (i.e. a leaf node), null will be returned
      *
      * @param {string} parentNodeId
+     * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
+     * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
-    async getImmediateChildren(parentNodeId: string): Promise<NodeRecord[]> {
+    async getImmediateChildren(
+        parentNodeId: string,
+        fields: string[] = null,
+        client: pg.Client = null
+    ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields("Children")} 
+        const result = await (client ? client : this.pool).query(
+            `SELECT ${this.selectFields("Children", fields)} 
             FROM "${tbl}" AS Parents, "${tbl}" AS Children
             WHERE Children."left" BETWEEN Parents."left" AND Parents."right" 
             AND Parents."left" = (
@@ -281,7 +287,7 @@ class NestedSetModelQueryer {
             ORDER BY Children."left" ASC`,
             [parentNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
@@ -336,7 +342,7 @@ class NestedSetModelQueryer {
             HAVING COUNT(t1.id) = $1`,
             [level]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
     }
 
