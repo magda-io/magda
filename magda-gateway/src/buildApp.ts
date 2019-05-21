@@ -96,6 +96,10 @@ export default function buildApp(config: Config) {
     _.forEach(
         (config.proxyRoutesJson as unknown) as Routes,
         (value: any, key: string) => {
+            // --- skip install status probs if statusCheck == false
+            if (value && value.statusCheck === false) {
+                return;
+            }
             probes[key] = createServiceProbe(value.to);
         }
     );

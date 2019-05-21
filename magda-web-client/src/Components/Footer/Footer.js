@@ -46,8 +46,8 @@ function FooterNavs({ footerNavs }) {
             <h3 className="au-display-lg">{item.label}</h3>
 
             <ul className="au-link-list">
-                {item.links.map(link => (
-                    <li key={link.href}>
+                {item.links.map((link, i) => (
+                    <li key={i}>
                         <FooterLink link={link} />
                     </li>
                 ))}
@@ -82,7 +82,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
 function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     return (
         <AUfooter dark className="au-body au-body--dark footer">
-            <div className="container">
+            <div className="container-fluid">
                 <Small>
                     {matched => (
                         <FooterNavs

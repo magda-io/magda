@@ -1,5 +1,13 @@
 @import "variables";
 
+.record--dataset {
+    .au-page-alerts {
+        p {
+            max-width: none;
+        }
+    }
+}
+
 .dataset-details {
     h3.section-heading {
         @include AU-fontgrid(lg, heading);

@@ -1,0 +1,19 @@
+.dataset-file-root {
+    //TODO: Get values from variables
+    border: 1px solid #ccc;
+    padding: 1em;
+    max-width: 48em;
+    border-radius: 5px;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.dataset-file-fileTitle {
+    margin: 0 0 0.5em 0;
+}
+
+.dataset-file-editButton {
+    font-size: 20px;
+    padding: 0px 7px;
+}

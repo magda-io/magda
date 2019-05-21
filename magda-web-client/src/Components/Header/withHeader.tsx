@@ -1,7 +1,7 @@
 import React, { ComponentType } from "react";
 import { connect } from "react-redux";
 import { memoize } from "lodash";
-
+import { Location } from "history";
 import Header from "Components/Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 
@@ -9,11 +9,11 @@ import "./withHeader.scss";
 
 type Props = {
     finishedFetching: boolean;
-    location: string;
+    location: Location;
 };
 
 const withHeader = <P extends {}>(
-    WrappedComponent: ComponentType<P>,
+    WrappedComponent: ComponentType<P & Props>,
     includeSearchBox: boolean
 ) => {
     const NewComponent = (props: P & Props) => {

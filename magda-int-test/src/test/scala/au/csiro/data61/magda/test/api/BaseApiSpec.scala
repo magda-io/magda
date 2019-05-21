@@ -37,15 +37,21 @@ import au.csiro.data61.magda.test.util.MagdaGeneratorTest
 import spray.json.JsObject
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.spatial.RegionLoader
+import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
+import au.csiro.data61.magda.test.util.TestActorSystem.config
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import org.scalatest.BeforeAndAfterEach
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest {
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
+
   def buildConfig = TestActorSystem.config
-  override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
+    .withValue("opa.testSessionId", ConfigValueFactory.fromAnyRef("general-search-api-tests"))
+    .withValue("opa.baseUrl", ConfigValueFactory.fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/"))
+
+  override def createActorSystem(): ActorSystem = ActorSystem("BaseApiSpec", config)
   val logger = Logging(system, getClass)
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 
