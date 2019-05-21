@@ -6,11 +6,12 @@ import { PublicUser } from "@magda/typescript-common/dist/authorization-api/mode
 import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
-
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+import NestedSetModelQueryer from "./NestedSetModelQueryer";
 
 export interface ApiRouterOptions {
     database: Database;
+    orgQueryer: NestedSetModelQueryer;
     jwtSecret: string;
 }
 
@@ -20,6 +21,7 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
+    const orgQueryer = options.orgQueryer;
 
     const router: express.Router = express.Router();
 
@@ -225,6 +227,48 @@ export default function createApiRouter(options: ApiRouterOptions) {
             result: "SUCCESS"
         });
     });
+
+    router.get(
+        "/public/orgUnits/getRootNode",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const node = await orgQueryer.getRootNode();
+                if (!node) throw new Error("Cannot locate the root tree node.");
+                res.status(200).json(node);
+            } catch (e) {
+                res.status(500).send(`Failed to retrieve tree root node: ${e}`);
+            }
+        }
+    );
+
+    router.get(
+        "/public/orgUnits/getImmediateChildren/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const nodes = await orgQueryer.getImmediateChildren(nodeId);
+                res.status(200).json(nodes);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    router.get(
+        "/public/orgUnits/getAllChildren/:nodeId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const nodes = await orgQueryer.getAllChildren(nodeId);
+                res.status(200).json(nodes);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {

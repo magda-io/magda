@@ -5,6 +5,7 @@ import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import NestedSetModelQueryer from "./NestedSetModelQueryer";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -46,11 +47,23 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
+const orgQueryer = new NestedSetModelQueryer(database.getPool(), "auth");
+orgQueryer.defaultSelectFieldList = [
+    "id",
+    "name",
+    "description",
+    "create_by",
+    "create_time",
+    "edit_by",
+    "edit_time"
+];
+
 app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
-        database
+        database,
+        orgQueryer
     })
 );
 
