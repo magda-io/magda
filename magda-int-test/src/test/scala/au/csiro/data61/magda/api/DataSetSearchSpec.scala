@@ -35,30 +35,25 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
     }
   }
 
-  describe("searching") {
-    println("Testing searching")
 
-    describe("*") {
-      println("  - Testing *")
-      it("should return all results") {
-        println("    -- Testing should return all results")
-        forAll(indexGen) {
-          case (_, dataSets, routes) ⇒
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
-              status shouldBe OK
-              contentType shouldBe `application/json`
-              val response = responseAs[SearchResult]
+  it("should return all results") {
+    println("Testing should return all results")
+    forAll(indexGen) {
+      case (_, dataSets, routes) ⇒
+        Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
+          status shouldBe OK
+          contentType shouldBe `application/json`
+          val response = responseAs[SearchResult]
 
-              response.hitCount shouldEqual dataSets.length
-              MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets)
-            }
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-              response.hitCount shouldEqual 0
-            }
+          response.hitCount shouldEqual dataSets.length
+          MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets)
         }
-      }
+        Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
+          response.hitCount shouldEqual 0
+        }
     }
   }
+
 }
