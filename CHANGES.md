@@ -1,22 +1,8 @@
-## Next
-
-Gateway:
-
--   Add ArcGIS/ESRI Authentication provider
-
 ## 0.0.56
 
 Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
-
-Others:
-
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
 
 Cataloging:
 
@@ -32,7 +18,19 @@ UI:
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
--   Refactored web client to group similar things togeather
+-   Refactored web client to group similar things together
+
+Gateway:
+
+-   Add ArcGIS/ESRI Authentication provider
+
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
 
 ## 0.0.55
 
