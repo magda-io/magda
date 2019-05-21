@@ -46,6 +46,7 @@ Access Control:
 -   Introduced Open Policy Agent as policy evaluation engine
 -   Search API will return datasets based on user's Roles & Permissions
 -   Users with access to draft datasets can see a new `drafts` tab
+-   Organization hierarchy & make Organization hierarchy data available for access control
 
 ## 0.0.55
 
