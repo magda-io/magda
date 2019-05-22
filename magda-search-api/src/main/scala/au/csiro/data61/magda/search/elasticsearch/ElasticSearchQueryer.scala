@@ -479,14 +479,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(generalQuery.publishingState, jwtToken)
 
     clientFuture.flatMap { client =>
-      val tenantTermQuery = termQuery("tenantId", tenantId)
       // First do a normal query search on the type we created for values in this facet
       client
         .execute(
           ElasticDsl
             .search(indices.indexForFacet(facetType))
             .query( must(
-              tenantTermQuery,
               dismax(
                 Seq(
                   matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
