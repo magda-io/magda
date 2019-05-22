@@ -121,7 +121,7 @@ class NestedSetModelQueryer {
                         `Field name ${f} contains invalid characters.`
                     );
                 }
-                return tableAliasOrName == ""
+                return tableAliasOrName === ""
                     ? `"${f}"`
                     : `${tableAliasOrName}."${f}"`;
             })
@@ -1075,7 +1075,7 @@ class NestedSetModelQueryer {
         client: pg.Client = null
     ): Promise<void> {
         if (nodeId.trim() === "") {
-            throw new Error("nodeId cannt be empty!");
+            throw new Error("nodeId can't be empty!");
         }
         const sqlValues: any[] = [nodeId];
         const updateFields: string[] = Object.keys(nodeData).filter(
