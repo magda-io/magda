@@ -3,48 +3,35 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
 
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import com.sksamuel.elastic4s.searches.sort.SortOrder
-import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.SearchRequest
-import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
-import com.sksamuel.elastic4s.searches.aggs.{FilterAggregation => FilterAggregationDefinition}
-import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, QueryStringQuery => QueryStringQueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
-import com.typesafe.config.Config
-import spray.json._
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.search.{SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IllegalArgumentException}
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Queries._
+import au.csiro.data61.magda.search.{SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
 import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
 import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
-import au.csiro.data61.magda.model.Temporal
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
-import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
-import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
-import com.sksamuel.elastic4s.searches.queries.matches.MatchNoneQuery
 import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
+import com.sksamuel.elastic4s.searches.sort.SortOrder
+import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
+import com.typesafe.config.Config
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(

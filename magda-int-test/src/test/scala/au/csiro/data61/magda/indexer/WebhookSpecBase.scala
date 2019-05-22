@@ -17,6 +17,7 @@ import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.search.SearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.{ElasticSearchQueryer, Indices}
 import au.csiro.data61.magda.test.api.BaseApiSpec
+import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.Generators
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.typesafe.config.{Config, ConfigFactory}
@@ -25,7 +26,7 @@ import spray.json.{JsNull, JsObject, _}
 
 import scala.concurrent.duration._
 
-class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols {
+class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols with ResponseDatasetAllowAll{
   override def buildConfig: Config = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
@@ -223,7 +224,6 @@ class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProt
               } else {
                 quality.flatMap {
                   case (name, skewPrimaryRaw, weightingPrimaryRaw, skewOtherWayRaw) =>
-                    def round(number: Double) = Math.round(number * 100).toDouble / 100
                     def sanitize(number: Double) = Math.max(0.01, number)
 
                     val skewPrimary = sanitize(skewPrimaryRaw)
@@ -234,11 +234,11 @@ class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProt
                     List(
                       name -> JsObject(
                         "score" -> (dataSet.quality + skewPrimary).toJson,
-                        "weighting" -> (weightingPrimary).toJson
+                        "weighting" -> weightingPrimary.toJson
                       ),
                       s"$name-alternate" -> JsObject(
                         "score" -> (dataSet.quality - skewOtherWay).toJson,
-                        "weighting" -> (weightingOtherWay).toJson
+                        "weighting" -> weightingOtherWay.toJson
                       )
                     )
                 }.toMap.toJson.asJsObject
