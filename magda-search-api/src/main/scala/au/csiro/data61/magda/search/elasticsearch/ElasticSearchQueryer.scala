@@ -333,16 +333,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     * this shows me other publishers I could search on instead
     */
   def alternativesAggregation(
-  tenantId: String,
-  query: Query,
+    tenantId: String,
+    query: Query,
     publishingStatusQuery: QueryDefinition,
     facetDef: FacetDefinition,
     strategy: SearchStrategy,
     facetSize: Int) = {
-
+    val tenantIdTermQuery = termQuery("tenantId", tenantId)
     filterAggregation("filter")
       .query(must(
         Seq(
+          tenantIdTermQuery,
           publishingStatusQuery,
           queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
         )
