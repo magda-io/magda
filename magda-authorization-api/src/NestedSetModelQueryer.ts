@@ -218,7 +218,7 @@ class NestedSetModelQueryer {
     /**
      * Get All children of a given node
      * (including immediate children and children of immediate children etc.)
-     * If the node has no child (i.e. a leaf node), null will be returned
+     * If the node has no child (i.e. a leaf node), an empty array will be returned
      *
      * @param {string} parentNodeId
      * @param {boolean} [includeMyself=false]
@@ -252,7 +252,7 @@ class NestedSetModelQueryer {
     /**
      * Get All parents of a given node
      * (including immediate parent and parents of immediate parent etc.)
-     * If the node has no parent (i.e. a root node), null will be returned (unless `includeMyself` = true)
+     * If the node has no parent (i.e. a root node), an empty array will be returned (unless `includeMyself` = true)
      *
      * @param {string} childNodeId
      * @param {boolean} [includeMyself=false]
@@ -284,7 +284,7 @@ class NestedSetModelQueryer {
 
     /**
      * Get Immediate Children of a Node
-     * If the node has no child (i.e. a leaf node), null will be returned
+     * If the node has no child (i.e. a leaf node), an empty array will be returned
      *
      * @param {string} parentNodeId
      * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
