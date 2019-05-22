@@ -4,6 +4,7 @@ import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
 import request from "helpers/request";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -235,9 +236,32 @@ export function createRecord(
     inputDistributions: any,
     aspects: any
 ): any {
-    return async (dispatch: Function) => {
+    return async (dispatch: Function, getState: () => any) => {
         dispatch(createNewDataset(inputDataset));
         try {
+            // -- set up access control aspect
+            const state = getState();
+            aspects["dataset-access-control"] = datasetAccessControlAspect;
+            if (!inputDataset["aspects"]["dataset-access-control"]) {
+                inputDataset["aspects"]["dataset-access-control"] = {};
+            }
+            if (
+                state.userManagement &&
+                state.userManagement.user &&
+                state.userManagement.user.id
+            ) {
+                inputDataset["aspects"]["dataset-access-control"]["ownerId"] =
+                    state.userManagement.user.id;
+            }
+            if (
+                state.userManagement &&
+                state.userManagement.user &&
+                state.userManagement.user.orgUnitId
+            ) {
+                inputDataset["aspects"]["dataset-access-control"][
+                    "orgUnitOwnerId"
+                ] = state.userManagement.user.orgUnitId;
+            }
             for (const [aspect, definition] of Object.entries(aspects)) {
                 await ensureAspectExists(aspect, definition);
             }
