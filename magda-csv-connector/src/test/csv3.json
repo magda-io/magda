@@ -55,7 +55,7 @@
                     "mechanism": "Yes",
                     "sourceSystem": "CRM",
                     "likelihoodOfRelease": "Low",
-                    "affiliatedOrganisation": "AI"
+                    "affiliatedOrganisation": ["AI"]
                 },
                 "accessLevel": "Non-Public",
                 "importance": "Essential",
@@ -220,7 +220,7 @@
                     "mechanism": "No",
                     "sourceSystem": "Recycle bin",
                     "likelihoodOfRelease": "Low",
-                    "affiliatedOrganisation": "Machine Learning"
+                    "affiliatedOrganisation": ["Machine Learning"]
                 },
                 "accessLevel": "T3",
                 "status": "Retired",

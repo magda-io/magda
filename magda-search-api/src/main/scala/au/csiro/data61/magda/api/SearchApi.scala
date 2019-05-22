@@ -64,26 +64,38 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
        *    }
        */
         pathPrefix("facets") {requiredTenantId { tenantId =>
-          path(Segment / "options") { facetId ⇒
-            (get & parameters(
-              'facetQuery ?,
-              "start" ? 0,
-              "limit" ? 10,
-              'generalQuery ?,
-              'publisher *,
-              'dateFrom ?,
-              'dateTo ?,
-              'region *,
-              'format *)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats) =>
-              val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
+          extractRequest { request =>
+            path(Segment / "options") { facetId ⇒
+              (get & parameters(
+                'facetQuery ?,
+                "start" ? 0,
+                "limit" ? 10,
+                'generalQuery ?,
+                'publisher *,
+                'dateFrom ?,
+                'dateTo ?,
+                'region *,
+                'format *,
+                'publishingState *)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
-              FacetType.fromId(facetId) match {
-                case Some(facetType) ⇒ complete(searchQueryer.searchFacets(facetType, facetQuery, query, start, limit, tenantId.toString))
-                case None ⇒ complete(NotFound)
+                FacetType.fromId(facetId) match {
+                  case Some(facetType) ⇒ complete(
+                    searchQueryer.searchFacets(
+                      request.headers.find(_.is("x-magda-session")).map(_.value()),
+                      facetType,
+                      facetQuery,
+                      query,
+                      start,
+                      limit,
+                      tenantId.toString
+                    ))
+                  case None ⇒ complete(NotFound)
+                }
               }
             }
           }
-          }
+        }
         } ~
         /**
          * @apiGroup Search
@@ -175,8 +187,9 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
          *    }
          *
          */
-          pathPrefix("datasets") {
-            requiredTenantId { tenantId =>
+          pathPrefix("datasets") { requiredTenantId { tenantId =>
+            extractRequest { request =>
+
               (get & parameters(
                 'query ?,
                 "start" ? 0,
@@ -186,10 +199,18 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 'dateFrom ?,
                 'dateTo ?,
                 'region *,
-                'format *)) { (generalQuery, start, limit, facetSize, publishers, dateFrom, dateTo, regions, formats) ⇒
-                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats)
+                'format *,
+                'publishingState *)) { (generalQuery, start, limit, facetSize, publishers, dateFrom, dateTo, regions, formats, publishingState) ⇒
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
-                onSuccess(searchQueryer.search(query, start, limit, facetSize, tenantId.toString)) { result =>
+                onSuccess(
+                  searchQueryer.search(
+                    request.headers.find(_.is("x-magda-session")).map(_.value()),
+                    query,
+                    start,
+                    limit,
+                    facetSize,
+                    tenantId.toString)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                   pathPrefix("datasets") {
@@ -211,6 +232,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 }
               }
             }
+          }
           } ~
           /**
            * @apiGroup Search

@@ -4,7 +4,7 @@ metadata:
   name: minion-broken-link-recrawl
 spec:
   concurrencyPolicy: Allow
-  schedule: "0 0 14,28 * *"
+  schedule: {{ .Values.schedule }}
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
   startingDeadlineSeconds: 120

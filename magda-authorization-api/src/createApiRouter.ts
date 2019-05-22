@@ -3,10 +3,7 @@ import { Maybe } from "tsmonad";
 
 import Database from "./Database";
 import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
-import {
-    getUserIdHandling,
-    getUserId
-} from "@magda/typescript-common/dist/session/GetUserId";
+import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 
@@ -142,15 +139,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 Pragma: "no-cache",
                 Expires: "0"
             });
-            const userId = getUserId(req, options.jwtSecret).valueOr(null);
-            if (!userId) {
-                throw new AuthError();
-            }
-            const user = (await database.getUser(userId)).valueOr(null);
-            if (!user) {
-                throw new GenericError("Not Found User", 404);
-            }
-            res.json(user);
+            const currentUserInfo = await database.getCurrentUserInfo(
+                req,
+                options.jwtSecret
+            );
+
+            res.json(currentUserInfo);
         } catch (e) {
             if (e instanceof GenericError) {
                 res.json(e.toData());

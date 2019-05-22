@@ -1,5 +1,5 @@
 import getDateString from "./getDateString";
-import { isSupportedFormat as isSupportedMapPreviewFormat } from "../UI/DataPreviewMap";
+import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
 // dataset query:
@@ -85,6 +85,12 @@ export type RawDistribution = {
             wellFormed: boolean;
             compatiblePreviews: CompatiblePreviews;
         };
+        "spatial-coverage": {
+            bbox?: number[];
+        };
+        publishing: {
+            state?: string;
+        };
     };
 };
 
@@ -143,9 +149,16 @@ export type ParsedDataset = {
     linkedDataRating: number;
     contactPoint: string;
     error?: FetchError;
-    hasQuality: boolean;
-    sourceDetails: any;
-    creation: any;
+    hasQuality?: boolean;
+    sourceDetails?: any;
+    creation?: any;
+    publishingState?: string;
+    importance?: string;
+    creationAffiliatedOrganisation?: string;
+    spatialCoverageBbox?: any;
+    temporalExtent?: any;
+    accessLevel?: string;
+    informationSecurity?: any;
 };
 
 export const defaultPublisher: Publisher = {
@@ -356,7 +369,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const identifier = dataset && dataset.id;
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
-    const temporalCoverage = aspects["temporal-coverage"];
+    const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
+    const spatialCoverage = aspects["spatial-coverage"] || {};
     const description = datasetInfo.description || "No description provided";
     const tags = datasetInfo.keywords || [];
     const landingPage = datasetInfo.landingPage || "";
@@ -364,6 +378,10 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const issuedDate = datasetInfo.issued && getDateString(datasetInfo.issued);
     const updatedDate =
         datasetInfo.modified && getDateString(datasetInfo.modified);
+
+    const publishing = aspects["publishing"] || {};
+
+    const creation = datasetInfo["creation"] || {};
 
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
@@ -458,6 +476,13 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        creation: datasetInfo["creation"]
+        creation: datasetInfo["creation"] || {},
+        importance: datasetInfo["importance"],
+        publishingState: publishing["state"],
+        creationAffiliatedOrganisation: creation["affiliatedOrganisation"],
+        spatialCoverageBbox: spatialCoverage["bbox"],
+        temporalExtent: datasetInfo["temporal"] || {},
+        accessLevel: datasetInfo["accessLevel"],
+        informationSecurity: datasetInfo["informationSecurity"] || {}
     };
 }

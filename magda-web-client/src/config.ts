@@ -1,7 +1,7 @@
-import Publisher from "./Components/SearchFacets/Publisher";
-import Format from "./Components/SearchFacets/Format";
-import Region from "./Components/SearchFacets/Region";
-import Temporal from "./Components/SearchFacets/Temporal";
+import Publisher from "./Components/Dataset/Search/Facets/Publisher";
+import Format from "./Components/Dataset/Search/Facets/Format";
+import Region from "./Components/Dataset/Search/Facets/Region";
+import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 
 declare global {
     interface Window {
@@ -29,6 +29,7 @@ const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
     contentApiBaseUrl?: string;
+    adminApiBaseURL?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
     searchApiBaseUrl?: string;
@@ -44,6 +45,9 @@ const serverConfig: {
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
+const registryAuthApiUrl =
+    serverConfig.registryApiBaseUrl ||
+    fallbackApiHost + "api/v0/registry-auth/";
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
@@ -66,15 +70,20 @@ const fetchOptions: RequestInit =
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
+const adminApiURL =
+    serverConfig.adminApiBaseURL || fallbackApiHost + "api/v0/admin";
+
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
     baseUrl,
     baseExternalUrl,
     contentApiURL,
+    adminApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
+    registryAuthApiUrl: registryAuthApiUrl,
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
     authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",

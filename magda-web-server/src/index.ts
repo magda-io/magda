@@ -219,7 +219,10 @@ app.use(express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
+    "admin",
     "search",
+    "drafts",
+    "all-datasets",
     "feedback",
     "contact",
     "account",

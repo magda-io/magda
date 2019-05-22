@@ -45,6 +45,15 @@ spec:
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
+{{- if .root.Values.db.poolInitialSize }}
+            "-Ddb.default.poolInitialSize={{ .root.Values.db.poolInitialSize }}",
+{{- end }}
+{{- if .root.Values.db.poolMaxSize }}
+            "-Ddb.default.poolMaxSize={{ .root.Values.db.poolMaxSize }}",
+{{- end }}
+{{- if .root.Values.db.poolConnectionTimeoutMillis }}
+            "-Ddb.default.poolConnectionTimeoutMillis={{ .root.Values.db.poolConnectionTimeoutMillis }}",
+{{- end }}
             "-Dakka.loglevel={{ .root.Values.logLevel | default .root.Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",

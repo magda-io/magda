@@ -1,0 +1,43 @@
+@import "variables";
+.pagination {
+    margin: 48px 0 0 0;
+
+    .pagination-list {
+        list-style: none;
+        display: flex;
+        flex-flow: row wrap;
+        padding-left: 0;
+        justify-content: center;
+        margin-bottom: 24px;
+        button {
+            height: 30px;
+            min-width: 30px;
+            border-radius: 2px;
+            line-height: 1;
+            padding: 0px;
+            margin: 12px;
+            font-weight: 400;
+            background-color: $AU-color-background;
+            color: $AU-color-foreground-action;
+            cursor: pointer;
+            border: 2px solid $AU-color-foreground-action;
+            &:hover,
+            &:focus {
+                background: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
+            }
+            &.current {
+                background-color: $AU-colordark-background;
+                color: $AU-colordark-foreground-text;
+                border: 2px solid $AU-colordark-background;
+            }
+        }
+    }
+    .pagination-summray {
+        opacity: 0.5;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+}

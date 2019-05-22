@@ -65,7 +65,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 40,
+    version = 42,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -147,6 +147,11 @@ object IndexDefinition extends DefaultJsonProtocol {
               booleanField("isOpenData"),
               magdaTextField("affiliatedOrganisation")
             ),
+            objectField("accessControl").fields(
+              keywordField("ownerId"),
+              keywordField("orgUnitOwnerId"),
+              keywordField("preAuthorisedPermissionIds")
+            ),
             keywordField("years"),
             /*
                * not sure whether is Elasticsearch or elastic4s
@@ -155,7 +160,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             keywordField("identifier"),
             keywordField("tenantId"),
             objectField("contactPoint").fields(keywordField("identifier")),
-            dateField("indexed")
+            dateField("indexed"),
+            keywordField("publishingState")
           )
         )
         .analysis(

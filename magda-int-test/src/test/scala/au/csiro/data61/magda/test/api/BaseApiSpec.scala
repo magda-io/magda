@@ -1,6 +1,5 @@
 package au.csiro.data61.magda.test.api
 
-import java.io.File
 import java.net.URL
 import java.util.Properties
 
@@ -12,11 +11,12 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
+import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util.{Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import spray.json.JsObject
@@ -26,10 +26,15 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with MagdaGeneratorTest with BeforeAndAfterEach with BeforeAndAfterAll{
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
+
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
+
   def buildConfig = TestActorSystem.config
-  override def createActorSystem(): ActorSystem = TestActorSystem.actorSystem
+    .withValue("opa.testSessionId", ConfigValueFactory.fromAnyRef("general-search-api-tests"))
+    .withValue("opa.baseUrl", ConfigValueFactory.fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/"))
+
+  override def createActorSystem(): ActorSystem = ActorSystem("BaseApiSpec", config)
   val logger = Logging(system, getClass)
   implicit val indexedRegions = BaseApiSpec.indexedRegions
 

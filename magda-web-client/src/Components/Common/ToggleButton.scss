@@ -1,0 +1,16 @@
+@import "variables";
+
+.toggle-button {
+    font-size: 1rem;
+    color: $AU-color-foreground-action;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    padding-left: 0px;
+
+    &:hover,
+    &:focus {
+        outline: none;
+    }
+}

@@ -1,0 +1,40 @@
+@import "variables";
+
+.boolean-editor {
+    cursor: pointer;
+    display: inline-block;
+    height: 2em;
+    width: 4em;
+    border: 0.2em solid black;
+    border-radius: 0.5em;
+    overflow: hidden;
+    transition: all 1s ease;
+}
+
+.boolean-editor-slider {
+    position: relative;
+    display: inline-block;
+    height: 2em;
+    width: 1.8em;
+    top: 0em;
+    bottom: 0em;
+
+    background-color: white;
+    transition: all 1s ease;
+}
+
+.boolean-editor-yes {
+    background-color: green;
+    .boolean-editor-slider {
+        left: 2em;
+        right: 0em;
+    }
+}
+
+.boolean-editor-no {
+    background-color: red;
+    .boolean-editor-slider {
+        left: 0em;
+        right: 2em;
+    }
+}

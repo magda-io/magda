@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "The publishing state of a dataset",
+    "description": "Specifies the state and other metadata associated with publication of data within MAGDA system.",
+    "type": "object",
+    "properties": {
+        "state": {
+            "title": "State of dataset",
+            "type": "string",
+            "default": "published",
+            "enum": ["draft", "published", "archived"]
+        },
+        "level": {
+            "title": "Level dataset is visible at",
+            "type": "string",
+            "default": "agency",
+            "enum": ["agency", "team", "public", "personal"]
+        }
+    }
+}

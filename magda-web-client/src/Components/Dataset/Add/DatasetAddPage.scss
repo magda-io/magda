@@ -1,0 +1,21 @@
+@import "variables";
+
+.instruction-icon {
+    width: 2em;
+    height: 2em;
+    padding: 0.25em;
+}
+
+.options {
+    padding: 4em;
+}
+
+.option-wrapper {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 49%;
+    @media only screen and (max-width: 600px) {
+        width: 100%;
+    }
+    padding: 0.5em;
+}

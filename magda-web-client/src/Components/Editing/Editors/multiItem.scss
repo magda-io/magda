@@ -1,0 +1,16 @@
+@import "variables";
+
+.multi-list-item-editor-container {
+    padding: 0.5em;
+}
+
+.multi-list-item-editor-item {
+    display: inline-block;
+    padding: 0.5em;
+    background: darken($AU-colordark-foreground-action, 15%);
+    border-radius: 0.5em;
+    color: $AU-colordark-background;
+    font-weight: bold;
+    margin-right: 2em;
+    margin-bottom: 1em;
+}

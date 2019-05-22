@@ -64,6 +64,11 @@ package misc {
      isOpenData: Option[Boolean] = None,
      affiliatedOrganisation: Option[String] = None)
 
+  case class AccessControl(
+     ownerId: Option[String] = None,
+     orgUnitOwnerId: Option[String] = None,
+     preAuthorisedPermissionIds: Option[Seq[String]] = None)
+
   case class DataSet(
       identifier: String,
       tenantId: String,
@@ -88,7 +93,9 @@ package misc {
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
       creation: Option[DcatCreation] = None,
-      score: Option[Float]) {
+      score: Option[Float],
+      publishingState: Option[String] = None,
+      accessControl: Option[AccessControl] = None) {
 
     def uniqueId: String = DataSet.registryIdToIdentifier(identifier + tenantId)
 
@@ -453,6 +460,8 @@ package misc {
 
     implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
 
+    implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
+
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters
       */
@@ -482,7 +491,9 @@ package misc {
           "hasQuality" -> dataSet.hasQuality.toJson,
           "creation" -> dataSet.creation.toJson,
           "source" -> dataSet.source.toJson,
-          "score" -> dataSet.score.toJson
+          "score" -> dataSet.score.toJson,
+          "publishingState" -> dataSet.publishingState.toJson,
+          "accessControl" -> dataSet.accessControl.toJson
         )
 
       def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
@@ -494,6 +505,14 @@ package misc {
       }
 
       def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
+
+      def convertCollectionField[T:JsonReader](fieldName: String, json: JsValue): Seq[T] = json match {
+        case JsObject(jsData) => jsData.get(fieldName) match {
+          case Some(JsArray(items)) => items.map(_.convertTo[T])
+          case _ => Seq()
+        }
+        case _ => Seq()
+      }
 
       override def read(json: JsValue): DataSet= {
 
@@ -510,10 +529,10 @@ package misc {
           accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
           spatial = convertOptionField[Location]("spatial", json),
           temporal = convertOptionField[PeriodOfTime]("temporal", json),
-          themes = convertField[Seq[String]]("themes", json),
-          keywords = convertField[Seq[String]]("keywords", json),
+          themes = convertCollectionField[String]("themes", json),
+          keywords = convertCollectionField[String]("keywords", json),
           contactPoint = convertOptionField[Agent]("contactPoint", json),
-          distributions = convertField[Seq[Distribution]]("distributions", json),
+          distributions = convertCollectionField[Distribution]("distributions", json),
           landingPage = convertOptionField[String]("landingPage", json),
           years = convertOptionField[String]("years", json),
           indexed = convertOptionField[OffsetDateTime]("indexed", json),
@@ -521,7 +540,9 @@ package misc {
           hasQuality = convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
           creation = convertOptionField[DcatCreation]("creation", json),
-          score = convertOptionField[Float]("score", json)
+          score = convertOptionField[Float]("score", json),
+          publishingState = convertOptionField[String]("publishingState", json),
+          accessControl = convertOptionField[AccessControl]("accessControl", json)
         )
       }
     }

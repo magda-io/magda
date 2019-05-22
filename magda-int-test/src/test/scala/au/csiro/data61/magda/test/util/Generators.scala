@@ -443,7 +443,8 @@ object Generators {
     landingPage = landingPage,
     quality = if (quality == 1) 0 else quality,
     hasQuality = if (quality > 0) true else if (quality == 1) false else hasQuality,
-    score = None)
+    score = None,
+    publishingState = Some("published"))
 
   val INDEXED_REGIONS_COUNT = 12
   def indexedRegionsGen(inputCache: mutable.Map[String, List[_]]) = cachedListGen("indexedRegions", regionGen(geometryGen(5, coordGen())), INDEXED_REGIONS_COUNT)(inputCache)

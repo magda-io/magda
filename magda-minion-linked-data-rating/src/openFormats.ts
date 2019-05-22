@@ -18,7 +18,14 @@ const FORMAT_STARS: { [stars: number]: string[] } = {
         "rss",
         "gpx"
     ],
-    4: ["csv geo au", "sparql", "rdf", "relational document format", "json ld"]
+    4: [
+        "csv geo au",
+        "sparql",
+        "rdf",
+        "relational document format",
+        "json ld",
+        "asc"
+    ]
 };
 
 export default FORMAT_STARS;

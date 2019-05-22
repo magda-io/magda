@@ -4,25 +4,22 @@ import java.time.OffsetDateTime
 
 import com.sksamuel.elastic4s.searches.ScoreMode
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.queries.{NestedQuery => NestedQueryDefinition}
-import com.typesafe.config.Config
-
-import au.csiro.data61.magda.model.misc.QueryRegion
-import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.{
-//import au.csiro.data61.magda.search.elasticsearch.QueryDefinitions.{
-  ShapeRelation,
-  PreindexedShape,
-  GeoShapeQuery => GeoShapeQueryDefinition
-}
-import au.csiro.data61.magda.api.FilterValue
 import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
+import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
+import com.sksamuel.elastic4s.searches.queries.geo.{PreindexedShape, ShapeRelation, GeoShapeQuery => GeoShapeQueryDefinition}
+import au.csiro.data61.magda.api.FilterValue
 import au.csiro.data61.magda.api.Specified
 import au.csiro.data61.magda.api.Unspecified
 import au.csiro.data61.magda.model.misc.Region
 import au.csiro.data61.magda.search.SearchStrategy
+import com.typesafe.config.Config
+import spray.json._
+import DefaultJsonProtocol._
+import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
+import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 
 object Queries {
+
   def publisherQuery(strategy: SearchStrategy)(publisher: FilterValue[String]) = {
     handleFilterValue(publisher, (publisherString: String) =>
       strategy match {
@@ -99,4 +96,3 @@ object Queries {
     case Unspecified()    => boolQuery().not(existsQuery(field))
   }
 }
-

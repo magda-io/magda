@@ -14,7 +14,7 @@ import org.locationtech.jts.geom.GeometryFactory
 
 class DataSetSearchSpec extends DataSetSearchSpecBase {
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     println("Testing DataSetSearchSpec")
     super.beforeAll()
   }
@@ -34,7 +34,6 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
       }
     }
   }
-
 
   it("should return all results") {
     println("Testing should return all results")

@@ -4,19 +4,17 @@ import { config } from "./config";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
-import Banner from "./UI/Banner";
-import Footer from "./Components/Footer/Footer";
+import Banner from "Components/Common/Banner";
+import Footer from "Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
 import { fetchContent } from "./actions/contentActions";
-import Notification from "./UI/Notification";
+import Notification from "Components/Common/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
-import HomePage from "./Pages/HomePage";
-import OtherPages from "./Pages/OtherPages";
+import Routes from "./Routes";
 
-import { Route, Switch } from "react-router-dom";
-import { Medium } from "./UI/Responsive";
+import { Medium } from "Components/Common/Responsive";
 import AUskipLink from "./pancake/react/skip-link";
 
 import "./AppContainer.scss";
@@ -49,11 +47,7 @@ class AppContainer extends React.Component {
                                 <Banner fallbackUrl={config.fallbackUrl} />
                             </Medium>
                         )}
-
-                        <Switch>
-                            <Route exact path="/" component={HomePage} />
-                            <Route path="/*" component={OtherPages} />
-                        </Switch>
+                        <Routes />
                     </div>
 
                     <Footer />

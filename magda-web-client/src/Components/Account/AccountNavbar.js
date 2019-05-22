@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
 import { bindActionCreators } from "redux";
-import { requestSignOut } from "../../actions/userManagementActions";
+import { requestSignOut } from "actions/userManagementActions";
 
 class AccountNavbar extends React.Component {
     signOut(event) {
@@ -11,40 +11,51 @@ class AccountNavbar extends React.Component {
     }
 
     render() {
-        return (
-            <React.Fragment>
-                {this.props.user ? (
-                    [
-                        <li
-                            key="/account"
-                            id={this.props.skipLink ? "nav" : undefined}
-                        >
-                            <NavLink to={`/account`}>
-                                <span>{this.props.user.displayName}</span>
-                            </NavLink>
-                        </li>,
-                        <li key="/signOut">
-                            <button
-                                className="link-button"
-                                href="/signout"
-                                onClick={this.signOut.bind(this)}
-                            >
-                                <span>Sign Out</span>
-                            </button>
-                        </li>
-                    ]
-                ) : (
-                    <li key="/account">
-                        <NavLink
-                            to={`/account`}
-                            id={this.props.skipLink ? "nav" : undefined}
-                        >
-                            <span>Sign In</span>
+        let menu = [];
+        if (this.props.user.id) {
+            menu.push(
+                <li key="/account" id={this.props.skipLink ? "nav" : undefined}>
+                    <NavLink to={`/account`}>
+                        <span>{this.props.user.displayName}</span>
+                    </NavLink>
+                </li>
+            );
+            if (this.props.user.isAdmin) {
+                menu.push(
+                    <li
+                        key="/admin"
+                        id={this.props.skipLink ? "nav" : undefined}
+                    >
+                        <NavLink to={`/admin`}>
+                            <span>Admin</span>
                         </NavLink>
                     </li>
-                )}
-            </React.Fragment>
-        );
+                );
+            }
+            menu.push(
+                <li key="/signOut">
+                    <button
+                        className="link-button"
+                        href="/signout"
+                        onClick={this.signOut.bind(this)}
+                    >
+                        <span>Sign Out</span>
+                    </button>
+                </li>
+            );
+        } else {
+            menu.push(
+                <li key="/account">
+                    <NavLink
+                        to={`/account`}
+                        id={this.props.skipLink ? "nav" : undefined}
+                    >
+                        <span>Sign In</span>
+                    </NavLink>
+                </li>
+            );
+        }
+        return menu;
     }
 }
 
