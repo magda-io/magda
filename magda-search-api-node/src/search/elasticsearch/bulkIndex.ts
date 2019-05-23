@@ -6,17 +6,18 @@ export default async function bulkIndex(
     client: Client,
     indexId: string,
     documents: any[],
-    refresh: boolean
+    refresh: boolean,
+    idField: string
 ): Promise<any> {
-    const bulkCommands = _.flatMap(documents, dataset => [
+    const bulkCommands = _.flatMap(documents, document => [
         {
             index: {
                 _index: indexId,
-                _id: dataset.identifier,
+                _id: document[idField],
                 _type: indexId
             }
         },
-        dataset
+        document
     ]);
 
     const result: any = await handleESError(

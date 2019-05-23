@@ -545,5 +545,5 @@ export default async function buildDatasetsIndex(
         })
     );
 
-    await bulkIndex(client, indexId, datasets, true);
+    await bulkIndex(client, indexId, datasets, true, "identifier");
 }

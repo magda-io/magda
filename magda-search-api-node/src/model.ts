@@ -18,6 +18,7 @@ export type Region = {
     regionName: string;
     boundingBox: Envelope;
     regionShortName: string;
+    geometry?: GeoJSON;
 };
 
 export type Query = {

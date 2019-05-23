@@ -90,5 +90,5 @@ export default async function buildRegionsIndex(
         client.indices.create({ index: indexId, body: DEFINITION })
     );
 
-    await bulkIndex(client, indexId, regions, true);
+    await bulkIndex(client, indexId, regions, true, "regionSearchId");
 }

@@ -47,8 +47,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         dateFrom: joi.string().optional(),
         dateTo: joi.string().optional(),
         region: joi
-            .array()
-            .items(joi.string())
+            .alternatives([joi.array().items(joi.string()), joi.string()])
             .optional(),
         format: joi
             .array()
@@ -68,6 +67,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     };
 
+    function processMaybeArray<T>(value: T | T[] | undefined): T[] | undefined {
+        if (typeof value === "undefined" || _.isArray(value)) {
+            return value;
+        } else {
+            return [value];
+        }
+    }
+
     function parseBaseQuery(queryStringObj: any): Query {
         return {
             freeText: queryStringObj.generalQuery,
@@ -78,7 +85,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             dateTo:
                 queryStringObj.dateTo &&
                 chrono.en_GB.parse(queryStringObj.dateTo)[0].end.date(),
-            regions: processRegions(queryStringObj.region),
+            regions: processRegions(processMaybeArray(queryStringObj.region)),
             formats: queryStringObj.format,
             publishingState: queryStringObj.publishingState
         };

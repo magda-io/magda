@@ -23,20 +23,175 @@ const API_ROUTER_CONFIG = {
 };
 
 describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
+    this.timeout(60000);
     let app: express.Application;
-    const regions: Region[] = [buildRegion()];
+    casual.seed(54321);
+    const regions: Region[] = [
+        {
+            regionType: "ithinkthisisregiontype",
+            regionName: "Queensland",
+            regionId: "3",
+            regionSearchId: "ithinkthisisregiontype/3",
+            boundingBox: {
+                type: "envelope",
+                coordinates: [
+                    [155.0830078125, -9.622414142924805],
+                    [137.9443359375, -29.11377539511439]
+                ]
+            },
+            regionShortName: "QLD",
+            geometry: {
+                type: "Polygon",
+                coordinates: [
+                    [
+                        [142.4, -10.7],
+                        [141.5, -13.6],
+                        [141.6, -15.1],
+                        [140.8, -17.5],
+                        [139.9, -17.7],
+                        [139, -17.3],
+                        [137.9, -16.4],
+                        [137.9, -26],
+                        [140.9, -26],
+                        [141, -29],
+                        [148.9, -28.9],
+                        [150, -28.6],
+                        [150.8, -28.7],
+                        [151.3, -29.1],
+                        [151.9, -28.9],
+                        [152, -28.6],
+                        [152.5, -28.4],
+                        [153.4, -28.2],
+                        [152.9, -27.4],
+                        [153, -26],
+                        [152.4, -24.9],
+                        [150.9, -23.6],
+                        [150.5, -22.4],
+                        [149.5, -22.3],
+                        [149.1, -21],
+                        [147.4, -19.5],
+                        [146.2, -18.9],
+                        [145.8, -17.3],
+                        [145.2, -16.3],
+                        [145.3, -15],
+                        [144.4, -14.2],
+                        [143.6, -14.3],
+                        [143.4, -12.7],
+                        [142.4, -10.7]
+                    ]
+                ]
+            }
+        },
+        {
+            boundingBox: {
+                coordinates: [
+                    [140.99853515625, -25.95804467331783],
+                    [128.935546875, -40.128491056854074]
+                ],
+                type: "envelope"
+            },
+            geometry: {
+                coordinates: [
+                    [
+                        [129.00146484375, -25.95804467331783],
+                        [128.935546875, -33.74261277734688],
+                        [140.99853515625, -40.128491056854074],
+                        [140.9765625, -37.99616267972812],
+                        [140.99853515625, -25.97779895546436],
+                        [129.00146484375, -25.95804467331783]
+                    ]
+                ],
+                type: "Polygon"
+            },
+            regionId: "4",
+            regionName: "South Australia",
+            regionSearchId: "ithinkthisisregiontype/4",
+            regionShortName: "SA",
+            regionType: "ithinkthisisregiontype"
+        },
+
+        {
+            boundingBox: {
+                coordinates: [
+                    [143.818957568, -37.507245995],
+                    [143.684946016, -37.570438887000016]
+                ],
+                type: "envelope"
+            },
+            geometry: {
+                coordinates: [
+                    [
+                        [143.817818144, -37.561006440000035],
+                        [143.815870752, -37.570438887000016],
+                        [143.707238272, -37.5578780345],
+                        [143.692926464, -37.558273952999976],
+                        [143.685929152, -37.56013037250001],
+                        [143.684946016, -37.55153592],
+                        [143.69083488, -37.5219110745],
+                        [143.69194512, -37.522036985500016],
+                        [143.692966816, -37.51626095249998],
+                        [143.70397299200002, -37.517608992000014],
+                        [143.704768, -37.519353005500015],
+                        [143.70626, -37.511441998500004],
+                        [143.729532992, -37.51882799399999],
+                        [143.74158192, -37.52394096850001],
+                        [143.74465801600002, -37.507245995],
+                        [143.80286499200002, -37.53370299300002],
+                        [143.800909152, -37.53990286099999],
+                        [143.812338016, -37.54136502699992],
+                        [143.810268992, -37.543485996499996],
+                        [143.809593088, -37.54661784300003],
+                        [143.8145608, -37.547667588500026],
+                        [143.813491584, -37.553411764500034],
+                        [143.818957568, -37.55583173100005],
+                        [143.817818144, -37.561006440000035]
+                    ]
+                ],
+                type: "Polygon"
+            },
+            regionId: "201011001",
+            regionName: "Alfredton",
+            regionSearchId: "sa2/201011001",
+            regionShortName: null,
+            regionType: "SA2"
+        }
+    ];
+
+    const buildDataset = (() => {
+        let globalDatasetIdentifierCount = 0;
+
+        return function buildDataset(overrides: any = {}): Dataset {
+            return {
+                identifier: "" + globalDatasetIdentifierCount++,
+                catalog: "data.gov.au",
+                publisher: {
+                    identifier: "publisher",
+                    name: casual.title
+                },
+                title: casual.title,
+                description: casual.description,
+                themes: casual.array_of_words(5),
+                keywords: casual.array_of_words(5),
+                distributions: [],
+                quality: casual.double(0, 1),
+                hasQuality: casual.coin_flip,
+                ...overrides
+            };
+        };
+    })();
 
     before(async () => {
         const router = createApiRouter(API_ROUTER_CONFIG);
         app = express();
         app.use(router);
+
         await Promise.all([
             buildRegionsIndex(client, API_ROUTER_CONFIG.regionsIndexId, regions)
         ]);
     });
 
     beforeEach(() => {
-        casual.seed(34234);
+        casual.seed(54321);
     });
 
     describe("by '*'", function() {
@@ -183,10 +338,6 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             );
 
             for (let acronymWithDataset of acronymsWithDatasets) {
-                console.log(
-                    `/datasets?query=${randomCase(acronymWithDataset.acronym)}`
-                );
-
                 await supertest(app)
                     .get(
                         `/datasets?query=${randomCase(
@@ -208,16 +359,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         });
     });
 
-    it("for a region in query text should boost results from that region", async () => {
-        await buildRegionsIndex(client, API_ROUTER_CONFIG.regionsIndexId, [
-            buildRegion({
-                north: -10,
-                east: 156,
-                south: -29,
-                west: 138
-            })
-        ]);
-
+    describe("searching with regions", () => {
         const qldGeometry: Location = {
             geoJson: fromBoundingBox([-20, 147, -25, 139])
         };
@@ -229,6 +371,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             catalog: "region-in-query-test-catalog",
             spatial: qldGeometry,
             quality: 0.6,
+            hasQuality: true,
             publishingState: "published"
         });
 
@@ -239,6 +382,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 "Wildlife density aggregated from states' measures of wildlife density.",
             catalog: "region-in-query-test-catalog",
             quality: 0.6,
+            hasQuality: true,
             publishingState: "published"
         });
 
@@ -249,151 +393,161 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 "Wildlife density aggregated from states' measures of wildlife density in queensland.",
             catalog: "region-in-query-test-catalog",
             quality: 0.6,
+            hasQuality: true,
             publishingState: "published"
         });
 
-        await buildDatasetIndex(client, API_ROUTER_CONFIG.datasetsIndexId, [
-            qldDataset,
-            nationalDataset1,
-            nationalDataset2
-        ]);
+        beforeEach(async () => {
+            await buildDatasetIndex(client, API_ROUTER_CONFIG.datasetsIndexId, [
+                qldDataset,
+                nationalDataset1,
+                nationalDataset2
+            ]);
+        });
 
-        await supertest(app)
-            .get(`/datasets?query=wildlife density"`)
-            .expect(200)
-            .expect(res => {
-                const body: SearchResult = res.body;
-                const identifiers = body.datasets.map(
-                    dataset => dataset.identifier
-                );
+        it("should return datasets in the specified region", async () => {
+            await supertest(app)
+                .get(`/datasets?region=ithinkthisisregiontype:3`)
+                .expect(200)
+                .expect(res => {
+                    const body: SearchResult = res.body;
+                    const identifiers = body.datasets.map(
+                        dataset => dataset.identifier
+                    );
 
-                expect(identifiers).to.eql([
-                    nationalDataset1.identifier,
-                    nationalDataset2.identifier,
-                    qldDataset.identifier
-                ]);
-            });
+                    expect(identifiers).to.eql([qldDataset.identifier]);
+                });
+        });
 
-        await supertest(app)
-            .get(`/datasets?query=wildlife density in queensland"`)
-            .expect(200)
-            .expect(res => {
-                const body: SearchResult = res.body;
-                const identifiers = body.datasets.map(
-                    dataset => dataset.identifier
-                );
+        it("for a region in query text should boost results from that region", async () => {
+            await supertest(app)
+                .get(`/datasets?query=wildlife density`)
+                .expect(200)
+                .expect(res => {
+                    const body: SearchResult = res.body;
+                    const identifiers = body.datasets.map(
+                        dataset => dataset.identifier
+                    );
 
-                expect(identifiers).to.eql([
-                    qldDataset.identifier,
-                    nationalDataset2.identifier
-                ]);
-            });
+                    expect(identifiers).to.eql([
+                        nationalDataset1.identifier,
+                        nationalDataset2.identifier,
+                        qldDataset.identifier
+                    ]);
+                });
+
+            await supertest(app)
+                .get(`/datasets?query=wildlife density in queensland`)
+                .expect(200)
+                .expect(res => {
+                    const body: SearchResult = res.body;
+                    const identifiers = body.datasets.map(
+                        dataset => dataset.identifier
+                    );
+
+                    expect(identifiers).to.eql([
+                        qldDataset.identifier,
+                        nationalDataset2.identifier
+                    ]);
+                });
+        });
     });
-});
 
-function fromBoundingBox([north, east, south, west]: number[]): Polygon {
-    const northEast = [east, north];
-    const northWest = [west, north];
-    const southWest = [west, south];
-    const southEast = [east, south];
+    function fromBoundingBox([north, east, south, west]: number[]): Polygon {
+        const northEast = [east, north];
+        const northWest = [west, north];
+        const southWest = [west, south];
+        const southEast = [east, south];
 
-    return {
-        type: "Polygon",
-        coordinates: [[northEast, northWest, southWest, southEast, northEast]],
-        bbox: [north, east, south, west]
-    };
-}
-
-function buildNDatasets(n: number, override: (n: number) => any = () => {}) {
-    return _.range(0, n).map(() => buildDataset(override(n)));
-}
-
-function randomCase(string: string): string {
-    return string
-        .split("")
-        .map(char =>
-            casual.coin_flip ? char.toLowerCase() : char.toUpperCase()
-        )
-        .join("");
-}
-
-let globalDatasetIdentifierCount = 0;
-function buildDataset(overrides: any = {}): Dataset {
-    return {
-        identifier: "" + globalDatasetIdentifierCount++,
-        catalog: "data.gov.au",
-        publisher: {
-            identifier: "publisher",
-            name: casual.title
-        },
-        title: casual.title,
-        description: casual.description,
-        themes: casual.array_of_words(5),
-        keywords: casual.array_of_words(5),
-        distributions: [],
-        quality: casual.double(0, 1),
-        hasQuality: casual.coin_flip,
-        ...overrides
-    };
-}
-
-function genMatching<T>(gen: () => T, predicate: (t: T) => boolean): T {
-    let counter = 0;
-
-    while (counter < 100) {
-        const value = gen();
-
-        if (predicate(value)) {
-            return value;
-        }
+        return {
+            type: "Polygon",
+            coordinates: [
+                [northEast, northWest, southWest, southEast, northEast]
+            ],
+            bbox: [north, east, south, west]
+        };
     }
 
-    throw new Error(
-        `Could not generate a value meeting predicate ${predicate.toString()} within 100 tries`
-    );
-}
+    function buildNDatasets(
+        n: number,
+        override: (n: number) => any = () => {}
+    ) {
+        return _.range(0, n).map(() => buildDataset(override(n)));
+    }
 
-function fixLatLngGenerator(gen: () => string): () => number {
-    return () => Number.parseFloat(gen());
-}
-const latitude = fixLatLngGenerator(() => casual.latitude);
-const longitude = fixLatLngGenerator(() => casual.longitude);
+    function randomCase(string: string): string {
+        return string
+            .split("")
+            .map(char =>
+                casual.coin_flip ? char.toLowerCase() : char.toUpperCase()
+            )
+            .join("");
+    }
 
-function buildRegion(
-    inputBoundingBox?: {
-        north: number;
-        west: number;
-        south: number;
-        east: number;
-    },
-    override?: any
-): Region {
-    const boundingBox = inputBoundingBox || {
-        north: latitude(),
-        west: longitude(),
-        south: genMatching(latitude, genned => genned < boundingBox.north),
-        east: genMatching(latitude, genned => genned < boundingBox.east)
-    };
+    // function genMatching<T>(gen: () => T, predicate: (t: T) => boolean): T {
+    //     let counter = 0;
 
-    return {
-        regionId: casual.string,
-        regionType: casual.string,
-        regionSearchId: casual.string,
-        regionName: casual.title,
-        regionShortName: casual.name,
-        boundingBox: {
-            type: "envelope",
-            coordinates: [
-                [boundingBox.west, boundingBox.north],
-                [boundingBox.east, boundingBox.south]
-            ]
-        },
-        geometry: fromBoundingBox([
-            boundingBox.north,
-            boundingBox.east,
-            boundingBox.south,
-            boundingBox.west
-        ]),
-        ...override
-    };
-}
+    //     while (counter++ < 100) {
+    //         const value = gen();
+
+    //         if (predicate(value)) {
+    //             return value;
+    //         }
+    //     }
+
+    //     throw new Error(
+    //         `Could not generate a value meeting predicate ${predicate.toString()} within 100 tries`
+    //     );
+    // }
+
+    // function fixLatLngGenerator(gen: () => string): () => number {
+    //     return () => Number.parseFloat(gen());
+    // }
+    // function latitude() {
+    //     return fixLatLngGenerator(() => casual.latitude)();
+    // }
+    // function longitude() {
+    //     return fixLatLngGenerator(() => casual.longitude)();
+    // }
+
+    // function buildRegion(
+    //     inputBoundingBox?: {
+    //         north: number;
+    //         west: number;
+    //         south: number;
+    //         east: number;
+    //     },
+    //     override?: any
+    // ): Region {
+    //     const north = latitude();
+    //     const west = longitude();
+    //     const boundingBox = inputBoundingBox || {
+    //         north,
+    //         west,
+    //         south: genMatching(latitude, genned => genned < north),
+    //         east: genMatching(latitude, genned => genned < west)
+    //     };
+
+    //     return {
+    //         regionId: casual.string,
+    //         regionType: casual.string,
+    //         regionSearchId: casual.string,
+    //         regionName: casual.title,
+    //         regionShortName: casual.name,
+    //         boundingBox: {
+    //             type: "envelope",
+    //             coordinates: [
+    //                 [boundingBox.west, boundingBox.north],
+    //                 [boundingBox.east, boundingBox.south]
+    //             ]
+    //         },
+    //         geometry: fromBoundingBox([
+    //             boundingBox.north,
+    //             boundingBox.east,
+    //             boundingBox.south,
+    //             boundingBox.west
+    //         ]),
+    //         ...override
+    //     };
+    // }
+});

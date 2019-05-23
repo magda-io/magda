@@ -269,11 +269,13 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                     .value();
 
                 // Remove these regions from the text
-                const textWithoutRegions = regionNames.reduce(
-                    (soFar, currentRegion) =>
-                        soFar.split(currentRegion).join(""),
-                    sanitisedFreeText
-                );
+                const textWithoutRegions = regionNames
+                    .reduce(
+                        (soFar, currentRegion) =>
+                            soFar.replace(new RegExp(currentRegion, "ig"), ""),
+                        sanitisedFreeText
+                    )
+                    .trim();
 
                 const textQueryNoRegions = this.textQuery(
                     textWithoutRegions.length > 0 ? textWithoutRegions : "*"
