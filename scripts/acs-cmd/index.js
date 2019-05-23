@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const pkg = require("../package.json");
 const program = require("commander");
+const chalk = require("chalk");
 
 program
     .version(pkg.version)
@@ -15,14 +16,18 @@ program
             `  POSTGRES_PASSWORD: database password; If not available in env var, '' will be used.`
     )
     .command("list", "List records (resources, operation etc.)")
-    .command(
-        "assign-permission <permissionId> <roleId>",
-        "Assign a permission to a role"
-    )
-    .command(
-        "remove-permission <permissionId> <roleId>",
-        "Remove a permission from a role"
-    )
-    .command("assign-role <roleId> <userId>", "Assign a role to a user")
-    .command("remove-role <roleId> <userId>", "Remove a role from a user")
+    .command("assign", "Assign a permission to a role or a role to a user")
+    .command("remove", "Remove a permission from a role or a role from a user")
+    .on("command:*", function(cmds) {
+        if (["list", "assign", "remove"].indexOf(cmds[0]) === -1) {
+            console.error(
+                chalk.red(
+                    `Invalid command: ${program.args.join(
+                        " "
+                    )}\nSee --help for a list of available commands.`
+                )
+            );
+            process.exit(1);
+        }
+    })
     .parse(process.argv);
