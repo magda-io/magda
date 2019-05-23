@@ -228,22 +228,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
         });
     });
 
-    router.get(
-        "/public/orgUnits/getRootNode",
-        MUST_BE_ADMIN,
-        async (req, res) => {
-            try {
-                const node = await orgQueryer.getRootNode();
-                if (!node) throw new Error("Cannot locate the root tree node.");
-                res.status(200).json(node);
-            } catch (e) {
-                res.status(500).send(`Failed to retrieve tree root node: ${e}`);
-            }
+    router.get("/public/orgUnits/rootNode", MUST_BE_ADMIN, async (req, res) => {
+        try {
+            const node = await orgQueryer.getRootNode();
+            if (!node) throw new Error("Cannot locate the root tree node.");
+            res.status(200).json(node);
+        } catch (e) {
+            res.status(500).send(`Failed to retrieve tree root node: ${e}`);
         }
-    );
+    });
 
     router.get(
-        "/public/orgUnits/getImmediateChildren/:nodeId",
+        "/public/orgUnits/immediateChildren/:nodeId",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
@@ -257,7 +253,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.get(
-        "/public/orgUnits/getAllChildren/:nodeId",
+        "/public/orgUnits/allChildren/:nodeId",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
@@ -271,7 +267,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.get(
-        "/public/orgUnits/getNodeById/:nodeId",
+        "/public/orgUnits/nodeById/:nodeId",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
@@ -289,7 +285,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     router.get(
-        "/public/orgUnits/getNodesByName/:nodeName",
+        "/public/orgUnits/nodesByName/:nodeName",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {

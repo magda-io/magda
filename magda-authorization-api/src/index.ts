@@ -47,7 +47,7 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
-const orgQueryer = new NestedSetModelQueryer(database.getPool(), "auth");
+const orgQueryer = new NestedSetModelQueryer(database.getPool(), "org_units");
 orgQueryer.defaultSelectFieldList = [
     "id",
     "name",
