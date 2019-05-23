@@ -116,7 +116,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         return nodes[0]["id"];
     }
 
-    it("Test `getNodesByName`", async () => {
+    it("`getNodesByName` should return the node with specified name", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodes = await queryer.getNodesByName("Chuck");
@@ -124,7 +124,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes[0]["name"]).to.equal("Chuck");
     });
 
-    it("Test `getNodeById`", async () => {
+    it("`getNodeById` should return the node with the specified id", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodes = await queryer.getNodesByName("Chuck");
@@ -134,14 +134,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(testNode.name).to.equal("Chuck");
     });
 
-    it("Test `getRootNode`", async () => {
+    it("`getRootNode` should return root node", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const node = await queryer.getRootNode();
         expect(node.name).to.equal("Albert");
     });
 
-    it("Test `defaultSelectFieldList` paremeter", async () => {
+    it("`defaultSelectFieldList` paremeter should be able to control the fields of returned nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName, [
             "id",
@@ -151,7 +151,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(Object.keys(node)).to.have.members(["id", "left"]);
     });
 
-    it("Test `getLeafNodes`", async () => {
+    it("`getLeafNodes` should return all leaf nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodes = await queryer.getLeafNodes();
@@ -163,7 +163,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         ]);
     });
 
-    it("Test `getAllChildren`", async () => {
+    it("`getAllChildren` should return all children correctly", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let nodes = await queryer.getAllChildren(
@@ -192,7 +192,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes.length).to.equal(0);
     });
 
-    it("Test `getImmediateChildren`", async () => {
+    it("`getImmediateChildren` should return all immediate children", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let nodes = await queryer.getImmediateChildren(
@@ -215,7 +215,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes.length).to.equal(0);
     });
 
-    it("Test `getAllParents`", async () => {
+    it("`getAllParents` should return all parents", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let nodes = await queryer.getAllParents(
@@ -239,7 +239,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes.length).to.equal(0);
     });
 
-    it("Test `getImmediateParent`", async () => {
+    it("`getImmediateParent` should return the immediate parent", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let node = await queryer.getImmediateParent(
@@ -263,7 +263,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(node).be.null;
     });
 
-    it("Test `getAllNodesAtLevel`", async () => {
+    it("`getAllNodesAtLevel` should return all nodes at N level", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let nodes = await queryer.getAllNodesAtLevel(1);
@@ -284,7 +284,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes.length).to.equal(0);
     });
 
-    it("Test `getLevelOfNode`", async () => {
+    it("`getLevelOfNode` should return the level number of the node", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let level: number;
@@ -319,14 +319,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(level).to.equal(3);
     });
 
-    it("Test `getTreeHeight`", async () => {
+    it("`getTreeHeight` should return the tree height", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let height = await queryer.getTreeHeight();
         expect(height).to.equal(3);
     });
 
-    it("Test `getLeftMostImmediateChild`", async () => {
+    it("`getLeftMostImmediateChild` should return left most immediate child", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let node: NodeRecord;
@@ -351,7 +351,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(node).be.null;
     });
 
-    it("Test `getRightMostImmediateChild`", async () => {
+    it("`getRightMostImmediateChild` should return right most immediate child", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let node: NodeRecord;
@@ -376,7 +376,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(node).be.null;
     });
 
-    it("Test `getTopDownPathBetween`", async () => {
+    it("`getTopDownPathBetween` should return top down path between two nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let nodes: NodeRecord[];
@@ -420,7 +420,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes).be.null;
     });
 
-    it("Test `compareNodes`", async () => {
+    it("`compareNodes` should return -1, 1, 0, null based on the nodes' level on the available path", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         let compareResult: number;
@@ -475,7 +475,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(compareResult).be.null;
     });
 
-    it("Test `createRootNode`", async () => {
+    it("`createRootNode` should create a root node", async () => {
         const tableName = await createTestTable();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodeId = await queryer.createRootNode({
@@ -500,7 +500,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
     });
 
-    it("Test `createRootNode` should set right correctly", async () => {
+    it("`createRootNode` should create a root node and set right correctly", async () => {
         // --- create a non empty table
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
@@ -532,7 +532,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(newRootNode.right).to.equal(12); // --- right should be 12
     });
 
-    it("Test `insertNode`", async () => {
+    it("`insertNode` should insert the node to the parent node specified", async () => {
         const tableName = await createTestTable();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -584,7 +584,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(testNode.right).to.equal(10);
     });
 
-    it("Test `insertNodeToRightOfSibling`", async () => {
+    it("`insertNodeToRightOfSibling` should insert the node to the right side of specified sibling", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -630,7 +630,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
     });
 
-    it("Test `moveSubTreeTo` No.1", async () => {
+    it("`moveSubTreeTo` should move the subtree to a new parent node (unless specified parent node is not a higeher level node) and maintain correct structure", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -693,7 +693,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
     });
 
-    it("Test `moveSubTreeTo` No.2", async () => {
+    it("`moveSubTreeTo` should work on a leaf node as well", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -731,7 +731,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         ).to.equal("Bert");
     });
 
-    it("Test `deleteSubTree` No.1", async () => {
+    it("`deleteSubTree` should delete the specified subtree and close the gap properly", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -748,7 +748,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(results.rows.length).to.equal(2);
     });
 
-    it("Test `deleteSubTree` No.2 allow delete root node", async () => {
+    it("`deleteSubTree` should allow to delete the root node if `allowRootNodeId` is true", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -762,7 +762,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(results.rows.length).to.equal(0);
     });
 
-    it("Test `deleteSubTree` No.3 not allow delete root node", async () => {
+    it("`deleteSubTree` should not allow delete root node if default value is used for `allowRootNodeId` parameter", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -776,7 +776,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
     });
 
-    it("Test `deleteSubTree` no.4 delete a leaf node", async () => {
+    it("`deleteSubTree` should delete a leaf node properly", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -809,7 +809,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Fred", 7, 8);
     });
 
-    it("Test `deleteNode` no. 1", async () => {
+    it("`deleteNode` should delete the specified node only and move all its children to its parent", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -828,7 +828,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Fred", 8, 9);
     });
 
-    it("Test `deleteNode` no.2", async () => {
+    it("`deleteNode` should delete the specified node only and close the gap properly for 3 levels children & 2 levels parents", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -867,7 +867,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Fred", 7, 8);
     });
 
-    it("Test `deleteNode` no.3", async () => {
+    it("`deleteNode` should delete the specified node only and close the gap properly for 2 levels children & 2 levels parents", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -893,7 +893,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Donna", 5, 6);
         await checkNodeLeftRight(queryer, "Fred", 9, 10);
 
-        // --- delete Eddie
+        // --- delete Bert
         await queryer.deleteNode(
             (await queryer.getNodesByName("Bert"))[0]["id"]
         );
@@ -906,7 +906,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await checkNodeLeftRight(queryer, "Fred", 7, 8);
     });
 
-    it("Test `deleteNode` no.4", async () => {
+    it("`deleteNode` should not allow to delete a root node", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 
@@ -920,7 +920,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         ).be.rejectedWith("Delete a root node is not allowed!");
     });
 
-    it("Test `updateNode`", async () => {
+    it("`updateNode` should update node data properly and ignore `id`, `left` & `right` fields", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
 

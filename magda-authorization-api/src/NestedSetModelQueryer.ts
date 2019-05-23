@@ -11,13 +11,19 @@ function isNonEmptyArray(v: any): boolean {
     return true;
 }
 
+const INVALID_CHAR_REGEX = /[^a-z_\d]/i;
+
+function isValidSqlIdentifier(id: string): boolean {
+    if (INVALID_CHAR_REGEX.test(id)) return false;
+    return true;
+}
+
 export type TextTreeNode =
     | string
     | {
           text: string;
           children?: TextTreeNode[];
       };
-
 class NestedSetModelQueryer {
     private pool: pg.Pool;
     private tableName: string;
@@ -60,6 +66,11 @@ class NestedSetModelQueryer {
     ) {
         if (!dbPool) throw new Error("dbPool cannot be empty!");
         if (!tableName) throw new Error("tableName cannot be empty!");
+        if (!isValidSqlIdentifier(tableName)) {
+            throw new Error(
+                `tableName: ${tableName} contains invalid characters!`
+            );
+        }
 
         this.pool = dbPool;
         this.tableName = tableName;
@@ -96,12 +107,24 @@ class NestedSetModelQueryer {
         if (!isNonEmptyArray(fieldList)) {
             return "*";
         }
+        if (!isValidSqlIdentifier(tableAliasOrName)) {
+            throw new Error(
+                `'tableAliasOrName' ${tableAliasOrName} contains invalid characters.`
+            );
+        }
         // --- do not double quote `tableAliasOrName`
         // --- or you will get missing FROM-clause entry for table error
         return fieldList
-            .map(f =>
-                tableAliasOrName == "" ? `"${f}"` : `${tableAliasOrName}."${f}"`
-            )
+            .map(f => {
+                if (!isValidSqlIdentifier(f)) {
+                    throw new Error(
+                        `Field name ${f} contains invalid characters.`
+                    );
+                }
+                return tableAliasOrName === ""
+                    ? `"${f}"`
+                    : `${tableAliasOrName}."${f}"`;
+            })
             .join(", ");
     }
 
@@ -195,7 +218,7 @@ class NestedSetModelQueryer {
     /**
      * Get All children of a given node
      * (including immediate children and children of immediate children etc.)
-     * If the node has no child (i.e. a leaf node), null will be returned
+     * If the node has no child (i.e. a leaf node), an empty array will be returned
      *
      * @param {string} parentNodeId
      * @param {boolean} [includeMyself=false]
@@ -229,7 +252,7 @@ class NestedSetModelQueryer {
     /**
      * Get All parents of a given node
      * (including immediate parent and parents of immediate parent etc.)
-     * If the node has no parent (i.e. a root node), null will be returned (unless `includeMyself` = true)
+     * If the node has no parent (i.e. a root node), an empty array will be returned (unless `includeMyself` = true)
      *
      * @param {string} childNodeId
      * @param {boolean} [includeMyself=false]
@@ -261,7 +284,7 @@ class NestedSetModelQueryer {
 
     /**
      * Get Immediate Children of a Node
-     * If the node has no child (i.e. a leaf node), null will be returned
+     * If the node has no child (i.e. a leaf node), an empty array will be returned
      *
      * @param {string} parentNodeId
      * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
@@ -528,13 +551,27 @@ class NestedSetModelQueryer {
         if (!_.isArray(sqlValues)) {
             throw new Error("`sqlValues` parameter should be an array!");
         }
+
+        if (!isValidSqlIdentifier(tableAliasOrName)) {
+            throw new Error(
+                `tableAliasOrName: ${tableAliasOrName} contains invalid characters!`
+            );
+        }
+
         const tbl = this.tableName;
         const fieldList = this.getInsertFields(insertFieldList);
 
         const columnsList = fieldList
-            .map(f =>
-                tableAliasOrName == "" ? `"${f}"` : `${tableAliasOrName}."${f}"`
-            )
+            .map(f => {
+                if (!isValidSqlIdentifier(f)) {
+                    throw new Error(
+                        `column name: ${f} contains invalid characters!`
+                    );
+                }
+                return tableAliasOrName == ""
+                    ? `"${f}"`
+                    : `${tableAliasOrName}."${f}"`;
+            })
             .join(", ");
 
         const valuesList = nodes
@@ -1038,7 +1075,7 @@ class NestedSetModelQueryer {
         client: pg.Client = null
     ): Promise<void> {
         if (nodeId.trim() === "") {
-            throw new Error("nodeId cannt be empty!");
+            throw new Error("nodeId can't be empty!");
         }
         const sqlValues: any[] = [nodeId];
         const updateFields: string[] = Object.keys(nodeData).filter(
@@ -1051,6 +1088,11 @@ class NestedSetModelQueryer {
 
         const setFieldList = updateFields
             .map(f => {
+                if (!isValidSqlIdentifier(f)) {
+                    throw new Error(
+                        `field name: ${f} contains invalid characters!`
+                    );
+                }
                 sqlValues.push(nodeData[f]);
                 return `"${f}" = $${sqlValues.length}`;
             })
