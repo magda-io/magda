@@ -10,7 +10,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./elasticsearch-test.yml:/tmp/elasticsearch.yml
+      - ./elasticsearch.yml:/tmp/elasticsearch.yml
       - ./setup-test.sh:/tmp/setup.sh
       - ./regionSynonyms.test.txt:/tmp/regionSynonyms.txt
       - ./wn_s_test.pl:/tmp/wn_s.pl

@@ -25,6 +25,7 @@ import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+import scala.sys.process.ProcessLogger
 
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
 
@@ -54,9 +55,18 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   def setupES(): Unit ={
     logger.debug("******** calling docker-compose up *********")
-    sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
-    logger.debug("******** Waiting 20 seconds for docker-compose up *********")
-    Thread.sleep(20000)
+    val sb = new StringBuffer()
+    val log = ProcessLogger {
+      out: String =>
+        println(s"$out")
+        sb.append(out)
+      (err: String) =>
+        println(s"ERR: $err")
+        throw new Exception(err)
+    }
+    sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!(log)
+    blockUntil("Waiting for ES")(() => sb.toString.contains("done"))
+    Thread.sleep(10000)
     blockUntilNotRed()
   }
 
