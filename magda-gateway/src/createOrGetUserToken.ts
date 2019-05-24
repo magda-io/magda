@@ -22,11 +22,8 @@ export default function createOrGetUserToken(
 }
 
 function profileToUser(profile: passport.Profile, source: string): User {
-    if (source === "arcgis") {
-        profile.emails = [];
-        // @ts-ignore: Unreachable code error
-        profile.emails.push({ value: profile.email });
-    }
+    // @ts-ignore: Unreachable code error
+    if (source === "arcgis") profile.emails = [{ value: profile.email }];
 
     if (!profile.emails || profile.emails.length === 0) {
         throw new Error("User with no email address");
