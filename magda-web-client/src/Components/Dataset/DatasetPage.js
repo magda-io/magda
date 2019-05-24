@@ -49,6 +49,7 @@ import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 
 import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
+import RemoteTextContentBox from "../RemoteTextContentBox";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -552,6 +553,70 @@ class RecordHandler extends React.Component {
                                     {hasEditPermissions && (
                                         <div>
                                             <br />
+                                            <hr />
+                                            <h2>Ownership</h2>
+                                            <div>
+                                                Owner:{" "}
+                                                {this.props.dataset
+                                                    .accessControl &&
+                                                this.props.dataset.accessControl
+                                                    .ownerId ? (
+                                                    <span>
+                                                        <RemoteTextContentBox
+                                                            key={
+                                                                this.props
+                                                                    .dataset
+                                                                    .accessControl
+                                                                    .ownerId
+                                                            }
+                                                            url={`${
+                                                                config.authApiUrl
+                                                            }users/${
+                                                                this.props
+                                                                    .dataset
+                                                                    .accessControl
+                                                                    .ownerId
+                                                            }`}
+                                                            contentExtractor={user =>
+                                                                user.displayName
+                                                            }
+                                                        />
+                                                    </span>
+                                                ) : (
+                                                    "N/A"
+                                                )}
+                                            </div>
+                                            <div>
+                                                Organisation Unit Owner:{" "}
+                                                {this.props.dataset
+                                                    .accessControl &&
+                                                this.props.dataset.accessControl
+                                                    .orgUnitOwnerId ? (
+                                                    <span>
+                                                        <RemoteTextContentBox
+                                                            key={
+                                                                this.props
+                                                                    .dataset
+                                                                    .accessControl
+                                                                    .orgUnitOwnerId
+                                                            }
+                                                            url={`${
+                                                                config.authApiUrl
+                                                            }orgUnits/nodeById/${
+                                                                this.props
+                                                                    .dataset
+                                                                    .accessControl
+                                                                    .orgUnitOwnerId
+                                                            }`}
+                                                            contentExtractor={orgUnit =>
+                                                                orgUnit.name
+                                                            }
+                                                        />
+                                                    </span>
+                                                ) : (
+                                                    "N/A"
+                                                )}
+                                            </div>
                                             <hr />
                                             <h2>Dates and updates</h2>
                                             <h4>
