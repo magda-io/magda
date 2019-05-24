@@ -17,7 +17,7 @@ const queryer = new NestedSetModelQueryer(pool, "org_units");
     try {
         const textTree = await queryer.getTreeTextView();
         console.log("\n");
-        console.log(textTree);
+        console.log(chalk.green(textTree));
     } catch (e) {
         console.error(chalk.red(`Error: ${e}`));
     }

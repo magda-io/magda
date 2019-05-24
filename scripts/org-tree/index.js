@@ -20,7 +20,7 @@ program
         "\n\tCreate a root tree node with specified name.\n"
     )
     .command(
-        "insert <nodeName> <parentNodeNameOrId>",
+        "insert <parentNodeNameOrId> <nodeName>",
         "\n\tInsert a node as a child node of the specified the parent node with specified name. \n" +
             "\tIf the parent node name is given instead of the parent node Id, the newly created child node will be inserted to the first located parent node.\n"
     )
