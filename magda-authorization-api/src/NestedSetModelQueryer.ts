@@ -614,7 +614,7 @@ class NestedSetModelQueryer {
                 "`node` parameter cannot be an empty object with no key."
             );
         }
-        let node_id: string;
+        let nodeId: string;
         try {
             await client.query("BEGIN");
             let result = await client.query(
@@ -657,7 +657,7 @@ class NestedSetModelQueryer {
                 throw new Error("Cannot locate create root node ID!");
             }
             await client.query("COMMIT");
-            node_id = result.rows[0]["id"];
+            nodeId = result.rows[0]["id"];
         } catch (e) {
             await client.query("ROLLBACK");
             throw e;
@@ -666,7 +666,7 @@ class NestedSetModelQueryer {
                 client.release();
             }
         }
-        return node_id;
+        return nodeId;
     }
 
     private async getNodeDataWithinTx(
@@ -686,12 +686,12 @@ class NestedSetModelQueryer {
     /**
      * Insert a node to the tree under a parent node
      *
-     * @param {NodeRecord} node
      * @param {string} parentNodeId
+     * @param {NodeRecord} node
      * @returns {Promise<string>}
      * @memberof NestedSetModelQueryer
      */
-    async insertNode(node: NodeRecord, parentNodeId: string): Promise<string> {
+    async insertNode(parentNodeId: string, node: NodeRecord): Promise<string> {
         if (!parentNodeId) {
             throw new Error("`parentNodeId` cannot be empty!");
         }
@@ -703,7 +703,7 @@ class NestedSetModelQueryer {
         }
         const tbl = this.tableName;
         const client = await this.pool.connect();
-        let node_id: string;
+        let nodeId: string;
         try {
             await client.query("BEGIN");
             const { right: parentRight } = await this.getNodeDataWithinTx(
@@ -741,28 +741,28 @@ class NestedSetModelQueryer {
                 throw new Error("Cannot locate created node ID!");
             }
             await client.query("COMMIT");
-            node_id = result.rows[0]["id"];
+            nodeId = result.rows[0]["id"];
         } catch (e) {
             await client.query("ROLLBACK");
             throw e;
         } finally {
             client.release();
         }
-        return node_id;
+        return nodeId;
     }
 
     /**
      * Insert a node to the right of its sibling
      * If `siblingNodeId` belongs to a root node, an error will be thrown
      *
-     * @param {NodeRecord} node
      * @param {string} siblingNodeId
+     * @param {NodeRecord} node
      * @returns {Promise<string>}
      * @memberof NestedSetModelQueryer
      */
     async insertNodeToRightOfSibling(
-        node: NodeRecord,
-        siblingNodeId: string
+        siblingNodeId: string,
+        node: NodeRecord
     ): Promise<string> {
         if (!siblingNodeId) {
             throw new Error("`siblingNodeId` cannot be empty!");
@@ -775,7 +775,7 @@ class NestedSetModelQueryer {
         }
         const tbl = this.tableName;
         const client = await this.pool.connect();
-        let node_id: string;
+        let nodeId: string;
         try {
             await client.query("BEGIN");
             const {
@@ -819,14 +819,14 @@ class NestedSetModelQueryer {
                 throw new Error("Cannot locate created node ID!");
             }
             await client.query("COMMIT");
-            node_id = result.rows[0]["id"];
+            nodeId = result.rows[0]["id"];
         } catch (e) {
             await client.query("ROLLBACK");
             throw e;
         } finally {
             client.release();
         }
-        return node_id;
+        return nodeId;
     }
 
     /**

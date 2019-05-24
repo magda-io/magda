@@ -12,10 +12,10 @@ program
         "Insert a node as a child node of the specified the parent node with specified name. " +
             "\nIf the parent node name is given instead of the parent node Id, the newly created child node will be inserted to the first located parent node."
     )
-    .option("<nodeName>", "insert node name")
     .option("<parentNodeNameOrId>", "parent node id or name")
+    .option("<nodeName>", "insert node name")
     .version(pkg.version)
-    .action(async (nodeName, parentNodeNameOrId) => {
+    .action(async (parentNodeNameOrId, nodeName) => {
         try {
             if (process.argv.slice(2).length < 2) {
                 program.help();
@@ -34,12 +34,9 @@ program
                 parentNodeNameOrId,
                 queryer
             );
-            const nodeId = await queryer.insertNode(
-                {
-                    name: nodeName
-                },
-                parentNodeId
-            );
+            const nodeId = await queryer.insertNode(parentNodeId, {
+                name: nodeName
+            });
             console.log(
                 chalk.green(
                     `A node with name: ${nodeName} has been inserted to parent node. \n Id: ${nodeId}`

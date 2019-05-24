@@ -545,19 +545,18 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodeId.length).to.equal(36);
 
         const rootNode = await queryer.getRootNode();
-        await queryer.insertNode({ name: "Bert" }, rootNode["id"]);
+        await queryer.insertNode(rootNode["id"], { name: "Bert" });
 
-        const lv3ParentNodeId = await queryer.insertNode(
-            { name: "Chuck" },
-            nodeId
-        );
+        const lv3ParentNodeId = await queryer.insertNode(nodeId, {
+            name: "Chuck"
+        });
 
         expect(typeof lv3ParentNodeId).to.equal("string");
         expect(lv3ParentNodeId.length).to.equal(36);
 
-        await queryer.insertNode({ name: "Donna" }, lv3ParentNodeId);
-        await queryer.insertNode({ name: "Eddie" }, lv3ParentNodeId);
-        await queryer.insertNode({ name: "Fred" }, lv3ParentNodeId);
+        await queryer.insertNode(lv3ParentNodeId, { name: "Donna" });
+        await queryer.insertNode(lv3ParentNodeId, { name: "Eddie" });
+        await queryer.insertNode(lv3ParentNodeId, { name: "Fred" });
 
         let testNode = (await queryer.getNodesByName("Albert"))[0];
         expect(testNode.left).to.equal(1);
@@ -591,10 +590,9 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
         const bertId = (await queryer.getNodesByName("Bert"))[0]["id"];
-        const bert1nodeId = await queryer.insertNodeToRightOfSibling(
-            { name: "Bert1" },
-            bertId
-        );
+        const bert1nodeId = await queryer.insertNodeToRightOfSibling(bertId, {
+            name: "Bert1"
+        });
         expect(typeof bert1nodeId).to.equal("string");
         expect(bert1nodeId.length).to.equal(36);
 
