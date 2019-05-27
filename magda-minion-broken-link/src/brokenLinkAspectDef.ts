@@ -1,4 +1,4 @@
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/src/registry/TenantConsts";
+import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export default {
     id: "source-link-status",
