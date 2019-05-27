@@ -832,10 +832,14 @@ class RecordHandler extends React.Component {
     // build breadcrumbs
     getBreadcrumbs() {
         const params = Object.keys(this.props.match.params);
+        const searchPage =
+            this.props.dataset.publishingState === "draft"
+                ? "drafts"
+                : "search";
         const results = (
             <li key="result">
                 <Link
-                    to={`/search?q=${queryString.parse(
+                    to={`/${searchPage}?q=${queryString.parse(
                         this.props.location.search
                     ).q || ""}`}
                 >
