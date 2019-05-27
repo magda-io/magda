@@ -17,7 +17,6 @@ class DataSetSearch_b_Spec extends DataSetSearchSpecBase {
   describe("searching") {
     describe("*") {
       it("should sort results by pure quality") {
-        println("    - Testing should sort results by pure quality")
         forAll(indexGen) {
           case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {

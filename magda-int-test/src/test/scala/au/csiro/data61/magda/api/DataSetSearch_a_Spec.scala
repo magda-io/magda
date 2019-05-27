@@ -9,7 +9,6 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 class DataSetSearch_a_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_a_Spec")
     super.beforeAll()
   }
 
@@ -32,7 +31,6 @@ class DataSetSearch_a_Spec extends DataSetSearchSpecBase {
             }
         }
       }
-
     }
   }
 }

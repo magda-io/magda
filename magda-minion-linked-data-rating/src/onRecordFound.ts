@@ -68,7 +68,7 @@ export default async function onRecordFound(
             {
                 stars: best || 0
             },
-            Number(theTenantId)
+            theTenantId
         )
         .then(result => unionToThrowable(result));
 
@@ -82,7 +82,7 @@ export default async function onRecordFound(
                     weighting: 1
                 }
             },
-            Number(theTenantId)
+            theTenantId
         )
         .then(result => unionToThrowable(result));
 
