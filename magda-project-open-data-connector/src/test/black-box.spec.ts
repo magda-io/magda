@@ -2,8 +2,6 @@ import { runConnectorTest } from "@magda/typescript-common/dist/test/connectors/
 
 import { MockOpenDataCatalog } from "./MockOpenDataCatalog";
 
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/src/registry/TenantConsts";
-
 const TEST_CASES = [
     {
         input: {
@@ -52,8 +50,7 @@ const TEST_CASES = [
                         name: "Connector"
                     }
                 },
-                sourceTag: "stag",
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                sourceTag: "stag"
             },
             "dist-connector-dataset-id-1": {
                 id: "dist-connector-dataset-id-1",
@@ -76,8 +73,7 @@ const TEST_CASES = [
                         name: "Connector"
                     }
                 },
-                sourceTag: "stag",
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                sourceTag: "stag"
             },
             "org-connector-": {
                 id: "org-connector-",
@@ -90,8 +86,7 @@ const TEST_CASES = [
                     },
                     "organization-details": {}
                 },
-                sourceTag: "stag",
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                sourceTag: "stag"
             },
             "ds-connector-dataset-id": {
                 id: "ds-connector-dataset-id",
@@ -123,8 +118,7 @@ const TEST_CASES = [
                     },
                     "dataset-publisher": { publisher: "org-connector-" }
                 },
-                sourceTag: "stag",
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                sourceTag: "stag"
             }
         }
     }
