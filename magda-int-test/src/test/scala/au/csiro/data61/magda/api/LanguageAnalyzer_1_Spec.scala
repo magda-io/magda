@@ -2,7 +2,6 @@ package au.csiro.data61.magda.api
 
 class LanguageAnalyzer_1_Spec extends LanguageAnalyzerSpecBase {
   override def beforeAll(): Unit = {
-    println("Testing LanguageAnalyzerSpec")
     super.beforeAll()
   }
 

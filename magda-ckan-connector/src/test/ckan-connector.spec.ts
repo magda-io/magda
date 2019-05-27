@@ -8,7 +8,6 @@ import JsonConnector, {
 } from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import AspectBuilder from "@magda/typescript-common/src/AspectBuilder";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 describe("JsonTransformer", () => {
     before(() => {
@@ -22,6 +21,8 @@ describe("JsonTransformer", () => {
     afterEach(() => {
         nock.cleanAll();
     });
+
+    const tenant_id_1 = 1;
 
     function setupCrawlTest(
         config: JsonConnectorConfig,
@@ -45,7 +46,8 @@ describe("JsonTransformer", () => {
             datasetAspectBuilders,
             distributionAspectBuilders,
             organizationAspectBuilders,
-            libraries
+            libraries,
+            tenantId: tenant_id_1
         });
 
         const registryScope = nock("http://example.com").log(console.log);
@@ -56,7 +58,7 @@ describe("JsonTransformer", () => {
             jwtSecret: "squirrel",
             userId: "1",
             maxRetries: 0,
-            tenantId: MAGDA_ADMIN_PORTAL_ID
+            tenantId: tenant_id_1
         });
 
         const connector = new JsonConnector({

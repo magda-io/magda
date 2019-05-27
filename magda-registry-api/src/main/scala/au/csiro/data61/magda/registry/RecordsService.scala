@@ -10,7 +10,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -47,7 +47,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
@@ -55,7 +55,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           val theResult = DB localTx { session =>
             recordPersistence.deleteRecord(session, recordId, tenantId) match {
               case Success(result) => complete(DeleteResult(result))
@@ -92,7 +92,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
     nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "sourceTagToPreserve", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to PRESERVE."),
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
@@ -102,7 +102,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def trimBySourceTag: Route = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
             val deleteFuture = Future {
               // --- DB session needs to be created within the `Future`
@@ -163,14 +163,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def putById: Route = put {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ => {
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
                 recordPersistence.putRecordById(session, id, tenantId, recordIn) match {
@@ -215,14 +215,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
             val theResult = DB localTx { session =>
               recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
@@ -269,14 +269,14 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
    */
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
-      requiredTenantId { tenantId =>
+      requiresTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>

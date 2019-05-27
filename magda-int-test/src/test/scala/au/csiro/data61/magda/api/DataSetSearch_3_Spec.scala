@@ -15,14 +15,11 @@ import org.scalacheck.Gen
 class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_3_Spec")
     super.beforeAll()
   }
 
   describe("filtering") {
-    println("Testing filtering")
     it("should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart") {
-      println("  - Testing should return only filtered datasets with MatchAll, and only ones that wouldn't pass filter with MatchPart")
       try {
         //        val filterQueryGen = queryGen
         //          .suchThat(query => query.dateFrom.isDefined || query.dateTo.isDefined || !query.formats.isEmpty || !query.publishers.isEmpty)
@@ -142,9 +139,7 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
     }
 
     describe("format") {
-      println("  - Testing format")
       it("exact") {
-        println("    - Testing exact")
         def dataSetToQuery(dataSet: DataSet) = {
           val formats = dataSet.distributions
             .map(_.format.map(Specified.apply).getOrElse(Unspecified()))
@@ -184,7 +179,6 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
       }
 
       it("unspecified") {
-        println("    - Testing unspecified")
         val pubQueryGen = Gen.const(Query(formats = Set(Unspecified())))
 
         doUnspecifiedTest(pubQueryGen) { response =>
@@ -199,9 +193,7 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
     }
 
     describe("publisher") {
-      println("  - Testing publisher")
       it("exact") {
-        println("    - Testing exact")
         def dataSetToQuery(dataSet: DataSet) = {
 
           val publishers = Set(
@@ -240,7 +232,6 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
       }
 
       it("unspecified") {
-        println("    - Testing unspecified")
         val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
 
         doUnspecifiedTest(pubQueryGen) { response =>
@@ -254,7 +245,6 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
           }
         }
       }
-
     }
 
     def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
@@ -268,5 +258,4 @@ class DataSetSearch_3_Spec extends DataSetSearchSpecBase {
       }
     }
   }
-
 }

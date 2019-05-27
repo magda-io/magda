@@ -11,14 +11,11 @@ import spray.json._
 class WebhookSpec extends WebhookSpecBase {
 
   override def beforeAll(): Unit = {
-    println("Testing WebhookSpec")
     super.beforeAll()
   }
 
   describe("when webhook received") {
-    println("Testing when webhook received")
     it("should index new datasets") {
-      println("  - Testing should index new datasets")
       loadDatasetsThroughEvents() { (allDataSets: List[DataSet], response: SearchResult) =>
         val cleanedInputDataSets = allDataSets.map(dataSet => dataSet.copy(
           // The registry only looks for the duration text so copy the actual duration into the text
@@ -90,7 +87,6 @@ class WebhookSpec extends WebhookSpecBase {
               input.quality should be(output.quality +- eps)
           }
         }
-
       }
     }
   }

@@ -117,8 +117,6 @@ class LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
     }
 
     def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean, testWhat: String): Unit = {
-      println(s"    ---- doTest: $testWhat")
-
       def getIndividualTerms(terms: Seq[String]) = terms.map(MagdaMatchers.tokenize)
 
       /** Checks that there's at least one searchable term in this seq of strings */

@@ -17,12 +17,10 @@ import org.scalacheck.Gen
 class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_5_Spec")
     super.beforeAll()
   }
 
   describe("query") {
-    println("Testing query")
     def queryEquals(outputQuery: Query, inputQuery: Query) = {
       def caseInsensitiveMatchFv(field: String, output: Traversable[FilterValue[String]], input: Traversable[FilterValue[String]]) = withClue(field) {
         output.map(_.map(_.toLowerCase)) should equal(input.map(_.map(_.toLowerCase)))
@@ -60,7 +58,6 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
     }
 
     it("should parse a randomly generated query correctly") {
-      println("  - Testing should parse a randomly generated query correctly")
       forAll(emptyIndexGen, textQueryGen(queryGen(List[DataSet]()))) { (indexTuple, queryTuple) ⇒
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
@@ -85,7 +82,6 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
     }
 
     it("should resolve valid regions") {
-      println("  - Testing should resolve valid regions")
       val thisQueryGen = set(innerRegionQueryGen).map(queryRegions => new Query(regions = queryRegions.map(Specified.apply)))
 
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) { (indexTuple, queryTuple) ⇒
@@ -144,7 +140,6 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
     }
 
     it("should not fail for queries that are full of arbitrary characters") {
-      println("  - Testing should not fail for queries that are full of arbitrary characters")
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
@@ -155,7 +150,6 @@ class DataSetSearch_5_Spec extends DataSetSearchSpecBase {
     }
 
     it("should return scores, and they should be in order") {
-      println("  - Testing should return scores, and they should be in order")
       val gen = for {
         index <- mediumIndexGen
         query <- textQueryGen(queryGen(index._2))

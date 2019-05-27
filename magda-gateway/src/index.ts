@@ -3,7 +3,6 @@ import * as _ from "lodash";
 
 import buildApp from "./buildApp";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import setupTenantMode from "./setupTenantMode";
 
 const coerceJson = (path?: string) => path && require(path);
 
@@ -213,7 +212,6 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
-setupTenantMode(argv as any);
 const app = buildApp(argv as any);
 
 app.listen(argv.listenPort);

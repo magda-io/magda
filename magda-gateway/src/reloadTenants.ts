@@ -8,7 +8,7 @@ export const tenantsTable = new Map<String, Tenant>();
 export default async function reloadTenants() {
     await new Promise<{}>((resolve, reject) => {
         request({
-            headers: { "X-Magda-TenantId": MAGDA_ADMIN_PORTAL_ID },
+            headers: { "X-Magda-Tenant-Id": MAGDA_ADMIN_PORTAL_ID },
             url: `${registryApi}/tenants`
         })
             .on("data", tenantsString => {

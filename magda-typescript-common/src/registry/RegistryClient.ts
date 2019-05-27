@@ -74,7 +74,7 @@ export default class RegistryClient {
 
     getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
         const operation = () => () =>
-            this.aspectDefinitionsApi.getAll(this.tenantId.toString());
+            this.aspectDefinitionsApi.getAll(this.tenantId);
         return <any>retry(
             operation(),
             this.secondsBetweenRetries,
@@ -100,7 +100,7 @@ export default class RegistryClient {
     ): Promise<Record | Error> {
         const operation = (id: string) => () =>
             this.recordsApi.getById(
-                this.tenantId.toString(),
+                this.tenantId,
                 id,
                 aspect,
                 optionalAspect,
@@ -129,7 +129,7 @@ export default class RegistryClient {
     ): Promise<RecordsPage<I> | Error> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
-                this.tenantId.toString(),
+                this.tenantId,
                 aspect,
                 optionalAspect,
                 pageToken,
@@ -156,7 +156,7 @@ export default class RegistryClient {
     ): Promise<string[] | Error> {
         const operation = () =>
             this.recordsApi.getPageTokens(
-                this.tenantId.toString(),
+                this.tenantId,
                 aspect,
                 limit
             );
@@ -181,7 +181,7 @@ export default class RegistryClient {
         tenantId: number = this.tenantId
     ): Promise<Array<Tenant> | Error> {
         // return this.tenantsApi.getAll().then(result => result.body);
-        const operation = () => this.tenantsApi.getAll(tenantId.toString());
+        const operation = () => this.tenantsApi.getAll(tenantId);
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
@@ -201,7 +201,7 @@ export default class RegistryClient {
     ): Promise<Tenant | Error> {
         // return this.tenantsApi.getByDomainName(domainName).then(result => result.body);
         const operation = () =>
-            this.tenantsApi.getByDomainName(tenantId.toString(), domainName);
+            this.tenantsApi.getByDomainName(tenantId, domainName);
         return <any>retry(
             operation,
             this.secondsBetweenRetries,

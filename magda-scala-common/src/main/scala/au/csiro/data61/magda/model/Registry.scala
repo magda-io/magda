@@ -15,7 +15,7 @@ import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
 
 object Registry {
-  val MAGDA_TENANT_ID_HEADER: String = "X-Magda-TenantId"
+  val MAGDA_TENANT_ID_HEADER: String = "X-Magda-Tenant-Id"
   val MAGDA_ADMIN_PORTAL_ID: BigInt = 0
   val MAGDA_SYSTEM_ID: BigInt = -1
 
@@ -27,7 +27,7 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject],
 
-    @(ApiModelProperty @field)(value = "The identifier of the tenant for the aspect type.", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString())
+    @(ApiModelProperty @field)(value = "The identifier of the tenant for the aspect type.", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID)
 
   case class WebHookPayload(
     action: String,
@@ -66,7 +66,7 @@ object Registry {
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
       "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None,
 
-    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString()) extends RecordType
+    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID) extends RecordType
 
 
   @ApiModel(description = "A tenant in the registry.")
@@ -84,7 +84,7 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String],
 
-    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = true) tenantId: String = MAGDA_ADMIN_PORTAL_ID.toString()) extends RecordType
+    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -243,7 +243,7 @@ object Registry {
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher: Option[Record] = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?)
         .map((dataSet: JsObject) => {
-          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsString(hit.tenantId)))
+          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId)))
           val record = theDataSet.convertTo[Record]
           record
         })
@@ -363,7 +363,7 @@ object Registry {
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
-      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsString(hit.tenantId)))
+      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsNumber(hit.tenantId)))
       val distributionRecord: Record = theDistribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
       val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())

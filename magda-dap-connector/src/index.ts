@@ -6,7 +6,7 @@ import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import * as fs from "fs";
 import * as yargs from "yargs";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel"
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel" --registryUrl="http://192.168.137.107:30860/v0"
 const argv = addJwtSecretFromEnvVar(
@@ -87,11 +87,7 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "The magda tenant id to use when making requests to the registry",
             type: "number",
-            demand: true,
-            default:
-                process.env.TENANT_ID ||
-                process.env.npm_package_config_tenantId ||
-                MAGDA_ADMIN_PORTAL_ID
+            demand: true
         }).argv
 );
 
@@ -101,7 +97,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "dap-dataset",
             name: "DAP Dataset",
             jsonSchema: require("@magda/registry-aspects/dap-dataset.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dap-dataset.js",
@@ -113,7 +109,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "dcat-dataset-strings",
             name: "DCAT Dataset properties as strings",
             jsonSchema: require("@magda/registry-aspects/dcat-dataset-strings.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dcat-dataset-strings.js",
@@ -125,7 +121,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dataset-source.js",
@@ -137,7 +133,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "temporal-coverage",
             name: "Temporal Coverage",
             jsonSchema: require("@magda/registry-aspects/temporal-coverage.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         setupFunctionString: fs.readFileSync(
             "aspect-templates/temporal-coverage-setup.js",
@@ -167,7 +163,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "dap-resource",
             name: "DAP Resource",
             jsonSchema: require("@magda/registry-aspects/dap-resource.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dap-resource.js",
@@ -179,7 +175,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "dcat-distribution-strings",
             name: "DCAT Distribution properties as strings",
             jsonSchema: require("@magda/registry-aspects/dcat-distribution-strings.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dcat-distribution-strings.js",
@@ -191,7 +187,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/distribution-source.js",
@@ -206,7 +202,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-source.js",
@@ -218,7 +214,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
             id: "organization-details",
             name: "Organization",
             jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-details.js",

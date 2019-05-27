@@ -15,14 +15,11 @@ import org.locationtech.jts.geom.GeometryFactory
 class DataSetSearchSpec extends DataSetSearchSpecBase {
 
   override def beforeAll(): Unit = {
-    println("Testing DataSetSearchSpec")
     super.beforeAll()
   }
 
   describe("meta") {
-    println("Testing meta")
     it("Mwundo <--> JTS conversions should work") {
-      println("  - Testing Mwundo <--> JTS conversions should work")
       val geoFactory = new GeometryFactory()
       forAll(regionGen(geometryGen(5, coordGen()))) { regionRaw =>
         val preConversion = regionRaw._2.fields("geometry").convertTo[Geometry]
@@ -36,7 +33,6 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
   }
 
   it("should return all results") {
-    println("Testing should return all results")
     forAll(indexGen) {
       case (_, dataSets, routes) ⇒
         Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {

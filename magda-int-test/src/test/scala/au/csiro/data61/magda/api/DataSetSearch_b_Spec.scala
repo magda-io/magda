@@ -10,19 +10,13 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 class DataSetSearch_b_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_b_Spec")
     super.beforeAll()
   }
 
 
   describe("searching") {
-    println("Testing searching")
-
     describe("*") {
-      println("  - Testing *")
-
       it("should sort results by pure quality") {
-        println("    - Testing should sort results by pure quality")
         forAll(indexGen) {
           case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {

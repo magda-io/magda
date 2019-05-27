@@ -19,6 +19,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
+import setupTenantMode from "./setupTenantMode";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -69,6 +70,8 @@ type Config = {
 };
 
 export default function buildApp(config: Config) {
+    setupTenantMode(config as any);
+
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);

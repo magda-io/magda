@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -60,7 +60,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   @ApiOperation(value = "Modify a record aspect by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Aspect],
     notes = "Modifies a record aspect.  If the aspect does not yet exist on this record, it is created.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to update an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to update."),
     new ApiImplicitParam(name = "aspect", required = true, dataType = "au.csiro.data61.magda.model.Registry$Aspect", paramType = "body", value = "The record aspect to save."),
@@ -68,7 +68,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   def putById: Route = put {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           entity(as[JsObject]) { aspect =>
             val theResult = DB localTx { session =>
               recordPersistence.putRecordAspectById(session, recordId, tenantId, aspectId, aspect) match {
@@ -102,14 +102,14 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   @ApiOperation(value = "Delete a record aspect by ID", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult],
     notes = "Deletes a record aspect.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to delete an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   def deleteById: Route = delete {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           DB localTx { session =>
             recordPersistence.deleteRecordAspect(session, recordId, tenantId, aspectId) match {
               case Success(result) => complete(DeleteResult(result))
@@ -152,7 +152,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   @ApiOperation(value = "Modify a record aspect by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[Aspect],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch."),
     new ApiImplicitParam(name = "aspectPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
@@ -160,7 +160,7 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   def patchById: Route = patch {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiredTenantId { tenantId =>
+        requiresTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
             DB localTx { session =>
               recordPersistence.patchRecordAspectById(session, recordId, tenantId, aspectId, aspectPatch) match {

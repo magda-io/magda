@@ -5,7 +5,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -40,14 +40,14 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
   @Path("/{aspectId}")
   @ApiOperation(value = "Get a record aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[Aspect])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch an aspect."),
     new ApiImplicitParam(name = "aspectId", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to fetch.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record or aspect exists with the given IDs.", response = classOf[BadRequest])))
   def getById = get {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
-      requiredTenantId { tenantId =>
+      requiresTenantId { tenantId =>
         DB readOnly { session =>
           recordPersistence.getRecordAspectById(session, recordId, tenantId, aspectId) match {
             case Some(recordAspect) => complete(recordAspect)

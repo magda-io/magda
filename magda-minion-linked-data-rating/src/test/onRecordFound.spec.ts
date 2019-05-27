@@ -461,7 +461,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                 }
             },
             sourceTag: undefined,
-            tenantId: "0"
+            tenantId: 0
         };
     }
 });

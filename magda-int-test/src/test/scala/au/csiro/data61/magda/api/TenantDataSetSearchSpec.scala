@@ -15,11 +15,8 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
   }
 
   describe("searching") {
-    println("Testing searching")
     describe("*") {
-      println("  - Testing *")
       it("should return all datasets of the specified tenant") {
-        println("    - Testing should return all datasets of the specified tenant")
 
         val tenants = List(tenant_1, tenant_2)
         forAll(tenantsIndexGen(tenants)) {
@@ -29,7 +26,7 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
                 status shouldBe OK
                 contentType shouldBe `application/json`
                 val response = responseAs[SearchResult]
-                val expected = dataSets.filter(_.tenantId == theTenant.toString)
+                val expected = dataSets.filter(_.tenantId == theTenant)
                 response.hitCount shouldEqual expected.length
                 MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, expected)
               }

@@ -16,8 +16,8 @@
         },
         "id": "dist-connector-IDIDID-0",
         "name": "IDIDID-0",
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-IDIDID-1": {
         "aspects": {
@@ -36,8 +36,8 @@
         },
         "id": "dist-connector-IDIDID-1",
         "name": "IDIDID-1",
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "ds-connector-IDIDID": {
         "aspects": {
@@ -84,8 +84,8 @@
         },
         "id": "ds-connector-IDIDID",
         "name": "Imagery service Queensland - QldBase QGovSispUsers",
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "org-connector-DEPT": {
         "aspects": {
@@ -103,7 +103,7 @@
         },
         "id": "org-connector-DEPT",
         "name": "DEPT",
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     }
 }

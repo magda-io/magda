@@ -12,18 +12,13 @@ import org.scalacheck.Gen
 class DataSetSearch_0_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_0_Spec")
     super.beforeAll()
   }
 
 
   describe("searching") {
-    println("Testing searching")
-
     describe("searching for a dataset should return that datasets contains the keyword & it's synonyms") {
-      println("  - Testing searching for a dataset should return that datasets contains the keyword & it's synonyms")
       it("for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`") {
-        println("    - Testing for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`")
         case class GenResult(searchKeyword: String, synonym: String, datasetWithSynonym: DataSet)
 
         val synonyms = List("agile", "nimble", "quick", "spry")
@@ -81,9 +76,7 @@ class DataSetSearch_0_Spec extends DataSetSearchSpecBase {
     }
 
     describe("searching for a dataset publisher's acronym should return that dataset eventually") {
-      println("  - Testing searching for a dataset publisher's acronym should return that dataset eventually")
       it("for pre-defined pairs") {
-        println("    - Testing for pre-defined pairs")
         case class GenResult(acronym: String, datasetWithPublisher: DataSet)
 
         val pairs = Seq(
@@ -144,7 +137,6 @@ class DataSetSearch_0_Spec extends DataSetSearchSpecBase {
       }
 
       it("for auto-generated publishers") {
-        println("    - Testing for auto-generated publishers")
         def dataSetToQuery(dataSet: DataSet) = {
           dataSet.publisher
             .flatMap(d => getAcronymFromPublisherName(d.name))

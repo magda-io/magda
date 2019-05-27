@@ -9,14 +9,11 @@ import org.scalacheck.Gen
 class DataSetSearch_4_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_4_Spec")
     super.beforeAll()
   }
 
   describe("pagination") {
-    println("Testing pagination")
     it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {
-      println("  - Testing should match the result of getting all datasets and using .drop(start).take(limit) to select a subset")
       val gen = for {
         (indexName, dataSets, routes) <- indexGen
         dataSetCount = dataSets.size

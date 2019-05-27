@@ -86,7 +86,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
         if (tenantIds.nonEmpty){
           val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
-            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId.toString)).retryUntil(_ => true).sample.get
+            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
           )
           putDataSetsInIndex(dataSets)
         }

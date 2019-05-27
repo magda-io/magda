@@ -2,9 +2,10 @@ package au.csiro.data61.magda.api
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.model.headers.LinkParams.title
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
-
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 
 class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
 
@@ -24,7 +25,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
 
     val qldDataset = DataSet(
         identifier="ds-region-in-query-test-1",
-        tenantId="0",
+        tenantId=MAGDA_ADMIN_PORTAL_ID,
         title=Some("Wildlife density in rural areas"),
         description=Some("Wildlife density as measured by the state survey"),
         catalog=Some("region-in-query-test-catalog"),
@@ -33,7 +34,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
         score = None)
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -42,7 +43,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
 
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
       catalog=Some("region-in-query-test-catalog"),
@@ -52,7 +53,6 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
     val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
-    val indices = new FakeIndices(indexName)
 
     try {
       blockUntilExactCount(3, indexName)
@@ -99,7 +99,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
 
     val saDataset = DataSet(
       identifier="ds-region-in-query-test-1",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
@@ -108,7 +108,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
       score = None)
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -116,7 +116,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
       score = None)
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
       catalog=Some("region-in-query-test-catalog"),
@@ -126,7 +126,6 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
     val datasets = List(nationalDataset1, nationalDataset2, saDataset)
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
-    val indices = new FakeIndices(indexName)
 
     try {
       blockUntilExactCount(3, indexName)
@@ -189,7 +188,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
 
     val alfDataset = DataSet(
       identifier="ds-region-in-query-test-1",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
@@ -198,7 +197,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
       score = None)
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -206,7 +205,7 @@ class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
       score = None)
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
-      tenantId="0",
+      tenantId=MAGDA_ADMIN_PORTAL_ID,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
       catalog=Some("region-in-query-test-catalog"),

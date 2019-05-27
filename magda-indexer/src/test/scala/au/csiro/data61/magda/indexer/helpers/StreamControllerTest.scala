@@ -11,6 +11,7 @@ import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{Assertion, AsyncFlatSpec, FlatSpec, Matchers}
@@ -154,7 +155,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     range.foldLeft(Seq[DataSet]()){
       case (acc, e) =>
         acc ++ Seq(
-          DataSet(identifier = s"d$e", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
+          DataSet(identifier = s"d$e", tenantId = MAGDA_ADMIN_PORTAL_ID, catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
     }
   }
 

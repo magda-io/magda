@@ -2,7 +2,6 @@ import { AspectDefinition, Record } from "./generated/registry/api";
 import AspectBuilder from "./AspectBuilder";
 import ConnectorRecordId from "./ConnectorRecordId";
 import createServiceError from "./createServiceError";
-import { MAGDA_ADMIN_PORTAL_ID } from "./registry/TenantConsts";
 
 /**
  * A base class for transformers for most any JSON-based catalog source.
@@ -23,14 +22,12 @@ export default abstract class JsonTransformer {
         libraries = {},
         datasetAspectBuilders = [],
         distributionAspectBuilders = [],
-        organizationAspectBuilders = [],
-        tenantId = MAGDA_ADMIN_PORTAL_ID
+        organizationAspectBuilders = []
     }: JsonTransformerOptions) {
         this.sourceId = sourceId;
         this.datasetAspectBuilders = datasetAspectBuilders.slice();
         this.distributionAspectBuilders = distributionAspectBuilders.slice();
         this.organizationAspectBuilders = organizationAspectBuilders.slice();
-        this.tenantId = tenantId;
 
         const setupParameters: BuilderSetupFunctionParameters = {
             transformer: this,
@@ -139,19 +136,19 @@ export default abstract class JsonTransformer {
             {
                 id: "dataset-distributions",
                 name: "Dataset Distributions",
-                tenantId: `${this.tenantId}`,
+                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/dataset-distributions.schema.json")
             },
             {
                 id: "source",
                 name: "Source",
-                tenantId: `${this.tenantId}`,
+                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/source.schema.json")
             },
             {
                 id: "dataset-publisher",
                 name: "Dataset Publisher",
-                tenantId: `${this.tenantId}`,
+                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/dataset-publisher.schema.json")
             }
         ]);
@@ -237,7 +234,7 @@ export default abstract class JsonTransformer {
             name: name,
             aspects: generatedAspects,
             sourceTag: undefined,
-            tenantId: this.tenantId.toString()
+            tenantId: this.tenantId
         };
     }
 }
@@ -290,7 +287,7 @@ export interface JsonTransformerOptions {
     distributionAspectBuilders?: AspectBuilder[];
     organizationAspectBuilders?: AspectBuilder[];
     maxConcurrency?: number;
-    tenantId?: number;
+    tenantId: number;
 }
 
 interface CompiledAspects {
