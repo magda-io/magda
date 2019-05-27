@@ -14,12 +14,15 @@ import scala.runtime.ScalaRunTime
 import scala.util.{Failure, Success, Try}
 
 package misc {
+
+  import scala.util.matching.Regex
+
   sealed trait FacetType {
     def id: String
   }
 
   object FacetType {
-    val all = Seq(Publisher, Format)
+    val all: Seq[FacetType] = Seq(Publisher, Format)
 
     private val idToFacet = all.groupBy(_.id.toLowerCase).mapValues(_.head)
 
@@ -71,7 +74,7 @@ package misc {
 
   case class DataSet(
       identifier: String,
-      tenantId: String,
+      tenantId: BigInt,
       title: Option[String] = None,
       catalog: Option[String],
       description: Option[String] = None,
@@ -105,7 +108,7 @@ package misc {
   }
 
   object DataSet {
-    def registryIdToIdentifier(registryId: String) = java.net.URLEncoder.encode(registryId, "UTF-8")
+    def registryIdToIdentifier(registryId: String): String = java.net.URLEncoder.encode(registryId, "UTF-8")
   }
 
   case class Agent(
@@ -132,16 +135,16 @@ package misc {
     geoJson: Option[Geometry] = None)
 
   object Location {
-    val geoJsonPattern = "\\{\"type\":\\s*\".+\",.*\\}".r
-    val emptyPolygonPattern = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
-    val polygonPattern = "POLYGON\\s*\\(\\(((-?[\\d\\.]+ -?[\\d\\.]+\\,?\\s?)+)\\)\\)".r
-    val csvPattern = "^(-?\\d+\\.?\\d*\\,){3}-?\\d+\\.?\\d*$".r
+    val geoJsonPattern: Regex = "\\{\"type\":\\s*\".+\",.*\\}".r
+    val emptyPolygonPattern: Regex = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
+    val polygonPattern: Regex = "POLYGON\\s*\\(\\(((-?[\\d\\.]+ -?[\\d\\.]+\\,?\\s?)+)\\)\\)".r
+    val csvPattern: Regex = "^(-?\\d+\\.?\\d*\\,){3}-?\\d+\\.?\\d*$".r
 
-    def applySanitised(text: String, geoJson: Option[Geometry] = None) = {
+    def applySanitised(text: String, geoJson: Option[Geometry] = None): Location = {
       val processedGeoJson: Option[Geometry] = geoJson match {
         case Some(Polygon(Seq(coords: Seq[Coordinate]))) =>
           coords.distinct match {
-            case Seq(coord)          => Some(Point(coords.head))
+            case Seq(_)          => Some(Point(coords.head))
             case Seq(coord1, coord2) => Some(MultiPoint(Seq(coord1, coord2)))
             case _                   => Some(Polygon(Seq(coords)))
           }
@@ -156,16 +159,15 @@ package misc {
     def apply(stringWithNewLines: String): Location = {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
-        case geoJsonPattern() => {
-          val json = Try(string.parseJson) match {
+        case geoJsonPattern() =>
+          val theJson = Try(string.parseJson) match {
             case Success(json) => json
-            case Failure(e) =>
+            case Failure(_) =>
               CoordinateFormat.quoteNumbersInJson(string).parseJson
           }
-          Some(Protocols.GeometryFormat.read(json))
-        }
+          Some(Protocols.GeometryFormat.read(theJson))
         case emptyPolygonPattern() => None
-        case csvPattern(a) =>
+        case csvPattern(_) =>
           val latLongs = string.split(",").map(str => CoordinateFormat.convertStringToBigDecimal(str))
           fromBoundingBox(Seq(BoundingBox(latLongs(0), latLongs(1), latLongs(2), latLongs(3))))
         case polygonPattern(polygonCoords, _) =>
@@ -207,7 +209,7 @@ package misc {
         .map { seq => seq.distinct }
         .distinct
 
-      if (bBoxPoints.size == 0) {
+      if (bBoxPoints.isEmpty) {
         None
       } else if (bBoxPoints.size == 1) {
         val coords = bBoxPoints.head
@@ -299,12 +301,12 @@ package misc {
       .findFirstIn(url)
       .flatMap { case extensionRegex(extension) => MediaTypes.forExtensionOption(extension) }
 
-    def parseMediaType(mimeType: Option[String], rawFormat: Option[String], url: Option[String]) = mimeType
-      .flatMap(mediaTypeFromMimeType(_))
-      .orElse(rawFormat flatMap (mediaTypeFromFormat(_)))
-      .orElse(url flatMap (mediaTypeFromExtension(_)))
+    def parseMediaType(mimeType: Option[String], rawFormat: Option[String], url: Option[String]): Option[MediaType] = mimeType
+      .flatMap(mediaTypeFromMimeType)
+      .orElse(rawFormat flatMap mediaTypeFromFormat)
+      .orElse(url flatMap mediaTypeFromExtension)
 
-    def formatFromUrl(url: String) = {
+    def formatFromUrl(url: String): Option[String] = {
       urlToFormat
         .view
         .filter {
@@ -317,17 +319,17 @@ package misc {
 
     def parseFormat(rawFormat: Option[String], url: Option[String], parsedMediaType: Option[MediaType], description: Option[String]): Option[String] = {
       rawFormat
-        .orElse(url.flatMap(Distribution.formatFromUrl(_)))
+        .orElse(url.flatMap(Distribution.formatFromUrl))
         .orElse(parsedMediaType.map(_.subType))
         .orElse(description.flatMap(desc =>
-          urlToFormat.values.filter(format =>
-            desc.toLowerCase.contains(format.toLowerCase())).headOption))
+          urlToFormat.values.find(format =>
+            desc.toLowerCase.contains(format.toLowerCase()))))
     }
 
     def isDownloadUrl(url: String, title: String, description: Option[String], format: Option[String]): Boolean = {
       title.toLowerCase.contains("download") ||
-        description.map(_.toLowerCase.contains("download")).getOrElse(false) ||
-        format.map(_.equals("HTML")).getOrElse(false)
+        description.exists(_.toLowerCase.contains("download")) ||
+        format.exists(_.equals("HTML"))
     }
   }
 
@@ -336,10 +338,10 @@ package misc {
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
 
-    implicit val dataSouceFormat = jsonFormat3(DataSouce.apply)
-    implicit val dcatCreationFormat = jsonFormat6(DcatCreation.apply)
+    implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(DataSouce.apply)
+    implicit val dcatCreationFormat: RootJsonFormat[DcatCreation] = jsonFormat6(DcatCreation.apply)
 
-    implicit val licenseFormat = jsonFormat2(License.apply)
+    implicit val licenseFormat: RootJsonFormat[License] = jsonFormat2(License.apply)
 
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
       override def write(facetType: FacetType): JsString = JsString.apply(facetType.id)
@@ -420,9 +422,9 @@ package misc {
       }
     }
 
-    val apiBoundingBoxFormat = jsonFormat4(BoundingBox)
+    val apiBoundingBoxFormat: RootJsonFormat[BoundingBox] = jsonFormat4(BoundingBox)
 
-    implicit val queryRegionFormat = jsonFormat2(QueryRegion.apply)
+    implicit val queryRegionFormat: RootJsonFormat[QueryRegion] = jsonFormat2(QueryRegion.apply)
 
     class RegionFormat(bbFormat: JsonFormat[BoundingBox]) extends JsonFormat[Region] {
       override def write(region: Region): JsValue = JsObject(Map(
@@ -451,16 +453,16 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat = jsonFormat13(Distribution.apply)
-    implicit val locationFormat = jsonFormat2(Location.apply)
-    implicit val agentFormat = jsonFormat17(Agent.apply)
-    implicit val facetOptionFormat = jsonFormat7(FacetOption.apply)
-    implicit val facetFormat = jsonFormat2(Facet.apply)
-    implicit val facetSearchResultFormat = jsonFormat2(FacetSearchResult.apply)
+    implicit val distributionFormat: RootJsonFormat[Distribution] = jsonFormat13(Distribution.apply)
+    implicit val locationFormat: RootJsonFormat[Location] = jsonFormat2(Location.apply)
+    implicit val agentFormat: RootJsonFormat[Agent] = jsonFormat17(Agent.apply)
+    implicit val facetOptionFormat: RootJsonFormat[FacetOption] = jsonFormat7(FacetOption.apply)
+    implicit val facetFormat: RootJsonFormat[Facet] = jsonFormat2(Facet.apply)
+    implicit val facetSearchResultFormat: RootJsonFormat[FacetSearchResult] = jsonFormat2(FacetSearchResult.apply)
 
-    implicit val readyStatus = jsonFormat1(ReadyStatus.apply)
+    implicit val readyStatus: RootJsonFormat[ReadyStatus] = jsonFormat1(ReadyStatus.apply)
 
-    implicit val accessControlFormat = jsonFormat3(AccessControl.apply)
+    implicit val accessControlFormat: RootJsonFormat[AccessControl] = jsonFormat3(AccessControl.apply)
 
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters
@@ -518,7 +520,7 @@ package misc {
 
         DataSet(
           identifier = convertField[String]("identifier", json),
-          tenantId = convertField[String]("tenantId", json),
+          tenantId = convertField[BigInt]("tenantId", json),
           title = convertOptionField[String]("title", json),
           catalog = convertOptionField[String]("catalog", json),
           description = convertOptionField[String]("description", json),

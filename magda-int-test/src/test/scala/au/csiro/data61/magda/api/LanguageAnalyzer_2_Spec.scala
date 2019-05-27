@@ -4,10 +4,8 @@ import scala.util.Random
 
 class LanguageAnalyzer_2_Spec extends LanguageAnalyzerSpecBase {
   override def beforeAll(): Unit = {
-    println("Testing LanguageAnalyzer_2_Spec")
     super.beforeAll()
   }
-
 
   describe("should return the right dataset when searching for that dataset's") {
     val testWhat = "should return the right dataset when searching for that dataset's"

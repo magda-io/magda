@@ -5,9 +5,9 @@ import "mocha";
 import AspectBuilder from "src/AspectBuilder";
 import * as fs from "fs";
 import { Record } from "src/generated/registry/api";
-import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 
 describe("JsonTransformer", () => {
+    const tenant_id_1 = 1;
     describe("organizationJsonToRecord", () => {
         let transformerOptions: JsonTransformerOptions;
 
@@ -18,7 +18,7 @@ describe("JsonTransformer", () => {
                         id: "organization-details",
                         name: "Organization",
                         jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
-                        tenantId: MAGDA_ADMIN_PORTAL_ID.toString()
+                        tenantId: tenant_id_1
                     },
                     builderFunctionString: fs.readFileSync(
                         "src/test/aspect-templates/organization-details.js",
@@ -29,7 +29,8 @@ describe("JsonTransformer", () => {
 
             transformerOptions = {
                 sourceId: "test",
-                organizationAspectBuilders
+                organizationAspectBuilders,
+                tenantId: tenant_id_1
             };
         });
 

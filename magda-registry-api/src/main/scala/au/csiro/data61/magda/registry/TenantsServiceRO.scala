@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.TenantDirectives.requiredAdminTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresAdminTenantId
 import au.csiro.data61.magda.model.Registry.Tenant
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -42,12 +42,12 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
     */
   @ApiOperation(value = "Get all tenants", nickname = "getAll", httpMethod = "GET", response = classOf[Tenant], responseContainer = "List")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "Don't know anything about tenants.", response = classOf[BadRequest])))
   def getAll: Route = get {
     pathEnd {
-      requiredAdminTenantId { _ =>
+      requiresAdminTenantId { _ =>
         DB readOnly { session =>
           tenantPersistence.getTenants(session) match {
             case tenants: List[Tenant] => complete(tenants)
@@ -77,14 +77,14 @@ class TenantsServiceRO(config: Config, system: ActorSystem, materializer: Materi
   @ApiOperation(value = "Get a tenant by its domain name", nickname = "getByDomainName", httpMethod = "GET",
     response = classOf[Tenant], notes = "Get all info about the tenant.")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "domainName", required = true, dataType = "string",
       paramType = "path", value = "Domain name of the tenant to be fetched.")))
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No tenant exists with that domain name.", response = classOf[BadRequest])))
   def getByDomainName: Route = get {
     path(Segment) { domainName =>
-      requiredAdminTenantId { _ =>
+      requiresAdminTenantId { _ =>
         DB readOnly { session =>
           tenantPersistence.getByDomainName(session, domainName) match {
             case Some(tenant) => complete(tenant)

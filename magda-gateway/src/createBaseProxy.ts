@@ -1,6 +1,5 @@
 import * as httpProxy from "http-proxy";
-
-import * as URI from "urijs";
+import * as express from "express";
 import { magdaAdminPortalName, multiTenantsMode } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
@@ -85,13 +84,9 @@ export default function createBaseProxy(): httpProxy {
     });
 
     proxy.on("proxyReq", async function(proxyReq, req, res) {
-        proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, "undefined");
-
         if (multiTenantsMode === true) {
-            const host = req.headers.host;
-            const domainName = new URI("http://" + host)
-                .hostname()
-                .toLowerCase();
+            const theRequest = <express.Request> req
+            const domainName = theRequest.hostname.toLowerCase()
 
             if (domainName === magdaAdminPortalName) {
                 proxyReq.setHeader(

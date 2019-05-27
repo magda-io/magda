@@ -87,7 +87,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "ckan-dataset",
             name: "CKAN Dataset",
             jsonSchema: require("@magda/registry-aspects/ckan-dataset.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/ckan-dataset.js",
@@ -99,7 +99,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "dcat-dataset-strings",
             name: "DCAT Dataset properties as strings",
             jsonSchema: require("@magda/registry-aspects/dcat-dataset-strings.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dcat-dataset-strings.js",
@@ -111,7 +111,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dataset-source.js",
@@ -123,7 +123,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             id: "temporal-coverage",
             name: "Temporal Coverage",
             jsonSchema: require("@magda/registry-aspects/temporal-coverage.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         setupFunctionString: fs.readFileSync(
             "aspect-templates/temporal-coverage-setup.js",
@@ -142,7 +142,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "ckan-resource",
             name: "CKAN Resource",
             jsonSchema: require("@magda/registry-aspects/ckan-resource.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/ckan-resource.js",
@@ -154,7 +154,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "dcat-distribution-strings",
             name: "DCAT Distribution properties as strings",
             jsonSchema: require("@magda/registry-aspects/dcat-distribution-strings.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/dcat-distribution-strings.js",
@@ -166,7 +166,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/distribution-source.js",
@@ -181,7 +181,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-source.js",
@@ -193,7 +193,7 @@ const organizationAspectBuilders: AspectBuilder[] = [
             id: "organization-details",
             name: "Organization",
             jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
-            tenantId: argv.tenantId.toString()
+            tenantId: argv.tenantId
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-details.js",
@@ -212,7 +212,7 @@ export const transformerOptions = {
     datasetAspectBuilders,
     distributionAspectBuilders,
     organizationAspectBuilders,
-    tenantId: argv.tenantId.toString()
+    tenantId: argv.tenantId
 };
 
 export const transformer: any = createTransformer(transformerOptions);

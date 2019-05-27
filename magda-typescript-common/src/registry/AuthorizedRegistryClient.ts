@@ -44,7 +44,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<AspectDefinition | Error> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
-                tenantId.toString(),
+                tenantId,
                 encodeURIComponent(aspectDefinition.id),
                 aspectDefinition,
                 this.jwt
@@ -199,7 +199,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordsApi.putById(
-                tenantId.toString(),
+                tenantId,
                 encodeURIComponent(record.id),
                 record,
                 this.jwt
@@ -231,7 +231,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.putById(
-                tenantId.toString(),
+                tenantId,
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
@@ -262,7 +262,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.patchById(
-                tenantId.toString(),
+                tenantId,
                 encodeURIComponent(recordId),
                 aspectId,
                 aspectPatch,
@@ -293,7 +293,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         const operation = () =>
             this.recordsApi
                 .trimBySourceTag(
-                    tenantId.toString(),
+                    tenantId,
                     sourceTagToPreserve,
                     sourceId,
                     this.jwt

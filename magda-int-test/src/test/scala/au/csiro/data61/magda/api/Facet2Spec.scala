@@ -15,7 +15,6 @@ class Facet2Spec extends FacetSpecBase {
   override var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
 
   override def beforeAll() = {
-    println("Testing Facet2Spec")
     super.beforeAll()
     defaultGen = for {
       tuple <- mediumIndexGen
@@ -24,10 +23,7 @@ class Facet2Spec extends FacetSpecBase {
   }
 
   describe("facets") {
-    println("Testing facets")
-
     describe("format") {
-      println("  - Testing format")
       def reducer(dataSet: DataSet) = dataSet.distributions.flatMap(_.format.map(_.toLowerCase)).toSet
       def queryToInt(query: Query) = query.formats.size
 
@@ -38,16 +34,13 @@ class Facet2Spec extends FacetSpecBase {
     }
 
     describe("year") {
-      println("  - Testing year")
       it("with no query") {
-        println("    - Testing with no query")
         checkFacetsNoQuery() { (dataSets, facetSize) =>
           checkDataSetResult(dataSets, responseAs[SearchResult])
         }
       }
 
       it("with a query") {
-        println("    - Testing with a query")
         val queryGen = for {
           dateFrom <- dateFromGen
           dateTo <- dateToGen

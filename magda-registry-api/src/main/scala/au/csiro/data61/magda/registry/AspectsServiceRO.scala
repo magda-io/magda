@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -37,10 +37,10 @@ class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorS
 
   @ApiOperation(value = "Get a list of all aspects", nickname = "getAll", httpMethod = "GET", response = classOf[AspectDefinition], responseContainer = "List")
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id")))
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0")))
   def getAll: Route = get {
     pathEnd {
-      requiredTenantId { tenantId =>
+      requiresTenantId { tenantId =>
         complete {
           DB readOnly { session =>
             AspectPersistence.getAll(session, tenantId)
@@ -73,11 +73,11 @@ class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorS
   @Path("/{id}")
   @ApiOperation(value = "Get an aspect by ID", nickname = "getById", httpMethod = "GET", response = classOf[AspectDefinition])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be fetched.")))
   def getById: Route = get {
     path(Segment) { id: String =>
-      requiredTenantId { tenantId =>
+      requiresTenantId { tenantId =>
         DB readOnly { session =>
           AspectPersistence.getById(session, id, tenantId) match {
             case Some(aspect) => complete(aspect)

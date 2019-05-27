@@ -14,13 +14,8 @@ class DataSetSearch_a_Spec extends DataSetSearchSpecBase {
   }
 
   describe("searching") {
-    println("Testing searching")
-
     describe("*") {
-      println("  - Testing *")
-
       it("hitCount should reflect all hits in the system, not just what is returned") {
-        println("    - Testing hitCount should reflect all hits in the system, not just what is returned")
         forAll(indexGen) {
           case (_, dataSets, routes) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {

@@ -7,7 +7,6 @@ import au.csiro.data61.magda.model.misc._
 
 class LanguageAnalyzer_3_Spec extends LanguageAnalyzerSpecBase {
   override def beforeAll(): Unit = {
-    println("Testing LanguageAnalyzer_3_Spec")
     super.beforeAll()
   }
 

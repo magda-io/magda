@@ -43,12 +43,10 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols with ResponseDatasetAllo
   implicit val ec = system.dispatcher
 
   override def beforeAll() = {
-    println("Testing CrawlerApiSpec")
     super.beforeAll()
   }
 
   it("should correctly store new datasets when reindexed") {
-    println("Testing should correctly store new datasets when reindexed")
     // When shrinking, shrink the datasets only and put them in a new index.
     implicit def shrinker2(implicit s: Shrink[List[DataSet]]): Shrink[(List[DataSet], List[DataSet])] =
       Shrink[(List[DataSet], List[DataSet])] {
@@ -190,5 +188,4 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols with ResponseDatasetAllo
       }
     }
   }
-
 }

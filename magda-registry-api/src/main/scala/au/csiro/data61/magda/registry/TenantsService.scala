@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiredAdminTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresAdminTenantId
 import au.csiro.data61.magda.model.Registry.Tenant
 import com.typesafe.config.Config
 import io.swagger.annotations._
@@ -48,14 +48,14 @@ class TenantsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     */
   @ApiOperation(value = "Create a new tenant", nickname = "create", httpMethod = "POST", response = classOf[Tenant])
   @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-TenantId", required = true, dataType = "String", paramType = "header", value = "Magda tenant id"),
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A tenant already exists with the supplied domainName", response = classOf[BadRequest])))
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
       pathEnd {
-        requiredAdminTenantId { _ =>
+        requiresAdminTenantId { _ =>
           entity(as[Tenant]) { tenant =>
             val theResult = DB localTx { session =>
               tenantPersistence.createTenant(session, tenant) match {

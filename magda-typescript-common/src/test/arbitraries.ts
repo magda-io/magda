@@ -53,12 +53,14 @@ const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     show: (x: string) => x
 });
 
+const intArb = jsc.integer(48, 57)
+
 export const recordArb = jsc.record<Record>({
     id: uuidArb,
     name: stringArb,
     aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10),
     sourceTag: jsc.constant(undefined),
-    tenantId: numArb
+    tenantId: intArb
 });
 
 export const specificRecordArb = (aspectArbs: {
@@ -69,7 +71,7 @@ export const specificRecordArb = (aspectArbs: {
         name: stringArb,
         aspects: jsc.record(aspectArbs),
         sourceTag: jsc.constant(undefined),
-        tenantId: numArb
+        tenantId: intArb
     });
 
 const defaultSchemeArb = jsc.oneof([

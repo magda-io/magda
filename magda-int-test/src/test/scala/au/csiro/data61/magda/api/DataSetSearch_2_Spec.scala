@@ -14,14 +14,11 @@ import org.scalacheck.{Gen, Shrink}
 class DataSetSearch_2_Spec extends DataSetSearchSpecBase {
 
   override def beforeAll() = {
-    println("Testing DataSetSearch_2_Spec")
     super.beforeAll()
   }
 
   describe("quotes") {
-    println("Testing quotes")
     it("should be able to be found verbatim somewhere in a dataset") {
-      println("  - Testing should be able to be found verbatim somewhere in a dataset")
       implicit val stringShrink: Shrink[String] = Shrink { string =>
         Stream.empty
       }
@@ -94,5 +91,4 @@ class DataSetSearch_2_Spec extends DataSetSearchSpecBase {
       }
     }
   }
-
 }

@@ -13,7 +13,6 @@ class Facet3Spec extends FacetSpecBase {
   override var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
 
   override def beforeAll() = {
-    println("Testing FacetSpec")
     super.beforeAll()
     defaultGen = for {
       tuple <- mediumIndexGen
@@ -22,10 +21,7 @@ class Facet3Spec extends FacetSpecBase {
   }
 
   describe("facets") {
-    println("Testing facets")
-
     describe("publisher") {
-      println("  - Testing publisher")
       def reducer(dataSet: DataSet) = Set(dataSet.publisher.flatMap(_.name)).flatten
       def queryToInt(query: Query) = query.publishers.size
 
@@ -38,13 +34,11 @@ class Facet3Spec extends FacetSpecBase {
       genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
 
       describe("should have identifiers except user selected option with 0 hitCount") {
-        println("  - Testing should have identifiers except user selected option with 0 hitCount")
         implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
           Stream.empty
         }
 
         it("in general") {
-          println("    - Testing in general")
           val gen = for {
             index <- indexGen
             textQuery <- textQueryGen(queryGen(index._2))
@@ -84,9 +78,7 @@ class Facet3Spec extends FacetSpecBase {
               throw e
           }
         }
-
       }
-
     }
   }
 }

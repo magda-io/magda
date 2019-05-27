@@ -6,7 +6,7 @@ export default [
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: undefined
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-source.js",
@@ -18,7 +18,7 @@ export default [
             id: "organization-details",
             name: "Organization",
             jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
-            tenantId: "tenant id in number string"
+            tenantId: undefined
         },
         builderFunctionString: fs.readFileSync(
             "aspect-templates/organization-details.js",

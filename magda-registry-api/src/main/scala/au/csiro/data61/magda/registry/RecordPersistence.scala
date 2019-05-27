@@ -343,7 +343,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         case (_, Success(JsNull)) => false // aspect was deleted
         case _                    => true
       }).map(aspect => (aspect._1, aspect._2.get.asJsObject)))
-    } yield Record(patchedRecord.id, patchedRecord.name, aspects, tenantId=tenantId.toString())
+    } yield Record(patchedRecord.id, patchedRecord.name, aspects, tenantId=tenantId)
   }
 
   def patchRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
@@ -431,7 +431,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
       hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, tenantId, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record.copy(tenantId = tenantId.toString()))
+        case _                => Success(record.copy(tenantId = tenantId))
       }
     } yield hasAspectFailure
   }
@@ -673,7 +673,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
-    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), rs.string("tenantId"))
+    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), rs.bigInt("tenantId"))
   }
 
   private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
@@ -686,7 +686,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
         }
         .toMap, rs.stringOpt("sourceTag"),
-      rs.string("tenantId"))
+      rs.bigInt("tenantId"))
   }
 
   private def rowToAspect(rs: WrappedResultSet): JsObject = {

@@ -88,7 +88,7 @@ const registry = new Registry({
     baseUrl: argv.registryUrl,
     jwtSecret: argv.jwtSecret,
     userId: argv.userId,
-    tenantId: Number(argv.tenantId)
+    tenantId: <number>(argv.tenantId)
 });
 
 const transformerOptions = {
@@ -99,7 +99,7 @@ const transformerOptions = {
     datasetAspectBuilders,
     distributionAspectBuilders,
     organizationAspectBuilders,
-    tenantId: Number(argv.tenantId)
+    tenantId: <number>(argv.tenantId)
 };
 
 const transformer = createTransformer(transformerOptions);

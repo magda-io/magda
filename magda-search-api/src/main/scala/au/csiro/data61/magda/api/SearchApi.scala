@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.api.{model => apimodel}
-import au.csiro.data61.magda.directives.TenantDirectives.requiredTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.search.SearchQueryer
 import com.typesafe.config.Config
 
@@ -63,7 +63,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
        *       ]
        *    }
        */
-        pathPrefix("facets") {requiredTenantId { tenantId =>
+        pathPrefix("facets") {requiresTenantId { tenantId =>
           extractRequest { request =>
             path(Segment / "options") { facetId ⇒
               (get & parameters(
@@ -187,7 +187,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
          *    }
          *
          */
-          pathPrefix("datasets") { requiredTenantId { tenantId =>
+          pathPrefix("datasets") { requiresTenantId { tenantId =>
             extractRequest { request =>
 
               (get & parameters(
@@ -267,7 +267,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *       ]
            *    }
            */
-          pathPrefix("organisations") {requiredTenantId { tenantId =>
+          pathPrefix("organisations") {requiresTenantId { tenantId =>
             (get & parameters(
               'query ?,
               "start" ? 0,
@@ -320,7 +320,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *        "regions": []
            *    }
            */
-          path("regions") {requiredTenantId { tenantId =>
+          path("regions") {requiresTenantId { tenantId =>
             (get & parameters('query ?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
               complete(searchQueryer.searchRegions(query, start, limit, tenantId.toString))
             }

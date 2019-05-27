@@ -18,8 +18,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1",
@@ -40,8 +40,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2",
@@ -62,8 +62,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-3",
@@ -84,8 +84,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "ds-connector-4fce6238-8d55-499c-bff5-98518552f4b4": {
         "id": "ds-connector-4fce6238-8d55-499c-bff5-98518552f4b4",
@@ -122,8 +122,8 @@
                 "publisher": "org-connector-Geoscience Australia"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-0": {
         "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-0",
@@ -144,8 +144,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-1": {
         "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-1",
@@ -166,8 +166,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2": {
         "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-2",
@@ -188,8 +188,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3": {
         "id": "dist-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2-3",
@@ -210,8 +210,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "ds-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2": {
         "id": "ds-connector-7846c08a-542d-4ab2-809a-09cca5b76bc2",
@@ -272,8 +272,8 @@
                 "publisher": "org-connector-Geoscience Australia"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0": {
         "id": "dist-connector-c59c79c9-6ab2-4230-a918-7a48cf547613-0",
@@ -295,8 +295,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "ds-connector-c59c79c9-6ab2-4230-a918-7a48cf547613": {
         "id": "ds-connector-c59c79c9-6ab2-4230-a918-7a48cf547613",
@@ -343,8 +343,8 @@
                 "publisher": "org-connector-Geoscience Australia"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0": {
         "id": "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-0",
@@ -365,8 +365,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1": {
         "id": "dist-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941-1",
@@ -384,8 +384,8 @@
                 "name": "Connector"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "ds-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941": {
         "id": "ds-connector-1dc9935c-0d2a-84ff-e053-12a3070ae941",
@@ -444,8 +444,8 @@
                 "publisher": "org-connector-Geoscience Australia"
             }
         },
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     },
     "org-connector-Geoscience Australia": {
         "aspects": {
@@ -469,7 +469,7 @@
         },
         "id": "org-connector-Geoscience Australia",
         "name": "Geoscience Australia",
-        "sourceTag": "stag",
-        "tenantId": "0"
+        "sourceTag": "stag"
+
     }
 }

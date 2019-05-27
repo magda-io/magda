@@ -13,15 +13,12 @@ import scala.concurrent.duration._
 class Webhook_2_Spec extends WebhookSpecBase {
 
   override def beforeAll() = {
-    println("Testing Webhook_2_Spec")
     super.beforeAll()
   }
 
   describe("when webhook received") {
-    println("Testing when webhook received")
 
     it("given a combination of deletions and insertions, it should not delete anything that was included as a record") {
-      println("  - Testing given a combination of deletions and insertions, it should not delete anything that was included as a record")
       val gen = for {
         gennedDataSets <- dataSetsGen
         dataSets = gennedDataSets.map(_._1)

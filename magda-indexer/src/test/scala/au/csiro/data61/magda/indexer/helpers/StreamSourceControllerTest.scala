@@ -5,13 +5,13 @@ import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{AsyncFlatSpec, FlatSpec,  _}
-
-import scala.concurrent.{ExecutionContextExecutor, Future}
-
 import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.{FlatSpec, _}
+
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class StreamSourceControllerTest extends FlatSpec with Matchers with BeforeAndAfterEach {
 
@@ -25,11 +25,11 @@ class StreamSourceControllerTest extends FlatSpec with Matchers with BeforeAndAf
   private var source: Source[DataSet, NotUsed] = None.orNull
 
   private val dataSet1 =
-    DataSet(identifier = "d1", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d1", tenantId = MAGDA_ADMIN_PORTAL_ID, catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
   private val dataSet2 =
-    DataSet(identifier = "d2", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d2", tenantId = MAGDA_ADMIN_PORTAL_ID, catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
   private val dataSet3 =
-    DataSet(identifier = "d3", tenantId = "0", catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
+    DataSet(identifier = "d3", tenantId = MAGDA_ADMIN_PORTAL_ID, catalog = Some("c"), quality = 1.0D, score = Some(1.0F))
 
   private val dataSets: Seq[DataSet] = List(dataSet1, dataSet2, dataSet3)
 
