@@ -3,8 +3,12 @@ import * as pg from "pg";
 import * as _ from "lodash";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
+import NestedSetModelQueryer, {
+    NodeRecord,
+    CompareNodeResult
+} from "../NestedSetModelQueryer";
 import getTestDBConfig from "./getTestDBConfig";
+import { Maybe } from "tsmonad";
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -131,14 +135,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes.length).to.equal(1);
         expect(nodes[0]["name"]).to.equal("Chuck");
         const testNode = await queryer.getNodeById(nodes[0]["id"]);
-        expect(testNode.name).to.equal("Chuck");
+        expect(testNode.valueOrThrow().name).to.equal("Chuck");
     });
 
     it("`getRootNode` should return root node", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const node = await queryer.getRootNode();
-        expect(node.name).to.equal("Albert");
+        expect(node.valueOrThrow().name).to.equal("Albert");
     });
 
     it("`defaultSelectFieldList` paremeter should be able to control the fields of returned nodes", async () => {
@@ -147,7 +151,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             "id",
             "left"
         ]);
-        const node = await queryer.getRootNode();
+        const node = (await queryer.getRootNode()).valueOrThrow();
         expect(Object.keys(node)).to.have.members(["id", "left"]);
     });
 
@@ -245,22 +249,22 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         let node = await queryer.getImmediateParent(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(node.name).to.equal("Albert");
+        expect(node.valueOrThrow().name).to.equal("Albert");
 
         node = await queryer.getImmediateParent(
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(node.name).to.equal("Chuck");
+        expect(node.valueOrThrow().name).to.equal("Chuck");
 
         node = await queryer.getImmediateParent(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(node.name).to.equal("Albert");
+        expect(node.valueOrThrow().name).to.equal("Albert");
 
         node = await queryer.getImmediateParent(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(node).be.null;
+        expect(node.equals(Maybe.nothing())).to.be.true;
     });
 
     it("`getAllNodesAtLevel` should return all nodes at N level", async () => {
@@ -329,62 +333,62 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
     it("`getLeftMostImmediateChild` should return left most immediate child", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        let node: NodeRecord;
+        let node: Maybe<NodeRecord>;
         node = await queryer.getLeftMostImmediateChild(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(node.name).to.equal("Bert");
+        expect(node.valueOrThrow().name).to.equal("Bert");
 
         node = await queryer.getLeftMostImmediateChild(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(node).be.null;
+        expect(node.equals(Maybe.nothing())).to.be.true;
 
         node = await queryer.getLeftMostImmediateChild(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(node.name).to.equal("Donna");
+        expect(node.valueOrThrow().name).to.equal("Donna");
 
         node = await queryer.getLeftMostImmediateChild(
             await getNodeIdFromName(tableName, "Eddie")
         );
-        expect(node).be.null;
+        expect(node.equals(Maybe.nothing())).to.be.true;
     });
 
     it("`getRightMostImmediateChild` should return right most immediate child", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        let node: NodeRecord;
+        let node: Maybe<NodeRecord>;
         node = await queryer.getRightMostImmediateChild(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(node.name).to.equal("Chuck");
+        expect(node.valueOrThrow().name).to.equal("Chuck");
 
         node = await queryer.getRightMostImmediateChild(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(node).be.null;
+        expect(node.equals(Maybe.nothing())).to.be.true;
 
         node = await queryer.getRightMostImmediateChild(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(node.name).to.equal("Fred");
+        expect(node.valueOrThrow().name).to.equal("Fred");
 
         node = await queryer.getRightMostImmediateChild(
             await getNodeIdFromName(tableName, "Eddie")
         );
-        expect(node).be.null;
+        expect(node.equals(Maybe.nothing())).to.be.true;
     });
 
     it("`getTopDownPathBetween` should return top down path between two nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        let nodes: NodeRecord[];
+        let nodes: Maybe<NodeRecord[]>;
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Donna"
@@ -394,7 +398,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Eddie")
         );
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Eddie"
@@ -404,43 +408,49 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Chuck"),
             await getNodeIdFromName(tableName, "Fred")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Chuck", "Fred"]);
+        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+            "Chuck",
+            "Fred"
+        ]);
 
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Albert", "Bert"]);
+        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+            "Albert",
+            "Bert"
+        ]);
 
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Bert"),
             await getNodeIdFromName(tableName, "Fred")
         );
         // --- there is no path between Bert and Fred
-        expect(nodes).be.null;
+        expect(nodes.equals(Maybe.nothing())).to.be.true;
     });
 
-    it("`compareNodes` should return -1, 1, 0, null based on the nodes' level on the available path", async () => {
+    it("`compareNodes` should return 'ancestor', 'descendant', 'equal', 'unrelated' based on the nodes' level on the available path", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        let compareResult: number;
+        let compareResult: CompareNodeResult;
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(compareResult).to.equal(1);
+        expect(compareResult).to.equal("ancestor");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Bert"),
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(compareResult).to.equal(-1);
+        expect(compareResult).to.equal("descendant");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Bert"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(compareResult).to.equal(0);
+        expect(compareResult).to.equal("equal");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Bert"),
@@ -448,31 +458,31 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
         // --- as there is no path between Bert & Eddie
         // --- i.e. Eddie is not Bert's subordinate
-        expect(compareResult).be.null;
+        expect(compareResult).equal("unrelated");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Eddie"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(compareResult).be.null;
+        expect(compareResult).equal("unrelated");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Chuck"),
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(compareResult).to.equal(1);
+        expect(compareResult).to.equal("ancestor");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Chuck"),
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(compareResult).to.equal(1);
+        expect(compareResult).to.equal("ancestor");
 
         compareResult = await queryer.compareNodes(
             await getNodeIdFromName(tableName, "Chuck"),
             "60194a60-aaaa-aaaa-aaaa-3e4d3c2cfefc" //--- non exists node
         );
-        expect(compareResult).be.null;
+        expect(compareResult).equal("unrelated");
     });
 
     it("`createRootNode` should create a root node", async () => {
@@ -515,7 +525,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         const originalRootNode = await queryer.getRootNode();
         // --- delete the root node
         await pool.query(`DELETE FROM "${tableName}" WHERE "id" = $1`, [
-            originalRootNode.id
+            originalRootNode.valueOrThrow().id
         ]);
 
         const nodeId = await queryer.createRootNode({
@@ -525,7 +535,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(typeof nodeId).to.equal("string");
         expect(nodeId.length).to.equal(36);
 
-        const newRootNode = await queryer.getRootNode();
+        const newRootNode = (await queryer.getRootNode()).valueOrThrow();
         expect(newRootNode.name).to.equal("test root node name");
         expect(newRootNode.desc).to.equal("test root node description");
         expect(newRootNode.left).to.equal(1);
@@ -544,7 +554,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(typeof nodeId).to.equal("string");
         expect(nodeId.length).to.equal(36);
 
-        const rootNode = await queryer.getRootNode();
+        const rootNode = (await queryer.getRootNode()).valueOrThrow();
         await queryer.insertNode(rootNode["id"], { name: "Bert" });
 
         const lv3ParentNodeId = await queryer.insertNode(nodeId, {
@@ -641,7 +651,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await queryer.moveSubTreeTo(chuckId, bertId);
 
         // --- checking three structure after the chanhes
-        let rootNode = await queryer.getRootNode();
+        let rootNode = (await queryer.getRootNode()).valueOrThrow();
         expect(rootNode.name).to.equal("Albert");
 
         let lv2Nodes = await queryer.getAllNodesAtLevel(2);
@@ -667,7 +677,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         );
 
         // --- checking three structure after the chanhes
-        rootNode = await queryer.getRootNode();
+        rootNode = (await queryer.getRootNode()).valueOrThrow();
         expect(rootNode.name).to.equal("Albert");
 
         lv2Nodes = await queryer.getAllNodesAtLevel(2);
@@ -700,7 +710,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(
             (await queryer.getImmediateParent(
                 (await queryer.getNodesByName("Donna"))[0]["id"]
-            )).name
+            )).valueOrThrow().name
         ).to.equal("Chuck");
 
         // --- move `Donna` to `Bert`: there is no path from Donna to Bert
@@ -709,8 +719,8 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             (await queryer.getNodesByName("Bert"))[0]["id"]
         );
 
-        // --- checking three structure after the chanhes
-        let rootNode = await queryer.getRootNode();
+        // --- checking three structure after the changes
+        let rootNode = (await queryer.getRootNode()).valueOrThrow();
         expect(rootNode.name).to.equal("Albert");
 
         let lv2Nodes = await queryer.getAllNodesAtLevel(2);
@@ -725,7 +735,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(
             (await queryer.getImmediateParent(
                 (await queryer.getNodesByName("Donna"))[0]["id"]
-            )).name
+            )).valueOrThrow().name
         ).to.equal("Bert");
     });
 
@@ -938,7 +948,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             desc: "test desc"
         });
 
-        const albertNode = await queryer.getNodeById(albertId);
+        const albertNode = (await queryer.getNodeById(albertId)).valueOrThrow();
         expect(albertNode.id).to.equal(albertId);
         expect(albertNode.left).to.equal(1);
         expect(albertNode.right).to.equal(12);
