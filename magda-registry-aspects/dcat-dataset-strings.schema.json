@@ -1,8 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "title": "DCAT Dataset properties as strings",
-    "description":
-        "The [DCAT Dataset](https://www.w3.org/TR/vocab-dcat/#class-dataset) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
+    "description": "The [DCAT Dataset](https://www.w3.org/TR/vocab-dcat/#class-dataset) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
     "type": "object",
     "properties": {
         "title": {
@@ -14,14 +13,12 @@
             "type": "string"
         },
         "issued": {
-            "title":
-                "Date of formal issuance (e.g., publication) of the dataset.",
+            "title": "Date of formal issuance (e.g., publication) of the dataset.",
             "type": "string",
             "format": "date-time"
         },
         "modified": {
-            "title":
-                "Most recent date on which the dataset was changed, updated or modified.",
+            "title": "Most recent date on which the dataset was changed, updated or modified.",
             "type": "string",
             "format": "date-time"
         },
@@ -59,8 +56,7 @@
             }
         },
         "themes": {
-            "title":
-                "The main category of the dataset. A dataset can have multiple themes.",
+            "title": "The main category of the dataset. A dataset can have multiple themes.",
             "type": "array",
             "items": {
                 "type": "string"
@@ -68,8 +64,7 @@
         },
         "keywords": {
             "title": "Tags",
-            "description":
-                "Tags (or keywords) help users discover your dataset; please include terms that would be used by technical and non-technical users.",
+            "description": "Tags (or keywords) help users discover your dataset; please include terms that would be used by technical and non-technical users.",
             "type": "array",
             "items": {
                 "type": "string",
@@ -82,15 +77,13 @@
             "type": "string"
         },
         "landingPage": {
-            "title":
-                "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
+            "title": "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
             "type": "string",
             "format": "uri"
         },
         "conformsTo": {
             "title": "Data Standard",
-            "description":
-                "URI or description to identify a standardized specification the dataset conforms to",
+            "description": "URI or description to identify a standardized specification the dataset conforms to",
             "type": "string"
         },
         "creation": {
@@ -106,8 +99,7 @@
                     "type": "string"
                 },
                 "sourceSystem": {
-                    "title":
-                        "Source system that was used to produce this metadata.",
+                    "title": "Source system that was used to produce this metadata.",
                     "type": "string"
                 },
                 "likelihoodOfRelease": {
@@ -119,15 +111,16 @@
                     "type": "boolean"
                 },
                 "affiliatedOrganisation": {
-                    "title":
-                        "Was this dataset produced collaborating with other organisations?",
-                    "type": "string"
+                    "title": "Was this dataset produced collaborating with other organisations?",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "accessLevel": {
-            "description":
-                "The degree to which this dataset could be made publicly-available, regardless of whether it has been made available. Choices: public (Data asset is or could be made publicly available to all without restrictions), restricted public (Data asset is available under certain use restrictions), or non-public (Data asset is not available to members of the public)",
+            "description": "The degree to which this dataset could be made publicly-available, regardless of whether it has been made available. Choices: public (Data asset is or could be made publicly available to all without restrictions), restricted public (Data asset is available under certain use restrictions), or non-public (Data asset is not available to members of the public)",
             "title": "Public Access Level",
             "type": "string"
         },
@@ -144,8 +137,7 @@
             "type": "object",
             "properties": {
                 "disseminationLimits": {
-                    "title":
-                        "Any sensitivity DLMs. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
+                    "title": "Any sensitivity DLMs. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
                     "type": "array",
                     "items": {
                         "type": "string",
@@ -160,8 +152,7 @@
                     }
                 },
                 "classification": {
-                    "title":
-                        "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
+                    "title": "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
                     "type": "string",
                     "enum": [
                         "UNCLASSIFIED",
@@ -178,13 +169,11 @@
             "type": "object",
             "properties": {
                 "format": {
-                    "title":
-                        "Format metadata exists in. E.g. word document, xml etc.",
+                    "title": "Format metadata exists in. E.g. word document, xml etc.",
                     "type": "string"
                 },
                 "standard": {
-                    "title":
-                        "Standard metadata conforms to. E.g. ISO 19114, RDF etc.",
+                    "title": "Standard metadata conforms to. E.g. ISO 19114, RDF etc.",
                     "type": "string"
                 },
                 "location": {

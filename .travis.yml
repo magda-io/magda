@@ -37,6 +37,8 @@ matrix:
         - docker-compose down
     - language: node_js
       node_js: "8"
+      services:
+        - postgresql
       cache:
         directories:
           - $HOME/.ivy2/cache
@@ -58,6 +60,10 @@ matrix:
       env:
         global:
           - CI=true
+          - POSTGRES_HOST=localhost
+          - POSTGRES_DB=postgres
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=""
     - language: node_js
       node_js: "8"
       cache:
@@ -70,6 +76,20 @@ matrix:
         - yarn run eslint
         - cd magda-preview-map && npm rebuild node-sass && cd ..
         - lerna run build --scope @magda/web-client --scope @magda/preview-map --include-filtered-dependencies
+      env:
+        global:
+          - CI=true
+    - language: node_js
+      node_js: "8"
+      cache:
+        directories:
+          - .yarn
+      before_install:
+        - yarn config set cache-folder .yarn
+      services:
+        - docker
+      script:
+        - docker run -v $PWD/deploy/helm/magda/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
       env:
         global:
           - CI=true

@@ -38,7 +38,9 @@
     "precommit": "pretty-quick --staged",
     "retag-and-push": "lerna run retag-and-push --stream",
     "eslint": "./node_modules/.bin/eslint magda-web-client/src/",
-    "create-secrets": "create-secrets"
+    "create-secrets": "create-secrets",
+    "start-opa": "opa run deploy/helm/magda/charts/opa/policies",
+    "test-opa": "opa test deploy/helm/magda/charts/opa/policies -v"
   },
   "pancake": {
     "auto-save": true,

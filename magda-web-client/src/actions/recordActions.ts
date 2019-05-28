@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
+import request from "helpers/request";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -90,7 +91,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
         let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing";
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing";
         const url =
             config.registryApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
@@ -136,7 +137,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             config.registryApiUrl +
             `records/${encodeURIComponent(
                 id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
+            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
         return fetch(url, config.fetchOptions)
             .then(response => {
                 if (!response.ok) {
@@ -262,36 +263,6 @@ export function createRecord(
             );
         }
     };
-}
-
-// import { config } from "../../../config";
-// import fetch from "isomorphic-fetch";
-
-function request(
-    method: string,
-    url: string,
-    body: any = undefined,
-    contentType: string = "application/json"
-) {
-    const fetchOptions = Object.assign({}, config.fetchOptions, {
-        method
-    });
-    if (body !== undefined) {
-        if (contentType === "application/json") {
-            fetchOptions.body = JSON.stringify(body);
-            fetchOptions.headers = {
-                "Content-type": "application/json"
-            };
-        }
-    }
-
-    console.log(method, url, fetchOptions);
-    return fetch(url, fetchOptions).then(async response => {
-        if (response.status === 200) {
-            return response.json();
-        }
-        throw new Error(await response.text());
-    });
 }
 
 async function ensureAspectExists(id: string, jsonSchema: any) {

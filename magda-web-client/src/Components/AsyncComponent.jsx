@@ -28,7 +28,7 @@ export default class AsyncComponent extends Component {
         if (!C) {
             return <Fragment>Loading...</Fragment>;
         }
-        return <C />;
+        return <C {...this.props} />;
     }
 }
 

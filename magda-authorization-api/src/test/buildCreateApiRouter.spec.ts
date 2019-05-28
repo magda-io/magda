@@ -10,6 +10,7 @@ import { expect } from "chai";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
 import mockDatabase from "./mockDatabase";
 import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataStore";
+import NestedSetModelQueryer from "../NestedSetModelQueryer";
 import Database from "../Database";
 import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
@@ -44,7 +45,8 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
     function buildExpressApp() {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
-            database: new mockDatabase() as Database
+            database: new mockDatabase() as Database,
+            orgQueryer: {} as NestedSetModelQueryer
         });
 
         const app = express();
@@ -493,8 +495,20 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
+
+                            const {
+                                roles,
+                                permissions,
+                                managingOrgUnitIds,
+                                orgUnit,
+                                orgUnitId,
+                                ...bodyUserData
+                            } = res.body;
+
+                            expect(res.body.roles).to.be.a("array");
+                            expect(res.body.permissions).to.be.a("array");
                             expect({ id: userId, ...userData }).to.deep.include(
-                                res.body
+                                bodyUserData
                             );
 
                             return true;

@@ -4,6 +4,18 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 
+Indexer:
+
+-   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
+
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
+
 Cataloging:
 
 -   Added new aspects for publishing state and spatial coverage
@@ -11,6 +23,7 @@ Cataloging:
 -   Updated new dataset demo UI page to support adding new datasets
 -   Updated dataset ui page to be able to edit fields
 -   Added editor / editor type abstraction for making state management simpler for large forms.
+-   Added "Add Catalog" page
 
 UI:
 
@@ -19,10 +32,25 @@ UI:
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
 -   Refactored web client to group similar things together
+-   Implemented basic admin pages in react ui
+-   Started implementing new add dataset flow design changes
+-   Fixed web-client code loaded & run twice
+-   Added basic spatial preview to add dataset
+-   Revised add dataset first metadata page for conformance with design
+-   Improved edit dataset page overall styling & editor behaviour
 
 Gateway:
 
 -   Add ArcGIS/ESRI Authentication provider
+
+Access Control:
+
+-   Introduced Role & Permission Structure
+-   Recognise unauthenticated users as anonymous users role
+-   Introduced Open Policy Agent as policy evaluation engine
+-   Search API will return datasets based on user's Roles & Permissions
+-   Users with access to draft datasets can see a new `drafts` tab
+-   Organization hierarchy & make Organization hierarchy data available for access control
 
 Others:
 
