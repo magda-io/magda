@@ -5,6 +5,20 @@ export interface PublicUser {
     isAdmin: boolean;
     roles?: Role[];
     permissions?: Permission[];
+    managingOrgUnitIds?: string[];
+    orgUnit?: OrgUnit;
+}
+
+export interface OrgUnit {
+    id?: string;
+    name?: string;
+    description?: string;
+    left?: number;
+    right?: number;
+    createBy?: string;
+    createTime?: Date;
+    editBy?: string;
+    editTime?: Date;
 }
 
 export interface User extends PublicUser {

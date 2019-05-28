@@ -10,6 +10,8 @@ import * as pg from "pg";
 import * as _ from "lodash";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import { getUserId } from "@magda/typescript-common/dist/session/GetUserId";
+import NestedSetModelQueryer from "./NestedSetModelQueryer";
+import isUuid from "@magda/typescript-common/dist/util/isUuid";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -36,20 +38,36 @@ const defaultAnonymousUserInfo: User = {
             permissionIds: [] as string[]
         }
     ],
-    permissions: []
+    permissions: [],
+    orgUnit: null,
+    managingOrgUnitIds: []
 };
 
 export default class Database {
     private pool: pg.Pool;
+    private orgQueryer: NestedSetModelQueryer;
 
     constructor(options: DatabaseOptions) {
         this.pool = createPool(options);
+        this.orgQueryer = new NestedSetModelQueryer(this.pool, "org_units", [
+            "id",
+            "name",
+            "description"
+        ]);
+    }
+
+    getPool(): pg.Pool {
+        return this.pool;
+    }
+
+    getOrgQueryer(): NestedSetModelQueryer {
+        return this.orgQueryer;
     }
 
     getUser(id: string): Promise<Maybe<User>> {
         return this.pool
             .query(
-                'SELECT id, "displayName", email, "photoURL", source, "isAdmin" FROM users WHERE "id" = $1',
+                'SELECT id, "displayName", email, "photoURL", source, "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
                 [id]
             )
             .then(res => arrayToMaybe(res.rows));
@@ -252,6 +270,17 @@ export default class Database {
         }
         user.roles = await this.getUserRoles(userId);
         user.permissions = await this.getUserPermissions(userId);
+        if (!isUuid(user.orgUnitId)) {
+            user.managingOrgUnitIds = [];
+            user.orgUnit = null;
+        } else {
+            user.orgUnit = await this.orgQueryer.getNodeById(user.orgUnitId);
+            user.managingOrgUnitIds = (await this.orgQueryer.getAllChildren(
+                user.orgUnitId,
+                true,
+                ["id"]
+            )).map(item => item.id);
+        }
         return user;
     }
 }

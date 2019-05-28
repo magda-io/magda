@@ -256,6 +256,13 @@ buildtest:typescript-apis:
     - registry-typescript-api
   cache:
     paths: []
+  services:
+    - postgres:9.6
+  variables:
+    POSTGRES_HOST: postgres
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: ""
   script:
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
