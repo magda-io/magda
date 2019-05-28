@@ -1,10 +1,16 @@
 import * as pg from "pg";
 import * as _ from "lodash";
+import { Maybe } from "tsmonad";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {
+    id?: string;
+    name: string;
+    description?: string;
     [key: string]: any;
 }
+
+export class NodeNotFoundError extends Error {}
 
 function isNonEmptyArray(v: any): boolean {
     if (!v || !_.isArray(v) || !v.length) return false;
@@ -24,6 +30,12 @@ export type TextTreeNode =
           text: string;
           children?: TextTreeNode[];
       };
+
+export type CompareNodeResult =
+    | "ancestor"
+    | "descendant"
+    | "equal"
+    | "unrelated";
 class NestedSetModelQueryer {
     private pool: pg.Pool;
     private tableName: string;
@@ -166,15 +178,16 @@ class NestedSetModelQueryer {
         id: string,
         fields: string[] = null,
         client: pg.Client = null
-    ): Promise<NodeRecord> {
+    ): Promise<Maybe<NodeRecord>> {
         const result = await (client ? client : this.pool).query(
             `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "id" = $1`,
             [id]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0];
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows[0]);
     }
 
     /**
@@ -189,14 +202,15 @@ class NestedSetModelQueryer {
     async getRootNode(
         fields: string[] = null,
         client: pg.Client = null
-    ): Promise<NodeRecord> {
+    ): Promise<Maybe<NodeRecord>> {
         const result = await (client ? client : this.pool).query(
             `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "left" = 1`
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0];
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows[0]);
     }
 
     /**
@@ -328,7 +342,7 @@ class NestedSetModelQueryer {
         childNodeId: string,
         fields: string[] = null,
         client: pg.Client = null
-    ): Promise<NodeRecord> {
+    ): Promise<Maybe<NodeRecord>> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
             `SELECT ${this.selectFields("Parents", fields)} 
@@ -341,8 +355,9 @@ class NestedSetModelQueryer {
             AND Children.id = $1`,
             [childNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0];
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows[0]);
     }
 
     /**
@@ -372,10 +387,10 @@ class NestedSetModelQueryer {
     /**
      * Get level no. of a given node
      * Starts from 1. i.e. The root node is 1
-     * If the node can't be found in the tree, return null
      *
      * @param {string} nodeId
      * @returns {Promise<number>}
+     * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async getLevelOfNode(nodeId: string): Promise<number> {
@@ -386,18 +401,22 @@ class NestedSetModelQueryer {
             WHERE Children.left BETWEEN Parents.left AND Parents.right AND Children.id = $1`,
             [nodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length)
+            throw new NodeNotFoundError();
         const level: number = parseInt(result.rows[0]["level"]);
-        if (!_.isNumber(level) || _.isNaN(level) || level < 1) return null;
+        if (!_.isNumber(level) || _.isNaN(level) || level < 1)
+            throw new Error(
+                `Could find a valid level for node ${nodeId}: ${level}`
+            );
         return level;
     }
 
     /**
      * Get total height (no. of the levels) of the tree
-     * Starts with 1 level
-     * If no tree found, return null
+     * Starts with 1 level.
      *
      * @returns {Promise<number>}
+     * @throws NodeNotFoundError If the root node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async getTreeHeight(): Promise<number> {
@@ -411,9 +430,11 @@ class NestedSetModelQueryer {
                 GROUP BY t2.id 
              ) AS L(level)`
         );
-        if (!result || !result.rows || !result.rows.length) return 0;
+        if (!result || !result.rows || !result.rows.length)
+            throw new NodeNotFoundError();
         const height: number = parseInt(result.rows[0]["height"]);
-        if (!_.isNumber(height) || _.isNaN(height) || height < 0) return 0;
+        if (!_.isNumber(height) || _.isNaN(height) || height < 0)
+            throw new Error(`Invalid height for tree: ${height}`);
         return height;
     }
 
@@ -421,10 +442,12 @@ class NestedSetModelQueryer {
      * Get left most immediate child of a node
      *
      * @param {string} parentNodeId
-     * @returns {Promise<NodeRecord>}
+     * @returns {Promise<Maybe<NodeRecord>>}
      * @memberof NestedSetModelQueryer
      */
-    async getLeftMostImmediateChild(parentNodeId: string): Promise<NodeRecord> {
+    async getLeftMostImmediateChild(
+        parentNodeId: string
+    ): Promise<Maybe<NodeRecord>> {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("Children")}
@@ -432,20 +455,21 @@ class NestedSetModelQueryer {
             WHERE Children.left = Parents.left + 1 AND Parents.id = $1`,
             [parentNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0];
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows[0]);
     }
 
     /**
      * Get right most immediate child of a node
      *
      * @param {string} parentNodeId
-     * @returns {Promise<NodeRecord>}
+     * @returns {Promise<Maybe<NodeRecord>>}
      * @memberof NestedSetModelQueryer
      */
     async getRightMostImmediateChild(
         parentNodeId: string
-    ): Promise<NodeRecord> {
+    ): Promise<Maybe<NodeRecord>> {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("Children")}
@@ -453,8 +477,9 @@ class NestedSetModelQueryer {
             WHERE Children.right = Parents.right - 1 AND Parents.id = $1`,
             [parentNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows[0];
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows[0]);
     }
 
     /**
@@ -465,13 +490,13 @@ class NestedSetModelQueryer {
      *
      * @param {string} higherNodeId
      * @param {string} lowerNodeId
-     * @returns {Promise<NodeRecord[]>}
+     * @returns {Promise<Maybe<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
     async getTopDownPathBetween(
         higherNodeId: string,
         lowerNodeId: string
-    ): Promise<NodeRecord[]> {
+    ): Promise<Maybe<NodeRecord[]>> {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("t2")}
@@ -482,28 +507,29 @@ class NestedSetModelQueryer {
             ORDER BY (t2.right-t2.left) DESC`,
             [higherNodeId, lowerNodeId]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
-        return result.rows;
+        if (!result || !result.rows || !result.rows.length)
+            return Maybe.nothing();
+        return Maybe.just(result.rows);
     }
 
     /**
      * Compare the relative position of the two nodes
-     * If node1 is superior to node2, return 1
-     * if node1 is the subordinate of node2, return -1
-     * If node1 = node2 return 0
-     * If there is no path can be found between Node1 and Node2 return null
+     * If node1 is superior to node2, return "ancestor"
+     * if node1 is the subordinate of node2, return "descendant"
+     * If node1 = node2 return "equal"
+     * If there is no path can be found between Node1 and Node2 return "unrelated"
      *
      * @param {string} node1Id
      * @param {string} node2Id
      * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
-     * @returns {Promise<number>}
+     * @returns {Promise<CompareNodeResult>}
      * @memberof NestedSetModelQueryer
      */
     async compareNodes(
         node1Id: string,
         node2Id: string,
         client: pg.Client = null
-    ): Promise<number> {
+    ): Promise<CompareNodeResult> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
             `SELECT (
@@ -521,10 +547,19 @@ class NestedSetModelQueryer {
             WHERE t1.id = CAST($1 AS uuid) AND t2.id = CAST($2 AS uuid)`,
             [node1Id, node2Id]
         );
-        if (!result || !result.rows || !result.rows.length) return null;
+        if (!result || !result.rows || !result.rows.length) return "unrelated";
         const comparisonResult: number = result.rows[0]["result"];
-        if (typeof comparisonResult === "number") return comparisonResult;
-        return null;
+        if (typeof comparisonResult === "number") {
+            switch (comparisonResult) {
+                case 1:
+                    return "ancestor";
+                case -1:
+                    return "descendant";
+                case 0:
+                    return "equal";
+            }
+        }
+        return "unrelated";
     }
 
     private getInsertFields(insertFieldList: string[] = null) {
@@ -675,12 +710,15 @@ class NestedSetModelQueryer {
         fields: string[]
     ): Promise<NodeRecord> {
         const node = await this.getNodeById(nodeId, fields, client);
-        if (!node) {
-            throw new Error(
-                `Cannot locate tree node record with id: ${nodeId}`
-            );
-        }
-        return node;
+
+        return node.caseOf({
+            just: node => node,
+            nothing: () => {
+                throw new NodeNotFoundError(
+                    `Cannot locate tree node record with id: ${nodeId}`
+                );
+            }
+        });
     }
 
     /**
@@ -689,6 +727,7 @@ class NestedSetModelQueryer {
      * @param {string} parentNodeId
      * @param {NodeRecord} node
      * @returns {Promise<string>}
+     * @throws NodeNotFoundError if parent node not found
      * @memberof NestedSetModelQueryer
      */
     async insertNode(parentNodeId: string, node: NodeRecord): Promise<string> {
@@ -758,6 +797,7 @@ class NestedSetModelQueryer {
      * @param {string} siblingNodeId
      * @param {NodeRecord} node
      * @returns {Promise<string>}
+     * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async insertNodeToRightOfSibling(
@@ -839,6 +879,7 @@ class NestedSetModelQueryer {
      * @param {string} subTreeRootNodeId
      * @param {string} newParentId
      * @returns {Promise<void>}
+     * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async moveSubTreeTo(
@@ -860,7 +901,7 @@ class NestedSetModelQueryer {
                 newParentId,
                 client
             );
-            if (comparisonResult === 1) {
+            if (comparisonResult === "ancestor") {
                 throw new Error(
                     `Cannot move a higher level node (id: ${subTreeRootNodeId})to its subordinate (id: ${newParentId})`
                 );
@@ -939,6 +980,7 @@ class NestedSetModelQueryer {
      * @param {string} subTreeRootNodeId
      * @param {boolean} [allowRootNodeId=false]
      * @returns {Promise<void>}
+     * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async deleteSubTree(
@@ -1002,6 +1044,7 @@ class NestedSetModelQueryer {
      *
      * @param {string} nodeId
      * @returns {Promise<void>}
+     * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
     async deleteNode(nodeId: string): Promise<void> {
@@ -1140,19 +1183,24 @@ class NestedSetModelQueryer {
      * @memberof NestedSetModelQueryer
      */
     async getTreeTextView(): Promise<string> {
-        const rootNode: NodeRecord = await this.getRootNode();
-        if (!rootNode) return "Empty Tree";
-        const tree: TextTreeNode[] = [];
-        const children = await this.getChildTextTreeNodes(rootNode.id);
-        if (children.length) {
-            tree.push({
-                text: rootNode.name,
-                children
-            });
-        } else {
-            tree.push(rootNode.name);
-        }
-        return textTree(tree);
+        const rootNodeMaybe = await this.getRootNode();
+
+        return rootNodeMaybe.caseOf({
+            just: async rootNode => {
+                const tree: TextTreeNode[] = [];
+                const children = await this.getChildTextTreeNodes(rootNode.id);
+                if (children.length) {
+                    tree.push({
+                        text: rootNode.name,
+                        children
+                    });
+                } else {
+                    tree.push(rootNode.name);
+                }
+                return textTree(tree);
+            },
+            nothing: async () => "Empty Tree"
+        });
     }
 }
 
