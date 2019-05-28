@@ -8,6 +8,10 @@ Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 
+Registry:
+
+-   PATCH request to registry won't trigger notification to webhook
+
 Others:
 
 -   Made registry-api DB pool settings configurable via Helm
