@@ -108,12 +108,14 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
   def deleteById = delete {
     path(Segment / "aspects" / Segment) { (recordId: String, aspectId: String) =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        DB localTx { session =>
+        val result = DB localTx { session =>
           recordPersistence.deleteRecordAspect(session, recordId, aspectId) match {
             case Success(result)    => complete(DeleteResult(result))
             case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
           }
         }
+        webHookActor ! WebHookActor.Process()
+        result
       }
     }
   }
@@ -158,12 +160,14 @@ class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, sy
       requireIsAdmin(authClient)(system, config) { _ =>
         {
           entity(as[JsonPatch]) { aspectPatch =>
-            DB localTx { session =>
+            val result = DB localTx { session =>
               recordPersistence.patchRecordAspectById(session, recordId, aspectId, aspectPatch) match {
                 case Success(result)    => complete(result)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
+            webHookActor ! WebHookActor.Process()
+            result
           }
         }
       }
