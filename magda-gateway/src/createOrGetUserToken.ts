@@ -22,9 +22,6 @@ export default function createOrGetUserToken(
 }
 
 function profileToUser(profile: passport.Profile, source: string): User {
-    // @ts-ignore: ArcGIS Passport provider incorrect defines email instead of emails
-    if (profile.email) profile.emails.push({ value: profile.email });
-
     if (!profile.emails || profile.emails.length === 0) {
         throw new Error("User with no email address");
     }

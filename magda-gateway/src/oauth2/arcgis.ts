@@ -39,6 +39,17 @@ export default function arcgis(options: ArcGisOptions) {
                 profile: Profile,
                 cb: (error: any, user?: any, info?: any) => void
             ) {
+                // ArcGIS Passport provider incorrect defines email instead of emails
+                if ((profile as any).email) {
+                    profile.emails = profile.emails || [];
+                    profile.emails.push({ value: (profile as any).email });
+                }
+
+                profile.displayName =
+                    profile.displayName ||
+                    ((profile as any)._json &&
+                        (profile as any)._json.thumbnail);
+
                 createOrGetUserToken(authorizationApi, profile, "arcgis")
                     .then(userId => cb(null, userId))
                     .catch(error => cb(error));
@@ -50,7 +61,6 @@ export default function arcgis(options: ArcGisOptions) {
 
     router.get("/", (req, res, next) => {
         const options: any = {
-            scope: ["profile", "email"],
             state: req.query.redirect || externalAuthHome
         };
         passport.authenticate("arcgis", options)(req, res, next);
