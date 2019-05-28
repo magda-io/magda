@@ -14,9 +14,11 @@
     "create-secrets": "create-secrets/index.js",
     "set-scss-vars": "set-scss-vars.js",
     "pkg-create-secrets-script": "pkg create-secrets/index.js --out-path create-secrets/build",
-    "create-region-synonym-file": "create-region-synonym-file.js"
+    "create-region-synonym-file": "create-region-synonym-file.js",
+    "org-tree": "org-tree/index.js"
   },
   "devDependencies": {
+    "@types/pg": "^7.4.14",
     "@types/request": "^2.48.1"
   },
   "magda": {
@@ -42,6 +44,7 @@
     "lodash": "^4.17.5",
     "moment": "^2.19.4",
     "nodemon": "^1.11.0",
+    "pg": "^7.11.0",
     "pkg": "^4.3.4",
     "pwgen": "^0.1.6",
     "request": "^2.88.0",

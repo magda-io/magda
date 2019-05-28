@@ -67,7 +67,13 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 JOINED_MEMORY_COMMAND_LINE_ARGS=$(join_by " " "${MEMORY_COMMAND_LINE_ARGS[@]}")
 JOINED_BACKUP_COMMAND_LINE_ARGS=$(join_by " " "${BACKUP_COMMAND_LINE_ARGS[@]}")
 
-PGARGS="-c listen_addresses='*' -c max_prepared_transactions=0 $JOINED_MEMORY_COMMAND_LINE_ARGS $JOINED_BACKUP_COMMAND_LINE_ARGS"
+if [[ "${DEBUG}" == "1" ]]; then
+    DEBUGARG='-c shared_preload_libraries='"'"'/usr/lib/postgresql/9.6/lib/plugin_debugger'"'"''
+else 
+    DEBUGARG=''
+fi
+
+PGARGS="-c listen_addresses='*' -c max_prepared_transactions=0 $DEBUGARG $JOINED_MEMORY_COMMAND_LINE_ARGS $JOINED_BACKUP_COMMAND_LINE_ARGS"
 
 # Why this elaborate way of running the command? It lets us use the same string of PGARGS for running pg_ctl (above) as it does for postgres (below).
 # Without it we get all these issues with exec expecting an array of strings vs pg_ctl -o expecting one big string.
