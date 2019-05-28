@@ -47,6 +47,7 @@ Access Control:
 -   Search API will return datasets based on user's Roles & Permissions
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
+-   Filter datasets based on user's current organization unit
 
 ## 0.0.55
 
@@ -58,6 +59,7 @@ UI:
 -   Fixed clicking out of search filter causes the results to refetch
 -   Provide access to CKAN Data API for enabled resources
 -   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
+-   Show Database ownership information on dataset page (Admin Only)
 
 Correspondence:
 
