@@ -97,6 +97,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     logger.info("Finished setting up regions")
   }
 
+  override def afterEach(): Unit = {
+    super.afterEach()
+  }
+
   override def afterAll() {
     tearDownES()
     System.gc()
