@@ -602,7 +602,7 @@ class RecordHandler extends React.Component {
                                                             }
                                                             url={`${
                                                                 config.authApiUrl
-                                                            }orgUnits/nodeById/${
+                                                            }orgUnits/${
                                                                 this.props
                                                                     .dataset
                                                                     .accessControl
