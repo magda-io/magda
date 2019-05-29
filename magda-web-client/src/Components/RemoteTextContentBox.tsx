@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
-import sprinerIcon from "../assets/spinner.svg";
+import spinnerIcon from "../assets/spinner.svg";
 
 /**
  * key: we need to set user Id to key to make sure a new component to be created for a new ID;
@@ -68,7 +68,7 @@ const RemoteTextContentBox = (props: Props) => {
                 style={{
                     position: "absolute"
                 }}
-                src={sprinerIcon}
+                src={spinnerIcon}
             />
         );
     } else {

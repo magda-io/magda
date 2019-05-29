@@ -42,6 +42,7 @@ UI:
 -   Added basic spatial preview to add dataset
 -   Revised add dataset first metadata page for conformance with design
 -   Improved edit dataset page overall styling & editor behaviour
+-   Show Database ownership information on dataset page (Admin Only)
 
 Access Control:
 
@@ -63,7 +64,6 @@ UI:
 -   Fixed clicking out of search filter causes the results to refetch
 -   Provide access to CKAN Data API for enabled resources
 -   Changed label of email validation error message in suggest dataset page to be consistent with rest of the error messages in that page
--   Show Database ownership information on dataset page (Admin Only)
 
 Correspondence:
 

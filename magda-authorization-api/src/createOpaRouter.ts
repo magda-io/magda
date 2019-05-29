@@ -158,7 +158,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         reqOpts.json = reqData;
 
         try {
-            // -- request's pipe api doesn't work well with chucked response
+            // -- request's pipe api doesn't work well with chunked response
             const fullResponse = await request(
                 `${opaUrl}v1${req.path}`,
                 reqOpts
