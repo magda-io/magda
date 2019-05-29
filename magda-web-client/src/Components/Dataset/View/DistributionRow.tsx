@@ -128,7 +128,7 @@ class DistributionRow extends Component<PropType> {
                         </div>
                     </div>
                 </div>
-                <div className="col-sm-4 button-area">
+                <div className="col-sm-4 button-area no-print">
                     {distribution.ckanResource &&
                         distribution.ckanResource.datastore_active && (
                             <a

@@ -288,3 +288,39 @@ h4 {
 .au-body p {
     max-width: 100%;
 }
+
+.print-only {
+    display: none;
+}
+
+@media print {
+    .au-breadcrumbs {
+        display: none;
+    }
+
+    a[href]:after {
+        display: none;
+        visibility: hidden;
+        position: absolute;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .au-body p {
+        max-width: 100% !important;
+    }
+
+    .container {
+        width: 100% !important;
+    }
+
+    .au-footer {
+        display: none !important;
+    }
+
+    .print-only {
+        display: initial;
+    }
+}
