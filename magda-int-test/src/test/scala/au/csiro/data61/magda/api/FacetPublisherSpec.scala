@@ -2,7 +2,6 @@ package au.csiro.data61.magda.api
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc.{DataSet, _}
 import au.csiro.data61.magda.test.util.ApiGenerators._
@@ -10,28 +9,12 @@ import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.{Shrink, _}
 
 class FacetPublisherSpec extends FacetSpecBase {
-  override var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
 
-  override def beforeAll() = {
-    super.beforeAll()
-    defaultGen = for {
-      tuple <- mediumIndexGen
-      query <- textQueryGen(queryGen(tuple._2))
-    } yield (tuple, query, Seq())
-  }
-
-  describe("facets") {
-    describe("publisher") {
-      def reducer(dataSet: DataSet) = Set(dataSet.publisher.flatMap(_.name)).flatten
-      def queryToInt(query: Query) = query.publishers.size
+  describe("facets publisher") {
 
       def queryGen(dataSets: List[DataSet]) = for {
         publishers <- Generators.smallSet(publisherQueryGen(dataSets))
       } yield new Query(publishers = publishers)
-
-      def specificBiasedQueryGen(dataSets: List[DataSet]) = Query(publishers = dataSets.flatMap(_.publisher.flatMap(_.name)).map(Specified.apply).toSet)
-
-      genericFacetSpecs(Publisher, reducer, queryToInt, queryGen, specificBiasedQueryGen)
 
       describe("should have identifiers except user selected option with 0 hitCount") {
         implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
@@ -80,5 +63,4 @@ class FacetPublisherSpec extends FacetSpecBase {
         }
       }
     }
-  }
 }

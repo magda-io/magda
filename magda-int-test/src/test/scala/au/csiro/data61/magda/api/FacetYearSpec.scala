@@ -3,36 +3,15 @@ package au.csiro.data61.magda.api
 import java.time.OffsetDateTime
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.misc.{DataSet, _}
+import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.test.util.ApiGenerators._
-import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck._
 
-class FacetFormaAndYearSpec extends FacetSpecBase {
-  override var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
-
-  override def beforeAll() = {
-    super.beforeAll()
-    defaultGen = for {
-      tuple <- mediumIndexGen
-      query <- textQueryGen(queryGen(tuple._2))
-    } yield (tuple, query, Seq())
-  }
+class FacetYearSpec extends FacetSpecBase {
 
   describe("facets") {
-    describe("format") {
-      def reducer(dataSet: DataSet) = dataSet.distributions.flatMap(_.format.map(_.toLowerCase)).toSet
-      def queryToInt(query: Query) = query.formats.size
-
-      def filterQueryGen(dataSets: List[DataSet]) = Generators.smallSet(formatQueryGen(dataSets)).flatMap(formats => Query(formats = formats))
-      def specificBiasedQueryGen(dataSets: List[DataSet]) = Query(formats = dataSets.flatMap(_.distributions.flatMap(_.format)).map(Specified.apply).toSet)
-
-      genericFacetSpecs(Format, reducer, queryToInt, filterQueryGen, specificBiasedQueryGen)
-    }
-
     describe("year") {
       it("with no query") {
         checkFacetsNoQuery() { (dataSets, facetSize) =>

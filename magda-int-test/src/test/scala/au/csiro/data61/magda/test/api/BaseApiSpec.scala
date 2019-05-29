@@ -75,7 +75,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def client(): ElasticClient = clientProvider.getClient().await
 
-  override def beforeAll() {
+  override def beforeEach() {
     tearDownES()
     setupES()
 
@@ -98,7 +98,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     System.gc()
   }
 
-  override def afterAll() {
+  override def afterEach() {
     tearDownES()
     System.gc()
   }
