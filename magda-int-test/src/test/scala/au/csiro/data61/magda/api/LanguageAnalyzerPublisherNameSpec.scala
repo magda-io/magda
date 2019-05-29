@@ -5,10 +5,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.model.misc._
 
-class LanguageAnalyzer_3_Spec extends LanguageAnalyzerSpecBase {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
+class LanguageAnalyzerPublisherNameSpec extends LanguageAnalyzerSpecBase {
 
   describe("should return the right publisher when searching by publisher name") {
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)

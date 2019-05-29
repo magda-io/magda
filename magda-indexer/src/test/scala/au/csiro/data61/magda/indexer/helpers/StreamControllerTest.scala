@@ -94,7 +94,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
       val indexResults = source.buffer(bufferSize, OverflowStrategy.backpressure)
         .map(dataSet => {
-          (dataSet.uniqueId, index(dataSet))
+          (dataSet.identifier, index(dataSet))
         })
         .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
           case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>

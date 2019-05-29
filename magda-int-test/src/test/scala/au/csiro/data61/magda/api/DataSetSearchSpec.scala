@@ -14,10 +14,6 @@ import org.locationtech.jts.geom.GeometryFactory
 
 class DataSetSearchSpec extends DataSetSearchSpecBase {
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
-
   describe("meta") {
     it("Mwundo <--> JTS conversions should work") {
       val geoFactory = new GeometryFactory()
@@ -50,5 +46,4 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
         }
     }
   }
-
 }

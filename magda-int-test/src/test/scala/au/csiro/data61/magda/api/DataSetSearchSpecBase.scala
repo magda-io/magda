@@ -14,10 +14,6 @@ import org.scalacheck.Gen
 
 class DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
-  override def beforeAll() = {
-    super.beforeAll()
-  }
-
   def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
     val gen = for {
       index <- indexGen.suchThat(!_._2.isEmpty)

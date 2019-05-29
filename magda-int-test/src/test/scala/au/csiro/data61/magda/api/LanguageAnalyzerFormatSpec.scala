@@ -5,10 +5,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.model.misc._
 
-class LanguageAnalyzer_4_Spec extends LanguageAnalyzerSpecBase {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
+class LanguageAnalyzerFormatSpec extends LanguageAnalyzerSpecBase {
 
   describe("should return the right format when searching by format value") {
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))

@@ -11,9 +11,6 @@ import scala.collection.immutable
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 class LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
 
   def isAStopWord(term: String): Boolean = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
 

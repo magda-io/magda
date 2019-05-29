@@ -8,11 +8,7 @@ import au.csiro.data61.magda.model.misc._
 import spray.json._
 
 
-class WebhookSpec extends WebhookSpecBase {
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
+class WebhookIndexNewDatasetsSpec extends WebhookSpecBase {
 
   describe("when webhook received") {
     it("should index new datasets") {

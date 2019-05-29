@@ -9,11 +9,6 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
-  override def beforeAll() = {
-    println("Testing TenantDataSetSearchSpec")
-    super.beforeAll()
-  }
-
   describe("searching") {
     describe("*") {
       it("should return all datasets of the specified tenant") {

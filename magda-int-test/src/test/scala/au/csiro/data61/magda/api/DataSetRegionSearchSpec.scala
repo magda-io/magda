@@ -7,18 +7,13 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 
-class DataSetSearch_1_Spec extends DataSetSearchSpecBase {
-
-  override def beforeAll() = {
-    println("Testing DataSetSearch_1_Spec")
-    super.beforeAll()
-  }
+class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
   it("for a region in query text should boost results from that region") {
     println("  - Testing for a region in query text should boost results from that region")
     // 3 fake datasets. One that relates to Queensland, the other to all of Australia
     // (but one of those has `queensland` in title otherwise only one document will be matched)
-    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    // The Australian one happens to be slightly more "relevant" due to the description, but the
     //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
     val qldGeometry = Location.fromBoundingBox(Seq(BoundingBox(-20.0, 147.0, -25.0, 139.0)))

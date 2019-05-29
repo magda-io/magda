@@ -30,18 +30,6 @@ class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProt
   override def buildConfig: Config = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
-
-  override def afterEach(): Unit ={
-    super.afterEach()
-  }
-
-  override def afterAll(): Unit ={
-    super.afterAll()
-  }
-
   /**
    * Cleanses the Location in such a way that it's the same for both input data and output data. In particular
    * it stops the tests failing because input polygons have bogus multiple-decimal-point coordinates (1.2.3 vs 1.23).
@@ -61,7 +49,7 @@ class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProt
   }
 
   val dataSetsGen: Gen[List[(DataSet, List[(String, Double, Double, Double)])]] = Generators.listSizeBetween(0, 20, Generators.dataSetGen(cachedListCache)).flatMap { dataSets =>
-    val qualityFacetGen = for {
+    val qualityFacetGen: Gen[(String, Double, Double, Double)] = for {
       skewPrimary <- Generators.twoDigitDoubleGen
       weightingPrimary <- Generators.twoDigitDoubleGen
       skewOtherWay <- Generators.twoDigitDoubleGen

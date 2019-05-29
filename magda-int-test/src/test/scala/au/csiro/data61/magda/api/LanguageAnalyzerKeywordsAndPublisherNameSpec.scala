@@ -1,10 +1,6 @@
 package au.csiro.data61.magda.api
 
-class LanguageAnalyzer_1_Spec extends LanguageAnalyzerSpecBase {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
-
+class LanguageAnalyzerKeywordsAndPublisherNameSpec extends LanguageAnalyzerSpecBase {
 
   describe("should return the right dataset when searching for that dataset's") {
     val testWhat = "should return the right dataset when searching for that dataset's"

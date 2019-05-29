@@ -2,12 +2,11 @@ package au.csiro.data61.magda.model
 
 import java.time.OffsetDateTime
 
-import com.monsanto.labs.mwundo.GeoJson._
-import akka.http.scaladsl.model.MediaType
-import akka.http.scaladsl.model.MediaTypes
+import akka.http.scaladsl.model.{MediaType, MediaTypes}
 import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.spatial.GeoJsonValidator
+import com.monsanto.labs.mwundo.GeoJson._
 import spray.json._
 
 import scala.runtime.ScalaRunTime
@@ -100,8 +99,6 @@ package misc {
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None) {
 
-    def uniqueId: String = DataSet.registryIdToIdentifier(identifier + tenantId)
-
     override def toString: String = s"Dataset(identifier = $identifier, tenantId = $tenantId, title=$title)"
 
     def normalToString: String = ScalaRunTime._toString(this)
@@ -109,6 +106,7 @@ package misc {
 
   object DataSet {
     def registryIdToIdentifier(registryId: String): String = java.net.URLEncoder.encode(registryId, "UTF-8")
+    def createUniqueId(identifier: String, tenantId: BigInt): String = DataSet.registryIdToIdentifier(identifier)
   }
 
   case class Agent(

@@ -11,11 +11,7 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 import org.scalacheck.{Gen, Shrink}
 
 
-class DataSetSearch_2_Spec extends DataSetSearchSpecBase {
-
-  override def beforeAll() = {
-    super.beforeAll()
-  }
+class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
 
   describe("quotes") {
     it("should be able to be found verbatim somewhere in a dataset") {

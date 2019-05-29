@@ -6,11 +6,7 @@ import au.csiro.data61.magda.api.model.SearchResult
 import org.scalacheck.Gen
 
 
-class DataSetSearch_4_Spec extends DataSetSearchSpecBase {
-
-  override def beforeAll() = {
-    super.beforeAll()
-  }
+class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
 
   describe("pagination") {
     it("should match the result of getting all datasets and using .drop(start).take(limit) to select a subset") {

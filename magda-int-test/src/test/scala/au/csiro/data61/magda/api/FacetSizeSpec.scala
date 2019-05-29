@@ -7,7 +7,7 @@ import au.csiro.data61.magda.model.misc.{DataSet, _}
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import org.scalacheck._
 
-class FacetSpec extends FacetSpecBase {
+class FacetSizeSpec extends FacetSpecBase {
   override var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
 
   override def beforeAll() = {

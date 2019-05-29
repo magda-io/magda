@@ -42,10 +42,6 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols with ResponseDatasetAllo
   override def buildConfig = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   implicit val ec = system.dispatcher
 
-  override def beforeAll() = {
-    super.beforeAll()
-  }
-
   it("should correctly store new datasets when reindexed") {
     // When shrinking, shrink the datasets only and put them in a new index.
     implicit def shrinker2(implicit s: Shrink[List[DataSet]]): Shrink[(List[DataSet], List[DataSet])] =

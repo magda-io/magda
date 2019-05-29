@@ -2,10 +2,7 @@ package au.csiro.data61.magda.api
 
 import scala.util.Random
 
-class LanguageAnalyzer_2_Spec extends LanguageAnalyzerSpecBase {
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-  }
+class LanguageAnalyzerDistributionAndThemeSpec extends LanguageAnalyzerSpecBase {
 
   describe("should return the right dataset when searching for that dataset's") {
     val testWhat = "should return the right dataset when searching for that dataset's"

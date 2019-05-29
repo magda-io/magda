@@ -105,7 +105,7 @@ class ElasticSearchIndexer(
           failures.foreach {
             case (results, (dataSet, promise, _)) =>
               results.filter(_.error.isDefined).foreach { failure =>
-                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
+                logger.warning("Failure when indexing {}: {}", dataSet.identifier, failure.error)
               }
 
               // The dataset result is always the first
@@ -123,7 +123,7 @@ class ElasticSearchIndexer(
             logger.info("Failed to index this batch", failures.size)
           }
 
-          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
+          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.identifier) }
       }
       .recover {
         case e: Throwable =>
@@ -232,7 +232,7 @@ class ElasticSearchIndexer(
     val geoFail = result.error.isDefined && result.error.exists(_.reason.contains("failed to parse [spatial.geoJson]"))
 
     if (geoFail) {
-      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
+      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.identifier)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
       // TODO: Make one indexing request only so that we can remove the source queue completely.
       index2(dataSetWithoutSpatial, promise)
@@ -474,8 +474,12 @@ class ElasticSearchIndexer(
 
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
-      client.execute(bulk(identifiers.map(identifier =>
-        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
+      client.execute(
+        bulk(
+          identifiers.map(identifier =>
+            ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))
+        )
+      )
     }.map {
       case results:RequestSuccess[BulkResponse] =>
         logger.info("Deleted {} datasets", results.result.successes.size)
@@ -537,7 +541,12 @@ class ElasticSearchIndexer(
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now))
 
-    val indexDataSet = ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).id(dataSet.uniqueId).source(dataSet.toJson)
+    // A dataset's identifier is guaranteed to be unique among all tenants. See how a dataset's identifier is created in
+    // au.csiro.data61.magda.model.Registry.RegistryConverters.convertRegistryDataSet
+    val indexDataSet = ElasticDsl
+      .indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+      .id(dataSet.identifier)
+      .source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>
       ElasticDsl.indexInto(indices.getIndex(config, Indices.PublishersIndex) / indices.getType(Indices.PublisherIndexType))
@@ -621,7 +630,7 @@ class ElasticSearchIndexer(
           failures.foreach {
             case (theResults, (dataSet, promise, _)) =>
               theResults.filter(_.error.isDefined).foreach { failure =>
-                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
+                logger.warning("Failure when indexing {}: {}", dataSet.identifier, failure.error)
               }
 
               // The dataset result is always the first
@@ -639,7 +648,7 @@ class ElasticSearchIndexer(
             logger.info("Failed to index this batch", failures.size)
           }
 
-          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
+          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.identifier) }
 
           (failures.toList.toString(), Future.successful(successes.size))
 
