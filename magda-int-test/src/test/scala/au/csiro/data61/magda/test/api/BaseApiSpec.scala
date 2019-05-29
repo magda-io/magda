@@ -77,6 +77,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def beforeEach() {
     tearDownES()
+    System.gc()
     setupES()
 
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
@@ -94,12 +95,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     logger.info("Setting up regions")
     IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
     logger.info("Finished setting up regions")
-
-    System.gc()
   }
 
-  override def afterEach() {
-    tearDownES()
+  override def afterAll() {
     System.gc()
   }
 

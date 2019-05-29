@@ -2,15 +2,13 @@ package au.csiro.data61.magda.api
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.model.headers.LinkParams.title
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.misc._
 
 class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
   it("for a region in query text should boost results from that region") {
-    println("  - Testing for a region in query text should boost results from that region")
     // 3 fake datasets. One that relates to Queensland, the other to all of Australia
     // (but one of those has `queensland` in title otherwise only one document will be matched)
     // The Australian one happens to be slightly more "relevant" due to the description, but the
@@ -89,7 +87,6 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
   }
 
   it("for a region in query text should boost results from that region by acronym") {
-    println("  - Testing for a region in query text should boost results from that region by acronym")
     val saGeometry = Location.fromBoundingBox(Seq(BoundingBox(-27, 134, -30, 130)))
 
     val saDataset = DataSet(
