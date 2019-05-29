@@ -11,7 +11,7 @@ import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck._
 
-class FacetSpecBase extends BaseSearchApiSpec {
+trait FacetSpecBase extends BaseSearchApiSpec {
   var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
   override def beforeAll(): Unit = {
     super.beforeAll()

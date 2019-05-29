@@ -12,7 +12,7 @@ import com.monsanto.labs.mwundo.GeoJson._
 import org.scalacheck.Gen
 
 
-class DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
+trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
   def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
     val gen = for {

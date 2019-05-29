@@ -10,7 +10,7 @@ import au.csiro.data61.magda.model.misc._
 import scala.collection.immutable
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
-class LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
+trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
 
   def isAStopWord(term: String): Boolean = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
 

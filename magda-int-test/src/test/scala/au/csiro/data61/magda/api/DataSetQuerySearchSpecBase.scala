@@ -5,7 +5,7 @@ import java.time.temporal.{ChronoField, TemporalField}
 import java.util.{Calendar, GregorianCalendar}
 
 
-class DataSetQuerySearchSpecBase extends DataSetSearchSpecBase {
+trait DataSetQuerySearchSpecBase extends DataSetSearchSpecBase {
 
   def queryEquals(outputQuery: Query, inputQuery: Query) = {
       def caseInsensitiveMatchFv(field: String, output: Traversable[FilterValue[String]], input: Traversable[FilterValue[String]]) = withClue(field) {

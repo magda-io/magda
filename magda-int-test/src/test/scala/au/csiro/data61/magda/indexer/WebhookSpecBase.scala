@@ -26,7 +26,7 @@ import spray.json.{JsNull, JsObject, _}
 
 import scala.concurrent.duration._
 
-class WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols with ResponseDatasetAllowAll{
+trait WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProtocols with ApiProtocols with ResponseDatasetAllowAll{
   override def buildConfig: Config = ConfigFactory.parseString("indexer.requestThrottleMs=1").withFallback(super.buildConfig)
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] = scala.collection.mutable.HashMap.empty
 
