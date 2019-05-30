@@ -1291,7 +1291,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testAsyncWebHook(param, Some(defaultWebHook)) { (payloads, _) =>
           param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[Record] shouldBe dataset
+            responseAs[Record] shouldBe dataset.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           val expectedEventIds = List(2)
