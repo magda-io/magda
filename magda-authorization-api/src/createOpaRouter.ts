@@ -3,7 +3,7 @@ import { Router } from "express";
 import * as _ from "lodash";
 import Database from "./Database";
 import { User } from "@magda/typescript-common/dist/authorization-api/model";
-import * as request from "request";
+import * as request from "request-promise-native";
 import * as bodyParser from "body-parser";
 import * as objectPath from "object-path";
 
@@ -126,8 +126,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         let reqData: any = {};
         const contentType = req.get("content-type");
 
-        const reqOpts: request.CoreOptions = {
-            method: "post"
+        const reqOpts: request.RequestPromiseOptions = {
+            method: "post",
+            resolveWithFullResponse: true
         };
 
         // --- merge userInfo into possible income input data via POST
@@ -156,7 +157,17 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqOpts.json = reqData;
 
-        request(`${opaUrl}v1${req.path}`, reqOpts).pipe(res);
+        try {
+            // -- request's pipe api doesn't work well with chunked response
+            const fullResponse = await request(
+                `${opaUrl}v1${req.path}`,
+                reqOpts
+            );
+            res.status(fullResponse.statusCode).send(fullResponse.body);
+        } catch (e) {
+            console.error(e);
+            res.status(500).send(`Failed to proxy request to OPA`);
+        }
     }
 
     async function proxyRequest(req: express.Request, res: express.Response) {

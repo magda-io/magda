@@ -1,3 +1,2 @@
 persistence:
   enabled: true
-  storageClass: standard
