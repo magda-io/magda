@@ -1,9 +1,19 @@
-import React from "react";
+import React, { ReactEventHandler } from "react";
 import Editor from "./Editor";
 
 import { ListMultiItemEditor } from "./multiItem";
 
-export function textEditorEx(options: any = {}) {
+export type InputComponentParmeter = React.ComponentType<{
+    className?: string;
+    defaultValue?: string;
+    onChange?: ReactEventHandler;
+    [k: string]: any;
+}> | null;
+
+export function textEditorEx(
+    options: any = {},
+    InputComponent: InputComponentParmeter = null
+) {
     return {
         edit: (
             value: any,
@@ -17,7 +27,19 @@ export function textEditorEx(options: any = {}) {
             if (options.redrawOnEmpty && !value) {
                 options.key = Math.random();
             }
-            return (
+            return InputComponent ? (
+                <InputComponent
+                    className={
+                        options.fullWidth
+                            ? "au-text-input full-width-ctrl textEditorEx"
+                            : "au-text-input non-full-width-ctrl textEditorEx"
+                    }
+                    defaultValue={value as string}
+                    onChange={callback}
+                    {...options}
+                    {...extraProps}
+                />
+            ) : (
                 <input
                     className={
                         options.fullWidth
@@ -64,7 +86,13 @@ export const multiTextEditor: Editor<string[]> = ListMultiItemEditor.create(
     () => ""
 );
 
-export const multiTextEditorEx = options => {
+export const multiTextEditorEx = (
+    options,
+    inputComponent: InputComponentParmeter = null
+) => {
     options.redrawOnEmpty = true;
-    return ListMultiItemEditor.create(textEditorEx(options), () => "");
+    return ListMultiItemEditor.create(
+        textEditorEx(options, inputComponent),
+        () => ""
+    );
 };

@@ -39,6 +39,7 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -274,9 +275,12 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={dataset.keywords}
                         onChange={editDataset("keywords")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Add a keyword"
-                        })}
+                        editor={multiTextEditorEx(
+                            {
+                                placeholder: "Add a keyword"
+                            },
+                            VocabularyAutoCompleteInput
+                        )}
                     />
                 </p>
                 <h4>Which themes does this dataset cover?</h4>

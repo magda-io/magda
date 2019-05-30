@@ -17,7 +17,7 @@ async function queryEndpoint(
     const requestUrl =
         `${apiEndpoint}?labelcontains=` + encodeURIComponent(str);
 
-    const data = await fetch(requestUrl, config.fetchOptions).then(response => {
+    const data = await fetch(requestUrl).then(response => {
         if (response.status === 200) {
             return response.json();
         }
