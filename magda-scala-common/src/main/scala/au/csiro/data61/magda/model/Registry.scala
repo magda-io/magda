@@ -64,7 +64,7 @@ object Registry {
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
       "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None,
 
-    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID) extends RecordType
+    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = false) tenantId: Option[BigInt] = None) extends RecordType
 
 
   @ApiModel(description = "A tenant in the registry.")
@@ -82,7 +82,7 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String],
 
-    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID) extends RecordType
+    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = false) tenantId: BigInt) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -241,7 +241,7 @@ object Registry {
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher: Option[Record] = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?)
         .map((dataSet: JsObject) => {
-          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId)))
+          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
           val record = theDataSet.convertTo[Record]
           record
         })
@@ -344,11 +344,11 @@ object Registry {
         if(hit.tenantId == MAGDA_ADMIN_PORTAL_ID)
           DataSet.registryIdToIdentifier(hit.id)
         else
-          DataSet.createUniqueId(hit.id, hit.tenantId)
+          DataSet.createUniqueId(hit.id, hit.tenantId.get)
 
       DataSet(
         identifier = theIdentifier,
-        tenantId = hit.tenantId,
+        tenantId = hit.tenantId.get,
         title = dcatStrings.extract[String]('title.?),
         catalog = source.extract[String]('name.?),
         description = getNullableStringField(dcatStrings, "description"),
@@ -377,7 +377,7 @@ object Registry {
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
-      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsNumber(hit.tenantId)))
+      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
       val distributionRecord: Record = theDistribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
       val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())

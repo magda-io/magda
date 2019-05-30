@@ -173,8 +173,8 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 2
-            page.records.head shouldBe recordWithAspect
-            page.records(1) shouldBe recordWithoutAspect
+            page.records.head shouldBe recordWithAspect.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(1) shouldBe recordWithoutAspect.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
         }
 
@@ -198,7 +198,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records.head shouldBe recordWithAspect
+            page.records.head shouldBe recordWithAspect.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -238,7 +238,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records.head shouldBe withFooAndBar
+            page.records.head shouldBe withFooAndBar.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspect=foo&aspect=bar") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -283,10 +283,10 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 4
-            page.records.head shouldBe withFoo
-            page.records(1) shouldBe withBar
-            page.records(2) shouldBe withFooAndBar
-            page.records(3) shouldBe withNone
+            page.records.head shouldBe withFoo.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(1) shouldBe withBar.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(2) shouldBe withFooAndBar.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(3) shouldBe withNone.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
         }
 
@@ -330,10 +330,10 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 2
-            page.records.head shouldBe withFoo
+            page.records.head shouldBe withFoo.copy(tenantId = Some(SINGLE_TENANT_ID))
 
             // withFooAndBarAndBaz shouldn't include the baz aspect because it wasn't requested
-            page.records(1) shouldBe withFooAndBarAndBaz.copy(aspects = withFooAndBarAndBaz.aspects - "baz")
+            page.records(1) shouldBe withFooAndBarAndBaz.copy(aspects = withFooAndBarAndBaz.aspects - "baz", tenantId = Some(SINGLE_TENANT_ID))
           }
         }
 
@@ -352,14 +352,14 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records.head shouldBe record
+            page.records.head shouldBe record.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records?aspect=with%20space") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records.head shouldBe record
+            page.records.head shouldBe record.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspect=with%20space") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -577,8 +577,8 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 2
-            page.records.head shouldBe recordWithValue1
-            page.records(1) shouldBe recordWithValue2
+            page.records.head shouldBe recordWithValue1.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(1) shouldBe recordWithValue2.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspectQuery=exampleAspect.value:correct&aspect=exampleAspect") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -649,8 +649,8 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 2
-            page.records.head shouldBe recordWithValue1
-            page.records(1) shouldBe recordWithValue2
+            page.records.head shouldBe recordWithValue1.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(1) shouldBe recordWithValue2.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspectQuery=exampleAspect.object.value:correct&aspect=exampleAspect") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -685,8 +685,8 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 2
-            page.records.head shouldBe recordWithValue1
-            page.records(1) shouldBe recordWithValue2
+            page.records.head shouldBe recordWithValue1.copy(tenantId = Some(SINGLE_TENANT_ID))
+            page.records(1) shouldBe recordWithValue2.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspectQuery=exampleAspect.value:correct&aspectQuery=exampleAspect.otherValue:alsoCorrect&aspect=exampleAspect") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -716,7 +716,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records.head shouldBe recordWithValue
+            page.records.head shouldBe recordWithValue.copy(tenantId = Some(SINGLE_TENANT_ID))
           }
 
           Get("/v0/records/count?aspectQuery=example%20Aspect.%26value:%2Fcorrect&aspect=example%20Aspect") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -1045,14 +1045,14 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("testId", "testName", Map(), Some("tag"))
         param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
 
           val recordRes = responseAs[Record]
-          recordRes shouldEqual record
+          recordRes shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1060,14 +1060,14 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("testId", "testName", Map(), None)
         param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
 
           val recordRes = responseAs[Record]
-          recordRes shouldEqual record
+          recordRes shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1075,12 +1075,12 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("in valid", "testName", Map())
         param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/in%20valid") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("in valid", "testName", Map())
+          responseAs[Record] shouldEqual Record("in valid", "testName", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1088,7 +1088,7 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("testId", "testName", Map())
         param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         val updated = record.copy(name = "foo")
@@ -1109,7 +1109,7 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("testId", "testName", Map())
         param.asAdmin(Put("/v0/records/testId", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -1117,7 +1117,7 @@ class RecordsServiceSpec extends ApiSpec {
 
           val recordsPage = responseAs[RecordsPage[Record]]
           recordsPage.records.length shouldEqual 1
-          recordsPage.records.head shouldEqual Record("testId", "testName", Map())
+          recordsPage.records.head shouldEqual Record("testId", "testName", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1130,12 +1130,12 @@ class RecordsServiceSpec extends ApiSpec {
         val newRecord = record.copy(name = "newName")
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual newRecord
+          responseAs[Record] shouldEqual newRecord.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "newName", Map())
+          responseAs[Record] shouldEqual Record("testId", "newName", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1153,7 +1153,7 @@ class RecordsServiceSpec extends ApiSpec {
         val newRecord = record.copy(sourceTag = Some("tag2"))
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual newRecord
+          responseAs[Record] shouldEqual newRecord.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
@@ -1171,7 +1171,7 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("testId", "testName", Map())
         param.asAdmin(Put("/v0/records/testId", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         val updated = record.copy(id = "foo")
@@ -1185,12 +1185,12 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record("in valid", "testName", Map())
         param.asAdmin(Put("/v0/records/in%20valid", record)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/in%20valid") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("in valid", "testName", Map())
+          responseAs[Record] shouldEqual Record("in valid", "testName", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1208,12 +1208,12 @@ class RecordsServiceSpec extends ApiSpec {
         val updated = record.copy(aspects = Map("test" -> JsObject()))
         param.asAdmin(Put("/v0/records/testId", updated)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual updated
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual updated
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1231,12 +1231,12 @@ class RecordsServiceSpec extends ApiSpec {
         val updated = record.copy(aspects = Map("test" -> JsObject("foo" -> JsString("baz"))))
         param.asAdmin(Put("/v0/records/testId", updated)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual updated
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual updated
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1256,12 +1256,12 @@ class RecordsServiceSpec extends ApiSpec {
         val updated = record.copy(aspects = Map())
         param.asAdmin(Put("/v0/records/testId", updated)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual updated
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1290,12 +1290,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "foo", Map())
+          responseAs[Record] shouldEqual Record("testId", "foo", Map(), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "foo", Map())
+          responseAs[Record] shouldEqual Record("testId", "foo", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1326,12 +1326,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Add(Pointer.root / "aspects" / "test", JsObject()))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject()))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject()), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject()))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject()), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1349,12 +1349,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Replace(Pointer.root / "aspects" / "test" / "foo", JsString("baz")))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("baz"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("baz"))), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("baz"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("baz"))), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1372,12 +1372,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Add(Pointer.root / "aspects" / "test" / "newprop", JsString("test")))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "newprop" -> JsString("test"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "newprop" -> JsString("test"))), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?aspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "newprop" -> JsString("test"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "newprop" -> JsString("test"))), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1395,12 +1395,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Remove(Pointer.root / "aspects" / "test"))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map())
+          responseAs[Record] shouldEqual Record("testId", "testName", Map(), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map())
+          responseAs[Record] shouldEqual Record("testId", "testName", Map(), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1418,12 +1418,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Remove(Pointer.root / "aspects" / "test" / "newprop"))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1441,12 +1441,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Move(Pointer.root / "aspects" / "test" / "foo", Pointer.root / "aspects" / "test" / "bar"))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("bar" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("bar" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("bar" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("bar" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1464,12 +1464,12 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(Copy(Pointer.root / "aspects" / "test" / "foo", Pointer.root / "aspects" / "test" / "bar"))
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "bar" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "bar" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "bar" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("test" -> JsObject("foo" -> JsString("bar"), "bar" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
       }
 
@@ -1487,7 +1487,7 @@ class RecordsServiceSpec extends ApiSpec {
         val patchSuccess = JsonPatch(Test(Pointer.root / "aspects" / "A" / "foo", JsString("bar")))
         param.asAdmin(Patch("/v0/records/testId", patchSuccess)) ~> addSingleTenantIdHeader ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          responseAs[Record] shouldEqual Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))), None, Some(SINGLE_TENANT_ID))
         }
 
         val patchFail = JsonPatch(Test(Pointer.root / "aspects" / "A" / "foo", JsString("not this value")))

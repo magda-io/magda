@@ -52,8 +52,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
+  val SINGLE_TENANT_ID = MAGDA_ADMIN_PORTAL_ID
+
   def addSingleTenantIdHeader: RawHeader = {
-    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+    addTenantIdHeader(SINGLE_TENANT_ID)
   }
 
   def addAdminPortalIdHeader: RawHeader = {

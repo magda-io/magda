@@ -343,7 +343,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
         case (_, Success(JsNull)) => false // aspect was deleted
         case _                    => true
       }).map(aspect => (aspect._1, aspect._2.get.asJsObject)))
-    } yield Record(patchedRecord.id, patchedRecord.name, aspects, tenantId=tenantId)
+    } yield Record(patchedRecord.id, patchedRecord.name, aspects, tenantId=Some(tenantId))
   }
 
   def patchRecordAspectById(implicit session: DBSession, recordId: String, tenantId: BigInt, aspectId: String, aspectPatch: JsonPatch): Try[JsObject] = {
@@ -431,7 +431,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
 
       hasAspectFailure <- record.aspects.map(aspect => createRecordAspect(session, record.id, tenantId, aspect._1, aspect._2)).find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record.copy(tenantId = tenantId))
+        case _                => Success(record.copy(tenantId = Some(tenantId)))
       }
     } yield hasAspectFailure
   }
@@ -686,7 +686,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
           case (aspectId, index) => (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
         }
         .toMap, rs.stringOpt("sourceTag"),
-      rs.bigInt("tenantId"))
+      Option(rs.bigInt("tenantId")))
   }
 
   private def rowToAspect(rs: WrappedResultSet): JsObject = {
