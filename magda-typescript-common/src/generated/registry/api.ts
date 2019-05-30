@@ -37,10 +37,6 @@ export class AspectDefinition {
     * The JSON Schema of this aspect.
     */
     'jsonSchema': any;
-    /**
-    * The identifier of the tenant for the aspect type.
-    */
-    'tenantId': number;
 }
 
 export class BadRequest {

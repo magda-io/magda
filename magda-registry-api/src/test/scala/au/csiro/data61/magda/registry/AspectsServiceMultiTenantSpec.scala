@@ -47,14 +47,14 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
               Get("/v0/aspects") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.OK
 
               val aspectDefinitions = responseAs[List[AspectDefinition]]
               aspectDefinitions.length shouldEqual 1
-              aspectDefinitions.head shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+              aspectDefinitions.head shouldEqual aspectDefinition
           }
 
           Get("/v0/aspects") ~> addTenantIdHeader(tenant_2) ~> param.api(role).routes ~> check {
@@ -70,11 +70,11 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           Get("/v0/aspects/in%20valid") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+            responseAs[AspectDefinition] shouldEqual aspectDefinition
           }
         }
       }
@@ -83,7 +83,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
@@ -93,7 +93,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
       }
 
       checkMustBeAdmin(role) {
-        val aspectDefinition = AspectDefinition("testId", "testName", None, tenant_1)
+        val aspectDefinition = AspectDefinition("testId", "testName", None)
         Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(tenant_1)
       }
     }
@@ -103,14 +103,14 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           Get("/v0/aspects") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
 
             val aspectDefinitions = responseAs[List[AspectDefinition]]
             aspectDefinitions.length shouldEqual 1
-            aspectDefinitions.head shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+            aspectDefinitions.head shouldEqual aspectDefinition
           }
         }
       }
@@ -121,7 +121,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val newDefinition = aspectDefinition.copy(name = "newName")
           param.asAdmin(Put("/v0/aspects/testId", newDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual newDefinition.copy(tenantId = tenant_1)
+            responseAs[AspectDefinition] shouldEqual newDefinition
           }
         }
       }
@@ -130,7 +130,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           val updated = aspectDefinition.copy(id = "foo")
           param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
@@ -144,11 +144,11 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
         param.asAdmin(Put("/v0/aspects/in%20valid", aspectDefinition)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
-          responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           Get("/v0/aspects/in%20valid") ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual aspectDefinition.copy(tenantId = tenant_1)
+            responseAs[AspectDefinition] shouldEqual aspectDefinition
           }
         }
       }
@@ -159,7 +159,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val updated = aspectDefinition.copy(jsonSchema = Some(JsObject()))
           param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual updated.copy(tenantId = tenant_1)
+            responseAs[AspectDefinition] shouldEqual updated
           }
         }
       }
@@ -170,7 +170,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val updated = aspectDefinition.copy(jsonSchema = Some(JsObject("foo" -> JsString("baz"))))
           param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual updated.copy(tenantId = tenant_1)
+            responseAs[AspectDefinition] shouldEqual updated
           }
         }
       }
@@ -197,7 +197,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
           param.asAdmin(Patch("/v0/aspects/testId", patch))~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "foo", None, tenant_1)
+            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "foo", None)
           }
         }
       }
@@ -219,7 +219,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val patch = JsonPatch(Add(Pointer.root / "jsonSchema", JsObject()))
           param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject()), tenant_1)
+            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject()))
           }
         }
       }
@@ -230,7 +230,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           val patch = JsonPatch(Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz")))
           param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(tenant_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("baz"))), tenant_1)
+            responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("baz"))))
           }
         }
       }
@@ -257,7 +257,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
               status shouldEqual StatusCodes.OK
               val lastEventIdAfterPatch: Option[Long] = getLastAspectEventId(session, "testId")
               lastEventIdAfterPatch shouldEqual lastEventIdBeforePatch
-              responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))), tenant_1)
+              responseAs[AspectDefinition] shouldEqual AspectDefinition("testId", "testName", Some(JsObject("foo" -> JsString("bar"))))
             }
           }
         }

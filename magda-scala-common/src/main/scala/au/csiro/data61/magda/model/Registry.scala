@@ -25,9 +25,7 @@ object Registry {
 
     @(ApiModelProperty @field)(value = "The name of the aspect.", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject],
-
-    @(ApiModelProperty @field)(value = "The identifier of the tenant for the aspect type.", required = true) tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID)
+    @(ApiModelProperty @field)(value = "The JSON Schema of this aspect.", required = false, dataType = "object") jsonSchema: Option[JsObject])
 
   case class WebHookPayload(
     action: String,
@@ -167,7 +165,7 @@ object Registry {
 
     implicit val recordFormat = jsonFormat5(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
-    implicit val aspectFormat = jsonFormat4(AspectDefinition.apply)
+    implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
     implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
     implicit val webHookFormat = jsonFormat14(WebHook.apply)

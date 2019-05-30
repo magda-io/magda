@@ -88,7 +88,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                       query,
                       start,
                       limit,
-                      tenantId.toString
+                      tenantId
                     ))
                   case None ⇒ complete(NotFound)
                 }
@@ -210,7 +210,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                     start,
                     limit,
                     facetSize,
-                    tenantId.toString)) { result =>
+                    tenantId)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                   pathPrefix("datasets") {
@@ -273,7 +273,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
               "start" ? 0,
               "limit" ? 10
             )) { (generalQuery, start, limit) ⇒
-              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit, tenantId.toString)) { result =>
+              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit, tenantId)) { result =>
                 val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
                 complete(status, result)
               }
@@ -322,7 +322,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            */
           path("regions") {requiresTenantId { tenantId =>
             (get & parameters('query ?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-              complete(searchQueryer.searchRegions(query, start, limit, tenantId.toString))
+              complete(searchQueryer.searchRegions(query, start, limit, tenantId))
             }
           }
           } ~

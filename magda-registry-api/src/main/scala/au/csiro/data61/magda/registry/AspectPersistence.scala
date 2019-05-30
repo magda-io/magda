@@ -92,7 +92,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
           0
         }
       }
-    } yield patchedAspect.copy(tenantId = tenantId)
+    } yield patchedAspect
   }
 
   def create(implicit session: DBSession, aspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
@@ -107,7 +107,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         case None => null
       }
       sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, $tenantId, ${aspect.name}, $eventId, $jsonString::json)".update.apply()
-      Success(aspect.copy(tenantId = tenantId))
+      Success(aspect)
     } catch {
       case e: SQLException => Failure(new RuntimeException("An aspect with the specified ID already exists."))
     }
@@ -118,7 +118,6 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     AspectDefinition(
       rs.string("aspectId"),
       rs.string("name"),
-      jsonSchema,
-      rs.bigInt("tenantId"))
+      jsonSchema)
   }
 }

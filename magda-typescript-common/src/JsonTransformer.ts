@@ -136,19 +136,16 @@ export default abstract class JsonTransformer {
             {
                 id: "dataset-distributions",
                 name: "Dataset Distributions",
-                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/dataset-distributions.schema.json")
             },
             {
                 id: "source",
                 name: "Source",
-                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/source.schema.json")
             },
             {
                 id: "dataset-publisher",
                 name: "Dataset Publisher",
-                tenantId: this.tenantId,
                 jsonSchema: require("@magda/registry-aspects/dataset-publisher.schema.json")
             }
         ]);

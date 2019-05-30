@@ -239,8 +239,7 @@ describe("JsonConnector", () => {
                             aspectDefinition: {
                                 id: "test-aspect-id",
                                 name: "test-aspect-id",
-                                jsonSchema: testAspectJsonSchema,
-                                tenantId: tenant_id_1
+                                jsonSchema: testAspectJsonSchema
                             },
                             builderFunctionString: `return {"test-aspect-data1":"${datasetRandomValue1}"};`
                         }

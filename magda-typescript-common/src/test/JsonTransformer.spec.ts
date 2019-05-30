@@ -17,8 +17,7 @@ describe("JsonTransformer", () => {
                     aspectDefinition: {
                         id: "organization-details",
                         name: "Organization",
-                        jsonSchema: require("@magda/registry-aspects/organization-details.schema.json"),
-                        tenantId: tenant_id_1
+                        jsonSchema: require("@magda/registry-aspects/organization-details.schema.json")
                     },
                     builderFunctionString: fs.readFileSync(
                         "src/test/aspect-templates/organization-details.js",

@@ -7,10 +7,10 @@ import au.csiro.data61.magda.model.misc._
 import scala.concurrent.Future
 
 trait SearchQueryer {
-  def search(jwtToken: Option[String], query: Query, start: Long, limit: Int, facetSize: Int, tenantId: String): Future[SearchResult]
-  def searchFacets(jwtToken: Option[String],facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int, tenantId: String): Future[FacetSearchResult]
-  def searchRegions(query: Option[String], start: Long, limit: Int, tenantId: String): Future[RegionSearchResult]
-  def searchOrganisations(query: Option[String], start: Int, limit: Int, tenantId: String): Future[OrganisationsSearchResult]
+  def search(jwtToken: Option[String], query: Query, start: Long, limit: Int, facetSize: Int, tenantId: BigInt): Future[SearchResult]
+  def searchFacets(jwtToken: Option[String],facetType: FacetType, facetQuery: Option[String], generalQuery: Query, start: Int, limit: Int, tenantId: BigInt): Future[FacetSearchResult]
+  def searchRegions(query: Option[String], start: Long, limit: Int, tenantId: BigInt): Future[RegionSearchResult]
+  def searchOrganisations(query: Option[String], start: Int, limit: Int, tenantId: BigInt): Future[OrganisationsSearchResult]
 }
 
 sealed trait SearchStrategy {
