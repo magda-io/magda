@@ -1,5 +1,7 @@
 {
   "private": true,
+  "name": "magda",
+  "version": "0.0.56-0",
   "workspaces": [
     "deploy",
     "magda-*",

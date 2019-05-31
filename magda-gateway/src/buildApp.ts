@@ -42,6 +42,9 @@ type Config = {
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
+    webProxyRoutesJson: {
+        [localRoute: string]: string;
+    };
     helmetJson: string;
     cspJson: string;
     corsJson: string;
@@ -172,6 +175,13 @@ export default function buildApp(config: Config) {
             routes
         })
     );
+
+    if (config.webProxyRoutesJson) {
+        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
+            app.use("/" + key, createGenericProxy(value));
+        });
+    }
+
     app.use("/preview-map", createGenericProxy(config.previewMap));
 
     if (config.enableCkanRedirection) {
