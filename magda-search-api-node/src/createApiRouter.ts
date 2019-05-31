@@ -75,16 +75,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     }
 
+    function parseDate(dateString: string) {
+        if (!dateString || dateString.trim().length === 0) {
+            return undefined;
+        }
+
+        const parsed = chrono.en_GB.parse(dateString);
+        // We always use "start" because we're not actually trying to parse a date range out
+        // of natural text
+        if (parsed.length === 0 || !parsed[0].start) {
+            return undefined;
+        }
+
+        return parsed[0].start.date();
+    }
+
     function parseBaseQuery(queryStringObj: any): Query {
         return {
             freeText: queryStringObj.generalQuery,
             publishers: queryStringObj.publisher,
-            dateFrom:
-                queryStringObj.dateFrom &&
-                chrono.en_GB.parse(queryStringObj.dateFrom)[0].end.date(),
-            dateTo:
-                queryStringObj.dateTo &&
-                chrono.en_GB.parse(queryStringObj.dateTo)[0].end.date(),
+            dateFrom: parseDate(queryStringObj.dateFrom),
+            dateTo: parseDate(queryStringObj.dateTo),
             regions: processRegions(processMaybeArray(queryStringObj.region)),
             formats: queryStringObj.format,
             publishingState: queryStringObj.publishingState
@@ -97,10 +108,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
         async (req, res) => {
             const queryString = req.query;
 
-            const processedQuery: Query = {
-                ...parseBaseQuery(queryString),
-                freeText: queryString.generalQuery
-            };
+            let processedQuery: Query;
+            try {
+                processedQuery = {
+                    ...parseBaseQuery(queryString),
+                    freeText: queryString.generalQuery
+                };
+            } catch (e) {
+                console.debug(e);
+                res.status(400).send("Error");
+                return;
+            }
 
             try {
                 const results = await searchQueryer.searchFacets(
@@ -114,7 +132,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 res.status(200).send(results);
             } catch (e) {
                 console.error(e);
-                console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }
         }

@@ -7,7 +7,8 @@ import {
     FacetSearchResult,
     Region,
     FacetOption,
-    SearchResult
+    SearchResult,
+    ISODate
 } from "../../model";
 import SearchQueryer from "../SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
@@ -323,6 +324,28 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             }
         })();
 
+        const dateQuery = (date: ISODate, comparator: "gte" | "lte") => ({
+            bool: {
+                should: [
+                    {
+                        range: {
+                            "temporal.end.date": {
+                                [comparator]: date
+                            }
+                        }
+                    },
+                    {
+                        range: {
+                            "temporal.start.date": {
+                                [comparator]: date
+                            }
+                        }
+                    }
+                ],
+                minimum_should_match: 1
+            }
+        });
+
         return {
             bool: {
                 must: [
@@ -331,8 +354,11 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                         this.regionIdToGeoshapeQuery(
                             queryRegion.regionType + "/" + queryRegion.regionId
                         )
-                    )
-                ]
+                    ),
+                    query.dateFrom &&
+                        dateQuery(query.dateFrom.toISOString(), "gte"),
+                    query.dateTo && dateQuery(query.dateTo.toISOString(), "lte")
+                ].filter(x => !!x)
             }
         };
     }

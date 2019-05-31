@@ -8,8 +8,8 @@ import _ from "lodash";
 import casual from "casual";
 import { Polygon } from "geojson";
 
-import buildDatasetIndex from "./buildDatasetsIndex";
-import buildRegionsIndex from "./buildRegionsIndex";
+import buildDatasetIndexInner from "./buildDatasetsIndex";
+import buildRegionsIndexInner from "./buildRegionsIndex";
 import createApiRouter from "../createApiRouter";
 // import handleESError from "../search/handleESError";
 import {
@@ -18,8 +18,10 @@ import {
     SearchResult,
     Agent,
     Location,
-    Distribution
+    Distribution,
+    PeriodOfTime
 } from "../model";
+import moment = require("moment");
 
 const client = new Client({ node: "http://localhost:9200" });
 const API_ROUTER_CONFIG = {
@@ -163,6 +165,20 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         }
     ];
 
+    const buildDatasetIndex = (datasets: Dataset[]) =>
+        buildDatasetIndexInner(
+            client,
+            API_ROUTER_CONFIG.datasetsIndexId,
+            datasets
+        );
+
+    const buildRegionsIndex = (regions: Region[]) =>
+        buildRegionsIndexInner(
+            client,
+            API_ROUTER_CONFIG.regionsIndexId,
+            regions
+        );
+
     const buildDataset = (() => {
         let globalDatasetIdentifierCount = 0;
 
@@ -170,10 +186,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             return {
                 identifier: "ds-" + globalDatasetIdentifierCount++,
                 catalog: "data.gov.au",
-                publisher: {
-                    identifier: "publisher",
-                    name: casual.title
-                },
+                publisher: buildPublisher(),
                 title: casual.title,
                 description: casual.description,
                 themes: casual.array_of_words(casual.integer(0, 10)),
@@ -183,6 +196,40 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 hasQuality: casual.coin_flip,
                 ...overrides
             } as Dataset;
+        };
+    })();
+
+    const buildPublisher = (() => {
+        let globalPublisherIdentifierCount = 0;
+
+        return function buildPublisher(overrides: any = {}): Agent {
+            return {
+                identifier: "pub-" + globalPublisherIdentifierCount++,
+                name: casual.title,
+                description: casual.description,
+                acronym: casual.title
+                    .split(" ")
+                    .map(word => word[0])
+                    .join(""),
+                jurisdiction: casual.title,
+                aggKeywords: casual.array_of_words(casual.integer(0, 10)),
+                email: casual.email,
+                imageUrl: casual.url,
+                phone: casual.phone,
+                addrStreet: casual.street,
+                addrSuburb: casual.city,
+                addrPostcode: casual.coin_flip
+                    ? casual.array_of_digits(4).join("")
+                    : casual.zip,
+                addrCountry: casual.country,
+                website: casual.url,
+                source: {
+                    name: casual.title,
+                    id: casual.string
+                },
+
+                ...overrides
+            };
         };
     })();
 
@@ -214,20 +261,6 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 ...overrides
             } as Distribution;
         };
-
-        //     identifier: string;
-        // title: string;
-        // description?: string;
-        // issued?: string;
-        // modified?: string;
-        // license?: License;
-        // rights?: string;
-        // accessURL?: string;
-        // downloadURL?: string;
-        // byteSize?: number;
-        // mediaType?: string;
-        // source?: DataSource;
-        // format?: string;
     })();
 
     const buildN = <T>(builderFn: (override: any) => T) => (
@@ -245,9 +278,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         app = express();
         app.use(router);
 
-        await Promise.all([
-            buildRegionsIndex(client, API_ROUTER_CONFIG.regionsIndexId, regions)
-        ]);
+        await Promise.all([buildRegionsIndex(regions)]);
     });
 
     beforeEach(() => {
@@ -258,11 +289,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         it("should return all datasets when searching by *", async () => {
             const datasets = buildNDatasets(15);
 
-            await buildDatasetIndex(
-                client,
-                API_ROUTER_CONFIG.datasetsIndexId,
-                datasets
-            );
+            await buildDatasetIndex(datasets);
 
             return supertest(app)
                 .get(`/datasets?query=*&limit=${datasets.length}`)
@@ -276,11 +303,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             const datasets = buildNDatasets(14);
             const halfMax = 7;
 
-            await buildDatasetIndex(
-                client,
-                API_ROUTER_CONFIG.datasetsIndexId,
-                datasets
-            );
+            await buildDatasetIndex(datasets);
 
             return supertest(app)
                 .get(`/datasets?query=*&limit=${halfMax}`)
@@ -300,11 +323,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 const toTry = [reversed, shuffled];
 
                 for (let order of toTry) {
-                    await buildDatasetIndex(
-                        client,
-                        API_ROUTER_CONFIG.datasetsIndexId,
-                        order
-                    );
+                    await buildDatasetIndex(order);
 
                     await supertest(app)
                         .get(`/datasets?query=*&limit=${order.length}`)
@@ -372,11 +391,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 ...buildNDatasets(5)
             ];
 
-            await buildDatasetIndex(
-                client,
-                API_ROUTER_CONFIG.datasetsIndexId,
-                datasets
-            );
+            await buildDatasetIndex(datasets);
 
             for (let synonym of synonyms) {
                 await supertest(app)
@@ -424,11 +439,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             const otherDatasets = buildNDatasets(15);
             const datasets = _.shuffle([...acronymDatasets, ...otherDatasets]);
 
-            await buildDatasetIndex(
-                client,
-                API_ROUTER_CONFIG.datasetsIndexId,
-                datasets
-            );
+            await buildDatasetIndex(datasets);
 
             for (let acronymWithDataset of acronymsWithDatasets) {
                 await supertest(app)
@@ -491,7 +502,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         async function setupQueensland() {
-            await buildDatasetIndex(client, API_ROUTER_CONFIG.datasetsIndexId, [
+            await buildDatasetIndex([
                 qldDataset,
                 nationalDataset1,
                 nationalDataset2
@@ -587,7 +598,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 publishingState: "published"
             });
 
-            await buildDatasetIndex(client, API_ROUTER_CONFIG.datasetsIndexId, [
+            await buildDatasetIndex([
                 saDataset,
                 nationalDataset1,
                 nationalDataset2
@@ -681,7 +692,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 publishingState: "published"
             });
 
-            await buildDatasetIndex(client, API_ROUTER_CONFIG.datasetsIndexId, [
+            await buildDatasetIndex([
                 alfDataset,
                 nationalDataset1,
                 nationalDataset2
@@ -720,65 +731,298 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         });
     });
 
-    describe("quotes", () => {
-        describe("should be able to be found verbatim somewhere in a dataset for:", () => {
-            async function testField(quote: string, override: any) {
-                const targetDataset = buildDataset(override);
+    const testKeywordSearch = (termInData: string, termInQuery: string) => {
+        const testField = async (override: any) => {
+            const targetDataset = buildDataset(override);
 
-                const datasets = _.shuffle([
-                    ...buildNDatasets(50),
-                    targetDataset
-                ]);
+            const datasets = _.shuffle([targetDataset, ...buildNDatasets(50)]);
 
-                await buildDatasetIndex(
-                    client,
-                    API_ROUTER_CONFIG.datasetsIndexId,
-                    datasets
-                );
+            await buildDatasetIndex(datasets);
 
-                await supertest(app)
-                    .get(`/datasets?query="${quote}"`)
-                    .expect(200)
-                    .expect(res => {
-                        const body: SearchResult = res.body;
+            await supertest(app)
+                .get(`/datasets?query=${termInQuery}`)
+                .expect(200)
+                .expect(res => {
+                    const body: SearchResult = res.body;
 
-                        expect(body.datasets[0].identifier).to.equal(
-                            targetDataset.identifier
-                        );
-                    });
-            }
+                    expect(body.hitCount).to.be.greaterThan(0);
+                    expect(body.datasets[0].identifier).to.equal(
+                        targetDataset.identifier
+                    );
+                });
+        };
 
+        describe(`'${termInQuery}' should be able to be found verbatim somewhere in a dataset for:`, () => {
             it("description", async () => {
-                const QUOTE = "this is a quote";
-
-                await testField(QUOTE, {
-                    description: `${casual.description} ${QUOTE} ${
+                await testField({
+                    description: `${casual.description} ${termInData} ${
                         casual.description
                     }`
                 });
             });
 
-            it("distribution description", async () => {
-                const QUOTE = "this is a quote";
+            it("exact description", async () => {
+                await testField({
+                    description: termInData
+                });
+            });
 
-                await testField(QUOTE, {
-                    distributions: [
-                        {
-                            description: `${casual.description} ${QUOTE} ${
+            it("distribution description", async () => {
+                await testField({
+                    distributions: _.shuffle([
+                        buildNDistributions(4),
+                        buildDistribution({
+                            description: `${casual.description} ${termInData} ${
                                 casual.description
                             }`
-                        }
-                    ]
+                        })
+                    ])
+                });
+            });
+
+            it("exact distribution description", async () => {
+                await testField({
+                    distributions: _.shuffle([
+                        buildNDistributions(4),
+                        buildDistribution({
+                            description: termInData
+                        })
+                    ])
+                });
+            });
+
+            it("exact keyword", async () => {
+                await testField({
+                    keywords: _.shuffle([
+                        ...casual.array_of_words(5),
+                        termInData
+                    ])
+                });
+            });
+
+            it("theme", async () => {
+                await testField({
+                    themes: _.shuffle([
+                        `${casual.short_description} ${termInData} ${
+                            casual.short_description
+                        }`,
+                        ...casual.array_of_words(5)
+                    ])
+                });
+            });
+
+            it("exact theme", async () => {
+                await testField({
+                    themes: _.shuffle([...casual.array_of_words(5), termInData])
                 });
             });
 
             describe.skip("(won't work until we fix #2238)", () => {
-                it.skip("title ", async () => {
-                    const TITLE = "ASIC Business Names";
-
-                    await testField(TITLE, {
-                        title: `${casual.title} ${TITLE} ${casual.title}`
+                it("title ", async () => {
+                    await testField({
+                        title: `${casual.title} ${termInData} ${casual.title}`
                     });
+                });
+
+                it("keyword", async () => {
+                    await testField({
+                        keywords: _.shuffle([
+                            `${casual.short_description} ${termInData} ${
+                                casual.short_description
+                            }`,
+                            ...casual.array_of_words(5)
+                        ])
+                    });
+                });
+
+                it("publisher name", async () => {
+                    await testField({
+                        publisher: buildPublisher({
+                            name: `${casual.title} ${termInData} ${
+                                casual.title
+                            }`
+                        })
+                    });
+                });
+
+                it("publisher description", async () => {
+                    await testField({
+                        publisher: buildPublisher({
+                            description: `${casual.description} ${termInData} ${
+                                casual.description
+                            }`
+                        })
+                    });
+                });
+
+                it("format", async () => {
+                    await testField({
+                        format: `${casual.short_description} ${termInData} ${
+                            casual.short_description
+                        }`
+                    });
+                });
+
+                it("exact format", async () => {
+                    await testField({
+                        format: termInData
+                    });
+                });
+            });
+        });
+    };
+
+    describe("searching for keywords", () => {
+        testKeywordSearch("rivers near ballarat", "rivers near ballarat");
+    });
+
+    describe("searching for quotes", () => {
+        testKeywordSearch("rivers near ballarat", '"rivers near ballarat"');
+    });
+
+    describe("filtering", () => {
+        describe("by date", () => {
+            let datesByMonth: {
+                datasets: Dataset[];
+                earliest: moment.Moment;
+                latest: moment.Moment;
+            }[];
+
+            describe("for datasets with a closed date range", async () => {
+                before(async () => {
+                    datesByMonth = _.range(0, 12).map(month => {
+                        const monthMoment = moment()
+                            .utc()
+                            .year(2019)
+                            .month(month);
+                        const earliest = monthMoment.clone().startOf("month");
+                        const latest = monthMoment.clone().endOf("month");
+
+                        return {
+                            datasets: _.range(1, 3).map(() => {
+                                const start = moment
+                                    .unix(
+                                        casual.integer(
+                                            earliest.unix(),
+                                            latest
+                                                .clone()
+                                                .subtract(1, "days")
+                                                .unix()
+                                        )
+                                    )
+                                    .utc();
+                                const end = moment
+                                    .unix(
+                                        casual.integer(
+                                            start.unix(),
+                                            latest.unix()
+                                        )
+                                    )
+                                    .utc();
+
+                                return buildDataset({
+                                    temporal: {
+                                        start: {
+                                            date: start.toISOString(),
+                                            text: start.toString()
+                                        },
+                                        end: {
+                                            date: end.toISOString(),
+                                            text: end.toString()
+                                        }
+                                    } as PeriodOfTime
+                                });
+                            }),
+                            earliest,
+                            latest
+                        };
+                    });
+
+                    await buildDatasetIndex(
+                        _.flatMap(datesByMonth, ({ datasets }) => datasets)
+                    );
+                });
+
+                it("should only return results between dateTo and dateFrom if both are present", async () => {
+                    for (let { datasets, earliest, latest } of datesByMonth) {
+                        // console.log(
+                        //     `/datasets?dateFrom=${earliest.format(
+                        //         "YYYY/MM/DD"
+                        //     )}&dateTo=${latest.format("YYYY/MM/DD")}`
+                        // );
+                        await supertest(app)
+                            .get(
+                                `/datasets?dateFrom=${earliest.format(
+                                    "YYYY/MM/DD"
+                                )}&dateTo=${latest.format("YYYY/MM/DD")}`
+                            )
+                            .expect(200)
+                            .expect(res => {
+                                const body: SearchResult = res.body;
+
+                                const identifiers = body.datasets.map(
+                                    dataset => dataset.identifier
+                                );
+
+                                expect(identifiers).to.have.same.members(
+                                    datasets.map(ds => ds.identifier)
+                                );
+                            });
+                    }
+                });
+
+                it("should only return results after dateFrom if dateTo is not also present", async () => {
+                    for (let i = 0; i < datesByMonth.length; i++) {
+                        const { earliest } = datesByMonth[i];
+
+                        const expectedIdentifiers = _(datesByMonth)
+                            .drop(i)
+                            .flatMap(({ datasets }) => datasets)
+                            .map(ds => ds.identifier)
+                            .value();
+
+                        await supertest(app)
+                            .get(
+                                `/datasets?dateFrom=${earliest.format(
+                                    "YYYY/MM/DD"
+                                )}&limit=${expectedIdentifiers.length + 1}`
+                            )
+                            .expect(200)
+                            .expect(res => {
+                                const body: SearchResult = res.body;
+
+                                expect(
+                                    body.datasets.map(ds => ds.identifier)
+                                ).to.have.same.members(expectedIdentifiers);
+                            });
+                    }
+                });
+
+                it("should only return results before dateTo if dateFrom is not also present", async () => {
+                    for (let i = 0; i < datesByMonth.length; i++) {
+                        const { latest } = datesByMonth[i];
+
+                        const expectedIdentifiers = _(datesByMonth)
+                            .take(i + 1)
+                            .flatMap(({ datasets }) => datasets)
+                            .map(ds => ds.identifier)
+                            .value();
+
+                        await supertest(app)
+                            .get(
+                                `/datasets?dateTo=${latest.format(
+                                    "YYYY/MM/DD"
+                                )}&limit=${expectedIdentifiers.length + 1}`
+                            )
+                            .expect(200)
+                            .expect(res => {
+                                const body: SearchResult = res.body;
+
+                                expect(
+                                    body.datasets.map(ds => ds.identifier)
+                                ).to.have.same.members(expectedIdentifiers);
+                            });
+                    }
                 });
             });
         });
