@@ -61,7 +61,6 @@ async function queryEndpoint(
             keywords.push(label._value);
         });
     });
-
     return keywords;
 }
 
@@ -71,9 +70,11 @@ export async function query(str: string): Promise<string[]> {
             "Failed to contact Vocabulary API: invalid vocabularyApiEndpoints config!"
         );
     }
-    return uniq(
-        flatMap(Promise.all(apiEndpoints.map(api => queryEndpoint(api, str))))
+    const result = await Promise.all(
+        apiEndpoints.map(api => queryEndpoint(api, str))
     );
+    const keywords = uniq(flatMap(result));
+    return keywords;
 }
 
 export async function isValidKeyword(keyword: string): Promise<boolean> {

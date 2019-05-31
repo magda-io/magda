@@ -9,5 +9,6 @@ data:
     {{- if .Values.contentApiBaseUrlInternal -}} "contentApiBaseUrlInternal": {{ .Values.contentApiBaseUrlInternal | quote }}, {{- end -}}
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
     "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
-    "featureFlags": {{ toJson .Values.featureFlags | quote }}
+    "featureFlags": {{ toJson .Values.featureFlags | quote }},
+    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | default "[]" }},
   }'

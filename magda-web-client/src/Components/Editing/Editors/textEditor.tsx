@@ -90,7 +90,10 @@ export const multiTextEditorEx = (
     options,
     inputComponent: InputComponentParmeter = null
 ) => {
-    options.redrawOnEmpty = true;
+    options.redrawOnEmpty =
+        typeof options.redrawOnEmpty !== "boolean"
+            ? true
+            : options.redrawOnEmpty;
     return ListMultiItemEditor.create(
         textEditorEx(options, inputComponent),
         () => ""

@@ -277,7 +277,8 @@ class NewDataset extends React.Component<Prop, State> {
                         onChange={editDataset("keywords")}
                         editor={multiTextEditorEx(
                             {
-                                placeholder: "Add a keyword"
+                                placeholder: "Add a keyword",
+                                redrawOnEmpty: false
                             },
                             VocabularyAutoCompleteInput
                         )}
@@ -294,9 +295,13 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={dataset.themes}
                         onChange={editDataset("themes")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Add a theme"
-                        })}
+                        editor={multiTextEditorEx(
+                            {
+                                placeholder: "Add a theme",
+                                redrawOnEmpty: false
+                            },
+                            VocabularyAutoCompleteInput
+                        )}
                     />
                 </p>
                 <hr />
