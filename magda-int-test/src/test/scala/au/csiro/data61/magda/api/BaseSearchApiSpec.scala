@@ -170,8 +170,8 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   override def afterEach() {
+//    cleanUpIndexes()
     super.afterEach()
-    cleanUpIndexes()
   }
 
 }
