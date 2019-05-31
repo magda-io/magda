@@ -1,0 +1,98 @@
+import * as express from "express";
+import { Strategy as ArcGISStrategy } from "passport-arcgis";
+import { Authenticator, Profile } from "passport";
+
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import createOrGetUserToken from "../createOrGetUserToken";
+import { redirectOnSuccess, redirectOnError } from "./redirect";
+
+export interface ArcGisOptions {
+    authorizationApi: ApiClient;
+    passport: Authenticator;
+    clientId: string;
+    clientSecret: string;
+    externalAuthHome: string;
+}
+
+export default function arcgis(options: ArcGisOptions) {
+    const authorizationApi = options.authorizationApi;
+    const passport = options.passport;
+    const clientId = options.clientId;
+    const clientSecret = options.clientSecret;
+    const externalAuthHome = options.externalAuthHome;
+    const loginBaseUrl = `${externalAuthHome}/login`;
+
+    if (!clientId) {
+        return undefined;
+    }
+
+    passport.use(
+        new ArcGISStrategy(
+            {
+                clientID: clientId,
+                clientSecret: clientSecret,
+                callbackURL: `${loginBaseUrl}/arcgis/return`
+            },
+            function(
+                accessToken: string,
+                refreshToken: string,
+                profile: Profile,
+                cb: (error: any, user?: any, info?: any) => void
+            ) {
+                // ArcGIS Passport provider incorrect defines email instead of emails
+                if ((profile as any).email) {
+                    profile.emails = profile.emails || [];
+                    profile.emails.push({ value: (profile as any).email });
+                }
+
+                profile.displayName =
+                    profile.displayName ||
+                    ((profile as any)._json &&
+                        (profile as any)._json.thumbnail);
+
+                createOrGetUserToken(authorizationApi, profile, "arcgis")
+                    .then(userId => cb(null, userId))
+                    .catch(error => cb(error));
+            }
+        )
+    );
+
+    const router: express.Router = express.Router();
+
+    router.get("/", (req, res, next) => {
+        const options: any = {
+            state: req.query.redirect || externalAuthHome
+        };
+        passport.authenticate("arcgis", options)(req, res, next);
+    });
+
+    router.get(
+        "/return",
+        (
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ) => {
+            passport.authenticate("arcgis", {
+                failWithError: true
+            })(req, res, next);
+        },
+        (
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ) => {
+            redirectOnSuccess(req.query.state, req, res);
+        },
+        (
+            err: any,
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ): any => {
+            redirectOnError(err, req.query.state, req, res);
+        }
+    );
+
+    return router;
+}

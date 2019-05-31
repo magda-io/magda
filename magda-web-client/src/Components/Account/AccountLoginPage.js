@@ -1,6 +1,7 @@
 import React from "react";
 import fbLogo from "assets/login/fb-logo.svg";
 import googleLogo from "assets/login/google-logo.svg";
+import arcgisLogo from "assets/login/esri-logo.svg";
 import aafLogo from "assets/login/aaf-logo.png";
 import AUctaLink from "../../pancake/react/cta-link";
 import "./AccountLoginPage.scss";
@@ -57,6 +58,18 @@ export default function Login(props) {
                                     alt="logo"
                                 />
                                 Google
+                            </a>
+                        </li>
+                    )}
+                    {props.providers.indexOf("arcgis") !== -1 && (
+                        <li className="login__provider">
+                            <a href={makeLoginUrl("arcgis")}>
+                                <img
+                                    src={arcgisLogo}
+                                    className="login__logo"
+                                    alt="logo"
+                                />
+                                Esri
                             </a>
                         </li>
                     )}
