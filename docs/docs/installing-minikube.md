@@ -53,4 +53,4 @@ eval $(minikube docker-env --shell=bash)
 export DOCKER_CERT_PATH=$(wslpath -u "${DOCKER_CERT_PATH}")
 ```
 
-* Run the `minikube-go` in each new WSL terminal: `source minikube-go`.
+* Run the `minikube-go` in each new WSL terminal, instead of the `eval $(minikube docker-env)` in the instructions above: `source minikube-go`.
