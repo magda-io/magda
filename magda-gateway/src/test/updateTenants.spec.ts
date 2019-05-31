@@ -3,6 +3,7 @@ import { expect } from "chai";
 import reloadTenants, { tenantsTable } from "../reloadTenants";
 import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 import { MAGDA_TENANT_ID_HEADER } from "@magda/typescript-common/dist/registry/TenantConsts";
+import { delay } from "q";
 
 const mockServer = require("mockttp").getLocal();
 
@@ -17,6 +18,7 @@ describe("Test reloadTenants", () => {
     });
 
     afterEach(() => {
+        delay(500)
         mockServer.stop();
     });
 

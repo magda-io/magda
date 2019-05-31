@@ -9,6 +9,8 @@ import {
     MAGDA_ADMIN_PORTAL_ID
 } from "@magda/typescript-common/dist/registry/TenantConsts";
 
+import {throttle} from "lodash"
+
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
     "Proxy-Authenticate",
@@ -103,11 +105,11 @@ export default function createBaseProxy(): httpProxy {
                     //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
-                    reloadTenants();
+                    throttle(reloadTenants, 5000);
 
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
-                        `Unable to process ${domainName} right now. Please try again shortly.`
+                        `Unable to process ${domainName} right now. Please try again shortly (5 seconds).`
                     );
                 }
             }

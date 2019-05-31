@@ -5,31 +5,23 @@ import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/Te
 
 export const tenantsTable = new Map<String, Tenant>();
 
-export default async function reloadTenants() {
-    await new Promise<{}> ( (resolve, reject) => {
-        fetch(`${registryApi}/tenants`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}`
+export default function reloadTenants(): Promise<void> {
+    return fetch(`${registryApi}/tenants`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}` // Warning: The fetch will automatically make the header name into lowercases.
+        }
+    })
+    .then( res => 
+        <Promise<Tenant[]>> res.json())
+    .then( (tenants: Tenant[]) => {
+        tenantsTable.clear();
+        tenants.forEach( t => {
+            if (t.enabled === true) {
+                tenantsTable.set(t.domainName.toLowerCase(), t);
+                console.debug(`${t.domainName.toLowerCase()} : ${t.id}`);
             }
-        })
-        .then(res => {
-            const tenantsF: Promise<Array<Tenant>> = res.json()
-            tenantsF.then( tenants => {
-                tenantsTable.clear();
-                tenants.forEach( t => {
-                    if (t.enabled === true) {
-                        tenantsTable.set(t.domainName.toLowerCase(), t);
-                        console.debug(`${t.domainName.toLowerCase()} : ${t.id}`);
-                    }
-                });
-                resolve();
-            })
-        })
-        .catch(e => {
-            reject(`  Got error: ${e.message}`);
-        })
+        });
     })
 }
-
