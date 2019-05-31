@@ -159,6 +159,11 @@ export type ParsedDataset = {
     temporalExtent?: any;
     accessLevel?: string;
     informationSecurity?: any;
+    accessControl?: {
+        ownerId: string;
+        orgUnitOwnerId: string;
+        preAuthorisedPermissionIds: string[];
+    };
 };
 
 export const defaultPublisher: Publisher = {
@@ -367,6 +372,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? Object.assign({}, defaultDatasetAspects, dataset["aspects"])
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
+    const accessControl = aspects["dataset-access-control"];
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
@@ -483,6 +489,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
-        informationSecurity: datasetInfo["informationSecurity"] || {}
+        informationSecurity: datasetInfo["informationSecurity"] || {},
+        accessControl
     };
 }

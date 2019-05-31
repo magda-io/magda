@@ -85,10 +85,25 @@ lerna run docker-build-local --include-filtered-dependencies
 yarn run create-secrets
 ```
 
+### Windows only: Set up a volume for Postgres data
+
+If you're using Docker Desktop on Windows, you'll need to set up a volume to store Postgres data because the standard strategy approach - a `hostpath` volume mapped to a Windows share - will result in file/directory permissions that are not to Postgres's liking. Instead, we'll set up a volume manually which is just a directory in the Docker Desktop VM's virtual disk. We use the unusual path of `/etc/kubernetes` because it is one of the few mount points backed by an actual virtual disk.
+
+```bash
+kubectl apply -f deploy/kubernetes/local-storage.yaml
+kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
+```
+
 ### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
-helm upgrade --install --timeout 9999999999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+```
+
+If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-windows.yml` too, i.e. do this instead of the above:
+
+```bash
+helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.

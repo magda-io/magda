@@ -1,0 +1,3 @@
+combined-db:
+    data:
+        storageClass: local-storage

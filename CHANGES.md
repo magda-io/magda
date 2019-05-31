@@ -42,6 +42,7 @@ UI:
 -   Added basic spatial preview to add dataset
 -   Revised add dataset first metadata page for conformance with design
 -   Improved edit dataset page overall styling & editor behaviour
+-   Show Database ownership information on dataset page (Admin Only)
 
 Access Control:
 
@@ -51,6 +52,7 @@ Access Control:
 -   Search API will return datasets based on user's Roles & Permissions
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
+-   Filter datasets based on user's current organization unit
 
 ## 0.0.55
 
