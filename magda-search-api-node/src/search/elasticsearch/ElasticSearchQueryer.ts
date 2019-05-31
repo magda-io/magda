@@ -75,6 +75,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             from: start
         };
         // console.log(JSON.stringify(esQueryBody, null, 2));
+
         const result: ApiResponse = await client.search(esQueryBody);
 
         const { body } = result;
@@ -113,7 +114,6 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 },
                 index: this.datasetsIndexId
             };
-
             const resultWithout = await client.search(generalEsQueryBody);
 
             const aggregationsResult = _(resultWithout.body.aggregations as {
@@ -151,7 +151,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         limit: number,
         facetSize: number
     ): Promise<SearchResult> {
-        const response: ApiResponse = await client.search({
+        const searchParams = {
             from: start,
             size: limit,
             body: {
@@ -159,13 +159,32 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 // aggs: filters
             },
             index: this.datasetsIndexId
-        });
+        };
+
+        // For debugging! Use this to explain how a certain dataset is rated.
+        // console.log(
+        //     JSON.stringify(
+        //         (await client.explain({
+        //             body: {
+        //                 query: await this.buildESDatasetsQuery(query)
+        //                 // aggs: filters
+        //             },
+        //             index: this.datasetsIndexId,
+        //             id: "ds-6",
+        //             type: "datasets"
+        //         })).body,
+        //         null,
+        //         2
+        //     )
+        // );
+        const response: ApiResponse = await client.search(searchParams);
 
         return {
             query,
             hitCount: response.body.hits.total,
             datasets: response.body.hits.hits.map((hit: any) => ({
                 ...hit._source,
+                score: hit._score,
                 years: undefined
             })),
             temporal: {
@@ -378,7 +397,6 @@ export default class ElasticSearchQueryer implements SearchQueryer {
 
         return {
             dis_max: {
-                tie_breaker: 0.2,
                 queries
             }
         };

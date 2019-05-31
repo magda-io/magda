@@ -12,7 +12,14 @@ import buildDatasetIndex from "./buildDatasetsIndex";
 import buildRegionsIndex from "./buildRegionsIndex";
 import createApiRouter from "../createApiRouter";
 // import handleESError from "../search/handleESError";
-import { Dataset, Region, SearchResult, Agent, Location } from "../model";
+import {
+    Dataset,
+    Region,
+    SearchResult,
+    Agent,
+    Location,
+    Distribution
+} from "../model";
 
 const client = new Client({ node: "http://localhost:9200" });
 const API_ROUTER_CONFIG = {
@@ -161,7 +168,7 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
 
         return function buildDataset(overrides: any = {}): Dataset {
             return {
-                identifier: "" + globalDatasetIdentifierCount++,
+                identifier: "ds-" + globalDatasetIdentifierCount++,
                 catalog: "data.gov.au",
                 publisher: {
                     identifier: "publisher",
@@ -169,15 +176,69 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 },
                 title: casual.title,
                 description: casual.description,
-                themes: casual.array_of_words(5),
-                keywords: casual.array_of_words(5),
-                distributions: [],
+                themes: casual.array_of_words(casual.integer(0, 10)),
+                keywords: casual.array_of_words(casual.integer(0, 10)),
+                distributions: buildNDistributions(casual.integer(0, 10)),
                 quality: casual.double(0, 1),
                 hasQuality: casual.coin_flip,
                 ...overrides
-            };
+            } as Dataset;
         };
     })();
+
+    const buildDistribution = (() => {
+        let globalDistIdentifierCount = 0;
+
+        return function buildDataset(overrides: any = {}): Distribution {
+            return {
+                identifier: "dist-" + globalDistIdentifierCount++,
+                title: casual.title,
+                description: casual.description,
+                issued: casual.date,
+                modified: casual.date,
+                license: {
+                    name: casual.title,
+                    url: casual.url
+                },
+                rights: casual.description,
+                accessURL: casual.url,
+                downloadURL: casual.url,
+                byteSize: casual.integer(1, Number.MAX_SAFE_INTEGER),
+                mediaType: casual.mime_type,
+                source: {
+                    id: casual.uuid,
+                    name: casual.title
+                },
+                format: casual.mime_type.split("/")[1],
+
+                ...overrides
+            } as Distribution;
+        };
+
+        //     identifier: string;
+        // title: string;
+        // description?: string;
+        // issued?: string;
+        // modified?: string;
+        // license?: License;
+        // rights?: string;
+        // accessURL?: string;
+        // downloadURL?: string;
+        // byteSize?: number;
+        // mediaType?: string;
+        // source?: DataSource;
+        // format?: string;
+    })();
+
+    const buildN = <T>(builderFn: (override: any) => T) => (
+        n: number,
+        override: (n: number) => any = () => {}
+    ): T[] => {
+        return _.range(0, n).map(() => builderFn(override(n)));
+    };
+
+    const buildNDatasets = buildN(buildDataset);
+    const buildNDistributions = buildN(buildDistribution);
 
     before(async () => {
         const router = createApiRouter(API_ROUTER_CONFIG);
@@ -231,31 +292,64 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 });
         });
 
-        it("should sort by quality", async () => {
-            const datasets = _.range(0, 1, 0.1).map((quality: number) =>
-                buildDataset({
-                    quality,
-                    hasQuality: true
-                })
-            );
+        describe("should sort by quality", () => {
+            const insertAndCheckOrder = async (datasets: Dataset[]) => {
+                const reversed = _.reverse(datasets);
+                const shuffled = _.shuffle(reversed);
 
-            const reversed = _.reverse(datasets);
+                const toTry = [reversed, shuffled];
 
-            await buildDatasetIndex(
-                client,
-                API_ROUTER_CONFIG.datasetsIndexId,
-                reversed
-            );
+                for (let order of toTry) {
+                    await buildDatasetIndex(
+                        client,
+                        API_ROUTER_CONFIG.datasetsIndexId,
+                        order
+                    );
 
-            return supertest(app)
-                .get(`/datasets?query=*`)
-                .expect(200)
-                .expect(res => {
-                    const body: SearchResult = res.body;
-                    expect(
-                        body.datasets.map(dataset => dataset.quality)
-                    ).to.eql(datasets.map(dataset => dataset.quality));
-                });
+                    await supertest(app)
+                        .get(`/datasets?query=*&limit=${order.length}`)
+                        .expect(200)
+                        .expect(res => {
+                            const body: SearchResult = res.body;
+
+                            expect(
+                                body.datasets.map(dataset => [
+                                    dataset.identifier,
+                                    dataset.quality
+                                ])
+                            ).to.eql(
+                                datasets.map(dataset => [
+                                    dataset.identifier,
+                                    dataset.quality
+                                ])
+                            );
+                        });
+                }
+            };
+
+            it("in general", async () => {
+                const datasets = _.range(0, 1, 0.05).map((quality: number) =>
+                    buildDataset({
+                        quality,
+                        hasQuality: true
+                    })
+                );
+
+                await insertAndCheckOrder(datasets);
+            });
+
+            it("even when a dataset has 0 distributions", async () => {
+                const datasets = _.range(0, 1, 0.05).map((quality: number) =>
+                    buildDataset({
+                        quality,
+                        hasQuality: true
+                    })
+                );
+
+                datasets[4].distributions = [];
+
+                await insertAndCheckOrder(datasets);
+            });
         });
     });
 
@@ -626,6 +720,70 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         });
     });
 
+    describe("quotes", () => {
+        describe("should be able to be found verbatim somewhere in a dataset for:", () => {
+            async function testField(quote: string, override: any) {
+                const targetDataset = buildDataset(override);
+
+                const datasets = _.shuffle([
+                    ...buildNDatasets(50),
+                    targetDataset
+                ]);
+
+                await buildDatasetIndex(
+                    client,
+                    API_ROUTER_CONFIG.datasetsIndexId,
+                    datasets
+                );
+
+                await supertest(app)
+                    .get(`/datasets?query="${quote}"`)
+                    .expect(200)
+                    .expect(res => {
+                        const body: SearchResult = res.body;
+
+                        expect(body.datasets[0].identifier).to.equal(
+                            targetDataset.identifier
+                        );
+                    });
+            }
+
+            it("description", async () => {
+                const QUOTE = "this is a quote";
+
+                await testField(QUOTE, {
+                    description: `${casual.description} ${QUOTE} ${
+                        casual.description
+                    }`
+                });
+            });
+
+            it("distribution description", async () => {
+                const QUOTE = "this is a quote";
+
+                await testField(QUOTE, {
+                    distributions: [
+                        {
+                            description: `${casual.description} ${QUOTE} ${
+                                casual.description
+                            }`
+                        }
+                    ]
+                });
+            });
+
+            describe.skip("(won't work until we fix #2238)", () => {
+                it.skip("title ", async () => {
+                    const TITLE = "ASIC Business Names";
+
+                    await testField(TITLE, {
+                        title: `${casual.title} ${TITLE} ${casual.title}`
+                    });
+                });
+            });
+        });
+    });
+
     function fromBoundingBox([north, east, south, west]: number[]): Polygon {
         const northEast = [east, north];
         const northWest = [west, north];
@@ -641,13 +799,6 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
         };
     }
 
-    function buildNDatasets(
-        n: number,
-        override: (n: number) => any = () => {}
-    ) {
-        return _.range(0, n).map(() => buildDataset(override(n)));
-    }
-
     function randomCase(string: string): string {
         return string
             .split("")
@@ -656,71 +807,4 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
             )
             .join("");
     }
-
-    // function genMatching<T>(gen: () => T, predicate: (t: T) => boolean): T {
-    //     let counter = 0;
-
-    //     while (counter++ < 100) {
-    //         const value = gen();
-
-    //         if (predicate(value)) {
-    //             return value;
-    //         }
-    //     }
-
-    //     throw new Error(
-    //         `Could not generate a value meeting predicate ${predicate.toString()} within 100 tries`
-    //     );
-    // }
-
-    // function fixLatLngGenerator(gen: () => string): () => number {
-    //     return () => Number.parseFloat(gen());
-    // }
-    // function latitude() {
-    //     return fixLatLngGenerator(() => casual.latitude)();
-    // }
-    // function longitude() {
-    //     return fixLatLngGenerator(() => casual.longitude)();
-    // }
-
-    // function buildRegion(
-    //     inputBoundingBox?: {
-    //         north: number;
-    //         west: number;
-    //         south: number;
-    //         east: number;
-    //     },
-    //     override?: any
-    // ): Region {
-    //     const north = latitude();
-    //     const west = longitude();
-    //     const boundingBox = inputBoundingBox || {
-    //         north,
-    //         west,
-    //         south: genMatching(latitude, genned => genned < north),
-    //         east: genMatching(latitude, genned => genned < west)
-    //     };
-
-    //     return {
-    //         regionId: casual.string,
-    //         regionType: casual.string,
-    //         regionSearchId: casual.string,
-    //         regionName: casual.title,
-    //         regionShortName: casual.name,
-    //         boundingBox: {
-    //             type: "envelope",
-    //             coordinates: [
-    //                 [boundingBox.west, boundingBox.north],
-    //                 [boundingBox.east, boundingBox.south]
-    //             ]
-    //         },
-    //         geometry: fromBoundingBox([
-    //             boundingBox.north,
-    //             boundingBox.east,
-    //             boundingBox.south,
-    //             boundingBox.west
-    //         ]),
-    //         ...override
-    //     };
-    // }
 });
