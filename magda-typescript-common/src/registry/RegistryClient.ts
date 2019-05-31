@@ -100,8 +100,8 @@ export default class RegistryClient {
     ): Promise<Record | Error> {
         const operation = (id: string) => () =>
             this.recordsApi.getById(
-                this.tenantId,
                 id,
+                this.tenantId,
                 aspect,
                 optionalAspect,
                 dereference

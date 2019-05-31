@@ -36,7 +36,7 @@ describe("Test reloadTenants", () => {
         expect(requests.length).to.equal(1);
         // This mock server turns header into lower cases.
         expect(
-            requests[0].headers[`${MAGDA_TENANT_ID_HEADER.toLowerCase()}`]
+            requests[0].headers[MAGDA_TENANT_ID_HEADER.toLowerCase()]
         ).to.equal("0");
     });
 

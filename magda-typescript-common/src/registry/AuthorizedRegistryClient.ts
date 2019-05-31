@@ -231,11 +231,11 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.putById(
-                tenantId,
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
-                this.jwt
+                this.jwt,
+                tenantId
             );
         return retry(
             operation,
@@ -262,11 +262,11 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.patchById(
-                tenantId,
                 encodeURIComponent(recordId),
                 aspectId,
                 aspectPatch,
-                this.jwt
+                this.jwt,
+                tenantId
             );
         return retry(
             operation,
