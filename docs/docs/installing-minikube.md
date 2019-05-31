@@ -43,7 +43,7 @@ A few notes for setting up Minikube in a WSL environment:
 /mnt/c/Program\ Files/Kubernetes/Minikube/minikube.exe $@
 ```
 
-* Start `minikube` (from Windows or WSL is fine) by running `docker start`
+* Start `minikube` (from Windows or WSL is fine) by running `minikube start`
 * The above will configure _Windows_ `kubectl` to be able to talk to Kubernetes in minikube, but the `kubectl` in WSL won't work. To fix that, open `%userprofile%\.kube\config` in a text editor and copy all the minikube context, cluster, and user from there into `~/.kube/config` in your WSL environment.
 * Create another bash script named `minikube-go` in your WSL path to configure WSL Docker to talk to minikube:
 
