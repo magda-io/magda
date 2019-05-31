@@ -2,7 +2,6 @@ import * as yargs from "yargs";
 import * as _ from "lodash";
 
 import buildApp from "./buildApp";
-import reloadTenants from "./reloadTenants"
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
@@ -215,7 +214,6 @@ const argv = addJwtSecretFromEnvVar(
 );
 
 const app = buildApp(argv as any);
-reloadTenants()
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 

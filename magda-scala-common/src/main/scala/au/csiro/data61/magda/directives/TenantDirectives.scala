@@ -16,14 +16,14 @@ object TenantDirectives {
     */
   def requiresTenantId: Directive1[BigInt] = {
     extractRequest flatMap {request =>
-      val sessionToken =   request.headers.find{
+      val tenantIdToken =   request.headers.find{
         case headers.RawHeader(`MAGDA_TENANT_ID_HEADER`, _) => true
         case headers.RawHeader(`magda_tenant_id_header_in_lower_cases`, _) => true
         case headers.RawHeader(`magda_tenant_id_header_in_upper_cases`, _) => true
         case _ => false
       }
 
-      sessionToken match {
+      tenantIdToken match {
         case Some(header) => provide(BigInt(header.value()))
         case None =>
           val msg = s"Could not find $MAGDA_TENANT_ID_HEADER header in request"
