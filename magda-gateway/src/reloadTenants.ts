@@ -3,14 +3,16 @@ import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
 import { registryApi } from "./setupTenantMode";
 import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
+import {throttle} from "lodash"
+
 export const tenantsTable = new Map<String, Tenant>();
 
-export default function reloadTenants(): Promise<void> {
-    return fetch(`${registryApi}/tenants`, {
+const theThrottledFetch = throttle(() => { 
+    fetch(`${registryApi}/tenants`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}` // Warning: The fetch will automatically make the header name into lowercases.
+            "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}`// Warning: The fetch will automatically make the header name into lowercases.
         }
     })
     .then( res => 
@@ -23,5 +25,9 @@ export default function reloadTenants(): Promise<void> {
                 console.debug(`${t.domainName.toLowerCase()} : ${t.id}`);
             }
         });
-    })
+    });
+}, 60000, {"trailing": false});
+
+export default function reloadTenants(){
+    return theThrottledFetch()
 }
