@@ -7,8 +7,8 @@ import {throttle} from "lodash"
 
 export const tenantsTable = new Map<String, Tenant>();
 
-const theThrottledFetch = throttle(() => { 
-    fetch(`${registryApi}/tenants`, {
+export function updateTenants(){
+    return fetch(`${registryApi}/tenants`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -26,8 +26,10 @@ const theThrottledFetch = throttle(() => {
             }
         });
     });
-}, 60000, {"trailing": false});
+}
+
+const throttledReloadTenants = throttle(updateTenants, 60000, {"trailing": false});
 
 export default function reloadTenants(){
-    return theThrottledFetch()
+    return throttledReloadTenants()
 }
