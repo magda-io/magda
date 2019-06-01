@@ -105,8 +105,7 @@ export default function createBaseProxy(): httpProxy {
                     //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
-                    throttle(reloadTenants, 5000);
-
+                    throttle(reloadTenants, 5000)();
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
                         `Unable to process ${domainName} right now. Please try again shortly (5 seconds).`
