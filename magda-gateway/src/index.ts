@@ -210,6 +210,11 @@ const argv = addJwtSecretFromEnvVar(
                 "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
             type: "string",
             default: "unknown_portal_host_name"
+        }).option("fetchTenantsMinIntervalInMs", {
+            describe:
+                "Minimal interval in ms to fetch tenants from DB.",
+            type: "number",
+            default: 60000
         }).argv
 );
 

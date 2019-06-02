@@ -1,9 +1,9 @@
 import * as httpProxy from "http-proxy";
 import * as express from "express";
-import { magdaAdminPortalName, multiTenantsMode } from "./setupTenantMode";
+import { magdaAdminPortalName, multiTenantsMode, tenantsLoader } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
-import reloadTenants, { tenantsTable } from "./reloadTenants";
+import { tenantsTable } from "./reloadTenants";
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
@@ -103,7 +103,7 @@ export default function createBaseProxy(): httpProxy {
                     //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
-                    reloadTenants();
+                    tenantsLoader.reloadTenants();
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
                         `Unable to process ${domainName} right now. Please try again shortly.`
