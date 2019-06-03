@@ -257,6 +257,16 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                     name: casual.title
                 },
                 format: casual.mime_type.split("/")[1],
+                temporal: {
+                    start: casual.coin_flip && {
+                        date: moment(casual.date("YYYY/MM/DD")).toISOString(),
+                        text: casual.date("YYYY/MM/DD")
+                    },
+                    end: casual.coin_flip && {
+                        date: moment(casual.date("YYYY/MM/DD")).toISOString(),
+                        text: casual.date("YYYY/MM/DD")
+                    }
+                } as PeriodOfTime,
 
                 ...overrides
             } as Distribution;
@@ -1024,6 +1034,28 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                             });
                     }
                 });
+            });
+
+            it("datasets should be retrievable by querying by their date", async () => {
+                const datasets = buildNDatasets(100);
+                await buildDatasetIndex(datasets);
+
+                for (let dataset in datasets) {
+                    await supertest(app)
+                        .get(
+                            `/datasets?dateTo=${latest.format(
+                                "YYYY/MM/DD"
+                            )}&limit=${expectedIdentifiers.length + 1}`
+                        )
+                        .expect(200)
+                        .expect(res => {
+                            const body: SearchResult = res.body;
+
+                            expect(
+                                body.datasets.map(ds => ds.identifier)
+                            ).to.have.same.members(expectedIdentifiers);
+                        });
+                }
             });
         });
     });
