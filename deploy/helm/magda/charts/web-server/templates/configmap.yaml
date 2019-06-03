@@ -10,5 +10,5 @@ data:
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
     "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
     "featureFlags": {{ toJson .Values.featureFlags | quote }},
-    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | default "[]" }}
+    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | quote }}
   }'
