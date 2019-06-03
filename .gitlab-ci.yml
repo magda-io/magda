@@ -369,7 +369,8 @@ dockerize:scala:
     - builders-and-yarn
     - buildtest:registry
     - buildtest:search-no-index-cache
-    - buildtest:search-with-index-cache
+    - buildtest:search-with-index-cache-group-1
+    - buildtest:search-with-index-cache-group-2
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
