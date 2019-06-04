@@ -2,11 +2,11 @@ import TenantsLoader from "./reloadTenants";
 
 export var multiTenantsMode: boolean = undefined;
 export var magdaAdminPortalName: string = undefined;
-export var registryApi: string = undefined;
+export var tenantApi: string = undefined;
 export var tenantsLoader: TenantsLoader = undefined;
 
 type Config = {
-    registryApi?: string;
+    tenantApi?: string;
     enableMultiTenants?: boolean;
     magdaAdminPortalName?: string;
     fetchTenantsMinIntervalInMs?: number;
@@ -15,6 +15,6 @@ type Config = {
 export default function setupTenantMode(config: Config) {
     multiTenantsMode = config.enableMultiTenants;
     magdaAdminPortalName = config.magdaAdminPortalName;
-    registryApi = config.registryApi;
+    tenantApi = config.tenantApi;
     tenantsLoader = new TenantsLoader(config.fetchTenantsMinIntervalInMs);
 }

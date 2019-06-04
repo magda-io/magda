@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-0",
+    "@magda/tenant-api": "^0.0.56-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -78,8 +79,7 @@
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.2.0",
-    "mockttp": "^0.13.0"
+    "typescript": "^3.2.0"
   },
   "config": {
     "docker": {

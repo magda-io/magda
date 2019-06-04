@@ -1,6 +1,6 @@
 import setupTenantMode from "../setupTenantMode";
 import TenantsLoader, { tenantsTable } from "../reloadTenants";
-import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
+import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
 import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 import { expect } from "chai";
@@ -22,7 +22,7 @@ describe("Test reload tenants", () => {
         // used in the test, which is OK.
         // A fresh tenant loader must be created for each test. Otherwise the
         // throttle mechanism will fail any tests that reuse the loader.
-        setupTenantMode({ registryApi: tenantsBaseUrl });
+        setupTenantMode({ tenantApi: tenantsBaseUrl });
     });
 
     beforeEach(() => {
@@ -39,7 +39,7 @@ describe("Test reload tenants", () => {
         .reply(
             200,
             [
-                {"domainName":"built.in","enabled":true,"id":0}
+                {"domainname":"built.in","enabled":true,"id":0}
             ]
         );
         const tenantLoader = new TenantsLoader();    
@@ -56,9 +56,9 @@ describe("Test reload tenants", () => {
         .reply(
             200, 
             [
-                {"domainName":"built.in","enabled":true,"id":0},
-                {"domainName":"web1.com","enabled":false,"id":1},
-                {"domainName":"web2.com","enabled":true,"id":2}
+                {"domainname":"built.in","enabled":true,"id":0},
+                {"domainname":"web1.com","enabled":false,"id":1},
+                {"domainname":"web2.com","enabled":true,"id":2}
             ]
         );
             
@@ -77,25 +77,19 @@ describe("Test reload tenants", () => {
         .reply(
             200,
             [
-                {"domainName":"built.in","enabled":true,"id":0},
-                {"domainName":"web1.com","enabled":true,"id":1},
-                {"domainName":"web2.com","enabled":false,"id":2}
+                {"domainname":"built.in","enabled":true,"id":0},
+                {"domainname":"web1.com","enabled":true,"id":1},
+                {"domainname":"web2.com","enabled":false,"id":2}
              ]
         );
         
-        const tenant_0 = new Tenant();
-        const tenant_1 = new Tenant();
-        const tenant_2 = new Tenant();
-        tenant_0.id = 0;
-        tenant_1.id = 1;
-        tenant_2.id = 2;
-        tenant_0.enabled = true;
-        tenant_1.enabled = true;
-        tenant_2.enabled = true;
+        const tenant_0: Tenant = {domainname: "built.in", enabled: true, id: 0};
+        const tenant_1 = {domainname: "web1.com", enabled: true, id: 1};
+        const tenant_2 = {domainname: "web1.com", enabled: true, id: 2};
 
-        tenantsTable.set("built.in", tenant_0);
-        tenantsTable.set("web1.com", tenant_1);
-        tenantsTable.set("web2.com", tenant_2);
+        tenantsTable.set(tenant_0.domainname, tenant_0);
+        tenantsTable.set(tenant_1.domainname, tenant_1);
+        tenantsTable.set(tenant_2.domainname, tenant_2);
 
         const tenantLoader = new TenantsLoader();
         await tenantLoader.reloadTenants();
@@ -119,7 +113,7 @@ describe("Test reload tenants", () => {
         .get("/tenants")
         .reply(
             200,
-            [{"domainName":`${testDomainName}`, "enabled":true, "id":expectedTenantId }]
+            [{"domainname":`${testDomainName}`, "enabled":true, "id":expectedTenantId }]
         );
         
         await tenantLoader.reloadTenants();
@@ -129,7 +123,7 @@ describe("Test reload tenants", () => {
         .get("/tenants")
         .reply(
             200,
-            [{"domainName":`${testDomainName}`, "enabled":true, "id":otherTenantId }]
+            [{"domainname":`${testDomainName}`, "enabled":true, "id":otherTenantId }]
         );
 
         await delay(() => {}, theReqIntervalInMs)
@@ -152,7 +146,7 @@ describe("Test reload tenants", () => {
         .get("/tenants")
         .reply(
             200,
-            [{"domainName":`${testDomainName}`, "enabled":true, "id":otherTenantId }]
+            [{"domainname":`${testDomainName}`, "enabled":true, "id":otherTenantId }]
         );
         
         await tenantLoader.reloadTenants();
@@ -162,7 +156,7 @@ describe("Test reload tenants", () => {
         .get("/tenants")
         .reply(
             200,
-            [{"domainName":`${testDomainName}`, "enabled":true, "id":expectedTenantId }]
+            [{"domainname":`${testDomainName}`, "enabled":true, "id":expectedTenantId }]
         );
 
         await delay(() => {}, theReqIntervalInMs)

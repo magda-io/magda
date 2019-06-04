@@ -200,10 +200,10 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
-        .option("registryApi", {
-            describe: "The base URL of the registry API.",
+        .option("tenantApi", {
+            describe: "The base URL of the tenant API.",
             type: "string",
-            default: "http://localhost:6101/v0"
+            default: "http://localhost:6120/v0"
         })
         .option("magdaAdminPortalName", {
             describe:
