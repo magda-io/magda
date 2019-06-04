@@ -103,13 +103,8 @@ buildtest:search-with-index-cache-group-1:
   tags:
     - heavy
   script:
-    - cd magda-elastic-search
-    - docker-compose up -d
-    - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.DataSet*Spec"
-    - cd magda-elastic-search
-    - docker-compose down
   artifacts:
     paths:
       - "target"
@@ -163,7 +158,61 @@ buildtest:search-with-index-cache-group-2:
         - heavy
     script:
         - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec"
+        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec"
+    artifacts:
+        paths:
+            - "target"
+            - "*/target"
+        expire_in: 30 days
+
+buildtest:search-with-index-cache-group-3:
+    stage: buildtest
+    image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+    retry: 2
+    dependencies: []
+    before_script:
+        - |
+            if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+              export DOCKER_HOST='tcp://localhost:2375'
+            fi
+        - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+        - docker info
+        - apk update
+        - apk upgrade
+        - apk add python3 python3-dev py3-pip build-base openssl-dev libffi-dev
+        - pip3 install --upgrade pip
+        - pip3 install docker-compose
+        - docker-compose --version
+    cache:
+        key: $CI_JOB_NAME
+        paths:
+            - "$CI_PROJECT_DIR/sbt-cache"
+            - "target"
+            - "*/target"
+            - "*/project/target"
+            - "$CI_PROJECT_DIR/pip-cache"
+    services:
+        - docker:dind
+    variables:
+        PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+        # 2.5gb heap
+        # unload classes we don't need
+        # aim for < 1000ms gc pauses (largely ignored)
+        # use the next-gen collector that every blog on the internet says not to use because we know better than them
+        # use < 25% of time for GC
+        # put the ivy cache in the workspace where gitlab can cache it
+        SBT_OPTS: >
+            -Xms2500M -Xmx2500M
+            -XX:+CMSClassUnloadingEnabled
+            -XX:MaxGCPauseMillis=1000
+            -XX:+UseG1GC
+            -XX:GCTimeRatio=3
+            -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+    tags:
+        - heavy
+    script:
+        - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
+        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec"
     artifacts:
         paths:
             - "target"
@@ -371,6 +420,7 @@ dockerize:scala:
     - buildtest:search-no-index-cache
     - buildtest:search-with-index-cache-group-1
     - buildtest:search-with-index-cache-group-2
+    - buildtest:search-with-index-cache-group-3
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
