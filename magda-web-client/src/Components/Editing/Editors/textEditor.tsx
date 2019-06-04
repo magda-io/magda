@@ -3,7 +3,7 @@ import Editor from "./Editor";
 
 import { ListMultiItemEditor } from "./multiItem";
 
-export type InputComponentParmeter = React.ComponentType<{
+export type InputComponentParameter = React.ComponentType<{
     className?: string;
     defaultValue?: string;
     onChange?: ReactEventHandler;
@@ -12,7 +12,7 @@ export type InputComponentParmeter = React.ComponentType<{
 
 export function textEditorEx(
     options: any = {},
-    InputComponent: InputComponentParmeter = null
+    InputComponent: InputComponentParameter = null
 ) {
     return {
         edit: (
@@ -88,7 +88,7 @@ export const multiTextEditor: Editor<string[]> = ListMultiItemEditor.create(
 
 export const multiTextEditorEx = (
     options,
-    inputComponent: InputComponentParmeter = null
+    inputComponent: InputComponentParameter = null
 ) => {
     options.redrawOnEmpty =
         typeof options.redrawOnEmpty !== "boolean"

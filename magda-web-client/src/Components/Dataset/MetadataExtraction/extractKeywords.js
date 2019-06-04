@@ -8,14 +8,14 @@ import { isValidKeyword } from "../../../helpers/VocabularyApis";
  */
 export async function extractKeywords(input, output) {
     if (input.text) {
-        const candicateKeywords = (output.keywords || []).concat(
+        const candidateKeywords = (output.keywords || []).concat(
             await getKeywords(input.text)
         );
         const keywords = [];
-        for (let i = 0; i < candicateKeywords.length; i++) {
-            const result = await isValidKeyword(candicateKeywords[i]);
+        for (let i = 0; i < candidateKeywords.length; i++) {
+            const result = await isValidKeyword(candidateKeywords[i]);
             if (result) {
-                keywords.push(candicateKeywords[i]);
+                keywords.push(candidateKeywords[i]);
             }
         }
         output.keywords = keywords;
