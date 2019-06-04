@@ -23,7 +23,7 @@ export default class Database {
 
     async createTenant(tenant: Tenant): Promise<Tenant> {
         const result = await this.pool.query(
-            'INSERT INTO tenants(domainName, enabled) VALUES($1, $2) RETURNING id',
+            'INSERT INTO tenants(domainname, enabled) VALUES($1, $2)',
             [
                 tenant.domainname,
                 tenant.enabled
