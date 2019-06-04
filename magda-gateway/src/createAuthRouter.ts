@@ -12,6 +12,8 @@ export interface AuthRouterOptions {
     googleClientSecret: string;
     aafClientUri: string;
     aafClientSecret: string;
+    arcgisClientId: string;
+    arcgisClientSecret: string;
     ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
@@ -56,6 +58,17 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             })
         },
         {
+            id: "arcgis",
+            enabled: options.arcgisClientId ? true : false,
+            authRouter: require("./oauth2/arcgis").default({
+                authorizationApi: authApi,
+                passport: passport,
+                clientId: options.arcgisClientId,
+                clientSecret: options.arcgisClientSecret,
+                externalAuthHome: `${options.externalUrl}/auth`
+            })
+        },
+        {
             id: "ckan",
             enabled: options.ckanUrl ? true : false,
             authRouter: require("./oauth2/ckan").default({
@@ -91,9 +104,11 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         res.render("admin");
     });
 
-    providers.filter(provider => provider.enabled).forEach(provider => {
-        authRouter.use("/login/" + provider.id, provider.authRouter);
-    });
+    providers
+        .filter(provider => provider.enabled)
+        .forEach(provider => {
+            authRouter.use("/login/" + provider.id, provider.authRouter);
+        });
 
     authRouter.get("/providers", (req, res) => {
         res.json(

@@ -2,12 +2,12 @@ import React from "react";
 
 import LightBulbIcon from "assets/light-bulb.svg";
 
-import Styles from "./ToolTip.module.scss";
+import "./ToolTip.scss";
 
 export default function ToolTip(props: any) {
     return (
-        <p className={Styles.root}>
-            <img src={LightBulbIcon} className={Styles.image} />
+        <p className="tooltip-root">
+            <img src={LightBulbIcon} className="tooltip-image" />
             <span>{props.children}</span>
         </p>
     );

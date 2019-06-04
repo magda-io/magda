@@ -39,6 +39,7 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -56,7 +57,7 @@ import uuidv4 from "uuid/v4";
 
 import * as codelists from "constants/DatasetConstants";
 
-import Styles from "./DatasetAddFilesPage.module.scss";
+import "./DatasetAddFilesPage.scss";
 
 import {
     State,
@@ -138,7 +139,7 @@ class NewDataset extends React.Component<Prop, State> {
             this.props.history.push(`/dataset/${lastDatasetId}`);
         }
         return (
-            <div className={Styles.root}>
+            <div className="dataset-add-files-root">
                 <Medium>
                     <Breadcrumbs
                         breadcrumbs={[
@@ -209,7 +210,9 @@ class NewDataset extends React.Component<Prop, State> {
                         >
                             Next:{" "}
                             {nextIsPublish
-                                ? "Publish draft dataset"
+                                ? this.state.isPublishing
+                                    ? "Publishing as draft..."
+                                    : "Publish draft dataset"
                                 : this.steps[step + 1].label}
                         </button>
                     </div>
@@ -272,9 +275,13 @@ class NewDataset extends React.Component<Prop, State> {
                     <AlwaysEditor
                         value={dataset.keywords}
                         onChange={editDataset("keywords")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Add a keyword"
-                        })}
+                        editor={multiTextEditorEx(
+                            {
+                                placeholder: "Add a keyword",
+                                redrawOnEmpty: false
+                            },
+                            VocabularyAutoCompleteInput
+                        )}
                     />
                 </p>
                 <h4>Which themes does this dataset cover?</h4>
@@ -306,11 +313,7 @@ class NewDataset extends React.Component<Prop, State> {
                 <h4>When was the dataset most recently modified?</h4>
                 <p>
                     <AlwaysEditor
-                        value={
-                            dataset.modified
-                                ? new Date(dataset.modified)
-                                : undefined
-                        }
+                        value={dataset.modified}
                         onChange={editDataset("modified")}
                         editor={dateEditor}
                     />
@@ -463,16 +466,16 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={codelistRadioEditor(codelists.publishingLevel)}
                     />
                 </p>
-                <h4>Where can users access this dataset from?</h4>
+                <h4>How can other users access this dataset?</h4>
                 <ToolTip>
-                    Select the best location for this file based on it's
-                    contents and your organisation file structure.
+                    Include locations on share drives, URLs of databases, how to
+                    arrange access etc.
                 </ToolTip>
                 <p>
                     <AlwaysEditor
                         value={datasetAccess.notes}
                         onChange={editDatasetAccess("notes")}
-                        editor={textEditor}
+                        editor={multilineTextEditor}
                     />
                 </p>
                 <hr />
@@ -585,7 +588,9 @@ class NewDataset extends React.Component<Prop, State> {
                         editor={codelistEditor(codelists.classification)}
                     />
                 </p>
-                <h4>What is the sensitivity of this dataset?</h4>
+                <h4 className="snippet-heading">
+                    What is the sensitivity of this dataset?
+                </h4>
                 <HelpSnippet>
                     <p>
                         Magda security classification refers to the
@@ -658,12 +663,12 @@ class NewDataset extends React.Component<Prop, State> {
                 <h3>Please describe the dataset</h3>
                 <ToolTip>
                     A good dataset description clearly and succinctly explains
-                    the contantes, purpose and value of the dataset. <br />
+                    the contents, purpose and value of the dataset. <br />
                     This is how users primarily identify and select your dataset
                     from others
                     <br />
                     Here you can also include information that you have not
-                    already covered in the metadata.
+                    already covered in the other metadata.
                 </ToolTip>
                 <p>
                     <AlwaysEditor
@@ -726,6 +731,10 @@ class NewDataset extends React.Component<Prop, State> {
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
+
+        this.setState({
+            isPublishing: true
+        });
     }
 }
 

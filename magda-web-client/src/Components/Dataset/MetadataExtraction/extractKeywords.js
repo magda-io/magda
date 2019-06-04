@@ -1,15 +1,24 @@
 import retext from "retext";
 import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
+import { isValidKeyword } from "../../../helpers/VocabularyApis";
 
 /**
  * Extract keywords from text based file formats
  */
 export async function extractKeywords(input, output) {
     if (input.text) {
-        output.keywords = (output.keywords || []).concat(
+        const candidateKeywords = (output.keywords || []).concat(
             await getKeywords(input.text)
         );
+        const keywords = [];
+        for (let i = 0; i < candidateKeywords.length; i++) {
+            const result = await isValidKeyword(candidateKeywords[i]);
+            if (result) {
+                keywords.push(candidateKeywords[i]);
+            }
+        }
+        output.keywords = keywords;
     }
 }
 

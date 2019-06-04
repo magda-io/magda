@@ -101,6 +101,12 @@ class Account extends React.Component {
                         <div>
                             <h1>Account</h1>
                             <p>Display Name: {this.props.user.displayName}</p>
+                            {this.props.user.orgUnit && (
+                                <p>
+                                    Organisation Unit:{" "}
+                                    {this.props.user.orgUnit.name}
+                                </p>
+                            )}
                             <p>Email: {this.props.user.email}</p>
                             {this.renderRoles()}
                             {this.props.user.isAdmin && (

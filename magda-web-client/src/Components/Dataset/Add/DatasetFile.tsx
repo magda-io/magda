@@ -9,7 +9,7 @@ import { File } from "./DatasetAddCommon";
 
 import humanFileSize from "helpers/humanFileSize";
 
-import Styles from "./DatasetFile.module.scss";
+import "./DatasetFile.scss";
 
 export default function DatasetFile({
     file,
@@ -25,7 +25,7 @@ export default function DatasetFile({
     const [editMode, setEditMode] = useState(false);
 
     return (
-        <section className={Styles.root}>
+        <section className="dataset-file-root">
             {editMode ? (
                 <div>
                     <div>
@@ -60,7 +60,7 @@ export default function DatasetFile({
             ) : (
                 <React.Fragment>
                     <div>
-                        <h3 className={Styles.fileTitle}>{file.title}</h3>
+                        <h3 className="dataset-file-fileTitle">{file.title}</h3>
 
                         <div>
                             <strong>Format: </strong> {file.format}
@@ -76,9 +76,7 @@ export default function DatasetFile({
                     </div>
                     <div>
                         <button
-                            className={`${
-                                Styles.editButton
-                            } au-btn au-btn--secondary`}
+                            className={`dataset-file-editButton au-btn au-btn--secondary`}
                             onClick={() => setEditMode(!editMode)}
                         >
                             {/* TODO: Replace with an actual icon */}✎

@@ -114,6 +114,12 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("requestOpts"),
         default: "{}"
+    })
+    .option("vocabularyApiEndpoints", {
+        describe: "A list of Vocabulary API Endpoints",
+        type: "string",
+        coerce: coerceJson("vocabularyApiEndpoints"),
+        default: "[]"
     }).argv;
 
 var app = express();
@@ -186,7 +192,8 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
-    featureFlags: argv.featureFlags || {}
+    featureFlags: argv.featureFlags || {},
+    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[]
 };
 
 app.get("/server-config.js", function(req, res) {

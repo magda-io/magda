@@ -22,6 +22,7 @@ gateway:
     origin: true
   auth:
     facebookClientId: "173073926555600"
+    arcgisClientId: "d0MgVUbbg5Z6vmWo"
     googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
     ckanAuthenticationUrl: https://data.gov.au/data
 

@@ -12,7 +12,7 @@ import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import { getFiles } from "helpers/readFile";
 
-import Styles from "./DatasetAddFilesPage.module.scss";
+import "./DatasetAddFilesPage.scss";
 
 import {
     State,
@@ -209,7 +209,10 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                         <ul>
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li key={i} className={Styles.fileListItem}>
+                                    <li
+                                        key={i}
+                                        className="dataset-add-files-fileListItem"
+                                    >
                                         {file._state === FileState.Ready ? (
                                             <DatasetFile
                                                 file={file}
@@ -239,8 +242,8 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     >
                         <FileDrop
                             onDrop={this.onDrop.bind(this)}
-                            className={Styles.dropZone}
-                            targetClassName={Styles.dropTarget}
+                            className="dataset-add-files-dropZone"
+                            targetClassName="dataset-add-files-dropTarget"
                         >
                             <span>Drag your files or click here</span>
                         </FileDrop>

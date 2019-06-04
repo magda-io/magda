@@ -8,6 +8,10 @@ Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 
+Registry:
+
+-   PATCH request to registry won't trigger notification to webhook
+
 Others:
 
 -   Made registry-api DB pool settings configurable via Helm
@@ -31,13 +35,20 @@ UI:
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
 -   Replaced star emoji in static page markdown with quality star icon
--   Refactored web client to group similar things togeather
+-   Refactored web client to group similar things together
 -   Implemented basic admin pages in react ui
 -   Started implementing new add dataset flow design changes
 -   Fixed web-client code loaded & run twice
 -   Added basic spatial preview to add dataset
 -   Revised add dataset first metadata page for conformance with design
 -   Improved edit dataset page overall styling & editor behaviour
+-   Show Database ownership information on dataset page (Admin Only)
+-   Added vocabulary suggestion for keywords & themes input on new dataset page
+-   Extracted keyword will be filtered by vocabulary APIs
+
+Gateway:
+
+-   Add ArcGIS/ESRI Authentication provider
 
 Access Control:
 
@@ -46,6 +57,16 @@ Access Control:
 -   Introduced Open Policy Agent as policy evaluation engine
 -   Search API will return datasets based on user's Roles & Permissions
 -   Users with access to draft datasets can see a new `drafts` tab
+-   Organization hierarchy & make Organization hierarchy data available for access control
+-   Filter datasets based on user's current organization unit
+
+Others:
+
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
 
 ## 0.0.55
 

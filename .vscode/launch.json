@@ -1,9 +1,40 @@
 {
-    // Use IntelliSense to learn about possible Node.js debug attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Mocha Debug Current File",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "${file}"
+            ],
+            "env": {
+                "JWT_SECRET": "squirrel",
+                "SESSION_SECRET": "keyboard cat",
+                "USER_ID": "00000000-0000-4000-8000-000000000000"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Debug Current Node Script",
+            "program": "${file}",
+            "cwd": "${workspaceRoot}",
+            "args": [],
+            "env": {
+                "JWT_SECRET": "squirrel",
+                "SESSION_SECRET": "keyboard cat",
+                "USER_ID": "00000000-0000-4000-8000-000000000000"
+            }
+        },
         {
             "type": "node",
             "request": "launch",
@@ -247,12 +278,7 @@
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node.cmd"
             },
-            "args": [
-                "-r",
-                "tsconfig-paths/register",
-                "src/index.ts"
-                //"--devProxy","https://dev.magda.io/api/"
-            ],
+            "args": ["-r", "tsconfig-paths/register", "src/index.ts"],
             "cwd": "${workspaceRoot}/magda-web-server"
         },
         {
@@ -285,6 +311,21 @@
                 "GOOGLE_CLIENT_ID": "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com",
                 "GOOGLE_CLIENT_SECRET": "none"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Auth API test case",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-authorization-api",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
         },
         {
             "type": "node",
@@ -387,6 +428,34 @@
                 "src/test/**/*.spec.ts",
                 "--fgrep",
                 "region"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Launch Content API",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "cwd": "${workspaceRoot}/magda-content-api",
+            "args": ["src/index.ts"],
+            "env": {
+                "PGUSER": "client",
+                "JWT_SECRET": "squirrel"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Content API Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-content-api",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
             ]
         }
     ]
