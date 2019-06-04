@@ -194,6 +194,24 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 distributions: buildNDistributions(casual.integer(0, 10)),
                 quality: casual.double(0, 1),
                 hasQuality: casual.coin_flip,
+                temporal: {
+                    start: casual.coin_flip
+                        ? {
+                              date: moment(
+                                  casual.date("YYYY/MM/DD")
+                              ).toISOString(),
+                              text: casual.date("YYYY/MM/DD")
+                          }
+                        : undefined,
+                    end: casual.coin_flip
+                        ? {
+                              date: moment(
+                                  casual.date("YYYY/MM/DD")
+                              ).toISOString(),
+                              text: casual.date("YYYY/MM/DD")
+                          }
+                        : undefined
+                } as PeriodOfTime,
                 ...overrides
             } as Dataset;
         };
@@ -257,16 +275,6 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                     name: casual.title
                 },
                 format: casual.mime_type.split("/")[1],
-                temporal: {
-                    start: casual.coin_flip && {
-                        date: moment(casual.date("YYYY/MM/DD")).toISOString(),
-                        text: casual.date("YYYY/MM/DD")
-                    },
-                    end: casual.coin_flip && {
-                        date: moment(casual.date("YYYY/MM/DD")).toISOString(),
-                        text: casual.date("YYYY/MM/DD")
-                    }
-                } as PeriodOfTime,
 
                 ...overrides
             } as Distribution;
@@ -1040,21 +1048,43 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                 const datasets = buildNDatasets(100);
                 await buildDatasetIndex(datasets);
 
-                for (let dataset in datasets) {
-                    await supertest(app)
-                        .get(
-                            `/datasets?dateTo=${latest.format(
-                                "YYYY/MM/DD"
-                            )}&limit=${expectedIdentifiers.length + 1}`
-                        )
-                        .expect(200)
-                        .expect(res => {
-                            const body: SearchResult = res.body;
+                for (let dataset of datasets) {
+                    if (
+                        dataset.temporal &&
+                        (dataset.temporal.end || dataset.temporal.start)
+                    ) {
+                        const url = `/datasets?${
+                            dataset.temporal.end && dataset.temporal.end.date
+                                ? "&dateTo=" +
+                                  encodeURIComponent(
+                                      moment(dataset.temporal.end.date)
+                                          .add(1, "day")
+                                          .format("YYYY/MM/DD")
+                                  )
+                                : ""
+                        }${
+                            dataset.temporal.start &&
+                            dataset.temporal.start.date
+                                ? "&dateFrom=" +
+                                  encodeURIComponent(
+                                      moment(dataset.temporal.start.date)
+                                          .subtract(1, "day")
+                                          .format("YYYY/MM/DD")
+                                  )
+                                : ""
+                        }&limit=${datasets.length}`;
 
-                            expect(
-                                body.datasets.map(ds => ds.identifier)
-                            ).to.have.same.members(expectedIdentifiers);
-                        });
+                        await supertest(app)
+                            .get(url)
+                            .expect(200)
+                            .expect(res => {
+                                const body: SearchResult = res.body;
+
+                                expect(
+                                    body.datasets.map(ds => ds.identifier)
+                                ).to.contain(dataset.identifier);
+                            });
+                    }
                 }
             });
         });
