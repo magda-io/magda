@@ -43,6 +43,8 @@ UI:
 -   Revised add dataset first metadata page for conformance with design
 -   Improved edit dataset page overall styling & editor behaviour
 -   Show Database ownership information on dataset page (Admin Only)
+-   Added vocabulary suggestion for keywords & themes input on new dataset page
+-   Extracted keyword will be filtered by vocabulary APIs
 
 Gateway:
 
