@@ -7,15 +7,15 @@ export interface ApiRouterOptions {
     jwtSecret: string;
 }
 
-function checkAuthorization(req: express.Request): boolean {
-    const sessionHeader = "X-Magda-Session";
-    const jwt = req.headers[`${sessionHeader.toLowerCase()}`] ||
-           req.headers[`${sessionHeader}`] ||
-           req.headers[`${sessionHeader.toUpperCase()}`]
+// function checkAuthorization(req: express.Request): boolean {
+//     const sessionHeader = "X-Magda-Session";
+//     const jwt = req.headers[`${sessionHeader.toLowerCase()}`] ||
+//            req.headers[`${sessionHeader}`] ||
+//            req.headers[`${sessionHeader.toUpperCase()}`]
 
-    // TODO: do this properly.
-    return jwt !== undefined
-}
+//     // TODO: do this properly.
+//     return jwt !== undefined
+// }
 
 function hasAdminPortalId(req: express.Request): boolean {
     return req.headers[`${MAGDA_TENANT_ID_HEADER.toLowerCase()}`] === MAGDA_ADMIN_PORTAL_ID.toString() ||
