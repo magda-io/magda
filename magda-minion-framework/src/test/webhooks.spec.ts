@@ -102,6 +102,9 @@ baseSpec(
                             const registryDomain = "example";
                             const registryUrl = `http://${registryDomain}.com:80`;
                             const registryScope = nock(registryUrl);
+                            const tenantDomain = "tenant"
+                            const tenantUrl = `http://${tenantDomain}.com:80`;
+                            const tenantScope = nock(tenantUrl);
 
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
@@ -120,6 +123,7 @@ baseSpec(
                                 argv: fakeArgv({
                                     internalUrl,
                                     registryUrl,
+                                    tenantUrl,
                                     jwtSecret,
                                     userId,
                                     listenPort: listenPort(),
@@ -162,7 +166,7 @@ baseSpec(
                             });
                             registryScope.post(/\/hooks\/.*/).reply(201, {});
 
-                            registryScope.get("/tenants").reply(200, []);
+                            tenantScope.get("/tenants").reply(200, []);
 
                             return minion(options)
                                 .then(() =>

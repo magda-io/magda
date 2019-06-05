@@ -47,9 +47,11 @@ baseSpec(
             beforeEachProperty();
 
             const internalUrl = `http://${domain}.com`;
-            const registryDomain = "example_" + registryDomainCounter;
+            const registryDomain = "registry_" + registryDomainCounter;
+            const tenantDomain = "tenant_" + registryDomainCounter;
             registryDomainCounter++;
             const registryUrl = `http://${registryDomain}.com:80`;
+            const tenantUrl = `http://${tenantDomain}.com:80`;
             const registryScope = nock(registryUrl);
             const tenantId = MAGDA_ADMIN_PORTAL_ID;
 
@@ -79,6 +81,7 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl,
                     registryUrl,
+                    tenantUrl,
                     jwtSecret,
                     userId,
                     listenPort: listenPort(),

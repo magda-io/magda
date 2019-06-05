@@ -9,6 +9,7 @@ export type MinionArguments = {
     jwtSecret: string;
     userId: string;
     registryUrl: string;
+    tenantUrl: string;
     retries: string | number;
     tenantId: string | number;
 };
@@ -65,6 +66,14 @@ export default function commonYargs<
                 process.env.REGISTRY_URL ||
                 process.env.npm_package_config_registryUrl ||
                 "http://localhost:6101/v0"
+        })
+        .option("tenantUrl", {
+            describe: "The base url for the tenant service",
+            type: "string",
+            default:
+                process.env.TENANT_URL ||
+                process.env.npm_package_config_tenantUrl ||
+                "http://localhost:6120/v0"
         })
         .option("retries", {
             describe: "The number of times to retry calling the registry",

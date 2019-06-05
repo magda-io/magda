@@ -8,7 +8,8 @@ import isWebhookRegistered from "./isWebhookRegistered";
 import registerWebhook from "./registerWebhook";
 import resumeWebhook from "./resumeWebhook";
 import Crawler from "./Crawler";
-import { Tenant } from "@magda/typescript-common/dist/generated/registry/api";
+import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
+import AuthorizedTenantClient  from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
 import {
     MAGDA_ADMIN_PORTAL_ID,
     MAGDA_SYSTEM_ID
@@ -24,8 +25,16 @@ export default async function minion(options: MinionOptions): Promise<void> {
         tenantId: options.tenantId
     });
 
-    const tenantIds: number[] = await registry
-        .getTenants(MAGDA_ADMIN_PORTAL_ID)
+    const tenantClient =  new AuthorizedTenantClient({
+        urlStr: options.argv.tenantUrl,
+        maxRetries: 1,
+        secondsBetweenRetries: 1,
+        jwtSecret: options.argv.jwtSecret,
+        userId: options.argv.userId
+    });
+
+    const tenantIds: number[] = await tenantClient
+        .getTenants()
         .then((tenants: Tenant[]) => {
             return tenants.map(t => t.id);
         });

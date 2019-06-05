@@ -31,6 +31,7 @@ baseSpec(
         jsc.property(
             "should properly crawl existing records if no webhook was found",
             lcAlphaNumStringArbNe,
+            lcAlphaNumStringArbNe,
             jsc.array(jsc.nestring),
             jsc.array(jsc.nestring),
             jsc.array(recordArb),
@@ -39,6 +40,7 @@ baseSpec(
             lcAlphaNumStringArbNe,
             (
                 registryHost,
+                tenantHost,
                 aspects,
                 optionalAspects,
                 records,
@@ -48,10 +50,12 @@ baseSpec(
             ) => {
                 beforeEachProperty();
                 const registryUrl = `http://${registryHost}.com`;
+                const tenantUrl = `http://${tenantHost}.com`;
                 const registryScope = nock(registryUrl);
+                const tenantScope = nock(tenantUrl);
                 registryScope.get(/\/hooks\/.*/).reply(404);
                 registryScope.put(/\/hooks\/.*/).reply(201);
-                registryScope.get("/tenants").reply(200, []);
+                tenantScope.get("/tenants").reply(200, []);
 
                 let index = 0;
                 const pages = _.groupBy(records, (element: any) => {
@@ -99,6 +103,7 @@ baseSpec(
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
                         registryUrl,
+                        tenantUrl,
                         jwtSecret,
                         userId,
                         listenPort: listenPort(),
@@ -188,6 +193,7 @@ baseSpec(
                         internalUrl: internalUrl,
                         listenPort: port,
                         registryUrl: "",
+                        tenantUrl: "",
                         jwtSecret,
                         userId,
                         tenantId: undefined
