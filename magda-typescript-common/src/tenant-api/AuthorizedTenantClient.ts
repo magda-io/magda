@@ -22,7 +22,7 @@ export interface AuthorizedTenantOptions extends TenantOptions {
     tenantId: number;
 }
 
-export default class TenantClient {
+export default class AuthorizedTenantClient {
     private jwt: string = null;
     private requestInitOption: RequestInit = null;
     
