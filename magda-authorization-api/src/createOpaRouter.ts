@@ -3,6 +3,7 @@ import { Router } from "express";
 import * as _ from "lodash";
 import Database from "./Database";
 import { User } from "@magda/typescript-common/dist/authorization-api/model";
+import OpaCompileResponseParser from "@magda/typescript-common/dist/OpaCompileResponseParser";
 import * as request from "request-promise-native";
 import * as bodyParser from "body-parser";
 import * as objectPath from "object-path";
@@ -163,7 +164,24 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 `${opaUrl}v1${req.path}`,
                 reqOpts
             );
-            res.status(fullResponse.statusCode).send(fullResponse.body);
+            if (
+                req.path === "/compile" &&
+                req.query.printRule &&
+                fullResponse.statusCode === 200
+            ) {
+                // --- output humand readable rules for debugging / investigation
+                // --- AST is good for a program to process but too long for a human to read
+                // --- query string parameter `printRule` contains the rule full name that you want to output
+                const parser = new OpaCompileResponseParser();
+                parser.parse(fullResponse.body);
+                res.status(fullResponse.statusCode).send(
+                    parser.evaluateRuleAsHumanReadableString(
+                        req.query.printRule
+                    )
+                );
+            } else {
+                res.status(fullResponse.statusCode).send(fullResponse.body);
+            }
         } catch (e) {
             console.error(e);
             res.status(500).send(`Failed to proxy request to OPA`);
