@@ -63,12 +63,10 @@ class Api(val webHookActorOption: Option[ActorRef], val authClient: AuthApiClien
     case Some(webHookActor) =>
       pathPrefix("aspects") { new AspectsService(config, authClient, webHookActor, system, materializer).route } ~
         pathPrefix("records") { new RecordsService(config, webHookActor, authClient, system, materializer).route } ~
-        pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route } ~
-        pathPrefix("tenants") { new TenantsService(config, webHookActor, authClient, system, materializer).route }
+        pathPrefix("hooks") { new HooksService(config, webHookActor, authClient, system, materializer).route }
     case None =>
       pathPrefix("aspects") { new AspectsServiceRO(config, authClient, system, materializer).route } ~
-        pathPrefix("records") { new RecordsServiceRO(config, system, materializer).route } ~
-        pathPrefix("tenants") { new TenantsServiceRO(config, system, materializer).route }
+        pathPrefix("records") { new RecordsServiceRO(config, system, materializer).route }
   }
 
   val routes = handleExceptions(myExceptionHandler) {

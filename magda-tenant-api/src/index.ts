@@ -48,14 +48,6 @@ app.use(
     })
 );
 
-app.use(
-    "/v0/tenants",
-    createTenantsRouter({
-        jwtSecret: argv.jwtSecret,
-        database
-    })
-);
-
 app.listen(argv.listenPort);
 console.log("Tenant API started on port " + argv.listenPort);
 

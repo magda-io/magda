@@ -26,5 +26,4 @@ trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val webHookResponseFormat = jsonFormat1(WebHookResponse.apply)
   implicit val countResponseFormat = jsonFormat1(CountResponse.apply)
   implicit val readyState = jsonFormat1(ReadyStatus.apply)
-  implicit val createTenantEventFormat = jsonFormat1(CreateTenantEvent.apply)
 }

@@ -52,8 +52,9 @@ defaultRoutes:
   apidocs:
     to: http://apidocs-server/
     redirectTrailingSlash: true
-  
-helmet: {}
+  tenant:
+    to: http://tenant-api/v0
+    auth: true
 
 csp:
   browserSniff: false

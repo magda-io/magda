@@ -21,7 +21,7 @@ import scala.reflect.runtime.{universe => ru}
 class SwaggerDocService(address: String, port: Int, val registryApiBaseUrl: String, system: ActorSystem) extends SwaggerHttpService {
   implicit val actorSystem: ActorSystem = system
   implicit val materializer: ActorMaterializer = ActorMaterializer()
-  override def apiClasses = Set(classOf[AspectsService], classOf[RecordsService], classOf[RecordAspectsService], classOf[RecordHistoryService], classOf[HooksService], classOf[TenantsServiceRO])
+  override def apiClasses = Set(classOf[AspectsService], classOf[RecordsService], classOf[RecordAspectsService], classOf[RecordHistoryService], classOf[HooksService])
   override val host = ""
   override val info = Info(version = "0.1")
   override val basePath = Uri(registryApiBaseUrl).path.toString()

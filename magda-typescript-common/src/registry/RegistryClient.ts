@@ -4,9 +4,7 @@ import {
     Record,
     RecordsApi,
     RecordAspectsApi,
-    WebHooksApi,
-    TenantsApi,
-    Tenant
+    WebHooksApi
 } from "../generated/registry/api";
 import * as URI from "urijs";
 import retry from "../retry";
@@ -41,7 +39,6 @@ export default class RegistryClient {
     protected recordAspectsApi: RecordAspectsApi;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
-    protected tenantsApi: TenantsApi;
     protected tenantId: number;
 
     constructor({
@@ -59,7 +56,6 @@ export default class RegistryClient {
         this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
-        this.tenantsApi = new TenantsApi(registryApiUrl);
 
         if (this.tenantId === undefined) this.tenantId = MAGDA_ADMIN_PORTAL_ID;
     }
@@ -171,44 +167,6 @@ export default class RegistryClient {
                         e,
                         retriesLeft
                     )
-                )
-        )
-            .then(result => result.body)
-            .catch(createServiceError);
-    }
-
-    getTenants(
-        tenantId: number = this.tenantId
-    ): Promise<Array<Tenant> | Error> {
-        // return this.tenantsApi.getAll().then(result => result.body);
-        const operation = () => this.tenantsApi.getAll(tenantId);
-        return <any>retry(
-            operation,
-            this.secondsBetweenRetries,
-            this.maxRetries,
-            (e, retriesLeft) =>
-                console.log(
-                    formatServiceError("Failed to GET tenants.", e, retriesLeft)
-                )
-        )
-            .then(result => result.body)
-            .catch(createServiceError);
-    }
-
-    getTenant(
-        domainName: string,
-        tenantId: number = this.tenantId
-    ): Promise<Tenant | Error> {
-        // return this.tenantsApi.getByDomainName(domainName).then(result => result.body);
-        const operation = () =>
-            this.tenantsApi.getByDomainName(tenantId, domainName);
-        return <any>retry(
-            operation,
-            this.secondsBetweenRetries,
-            this.maxRetries,
-            (e, retriesLeft) =>
-                console.log(
-                    formatServiceError("Failed to GET tenants.", e, retriesLeft)
                 )
         )
             .then(result => result.body)

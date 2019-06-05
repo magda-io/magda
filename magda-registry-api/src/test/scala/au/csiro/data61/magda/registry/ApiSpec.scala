@@ -119,12 +119,6 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
     flyway.migrate()
 
-    DB localTx { implicit session =>
-      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES($domain_name_1, $tenant_1, true, 'test1', 1)".update.apply()
-      sql"INSERT INTO test.Tenants(domainName, id, enabled, description, lastUpdate) VALUES($domain_name_2, $tenant_2, true, 'test2', 1)".update.apply()
-      sql"ALTER SEQUENCE tenants_id_seq RESTART WITH 3".update().apply()
-    }
-
     val actor = system.actorOf(WebHookActor.props("http://localhost:6101/v0/")(testConfig))
     val api = (role: Role) => new Api(if (role == Full) Some(actor) else None, authClient, testConfig, system, executor, materializer)
 
