@@ -13,8 +13,6 @@ import {
 import SearchQueryer from "../SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
 
-const client = new Client({ node: "http://localhost:9200" });
-
 type LanguageField = {
     path: string;
     boost?: number;
@@ -36,7 +34,10 @@ const NON_LANGUAGE_FIELDS: LanguageField[] = [
 ];
 
 export default class ElasticSearchQueryer implements SearchQueryer {
+    client = new Client({ node: this.url });
+
     constructor(
+        readonly url: string,
         readonly datasetsIndexId: string,
         readonly regionsIndexId: string,
         readonly publishersIndexId: string
@@ -77,7 +78,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         };
         // console.log(JSON.stringify(esQueryBody, null, 2));
 
-        const result: ApiResponse = await client.search(esQueryBody);
+        const result: ApiResponse = await this.client.search(esQueryBody);
 
         const { body } = result;
 
@@ -115,7 +116,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 },
                 index: this.datasetsIndexId
             };
-            const resultWithout = await client.search(generalEsQueryBody);
+            const resultWithout = await this.client.search(generalEsQueryBody);
 
             const aggregationsResult = _(resultWithout.body.aggregations as {
                 [aggName: string]: any;
@@ -165,7 +166,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         // For debugging! Use this to explain how a certain dataset is rated.
         // console.log(
         //     JSON.stringify(
-        //         (await client.explain({
+        //         (await this.client.explain({
         //             body: {
         //                 query: await this.buildESDatasetsQuery(query)
         //                 // aggs: filters
@@ -178,7 +179,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         //         2
         //     )
         // );
-        const response: ApiResponse = await client.search(searchParams);
+        const response: ApiResponse = await this.client.search(searchParams);
 
         return {
             query,
@@ -208,7 +209,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             return [];
         }
 
-        const regionsResult = await client.search({
+        const regionsResult = await this.client.search({
             index: this.regionsIndexId,
             body: {
                 query: {

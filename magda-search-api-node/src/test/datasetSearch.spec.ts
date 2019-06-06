@@ -23,14 +23,16 @@ import {
 } from "../model";
 import moment = require("moment");
 
+const ES_URL = process.env.TEST_ES_URL || "http://localhost:9200";
 const client = new Client({
-    node: process.env.TEST_ES_URL || "http://localhost:9200"
+    node: ES_URL
 });
 const API_ROUTER_CONFIG = {
     jwtSecret: "",
     datasetsIndexId: "datasets",
     regionsIndexId: "regions",
-    publishersIndexId: "publishers"
+    publishersIndexId: "publishers",
+    elasticsearchUrl: ES_URL
 };
 
 describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
@@ -1088,6 +1090,71 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                             });
                     }
                 }
+            });
+
+            describe("should understand dates in format:", () => {
+                const testFormat = (
+                    format: string,
+                    unit: moment.DurationInputArg2
+                ) => {
+                    it.skip(format, async () => {
+                        const startDate = moment(casual.date(format), format);
+
+                        const datasets = [
+                            buildDataset({
+                                temporal: {
+                                    end: {
+                                        date: startDate
+                                            .clone()
+                                            .subtract(1, "ms")
+                                            .toISOString()
+                                    }
+                                }
+                            }),
+                            buildDataset({
+                                temporal: {
+                                    start: {
+                                        date: startDate.toISOString()
+                                    },
+                                    end: {
+                                        date: startDate.toISOString()
+                                    }
+                                }
+                            }),
+                            buildDataset({
+                                temporal: {
+                                    end: {
+                                        date: startDate
+                                            .clone()
+                                            .add(1, unit)
+                                            .add(1, "ms")
+                                            .toISOString()
+                                    }
+                                }
+                            })
+                        ];
+
+                        await buildDatasetIndex(datasets);
+
+                        await supertest(app)
+                            .get(
+                                `/datasets?dateFrom=${startDate.format(
+                                    format
+                                )}&dateTo=${startDate.format(format)}`
+                            )
+                            .expect(200)
+                            .expect(res => {
+                                const body: SearchResult = res.body;
+
+                                expect(body.datasets.length).to.equal(1);
+                                expect(body.datasets[0].identifier).to.equal(
+                                    datasets[1].identifier
+                                );
+                            });
+                    });
+                };
+
+                testFormat("YYYY/MM/DD", "day");
             });
         });
     });

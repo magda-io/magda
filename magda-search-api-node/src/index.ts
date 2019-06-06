@@ -13,15 +13,10 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 6969
         })
-        .option("esHost", {
-            describe: "The host running the auth database.",
+        .option("elasticsearchUrl", {
+            describe: "The url of the elasticsearch node to connect to",
             type: "string",
-            default: "localhost"
-        })
-        .option("esPort", {
-            describe: "The port running the auth database.",
-            type: "number",
-            default: 5432
+            default: "localhost:9200"
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
@@ -49,6 +44,7 @@ app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
+        elasticsearchUrl: argv.elasticsearchUrl,
         datasetsIndexId: argv.datasetsIndexId,
         regionsIndexId: argv.regionsIndexId,
         publishersIndexId: argv.publishersIndexId

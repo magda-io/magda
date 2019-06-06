@@ -16,6 +16,7 @@ import { Query, QueryRegion } from "./model";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
+    elasticsearchUrl: string;
     datasetsIndexId: string;
     regionsIndexId: string;
     publishersIndexId: string;
@@ -24,6 +25,7 @@ export interface ApiRouterOptions {
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
     const searchQueryer = new ElasticSearchQueryer(
+        options.elasticsearchUrl,
         options.datasetsIndexId,
         options.regionsIndexId,
         options.publishersIndexId
@@ -75,19 +77,28 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     }
 
-    function parseDate(dateString: string) {
+    function parseDate(dateString: string, forward: boolean = false) {
         if (!dateString || dateString.trim().length === 0) {
             return undefined;
         }
 
-        const parsed = chrono.en_GB.parse(dateString);
+        console.log(dateString);
+
+        const parsed = chrono.parseDate(dateString, new Date(), {
+            forwardDate: forward
+        });
+
+        console.log(parsed);
+
+        return parsed;
+
         // We always use "start" because we're not actually trying to parse a date range out
         // of natural text
-        if (parsed.length === 0 || !parsed[0].start) {
-            return undefined;
-        }
+        // if (!parsed || parsed.length === 0 || !parsed[0].start) {
+        //     return undefined;
+        // }
 
-        return parsed[0].start.date();
+        // return parsed[0].start.date();
     }
 
     function parseBaseQuery(queryStringObj: any): Query {
@@ -95,7 +106,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             freeText: queryStringObj.generalQuery,
             publishers: queryStringObj.publisher,
             dateFrom: parseDate(queryStringObj.dateFrom),
-            dateTo: parseDate(queryStringObj.dateTo),
+            dateTo: parseDate(queryStringObj.dateTo, true),
             regions: processRegions(processMaybeArray(queryStringObj.region)),
             formats: queryStringObj.format,
             publishingState: queryStringObj.publishingState
