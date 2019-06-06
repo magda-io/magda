@@ -2,17 +2,30 @@ import * as express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
-import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
-import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
+import {
+    PublicUser,
+    DatasetAccessControlMetaData
+} from "@magda/typescript-common/dist/authorization-api/model";
+import {
+    getUserIdHandling,
+    getUserId
+} from "@magda/typescript-common/dist/session/GetUserId";
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 import NestedSetModelQueryer, {
     NodeNotFoundError
 } from "./NestedSetModelQueryer";
+import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import * as bodyParser from "body-parser";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import getWhoAllowDatasetOperation from "./getWhoAllowDatasetOperation";
 
 export interface ApiRouterOptions {
     database: Database;
+    registryApiUrl: string;
+    opaUrl: string;
     orgQueryer: NestedSetModelQueryer;
     jwtSecret: string;
 }
@@ -80,7 +93,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const MUST_BE_ADMIN = function(req: any, res: any, next: any) {
         //--- private API requires admin level access
-
         getUserIdHandling(
             req,
             res,
@@ -108,6 +120,30 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             }
         );
+    };
+
+    const MUST_BE_LOGGED_IN = function(req: any, res: any, next: any) {
+        // --- require to be logged in user only
+        // --- we probably should have a OPA policy to control all APIs in future
+        // --- so that we never need the similar logic here
+        getUserId(req, options.jwtSecret).caseOf({
+            just: userId => {
+                req.userId = userId;
+                next();
+            },
+            nothing: () => {
+                res.status(401).send("Not authorized");
+            }
+        });
+    };
+
+    const NO_CACHE = function(req: any, res: any, next: any) {
+        res.set({
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0"
+        });
+        next();
     };
 
     router.all("/private/*", MUST_BE_ADMIN);
@@ -143,6 +179,113 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
         res.end();
     });
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/whoAllowDatasetOpeartion Get authorised users for dataset operation
+     * @apiDescription Returns a list users who can perform specified dataset operation
+     *
+     * @apiParam {String} datasetId Optional dataset id you specify which dataset you want OPA makes decision on.
+     *  You must either supply an Id of the dataset or supply dataset metadata in request body
+     *
+     * @apiParam {String} operationUri  Mandatory The uri of the operation required
+     *
+     * @apiParamExample {json} Optional dataset metadata request data. Example:
+     * {
+     *      "publishingState": "draft",
+     *      "accessControl": {
+     *          "ownerId": "xxxxx-xxxx-xxxx-xxxx",
+     *          "orgUnitOwnerId": "xxxxx-xxxx-xxxx-xxxx",
+     *          "preAuthorisedPermissionIds": ["xxxxx-xxxx-xxxx-xxxx"]
+     *      }
+     * }
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/public/users/whoAllowDatasetOpeartion",
+        MUST_BE_LOGGED_IN,
+        bodyParser.json({ type: "application/json" }),
+        NO_CACHE,
+        async function(req, res) {
+            try {
+                let dataset: DatasetAccessControlMetaData;
+                const datasetId = req.query.datasetId;
+                if (datasetId) {
+                    // --- load dataset info from registry
+                    const registryClient = new Registry({
+                        baseUrl: options.registryApiUrl,
+                        jwtSecret: options.jwtSecret,
+                        userId: (req as any).userId
+                    });
+                    const record: Record = unionToThrowable(
+                        await registryClient.getRecord(datasetId, undefined, [
+                            "publishing",
+                            "dataset-access-control"
+                        ])
+                    );
+                    dataset = {
+                        // --- default to `published` --- to be consistent with UI & other codebase
+                        publishingState:
+                            record &&
+                            record.aspects &&
+                            record.aspects.publishing &&
+                            record.aspects.publishing.state
+                                ? record.aspects.publishing.state
+                                : "published",
+                        accessControl:
+                            record &&
+                            record.aspects &&
+                            record.aspects["dataset-access-control"]
+                                ? record.aspects["dataset-access-control"]
+                                : {}
+                    };
+                } else {
+                    dataset = req.body;
+                    if (
+                        typeof dataset !== "object" ||
+                        !dataset.publishingState
+                    ) {
+                        throw new GenericError(
+                            "Expecting dataset id or dataset metadata"
+                        );
+                    }
+                }
+                const opeartionUri = req.query.operationUri;
+                if (!opeartionUri) {
+                    throw new GenericError("Missing parameter `opeartionUri`");
+                }
+                const users = await getWhoAllowDatasetOperation(
+                    options.opaUrl,
+                    dataset,
+                    opeartionUri
+                );
+                res.send(users);
+            } catch (e) {
+                if (e instanceof GenericError) {
+                    const data = e.toData();
+                    res.status(data.errorCode).json(data);
+                } else {
+                    respondWithError("/public/users/whoami", res, e);
+                }
+            }
+        }
+    );
 
     /**
      * @apiGroup Auth

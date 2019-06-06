@@ -786,7 +786,12 @@ export class RegoRef {
     // --- the first var type won't count as collection lookup
     hasCollectionLookup(): boolean {
         if (this.parts.length <= 1) return false;
-        else return this.parts.findIndex(part => part.type === "var") >= 1;
+        else {
+            return (
+                this.parts.slice(1).findIndex(part => part.type === "var") !==
+                -1
+            );
+        }
     }
 
     // -- simple collection only contains 1 level lookup
@@ -795,8 +800,8 @@ export class RegoRef {
         if (this.parts.length <= 1) return false;
         else {
             return (
-                this.parts.findIndex(part => part.type === "var") ===
-                this.parts.length - 1
+                this.parts.slice(1).findIndex(part => part.type === "var") ===
+                this.parts.length - 2
             );
         }
     }
