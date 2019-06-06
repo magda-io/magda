@@ -286,6 +286,7 @@ buildtest:typescript-apis-with-es:
     - apk update
     - apk upgrade
     - apk add python3 python3-dev py3-pip build-base openssl-dev libffi-dev
+    - apk add --no-cache curl
     - pip3 install --upgrade pip
     - pip3 install docker-compose
     - docker-compose --version
@@ -303,10 +304,9 @@ buildtest:typescript-apis-with-es:
     - docker-compose up -d
     - cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-es=true -- run build --include-filtered-dependencies
-    - "until $(curl --output /dev/null --silent --head --fail http://myhost:myport); do
-      printf '.'
-      sleep 5
-      done"
+    # Wait for es to come up
+    - until $(curl --output /dev/null --silent --head --fail http://docker:9200); do printf '.' sleep 5; done
+    - curl http://docker:9200
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-es=true -- run test --include-filtered-dependencies
     - cd magda-elastic-search
     - docker-compose down
