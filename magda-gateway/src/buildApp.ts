@@ -68,6 +68,7 @@ type Config = {
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
     fetchTenantsMinIntervalInMs?: number;
+    tenantUrl?: string;
 };
 
 export default function buildApp(config: Config) {

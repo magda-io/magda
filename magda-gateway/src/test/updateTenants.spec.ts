@@ -8,9 +8,16 @@ import * as nock from "nock";
 import { delay } from "q";
 
 describe("Test reload tenants", () => {
-    const tenantsBaseUrl = "http://some.where";
+    const config = {
+        tenantUrl: "http://some.where", 
+        enableMultiTenants: true,
+        magdaAdminPortalName: "some.where",
+        fetchTenantsMinIntervalInMs: 1000,
+        jwtScret: "a top secret", 
+        userId: "an-admin-user",  
+    };
 
-    const requestScope = nock(tenantsBaseUrl, {
+    const requestScope = nock(config.tenantUrl, {
         reqheaders:{
             "Content-Type": "application/json",
             "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}`
@@ -22,7 +29,7 @@ describe("Test reload tenants", () => {
         // used in the test, which is OK.
         // A fresh tenant loader must be created for each test. Otherwise the
         // throttle mechanism will fail any tests that reuse the loader.
-        setupTenantMode({ tenantApi: tenantsBaseUrl });
+        setupTenantMode(config);
     });
 
     beforeEach(() => {
@@ -42,7 +49,7 @@ describe("Test reload tenants", () => {
                 {"domainname":"built.in","enabled":true,"id":0}
             ]
         );
-        const tenantLoader = new TenantsLoader();    
+        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);    
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.get('built.in').id).to.equal(0)
@@ -62,7 +69,7 @@ describe("Test reload tenants", () => {
             ]
         );
             
-        const tenantLoader = new TenantsLoader();
+        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);   
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.size).to.equal(2);
@@ -91,7 +98,7 @@ describe("Test reload tenants", () => {
         tenantsTable.set(tenant_1.domainname, tenant_1);
         tenantsTable.set(tenant_2.domainname, tenant_2);
 
-        const tenantLoader = new TenantsLoader();
+        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);   
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.size).to.equal(2);
@@ -107,7 +114,7 @@ describe("Test reload tenants", () => {
         const expectedTenantId = 1;
         const otherTenantId = 2;
 
-        const tenantLoader = new TenantsLoader(minReqIntervalInMs)
+        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId, minReqIntervalInMs);   
         
         const request_1 = requestScope
         .get("/tenants")
@@ -140,7 +147,7 @@ describe("Test reload tenants", () => {
         const expectedTenantId = 2;
         const otherTenantId = 1;
 
-        const tenantLoader = new TenantsLoader(minReqIntervalInMs)
+        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId, minReqIntervalInMs);   
 
         const request_1 = requestScope
         .get("/tenants")

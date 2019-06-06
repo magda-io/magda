@@ -1,21 +1,15 @@
 import * as express from "express";
 import Database from "./Database";
 import { MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
+    authApiUrl: string;
 }
 
-// function checkAuthorization(req: express.Request): boolean {
-//     const sessionHeader = "X-Magda-Session";
-//     const jwt = req.headers[`${sessionHeader.toLowerCase()}`] ||
-//            req.headers[`${sessionHeader}`] ||
-//            req.headers[`${sessionHeader.toUpperCase()}`]
-
-//     // TODO: do this properly.
-//     return jwt !== undefined
-// }
 
 function hasAdminPortalId(req: express.Request): boolean {
     return req.headers[`${MAGDA_TENANT_ID_HEADER.toLowerCase()}`] === MAGDA_ADMIN_PORTAL_ID.toString() ||
@@ -31,6 +25,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
 
     const router: express.Router = express.Router();
+
+    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
     router.get("/tenants", function(req, res) {
         try {
@@ -51,7 +47,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             res.status(500);
         }
     });
-
 
 
     router.post("/tenants", async function(req, res) {

@@ -1,20 +1,15 @@
 require("isomorphic-fetch");
-import { tenantApi } from "./setupTenantMode";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 import { throttle, Cancelable } from "lodash"
 import {Tenant} from "@magda/typescript-common/dist/tenant-api/Tenant"
+import AuthorizedTenantClient from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient"
 
 export const tenantsTable = new Map<String, Tenant>();
 
+let tenantApiClient: AuthorizedTenantClient;
+ 
 async function updateTenants(){
-    const res = await fetch(`${tenantApi}/tenants`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}` // Warning: The fetch will automatically make the header name X-Magda-Tenant-Id into lowercases.
-        }
-    });
-    const tenants: Tenant[] = await <Promise<Tenant[]>>res.json();
+    const res = await tenantApiClient.getTenants();
+    const tenants = <Tenant[]>res;
     tenantsTable.clear();
     tenants.forEach(t => {
         if (t.enabled === true) {
@@ -27,8 +22,14 @@ async function updateTenants(){
 export default class TenantsLoader {
     private throttledReloadTenants: (() => Promise<void>) & Cancelable;
 
-    constructor(minFetchIntervalInMs: number = 60000){
+    constructor(tenantUrl: string, jwtScret: string, userId: string,  minFetchIntervalInMs: number = 60000){
         console.debug(`TenantsLoader throttle interval = ${minFetchIntervalInMs}`);
+        tenantApiClient = new AuthorizedTenantClient({
+            urlStr: tenantUrl,
+            jwtSecret: jwtScret,
+            userId: userId
+        })
+        
         this.throttledReloadTenants = throttle(updateTenants, minFetchIntervalInMs, {"trailing": false});
     }
 

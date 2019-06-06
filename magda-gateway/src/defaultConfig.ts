@@ -21,10 +21,6 @@ export default {
         content: {
             to: "http://localhost:6119/v0",
             auth: true
-        },
-        tenant: {
-            to: "http://localhost:6120/v0",
-            auth: true
         }
     },
     csp: {

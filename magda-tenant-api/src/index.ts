@@ -28,6 +28,9 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        }) .option("authApiUrl", {
+            describe: "The authorization api URL",
+            type: "string"
         }).argv
 );
 
@@ -44,7 +47,8 @@ app.use(
     "/v0",
     createTenantsRouter({
         jwtSecret: argv.jwtSecret,
-        database
+        database,
+        authApiUrl: argv.authApiUrl
     })
 );
 
