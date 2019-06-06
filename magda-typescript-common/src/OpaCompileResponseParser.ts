@@ -318,6 +318,19 @@ export class RegoTerm {
     }
 
     /**
+     * Return RegoRef instance if this term is a RegoRef.
+     *
+     * @returns {RegoRef}
+     * @memberof RegoTerm
+     */
+    getRef(): RegoRef {
+        if (this.isRef()) {
+            return this.value as RegoRef;
+        }
+        throw new Error(`Term ${this.asString()} is not a ref`);
+    }
+
+    /**
      * If it's a reference term, return its full string representation
      * Otherwise, throw exception
      *
@@ -777,6 +790,12 @@ export class RegoRef {
 
     refString(removalPrefixs: string[] = []): string {
         return this.fullRefString(removalPrefixs).replace("\\[_\\]$", "");
+    }
+
+    asCollectionRefs(removalPrefixs: string[] = []): string[] {
+        return this.fullRefString(removalPrefixs)
+            .split("[_]")
+            .map(refStr => refStr.replace(/^\./, ""));
     }
 
     isOperator(): boolean {

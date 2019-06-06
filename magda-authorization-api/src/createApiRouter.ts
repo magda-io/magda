@@ -309,13 +309,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/whoami", async function(req, res) {
+    router.get("/public/users/whoami", NO_CACHE, async function(req, res) {
         try {
-            res.set({
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                Pragma: "no-cache",
-                Expires: "0"
-            });
             const currentUserInfo = await database.getCurrentUserInfo(
                 req,
                 options.jwtSecret
@@ -389,12 +384,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/:userId", (req, res) => {
-        res.set({
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0"
-        });
+    router.get("/public/users/:userId", NO_CACHE, (req, res) => {
         const userId = req.params.userId;
         const getPublicUser = database.getUser(userId).then(userMaybe =>
             userMaybe.map(user => {
