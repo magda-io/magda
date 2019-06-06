@@ -180,45 +180,6 @@ buildtest:search-no-index-cache:
       - "*/target"
     expire_in: 30 days
 
-buildtest:search-node:
-  stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
-  retry: 2
-  dependencies:
-    - builders-and-yarn
-  before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
-    - docker info
-    - apk update
-    - apk upgrade
-    - apk add python3 python3-dev py3-pip build-base openssl-dev libffi-dev
-    - pip3 install --upgrade pip
-    - pip3 install docker-compose
-    - docker-compose --version
-  cache:
-    key: $CI_JOB_NAME
-    paths:
-      - "$CI_PROJECT_DIR/pip-cache"
-  services:
-    - docker:dind
-  variables:
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
-  script:
-    - cd magda-elastic-search
-    - docker-compose up -d
-    - cd ..
-    - yarn run in-submodules -- -f categories.search=true -f language=typescript -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.search=true -f language=typescript -- run test --include-filtered-dependencies
-    - cd magda-elastic-search
-    - docker-compose down
-  artifacts:
-    paths:
-      - "*/dist"
-    expire_in: 30 days
-
 buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
@@ -286,7 +247,7 @@ buildtest:map:
       - "magda-preview-map/wwwroot/build"
     expire_in: 30 days
 
-buildtest:typescript-apis:
+buildtest:typescript-apis-stateless:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
@@ -303,8 +264,76 @@ buildtest:typescript-apis:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
   script:
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
+  artifacts:
+    paths:
+      - "*/dist"
+    expire_in: 30 days
+
+buildtest:typescript-apis-with-es:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  retry: 2
+  dependencies:
+    - builders-and-yarn
+  before_script:
+    - |
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    - docker info
+    - apk update
+    - apk upgrade
+    - apk add python3 python3-dev py3-pip build-base openssl-dev libffi-dev
+    - pip3 install --upgrade pip
+    - pip3 install docker-compose
+    - docker-compose --version
+  cache:
+    key: $CI_JOB_NAME
+    paths:
+      - "$CI_PROJECT_DIR/pip-cache"
+  services:
+    - docker:dind
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+    TEST_ES_URL: "http://docker:9200"
+  script:
+    - cd magda-elastic-search
+    - docker-compose up -d
+    - cd ..
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-es=true -- run build --include-filtered-dependencies
+    - "until $(curl --output /dev/null --silent --head --fail http://myhost:myport); do
+      printf '.'
+      sleep 5
+      done"
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-es=true -- run test --include-filtered-dependencies
+    - cd magda-elastic-search
+    - docker-compose down
+  artifacts:
+    paths:
+      - "*/dist"
+    expire_in: 30 days
+
+buildtest:typescript-apis-with-pg:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+  cache:
+    paths: []
+  services:
+    - postgres:9.6
+  variables:
+    POSTGRES_HOST: postgres
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: ""
+  script:
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
   artifacts:
     paths:
       - "*/dist"
@@ -426,7 +455,8 @@ dockerize:typescript-apis:
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
-    - buildtest:typescript-apis
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master

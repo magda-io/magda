@@ -56,7 +56,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "api": true
+      "api": true,
+      "stateless": true
     }
   },
   "nyc": {

@@ -26,6 +26,18 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        })
+        .option("datasetsIndexId", {
+            describe: "The id of the datasets index in elasticsearch",
+            type: "string"
+        })
+        .option("regionsIndexId", {
+            describe: "The id of the regions index id",
+            type: "string"
+        })
+        .option("publishersIndexId", {
+            describe: "The id of the publishers index id",
+            type: "string"
         }).argv
 );
 
@@ -36,7 +48,10 @@ const app = express();
 app.use(
     "/v0",
     createApiRouter({
-        jwtSecret: argv.jwtSecret
+        jwtSecret: argv.jwtSecret,
+        datasetsIndexId: argv.datasetsIndexId,
+        regionsIndexId: argv.regionsIndexId,
+        publishersIndexId: argv.publishersIndexId
     })
 );
 

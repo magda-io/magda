@@ -23,7 +23,9 @@ import {
 } from "../model";
 import moment = require("moment");
 
-const client = new Client({ node: "http://localhost:9200" });
+const client = new Client({
+    node: process.env.TEST_ES_URL || "http://localhost:9200"
+});
 const API_ROUTER_CONFIG = {
     jwtSecret: "",
     datasetsIndexId: "datasets",
@@ -1057,9 +1059,9 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                             dataset.temporal.end && dataset.temporal.end.date
                                 ? "&dateTo=" +
                                   encodeURIComponent(
-                                      moment(dataset.temporal.end.date)
-                                          .add(1, "day")
-                                          .format("YYYY/MM/DD")
+                                      moment(
+                                          dataset.temporal.end.date
+                                      ).toISOString()
                                   )
                                 : ""
                         }${
@@ -1067,9 +1069,9 @@ describe("Searching for datasets", function(this: Mocha.ISuiteCallbackContext) {
                             dataset.temporal.start.date
                                 ? "&dateFrom=" +
                                   encodeURIComponent(
-                                      moment(dataset.temporal.start.date)
-                                          .subtract(1, "day")
-                                          .format("YYYY/MM/DD")
+                                      moment(
+                                          dataset.temporal.start.date
+                                      ).toISOString()
                                   )
                                 : ""
                         }&limit=${datasets.length}`;

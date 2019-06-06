@@ -20,7 +20,8 @@
   "magda": {
     "language": "scala",
     "categories": {
-      "api": true
+      "api": true,
+      "uses-es": true
     }
   }
 }

@@ -21,7 +21,8 @@
   "magda": {
     "language": "scala",
     "categories": {
-      "api": true
+      "api": true,
+      "uses-pg": true
     }
   }
 }
