@@ -331,6 +331,50 @@ export class RegoTerm {
     }
 
     /**
+     * If the term is a reference and it contains any collection lookup
+     * e.g.
+     * - objectA.propB.collectionC[_]
+     * - objectA.propB.collectionC[_].ABC[_].name
+     * - objectA.propB.collectionC[_].id
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    hasCollectionLookup(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.hasCollectionLookup();
+    }
+
+    /**
+     * The term is not only a Reference but a reference contains simple collection lookup
+     * i.e. only contains one collection lookup and the whole ref ends with the only collection lookup
+     * e.g. objectA.propB.collectionC[_]
+     * Note: objectA.propB.collectionC[_].name is not a simple collection lookup as it resolve to single value (`name` property)
+     * rather than a collection
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    isSimpleCollectionLookup(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.isSimpleCollectionLookup();
+    }
+
+    /**
+     *
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    isResolveAsCollectionValue(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.isResolveAsCollectionValue();
+    }
+
+    /**
      * If it's a reference term, return its full string representation
      * Otherwise, throw exception
      *
@@ -757,7 +801,7 @@ export class RegoRef {
             .forEach(prefix => {
                 if (!prefix) return;
                 const idx = result.indexOf(prefix);
-                if (idx === -1) return;
+                if (idx !== 0) return;
                 result = result.substring(prefix.length);
             });
         return result;
@@ -773,7 +817,7 @@ export class RegoRef {
                 } else {
                     if (part.type == "var") {
                         // --- it's a collection lookup
-                        // --- var name doesn't matter
+                        // --- var name doesn't matter for most cases
                         partStr = "[_]";
                     } else {
                         partStr = part.value;
@@ -784,7 +828,7 @@ export class RegoRef {
                 //--- a.[_].[_] should be a[_][_]
             })
             .join(".")
-            .replace(".[", "[");
+            .replace(/\.\[/g, "[");
         return this.removeAllPrefixs(str, removalPrefixs);
     }
 
@@ -823,6 +867,12 @@ export class RegoRef {
                 this.parts.length - 2
             );
         }
+    }
+
+    // --- see comment for same name method of RegoTerm
+    isResolveAsCollectionValue(): boolean {
+        const refString = this.fullRefString();
+        return refString.lastIndexOf("[_]") === refString.length - 3;
     }
 
     asOperator(): string {

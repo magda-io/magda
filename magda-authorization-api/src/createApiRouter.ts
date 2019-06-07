@@ -272,6 +272,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
                 const users = await getWhoAllowDatasetOperation(
                     options.opaUrl,
+                    database,
                     dataset,
                     opeartionUri
                 );
