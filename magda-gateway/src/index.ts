@@ -200,17 +200,17 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
-        .option("tenantApi", {
+        .option("tenantUrl", {
             describe: "The base URL of the tenant API.",
             type: "string",
-            default: "http://localhost:6120/v0"
+            default: "http://localhost:6130/v0"
         })
         .option("magdaAdminPortalName", {
             describe:
                 "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
             type: "string",
             default: "unknown_portal_host_name"
-        }).option("fetchTenantsMinIntervalInMs", {
+        }).option("minReqIntervalInMs", {
             describe:
                 "Minimal interval in ms to fetch tenants from DB.",
             type: "number",

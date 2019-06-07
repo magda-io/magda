@@ -13,7 +13,7 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "The TCP/IP port on which the tenant api should listen.",
             type: "number",
-            default: 6120
+            default: 6130
         })
         .option("dbHost", {
             describe: "The host running the tenant database.",

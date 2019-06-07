@@ -24,7 +24,8 @@ spec:
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
             "--dbHost", "tenant-db",
-            "--dbPort", "5432"
+            "--dbPort", "5432",
+            "--authApiUrl", "http://authorization-api/v0"
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

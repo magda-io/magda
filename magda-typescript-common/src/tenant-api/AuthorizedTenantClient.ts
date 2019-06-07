@@ -1,7 +1,6 @@
 require("isomorphic-fetch");
 import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 import {Tenant} from "../tenant-api/Tenant"
-import * as URI from "urijs";
 import * as lodash from "lodash";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
@@ -26,19 +25,19 @@ export default class AuthorizedTenantClient {
     private jwt: string = null;
     private requestInitOption: RequestInit = null;
     
-    protected uri: uri.URI;
+    protected url: string;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
     protected defaultHeaders : any = {};
 
     constructor({
         urlStr,
-        maxRetries = 10,
+        maxRetries = 2,
         secondsBetweenRetries = 10,
         jwtSecret = null,
         userId = null
     }: TenantOptions) {
-        this.uri = new URI(urlStr);
+        this.url = urlStr;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
 
@@ -60,7 +59,7 @@ export default class AuthorizedTenantClient {
     }
 
     private async get() {
-        const res = await fetch(`${this.uri.valueOf()}`+ "tenants", 
+        const res = await fetch(`${this.url}`+ "/tenants", 
         this.getMergeRequestInitOption({method: "GET"}))
 
         return <Promise<Tenant[]>>res.json();

@@ -63,7 +63,7 @@ spec:
             "--corsJson", "/etc/config/cors.json",
             "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
-            "--tenantApi", "http://tenant-api/v0",
+            "--tenantUrl", "http://tenant-api/v0",
             "--previewMap", "http://preview-map:6110",
 {{- if .Values.enableMultiTenants }}
             "--enableMultiTenants", {{ .Values.enableMultiTenants | quote }},

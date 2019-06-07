@@ -13,7 +13,7 @@ describe("Test reload tenants", () => {
         enableMultiTenants: true,
         magdaAdminPortalName: "some.where",
         fetchTenantsMinIntervalInMs: 1000,
-        jwtScret: "a top secret", 
+        jwtSecret: "a top secret", 
         userId: "an-admin-user",  
     };
 
@@ -49,7 +49,13 @@ describe("Test reload tenants", () => {
                 {"domainname":"built.in","enabled":true,"id":0}
             ]
         );
-        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);    
+        
+        const tenantLoader = new TenantsLoader({
+            tenantUrl: config.tenantUrl,
+            jwtSecret: config.jwtSecret,
+            userId: config.userId
+        });    
+        
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.get('built.in').id).to.equal(0)
@@ -68,8 +74,13 @@ describe("Test reload tenants", () => {
                 {"domainname":"web2.com","enabled":true,"id":2}
             ]
         );
-            
-        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);   
+
+        const tenantLoader = new TenantsLoader({
+            tenantUrl: config.tenantUrl,
+            jwtSecret: config.jwtSecret,
+            userId: config.userId
+        });   
+
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.size).to.equal(2);
@@ -98,7 +109,12 @@ describe("Test reload tenants", () => {
         tenantsTable.set(tenant_1.domainname, tenant_1);
         tenantsTable.set(tenant_2.domainname, tenant_2);
 
-        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId);   
+        
+        const tenantLoader = new TenantsLoader({
+            tenantUrl: config.tenantUrl,
+            jwtSecret: config.jwtSecret,
+            userId: config.userId});   
+            
         await tenantLoader.reloadTenants();
     
         expect(tenantsTable.size).to.equal(2);
@@ -114,7 +130,11 @@ describe("Test reload tenants", () => {
         const expectedTenantId = 1;
         const otherTenantId = 2;
 
-        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId, minReqIntervalInMs);   
+        const tenantLoader = new TenantsLoader({
+            tenantUrl: config.tenantUrl,
+            jwtSecret: config.jwtSecret,
+            userId: config.userId,
+            minReqIntervalInMs: minReqIntervalInMs});   
         
         const request_1 = requestScope
         .get("/tenants")
@@ -147,7 +167,11 @@ describe("Test reload tenants", () => {
         const expectedTenantId = 2;
         const otherTenantId = 1;
 
-        const tenantLoader = new TenantsLoader(config.tenantUrl, config.jwtScret, config.userId, minReqIntervalInMs);   
+        const tenantLoader = new TenantsLoader({
+            tenantUrl: config.tenantUrl,
+            jwtSecret: config.jwtSecret,
+            userId: config.userId,
+            minReqIntervalInMs: minReqIntervalInMs});   
 
         const request_1 = requestScope
         .get("/tenants")

@@ -8,8 +8,7 @@ export const tenantsTable = new Map<String, Tenant>();
 let tenantApiClient: AuthorizedTenantClient;
  
 async function updateTenants(){
-    const res = await tenantApiClient.getTenants();
-    const tenants = <Tenant[]>res;
+    const tenants = <Tenant[]> await tenantApiClient.getTenants();
     tenantsTable.clear();
     tenants.forEach(t => {
         if (t.enabled === true) {
@@ -19,18 +18,26 @@ async function updateTenants(){
     });
 }
 
+type TenantsLoaderConfig = {
+    tenantUrl: string;
+    jwtSecret: string;
+    userId: string;
+    minReqIntervalInMs?: number;
+}
+
 export default class TenantsLoader {
     private throttledReloadTenants: (() => Promise<void>) & Cancelable;
 
-    constructor(tenantUrl: string, jwtScret: string, userId: string,  minFetchIntervalInMs: number = 60000){
-        console.debug(`TenantsLoader throttle interval = ${minFetchIntervalInMs}`);
+    constructor(config: TenantsLoaderConfig){
+        console.debug(`TenantsLoader throttle interval = ${config.minReqIntervalInMs}`);
         tenantApiClient = new AuthorizedTenantClient({
-            urlStr: tenantUrl,
-            jwtSecret: jwtScret,
-            userId: userId
+            urlStr: config.tenantUrl,
+            userId: config.userId,
+            jwtSecret: config.jwtSecret
         })
         
-        this.throttledReloadTenants = throttle(updateTenants, minFetchIntervalInMs, {"trailing": false});
+        const throttleInterval = config.minReqIntervalInMs || 600000;
+        this.throttledReloadTenants = throttle(updateTenants, throttleInterval, {"trailing": false});
     }
 
     public reloadTenants(){
