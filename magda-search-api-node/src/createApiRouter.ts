@@ -82,23 +82,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
             return undefined;
         }
 
-        console.log(dateString);
-
         const parsed = chrono.parseDate(dateString, new Date(), {
             forwardDate: forward
         });
 
-        console.log(parsed);
-
         return parsed;
-
-        // We always use "start" because we're not actually trying to parse a date range out
-        // of natural text
-        // if (!parsed || parsed.length === 0 || !parsed[0].start) {
-        //     return undefined;
-        // }
-
-        // return parsed[0].start.date();
     }
 
     function parseBaseQuery(queryStringObj: any): Query {

@@ -28,13 +28,18 @@ function getKeywords(text, maximum = 10) {
             .use(keywords, {
                 maximum
             })
-            .process(text, done);
+            .process(text.substring(0, 20000), done);
 
         function done(err, file) {
             if (err) throw err;
             let keyphrases = [];
             file.data.keyphrases.forEach(function(phrase) {
-                keyphrases.push(phrase.matches[0].nodes.map(toString).join(""));
+                keyphrases.push(
+                    phrase.matches[0].nodes
+                        .map(toString)
+                        .join("")
+                        .replace(/\s+/, " ")
+                );
             });
             resolve(keyphrases);
         }
