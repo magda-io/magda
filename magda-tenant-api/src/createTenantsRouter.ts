@@ -40,7 +40,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             else{
                 res.status(400)
                 res.setHeader("Content-Type", "plain/text")
-                res.send("Incorrect tenant ID or unauthorised operation")
+                res.send("Incorrect tenant ID")
             }
         } catch (e) {
             console.error(e);
