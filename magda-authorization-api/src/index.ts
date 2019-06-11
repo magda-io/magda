@@ -5,7 +5,6 @@ import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import NestedSetModelQueryer from "./NestedSetModelQueryer";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
