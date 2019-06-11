@@ -35,7 +35,7 @@ const argv = addJwtSecretFromEnvVar(
         .option("registryApiUrl", {
             describe: "The access endpoint URL of the Registry API",
             type: "string",
-            default: "http://localhost:6101/v0/"
+            default: "http://localhost:6101/v0"
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
