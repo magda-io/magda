@@ -18,3 +18,4 @@ service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
 featureFlags: {}
+vocabularyApiEndpoints: []

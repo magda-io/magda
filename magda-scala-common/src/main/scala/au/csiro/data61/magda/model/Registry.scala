@@ -451,6 +451,7 @@ object Registry {
       "dataset-quality-rating",
       "dataset-format",
       "publishing",
-      "spatial-coverage")
+      "spatial-coverage",
+      "dataset-access-control")
   }
 }

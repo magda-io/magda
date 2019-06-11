@@ -41,6 +41,7 @@ const serverConfig: {
     featureFlags?: {
         [id: string]: boolean;
     };
+    vocabularyApiEndpoints: string[];
 } = window.magda_server_config || {};
 
 const registryApiUrl =
@@ -72,6 +73,16 @@ const contentApiURL =
 
 const adminApiURL =
     serverConfig.adminApiBaseURL || fallbackApiHost + "api/v0/admin";
+
+const vocabularyApiEndpoints =
+    Array.isArray(serverConfig.vocabularyApiEndpoints) &&
+    serverConfig.vocabularyApiEndpoints.length
+        ? serverConfig.vocabularyApiEndpoints
+        // --- default endpoints
+        : [
+              "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
+              "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
+          ];
 
 export const config = {
     fetchOptions,
@@ -138,7 +149,8 @@ export const config = {
     gapiIds: serverConfig.gapiIds || [],
     featureFlags:
         serverConfig.featureFlags ||
-        (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {})
+        (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
+    vocabularyApiEndpoints
 };
 
 export const defaultConfiguration = {

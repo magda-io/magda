@@ -13,6 +13,7 @@ import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 import com.sksamuel.elastic4s.searches.queries.{ExistsQuery, RangeQuery, Query => QueryDefinition}
 import com.typesafe.config.Config
 import akka.util.ByteString
+import scala.concurrent.duration._
 import spray.json._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -380,24 +381,22 @@ class OpaQueryer(var unknownDataRefs:Seq[String] = Seq("input.object.dataset"))(
         Future.failed(new Error(s"Failed to retrieve access control decision from OPA: ${body.utf8String}"))
       }
     } else {
-      res.entity.dataBytes.map(_.utf8String)
-        .map(_.parseJson)
-        .runFold[Seq[QueryDefinition]](List())((queries: Seq[QueryDefinition], json:JsValue)=>{
-          val ruleQuries = json
-            .asJsObject
-            .fields
-            .get("result")
-            .flatMap(_.asJsObject.fields.get("support"))
-            .flatMap(_.asInstanceOf[JsArray].elements.headOption)
-            .flatMap(_.asJsObject.fields.get("rules"))
-            .toSeq
-            .flatMap(_.asInstanceOf[JsArray].elements)
-            .map(ruleToQueryDef(_))
 
-          val combinedQuery = mergeNonMatchQuries(ruleQuries)
+      res.entity.toStrict(10.seconds).map{ entity =>
+        val json = entity.data.utf8String.parseJson
+        val ruleQuries = json
+          .asJsObject
+          .fields
+          .get("result")
+          .flatMap(_.asJsObject.fields.get("support"))
+          .flatMap(_.asInstanceOf[JsArray].elements.headOption)
+          .flatMap(_.asJsObject.fields.get("rules"))
+          .toSeq
+          .flatMap(_.asInstanceOf[JsArray].elements)
+          .map(ruleToQueryDef(_))
 
-          queries ++ combinedQuery
-      })
+        mergeNonMatchQuries(ruleQuries)
+      }
     }
   }
 

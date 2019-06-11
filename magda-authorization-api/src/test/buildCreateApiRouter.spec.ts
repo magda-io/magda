@@ -10,6 +10,7 @@ import { expect } from "chai";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
 import mockDatabase from "./mockDatabase";
 import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataStore";
+import NestedSetModelQueryer from "../NestedSetModelQueryer";
 import Database from "../Database";
 import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
@@ -44,7 +45,8 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
     function buildExpressApp() {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
-            database: new mockDatabase() as Database
+            database: new mockDatabase() as Database,
+            orgQueryer: {} as NestedSetModelQueryer
         });
 
         const app = express();
@@ -497,6 +499,9 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                             const {
                                 roles,
                                 permissions,
+                                managingOrgUnitIds,
+                                orgUnit,
+                                orgUnitId,
                                 ...bodyUserData
                             } = res.body;
 

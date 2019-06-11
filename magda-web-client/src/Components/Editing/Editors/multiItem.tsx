@@ -46,6 +46,9 @@ export abstract class MultiItemEditor<V> extends React.Component<
     add() {
         const value = this.value();
         let newValue = this.state.newValue;
+        if (Array.isArray(value) && value.indexOf(newValue) !== -1) {
+            return;
+        }
         if (newValue) {
             value.push(newValue);
             newValue = this.props.createNewValue();
