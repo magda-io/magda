@@ -21,8 +21,11 @@ describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallback
 
     async function buildInitDb() {
         // --- rebuilt the schema
+        console.log("runMigrationSql....");
         await runMigrationSql(pool, true);
+        console.log("createTestTableWithTestData....");
         await createTestTableWithTestData();
+        console.log("creating users....");
         // --- t1001 set to branch & t1002 set to branch b
         await pool.query(`INSERT INTO users (id, "displayName", "email", "source", "sourceId", "orgUnitId") VALUES 
             ('00000000-0000-1000-0001-000000000000', 't1001', 't1001@email.com', 'manual', 't1001', '00000000-0000-2000-0002-000000000000'),

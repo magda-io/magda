@@ -53,6 +53,7 @@ export default async function runMigrationSql(
             path: f,
             version: getVersionNumber(path.basename(f))
         }))
+        .filter(f => f.version !== 1.2)
         .sort((a, b) => a.version - b.version);
 
     if (!fileObjects.length)
