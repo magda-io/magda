@@ -10,7 +10,7 @@ import {
     DatasetAccessControlMetaData,
     User
 } from "@magda/typescript-common/dist/authorization-api/model";
-import Database from "./Database";
+import * as pg from "pg";
 
 const INVALID_CHAR_REGEX = /[^a-z_\d\.]/i;
 
@@ -132,7 +132,7 @@ function regoExpToSql(exp: RegoExp, sqlParameters: any[]): string {
 
 async function getWhoAllowDatasetOperation(
     opaUrl: string,
-    db: Database,
+    pool: pg.Pool,
     dataset: DatasetAccessControlMetaData,
     operation: string
 ): Promise<User[]> {
@@ -175,7 +175,6 @@ async function getWhoAllowDatasetOperation(
         .join(" ) OR ( ");
     ruleConditions = ruleConditions ? `WHERE (${ruleConditions})` : "";
 
-    const pool = db.getPool();
     const sql = `
         SELECT users.*
         FROM users
@@ -186,6 +185,7 @@ async function getWhoAllowDatasetOperation(
         LEFT JOIN permission_operations ON permission_operations.permission_id = role_permissions.permission_id
         LEFT JOIN operations ON operations.id = permission_operations.operation_id
         ${ruleConditions} 
+        GROUP BY users.id
     `;
 
     const queryResult = await pool.query(sql, sqlParameters);

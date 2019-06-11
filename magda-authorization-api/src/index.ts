@@ -52,25 +52,13 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
-const orgQueryer = new NestedSetModelQueryer(database.getPool(), "org_units");
-orgQueryer.defaultSelectFieldList = [
-    "id",
-    "name",
-    "description",
-    "create_by",
-    "create_time",
-    "edit_by",
-    "edit_time"
-];
-
 app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
         registryApiUrl: argv.registryApiUrl,
         opaUrl: argv.opaUrl,
-        database,
-        orgQueryer
+        database
     })
 );
 

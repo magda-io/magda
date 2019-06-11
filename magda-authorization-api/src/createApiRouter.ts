@@ -13,9 +13,7 @@ import {
 import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
 import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
-import NestedSetModelQueryer, {
-    NodeNotFoundError
-} from "./NestedSetModelQueryer";
+import { NodeNotFoundError } from "./NestedSetModelQueryer";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import * as bodyParser from "body-parser";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
@@ -26,7 +24,6 @@ export interface ApiRouterOptions {
     database: Database;
     registryApiUrl: string;
     opaUrl: string;
-    orgQueryer: NestedSetModelQueryer;
     jwtSecret: string;
 }
 
@@ -36,7 +33,7 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
-    const orgQueryer = options.orgQueryer;
+    const orgQueryer = database.getOrgQueryer();
 
     const router: express.Router = express.Router();
 
@@ -272,7 +269,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
                 const users = await getWhoAllowDatasetOperation(
                     options.opaUrl,
-                    database,
+                    database.getPool(),
                     dataset,
                     opeartionUri
                 );
