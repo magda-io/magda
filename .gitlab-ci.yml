@@ -267,6 +267,7 @@ buildtest:typescript-apis:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
+    key: $CI_JOB_NAME
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
