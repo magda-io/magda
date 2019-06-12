@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Record } from "src/generated/registry/api";
 
 describe("JsonTransformer", () => {
-    const tenant_id_1 = 1;
+    const tenantId1 = 1;
     describe("organizationJsonToRecord", () => {
         let transformerOptions: JsonTransformerOptions;
 
@@ -29,7 +29,7 @@ describe("JsonTransformer", () => {
             transformerOptions = {
                 sourceId: "test",
                 organizationAspectBuilders,
-                tenantId: tenant_id_1
+                tenantId: tenantId1
             };
         });
 
