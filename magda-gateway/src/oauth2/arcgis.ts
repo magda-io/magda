@@ -42,7 +42,7 @@ export default function arcgis(options: ArcGisOptions) {
         callbackURL: `${loginBaseUrl}/arcgis/return`
     };
 
-    // Expect options.arcgisInstanceBaseUrl to be something like https://beta.portal.data.nsw.gov.au/arcgis
+    // Expect options.arcgisInstanceBaseUrl to be something like https://some.portal.gov.au/arcgis
     if (options.arcgisInstanceBaseUrl) {
         // Overrides 'https://www.arcgis.com/sharing/oauth2/authorize'
         strategyOptions.authorizationURL = `${
