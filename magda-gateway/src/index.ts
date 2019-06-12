@@ -136,6 +136,13 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.ARCGIS_CLIENT_SECRET ||
                 process.env.npm_package_config_arcgisClientSecret
         })
+        .option("arcgisInstanceBaseUrl", {
+            describe: "The instance of ArcGIS infrastructure to use for OAuth.",
+            type: "string",
+            default:
+                process.env.ARCGIS_INSTANCE_BASE_URL ||
+                process.env.npm_package_config_arcgisInstanceBaseUrl
+        })
         .option("aafClientUri", {
             describe: "The aaf client Uri to use for AAF Auth.",
             type: "string",
