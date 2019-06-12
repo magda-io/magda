@@ -182,8 +182,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {get} /v0/auth/users/whoAllowDatasetOpeartion Get authorised users for dataset operation
      * @apiDescription Returns a list users who can perform specified dataset operation
      *
-     * @apiParam {String} datasetId Optional dataset id you specify which dataset you want OPA makes decision on.
-     *  You must either supply an Id of the dataset or supply dataset metadata in request body
+     * @apiParam {String} datasetId Optional dataset id if you want to specify which dataset you want OPA makes decision on.
+     *  You must either supply an Id of the dataset or supply the dataset metadata in the request body
      *
      * @apiParam {String} operationUri  Mandatory The uri of the operation required
      *
