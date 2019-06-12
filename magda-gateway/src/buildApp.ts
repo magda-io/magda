@@ -70,7 +70,7 @@ type Config = {
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
     fetchTenantsMinIntervalInMs?: number;
-    tenantUrl2?: string;
+    tenantUrl?: string;
 };
 
 export var tenantMode: TenantMode = undefined;
