@@ -169,7 +169,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 req.query.printRule &&
                 fullResponse.statusCode === 200
             ) {
-                // --- output humand readable rules for debugging / investigation
+                // --- output human readable rules for debugging / investigation
                 // --- AST is good for a program to process but too long for a human to read
                 // --- query string parameter `printRule` contains the rule full name that you want to output
                 const parser = new OpaCompileResponseParser();

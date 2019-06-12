@@ -179,7 +179,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/users/whoAllowDatasetOpeartion Get authorised users for dataset operation
+     * @api {post} /v0/auth/users/allowed/dataset Get authorised users for dataset operation
      * @apiDescription Returns a list users who can perform specified dataset operation
      *
      * @apiParam {String} datasetId Optional dataset id if you want to specify which dataset you want OPA makes decision on.
@@ -214,8 +214,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get(
-        "/public/users/whoAllowDatasetOpeartion",
+    router.post(
+        "/public/users/allowed/dataset",
         MUST_BE_LOGGED_IN,
         bodyParser.json({ type: "application/json" }),
         NO_CACHE,
@@ -263,15 +263,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         );
                     }
                 }
-                const opeartionUri = req.query.operationUri;
-                if (!opeartionUri) {
-                    throw new GenericError("Missing parameter `opeartionUri`");
+                const operationUri = req.query.operationUri;
+                if (!operationUri) {
+                    throw new GenericError("Missing parameter `operationUri`");
                 }
                 const users = await getWhoAllowDatasetOperation(
                     options.opaUrl,
                     database.getPool(),
                     dataset,
-                    opeartionUri
+                    operationUri
                 );
                 res.send(users);
             } catch (e) {

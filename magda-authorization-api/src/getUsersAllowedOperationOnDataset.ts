@@ -23,34 +23,38 @@ const VALID_REF_PREFIX_LIST: {
     [key: string]: string | ((refString: string) => string);
 } = {
     "input.user.permissions[_]": (ref: string): string => {
-        const sqlIdentiderParts = ref
+        const sqlIdentifierParts = ref
             .replace("input.user.permissions[_]", "permissions")
             .split(".");
         // --- convert camelCase field name to snakecase field name for SQL indentifier
-        sqlIdentiderParts[sqlIdentiderParts.length - 1] = _.snakeCase(
-            sqlIdentiderParts[sqlIdentiderParts.length - 1]
+        sqlIdentifierParts[sqlIdentifierParts.length - 1] = _.snakeCase(
+            sqlIdentifierParts[sqlIdentifierParts.length - 1]
         );
 
-        const sqlIdentider = sqlIdentiderParts.join(".");
-        if (!isValidSqlIdentifier(sqlIdentider)) {
-            throw new Error(`Invalid Sql Identifier ${sqlIdentider} produced.`);
+        const sqlIdentifier = sqlIdentifierParts.join(".");
+        if (!isValidSqlIdentifier(sqlIdentifier)) {
+            throw new Error(
+                `Invalid Sql Identifier ${sqlIdentifier} produced.`
+            );
         }
-        return sqlIdentider;
+        return sqlIdentifier;
     },
     "input.user.permissions[_].operations[_]": (ref: string): string => {
-        const sqlIdentiderParts = ref
+        const sqlIdentifierParts = ref
             .replace("input.user.permissions[_].operations[_]", "operations")
             .split(".");
         // --- convert camelCase field name to snakecase field name for SQL indentifier
-        sqlIdentiderParts[sqlIdentiderParts.length - 1] = _.snakeCase(
-            sqlIdentiderParts[sqlIdentiderParts.length - 1]
+        sqlIdentifierParts[sqlIdentifierParts.length - 1] = _.snakeCase(
+            sqlIdentifierParts[sqlIdentifierParts.length - 1]
         );
 
-        const sqlIdentider = sqlIdentiderParts.join(".");
-        if (!isValidSqlIdentifier(sqlIdentider)) {
-            throw new Error(`Invalid Sql Identifier ${sqlIdentider} produced.`);
+        const sqlIdentifier = sqlIdentifierParts.join(".");
+        if (!isValidSqlIdentifier(sqlIdentifier)) {
+            throw new Error(
+                `Invalid Sql Identifier ${sqlIdentifier} produced.`
+            );
         }
-        return sqlIdentider;
+        return sqlIdentifier;
     },
     "input.user.managingOrgUnitIds[_]": (ref: string): string => {
         if (ref !== "input.user.managingOrgUnitIds[_]") {
@@ -130,7 +134,7 @@ function regoExpToSql(exp: RegoExp, sqlParameters: any[]): string {
     return `${operandParts[0]} ${operatorString} ${operandParts[1]}`;
 }
 
-async function getWhoAllowDatasetOperation(
+async function getUsersAllowedOperationOnDataset(
     opaUrl: string,
     pool: pg.Pool,
     dataset: DatasetAccessControlMetaData,
@@ -196,4 +200,4 @@ async function getWhoAllowDatasetOperation(
     return queryResult.rows;
 }
 
-export default getWhoAllowDatasetOperation;
+export default getUsersAllowedOperationOnDataset;

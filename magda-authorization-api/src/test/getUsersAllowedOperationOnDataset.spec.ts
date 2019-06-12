@@ -3,7 +3,7 @@ import * as pg from "pg";
 import * as _ from "lodash";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import getWhoAllowDatasetOperation from "../getWhoAllowDatasetOperation";
+import getUsersAllowedOperationOnDataset from "../getUsersAllowedOperationOnDataset";
 import getTestDBConfig from "./getTestDBConfig";
 import runMigrationSql, { deleteAllTables } from "./runMigrationSql";
 
@@ -14,7 +14,7 @@ const opaUrl = process.env["OPA_URL"]
     ? process.env["OPA_URL"]
     : "http://localhost:8181/";
 
-describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallbackContext) {
+describe("Test getUsersAllowedOperationOnDataset", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();
@@ -106,7 +106,7 @@ describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallback
         it("Should return both users regardless dataset / orgUnit owner", async () => {
             // --- because, by default, the approver role contains a draft read permission without any constraints
             // --- anyone who has approver role should be returned from APIs
-            const users = await getWhoAllowDatasetOperation(
+            const users = await getUsersAllowedOperationOnDataset(
                 opaUrl,
                 pool,
                 {
@@ -128,12 +128,12 @@ describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallback
             expect(userIds).to.include("00000000-0000-1000-0003-000000000000");
         });
 
-        it("Should not include the user withour approver role", async () => {
+        it("Should not include the user without approver role", async () => {
             // --- remove approver role from t1001
             await pool.query(
                 `DELETE FROM user_roles WHERE user_id = '00000000-0000-1000-0001-000000000000'`
             );
-            const users = await getWhoAllowDatasetOperation(
+            const users = await getUsersAllowedOperationOnDataset(
                 opaUrl,
                 pool,
                 {
@@ -177,7 +177,7 @@ describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallback
             ))`);
 
             // --- assume a dataset is created by t1003 (thus, belong to org unit: `Section C`)
-            const users = await getWhoAllowDatasetOperation(
+            const users = await getUsersAllowedOperationOnDataset(
                 opaUrl,
                 pool,
                 {
@@ -237,7 +237,7 @@ describe("Test getWhoAllowDatasetOperation", function(this: Mocha.ISuiteCallback
                 (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read')
             )`);
 
-            const users = await getWhoAllowDatasetOperation(
+            const users = await getUsersAllowedOperationOnDataset(
                 opaUrl,
                 pool,
                 {
