@@ -19,7 +19,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
-import setupTenantMode from "./setupTenantMode";
+import setupTenantMode, { TenantConfig, TenantMode } from "./setupTenantMode";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -70,11 +70,13 @@ type Config = {
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
     fetchTenantsMinIntervalInMs?: number;
-    tenantUrl?: string;
+    tenantUrl2?: string;
 };
 
+export var tenantMode: TenantMode = undefined;
+
 export default function buildApp(config: Config) {
-    setupTenantMode(config as any);
+    tenantMode = setupTenantMode(config as TenantConfig);
 
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes

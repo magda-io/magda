@@ -6,8 +6,8 @@ import akka.http.scaladsl.server.{Directive1, MissingHeaderRejection, Validation
 import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 
 object TenantDirectives {
-  private val magda_tenant_id_header_in_lower_cases = MAGDA_TENANT_ID_HEADER.toLowerCase()
-  private val magda_tenant_id_header_in_upper_cases = MAGDA_TENANT_ID_HEADER.toUpperCase()
+  private val MAGDA_TENANT_ID_HEADER_IN_LOWER_CASES = MAGDA_TENANT_ID_HEADER.toLowerCase()
+  private val MAGDA_TENANT_ID_HEADER_IN_UPPER_CASES = MAGDA_TENANT_ID_HEADER.toUpperCase()
 
   /***
     * Some libraries may automatically change request header names into lower cases.
@@ -18,8 +18,8 @@ object TenantDirectives {
     extractRequest flatMap {request =>
       val tenantIdToken =   request.headers.find{
         case headers.RawHeader(`MAGDA_TENANT_ID_HEADER`, _) => true
-        case headers.RawHeader(`magda_tenant_id_header_in_lower_cases`, _) => true
-        case headers.RawHeader(`magda_tenant_id_header_in_upper_cases`, _) => true
+        case headers.RawHeader(`MAGDA_TENANT_ID_HEADER_IN_LOWER_CASES`, _) => true
+        case headers.RawHeader(`MAGDA_TENANT_ID_HEADER_IN_UPPER_CASES`, _) => true
         case _ => false
       }
 

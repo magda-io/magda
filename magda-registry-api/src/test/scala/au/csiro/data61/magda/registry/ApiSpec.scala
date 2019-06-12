@@ -63,10 +63,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   }
 
   // Any positive numbers
-  val tenant_1: BigInt = 1
-  val tenant_2: BigInt = 2
-  val domain_name_1: String = "test1"
-  val domain_name_2: String = "test2"
+  val TENANT_1: BigInt = 1
+  val TENANT_2: BigInt = 2
+  val DOMAIN_NAME_1: String = "test1"
+  val DOMAIN_NAME_2: String = "test2"
 
   // Stop Flyway from producing so much spam that Travis terminates the process.
   LoggerFactory.getLogger("org.flywaydb").asInstanceOf[Logger].setLevel(Level.WARN)

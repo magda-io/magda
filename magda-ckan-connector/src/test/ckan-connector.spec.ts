@@ -22,7 +22,7 @@ describe("JsonTransformer", () => {
         nock.cleanAll();
     });
 
-    const tenant_id_1 = 1;
+    const TENANT_ID_1 = 1;
 
     function setupCrawlTest(
         config: JsonConnectorConfig,
@@ -47,7 +47,7 @@ describe("JsonTransformer", () => {
             distributionAspectBuilders,
             organizationAspectBuilders,
             libraries,
-            tenantId: tenant_id_1
+            tenantId: TENANT_ID_1
         });
 
         const registryScope = nock("http://example.com").log(console.log);
@@ -58,7 +58,7 @@ describe("JsonTransformer", () => {
             jwtSecret: "squirrel",
             userId: "1",
             maxRetries: 0,
-            tenantId: tenant_id_1
+            tenantId: TENANT_ID_1
         });
 
         const connector = new JsonConnector({
