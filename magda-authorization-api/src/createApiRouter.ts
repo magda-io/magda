@@ -481,6 +481,67 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {get} /v0/orgunits/root Get root organisation
+     * @apiDescription Gets the root organisation unit (top of the tree).
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
+        handleMaybePromise(
+            res,
+            orgQueryer.getRootNode(),
+            "GET /public/orgunits/root",
+            "Cannot locate the root tree node."
+        );
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/orgunits/root Create root organisation
+     * @apiDescription Creates the root organisation unit (top of the tree).
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *       name: "other-team"
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiSuccessExample {string} 200
+     *     {
+     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *     }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
+        try {
+            const nodeId = await orgQueryer.createRootNode(req.body);
+            res.status(200).json({ nodeId: nodeId });
+        } catch (e) {
+            respondWithError("POST /public/orgunits/root", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
      * @api {get} /public/orgunits/:nodeId Get details for a node
      * @apiDescription Gets the details of the node with this id.
      *
@@ -556,67 +617,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
         } catch (e) {
             respondWithError("PUT /public/orgunits/:nodeId", res, e);
-        }
-    });
-
-    /**
-     * @apiGroup Auth
-     * @api {get} /v0/orgunits/root Get root organisation
-     * @apiDescription Gets the root organisation unit (top of the tree).
-     *
-     * @apiSuccessExample {json} 200
-     *    {
-     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *      name: "other-team"
-     *      description: "The other teams"
-     *    }
-     *
-     * @apiErrorExample {json} 401/404/500
-     *    {
-     *      "isError": true,
-     *      "errorCode": 401, //--- or 404, 500 depends on error type
-     *      "errorMessage": "Not authorized"
-     *    }
-     */
-    router.get("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
-        handleMaybePromise(
-            res,
-            orgQueryer.getRootNode(),
-            "GET /public/orgunits/root",
-            "Cannot locate the root tree node."
-        );
-    });
-
-    /**
-     * @apiGroup Auth
-     * @api {post} /v0/orgunits/root Create root organisation
-     * @apiDescription Creates the root organisation unit (top of the tree).
-     *
-     * @apiParamExample (Body) {json}:
-     *     {
-     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *       name: "other-team"
-     *       description: "The other teams"
-     *     }
-     *
-     * @apiSuccessExample {string} 200
-     *     {
-     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *     }
-     *
-     * @apiErrorExample {json} 401/500
-     *    {
-     *      "isError": true,
-     *      "errorCode": 401, //--- or 500 depends on error type
-     *      "errorMessage": "Not authorized"
-     *    }
-     */
-    router.post("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
-        try {
-            const nodeId = await orgQueryer.createRootNode(req.body);
-            res.status(200).json({ nodeId: nodeId });
-        } catch (e) {
-            respondWithError("POST /public/orgunits/root", res, e);
         }
     });
 
