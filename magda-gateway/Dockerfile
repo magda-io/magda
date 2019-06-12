@@ -1,4 +1,4 @@
-FROM node:10
+FROM mhart/alpine-node:8
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
