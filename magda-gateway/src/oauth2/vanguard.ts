@@ -2,7 +2,7 @@ import { Strategy } from "passport-wsfed-saml2";
 
 import * as express from "express";
 import { Router } from "express";
-import { Authenticator, Profile } from "passport";
+import { Authenticator } from "passport";
 
 import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import createOrGetUserToken from "../createOrGetUserToken";
@@ -42,7 +42,24 @@ export default function vanguard(options: VanguardOptions) {
                 protocol: "wsfed",
                 cert: wsFedCertificate
             },
-            function(profile: Profile, cb: Function) {
+            function(profile: any, cb: Function) {
+                const email =
+                    profile[
+                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+                    ];
+                const displayName =
+                    profile[
+                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+                    ] || email;
+                const id =
+                    profile[
+                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+                    ];
+                profile = Object.assign(profile, {
+                    emails: [{ value: email }],
+                    displayName,
+                    id
+                });
                 createOrGetUserToken(authorizationApi, profile, "vanguard")
                     .then(userId => cb(null, userId))
                     .catch(error => cb(error));
