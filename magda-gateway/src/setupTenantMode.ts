@@ -2,7 +2,7 @@ import TenantsLoader from "./reloadTenants";
 
 export type TenantConfig = {
     tenantUrl?: string;
-    enableMultiTenants: boolean;
+    enableMultiTenants?: boolean;
     magdaAdminPortalName?: string;
     minReqIntervalInMs?: number;
     jwtSecret?: string;

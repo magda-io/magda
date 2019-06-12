@@ -71,6 +71,7 @@ type Config = {
     ckanRedirectionPath?: string;
     fetchTenantsMinIntervalInMs?: number;
     tenantUrl?: string;
+    enableMultiTenants?: boolean;
 };
 
 export var tenantMode: TenantMode = undefined;
