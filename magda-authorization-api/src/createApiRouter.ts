@@ -182,19 +182,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiDescription Returns a list users who can perform specified dataset operation
      *
      * @apiParam {String} datasetId Optional dataset id if you want to specify which dataset you want OPA makes decision on.
-     *  You must either supply an Id of the dataset or supply the dataset metadata in the request body
+     *  You must either supply an Id of the dataset or supply the dataset metadata as other query string parameters accordingly.
      *
      * @apiParam {String} operationUri  Mandatory The uri of the operation required
+     * @apiParam {String} publishingState  Optional Dataset publishingState; Required if `datasetId` not present
+     * @apiParam {String} ownerId  Optional Dataset ownerId; Supply only if `datasetId` not present
+     * @apiParam {String} orgUnitOwnerId  Optional Dataset orgUnitOwnerId; Supply only if `datasetId` not present
+     * @apiParam {String[]} preAuthorisedPermissionIds  Optional Dataset preAuthorisedPermissionIds; Supply only if `datasetId` not present
      *
-     * @apiParamExample {json} Optional dataset metadata request data. Example:
-     * {
-     *      "publishingState": "draft",
-     *      "accessControl": {
-     *          "ownerId": "xxxxx-xxxx-xxxx-xxxx",
-     *          "orgUnitOwnerId": "xxxxx-xxxx-xxxx-xxxx",
-     *          "preAuthorisedPermissionIds": ["xxxxx-xxxx-xxxx-xxxx"]
-     *      }
-     * }
      *
      * @apiSuccessExample {json} 200
      *    [{
