@@ -27,8 +27,6 @@ export default function vanguard(options: VanguardOptions) {
     const wsFedCertificate = options.wsFedCertificate;
     const externalAuthHome = options.externalAuthHome;
 
-    // const loginBaseUrl = `${externalAuthHome}/login`;
-
     if (!wsFedIdpUrl || !wsFedRealm || !wsFedCertificate) {
         return undefined;
     }
