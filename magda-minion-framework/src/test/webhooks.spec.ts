@@ -102,7 +102,7 @@ baseSpec(
                             const registryDomain = "example";
                             const registryUrl = `http://${registryDomain}.com:80`;
                             const registryScope = nock(registryUrl);
-                            const tenantDomain = "tenant"
+                            const tenantDomain = "tenant";
                             const tenantUrl = `http://${tenantDomain}.com:80`;
                             const tenantScope = nock(tenantUrl);
 
@@ -150,7 +150,8 @@ baseSpec(
                                         return match.success
                                             ? Promise.resolve()
                                             : Promise.reject(fakeError);
-                                    })
+                                    }),
+                                tenantId: MAGDA_ADMIN_PORTAL_ID
                             };
 
                             registryScope.get(/\/hooks\/.*/).reply(200, {

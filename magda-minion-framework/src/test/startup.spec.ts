@@ -117,7 +117,8 @@ baseSpec(
                     maxRetries: 0,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(() => Promise.resolve())
+                        .callsFake(() => Promise.resolve()),
+                    tenantId: MAGDA_ADMIN_PORTAL_ID
                 };
 
                 const minionPromise = makePromiseQueryable(minion(options));
@@ -196,7 +197,7 @@ baseSpec(
                         tenantUrl: "",
                         jwtSecret,
                         userId,
-                        tenantId: undefined
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     }),
                     id: id,
                     aspects: aspects,
@@ -206,7 +207,8 @@ baseSpec(
                     concurrency,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(record => Promise.resolve())
+                        .callsFake(record => Promise.resolve()),
+                    tenantId: MAGDA_ADMIN_PORTAL_ID
                 };
 
                 return minion(options)

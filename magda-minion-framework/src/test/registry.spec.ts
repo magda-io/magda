@@ -34,7 +34,14 @@ baseSpec(
     ) => {
         doStartupTest(
             "should register aspects",
-            ({ aspectDefs, registryScope, tenantScope, jwtSecret, userId, hook }) => {
+            ({
+                aspectDefs,
+                registryScope,
+                tenantScope,
+                jwtSecret,
+                userId,
+                hook
+            }) => {
                 aspectDefs.forEach(aspectDef => {
                     registryScope
                         .put(
@@ -57,7 +64,14 @@ baseSpec(
 
         doStartupTest(
             "should register hook if none exists",
-            ({ aspectDefs, registryScope, tenantScope, jwtSecret, userId, hook }) => {
+            ({
+                aspectDefs,
+                registryScope,
+                tenantScope,
+                jwtSecret,
+                userId,
+                hook
+            }) => {
                 registryScope
                     .put(/aspects\/.*/)
                     .times(aspectDefs.length)
@@ -95,7 +109,14 @@ baseSpec(
 
         doStartupTest(
             "should resume hook if one already exists",
-            ({ aspectDefs, registryScope, tenantScope, jwtSecret, userId, hook }) => {
+            ({
+                aspectDefs,
+                registryScope,
+                tenantScope,
+                jwtSecret,
+                userId,
+                hook
+            }) => {
                 registryScope
                     .put(/aspects\/.*/)
                     .times(aspectDefs.length)
@@ -207,7 +228,8 @@ baseSpec(
                         express: expressApp,
                         onRecordFound: record => Promise.resolve(),
                         maxRetries: 0,
-                        concurrency: concurrency
+                        concurrency: concurrency,
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     };
 
                     return minion(options).then(() => {

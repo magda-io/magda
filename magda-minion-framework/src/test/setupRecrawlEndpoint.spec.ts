@@ -51,7 +51,8 @@ baseSpec(
                 concurrency: 1,
                 onRecordFound: (recordFound: Record) => {
                     return Promise.resolve();
-                }
+                },
+                tenantId: MAGDA_ADMIN_PORTAL_ID
             };
 
             setupRecrawlEndpoint(app, options, crawler);
@@ -95,7 +96,8 @@ baseSpec(
                 concurrency: 1,
                 onRecordFound: (recordFound: Record) => {
                     return Promise.resolve();
-                }
+                },
+                tenantId: MAGDA_ADMIN_PORTAL_ID
             };
 
             setupRecrawlEndpoint(app, options, crawler);
@@ -167,7 +169,8 @@ baseSpec(
                             concurrency: 1,
                             onRecordFound: (recordFound: Record) => {
                                 return Promise.resolve();
-                            }
+                            },
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         };
 
                         setupRecrawlEndpoint(app, options, crawler);
