@@ -73,28 +73,34 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   def tenantsIndexGen(tenantIds: List[BigInt]): Gen[(String, List[DataSet], Route)]  =
     Gen.delay {
       Gen.choose(0, 10).flatMap { size =>
-        genIndexForSize(size, tenantIds)
+        genIndexForTenantAndSize(size, tenantIds)
       }
     }
 
-  def genIndexForSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
+  def genIndexForTenantAndSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
+    val size = rawSize % 100
+    val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
+    val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
+      Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
+    )
+    putDataSetsInIndex(dataSets)
+  }
+
+  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
     val size = rawSize % 100
 
     getFromIndexCache(size) match {
-      case (_, None) ⇒
+      case (cacheKey, None) ⇒
         val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
 
-        if (tenantIds.nonEmpty){
-          val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
-            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
-          )
-          putDataSetsInIndex(dataSets)
-        }
-        else {
+        val future = Future {
           val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
           putDataSetsInIndex(dataSets)
         }
 
+        BaseSearchApiSpec.genCache.put(cacheKey, future)
+        logger.debug("Cache miss for {}", cacheKey)
+        future.await(INSERTION_WAIT_TIME)
       case (cacheKey, Some(cachedValue)) ⇒
         logger.debug("Cache hit for {}", cacheKey)
         val value: (String, List[DataSet], Route) = cachedValue.await(INSERTION_WAIT_TIME)
@@ -170,7 +176,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   override def afterEach() {
-//    cleanUpIndexes()
+    cleanUpIndexes()
     super.afterEach()
   }
 
