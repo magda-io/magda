@@ -46,7 +46,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         jwtSecret: secret,
         userId: "1",
         maxRetries: 0,
-        tenantId: undefined
+        tenantId: 1
     });
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };

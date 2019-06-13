@@ -13,29 +13,32 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
-import { MAGDA_ADMIN_PORTAL_ID } from "./TenantConsts";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
     userId: string;
-    tenantId: number;
 }
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
     protected jwt: string;
-    protected tenantId: number;
 
     constructor(options: AuthorizedRegistryOptions) {
-        super(options);
+        if (options.tenantId === undefined) {
+            throw Error("A tenant id must be defined.");
+        }
 
+        if (options.userId === undefined) {
+            throw Error("A user id must be defined.");
+        }
+
+        if (options.jwtSecret === undefined) {
+            throw Error("Some jwt secret must be defined.");
+        }
+
+        super(options);
         this.options = options;
         this.jwt = buildJwt(options.jwtSecret, options.userId);
-        if (options.tenantId === undefined) {
-            this.tenantId = MAGDA_ADMIN_PORTAL_ID;
-        } else {
-            this.tenantId = options.tenantId;
-        }
     }
 
     putAspectDefinition(

@@ -10,13 +10,12 @@ import * as URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
-import { MAGDA_ADMIN_PORTAL_ID } from "./TenantConsts";
 
 export interface RegistryOptions {
     baseUrl: string;
     maxRetries?: number;
     secondsBetweenRetries?: number;
-    tenantId?: number;
+    tenantId: number;
 }
 
 export interface PutResult {
@@ -44,8 +43,14 @@ export default class RegistryClient {
     constructor({
         baseUrl,
         maxRetries = 10,
-        secondsBetweenRetries = 10
+        secondsBetweenRetries = 10,
+        tenantId
     }: RegistryOptions) {
+        if (tenantId === undefined) {
+            throw Error("A tenant id must be defined.");
+        }
+
+        this.tenantId = tenantId;
         const registryApiUrl = baseUrl;
         this.baseUri = new URI(baseUrl);
         this.maxRetries = maxRetries;
@@ -56,8 +61,6 @@ export default class RegistryClient {
         this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
-
-        if (this.tenantId === undefined) this.tenantId = MAGDA_ADMIN_PORTAL_ID;
     }
 
     getRecordUrl(id: string): string {
@@ -151,11 +154,7 @@ export default class RegistryClient {
         limit?: number
     ): Promise<string[] | Error> {
         const operation = () =>
-            this.recordsApi.getPageTokens(
-                this.tenantId,
-                aspect,
-                limit
-            );
+            this.recordsApi.getPageTokens(this.tenantId, aspect, limit);
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
