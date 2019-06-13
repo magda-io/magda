@@ -87,7 +87,7 @@ export default class DatasetPageSuggestForm extends React.Component {
             <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest && (
-                    <div className="dataset-button-container">
+                    <div className="dataset-button-container no-print">
                         <AUbutton
                             className="au-btn--secondary ask-question-button"
                             onClick={this.toggleShowForm}
@@ -96,6 +96,15 @@ export default class DatasetPageSuggestForm extends React.Component {
                         </AUbutton>
                     </div>
                 )}
+                <div className="dataset-button-container no-print">
+                    <AUbutton
+                        className="au-btn--secondary ask-question-button"
+                        onClick={() => window.print()}
+                    >
+                        Print this page
+                    </AUbutton>
+                </div>
+
                 <React.Fragment>
                     <Modal
                         isOpen={this.state.showSuggest}

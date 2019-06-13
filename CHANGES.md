@@ -31,6 +31,7 @@ Cataloging:
 
 UI:
 
+-   Made dataset page printer friendly
 -   Display search box placeholder text at a lower opacity while the field is in focus.
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
