@@ -15,10 +15,9 @@ import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import * as bodyParser from "body-parser";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import getWhoAllowDatasetOperation from "./getWhoAllowDatasetOperation";
+import getUsersAllowedOperationOnDataset from "./getUsersAllowedOperationOnDataset";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -214,10 +213,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.post(
+    router.get(
         "/public/users/allowed/dataset",
         MUST_BE_LOGGED_IN,
-        bodyParser.json({ type: "application/json" }),
         NO_CACHE,
         async function(req, res) {
             try {
@@ -253,9 +251,20 @@ export default function createApiRouter(options: ApiRouterOptions) {
                                 : {}
                     };
                 } else {
-                    dataset = req.body;
+                    dataset = {
+                        publishingState: req.query.publishingState,
+                        accessControl: {
+                            ownerId: req.query.ownerId,
+                            orgUnitOwnerId: req.query.orgUnitOwnerId,
+                            preAuthorisedPermissionIds: Array.isArray(
+                                req.query.preAuthorisedPermissionIds
+                            )
+                                ? req.query.preAuthorisedPermissionIds
+                                : undefined
+                        }
+                    };
                     if (
-                        typeof dataset !== "object" ||
+                        typeof dataset.publishingState !== "string" ||
                         !dataset.publishingState
                     ) {
                         throw new GenericError(
@@ -267,7 +276,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 if (!operationUri) {
                     throw new GenericError("Missing parameter `operationUri`");
                 }
-                const users = await getWhoAllowDatasetOperation(
+                const users = await getUsersAllowedOperationOnDataset(
                     options.opaUrl,
                     database.getPool(),
                     dataset,
