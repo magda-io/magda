@@ -94,7 +94,8 @@ baseSpec(
                 async,
                 express: expressApp,
                 concurrency: concurrency,
-                onRecordFound: onRecordFound.bind(context)
+                onRecordFound: onRecordFound.bind(context),
+                tenantId: tenantId
             };
 
             registryScope

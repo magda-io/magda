@@ -18,5 +18,5 @@ export default class MinionOptions {
     express?: () => express.Express;
     maxRetries?: number;
     concurrency?: number;
-    tenantId?: number;
+    tenantId: number;
 }
