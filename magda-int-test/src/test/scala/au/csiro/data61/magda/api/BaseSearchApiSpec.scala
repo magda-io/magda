@@ -79,43 +79,24 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
   def genIndexForTenantAndSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
     val size = rawSize % 100
+    // We are not using cached indexes anymore.  inputCache stays here simply to avoid
+    // too many changes in the interfaces.
     val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
-    val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
+    val dataSets = tenantIds.flatMap( tenantId =>
       Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
     )
+    inputCache.clear()
     putDataSetsInIndex(dataSets)
   }
 
   def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
     val size = rawSize % 100
-
-    getFromIndexCache(size) match {
-      case (cacheKey, None) ⇒
-        val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
-
-        val future = Future {
-          val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
-          putDataSetsInIndex(dataSets)
-        }
-
-        BaseSearchApiSpec.genCache.put(cacheKey, future)
-        logger.debug("Cache miss for {}", cacheKey)
-        future.await(INSERTION_WAIT_TIME)
-      case (cacheKey, Some(cachedValue)) ⇒
-        logger.debug("Cache hit for {}", cacheKey)
-        val value: (String, List[DataSet], Route) = cachedValue.await(INSERTION_WAIT_TIME)
-        value
-    }
-  }
-
-  def getFromIndexCache(size: Int): (Int, Option[Future[(String, List[DataSet], Route)]]) = {
-    //    val cacheKey = if (size < 20) size
-    //    else if (size < 50) size - size % 3
-    //    else if (size < 100) size - size % 4
-    //    else size - size % 25
-    val cacheKey = size
-    logger.debug(cacheKey.toString)
-    (cacheKey, Option(BaseSearchApiSpec.genCache.get(cacheKey)))
+    // We are not using cached indexes anymore.  inputCache stays here simply to avoid
+    // too many changes in the interfaces.
+    val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
+    val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
+    inputCache.clear()
+    putDataSetsInIndex(dataSets)
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]) = {
@@ -179,11 +160,8 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     cleanUpIndexes()
     super.afterEach()
   }
-
 }
 
 object BaseSearchApiSpec {
-
-  val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
 
 }
