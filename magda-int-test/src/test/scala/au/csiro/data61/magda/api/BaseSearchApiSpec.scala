@@ -26,17 +26,14 @@ import scala.concurrent.duration.DurationInt
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
   val INSERTION_WAIT_TIME = 500 seconds
 
-  val cleanUpQueue = new ConcurrentLinkedQueue[String]()
+//  val cleanUpQueue = new ConcurrentLinkedQueue[String]()
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
-    case (indexName, dataSets, route) ⇒
+    case (_, dataSets, _) ⇒
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
         // Have this on warn level so it keeps travis entertained in long shrinks.
         logger.error("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
-
-        val result = putDataSetsInIndex(shrunkDataSets)
-        cleanUpQueue.add(result._1)
-        result
+        putDataSetsInIndex(shrunkDataSets)
       })
   }
 
@@ -45,7 +42,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   implicit def textQueryShrinker(implicit s: Shrink[String], s1: Shrink[Query]): Shrink[(String, Query)] = Shrink[(String, Query)] {
-    case (queryString, queryObj) ⇒
+    case (_, queryObj) ⇒
       Shrink.shrink(queryObj).map { shrunkQuery ⇒
         (queryToText(shrunkQuery), shrunkQuery)
       }
@@ -144,20 +141,8 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
-  def cleanUpIndexes() = {
-    blockUntilNotRed()
-    cleanUpQueue.iterator().forEachRemaining(
-      new Consumer[String] {
-        override def accept(indexName: String) = {
-          logger.debug(s"Deleting index $indexName")
-          client.execute(ElasticDsl.deleteIndex(indexName)).await(INSERTION_WAIT_TIME)
-          cleanUpQueue.remove()
-        }
-      })
-  }
 
   override def afterEach() {
-    cleanUpIndexes()
     super.afterEach()
   }
 }

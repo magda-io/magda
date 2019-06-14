@@ -57,7 +57,7 @@ registry-typescript-api:
       - "magda-typescript-common/src/generated"
     expire_in: 30 days
 
-buildtest:search-with-index-cache-group-1:
+buildtest:search-group-1:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -111,7 +111,7 @@ buildtest:search-with-index-cache-group-1:
       - "*/target"
     expire_in: 30 days
 
-buildtest:search-with-index-cache-group-2:
+buildtest:search-group-2:
     stage: buildtest
     image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
     retry: 2
@@ -165,7 +165,7 @@ buildtest:search-with-index-cache-group-2:
             - "*/target"
         expire_in: 30 days
 
-buildtest:search-with-index-cache-group-3:
+buildtest:search-group-3:
     stage: buildtest
     image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
     retry: 2
@@ -219,7 +219,7 @@ buildtest:search-with-index-cache-group-3:
             - "*/target"
         expire_in: 30 days
 
-buildtest:search-no-index-cache:
+buildtest:other-int-tests:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -271,7 +271,7 @@ buildtest:search-no-index-cache:
     - heavy
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.opa.*Spec au.csiro.data61.magda.spatial.*Spec"
   artifacts:
     paths:
       - "target"
@@ -424,10 +424,10 @@ dockerize:scala:
     - registry-typescript-api
     - builders-and-yarn
     - buildtest:registry
-    - buildtest:search-no-index-cache
-    - buildtest:search-with-index-cache-group-1
-    - buildtest:search-with-index-cache-group-2
-    - buildtest:search-with-index-cache-group-3
+    - buildtest:other-int-tests
+    - buildtest:search-group-1
+    - buildtest:search-group-2
+    - buildtest:search-group-3
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
