@@ -27,6 +27,7 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
               }
             )
         }
+        deleteAllIndexes()
       }
     }
   }

@@ -61,24 +61,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       false
   }
 
-  def setupES(): Unit ={
-    logger.debug("******** calling docker-compose up *********")
-    sys.process.Process(Seq("docker-compose","up", "-d"), new java.io.File("./magda-elastic-search")).!!
-    blockUntil("Waiting for ES")(() => esIsReady())
-  }
-
-  def tearDownES(): Unit ={
-    logger.debug("-------------- calling docker-compose down ------------")
-    sys.process.Process(Seq("docker-compose","down"), new java.io.File("./magda-elastic-search")).!!
-    logger.debug("-------------- docker-compose down completed ------------")
-  }
-
   override def client(): ElasticClient = clientProvider.getClient().await
 
-  override def beforeEach() {
-    tearDownES()
+  override def beforeAll() {
     System.gc()
-    setupES()
 
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
       deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
@@ -102,7 +88,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def afterAll() {
-    tearDownES()
     System.gc()
   }
 

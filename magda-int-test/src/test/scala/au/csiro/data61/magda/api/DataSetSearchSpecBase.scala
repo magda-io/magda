@@ -30,6 +30,7 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
           }
         }
     }
+    deleteAllIndexes()
   }
 
   def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {

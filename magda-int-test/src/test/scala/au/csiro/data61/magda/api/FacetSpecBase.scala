@@ -39,6 +39,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
         e.printStackTrace()
         throw e
     }
+    deleteAllIndexes()
   }
 
 
@@ -54,6 +55,8 @@ trait FacetSpecBase extends BaseSearchApiSpec {
           inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
         }
     }
+
+    deleteAllIndexes()
   }
 
   def checkFacetsWithQuery(thisTextQueryGen: List[DataSet] => Gen[(String, Query)] = dataSets => textQueryGen(queryGen(dataSets)), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.choose(0, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
@@ -132,6 +135,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
+        deleteAllIndexes()
       }
 
       describe("with query") {
@@ -153,6 +157,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
+          deleteAllIndexes()
         }
 
         it("matched facets should come above unmatched") {
@@ -165,6 +170,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               facet.options should equal(matched ++ unmatched)
             }
           }
+          deleteAllIndexes()
         }
 
         it("with unmatched facet options") {
@@ -186,6 +192,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
+          deleteAllIndexes()
         }
       }
 
@@ -216,6 +223,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
+        deleteAllIndexes()
       }
     }
     }
@@ -242,6 +250,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
+        deleteAllIndexes()
       }
 
       describe("with query") {
@@ -269,6 +278,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
+          deleteAllIndexes()
         }
 
         it("for unmatched facet options") {
@@ -295,6 +305,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
+          deleteAllIndexes()
         }
       }
     }

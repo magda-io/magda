@@ -15,5 +15,6 @@ trait DataSetFilteringSpecBase extends DataSetSearchSpecBase {
             }
           }
       }
+    deleteAllIndexes()
     }
 }

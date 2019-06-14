@@ -61,6 +61,15 @@ class HttpFetcherImpl(baseUrl: URL)(implicit val system: ActorSystem,
       case (response, _) => response.get
     }
   }
+
+  def delete[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(implicit m: ToEntityMarshaller[T]): Future[HttpResponse] = {
+    val url = s"${baseUrl.getPath}${path}"
+    system.log.debug("Making DELETE request to {}{} with {}", baseUrl.getHost, url, payload)
+    val request = RequestBuilding.Delete(url, payload).withHeaders(scala.collection.immutable.Seq.concat(headers))
+    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
+      case (response, _) => response.get
+    }
+  }
 }
 
 object HttpFetcher {

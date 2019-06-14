@@ -195,6 +195,8 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
             }
           }
       }
+
+      deleteAllIndexes()
     }
   }
 
