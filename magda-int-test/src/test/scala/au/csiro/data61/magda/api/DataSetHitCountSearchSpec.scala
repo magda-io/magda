@@ -26,6 +26,7 @@ class DataSetHitCountSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldEqual 0
             }
         }
+        deleteAllIndexes()
       }
     }
   }

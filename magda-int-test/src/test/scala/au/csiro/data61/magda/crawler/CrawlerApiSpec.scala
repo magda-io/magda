@@ -79,6 +79,8 @@ class CrawlerApiSpec extends BaseApiSpec with Protocols with ResponseDatasetAllo
         indexNames.foreach { idxName =>
           deleteIndex(idxName)
         }
+
+      deleteAllIndexes()
     }
 
     def doTest(indices: Indices, indexNames: List[String], source: (List[DataSet], List[DataSet]), firstIndex: Boolean) = {

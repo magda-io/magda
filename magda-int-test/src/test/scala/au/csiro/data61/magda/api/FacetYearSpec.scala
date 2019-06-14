@@ -16,6 +16,8 @@ class FacetYearSpec extends FacetSpecBase {
       checkFacetsNoQuery() { (dataSets, facetSize) =>
         checkDataSetResult(dataSets, responseAs[SearchResult])
       }
+
+      deleteAllIndexes()
     }
 
     it("with a query") {
@@ -32,6 +34,8 @@ class FacetYearSpec extends FacetSpecBase {
           checkDataSetResult(filteredDataSets, result)
         }
       }
+
+      deleteAllIndexes()
     }
 
     def checkDataSetResult(dataSets: List[DataSet], result: SearchResult) = {

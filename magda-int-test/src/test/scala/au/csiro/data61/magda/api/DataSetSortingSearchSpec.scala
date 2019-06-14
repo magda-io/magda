@@ -28,6 +28,8 @@ class DataSetSortingSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldEqual 0
             }
         }
+
+        deleteAllIndexes()
       }
     }
   }

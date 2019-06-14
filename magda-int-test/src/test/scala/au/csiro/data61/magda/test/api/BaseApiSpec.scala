@@ -161,6 +161,14 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       case _ => DefaultIndices.getIndex(config, index)
     }
   }
+
+  def deleteAllIndexes(): Unit ={
+    import au.csiro.data61.magda.client.HttpFetcher
+    import java.net.URL
+    HttpFetcher(new URL("http://localhost:9200")).delete("/publisher-*", "")
+    HttpFetcher(new URL("http://localhost:9200")).delete("/dataset-*", "")
+    HttpFetcher(new URL("http://localhost:9200")).delete("/format-*", "")
+  }
 }
 
 object BaseApiSpec {

@@ -42,6 +42,8 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
             }
           }
       }
+
+      deleteAllIndexes()
     }
   }
 }

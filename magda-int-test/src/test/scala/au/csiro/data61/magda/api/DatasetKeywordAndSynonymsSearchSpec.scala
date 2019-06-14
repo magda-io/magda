@@ -66,6 +66,7 @@ class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
           this.deleteIndex(indexName)
         }
 
+        deleteAllIndexes()
       }
     }
 }

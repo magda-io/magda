@@ -60,6 +60,8 @@ class FacetPublisherSpec extends FacetSpecBase {
               e.printStackTrace
               throw e
           }
+
+          deleteAllIndexes()
         }
       }
     }

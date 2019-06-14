@@ -133,6 +133,8 @@ trait WebhookSpecBase extends BaseApiSpec with RegistryConverters with ModelProt
         deleteIndex(idxName)
       }
     }
+
+    deleteAllIndexes()
   }
 
   def filterDate(input: Option[ApiDate]): Option[ApiDate] = input.flatMap {

@@ -34,6 +34,8 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
           }
         }
       }
+
+      deleteAllIndexes()
     }
 
     it("should resolve valid regions") {
@@ -92,6 +94,8 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
           response.dataSets shouldBe empty
         }
       }
+
+      deleteAllIndexes()
     }
   }
 }

@@ -73,6 +73,8 @@ class WebhookDeleteDatasetsSpec extends WebhookSpecBase {
             deleteIndex(idxName)
           }
       }
+
+      deleteAllIndexes()
     }
   }
 }

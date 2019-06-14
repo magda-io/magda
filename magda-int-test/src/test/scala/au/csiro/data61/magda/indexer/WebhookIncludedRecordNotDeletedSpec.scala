@@ -71,6 +71,8 @@ class WebhookIncludedRecordNotDeletedSpec extends WebhookSpecBase {
             deleteIndex(idxName)
           }
       }
+
+      deleteAllIndexes()
     }
   }
 }

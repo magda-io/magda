@@ -26,6 +26,8 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
         preConversion should equal(postConversion)
       }
     }
+
+    deleteAllIndexes()
   }
 
   it("should return all results") {
@@ -45,5 +47,6 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
           response.hitCount shouldEqual 0
         }
     }
+    deleteAllIndexes()
   }
 }

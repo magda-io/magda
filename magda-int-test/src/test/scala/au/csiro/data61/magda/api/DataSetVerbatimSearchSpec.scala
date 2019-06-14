@@ -85,6 +85,8 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
             }
           }
       }
+
+      deleteAllIndexes()
     }
   }
 }

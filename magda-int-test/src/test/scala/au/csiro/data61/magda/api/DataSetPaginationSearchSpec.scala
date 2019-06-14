@@ -37,6 +37,8 @@ class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
             }
           }
       }
+
+      deleteAllIndexes()
     }
   }
 }

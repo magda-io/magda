@@ -84,6 +84,8 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
+
+    deleteAllIndexes()
   }
 
   it("for a region in query text should boost results from that region by acronym") {
@@ -167,6 +169,8 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
+
+    deleteAllIndexes()
   }
 
   it("for a region in query text should boost results from that region in Alfredton") {
@@ -244,6 +248,8 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
+
+    deleteAllIndexes()
   }
 
 }

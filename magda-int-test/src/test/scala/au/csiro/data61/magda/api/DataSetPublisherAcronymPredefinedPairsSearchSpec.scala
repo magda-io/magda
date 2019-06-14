@@ -70,6 +70,8 @@ class DataSetPublisherAcronymPredefinedPairsSearchSpec extends DataSetSearchSpec
         } finally {
           this.deleteIndex(indexName)
         }
+
+        deleteAllIndexes()
       }
     }
 }
