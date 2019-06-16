@@ -12,7 +12,7 @@ import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.MockServer
-import au.csiro.data61.magda.test.util.{Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
+import au.csiro.data61.magda.test.util.{ContinuousIntegration, Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
@@ -25,7 +25,6 @@ import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-
 import au.csiro.data61.magda.client.HttpFetcher
 import java.net.URL
 
@@ -85,9 +84,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def beforeEach(): Unit = {
     println(s"Testing one of $suiteName: $testNames")
-    HttpFetcher(new URL("http://localhost:9200/dataset*")).delete("", "").await()
-    HttpFetcher(new URL("http://localhost:9200/format*")).delete("", "").await()
-    HttpFetcher(new URL("http://localhost:9200/publisher*")).delete("", "")await()
+    val hostname = if (ContinuousIntegration.isCi) "docker" else "localhost"
+    HttpFetcher(new URL(s"http://$hostname:9200/dataset*")).delete("", "").await()
+    HttpFetcher(new URL(s"http://$hostname:9200/format*")).delete("", "").await()
+    HttpFetcher(new URL(s"http://$hostname:9200/publisher*")).delete("", "")await()
   }
 
   override def afterAll() {
