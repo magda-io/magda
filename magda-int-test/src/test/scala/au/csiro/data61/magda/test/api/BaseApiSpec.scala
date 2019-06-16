@@ -44,8 +44,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   val clientProvider = new DefaultClientProvider
 
-  val tenant1: BigInt = BigInt(1)
-  val tenant2: BigInt = BigInt(2)
+  val tenant1: BigInt = 1
+  val tenant2: BigInt = 2
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
@@ -83,11 +83,15 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def beforeEach(): Unit = {
+    val esUrlStr = config.getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
     println(s"Testing one of $suiteName: $testNames")
-    val hostname = if (ContinuousIntegration.isCi) "docker" else "localhost"
-    HttpFetcher(new URL(s"http://$hostname:9200/dataset*")).delete("", "").await()
-    HttpFetcher(new URL(s"http://$hostname:9200/format*")).delete("", "").await()
-    HttpFetcher(new URL(s"http://$hostname:9200/publisher*")).delete("", "")await()
+    println(s"*** ES at $esUrlStr")
+
+    blockUntilNotRed()
+    HttpFetcher(new URL(s"$esUrlStr/dataset*")).delete("", "").await()
+    HttpFetcher(new URL(s"$esUrlStr/format*")).delete("", "").await()
+    HttpFetcher(new URL(s"$esUrlStr/publisher*")).delete("", "")await()
+    blockUntilNotRed()
   }
 
   override def afterAll() {
