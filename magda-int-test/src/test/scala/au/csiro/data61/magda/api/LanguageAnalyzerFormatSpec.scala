@@ -23,7 +23,7 @@ class LanguageAnalyzerFormatSpec extends LanguageAnalyzerSpecBase {
         }
       }
 
-      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
         result.hitCount shouldBe 0

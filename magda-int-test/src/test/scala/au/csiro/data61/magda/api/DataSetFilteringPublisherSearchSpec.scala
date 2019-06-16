@@ -25,6 +25,7 @@ class DataSetFilteringPublisherSearchSpec extends DataSetFilteringSpecBase {
       }
 
       doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
+        assert(query != Query())
         whenever(query != Query() && query.publishers.filter(_.isDefined).forall(!_.get.contains("  "))) {
           val queryPublishers = query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))
           withClue(s"queryPublishers $queryPublishers and dataSet publisher ${dataSet.publisher.flatMap(_.name)}") {
@@ -51,7 +52,7 @@ class DataSetFilteringPublisherSearchSpec extends DataSetFilteringSpecBase {
       val pubQueryGen = Gen.const(Query(publishers = Set(Unspecified())))
 
       doUnspecifiedTest(pubQueryGen) { response =>
-        whenever(!response.dataSets.isEmpty) {
+        whenever(response.dataSets.nonEmpty) {
           response.dataSets.foreach { dataSet =>
             val dataSetPublisher = dataSet.publisher.flatMap(_.name)
             withClue(s"dataSetPublisher $dataSetPublisher") {

@@ -23,7 +23,7 @@ class DataSetPublisherAcronymPredefinedPairsSearchSpec extends DataSetSearchSpec
         val cache = scala.collection.mutable.HashMap.empty[String, List[_]]
         val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
         val publisherPairs = pairs.map {
-          case (fullName, acronym) =>
+          case (_, _) =>
             val gen = for {
               pair <- Gen.oneOf(pairs)
               randomCaseFullName <- Generators.randomCaseGen(pair._1)
@@ -44,7 +44,6 @@ class DataSetPublisherAcronymPredefinedPairsSearchSpec extends DataSetSearchSpec
         val allDatasets = randomDatasets ++ publisherDatasets
 
         val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
-        val indices = FakeIndices(indexName)
 
         try {
           blockUntilExactCount(allDatasets.size, indexName)
@@ -61,7 +60,7 @@ class DataSetPublisherAcronymPredefinedPairsSearchSpec extends DataSetSearchSpec
                   response.dataSets.exists(_.identifier == datasetWithPublisher.identifier) shouldBe true
                 }
               }
-              Get(s"""/v0/datasets?query=$randomCaseAcronym&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              Get(s"""/v0/datasets?query=$randomCaseAcronym&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
                 status shouldBe OK
                 val response = responseAs[SearchResult]
                 response.hitCount shouldBe 0
@@ -70,8 +69,6 @@ class DataSetPublisherAcronymPredefinedPairsSearchSpec extends DataSetSearchSpec
         } finally {
           this.deleteIndex(indexName)
         }
-
-        deleteAllIndexes()
       }
     }
 }

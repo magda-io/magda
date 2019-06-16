@@ -61,7 +61,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -75,7 +75,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -84,8 +84,6 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
-
-    deleteAllIndexes()
   }
 
   it("for a region in query text should boost results from that region by acronym") {
@@ -143,7 +141,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -160,7 +158,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -169,8 +167,6 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
-
-    deleteAllIndexes()
   }
 
   it("for a region in query text should boost results from that region in Alfredton") {
@@ -226,7 +222,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -240,7 +236,7 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
         response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 0
@@ -248,8 +244,6 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
     } finally {
       this.deleteIndex(indexName)
     }
-
-    deleteAllIndexes()
   }
 
 }

@@ -16,8 +16,6 @@ class FacetYearSpec extends FacetSpecBase {
       checkFacetsNoQuery() { (dataSets, facetSize) =>
         checkDataSetResult(dataSets, responseAs[SearchResult])
       }
-
-      deleteAllIndexes()
     }
 
     it("with a query") {
@@ -34,8 +32,6 @@ class FacetYearSpec extends FacetSpecBase {
           checkDataSetResult(filteredDataSets, result)
         }
       }
-
-      deleteAllIndexes()
     }
 
     def checkDataSetResult(dataSets: List[DataSet], result: SearchResult) = {
@@ -43,12 +39,12 @@ class FacetYearSpec extends FacetSpecBase {
         case Nil =>
           result.temporal.flatMap(_.end) shouldEqual None
           result.temporal.flatMap(_.start) shouldEqual None
-        case dataSets =>
-          val expectedMax = dataSets.map(dataSet => dataSet.temporal.flatMap(_.end).flatMap(_.date)).flatten match {
+        case theDataSets =>
+          val expectedMax = theDataSets.flatMap(dataSet => dataSet.temporal.flatMap(_.end).flatMap(_.date)) match {
             case Seq() => None
             case dates => Some(dates.max)
           }
-          val expectedMin = dataSets.map(dataSet => dataSet.temporal.flatMap(_.start).flatMap(_.date)).flatten match {
+          val expectedMin = theDataSets.flatMap(dataSet => dataSet.temporal.flatMap(_.start).flatMap(_.date)) match {
             case Seq() => None
             case dates => Some(dates.min)
           }

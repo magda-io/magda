@@ -9,7 +9,7 @@ import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.Gen
 
 
-class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
+class DataSetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
 
   describe("searching for a dataset should return that datasets contains the keyword & it's synonyms") {
       it("for synonyms group 300032733 `agile`, `nimble`, `quick` & `spry`") {
@@ -21,7 +21,7 @@ class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
         val randomDatasets = Gen.listOfN(20, Generators.dataSetGen(cache)).retryUntil(_ => true).sample.get
 
         val synonymTestData = synonyms.map {
-          case searchKeyword =>
+          searchKeyword =>
             val gen = for {
               synonym <- Gen.oneOf(synonyms.filter(_ !== searchKeyword))
               dataset <- Generators.dataSetGen(scala.collection.mutable.HashMap.empty)
@@ -39,13 +39,12 @@ class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
         val allDatasets = randomDatasets ++ synonymDataset
 
         val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
-        val indices = new FakeIndices(indexName)
 
         try {
           blockUntilExactCount(allDatasets.size, indexName)
 
           forAll(searchKeywordGen) {
-            case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
+            case GenResult(searchKeyword, _, datasetWithSynonym) =>
               Get(s"""/v0/datasets?query=$searchKeyword&limit=${allDatasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val response = responseAs[SearchResult]
@@ -56,7 +55,7 @@ class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
                   response.dataSets.exists(_.identifier == datasetWithSynonym.identifier) shouldBe true
                 }
               }
-              Get(s"""/v0/datasets?query=$searchKeyword&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+              Get(s"""/v0/datasets?query=$searchKeyword&limit=${allDatasets.size}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
                 status shouldBe OK
                 val response = responseAs[SearchResult]
                 response.hitCount shouldBe 0
@@ -65,8 +64,6 @@ class DatasetKeywordAndSynonymsSearchSpec extends DataSetSearchSpecBase {
         } finally {
           this.deleteIndex(indexName)
         }
-
-        deleteAllIndexes()
       }
     }
 }

@@ -15,7 +15,7 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
 
   describe("quotes") {
     it("should be able to be found verbatim somewhere in a dataset") {
-      implicit val stringShrink: Shrink[String] = Shrink { string =>
+      implicit val stringShrink: Shrink[String] = Shrink { _ =>
         Stream.empty
       }
 
@@ -23,8 +23,15 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
         Stream.empty
       }
 
+      def validateQuote(quote: String): Boolean = {
+        quote.forall(_.toInt >= 32) &&
+          !quote.toLowerCase.contains("or") &&
+          !quote.toLowerCase.contains("and") &&
+          quote.exists(_.isLetterOrDigit)
+      }
+
       val quoteGen = for {
-        (_, dataSets, routes) <- indexGen.suchThat(!_._2.filter(_.description.isDefined).isEmpty)
+        (_, dataSets, routes) <- indexGen.suchThat(_._2.exists(_.description.isDefined))
         dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
         dataSet <- Gen.oneOf(dataSetsWithDesc)
         description = dataSet.description.get
@@ -32,61 +39,60 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
         start <- Gen.choose(0, Math.max(descWords.length - 1, 0))
         end <- Gen.choose(start + 1, descWords.length)
         quoteWords = descWords.slice(start, end)
-        quote <- randomCaseGen(quoteWords.mkString(" ").trim)
+        quote <- randomCaseGen(quoteWords.mkString(" ").trim) if validateQuote(quote)
         reverseOrderWords = quoteWords.reverse
         reverseOrderQuote <- randomCaseGen(reverseOrderWords.mkString(" ").trim)
       } yield (dataSetsWithDesc, routes, quote, reverseOrderQuote, dataSet)
 
       forAll(quoteGen) {
         case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
-          whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
+          assert(validateQuote(quote))
+          assert(dataSets.nonEmpty)
 
-              response.strategy.get should equal(MatchAll)
-              response.dataSets.isEmpty should be(false)
+          Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
 
-              response.dataSets.exists(_.identifier == sourceDataSet.identifier)
+            response.strategy.get should equal(MatchAll)
+            response.dataSets.isEmpty should be(false)
 
+            response.dataSets.exists(_.identifier == sourceDataSet.identifier) should be(true)
+
+            response.dataSets.foreach { dataSet =>
+              withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
+                  MagdaMatchers.extractAlphaNum(quote)) should be(true)
+              }
+            }
+          }
+
+          Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            response.dataSets.isEmpty should be(true)
+          }
+
+          // Just to make sure we're matching on the quote in order, run it backwards.
+          Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+
+            if (response.strategy.get == MatchAll) {
               response.dataSets.foreach { dataSet =>
-                withClue(s"dataSet term ${quote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
+                withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
                   MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
-                    MagdaMatchers.extractAlphaNum(quote)) should be(true)
+                    MagdaMatchers.extractAlphaNum(reverseOrderQuote)) should be(true)
                 }
               }
             }
+          }
 
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-              response.dataSets.isEmpty should be(true)
-            }
-
-            // Just to make sure we're matching on the quote in order, run it backwards.
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-
-              if (response.strategy.get == MatchAll) {
-                response.dataSets.foreach { dataSet =>
-                  withClue(s"dataSet term ${reverseOrderQuote.toLowerCase} and dataSet ${dataSet.normalToString.toLowerCase}") {
-                    MagdaMatchers.extractAlphaNum(dataSet.normalToString).contains(
-                      MagdaMatchers.extractAlphaNum(reverseOrderQuote)) should be(true)
-                  }
-                }
-              }
-            }
-
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+          Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               response.hitCount shouldBe 0
             }
-          }
       }
-
-      deleteAllIndexes()
     }
   }
 }

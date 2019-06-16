@@ -1,8 +1,5 @@
 package au.csiro.data61.magda.api
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
-import java.util.function.Consumer
-
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
@@ -14,19 +11,15 @@ import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
 import au.csiro.data61.magda.test.util.Generators
-import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.scalacheck.{Gen, Shrink}
 
 import scala.collection.mutable
-import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
-  val INSERTION_WAIT_TIME = 500 seconds
-
-//  val cleanUpQueue = new ConcurrentLinkedQueue[String]()
+  val INSERTION_WAIT_TIME: FiniteDuration = 500 seconds
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
     case (_, dataSets, _) ⇒
@@ -96,7 +89,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     putDataSetsInIndex(dataSets)
   }
 
-  def putDataSetsInIndex(dataSets: List[DataSet]) = {
+  def putDataSetsInIndex(dataSets: List[DataSet]): (String, List[DataSet], Route) = {
 
     blockUntilNotRed()
 
@@ -134,17 +127,11 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
       refresh(idxName)
     }
 
-    blockUntilExactCount(dataSets.size, indexNames(0))
+    blockUntilExactCount(dataSets.size, indexNames.head)
 
-
-    (indexNames(0), dataSets, api.routes)
+    (indexNames.head, dataSets, api.routes)
   }
-
-  def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
-
-  override def afterEach() {
-    super.afterEach()
-  }
+  def encodeForUrl(query: String): String = java.net.URLEncoder.encode(query, "UTF-8")
 }
 
 object BaseSearchApiSpec {

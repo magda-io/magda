@@ -6,6 +6,7 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import com.monsanto.labs.mwundo.GeoJson._
+import org.scalacheck.Gen
 
 
 class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
@@ -13,29 +14,37 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
   describe("query") {
 
     it("should parse a randomly generated query correctly") {
-      forAll(emptyIndexGen, textQueryGen(queryGen(List[DataSet]()))) { (indexTuple, queryTuple) ⇒
+
+      def validateQueryText(text: String): Boolean =
+        text.trim.equals(text) &&
+          !text.contains("  ") &&
+          !text.toLowerCase.contains("or") &&
+          !text.toLowerCase.contains("and")
+
+
+      val theQuery: Gen[(String, Query)] = for {
+        query <- queryGen(List[DataSet]())
+        gen <- textQueryGen(query) if validateQueryText(gen._1)
+      }yield gen
+
+      forAll(emptyIndexGen, theQuery) { (indexTuple, queryTuple) ⇒
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
+        assert(validateQueryText(textQuery))
+//      println(s"***** Text query: $textQuery")
+        Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
 
-        whenever(textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
-          !textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
+          queryEquals(response.query, query)
+        }
 
-          Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
-            status shouldBe OK
-            val response = responseAs[SearchResult]
-
-            queryEquals(response.query, query)
-          }
-
-          Get(s"/v0/datasets?${textQuery}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
-            status shouldBe OK
-            val response = responseAs[SearchResult]
-            response.dataSets shouldBe empty
-          }
+        Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
+          status shouldBe OK
+          val response = responseAs[SearchResult]
+          response.dataSets shouldBe empty
         }
       }
-
-      deleteAllIndexes()
     }
 
     it("should resolve valid regions") {
@@ -45,7 +54,7 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
+        Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
@@ -87,15 +96,13 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
           }
         }
 
-        Get(s"/v0/datasets?${textQuery}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+        Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
           response.dataSets shouldBe empty
         }
       }
-
-      deleteAllIndexes()
     }
   }
 }

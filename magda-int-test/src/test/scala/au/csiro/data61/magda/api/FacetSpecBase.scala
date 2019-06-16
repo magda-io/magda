@@ -39,7 +39,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
         e.printStackTrace()
         throw e
     }
-    deleteAllIndexes()
   }
 
 
@@ -55,8 +54,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
           inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
         }
     }
-
-    deleteAllIndexes()
   }
 
   def checkFacetsWithQuery(thisTextQueryGen: List[DataSet] => Gen[(String, Query)] = dataSets => textQueryGen(queryGen(dataSets)), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.choose(0, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
@@ -92,7 +89,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
     }
   }
 
-  def filter(dataSet: DataSet, facetOption: FacetOption, reducer: DataSet ⇒ Set[String]) = {
+  def filter(dataSet: DataSet, facetOption: FacetOption, reducer: DataSet ⇒ Set[String]): Boolean = {
     val facetValue = reducer(dataSet)
 
     facetValue.exists(_.equalsIgnoreCase(facetOption.value))
@@ -111,7 +108,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
     }
   }
 
-  def getFacet(result: SearchResult, facetType: FacetType) = result.facets.get.find(_.id.equals(facetType.id)).get
+  def getFacet(result: SearchResult, facetType: FacetType): Facet = result.facets.get.find(_.id.equals(facetType.id)).get
 
   def genericFacetGroupingSpecs(facetType: FacetType, reducer: DataSet ⇒ Set[String], queryCounter: Query ⇒ Int, filterQueryGen: List[DataSet] => Gen[Query], specificGen: List[DataSet] => Gen[Query]): Unit = {
     describe("all facet options should correspond with grouping the datasets for that query") {
@@ -135,7 +132,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
-        deleteAllIndexes()
       }
 
       describe("with query") {
@@ -157,7 +153,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
-          deleteAllIndexes()
         }
 
         it("matched facets should come above unmatched") {
@@ -170,7 +165,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               facet.options should equal(matched ++ unmatched)
             }
           }
-          deleteAllIndexes()
         }
 
         it("with unmatched facet options") {
@@ -192,7 +186,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
-          deleteAllIndexes()
         }
       }
 
@@ -223,7 +216,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
-        deleteAllIndexes()
       }
     }
     }
@@ -250,7 +242,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         }
-        deleteAllIndexes()
       }
 
       describe("with query") {
@@ -278,7 +269,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
-          deleteAllIndexes()
         }
 
         it("for unmatched facet options") {
@@ -305,7 +295,6 @@ trait FacetSpecBase extends BaseSearchApiSpec {
               }
             }
           }
-          deleteAllIndexes()
         }
       }
     }

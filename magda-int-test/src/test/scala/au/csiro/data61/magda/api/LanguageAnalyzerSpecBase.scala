@@ -159,7 +159,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
               list <- soFar
             } yield currentInner :+ list)
 
-          combinedDataSetAndTermGen.map((indexName, _, routes))
+          combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._2.nonEmpty)
       }
 
       implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[Seq[String]]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
@@ -189,14 +189,11 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
 
       forAll(indexAndTermsGen) {
         case (_, tuples, routes) =>
-          whenever(tuples.nonEmpty) {
-            tuples.foreach {
-              case (dataSet, term) => test(dataSet, term, routes, tuples)
-            }
+          assert(tuples.nonEmpty)
+          tuples.foreach {
+            case (dataSet, term) => test(dataSet, term, routes, tuples)
           }
       }
-
-      deleteAllIndexes()
     }
   }
 
@@ -217,7 +214,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
         }
       }
 
-      Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[SearchResult]
         result.hitCount shouldBe 0

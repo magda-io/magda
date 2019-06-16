@@ -53,7 +53,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
                   }
 
                   val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-                  val publisherMatched = if (!query.publishers.isEmpty) {
+                  val publisherMatched = if (query.publishers.nonEmpty) {
                     query.publishers.exists { queryPublisher =>
                       queryPublisher match {
                         case Specified(specifiedPublisher) => dataSetPublisherName.exists(innerDataSetPublisher =>
@@ -63,7 +63,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
                     }
                   } else true
 
-                  val formatMatched = if (!query.formats.isEmpty) {
+                  val formatMatched = if (query.formats.nonEmpty) {
                     query.formats.exists(queryFormat =>
                       dataSet.distributions.exists(distribution =>
                         queryFormat match {
@@ -96,7 +96,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
                     }))
 
                   val unspecifiedRegion = query.regions.exists(_.isEmpty)
-                  val geoMatched = if (!query.regions.isEmpty) {
+                  val geoMatched = if (query.regions.nonEmpty) {
                     unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
                   } else true
 
@@ -117,7 +117,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
               }
             }
 
-            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               whenever(response.strategy.get == MatchAll) {
@@ -127,7 +127,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
         }
       } catch {
         case e: Throwable =>
-          e.printStackTrace
+          e.printStackTrace()
           throw e
       }
     }

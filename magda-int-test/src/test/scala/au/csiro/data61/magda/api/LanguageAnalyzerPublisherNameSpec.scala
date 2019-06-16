@@ -19,13 +19,13 @@ class LanguageAnalyzerPublisherNameSpec extends LanguageAnalyzerSpecBase {
 
         withClue(s"term: $publisherName, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
           result.options.exists { option =>
-            option.value.equalsIgnoreCase(publisher.name.get)
+            option.value.equalsIgnoreCase(publisher.name.get) &&
             option.identifier.get.equals(publisher.identifier.get)
           } should be(true)
         }
       }
 
-      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
         status shouldBe OK
         val result: FacetSearchResult = responseAs[FacetSearchResult]
         result.hitCount shouldBe 0

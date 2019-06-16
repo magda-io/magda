@@ -16,25 +16,26 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
   def doDataSetFilterTest(buildQuery: DataSet => Gen[Query])(test: (Query, SearchResult, DataSet) => Unit) {
     val gen = for {
-      index <- indexGen.suchThat(!_._2.isEmpty)
+      index <- indexGen.suchThat(_._2.nonEmpty)
       dataSet <- Gen.oneOf(index._2)
-      query = buildQuery(dataSet)
+      query = buildQuery(dataSet).suchThat(_ != Query())
       textQuery <- textQueryGen(query)
-    } yield (index, dataSet, textQuery)
+    } yield {
+      (index, dataSet, textQuery)
+    }
 
     forAll(gen) {
-      case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
-        whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
+      case ((_, dataSets, routes), dataSet, (textQuery, query)) =>
+        whenever(dataSets.nonEmpty && dataSets.contains(dataSet)) {
           doFilterTest(textQuery, dataSets, routes) { response =>
             test(query, response, dataSet)
           }
         }
     }
-    deleteAllIndexes()
   }
 
-  def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-    Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
+  def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: SearchResult => Unit): Unit = {
+    Get(s"/v0/datasets?$query&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       val response = responseAs[SearchResult]
 
@@ -47,7 +48,7 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
       regionJsonToQueryRegion(innerRegion._1, innerRegion._2).equals(queryRegion)
     }
 
-    withClue(s"for queryRegion $queryRegion and regions ${indexedRegions}") {
+    withClue(s"for queryRegion $queryRegion and regions $indexedRegions") {
       regionJsonOption.isDefined should be(true)
     }
     val (regionType, json) = regionJsonOption.get

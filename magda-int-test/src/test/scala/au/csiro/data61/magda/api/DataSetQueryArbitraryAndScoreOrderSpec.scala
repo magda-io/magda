@@ -33,7 +33,7 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
           val (textQuery, _) = queryTuple
           val (_, _, routes) = indexTuple
 
-          Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
+          Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
             whenever(response.hitCount > 0) {
@@ -42,8 +42,6 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
             }
           }
       }
-
-      deleteAllIndexes()
     }
   }
 }

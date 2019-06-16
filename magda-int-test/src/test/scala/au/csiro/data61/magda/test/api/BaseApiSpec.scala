@@ -26,6 +26,9 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
+import au.csiro.data61.magda.client.HttpFetcher
+import java.net.URL
+
 trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
@@ -42,8 +45,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   val clientProvider = new DefaultClientProvider
 
-  val tenant_1: BigInt = BigInt(1)
-  val tenant_2: BigInt = BigInt(2)
+  val tenant1: BigInt = BigInt(1)
+  val tenant2: BigInt = BigInt(2)
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
@@ -51,7 +54,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   def addSingleTenantIdHeader: RawHeader = {
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
-
 
   private def esIsReady() = try {
     blockUntilNotRed()
@@ -64,8 +66,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
-    System.gc()
-
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
       deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
     }
@@ -83,12 +83,14 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     logger.info("Finished setting up regions")
   }
 
-  override def afterEach(): Unit = {
-    super.afterEach()
+  override def beforeEach(): Unit = {
+    println(s"Testing one of $suiteName: $testNames")
+    HttpFetcher(new URL("http://localhost:9200/dataset*")).delete("", "").await()
+    HttpFetcher(new URL("http://localhost:9200/format*")).delete("", "").await()
+    HttpFetcher(new URL("http://localhost:9200/publisher*")).delete("", "")await()
   }
 
   override def afterAll() {
-    System.gc()
   }
 
   implicit object MockClientProvider extends ClientProvider {
@@ -160,14 +162,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
       case _ => DefaultIndices.getIndex(config, index)
     }
-  }
-
-  def deleteAllIndexes(): Unit ={
-    import au.csiro.data61.magda.client.HttpFetcher
-    import java.net.URL
-    HttpFetcher(new URL("http://localhost:9200")).delete("/publisher-*", "")
-    HttpFetcher(new URL("http://localhost:9200")).delete("/dataset-*", "")
-    HttpFetcher(new URL("http://localhost:9200")).delete("/format-*", "")
   }
 }
 

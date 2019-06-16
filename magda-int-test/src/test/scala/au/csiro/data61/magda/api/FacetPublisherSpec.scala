@@ -17,7 +17,7 @@ class FacetPublisherSpec extends FacetSpecBase {
       } yield new Query(publishers = publishers)
 
       describe("should have identifiers except user selected option with 0 hitCount") {
-        implicit val stringShrink: Shrink[List[Agent]] = Shrink { string =>
+        implicit val stringShrink: Shrink[List[Agent]] = Shrink { _ =>
           Stream.empty
         }
 
@@ -31,7 +31,7 @@ class FacetPublisherSpec extends FacetSpecBase {
           try {
             forAll(gen) {
               case (tuple, textQuery, facetSize) ⇒
-                val (indexName, dataSets, routes) = tuple
+                val (_, dataSets, routes) = tuple
 
                 val publishers = dataSets.flatMap(_.publisher).distinct
 
@@ -57,11 +57,9 @@ class FacetPublisherSpec extends FacetSpecBase {
             }
           } catch {
             case e: Throwable =>
-              e.printStackTrace
+              e.printStackTrace()
               throw e
           }
-
-          deleteAllIndexes()
         }
       }
     }

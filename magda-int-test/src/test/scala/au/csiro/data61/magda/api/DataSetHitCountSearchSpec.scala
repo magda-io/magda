@@ -20,13 +20,12 @@ class DataSetHitCountSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldEqual dataSets.length
               MagdaMatchers.dataSetsEqualIgnoreOrder(response.dataSets, dataSets.take(dataSets.length / 2))
             }
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               response.hitCount shouldEqual 0
             }
         }
-        deleteAllIndexes()
       }
     }
   }

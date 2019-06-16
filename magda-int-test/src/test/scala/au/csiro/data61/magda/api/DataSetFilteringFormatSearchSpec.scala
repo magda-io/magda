@@ -11,6 +11,10 @@ class DataSetFilteringFormatSearchSpec extends DataSetFilteringSpecBase {
   describe("filtering") {
     describe("format") {
       it("exact") {
+        def validateQuery(query: Query): Boolean = {
+          query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))
+        }
+
         def dataSetToQuery(dataSet: DataSet) = {
           val formats = dataSet.distributions
             .map(_.format.map(Specified.apply).getOrElse(Unspecified()))
@@ -21,29 +25,27 @@ class DataSetFilteringFormatSearchSpec extends DataSetFilteringSpecBase {
 
           for {
             formatsReduced <- Gen.someOf(formats)
-            query = Query(formats = formatsReduced.toSet)
+            query = Query(formats = formatsReduced.toSet) if validateQuery(query)
           } yield query
         }
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
-          whenever(query != Query() && query.formats.filter(_.isDefined).forall(!_.get.contains("  "))) {
-            val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
+          assert(validateQuery(query))
+          val queryFormats = query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
+          withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
+            response.strategy.get should be(MatchAll)
+            response.dataSets.isEmpty should be(false)
+            response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
+          }
+
+          response.dataSets.foreach { dataSet =>
+            val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
+              case Some(format) => queryFormats.contains(Specified(MagdaMatchers.extractAlphaNum(format)))
+              case None         => queryFormats.contains(Unspecified())
+            })
+
             withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
-              response.strategy.get should be(MatchAll)
-              response.dataSets.isEmpty should be(false)
-              response.dataSets.exists(_.identifier == dataSet.identifier) should be(true)
-            }
-
-            response.dataSets.foreach { dataSet =>
-
-              val matchesQuery = dataSet.distributions.exists(dist => dist.format match {
-                case Some(format) => queryFormats.contains(Specified(MagdaMatchers.extractAlphaNum(format)))
-                case None         => queryFormats.contains(Unspecified())
-              })
-
-              withClue(s"queryFormats $queryFormats and dataset formats ${dataSet.distributions.flatMap(_.format)}") {
-                matchesQuery should be(true)
-              }
+              matchesQuery should be(true)
             }
           }
         }

@@ -21,24 +21,22 @@ class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
         case (_, dataSets, routes, start, limit) =>
           whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
 
-            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addSingleTenantIdHeader ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=$start&limit=$limit") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val result = responseAs[SearchResult]
                 val sortedDataSets = sortByQuality(dataSets)
 
-                val expectedResultIdentifiers = sortedDataSets.drop(start).take(limit).map(_.identifier)
+                val expectedResultIdentifiers = sortedDataSets.slice(start, start + limit).map(_.identifier)
                 expectedResultIdentifiers shouldEqual result.dataSets.map(_.identifier)
               }
 
-            Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addTenantIdHeader(tenant_1) ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=$start&limit=$limit") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
               status shouldBe OK
               val result = responseAs[SearchResult]
               result.hitCount shouldBe 0
             }
           }
       }
-
-      deleteAllIndexes()
     }
   }
 }

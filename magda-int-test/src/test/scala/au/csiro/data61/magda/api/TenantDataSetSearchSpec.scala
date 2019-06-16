@@ -13,7 +13,7 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
     describe("*") {
       it("should return all datasets of the specified tenant") {
 
-        val tenants = List(tenant_1, tenant_2)
+        val tenants = List(tenant1, tenant2)
         forAll(tenantsIndexGen(tenants)) {
           case (_, dataSets, route) ⇒
             tenants.flatMap( theTenant =>
@@ -27,7 +27,6 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters 
               }
             )
         }
-        deleteAllIndexes()
       }
     }
   }
