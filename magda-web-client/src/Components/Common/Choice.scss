@@ -33,6 +33,9 @@
 .choice-Button {
     width: 520px;
     height: 220px;
+    display: block !important;
+    margin-left: auto;
+    margin-right: auto;
     border-radius: 0 40px 40px 40px !important;
     padding-left: 45px !important;
     padding-top: 55px !important;
