@@ -163,7 +163,7 @@ buildtest:search-group-2:
         - heavy
     script:
         - cd magda-elastic-search
-        - - docker-compose -f docker-compose.yml -f docker-compose.2.yml up -d
+        - docker-compose -f docker-compose.yml -f docker-compose.2.yml up -d
         - cd ..
         - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
         - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9202 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec"
