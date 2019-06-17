@@ -3,7 +3,7 @@ import Choice from "Components/Common/Choice";
 
 import iconSearch from "assets/icon-search.svg";
 import iconDocument from "assets/icon-document.svg";
-import iconOval from "assets/icon-oval.svg";
+import iconSave from "assets/icon-save.svg";
 
 import iconUpload from "assets/upload-white.svg";
 import iconWebsite from "assets/website-white.svg";
@@ -35,7 +35,7 @@ class AddDataset extends React.Component<any, any> {
                                 />
                             </div>
                             <div className="col-sm-4 block">
-                                <img src={iconOval} className="icon-oval" />
+                                <img src={iconSave} className="icon-oval" />
                             </div>
                         </div>
 
