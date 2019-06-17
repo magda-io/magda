@@ -1,6 +1,0 @@
-version: "3"
-services:
-  test-es:
-    ports:
-      - 9203:9200
-      - 9303:9300

@@ -88,9 +88,9 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     println(s"*** ES at $esUrlStr")
 
     blockUntilNotRed()
-    HttpFetcher(new URL(s"$esUrlStr/dataset*")).delete("", "").await()
-    HttpFetcher(new URL(s"$esUrlStr/format*")).delete("", "").await()
-    HttpFetcher(new URL(s"$esUrlStr/publisher*")).delete("", "")await()
+    HttpFetcher(new URL(s"$esUrlStr/dataset*?refresh")).delete("", "").await()
+    HttpFetcher(new URL(s"$esUrlStr/format*?refresh")).delete("", "").await()
+    HttpFetcher(new URL(s"$esUrlStr/publisher*?refresh")).delete("", "")await()
     blockUntilNotRed()
   }
 
