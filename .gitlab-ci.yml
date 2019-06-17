@@ -104,10 +104,10 @@ buildtest:search-group-1:
     - heavy
   script:
     - cd magda-elastic-search
-    - docker-compose up -d
+    - docker-compose -f docker-compose.yml -f docker-compose.1.yml up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.DataSet*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9201 "intTest/testOnly au.csiro.data61.magda.api.DataSet*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
@@ -163,10 +163,10 @@ buildtest:search-group-2:
         - heavy
     script:
         - cd magda-elastic-search
-        - docker-compose up -d
+        - - docker-compose -f docker-compose.yml -f docker-compose.2.yml up -d
         - cd ..
         - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec"
+        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9202 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec"
         - cd magda-elastic-search
         - docker-compose down
     artifacts:
@@ -222,10 +222,10 @@ buildtest:search-group-3:
         - heavy
     script:
         - cd magda-elastic-search
-        - docker-compose up -d
+        - docker-compose -f docker-compose.yml -f docker-compose.3.yml up -d
         - cd ..
         - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec"
+        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9203 "intTest/testOnly au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec"
         - cd magda-elastic-search
         - docker-compose down
     artifacts:
@@ -286,10 +286,10 @@ buildtest:other-int-tests:
     - heavy
   script:
     - cd magda-elastic-search
-    - docker-compose up -d
+    - docker-compose -f docker-compose.yml -f docker-compose.4.yml up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.opa.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9204 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.opa.*Spec au.csiro.data61.magda.spatial.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
