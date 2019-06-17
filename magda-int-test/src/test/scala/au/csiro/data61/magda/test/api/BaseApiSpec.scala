@@ -83,7 +83,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def beforeEach(): Unit = {
-    val esUrlStr = config.getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
+    val hostname = if (ContinuousIntegration.isCi) "docker" else "localhost"
+    // TODO: Investigate why sbt command line arg (in .gitlab-ci.yml) does not override serverUrl specified in TestActorSystem.config.
+    val esUrlStr = s"http://$hostname:9200"
+//    val esUrlStr = config.getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
     println(s"Testing one of $suiteName: $testNames")
     println(s"*** ES at $esUrlStr")
 
