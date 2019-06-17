@@ -5,30 +5,36 @@ import java.util.Properties
 
 import akka.actor.ActorSystem
 import akka.event.Logging
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.MockServer
-import au.csiro.data61.magda.test.util.{ContinuousIntegration, Generators, MagdaElasticSugar, MagdaGeneratorTest, TestActorSystem}
+import au.csiro.data61.magda.test.util._
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
-import spray.json.JsObject
+import spray.json.{DefaultJsonProtocol, JsObject, _}
 
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-import au.csiro.data61.magda.client.HttpFetcher
-import java.net.URL
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
+case class Payload(`index.blocks.read_only_allow_delete`: String)
+
+trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+  implicit val payloadFormat = jsonFormat1(Payload.apply)
+}
+
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer with JsonSupport {
 
   implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
 
@@ -94,6 +100,12 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     HttpFetcher(new URL(s"$esUrlStr/dataset*?refresh=wait_for")).delete("", "").await()
     HttpFetcher(new URL(s"$esUrlStr/format*?refresh=wait_for")).delete("", "").await()
     HttpFetcher(new URL(s"$esUrlStr/publisher*?refresh=wait_for")).delete("", "")await()
+
+    HttpFetcher(new URL(s"$esUrlStr/_cat/allocation?v&pretty")).get("").map(res => println(s"***** _cat/allocation?v&pretty:\n${res.entity}"))
+
+    val payload: Payload = "{\"index.blocks.read_only_allow_delete\": \"true\"}".parseJson.convertTo[Payload]
+    val header = RawHeader("Content-Type", "application/json")
+    HttpFetcher(new URL(s"$esUrlStr/_all/_settings")).put(path = "", payload = payload, headers = Seq(header)).map(res => println(s"***** _all read_only_allow_delete:\n${res.entity}"))
     blockUntilNotRed()
   }
 
