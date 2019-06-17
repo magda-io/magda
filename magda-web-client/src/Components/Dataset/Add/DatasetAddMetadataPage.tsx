@@ -1,8 +1,5 @@
 import React from "react";
 import { withRouter } from "react-router";
-
-import Breadcrumbs from "Components/Common/Breadcrumbs";
-import { Medium } from "Components/Common/Responsive";
 import FileIcon from "Components/Common/FileIcon";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -29,7 +26,7 @@ import HelpSnippet from "Components/Common/HelpSnippet";
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
+import AddDatasetProgressMeter from "Components/Common/AddDatasetProgressMeter";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -94,22 +91,10 @@ class NewDataset extends React.Component<Prop, State> {
     }
 
     steps: any = [
-        {
-            label: "Basic Details",
-            render: this.renderBasicDetails.bind(this)
-        },
-        {
-            label: "People and production",
-            render: this.renderProduction.bind(this)
-        },
-        {
-            label: "Dataset visibility, access and control",
-            render: this.renderRestriction.bind(this)
-        },
-        {
-            label: "Dataset description",
-            render: this.renderDescription.bind(this)
-        }
+        this.renderBasicDetails.bind(this),
+        this.renderProduction.bind(this),
+        this.renderRestriction.bind(this),
+        this.renderDescription.bind(this)
     ];
 
     edit = (aspectField: string) => (field: string) => (newValue: any) => {
@@ -140,23 +125,11 @@ class NewDataset extends React.Component<Prop, State> {
         }
         return (
             <div className="dataset-add-files-root">
-                <Medium>
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li key="datasets">
-                                <span>Add data</span>
-                            </li>
-                        ]}
-                    />
-                </Medium>
                 <div className="row">
                     <div className="col-sm-12">
-                        <h1>
-                            Review and add metadata (step {step + 1} of{" "}
-                            {this.steps.length})
-                        </h1>
-                        <DeterminateProgressBar
-                            progress={((step + 1) / this.steps.length) * 100}
+                        <AddDatasetProgressMeter
+                            step={step + 2}
+                            datasetId={this.props.dataset}
                         />
                     </div>
                 </div>
@@ -187,7 +160,7 @@ class NewDataset extends React.Component<Prop, State> {
                         </div>
                     </div>
                 </div>
-                {this.steps[step].render()}
+                {this.steps[step]()}
                 <br />
                 <br />
                 <br />

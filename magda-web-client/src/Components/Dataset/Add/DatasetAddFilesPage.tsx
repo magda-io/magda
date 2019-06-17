@@ -4,11 +4,10 @@ import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
 import { Link } from "react-router-dom";
 
-import Breadcrumbs from "Components/Common/Breadcrumbs";
-import { Medium } from "Components/Common/Responsive";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
+import AddDatasetProgressMeter from "Components/Common/AddDatasetProgressMeter";
 
 import { getFiles } from "helpers/readFile";
 
@@ -171,15 +170,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
     render() {
         return (
             <div className="container-fluid">
-                <Medium>
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li key="datasets">
-                                <span>Add data</span>
-                            </li>
-                        ]}
-                    />
-                </Medium>
+                <AddDatasetProgressMeter step={1} />
 
                 <div className="row">
                     <div className="col-xs-12">
