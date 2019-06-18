@@ -79,7 +79,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
     return (
         <div className="row add-dataset-progress-meter">
             <div className="col-sm-2 step-item-heading">
-                <div className="heading">{Steps[props.step - 1].title}</div>
+                <div className="heading">Add a dataset</div>
             </div>
             <div className="col-sm-10 step-item-body">
                 {Steps.map((item, idx) =>
