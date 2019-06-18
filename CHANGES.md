@@ -47,6 +47,7 @@ UI:
 -   Added vocabulary suggestion for keywords & themes input on new dataset page
 -   Extracted keyword will be filtered by vocabulary APIs
 -   New add dataset page design
+-   Added new progress meter
 
 Gateway:
 
