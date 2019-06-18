@@ -19,7 +19,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
-import setupTenantMode, { TenantConfig, TenantMode } from "./setupTenantMode";
+import setupTenantMode, { TenantConfig } from "./setupTenantMode";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -74,10 +74,8 @@ type Config = {
     enableMultiTenants?: boolean;
 };
 
-export var tenantMode: TenantMode = undefined;
-
 export default function buildApp(config: Config) {
-    tenantMode = setupTenantMode(config as TenantConfig);
+    const tenantMode = setupTenantMode(config as TenantConfig);
 
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
@@ -178,13 +176,16 @@ export default function buildApp(config: Config) {
 
     app.use(
         "/api/v0",
-        createApiRouter({
-            authenticator: authenticator,
-            jwtSecret: config.jwtSecret,
-            routes
-        })
+        createApiRouter(
+            {
+                authenticator: authenticator,
+                jwtSecret: config.jwtSecret,
+                routes
+            },
+            tenantMode
+        )
     );
-    app.use("/preview-map", createGenericProxy(config.previewMap));
+    app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
@@ -203,7 +204,7 @@ export default function buildApp(config: Config) {
     }
 
     // Proxy any other URL to magda-web
-    app.use("/", createGenericProxy(config.web));
+    app.use("/", createGenericProxy(config.web, tenantMode));
 
     return app;
 }

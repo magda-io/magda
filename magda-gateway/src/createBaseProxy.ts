@@ -1,6 +1,7 @@
 import * as httpProxy from "http-proxy";
 import * as express from "express";
-import { tenantMode } from "./buildApp";
+
+import { TenantMode } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
 import { tenantsTable } from "./reloadTenants";
@@ -24,7 +25,7 @@ const doNotProxyHeaderLookup = groupBy(
     (x: string) => x
 );
 
-export default function createBaseProxy(): httpProxy {
+export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
     const proxy = httpProxy.createProxyServer({
         prependUrl: false,
         changeOrigin: true

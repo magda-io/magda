@@ -7,6 +7,7 @@ import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
+import { TenantMode } from "./setupTenantMode";
 
 export interface ProxyTarget {
     to: string;
@@ -23,8 +24,11 @@ export interface ApiRouterOptions {
     };
 }
 
-export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = createBaseProxy();
+export default function createApiRouter(
+    options: ApiRouterOptions,
+    tenantMode: TenantMode
+): Router {
+    var proxy = createBaseProxy(tenantMode);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;

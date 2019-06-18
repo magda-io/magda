@@ -77,14 +77,15 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   def blockUntilDeleted(indexPatterns: List[String]): Unit = {
     val esUrlStr = AppConfig.conf().getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
-    println(s"Testing one of $suiteName: $testNames")
+    println(s"Testing one of ${testNames.size} case(s) in $suiteName")
     println(s"*** ES at $esUrlStr")
 
     blockUntilNotRed()
     indexPatterns.map(indexPattern => {
-      HttpFetcher(new URL(s"$esUrlStr/$indexPattern?refresh")).delete("", "")
+      HttpFetcher(new URL(s"$esUrlStr/$indexPattern?refresh")).delete("", "").await
     })
 
+    blockUntilNotRed()
     blockUntil("Expected indexes are deleted.") { () =>
       val results: Seq[Future[Boolean]] = indexPatterns.map(indexPatter => {
         HttpFetcher(new URL(s"$esUrlStr/$indexPatter")).head("", "").map(res => {
