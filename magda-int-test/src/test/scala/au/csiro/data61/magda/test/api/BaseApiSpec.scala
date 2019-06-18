@@ -5,10 +5,10 @@ import java.util.Properties
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 import au.csiro.data61.magda.search.elasticsearch._
@@ -21,32 +21,27 @@ import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSucces
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
-import spray.json.{DefaultJsonProtocol, JsObject, _}
+import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-case class Payload(`index.blocks.read_only_allow_delete`: String)
 
-trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-  implicit val payloadFormat = jsonFormat1(Payload.apply)
-}
+trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer {
 
-trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with MagdaElasticSugar with BeforeAndAfterEach with BeforeAndAfterAll with MagdaGeneratorTest with MockServer with JsonSupport {
+  implicit def default(implicit system: ActorSystem): RouteTestTimeout = RouteTestTimeout(300 seconds)
 
-  implicit def default(implicit system: ActorSystem) = RouteTestTimeout(300 seconds)
-
-  def buildConfig = TestActorSystem.config
+  def buildConfig: Config = TestActorSystem.config
     .withValue("opa.testSessionId", ConfigValueFactory.fromAnyRef("general-search-api-tests"))
     .withValue("opa.baseUrl", ConfigValueFactory.fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/"))
 
   override def createActorSystem(): ActorSystem = ActorSystem("BaseApiSpec", config)
   val logger = Logging(system, getClass)
-  implicit val indexedRegions = BaseApiSpec.indexedRegions
+  implicit val indexedRegions: List[(RegionSource, JsObject)] = BaseApiSpec.indexedRegions
 
-  implicit val config = buildConfig
+  implicit val config: Config = buildConfig
 
   val clientProvider = new DefaultClientProvider
 
@@ -60,14 +55,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
   }
 
-  private def esIsReady() = try {
-    blockUntilNotRed()
-    true
-  } catch {
-    case _: Exception =>
-      false
-  }
-
   override def client(): ElasticClient = clientProvider.getClient().await
 
   override def beforeAll() {
@@ -75,7 +62,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
       deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
     }
 
-    client.execute(
+    client().execute(
       IndexDefinition.regions.definition(DefaultIndices, config)
     ).await(90 seconds)
 
@@ -84,56 +71,63 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     }
 
     logger.info("Setting up regions")
-    IndexDefinition.setupRegions(client, fakeRegionLoader, DefaultIndices).await(60 seconds)
+    IndexDefinition.setupRegions(client(), fakeRegionLoader, DefaultIndices).await(60 seconds)
     logger.info("Finished setting up regions")
   }
 
-  override def beforeEach(): Unit = {
-    val hostname = if (ContinuousIntegration.isCi) "docker" else "localhost"
-    // TODO: Investigate why sbt command line arg (in .gitlab-ci.yml) does not override serverUrl specified in TestActorSystem.config.
-    val esUrlStr = s"http://$hostname:9200"
-//    val esUrlStr = config.getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
+  def blockUntilDeleted(indexPatterns: List[String]): Unit = {
+    val esUrlStr = AppConfig.conf().getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
     println(s"Testing one of $suiteName: $testNames")
     println(s"*** ES at $esUrlStr")
 
     blockUntilNotRed()
-    HttpFetcher(new URL(s"$esUrlStr/dataset*?refresh=wait_for")).delete("", "").await()
-    HttpFetcher(new URL(s"$esUrlStr/format*?refresh=wait_for")).delete("", "").await()
-    HttpFetcher(new URL(s"$esUrlStr/publisher*?refresh=wait_for")).delete("", "")await()
+    indexPatterns.map(indexPattern => {
+      HttpFetcher(new URL(s"$esUrlStr/$indexPattern?refresh")).delete("", "")
+    })
 
-    HttpFetcher(new URL(s"$esUrlStr/_cat/allocation?v&pretty")).get("").map(res => println(s"***** _cat/allocation?v&pretty:\n${res.entity}"))
+    blockUntil("Expected indexes are deleted.") { () =>
+      val results: Seq[Future[Boolean]] = indexPatterns.map(indexPatter => {
+        HttpFetcher(new URL(s"$esUrlStr/$indexPatter")).head("", "").map(res => {
+          res.discardEntityBytes()
+          // A non-existence index will return "{}" that is 2 bytes.
+          res.entity.getContentLengthOption().getAsLong <= 2
+        }).map(result => result)
+      })
 
-    val payload: Payload = "{\"index.blocks.read_only_allow_delete\": \"true\"}".parseJson.convertTo[Payload]
-    val header = RawHeader("Content-Type", "application/json")
-    HttpFetcher(new URL(s"$esUrlStr/_all/_settings")).put(path = "", payload = payload, headers = Seq(header)).map(res => println(s"***** _all read_only_allow_delete:\n${res.entity}"))
-    blockUntilNotRed()
+      results.forall(result => result.map(r => r).await)
+    }
   }
 
-  override def afterAll() {
+  override def beforeEach(): Unit = {
+    blockUntilDeleted(List("dataset*", "format*", "publisher*"))
+  }
+
+  override def afterAll(): Unit = {
+    blockUntilDeleted(List("dataset*", "format*", "publisher*"))
   }
 
   implicit object MockClientProvider extends ClientProvider {
-    override def getClient(): Future[ElasticClient] = Future(client)
+    override def getClient(): Future[ElasticClient] = Future(client())
   }
 
   def blockUntilNotRed(): Unit = {
     blockUntil("Expected cluster to have NOT RED status") { () =>
-      client.execute {
+      client().execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED
-        case f: RequestFailure => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED.toString
+        case _: RequestFailure => false
       }
     }
   }
 
   def blockUntilNotYellow(): Unit = {
     blockUntil("Expected cluster to have green status") { () =>
-      client.execute {
+      client().execute {
         clusterHealth()
       }.await(90 seconds) match {
-        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
-        case f: RequestFailure => false
+        case r: RequestSuccess[ClusterHealthResponse] => r.result.status != ClusterHealthStatus.RED.toString && r.result.status != ClusterHealthStatus.YELLOW.toString
+        case _: RequestFailure => false
       }
     }
   }
@@ -149,7 +143,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
         if (!done) {
           logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
-          Thread.sleep(500 * (backoff))
+          Thread.sleep(500 * backoff)
         } else {
           logger.debug(s"{} is true, proceeding.", explain)
         }
@@ -176,16 +170,16 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   case class FakeIndices(rawIndexName: String) extends Indices {
     override def getIndex(config: Config, index: Indices.Index): String = index match {
-      case Indices.DataSetsIndex => s"dataset-idx-${rawIndexName}"
-      case Indices.PublishersIndex => s"publisher-idx-${rawIndexName}"
-      case Indices.FormatsIndex => s"format-idx-${rawIndexName}"
+      case Indices.DataSetsIndex => s"dataset-idx-$rawIndexName"
+      case Indices.PublishersIndex => s"publisher-idx-$rawIndexName"
+      case Indices.FormatsIndex => s"format-idx-$rawIndexName"
       case _ => DefaultIndices.getIndex(config, index)
     }
   }
 }
 
 object BaseApiSpec {
-  val testStates = {
+  val testStates: List[(RegionSource, JsObject)] = {
     import spray.json._
     List(
       (new RegionSource("ithinkthisisregiontype",new URL("http://example.com"), "STE_CODE11", "STE_NAME11", Some("STE_ABBREV"), false, false, 10), """
@@ -200,5 +194,5 @@ object BaseApiSpec {
     )
 
   }
-  val indexedRegions = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
+  val indexedRegions: List[(RegionSource, JsObject)] = Generators.indexedRegionsGen(mutable.HashMap.empty).retryUntil(_ => true).sample.get ++ testStates
 }

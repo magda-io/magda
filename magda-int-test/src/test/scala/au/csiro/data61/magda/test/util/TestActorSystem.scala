@@ -27,7 +27,7 @@ object TestActorSystem {
       connectTimeout = 30000
       socketTimeout = 600000
       maxRetryTimeout = 30000
-      serverUrl = "elasticsearch://localhost:9200"
+      serverUrl = "elasticsearch://localhost:9201"
     }
     opa {
       baseUrl = "http://localhost:8888/v0/opa/"
