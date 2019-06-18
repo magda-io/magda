@@ -166,7 +166,7 @@ buildtest:search-group-2:
         - docker-compose up -d
         - cd ..
         - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Tenant*Spec"
+        - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Facet*Spec"
         - cd magda-elastic-search
         - docker-compose down
     artifacts:
