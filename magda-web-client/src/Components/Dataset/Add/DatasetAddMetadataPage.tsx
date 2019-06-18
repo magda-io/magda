@@ -210,124 +210,130 @@ class NewDataset extends React.Component<Prop, State> {
         const editTemporalCoverage = this.edit("temporalCoverage");
         const editSpatialCoverage = this.edit("spatialCoverage");
         return (
-            <div>
-                <h2>Dataset details and contents</h2>
-                <hr />
-                <h3>Title and language</h3>
-                <h4>What is the title of the dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.title}
-                        onChange={editDataset("title")}
-                        editor={textEditorEx({ required: true })}
-                    />
-                </p>
-                <br />
-                <h4>What language(s) is the dataset available in?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.languages}
-                        onChange={editDataset("languages")}
-                        editor={multiCodelistEditor(
-                            codelists.languages,
-                            true,
-                            "Add another language"
-                        )}
-                    />
-                </p>
-                <hr />
-                <h3>Contents</h3>
-                <h4>What keywords best describe this dataset?</h4>
-                <ToolTip>
-                    Keywords are specific words that your dataset contains, and
-                    they help people search for specific datasets. We recommend
-                    keywords and kept to 10-15 words. We've identified the top
-                    keywords from your document.
-                </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.keywords}
-                        onChange={editDataset("keywords")}
-                        editor={multiTextEditorEx(
-                            {
-                                placeholder: "Add a keyword",
-                                redrawOnEmpty: false
-                            },
-                            VocabularyAutoCompleteInput
-                        )}
-                    />
-                </p>
-                <h4>Which themes does this dataset cover?</h4>
-                <ToolTip>
-                    Themes are the topics your dataset covers and they help
-                    people find related datasets within a topic. We recommend
-                    themes are kept to 5-10 topics. We've identified themes from
-                    your document, that are consistent with similar datasets.
-                </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.themes}
-                        onChange={editDataset("themes")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Add a theme"
-                        })}
-                    />
-                </p>
-                <hr />
-                <h3>Dates and updates</h3>
-                <h4>When was the data first issued?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.issued}
-                        onChange={editDataset("issued")}
-                        editor={dateEditor}
-                    />
-                </p>
-                <h4>When was the dataset most recently modified?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.modified}
-                        onChange={editDataset("modified")}
-                        editor={dateEditor}
-                    />
-                </p>
-                <h4>How frequently is the dataset updated?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.accrualPeriodicity}
-                        onChange={editDataset("accrualPeriodicity")}
-                        editor={codelistEditor(codelists.accrualPeriodicity)}
-                    />
-                </p>
-                <h4>What time period(s) does the dataset cover?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={temporalCoverage.intervals}
-                        onChange={editTemporalCoverage("intervals")}
-                        editor={multiDateIntervalEditor}
-                    />
-                </p>
-                <hr />
-                <h3>Spatial area</h3>
-                <h4>
-                    We've determined that the spatial extent of your data is:
-                </h4>
-                <p>
-                    <AlwaysEditor
-                        value={spatialCoverage.bbox}
-                        onChange={editSpatialCoverage("bbox")}
-                        editor={bboxEditor}
-                    />
-                </p>
+            <div className="row">
+                <div className="col-sm-12">
+                    <h2>Dataset details and contents</h2>
+                    <hr />
+                    <h3>Title and language</h3>
+                    <h4>What is the title of the dataset?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.title}
+                            onChange={editDataset("title")}
+                            editor={textEditorEx({ required: true })}
+                        />
+                    </p>
+                    <br />
+                    <h4>What language(s) is the dataset available in?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.languages}
+                            onChange={editDataset("languages")}
+                            editor={multiCodelistEditor(
+                                codelists.languages,
+                                true,
+                                "Add another language"
+                            )}
+                        />
+                    </p>
+                    <hr />
+                    <h3>Contents</h3>
+                    <h4>What keywords best describe this dataset?</h4>
+                    <ToolTip>
+                        Keywords are specific words that your dataset contains,
+                        and they help people search for specific datasets. We
+                        recommend keywords and kept to 10-15 words. We've
+                        identified the top keywords from your document.
+                    </ToolTip>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.keywords}
+                            onChange={editDataset("keywords")}
+                            editor={multiTextEditorEx(
+                                {
+                                    placeholder: "Add a keyword",
+                                    redrawOnEmpty: false
+                                },
+                                VocabularyAutoCompleteInput
+                            )}
+                        />
+                    </p>
+                    <h4>Which themes does this dataset cover?</h4>
+                    <ToolTip>
+                        Themes are the topics your dataset covers and they help
+                        people find related datasets within a topic. We
+                        recommend themes are kept to 5-10 topics. We've
+                        identified themes from your document, that are
+                        consistent with similar datasets.
+                    </ToolTip>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.themes}
+                            onChange={editDataset("themes")}
+                            editor={multiTextEditorEx({
+                                placeholder: "Add a theme"
+                            })}
+                        />
+                    </p>
+                    <hr />
+                    <h3>Dates and updates</h3>
+                    <h4>When was the data first issued?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.issued}
+                            onChange={editDataset("issued")}
+                            editor={dateEditor}
+                        />
+                    </p>
+                    <h4>When was the dataset most recently modified?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.modified}
+                            onChange={editDataset("modified")}
+                            editor={dateEditor}
+                        />
+                    </p>
+                    <h4>How frequently is the dataset updated?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.accrualPeriodicity}
+                            onChange={editDataset("accrualPeriodicity")}
+                            editor={codelistEditor(
+                                codelists.accrualPeriodicity
+                            )}
+                        />
+                    </p>
+                    <h4>What time period(s) does the dataset cover?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={temporalCoverage.intervals}
+                            onChange={editTemporalCoverage("intervals")}
+                            editor={multiDateIntervalEditor}
+                        />
+                    </p>
+                    <hr />
+                    <h3>Spatial area</h3>
+                    <h4>
+                        We've determined that the spatial extent of your data
+                        is:
+                    </h4>
+                    <p>
+                        <AlwaysEditor
+                            value={spatialCoverage.bbox}
+                            onChange={editSpatialCoverage("bbox")}
+                            editor={bboxEditor}
+                        />
+                    </p>
 
-                <h4>Would you like to show a spatial preview?</h4>
+                    <h4>Would you like to show a spatial preview?</h4>
 
-                <p>
-                    <YesNoToggle yes={!!spatialCoverage.bbox}>
-                        <p>Map preview: </p>
-                        <BBOXPreview bbox={spatialCoverage.bbox} />
-                    </YesNoToggle>
-                </p>
+                    <p>
+                        <YesNoToggle yes={!!spatialCoverage.bbox}>
+                            <p>Map preview: </p>
+                            <BBOXPreview bbox={spatialCoverage.bbox} />
+                        </YesNoToggle>
+                    </p>
+                </div>
             </div>
         );
     }
@@ -337,76 +343,80 @@ class NewDataset extends React.Component<Prop, State> {
 
         const editDataset = this.edit("dataset");
         return (
-            <div>
-                <h2>People and production</h2>
-                <hr />
-                <h3>People</h3>
-                <h4>
-                    What organisation is responsible for publishing this
-                    dataset?
-                </h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.publisher}
-                        onChange={editDataset("publisher")}
-                        editor={textEditor}
-                    />
-                </p>
-                <h4>Who is the primary contact point(s) for this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.contactPointFull}
-                        onChange={editDataset("contactPointFull")}
-                        editor={multiContactEditor({})}
-                    />
-                </p>
-                <h4>
-                    How should the contact point(s) be referenced in the
-                    metadata?
-                </h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.contactPointDisplay}
-                        onChange={editDataset("contactPointDisplay")}
-                        editor={codelistRadioEditor(
-                            codelists.contactPointDisplay
-                        )}
-                    />
-                </p>
-                <hr />
-                <h3>Production</h3>
-                <h4>
-                    Was this dataset produced in collaboration with with other
-                    organisations?
-                </h4>
-                <p>
-                    <YesNoEditReveal
-                        value={dataset.creation_affiliatedOrganisation}
-                        defaultValue={[]}
-                        nullValue={null}
-                        onChange={editDataset(
-                            "creation_affiliatedOrganisation"
-                        )}
-                    >
+            <div className="row">
+                <div className="col-sm-12">
+                    <h2>People and production</h2>
+                    <hr />
+                    <h3>People</h3>
+                    <h4>
+                        What organisation is responsible for publishing this
+                        dataset?
+                    </h4>
+                    <p>
                         <AlwaysEditor
+                            value={dataset.publisher}
+                            onChange={editDataset("publisher")}
+                            editor={textEditor}
+                        />
+                    </p>
+                    <h4>
+                        Who is the primary contact point(s) for this dataset?
+                    </h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.contactPointFull}
+                            onChange={editDataset("contactPointFull")}
+                            editor={multiContactEditor({})}
+                        />
+                    </p>
+                    <h4>
+                        How should the contact point(s) be referenced in the
+                        metadata?
+                    </h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.contactPointDisplay}
+                            onChange={editDataset("contactPointDisplay")}
+                            editor={codelistRadioEditor(
+                                codelists.contactPointDisplay
+                            )}
+                        />
+                    </p>
+                    <hr />
+                    <h3>Production</h3>
+                    <h4>
+                        Was this dataset produced in collaboration with with
+                        other organisations?
+                    </h4>
+                    <p>
+                        <YesNoEditReveal
                             value={dataset.creation_affiliatedOrganisation}
+                            defaultValue={[]}
+                            nullValue={null}
                             onChange={editDataset(
                                 "creation_affiliatedOrganisation"
                             )}
-                            editor={multiTextEditorEx({
-                                placeholder: "Add an organisation"
-                            })}
+                        >
+                            <AlwaysEditor
+                                value={dataset.creation_affiliatedOrganisation}
+                                onChange={editDataset(
+                                    "creation_affiliatedOrganisation"
+                                )}
+                                editor={multiTextEditorEx({
+                                    placeholder: "Add an organisation"
+                                })}
+                            />
+                        </YesNoEditReveal>
+                    </p>
+                    <h4>How was the dataset produced?</h4>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.creation_mechanism}
+                            onChange={editDataset("creation_mechanism")}
+                            editor={multilineTextEditor}
                         />
-                    </YesNoEditReveal>
-                </p>
-                <h4>How was the dataset produced?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.creation_mechanism}
-                        onChange={editDataset("creation_mechanism")}
-                        editor={multilineTextEditor}
-                    />
-                </p>
+                    </p>
+                </div>
             </div>
         );
     }
@@ -423,206 +433,225 @@ class NewDataset extends React.Component<Prop, State> {
         const editDatasetAccess = this.edit("datasetAccess");
         const editDatasetUsage = this.edit("datasetUsage");
         return (
-            <div>
-                <h2>Dataset access and use</h2>
-                <hr />
-                <h3>User access</h3>
-                <h4>Who can see the dataset once it is published?</h4>
-                <ToolTip>
-                    We recommend you publish your data to everyone in your
-                    organisation to help prevent data silos.
-                </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={datasetPublishing.level}
-                        onChange={editDatasetPublishing("level")}
-                        editor={codelistRadioEditor(codelists.publishingLevel)}
-                    />
-                </p>
-                <h4>How can other users access this dataset?</h4>
-                <ToolTip>
-                    Include locations on share drives, URLs of databases, how to
-                    arrange access etc.
-                </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={datasetAccess.notes}
-                        onChange={editDatasetAccess("notes")}
-                        editor={multilineTextEditor}
-                    />
-                </p>
-                <hr />
-                <h3>Dataset use</h3>
-                {files.length !== 0 && (
-                    <React.Fragment>
-                        <h4>
-                            What type of license should be applied to these
-                            files?
-                        </h4>
+            <div className="row">
+                <div className="col-sm-12">
+                    <h2>Dataset access and use</h2>
+                    <hr />
+                    <h3>User access</h3>
+                    <h4>Who can see the dataset once it is published?</h4>
+                    <ToolTip>
+                        We recommend you publish your data to everyone in your
+                        organisation to help prevent data silos.
+                    </ToolTip>
+                    <p>
+                        <AlwaysEditor
+                            value={datasetPublishing.level}
+                            onChange={editDatasetPublishing("level")}
+                            editor={codelistRadioEditor(
+                                codelists.publishingLevel
+                            )}
+                        />
+                    </p>
+                    <h4>How can other users access this dataset?</h4>
+                    <ToolTip>
+                        Include locations on share drives, URLs of databases,
+                        how to arrange access etc.
+                    </ToolTip>
+                    <p>
+                        <AlwaysEditor
+                            value={datasetAccess.notes}
+                            onChange={editDatasetAccess("notes")}
+                            editor={multilineTextEditor}
+                        />
+                    </p>
+                    <hr />
+                    <h3>Dataset use</h3>
+                    {files.length !== 0 && (
+                        <React.Fragment>
+                            <h4>
+                                What type of license should be applied to these
+                                files?
+                            </h4>
 
-                        <ToolTip>
-                            By default, Magda adds Licenses at the Dataset Level
-                            (i.e. to all files), but this can be overriden to
-                            apply at a Distribution (each file or URL) level if
-                            desired.
-                        </ToolTip>
+                            <ToolTip>
+                                By default, Magda adds Licenses at the Dataset
+                                Level (i.e. to all files), but this can be
+                                overriden to apply at a Distribution (each file
+                                or URL) level if desired.
+                            </ToolTip>
 
-                        <p>
-                            <AlwaysEditor
-                                value={_licenseLevel}
-                                onChange={this.editState("_licenseLevel")}
-                                editor={codelistEditor(
-                                    codelists.datasetLicenseLevel
-                                )}
-                            />
-                        </p>
-                    </React.Fragment>
-                )}
-                <h4>What license restrictions should be applied?</h4>
-                <ToolTip>
-                    We recommend a Whole of Government License be applied to
-                    encourage inter-department data sharing in the future.
-                </ToolTip>
-                {_licenseLevel === "dataset" ? (
-                    <div>
-                        <p>
-                            <AlwaysEditor
-                                value={datasetUsage.licenseLevel}
-                                onChange={editDatasetUsage("licenseLevel")}
-                                editor={codelistEditor(codelists.licenseLevel)}
-                            />
-                        </p>
-                        {datasetUsage.licenseLevel === "custom" && (
                             <p>
                                 <AlwaysEditor
-                                    value={datasetUsage.license}
-                                    onChange={editDatasetUsage("license")}
-                                    editor={textEditorEx({
-                                        placeholder: "Please specify a license"
-                                    })}
+                                    value={_licenseLevel}
+                                    onChange={this.editState("_licenseLevel")}
+                                    editor={codelistEditor(
+                                        codelists.datasetLicenseLevel
+                                    )}
                                 />
                             </p>
-                        )}
-                    </div>
-                ) : (
-                    <div>
-                        {files.map((file, fileIndex) => {
-                            const edit = field => value => {
-                                file.usage[field] = value;
-                                this.editState("files")(files);
-                            };
-                            return (
-                                <div className="fileBlock">
-                                    <span className="fileBlock-icon">
-                                        <FileIcon
-                                            text={file.format}
-                                            width="1.5em"
-                                        />
-                                    </span>
-                                    <span className="fileBlock-text">
-                                        {file.title}
-                                    </span>
-
-                                    <div className="fileBlock-control">
-                                        <p>
-                                            <AlwaysEditor
-                                                value={file.usage.licenseLevel}
-                                                onChange={edit("licenseLevel")}
-                                                editor={codelistEditor(
-                                                    codelists.licenseLevel
-                                                )}
+                        </React.Fragment>
+                    )}
+                    <h4>What license restrictions should be applied?</h4>
+                    <ToolTip>
+                        We recommend a Whole of Government License be applied to
+                        encourage inter-department data sharing in the future.
+                    </ToolTip>
+                    {_licenseLevel === "dataset" ? (
+                        <div>
+                            <p>
+                                <AlwaysEditor
+                                    value={datasetUsage.licenseLevel}
+                                    onChange={editDatasetUsage("licenseLevel")}
+                                    editor={codelistEditor(
+                                        codelists.licenseLevel
+                                    )}
+                                />
+                            </p>
+                            {datasetUsage.licenseLevel === "custom" && (
+                                <p>
+                                    <AlwaysEditor
+                                        value={datasetUsage.license}
+                                        onChange={editDatasetUsage("license")}
+                                        editor={textEditorEx({
+                                            placeholder:
+                                                "Please specify a license"
+                                        })}
+                                    />
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div>
+                            {files.map((file, fileIndex) => {
+                                const edit = field => value => {
+                                    file.usage[field] = value;
+                                    this.editState("files")(files);
+                                };
+                                return (
+                                    <div className="fileBlock">
+                                        <span className="fileBlock-icon">
+                                            <FileIcon
+                                                text={file.format}
+                                                width="1.5em"
                                             />
-                                        </p>
-                                        {file.usage.licenseLevel ===
-                                            "custom" && (
+                                        </span>
+                                        <span className="fileBlock-text">
+                                            {file.title}
+                                        </span>
+
+                                        <div className="fileBlock-control">
                                             <p>
                                                 <AlwaysEditor
-                                                    value={file.usage.license}
-                                                    onChange={edit("license")}
-                                                    editor={textEditorEx({
-                                                        placeholder:
-                                                            "Please specify a license"
-                                                    })}
+                                                    value={
+                                                        file.usage.licenseLevel
+                                                    }
+                                                    onChange={edit(
+                                                        "licenseLevel"
+                                                    )}
+                                                    editor={codelistEditor(
+                                                        codelists.licenseLevel
+                                                    )}
                                                 />
                                             </p>
-                                        )}
+                                            {file.usage.licenseLevel ===
+                                                "custom" && (
+                                                <p>
+                                                    <AlwaysEditor
+                                                        value={
+                                                            file.usage.license
+                                                        }
+                                                        onChange={edit(
+                                                            "license"
+                                                        )}
+                                                        editor={textEditorEx({
+                                                            placeholder:
+                                                                "Please specify a license"
+                                                        })}
+                                                    />
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                );
+                            })}
+                        </div>
+                    )}
 
-                <h4>What is the security classification of this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={datasetUsage.securityClassification}
-                        onChange={editDatasetUsage("securityClassification")}
-                        editor={codelistEditor(codelists.classification)}
-                    />
-                </p>
-                <h4 className="snippet-heading">
-                    What is the sensitivity of this dataset?
-                </h4>
-                <HelpSnippet>
+                    <h4>
+                        What is the security classification of this dataset?
+                    </h4>
                     <p>
-                        Magda security classification refers to the
-                        Attorney-General Department's Sensitive and
-                        Classification policy.
-                        <br />
-                        It is important that the appropriate security
-                        classification level is selected to protect the
-                        confidentiality, integrity and availability of the data.
-                        The framework is as follows:
+                        <AlwaysEditor
+                            value={datasetUsage.securityClassification}
+                            onChange={editDatasetUsage(
+                                "securityClassification"
+                            )}
+                            editor={codelistEditor(codelists.classification)}
+                        />
                     </p>
-                    <p>
-                        UNCLASSIFIED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>low or no business impact.</b>
-                    </p>
-                    <p>
-                        PROTECTED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            limited damage to an individual, organisation or
-                            government generally if compromised.
-                        </b>
-                    </p>
-                    <p>
-                        CONFIDENTIAL: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            damage to the national interest, organisations or
-                            individuals.
-                        </b>
-                    </p>
-                    <p>
-                        SECRET: Compromise of information confidentiality would
-                        be expected to cause{" "}
-                        <b>
-                            serious damage to national interest, organisations
-                            or individuals.
-                        </b>
-                    </p>
-                    <p>
-                        TOP SECRET: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            exceptionally grave damage to te national interest,
-                            organisations or individuals.
-                        </b>
-                    </p>
-                </HelpSnippet>
+                    <h4 className="snippet-heading">
+                        What is the sensitivity of this dataset?
+                    </h4>
+                    <HelpSnippet>
+                        <p>
+                            Magda security classification refers to the
+                            Attorney-General Department's Sensitive and
+                            Classification policy.
+                            <br />
+                            It is important that the appropriate security
+                            classification level is selected to protect the
+                            confidentiality, integrity and availability of the
+                            data. The framework is as follows:
+                        </p>
+                        <p>
+                            UNCLASSIFIED: Compromise of information
+                            confidentiality would be expected to cause{" "}
+                            <b>low or no business impact.</b>
+                        </p>
+                        <p>
+                            PROTECTED: Compromise of information confidentiality
+                            would be expected to cause{" "}
+                            <b>
+                                limited damage to an individual, organisation or
+                                government generally if compromised.
+                            </b>
+                        </p>
+                        <p>
+                            CONFIDENTIAL: Compromise of information
+                            confidentiality would be expected to cause{" "}
+                            <b>
+                                damage to the national interest, organisations
+                                or individuals.
+                            </b>
+                        </p>
+                        <p>
+                            SECRET: Compromise of information confidentiality
+                            would be expected to cause{" "}
+                            <b>
+                                serious damage to national interest,
+                                organisations or individuals.
+                            </b>
+                        </p>
+                        <p>
+                            TOP SECRET: Compromise of information
+                            confidentiality would be expected to cause{" "}
+                            <b>
+                                exceptionally grave damage to te national
+                                interest, organisations or individuals.
+                            </b>
+                        </p>
+                    </HelpSnippet>
 
-                <p>
-                    <AlwaysEditor
-                        value={datasetUsage.disseminationLimits}
-                        onChange={editDatasetUsage("disseminationLimits")}
-                        editor={multiCodelistEditor(
-                            codelists.disseminationLimits
-                        )}
-                    />
-                </p>
+                    <p>
+                        <AlwaysEditor
+                            value={datasetUsage.disseminationLimits}
+                            onChange={editDatasetUsage("disseminationLimits")}
+                            editor={multiCodelistEditor(
+                                codelists.disseminationLimits
+                            )}
+                        />
+                    </p>
+                </div>
             </div>
         );
     }
@@ -631,25 +660,28 @@ class NewDataset extends React.Component<Prop, State> {
         const { dataset } = this.state;
         const editDataset = this.edit("dataset");
         return (
-            <div>
-                <h2>Dataset description</h2>
-                <h3>Please describe the dataset</h3>
-                <ToolTip>
-                    A good dataset description clearly and succinctly explains
-                    the contents, purpose and value of the dataset. <br />
-                    This is how users primarily identify and select your dataset
-                    from others
-                    <br />
-                    Here you can also include information that you have not
-                    already covered in the other metadata.
-                </ToolTip>
-                <p>
-                    <AlwaysEditor
-                        value={dataset.description}
-                        onChange={editDataset("description")}
-                        editor={multilineTextEditor}
-                    />
-                </p>
+            <div className="row">
+                <div className="col-sm-12">
+                    <h2>Dataset description</h2>
+                    <h3>Please describe the dataset</h3>
+                    <ToolTip>
+                        A good dataset description clearly and succinctly
+                        explains the contents, purpose and value of the dataset.{" "}
+                        <br />
+                        This is how users primarily identify and select your
+                        dataset from others
+                        <br />
+                        Here you can also include information that you have not
+                        already covered in the other metadata.
+                    </ToolTip>
+                    <p>
+                        <AlwaysEditor
+                            value={dataset.description}
+                            onChange={editDataset("description")}
+                            editor={multilineTextEditor}
+                        />
+                    </p>
+                </div>
             </div>
         );
     }
