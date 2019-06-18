@@ -77,8 +77,6 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   def blockUntilDeleted(indexPatterns: List[String]): Unit = {
     val esUrlStr = AppConfig.conf().getConfig("elasticSearch").getString("serverUrl").replace("elasticsearch", "http")
-    println(s"Testing one of ${testNames.size} case(s) in $suiteName")
-    println(s"*** ES at $esUrlStr")
 
     blockUntilNotRed()
     indexPatterns.map(indexPattern => {
@@ -100,6 +98,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   }
 
   override def beforeEach(): Unit = {
+    println(s"Testing one of ${testNames.size} case(s) in $suiteName")
     blockUntilDeleted(List("dataset*", "format*", "publisher*"))
   }
 

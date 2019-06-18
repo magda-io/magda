@@ -170,7 +170,6 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
   }
 
   it("for a region in query text should boost results from that region in Alfredton") {
-    println("  - Testing for a region in query text should boost results from that region in Alfredton")
     // 3 fake datasets. One that relates to Alfredton, the other to all of Australia
     // (but one of those has `Alfredton` in title otherwise only one document will be matched)
     // The Austrlian one happens to be slightly more "relevant" due to the description, but the
