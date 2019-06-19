@@ -111,7 +111,6 @@ buildtest:intTestA:
     - cd magda-elastic-search
     - docker-compose down
     - "ls $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "find / -type d -name '?ivy?'"
   artifacts:
     paths:
       - "target"
@@ -172,7 +171,6 @@ buildtest:intTestB:
     - cd magda-elastic-search
     - docker-compose down
     - "ls $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "find / -type d -name '?ivy?'"
   artifacts:
     paths:
       - "target"
@@ -232,7 +230,6 @@ buildtest:intTestC:
     - cd magda-elastic-search
     - docker-compose down
     - "ls $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "find / -type d -name '?ivy?'"
   artifacts:
     paths:
       - "target"
@@ -297,7 +294,6 @@ buildtest:intTestD:
     - cd magda-elastic-search
     - docker-compose down
     - "ls $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "find / -type d -name '?ivy?'"
   artifacts:
     paths:
       - "target"
