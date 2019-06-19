@@ -57,7 +57,7 @@ registry-typescript-api:
       - "magda-typescript-common/src/generated"
     expire_in: 30 days
 
-buildtest:search-group-1:
+buildtest:intTestA:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -116,7 +116,7 @@ buildtest:search-group-1:
       - "*/target"
     expire_in: 30 days
 
-buildtest:search-group-2:
+buildtest:intTestB:
     stage: buildtest
     image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
     retry: 2
@@ -175,7 +175,7 @@ buildtest:search-group-2:
             - "*/target"
         expire_in: 30 days
 
-buildtest:search-group-3:
+buildtest:intTestC:
     stage: buildtest
     image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
     retry: 2
@@ -234,7 +234,7 @@ buildtest:search-group-3:
             - "*/target"
         expire_in: 30 days
 
-buildtest:other-int-tests:
+buildtest:intTestD:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -444,10 +444,10 @@ dockerize:scala:
     - registry-typescript-api
     - builders-and-yarn
     - buildtest:registry
-    - buildtest:other-int-tests
-    - buildtest:search-group-1
-    - buildtest:search-group-2
-    - buildtest:search-group-3
+    - buildtest:intTestD
+    - buildtest:intTestA
+    - buildtest:intTestB
+    - buildtest:intTestC
   cache:
     policy: pull-push
     key: $CI_JOB_NAME
