@@ -4,9 +4,7 @@ import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
 import { Link } from "react-router-dom";
 
-import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
-import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import { getFiles } from "helpers/readFile";
 
@@ -168,14 +166,14 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
 
     render() {
         return (
-            <div className="container-fluid">
+            <div className="container-fluid dataset-add-file-page">
                 <div className="row">
-                    <div className="col-xs-12">
-                        <h1>Upload files to pre-populate metadata</h1>
+                    <div className="col-xs-12 top-text-area">
+                        <h1>Add files to pre-populate metadata</h1>
                         <p>
                             Upload all the files in your dataset so our
                             Publishing Tool can review the file contents and
-                            pre-populate metadata at any time.
+                            pre-populate metadata.
                         </p>
                         <p>
                             All our processing happens in your internet browser,
@@ -185,41 +183,28 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                     </div>
                 </div>
 
-                <div className="row">
+                <div className="row files-area">
                     <div className="col-xs-12">
-                        {this.state.files.length > 0 && (
-                            <ToolTip>
-                                We recommend ensuring dataset file names are
-                                descriptive so users can easily understand the
-                                contents
-                            </ToolTip>
-                        )}
-                        <ul>
+                        <div className="row">
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li
+                                    <div
                                         key={i}
-                                        className="dataset-add-files-fileListItem"
+                                        className="col-xs-6 dataset-add-files-fileListItem"
                                     >
-                                        {file._state === FileState.Ready ? (
-                                            <DatasetFile
-                                                file={file}
-                                                onChange={this.editFile(i)}
-                                            />
-                                        ) : (
-                                            <div>
-                                                <DeterminateProgressBar
-                                                    progress={file._progress}
-                                                    text={
-                                                        FileState[file._state]
-                                                    }
-                                                />
-                                            </div>
-                                        )}
-                                    </li>
+                                        <DatasetFile
+                                            file={file}
+                                            onChange={this.editFile(i)}
+                                        />
+                                    </div>
                                 );
                             })}
-                        </ul>
+                        </div>
+                        {this.state.files.length > 0 && (
+                            <div className="more-files-to-add-text">
+                                More files to add?
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -232,9 +217,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             onDrop={this.onDrop.bind(this)}
                             className="dataset-add-files-dropZone"
                             targetClassName="dataset-add-files-dropTarget"
-                        >
-                            <span>Drag your files or click here</span>
-                        </FileDrop>
+                        />
                     </div>
                 </div>
 

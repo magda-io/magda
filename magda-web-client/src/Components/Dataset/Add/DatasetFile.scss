@@ -1,19 +1,70 @@
 .dataset-file-root {
     //TODO: Get values from variables
-    border: 1px solid #ccc;
     padding: 1em;
     max-width: 48em;
     border-radius: 5px;
 
     display: flex;
     justify-content: space-between;
-}
 
-.dataset-file-fileTitle {
-    margin: 0 0 0.5em 0;
-}
+    .dataset-file-fileTitle {
+        margin: 0 0 0.5em 0;
+    }
 
-.dataset-file-editButton {
-    font-size: 20px;
-    padding: 0px 7px;
+    .dataset-file-editButton {
+        font-size: 20px;
+        padding: 0px 7px;
+    }
+
+    .file-in-progress {
+        .file-icon-area {
+            float: left;
+            margin-right: 57px;
+            .format-icon {
+                width: 48px;
+            }
+            .format-text {
+                text-transform: uppercase;
+                text-align: center;
+            }
+        }
+        .file-info {
+            float: left;
+            .file-name {
+                font-size: 15px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.33;
+                letter-spacing: normal;
+                color: #484848;
+            }
+            .file-status {
+                font-size: 14px;
+                font-weight: 300;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                color: #636363;
+            }
+            .file-progress-bar {
+                height: 24px;
+                border-radius: 8px;
+                background-image: linear-gradient(
+                        to left,
+                        rgba(255, 255, 255, 0.5),
+                        rgba(0, 0, 0, 0.5)
+                    ),
+                    linear-gradient(
+                        to bottom,
+                        rgba(65, 49, 87, 0.68),
+                        rgba(65, 49, 87, 0.68)
+                    );
+            }
+        }
+    }
+}
+.complete-processing {
+    border: 1px solid #ccc;
 }
