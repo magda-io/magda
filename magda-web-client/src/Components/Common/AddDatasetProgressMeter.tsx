@@ -2,41 +2,79 @@ import React from "react";
 import { withRouter } from "react-router";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
-import { History } from "history";
+import { History, Location } from "history";
 
+type urlFunc = (datasetId: string) => string;
 interface StepItem {
     title: string;
-    url: string;
+    url: string | urlFunc;
+    testFunc: (url: string) => boolean;
 }
 
 interface PropsType {
     history: History;
-    step: number; // --- 1 to 5
-    datasetId?: string;
+    location: Location;
 }
 
 export const Steps: StepItem[] = [
     {
         title: "Add files",
-        url: "/dataset/add/files"
+        url: datasetId =>
+            datasetId
+                ? `/dataset/add/files/${datasetId}`
+                : "/dataset/add/files",
+        testFunc: url => url.indexOf("/dataset/add/files") !== -1
     },
     {
         title: "Details and Contents",
-        url: "/dataset/add/metadata/${datasetId}/0"
+        url: "/dataset/add/metadata/${datasetId}/0",
+        testFunc: url =>
+            url.search(/\/dataset\/add\/metadata\/[^\/]+\/0/) !== -1
     },
     {
         title: "People and Production",
-        url: "/dataset/add/metadata/${datasetId}/1"
+        url: "/dataset/add/metadata/${datasetId}/1",
+        testFunc: url =>
+            url.search(/\/dataset\/add\/metadata\/[^\/]+\/1/) !== -1
     },
     {
         title: "Access and User",
-        url: "/dataset/add/metadata/${datasetId}/2"
+        url: "/dataset/add/metadata/${datasetId}/2",
+        testFunc: url =>
+            url.search(/\/dataset\/add\/metadata\/[^\/]+\/2/) !== -1
     },
     {
         title: "Submit for Approval",
-        url: "/dataset/add/metadata/${datasetId}/3"
+        url: "/dataset/add/metadata/${datasetId}/3",
+        testFunc: url =>
+            url.search(/\/dataset\/add\/metadata\/[^\/]+\/3/) !== -1
     }
 ];
+
+function determineCurrentStep(location) {
+    const { pathname } = location;
+    for (let i = 0; i < Steps.length; i++) {
+        if (Steps[i].testFunc(pathname)) return i + 1;
+    }
+    throw new Error("Can't determine current progress step");
+}
+
+function determineDatasetId(location) {
+    const { pathname } = location;
+    const matches = pathname.match(/dataset-[\da-z-]+/);
+    if (matches) return matches[0];
+    return "";
+}
+
+function createStepUrl(datasetId, item: StepItem) {
+    if (typeof item.url === "string") {
+        return item.url.replace("${datasetId}", datasetId);
+    } else if (typeof item.url === "function") {
+        return item.url(datasetId);
+    } else {
+        throw new Error("Invalid step item config.");
+    }
+}
 
 const AddDatasetProgressMeter = (props: PropsType) => {
     function renderStepItem(
@@ -63,9 +101,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
                     if (statusClass !== "past-item") {
                         return;
                     }
-                    props.history.push(
-                        item.url.replace("${datasetId}", datasetId)
-                    );
+                    props.history.push(createStepUrl(datasetId, item));
                 }}
             >
                 <div className="step-item">
@@ -76,6 +112,9 @@ const AddDatasetProgressMeter = (props: PropsType) => {
         );
     }
 
+    const currentStep = determineCurrentStep(props.location);
+    const datasetId = determineDatasetId(props.location);
+
     return (
         <div className="row add-dataset-progress-meter">
             <div className="col-sm-2 step-item-heading">
@@ -83,12 +122,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
             </div>
             <div className="col-sm-10 step-item-body">
                 {Steps.map((item, idx) =>
-                    renderStepItem(
-                        item,
-                        idx,
-                        props.step,
-                        props.datasetId ? props.datasetId : ""
-                    )
+                    renderStepItem(item, idx, currentStep, datasetId)
                 )}
             </div>
         </div>

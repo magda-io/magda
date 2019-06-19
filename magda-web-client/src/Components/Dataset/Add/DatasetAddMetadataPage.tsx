@@ -26,7 +26,6 @@ import HelpSnippet from "Components/Common/HelpSnippet";
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import AddDatasetProgressMeter from "Components/Common/AddDatasetProgressMeter";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -125,14 +124,6 @@ class NewDataset extends React.Component<Prop, State> {
         }
         return (
             <div className="dataset-add-files-root">
-                <div className="row">
-                    <div className="col-sm-12">
-                        <AddDatasetProgressMeter
-                            step={step + 2}
-                            datasetId={this.props.dataset}
-                        />
-                    </div>
-                </div>
                 <div className="row">
                     <div className="col-sm-12">
                         <div className="dataset-add-files">

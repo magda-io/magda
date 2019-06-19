@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
-import AddDatasetProgressMeter from "Components/Common/AddDatasetProgressMeter";
 
 import { getFiles } from "helpers/readFile";
 
@@ -170,8 +169,6 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
     render() {
         return (
             <div className="container-fluid">
-                <AddDatasetProgressMeter step={1} />
-
                 <div className="row">
                     <div className="col-xs-12">
                         <h1>Upload files to pre-populate metadata</h1>
