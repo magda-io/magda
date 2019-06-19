@@ -68,6 +68,7 @@ buildtest:intTestA:
         export DOCKER_HOST='tcp://localhost:2375'
       fi
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -79,6 +80,7 @@ buildtest:intTestA:
     key: $CI_JOB_NAME
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/sbt-cache/ivy"
       - "target"
       - "*/target"
       - "*/project/target"
@@ -127,6 +129,7 @@ buildtest:intTestB:
         export DOCKER_HOST='tcp://localhost:2375'
       fi
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -138,6 +141,7 @@ buildtest:intTestB:
     key: $CI_JOB_NAME
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/sbt-cache/ivy"
       - "target"
       - "*/target"
       - "*/project/target"
@@ -185,6 +189,7 @@ buildtest:intTestC:
         export DOCKER_HOST='tcp://localhost:2375'
       fi
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -196,6 +201,7 @@ buildtest:intTestC:
     key: $CI_JOB_NAME
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/sbt-cache/ivy"
       - "target"
       - "*/target"
       - "*/project/target"
@@ -243,6 +249,7 @@ buildtest:intTestD:
         export DOCKER_HOST='tcp://localhost:2375'
       fi
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
+    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -254,6 +261,7 @@ buildtest:intTestD:
     key: $CI_JOB_NAME
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/sbt-cache/ivy"
       - "target"
       - "*/target"
       - "*/project/target"
