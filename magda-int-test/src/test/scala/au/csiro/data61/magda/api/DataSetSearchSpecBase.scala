@@ -26,10 +26,10 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
     forAll(gen) {
       case ((_, dataSets, routes), dataSet, (textQuery, query)) =>
-        whenever(dataSets.nonEmpty && dataSets.contains(dataSet)) {
-          doFilterTest(textQuery, dataSets, routes) { response =>
-            test(query, response, dataSet)
-          }
+        assert(dataSets.nonEmpty)
+        assert(dataSets.contains(dataSet))
+        doFilterTest(textQuery, dataSets, routes) { response =>
+          test(query, response, dataSet)
         }
     }
   }
