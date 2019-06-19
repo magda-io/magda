@@ -67,6 +67,7 @@ buildtest:intTestA:
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
+    - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
@@ -128,6 +129,7 @@ buildtest:intTestB:
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
+    - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
@@ -188,6 +190,7 @@ buildtest:intTestC:
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
+    - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
@@ -248,6 +251,7 @@ buildtest:intTestD:
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
+    - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
