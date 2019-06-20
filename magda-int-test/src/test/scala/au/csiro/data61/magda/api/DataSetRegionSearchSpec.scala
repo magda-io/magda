@@ -47,6 +47,9 @@ class DataSetRegionSearchSpec extends DataSetSearchSpecBase {
 
     val (indexName, _, routes) = putDataSetsInIndex(datasets)
 
+    // Newly indexed datasets will take some time to become searchable.
+    Thread.sleep(2000)
+
     try {
       blockUntilExactCount(3, indexName)
 
