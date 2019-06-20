@@ -5,9 +5,9 @@ import iconSearch from "assets/icon-search.svg";
 import iconDocument from "assets/icon-document.svg";
 import iconSave from "assets/icon-save.svg";
 
-import iconUpload from "assets/upload-white.svg";
-import iconWebsite from "assets/website-white.svg";
-import iconDataEntry from "assets/data-entry-purple.svg";
+import iconUpload from "assets/add-files.svg";
+import iconWebsite from "assets/noun-website.png";
+import iconDataEntry from "assets/list-ul.svg";
 import iconFolders from "assets/noun-files.png";
 
 import "./DatasetAddPage.scss";
