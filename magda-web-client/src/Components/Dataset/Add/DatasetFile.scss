@@ -8,8 +8,12 @@
     display: flex;
     justify-content: space-between;
 
-    .dataset-file-fileTitle {
+    .dataset-file-file-title {
         margin: 0 0 0.5em 0;
+        width: 370px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .file-in-progress {
@@ -38,7 +42,7 @@
         }
         .file-info {
             float: left;
-            .file-name {
+            .file-name-size {
                 font-size: 15px;
                 font-weight: normal;
                 font-style: normal;
@@ -46,6 +50,15 @@
                 line-height: 1.33;
                 letter-spacing: normal;
                 color: #484848;
+                div {
+                    float: left;
+                }
+            }
+            .file-name {
+                width: 260px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
             }
             .file-status {
                 font-size: 14px;
@@ -60,7 +73,7 @@
                 position: relative;
                 height: 24px;
                 border-radius: 8px;
-                margin-top: 16px;
+                margin-top: 33px;
                 margin-bottom: 9px;
                 width: 330px;
                 border: 1px solid #c0bebe;

@@ -5,7 +5,7 @@ import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { dateEditor } from "Components/Editing/Editors/dateEditor";
 
-import { getFormatIcon } from "../View/DistributionIcon";
+import FileIcon from "Components/Common/FileIcon";
 
 import humanFileSize from "helpers/humanFileSize";
 
@@ -36,12 +36,14 @@ function FileInProgress({
                     <img src={dismissIcon} />
                 </button>
                 <div className="file-icon-area">
-                    <img className="format-icon" src={getFormatIcon(file)} />
-                    <div className="format-text">{file.format}</div>
+                    <FileIcon width="48px" text={file.format} />
                 </div>
                 <div className="file-info">
-                    <div className="file-name">
-                        {file.title} ({humanFileSize(file.byteSize, true)})
+                    <div className="file-name-size">
+                        <div className="file-name">{file.title}</div>
+                        <div className="file-size">
+                            ({humanFileSize(file.byteSize, true)})
+                        </div>
                     </div>
                     <div className="file-progress-bar">
                         <div
@@ -91,12 +93,6 @@ export default function DatasetFile({
             {editMode ? (
                 <div>
                     <button
-                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
-                        onClick={() => onDelete()}
-                    >
-                        <img src={dismissIcon} />
-                    </button>
-                    <button
                         className={`au-btn dataset-file-save-button`}
                         onClick={() => setEditMode(!editMode)}
                     >
@@ -136,7 +132,9 @@ export default function DatasetFile({
                         <img src={dismissIcon} />
                     </button>
                     <div>
-                        <h3 className="dataset-file-fileTitle">{file.title}</h3>
+                        <h3 className="dataset-file-file-title">
+                            {file.title}
+                        </h3>
                         <div className="file-info">
                             <div>Format: {file.format}</div>
                             <div>
