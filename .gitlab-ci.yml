@@ -86,7 +86,6 @@ buildtest:intTestA:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull-push
   services:
     - docker:dind
   variables:
@@ -149,7 +148,6 @@ buildtest:intTestB:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
   services:
     - docker:dind
   variables:
@@ -211,7 +209,6 @@ buildtest:intTestC:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
   services:
     - docker:dind
   variables:
@@ -273,7 +270,6 @@ buildtest:intTestD:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
   services:
     - postgres:9.6
     - docker:dind
