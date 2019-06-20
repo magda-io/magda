@@ -164,6 +164,18 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
         this.updateLastModifyDate();
     };
 
+    deleteFile = (index: number) => () => {
+        this.setState(state => {
+            const newFiles = state.files.filter((item, idx) => {
+                if (idx === index) return false;
+                return true;
+            });
+            return {
+                files: newFiles
+            };
+        });
+    };
+
     render() {
         return (
             <div className="container-fluid dataset-add-file-page">
@@ -195,6 +207,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                         <DatasetFile
                                             file={file}
                                             onChange={this.editFile(i)}
+                                            onDelete={this.deleteFile(i)}
                                         />
                                     </div>
                                 );

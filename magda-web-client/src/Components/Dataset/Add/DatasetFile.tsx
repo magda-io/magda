@@ -11,15 +11,30 @@ import humanFileSize from "helpers/humanFileSize";
 
 import { FileState, File, fileStateToText } from "./DatasetAddCommon";
 
+import editIcon from "../../../assets/edit.svg";
+import dismissIcon from "../../../assets/dismiss.svg";
+
 import "./DatasetFile.scss";
 
-function FileInProgress({ file }: { file: File }) {
+function FileInProgress({
+    file,
+    onDelete
+}: {
+    file: File;
+    onDelete: () => void;
+}) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
     if (width < 5) width = 5;
     return (
         <div className="dataset-file-root">
             <div className="file-in-progress">
+                <button
+                    className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                    onClick={() => onDelete()}
+                >
+                    <img src={dismissIcon} />
+                </button>
                 <div className="file-icon-area">
                     <img className="format-icon" src={getFormatIcon(file)} />
                     <div className="format-text">{file.format}</div>
@@ -28,11 +43,19 @@ function FileInProgress({ file }: { file: File }) {
                     <div className="file-name">
                         {file.title} ({humanFileSize(file.byteSize, true)})
                     </div>
-                    <div
-                        className="file-progress-bar"
-                        style={{ width: `${width}px` }}
-                    >
-                        &nbsp;
+                    <div className="file-progress-bar">
+                        <div
+                            className="file-progress-bar-content"
+                            style={{ width: `${width}px` }}
+                        >
+                            &nbsp;
+                        </div>
+                        <div
+                            className="file-progress-bar-box"
+                            style={{ width: `${width}px` }}
+                        >
+                            &nbsp;
+                        </div>
                     </div>
                     <div className="file-status">
                         {fileStateToText(file._state)} - {file._progress}%
@@ -46,13 +69,15 @@ function FileInProgress({ file }: { file: File }) {
 
 export default function DatasetFile({
     file,
+    onDelete,
     onChange
 }: {
     file: File;
+    onDelete: () => void;
     onChange: (file: File) => void;
 }) {
     if (file._state !== FileState.Ready) {
-        return <FileInProgress file={file} />;
+        return <FileInProgress file={file} onDelete={onDelete} />;
     }
 
     const editFormat = (newValue: string | undefined) =>
@@ -65,6 +90,12 @@ export default function DatasetFile({
         <section className="dataset-file-root complete-processing">
             {editMode ? (
                 <div>
+                    <button
+                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                        onClick={() => onDelete()}
+                    >
+                        <img src={dismissIcon} />
+                    </button>
                     <div>
                         <strong>Format: </strong>{" "}
                         <AlwaysEditor
@@ -72,10 +103,6 @@ export default function DatasetFile({
                             onChange={editFormat}
                             editor={textEditor}
                         />
-                    </div>
-                    <div>
-                        <strong>Size: </strong>{" "}
-                        {humanFileSize(file.byteSize, false)}
                     </div>
                     <div>
                         <strong>Last Modified: </strong>{" "}
@@ -96,28 +123,30 @@ export default function DatasetFile({
                 </div>
             ) : (
                 <React.Fragment>
+                    <button
+                        className={`dataset-file-edit-button au-btn au-btn--secondary`}
+                        onClick={() => setEditMode(!editMode)}
+                    >
+                        <img src={editIcon} />
+                    </button>
+                    <button
+                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                        onClick={() => onDelete()}
+                    >
+                        <img src={dismissIcon} />
+                    </button>
                     <div>
                         <h3 className="dataset-file-fileTitle">{file.title}</h3>
-                        <img src={getFormatIcon(file)} />
-                        <div>
-                            <strong>Format: </strong> {file.format}
+                        <div className="file-info">
+                            <div>Format: {file.format}</div>
+                            <div>
+                                Size: {humanFileSize(file.byteSize, false)}
+                            </div>
+                            <div>
+                                Last Modified:{" "}
+                                {Moment(file.modified).format("DD/MM/YYYY")}
+                            </div>
                         </div>
-                        <div>
-                            <strong>Size: </strong>{" "}
-                            {humanFileSize(file.byteSize, false)}
-                        </div>
-                        <div>
-                            <strong>Last Modified: </strong>{" "}
-                            {Moment(file.modified).format("DD/MM/YYYY")}
-                        </div>
-                    </div>
-                    <div>
-                        <button
-                            className={`dataset-file-editButton au-btn au-btn--secondary`}
-                            onClick={() => setEditMode(!editMode)}
-                        >
-                            {/* TODO: Replace with an actual icon */}✎
-                        </button>
                     </div>
                 </React.Fragment>
             )}
