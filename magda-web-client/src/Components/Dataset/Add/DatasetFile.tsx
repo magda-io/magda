@@ -96,8 +96,15 @@ export default function DatasetFile({
                     >
                         <img src={dismissIcon} />
                     </button>
+                    <button
+                        className={`au-btn dataset-file-save-button`}
+                        onClick={() => setEditMode(!editMode)}
+                    >
+                        Save
+                    </button>
                     <div>
-                        <strong>Format: </strong>{" "}
+                        <span>Format: </span>
+                        &nbsp;&nbsp;
                         <AlwaysEditor
                             value={file.format}
                             onChange={editFormat}
@@ -105,20 +112,13 @@ export default function DatasetFile({
                         />
                     </div>
                     <div>
-                        <strong>Last Modified: </strong>{" "}
+                        <span>Last Modified: </span>
+                        &nbsp;&nbsp;
                         <AlwaysEditor
                             value={file.modified}
                             onChange={editModified}
                             editor={dateEditor}
                         />
-                    </div>
-                    <div>
-                        <button
-                            className={`au-btn`}
-                            onClick={() => setEditMode(!editMode)}
-                        >
-                            Save
-                        </button>
                     </div>
                 </div>
             ) : (

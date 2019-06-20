@@ -89,6 +89,8 @@
     background-image: url("../../../assets/purple-box.svg");
     background-repeat: no-repeat;
     padding-left: 60px;
+    width: 534px;
+    height: 125px;
 
     .file-info {
         font-size: 13px;
@@ -128,5 +130,29 @@
     .dataset-file-delete-button:hover {
         border: 1px solid #c0bebe;
         border-radius: 4px;
+    }
+
+    .au-text-input {
+        width: 290px;
+        height: 35px;
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+    }
+
+    .SingleDatePickerInput {
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+    }
+
+    .date-editor-wrapper {
+        border: none;
+    }
+    .dataset-file-save-button {
+        position: absolute;
+        right: 25px;
+        bottom: 18px;
+        background-color: #30384d !important;
+        border-radius: 5px;
+        border: none;
     }
 }
