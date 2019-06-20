@@ -1,32 +1,47 @@
 package au.csiro.data61.magda.api
 
+import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
+import java.util.function.Consumer
+
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, RegistryConverters}
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.search.elasticsearch.{ElasticSearchQueryer, Indices}
+import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
+import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
-import au.csiro.data61.magda.test.util.Generators
+import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import org.scalacheck.{Gen, Shrink}
+import au.csiro.data61.magda.test.util.{Generators, TestActorSystem}
 
 import scala.collection.mutable
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
-
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
+import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.test.MockServer
+import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
+import org.mockserver.client.MockServerClient
+import org.mockserver.model.{HttpRequest, HttpResponse}
+import org.scalacheck.{Gen, Shrink}
 
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
-  val INSERTION_WAIT_TIME: FiniteDuration = 500 seconds
+  val INSERTION_WAIT_TIME = 500 seconds
+
+  val cleanUpQueue = new ConcurrentLinkedQueue[String]()
 
   implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
-    case (_, dataSets, _) ⇒
+    case (indexName, dataSets, route) ⇒
       Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
         // Have this on warn level so it keeps travis entertained in long shrinks.
         logger.error("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
-        putDataSetsInIndex(shrunkDataSets)
+
+        val result = putDataSetsInIndex(shrunkDataSets)
+        cleanUpQueue.add(result._1)
+        result
       })
   }
 
@@ -35,7 +50,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   implicit def textQueryShrinker(implicit s: Shrink[String], s1: Shrink[Query]): Shrink[(String, Query)] = Shrink[(String, Query)] {
-    case (_, queryObj) ⇒
+    case (queryString, queryObj) ⇒
       Shrink.shrink(queryObj).map { shrunkQuery ⇒
         (queryToText(shrunkQuery), shrunkQuery)
       }
@@ -79,17 +94,42 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     putDataSetsInIndex(dataSets)
   }
 
-  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
+  def genIndexForSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
     val size = rawSize % 100
-    // We are not using cached indexes anymore.  inputCache stays here simply to avoid
-    // too many changes in the interfaces.
-    val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
-    val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
-    inputCache.clear()
-    putDataSetsInIndex(dataSets)
+
+    getFromIndexCache(size) match {
+      case (_, None) ⇒
+        val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
+
+        if (tenantIds.nonEmpty){
+          val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
+            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
+          )
+          putDataSetsInIndex(dataSets)
+        }
+        else {
+          val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
+          putDataSetsInIndex(dataSets)
+        }
+
+      case (cacheKey, Some(cachedValue)) ⇒
+        logger.debug("Cache hit for {}", cacheKey)
+        val value: (String, List[DataSet], Route) = cachedValue.await(INSERTION_WAIT_TIME)
+        value
+    }
   }
 
-  def putDataSetsInIndex(dataSets: List[DataSet]): (String, List[DataSet], Route) = {
+  def getFromIndexCache(size: Int): (Int, Option[Future[(String, List[DataSet], Route)]]) = {
+    //    val cacheKey = if (size < 20) size
+    //    else if (size < 50) size - size % 3
+    //    else if (size < 100) size - size % 4
+    //    else size - size % 25
+    val cacheKey = size
+    logger.debug(cacheKey.toString)
+    (cacheKey, Option(BaseSearchApiSpec.genCache.get(cacheKey)))
+  }
+
+  def putDataSetsInIndex(dataSets: List[DataSet]) = {
 
     blockUntilNotRed()
 
@@ -127,13 +167,32 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
       refresh(idxName)
     }
 
-    blockUntilExactCount(dataSets.size, indexNames.head)
+    blockUntilExactCount(dataSets.size, indexNames(0))
 
-    (indexNames.head, dataSets, api.routes)
+
+    (indexNames(0), dataSets, api.routes)
   }
-  def encodeForUrl(query: String): String = java.net.URLEncoder.encode(query, "UTF-8")
+
+  def encodeForUrl(query: String) = java.net.URLEncoder.encode(query, "UTF-8")
+  def cleanUpIndexes() = {
+    blockUntilNotRed()
+    cleanUpQueue.iterator().forEachRemaining(
+      new Consumer[String] {
+        override def accept(indexName: String) = {
+          logger.debug(s"Deleting index $indexName")
+          client.execute(ElasticDsl.deleteIndex(indexName)).await(INSERTION_WAIT_TIME)
+          cleanUpQueue.remove()
+        }
+      })
+  }
+
+  override def afterEach() {
+    super.afterEach()
+
+    cleanUpIndexes()
+  }
 }
 
 object BaseSearchApiSpec {
-
+  val genCache: ConcurrentHashMap[Int, Future[(String, List[DataSet], Route)]] = new ConcurrentHashMap()
 }
