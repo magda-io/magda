@@ -57,7 +57,10 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def client(): ElasticClient = clientProvider.getClient().await
 
+  var startTime: Long = System.currentTimeMillis()
+
   override def beforeAll() {
+    startTime = System.currentTimeMillis()
     if (doesIndexExists(DefaultIndices.getIndex(config, Indices.RegionsIndex))) {
       deleteIndex(DefaultIndices.getIndex(config, Indices.RegionsIndex))
     }
@@ -104,6 +107,8 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def afterAll(): Unit = {
     blockUntilDeleted(List("dataset*", "format*", "publisher*"))
+
+    println(s"***** $suiteName run time: ${System.currentTimeMillis() - startTime}")
   }
 
   implicit object MockClientProvider extends ClientProvider {
