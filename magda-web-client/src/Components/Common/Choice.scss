@@ -26,7 +26,6 @@
 
 .choice-Icon {
     width: 5em;
-    margin-right: 2em;
     height: 5em;
 }
 
@@ -42,6 +41,9 @@
     padding-right: 45px !important;
     border: none !important;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+    .text-content {
+        padding-left: 25px;
+    }
 }
 
 .au-btn--secondary.choice-Button {
