@@ -233,7 +233,7 @@ buildtest:intTestC:
     - docker-compose up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.Language*Spec au.csiro.data61.magda.api.Tenant*Spec, au.csiro.data61.magda.api.longrun.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
@@ -299,7 +299,7 @@ buildtest:intTestD:
     - docker-compose up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.opa.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.opa.*Spec au.csiro.data61.magda.spatial.*Spec au.csiro.data61.magda.api.verylongrun.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:

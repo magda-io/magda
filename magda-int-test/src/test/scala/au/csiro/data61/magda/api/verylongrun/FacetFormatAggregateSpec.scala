@@ -1,5 +1,6 @@
-package au.csiro.data61.magda.api
+package au.csiro.data61.magda.api.verylongrun
 
+import au.csiro.data61.magda.api.{FacetSpecBase, Query, Specified}
 import au.csiro.data61.magda.model.misc.{DataSet, _}
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.Generators
