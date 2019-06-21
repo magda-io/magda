@@ -740,3 +740,4 @@ Publish Helm Chart:
     - helm package magda -d chart-repo
     - helm repo index chart-repo
     - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
+
