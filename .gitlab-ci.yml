@@ -2,6 +2,7 @@ variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
   SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
+  INT_TEST_CACHE_KEY: "intTestD"
 
 stages:
   - builders
@@ -78,7 +79,7 @@ buildtest:intTestA:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $INT_TEST_CACHE_KEY
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "$CI_PROJECT_DIR/sbt-cache/ivy"
@@ -86,6 +87,7 @@ buildtest:intTestA:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   variables:
@@ -140,7 +142,7 @@ buildtest:intTestB:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $INT_TEST_CACHE_KEY
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "$CI_PROJECT_DIR/sbt-cache/ivy"
@@ -148,6 +150,7 @@ buildtest:intTestB:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   variables:
@@ -201,7 +204,7 @@ buildtest:intTestC:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $INT_TEST_CACHE_KEY
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "$CI_PROJECT_DIR/sbt-cache/ivy"
@@ -209,6 +212,7 @@ buildtest:intTestC:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   variables:
@@ -262,7 +266,7 @@ buildtest:intTestD:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $INT_TEST_CACHE_KEY
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "$CI_PROJECT_DIR/sbt-cache/ivy"
@@ -270,6 +274,7 @@ buildtest:intTestD:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull-push
   services:
     - postgres:9.6
     - docker:dind
