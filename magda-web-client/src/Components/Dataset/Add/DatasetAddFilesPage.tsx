@@ -230,7 +230,12 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             onDrop={this.onDrop.bind(this)}
                             className="dataset-add-files-dropZone"
                             targetClassName="dataset-add-files-dropTarget"
-                        />
+                        >
+                            <button
+                                className="au-btn filedrop-zone-button"
+                                aria-label="Press enter key to upload files"
+                            />
+                        </FileDrop>
                     </div>
                 </div>
 

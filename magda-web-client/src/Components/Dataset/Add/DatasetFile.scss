@@ -26,9 +26,6 @@
             top: 0px;
             padding: 1px 0px 0px 0px;
         }
-        .dataset-file-delete-button:focus {
-            outline: none;
-        }
         .file-icon-area {
             float: left;
             margin-right: 57px;
@@ -135,10 +132,6 @@
         padding: 1px 0px 0px 0px;
     }
 
-    .dataset-file-edit-button:focus,
-    .dataset-file-delete-button:focus {
-        outline: none;
-    }
     .dataset-file-edit-button:hover,
     .dataset-file-delete-button:hover {
         border: 1px solid #c0bebe;

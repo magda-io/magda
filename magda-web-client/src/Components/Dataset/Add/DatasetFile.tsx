@@ -31,6 +31,7 @@ function FileInProgress({
             <div className="file-in-progress">
                 <button
                     className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                    arial-label="Remove file"
                     onClick={() => onDelete()}
                 >
                     <img src={dismissIcon} />
@@ -94,6 +95,7 @@ export default function DatasetFile({
                 <div>
                     <button
                         className={`au-btn dataset-file-save-button`}
+                        arial-label="Save changes"
                         onClick={() => setEditMode(!editMode)}
                     >
                         Save
@@ -121,12 +123,14 @@ export default function DatasetFile({
                 <React.Fragment>
                     <button
                         className={`dataset-file-edit-button au-btn au-btn--secondary`}
+                        arial-label="Edit file metadata"
                         onClick={() => setEditMode(!editMode)}
                     >
                         <img src={editIcon} />
                     </button>
                     <button
                         className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                        arial-label="Remove file"
                         onClick={() => onDelete()}
                     >
                         <img src={dismissIcon} />
