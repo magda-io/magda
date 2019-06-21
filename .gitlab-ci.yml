@@ -119,7 +119,7 @@ buildtest:intTestA:
       - "*/target"
     expire_in: 30 days
 
-buildtest:search-no-index-cache:
+buildtest:intTestB:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
@@ -456,7 +456,7 @@ dockerize:scala:
     - buildtest:registry
     - buildtest:intTestD
     - buildtest:intTestA
-    - buildtest:search-no-index-cache
+    - buildtest:intTestB
     - buildtest:intTestC
   cache:
     policy: pull-push
