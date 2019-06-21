@@ -90,7 +90,7 @@ export default function DatasetFile({
     const [editMode, setEditMode] = useState(false);
 
     return (
-        <section className="dataset-file-root complete-processing">
+        <div className="dataset-file-root complete-processing">
             {editMode ? (
                 <div>
                     <button
@@ -152,6 +152,6 @@ export default function DatasetFile({
                     </div>
                 </React.Fragment>
             )}
-        </section>
+        </div>
     );
 }
