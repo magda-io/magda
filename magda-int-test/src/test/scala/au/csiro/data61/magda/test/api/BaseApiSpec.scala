@@ -15,6 +15,7 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util._
+import breeze.numerics.round
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
@@ -108,7 +109,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   override def afterAll(): Unit = {
     blockUntilDeleted(List("dataset*", "format*", "publisher*"))
 
-    println(s"***** $suiteName run time: ${System.currentTimeMillis() - startTime}")
+    println(s"***** $suiteName run time: ${Math.round((System.currentTimeMillis() - startTime)/60000)} minutes")
   }
 
   implicit object MockClientProvider extends ClientProvider {
