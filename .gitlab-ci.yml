@@ -70,7 +70,6 @@ buildtest:intTestA:
       fi
     - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -133,7 +132,6 @@ buildtest:intTestB:
       fi
     - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -195,7 +193,6 @@ buildtest:intTestC:
       fi
     - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
@@ -257,7 +254,6 @@ buildtest:intTestD:
       fi
     - "ls /sbt-cache || :"
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
-    - "cp -R /sbt-cache/ivy/* $CI_PROJECT_DIR/sbt-cache/ivy || :"
     - docker info
     - apk update
     - apk upgrade
