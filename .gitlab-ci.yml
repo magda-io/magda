@@ -87,7 +87,7 @@ buildtest:intTestA:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
+    policy: pull-push
   services:
     - docker:dind
   variables:
@@ -150,7 +150,7 @@ buildtest:intTestB:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
+    policy: pull-push
   services:
     - docker:dind
   variables:
@@ -212,7 +212,7 @@ buildtest:intTestC:
       - "*/target"
       - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-    policy: pull
+    policy: pull-push
   services:
     - docker:dind
   variables:
