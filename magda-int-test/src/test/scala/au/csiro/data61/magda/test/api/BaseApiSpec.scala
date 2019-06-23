@@ -15,7 +15,6 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.util._
-import breeze.numerics.round
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
 import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
