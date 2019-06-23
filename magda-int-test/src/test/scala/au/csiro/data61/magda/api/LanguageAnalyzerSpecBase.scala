@@ -163,31 +163,6 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
           combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._2.nonEmpty)
       }
 
-      implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[Seq[String]]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
-        case (dataSet, string) =>
-          val seq = MagdaMatchers.tokenize(string)
-          val x = for {
-            start <- seq.indices
-            len <- 1 to (seq.length - start)
-            combinations = seq.slice(start, start + len) if !combinations.equals(seq)
-          } yield combinations
-
-          val shrunk = x.map(_.mkString(" "))
-
-          shrunk.map((dataSet, _)).toStream
-      }
-
-      // Make sure a shrink for the indexAndTerms gen simply shrinks the list of datasets
-      implicit def indexAndTermsShrinker(implicit s: Shrink[String], s1: Shrink[List[(DataSet, String)]], s2: Shrink[Route]): Shrink[(String, List[(DataSet, String)], Route)] = Shrink[(String, List[(DataSet, String)], Route)] {
-        case (_, terms, _) ⇒
-          Shrink.shrink(terms).map { shrunkTerms ⇒
-            val x = putDataSetsInIndex(shrunkTerms.map(_._1))
-            logger.error("Shrinking " + terms.size + " to " + shrunkTerms.size)
-
-            (x._1, shrunkTerms, x._3)
-          }
-      }
-
       forAll(indexAndTermsGen) {
         case (_, tuples, routes) =>
           assert(tuples.nonEmpty)
