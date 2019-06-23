@@ -119,6 +119,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
       /** Checks that there's at least one searchable term in this seq of strings */
       def checkForSearchableTerm = (list: Seq[String]) =>
         list.forall(_.length > 2) &&
+          list.forall(_ matches ".*[A-Za-z].*") &&
           list.exists(term => !Seq("and", "or").contains(term.trim.toLowerCase)) &&
           list.exists(!isAStopWord(_))
 
@@ -190,6 +191,14 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
       forAll(indexAndTermsGen) {
         case (_, tuples, routes) =>
           assert(tuples.nonEmpty)
+
+          val terms: Seq[String] = for {
+            dataSetAndTerm <- tuples
+            term = dataSetAndTerm._2
+          } yield term
+
+          assert(checkForSearchableTerm(terms))
+
           tuples.foreach {
             case (dataSet, term) => test(dataSet, term, routes, tuples)
           }
