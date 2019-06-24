@@ -484,13 +484,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .execute(
           ElasticDsl
             .search(indices.indexForFacet(facetType))
-            .query( must(
-              dismax(
-                Seq(
-                  matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
-                  matchPhrasePrefixQuery("acronym", facetQuery.getOrElse(""))))
-                .tieBreaker(0)
-            ))
+            .query(dismax(
+              Seq(
+                matchPhrasePrefixQuery("value", facetQuery.getOrElse("")),
+                matchPhrasePrefixQuery("acronym", facetQuery.getOrElse(""))))
+              .tieBreaker(0))
             .limit(limit))
         .flatMap {
           case ESGenericException(e) => throw e
