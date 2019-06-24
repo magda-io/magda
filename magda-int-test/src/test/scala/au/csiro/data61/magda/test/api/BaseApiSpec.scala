@@ -47,6 +47,11 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   val tenant1: BigInt = 1
   val tenant2: BigInt = 2
+
+  var totalIndexingTime: Long = 0
+  var totalNumOfDatasetIndexes: Int = 0
+  var eachTestStart: Long = 0
+
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
@@ -102,7 +107,16 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   override def beforeEach(): Unit = {
     println(s"Testing one of ${testNames.size} case(s) in $suiteName")
+    eachTestStart = System.currentTimeMillis()
     blockUntilDeleted(List("dataset*", "format*", "publisher*"))
+    println(s"     Deleting all indexes takes ${Math.round((System.currentTimeMillis() - eachTestStart)/1000)} seconds.")
+    totalIndexingTime = 0
+    totalNumOfDatasetIndexes = 0
+  }
+
+  override def afterEach(): Unit = {
+    println(s"     This case takes ${Math.round((System.currentTimeMillis() - eachTestStart)/1000)} seconds.")
+    println(s"         Indexing $totalNumOfDatasetIndexes datasets takes ${Math.round(totalIndexingTime/1000)} seconds.")
   }
 
   override def afterAll(): Unit = {

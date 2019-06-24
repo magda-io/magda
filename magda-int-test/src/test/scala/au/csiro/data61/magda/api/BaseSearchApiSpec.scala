@@ -81,7 +81,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]): (String, List[DataSet], Route) = {
-
+    val start = System.currentTimeMillis()
     blockUntilNotRed()
 
     val rawIndexName = java.util.UUID.randomUUID.toString
@@ -119,6 +119,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     }
 
     blockUntilExactCount(dataSets.size, indexNames.head)
+
+    totalIndexingTime += System.currentTimeMillis() - start
+    totalNumOfDatasetIndexes += 1
 
     (indexNames.head, dataSets, api.routes)
   }
