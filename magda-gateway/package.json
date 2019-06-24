@@ -43,7 +43,7 @@
     "passport-facebook": "^2.0.0",
     "passport-google-oauth20": "^1.0.0",
     "passport-local": "^1.0.0",
-    "passport-wsfed-saml2": "^3.0.17",
+    "passport-wsfed-saml2": "https://github.com/magda-io/passport-wsfed-saml2",
     "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
