@@ -161,7 +161,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
               list <- soFar
             } yield currentInner :+ list)
 
-          combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._2.nonEmpty)
+          combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._1.nonEmpty && tuple._2.nonEmpty)
       }
 
       forAll(indexAndTermsGen) {
