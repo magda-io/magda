@@ -50,6 +50,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
 
   var totalIndexingTime: Long = 0
   var totalNumOfDatasetIndexes: Int = 0
+  var totalNumOfDatasets: Int = 0
   var eachTestStart: Long = 0
 
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
@@ -112,11 +113,13 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     println(s"     Deleting all indexes takes ${Math.round((System.currentTimeMillis() - eachTestStart)/1000)} seconds.")
     totalIndexingTime = 0
     totalNumOfDatasetIndexes = 0
+    totalNumOfDatasets = 0
   }
 
   override def afterEach(): Unit = {
     println(s"     This case takes ${Math.round((System.currentTimeMillis() - eachTestStart)/1000)} seconds.")
-    println(s"         Indexing $totalNumOfDatasetIndexes datasets takes ${Math.round(totalIndexingTime/1000)} seconds.")
+    println(s"         Indexing $totalNumOfDatasets datasets into $totalNumOfDatasetIndexes indexes takes ${Math.round(totalIndexingTime/1000)} seconds.")
+    println(s"         Indexing ${Math.round(totalNumOfDatasets*10000/totalIndexingTime)} datasets per 10 seconds.")
   }
 
   override def afterAll(): Unit = {
