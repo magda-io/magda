@@ -21,15 +21,6 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
   val INSERTION_WAIT_TIME: FiniteDuration = 500 seconds
 
-  implicit def indexShrinker(implicit s: Shrink[String], s1: Shrink[List[DataSet]], s2: Shrink[Route]): Shrink[(String, List[DataSet], Route)] = Shrink[(String, List[DataSet], Route)] {
-    case (_, dataSets, _) ⇒
-      Shrink.shrink(dataSets).map(shrunkDataSets ⇒ {
-        // Have this on warn level so it keeps travis entertained in long shrinks.
-        logger.error("Shrunk datasets to size {} from {}", shrunkDataSets.size, dataSets.size)
-        putDataSetsInIndex(shrunkDataSets)
-      })
-  }
-
   def queryToText(query: Query): String = {
     textQueryGen(Gen.const(query)).retryUntil(_ => true).sample.get._1
   }

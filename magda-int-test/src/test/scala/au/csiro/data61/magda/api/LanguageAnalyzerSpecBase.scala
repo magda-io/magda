@@ -1,14 +1,15 @@
 package au.csiro.data61.magda.api
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
-import org.scalacheck.{Shrink, _}
-import akka.http.scaladsl.model.StatusCodes.OK
-import au.csiro.data61.magda.model.misc._
+import org.scalacheck._
+
 import scala.collection.immutable
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
 
