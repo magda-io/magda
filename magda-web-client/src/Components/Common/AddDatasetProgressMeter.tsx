@@ -117,13 +117,15 @@ const AddDatasetProgressMeter = (props: PropsType) => {
 
     return (
         <div className="row add-dataset-progress-meter">
-            <div className="col-sm-2 step-item-heading">
-                <div className="heading">Add a dataset</div>
-            </div>
-            <div className="col-sm-10 step-item-body">
-                {Steps.map((item, idx) =>
-                    renderStepItem(item, idx, currentStep, datasetId)
-                )}
+            <div className="container">
+                <div className="col-sm-2 step-item-heading">
+                    <div className="heading">Add a dataset</div>
+                </div>
+                <div className="col-sm-10 step-item-body">
+                    {Steps.map((item, idx) =>
+                        renderStepItem(item, idx, currentStep, datasetId)
+                    )}
+                </div>
             </div>
         </div>
     );
