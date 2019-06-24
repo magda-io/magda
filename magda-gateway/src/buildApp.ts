@@ -68,6 +68,9 @@ type Config = {
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
+    vanguardWsFedIdpUrl?: string;
+    vanguardWsFedRealm?: string;
+    vanguardWsFedCertificate?: string;
 };
 
 export default function buildApp(config: Config) {
@@ -163,7 +166,10 @@ export default function buildApp(config: Config) {
                 ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
-                userId: config.userId
+                userId: config.userId,
+                vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
+                vanguardWsFedRealm: config.vanguardWsFedRealm,
+                vanguardWsFedCertificate: config.vanguardWsFedCertificate
             })
         );
     }

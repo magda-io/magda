@@ -50,6 +50,7 @@ UI:
 Gateway:
 
 -   Add ArcGIS/ESRI Authentication provider
+-   Add Vanguard (WS-FED) Authentication provider
 
 Access Control:
 
