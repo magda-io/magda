@@ -120,7 +120,7 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
 
     blockUntilExactCount(dataSets.size, indexNames.head)
 
-    totalIndexingTime += System.currentTimeMillis() - start
+    totalIndexingTime += (System.currentTimeMillis() - start)
     totalNumOfDatasetIndexes += 1
 
     (indexNames.head, dataSets, api.routes)
