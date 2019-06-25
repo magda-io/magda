@@ -8,12 +8,15 @@ import au.csiro.data61.magda.model.Registry.RegistryConverters
 import au.csiro.data61.magda.test.util.MagdaMatchers
 
 class TenantDataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
+  blockUntilNotRed()
 
   describe("searching") {
     describe("*") {
       it("should return all datasets of the specified tenant") {
-
-        val tenants = List(tenant1, tenant2)
+        val tenant0: BigInt = 0
+        val tenant1: BigInt = 1
+        val tenant2: BigInt = 2
+        val tenants = List(tenant0, tenant1, tenant2)
         forAll(tenantsIndexGen(tenants)) {
           case (_, dataSets, route) ⇒
             tenants.flatMap( theTenant =>

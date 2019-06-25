@@ -7,24 +7,121 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy
 import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
-import org.scalacheck._
+import org.scalacheck.{Shrink, _}
 
-import scala.collection.immutable
+import scala.util.Random
 
-trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
+class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
-  def isAStopWord(term: String): Boolean = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
+  blockUntilNotRed()
 
-  def getAllSlices(terms: Seq[String]): immutable.IndexedSeq[Seq[String]] = for {
-    start <- terms.indices
+  describe("should return the right dataset when searching for that dataset's") {
+    describe("title") {
+      testDataSetSearch(dataSet => dataSet.title.toSeq)
+    }
+
+    describe("description") {
+      testDataSetSearch(dataSet => dataSet.description.toSeq, true)
+    }
+
+    describe("keywords") {
+      testDataSetSearch(dataSet => dataSet.keywords)
+    }
+
+    describe("publisher name") {
+      testDataSetSearch(dataSet => dataSet.publisher.toSeq.flatMap(_.name.toSeq))
+    }
+
+    describe("distribution title") {
+      testDataSetSearch(dataSet => {
+        // --- only randomly pick one distribution to test as now it's AND operator in simple_string_query
+        Random.shuffle(dataSet.distributions).take(1).map(_.title)
+      })
+    }
+
+    describe("distribution description") {
+      testDataSetSearch(dataSet => {
+        Random.shuffle(dataSet.distributions).take(1).flatMap(_.description.toSeq)
+      }, true)
+    }
+
+    describe("theme") {
+      testDataSetSearch(dataSet => dataSet.themes, true)
+    }
+
+    def testDataSetSearch(rawTermExtractor: DataSet => Seq[String], useLightEnglishStemmer: Boolean = false) = {
+      def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
+        .filter(term => term.matches(".*[A-Za-z].*"))
+        .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
+
+      def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
+        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
+          status shouldBe OK
+          val result = responseAs[SearchResult]
+
+          withClue(s"term: ${term} for ${outerTermExtractor(dataSet)} in ${result.dataSets.map(dataSet => dataSet.identifier + ": " + outerTermExtractor(dataSet)).mkString(", ")}") {
+            result.strategy.get should equal(SearchStrategy.MatchAll)
+            result.dataSets.size should be > 0
+            result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
+          }
+        }
+      }
+
+      testLanguageFieldSearch(outerTermExtractor, test, false, useLightEnglishStemmer)
+    }
+  }
+
+  describe("should return the right publisher when searching by publisher name") {
+    def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
+
+    def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
+      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val result = responseAs[FacetSearchResult]
+
+        val publisher = dataSet.publisher.get
+
+        withClue(s"term: ${publisherName}, publisher: ${dataSet.publisher.map(_.name)} options ${result.options}") {
+          result.options.exists { option =>
+            option.value.equalsIgnoreCase(publisher.name.get)
+            option.identifier.get.equals(publisher.identifier.get)
+          } should be(true)
+        }
+      }
+    }
+
+    testLanguageFieldSearch(termExtractor, test, true)
+  }
+
+  describe("should return the right format when searching by format value") {
+    def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
+
+    def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+        status shouldBe OK
+        val result = responseAs[FacetSearchResult]
+        val formats = termExtractor(dataSet)
+
+        withClue(s"term: ${formatName} formats: ${formats} options ${result.options}") {
+          result.options.exists(value =>
+            formats.exists(format =>
+              value.value.equalsIgnoreCase(format))) should be(true)
+        }
+      }
+    }
+
+    testLanguageFieldSearch(termExtractor, test, true)
+  }
+
+  def isAStopWord(term: String) = Generators.luceneStopWords.exists(stopWord => term.trim.equalsIgnoreCase(stopWord))
+
+  def getAllSlices(terms: Seq[String]) = for {
+    start <- 0 to terms.length - 1
     len <- 1 to (terms.length - start)
-    combinations = terms.slice(start, start + len)
+    combinations = terms.drop(start).take(len)
   } yield combinations
 
-  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String],
-                              test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false,
-                              useLightEnglishStemmer: Boolean = false,
-                              testWhat: String): Unit = {
+  def testLanguageFieldSearch(outerTermExtractor: DataSet => Seq[String], test: (DataSet, String, Route, List[(DataSet, String)]) => Unit, keepOrder: Boolean = false, useLightEnglishStemmer: Boolean = false) = {
     it("when searching for it directly") {
       def innerTermExtractor(dataSet: DataSet) = if (keepOrder) {
         outerTermExtractor(dataSet).map(term => MagdaMatchers.tokenize(term).map(_.trim)).flatMap(getAllSlices).map(_.mkString(" "))
@@ -32,7 +129,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
         outerTermExtractor(dataSet).flatMap(MagdaMatchers.tokenize)
       }
 
-      doTest(innerTermExtractor, keepOrder, s"$testWhat, when searching for it directly")
+      doTest(innerTermExtractor, keepOrder)
     }
 
     it(s"regardless of pluralization/depluralization") {
@@ -111,16 +208,15 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
             .filterNot(isAStopWord)
         }
 
-      doTest(innerTermExtractor, keepOrder, s"$testWhat, regardless of pluralization/depluralization")
+      doTest(innerTermExtractor, keepOrder)
     }
 
-    def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean, testWhat: String): Unit = {
+    def doTest(innerTermExtractor: DataSet => Seq[String], keepOrder: Boolean) = {
       def getIndividualTerms(terms: Seq[String]) = terms.map(MagdaMatchers.tokenize)
 
       /** Checks that there's at least one searchable term in this seq of strings */
       def checkForSearchableTerm = (list: Seq[String]) =>
         list.forall(_.length > 2) &&
-          list.forall(_ matches ".*[A-Za-z].*") &&
           list.exists(term => !Seq("and", "or").contains(term.trim.toLowerCase)) &&
           list.exists(!isAStopWord(_))
 
@@ -135,7 +231,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
               val validTerms = rawTerms.filter(checkForSearchableTerm)
 
               // Make sure there's _some_ sublist that can be successfully searched - if so try to generate one, otherwise return none
-              if (validTerms.nonEmpty) {
+              if (!validTerms.isEmpty) {
                 Some(Gen.oneOf(validTerms))
               } else None
             } else {
@@ -144,7 +240,7 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
                 .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
                 .filterNot(isAStopWord)
 
-              if (terms.nonEmpty) {
+              if (!terms.isEmpty) {
                 Some(for {
                   noOfTerms <- Gen.choose(1, terms.length)
                   selectedTerms <- Gen.pick(noOfTerms, terms) //Gen.pick shuffles the order
@@ -161,52 +257,42 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
               list <- soFar
             } yield currentInner :+ list)
 
-          combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._2.nonEmpty)
+          combinedDataSetAndTermGen.map((indexName, _, routes))
+      }
+
+      implicit def dataSetStringShrinker(implicit s: Shrink[DataSet], s1: Shrink[Seq[String]]): Shrink[(DataSet, String)] = Shrink[(DataSet, String)] {
+        case (dataSet, string) =>
+          val seq = MagdaMatchers.tokenize(string)
+          val x = for {
+            start <- 0 to seq.length - 1
+            len <- 1 to (seq.length - start)
+            combinations = seq.drop(start).take(len) if !combinations.equals(seq)
+          } yield combinations
+
+          val shrunk = x.map(_.mkString(" "))
+
+          shrunk.map((dataSet, _)).toStream
+      }
+
+      // Make sure a shrink for the indexAndTerms gen simply shrinks the list of datasets
+      implicit def indexAndTermsShrinker(implicit s: Shrink[String], s1: Shrink[List[(DataSet, String)]], s2: Shrink[Route]): Shrink[(String, List[(DataSet, String)], Route)] = Shrink[(String, List[(DataSet, String)], Route)] {
+        case (indexName, terms, route) ⇒
+          Shrink.shrink(terms).map { shrunkTerms ⇒
+            val x = putDataSetsInIndex(shrunkTerms.map(_._1))
+            logger.error("Shrinking " + terms.size + " to " + shrunkTerms.size)
+
+            (x._1, shrunkTerms, x._3)
+          }
       }
 
       forAll(indexAndTermsGen) {
-        case (_, tuples, routes) =>
-          assert(tuples.nonEmpty)
-
-          val terms: Seq[String] = for {
-            dataSetAndTerm <- tuples
-            term = dataSetAndTerm._2
-          } yield term
-
-          assert(checkForSearchableTerm(terms))
-
-          tuples.foreach {
-            case (dataSet, term) => test(dataSet, term, routes, tuples)
+        case (indexName, tuples, routes) =>
+          whenever(!tuples.isEmpty) {
+            tuples.foreach {
+              case (dataSet, term) => test(dataSet, term, routes, tuples)
+            }
           }
       }
     }
   }
-
-  def testDataSetSearch(rawTermExtractor: DataSet => Seq[String], useLightEnglishStemmer: Boolean = false, testWhat: String): Unit = {
-    def outerTermExtractor(dataSet: DataSet) = rawTermExtractor(dataSet)
-      .filter(term => term.matches(".*[A-Za-z].*"))
-      .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
-
-    def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val result = responseAs[SearchResult]
-
-        withClue(s"term: $term for ${outerTermExtractor(dataSet)} in ${result.dataSets.map(dataSet => dataSet.identifier + ": " + outerTermExtractor(dataSet)).mkString(", ")}") {
-          result.strategy.get should equal(SearchStrategy.MatchAll)
-          result.dataSets.size should be > 0
-          result.dataSets.exists(_.identifier.equals(dataSet.identifier)) shouldBe true
-        }
-      }
-
-      Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
-        status shouldBe OK
-        val result = responseAs[SearchResult]
-        result.hitCount shouldBe 0
-      }
-    }
-
-    testLanguageFieldSearch(outerTermExtractor, test, keepOrder = false, useLightEnglishStemmer = useLightEnglishStemmer, testWhat)
-  }
-
 }
