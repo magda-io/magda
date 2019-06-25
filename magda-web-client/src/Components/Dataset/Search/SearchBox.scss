@@ -159,6 +159,10 @@
             bottom: 0px;
         }
     }
+
+    @media print {
+        display: none;
+    }
 }
 
 .home {

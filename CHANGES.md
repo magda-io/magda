@@ -44,6 +44,7 @@ Cataloging:
 
 UI:
 
+-   Made dataset page printer friendly
 -   Display search box placeholder text at a lower opacity while the field is in focus.
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
@@ -62,6 +63,7 @@ UI:
 Gateway:
 
 -   Add ArcGIS/ESRI Authentication provider
+-   Add Vanguard (WS-FED) Authentication provider
 
 Access Control:
 
@@ -72,6 +74,7 @@ Access Control:
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
 -   Filter datasets based on user's current organization unit
+-   Added API to see what users will approve a potential dataset
 
 Others:
 

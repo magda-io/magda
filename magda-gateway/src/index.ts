@@ -137,6 +137,30 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.ARCGIS_CLIENT_SECRET ||
                 process.env.npm_package_config_arcgisClientSecret
         })
+        .option("vanguardWsFedCertificate", {
+            describe:
+                "The certificate to use for Vanguard WS-FED Login. This can also be specified with the VANGUARD_CERTIFICATE environment variable.",
+            type: "string",
+            default:
+                process.env.VANGUARD_CERTIFICATE ||
+                process.env.npm_package_config_vanguardCertificate
+        })
+        .option("vanguardWsFedIdpUrl", {
+            describe:
+                "Vanguard integration entry point. Can also be specified in VANGUARD_URL environment variable.",
+            type: "string",
+            default:
+                process.env.VANGUARD_URL ||
+                process.env.npm_package_config_vanguardUrl
+        })
+        .option("vanguardWsFedRealm", {
+            describe:
+                "Vanguard realm id for entry point. Can also be specified in VANGUARD_REALM environment variable.",
+            type: "string",
+            default:
+                process.env.VANGUARD_REALM ||
+                process.env.npm_package_config_vanguardRealm
+        })
         .option("aafClientUri", {
             describe: "The aaf client Uri to use for AAF Auth.",
             type: "string",
@@ -225,9 +249,9 @@ const argv = addJwtSecretFromEnvVar(
                 "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
             type: "string",
             default: "unknown_portal_host_name"
-        }).option("minReqIntervalInMs", {
-            describe:
-                "Minimal interval in ms to fetch tenants from DB.",
+        })
+        .option("minReqIntervalInMs", {
+            describe: "Minimal interval in ms to fetch tenants from DB.",
             type: "number",
             default: 60000
         }).argv

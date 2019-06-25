@@ -31,6 +31,9 @@
     border-bottom: 8px solid $header-color-border;
     border-bottom: 0.5rem solid $header-color-border;
     background-color: transparent;
+    @media print {
+        display: none;
+    }
 }
 
 .header-nav {
