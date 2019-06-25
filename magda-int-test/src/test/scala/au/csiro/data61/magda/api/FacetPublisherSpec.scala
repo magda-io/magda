@@ -31,29 +31,32 @@ class FacetPublisherSpec extends FacetSpecBase {
           try {
             forAll(gen) {
               case (tuple, textQuery, facetSize) ⇒
-                val (_, dataSets, routes) = tuple
 
-                val publishers = dataSets.flatMap(_.publisher).distinct
+                tuple._1.map(t => {
+                  val dataSets = t._2
+                  val routes = t._3
+                  val publishers = dataSets.flatMap(_.publisher).distinct
 
-                val publisherLookup = publishers
-                  .groupBy(_.name.get.toLowerCase)
+                  val publisherLookup = publishers
+                    .groupBy(_.name.get.toLowerCase)
 
-                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> addSingleTenantIdHeader ~> routes ~> check {
-                  status shouldBe OK
+                  Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> addSingleTenantIdHeader ~> routes ~> check {
+                    status shouldBe OK
 
-                  val result = responseAs[SearchResult]
+                    val result = responseAs[SearchResult]
 
-                  val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
+                    val facet = result.facets.get.find(_.id.equals(Publisher.id)).get
 
-                  withClue("publishers " + publisherLookup) {
-                    facet.options.foreach { x =>
-                      val matchedPublishers = publisherLookup.get(x.value.toLowerCase)
-                      if(matchedPublishers.isDefined && ( !x.matched || x.hitCount != 0 )) {
-                        matchedPublishers.get.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                    withClue("publishers " + publisherLookup) {
+                      facet.options.foreach { x =>
+                        val matchedPublishers = publisherLookup.get(x.value.toLowerCase)
+                        if(matchedPublishers.isDefined && ( !x.matched || x.hitCount != 0 )) {
+                          matchedPublishers.get.exists(publisher => publisher.identifier.get.equals(x.identifier.get)) should be(true)
+                        }
                       }
                     }
                   }
-                }
+                })
             }
           } catch {
             case e: Throwable =>

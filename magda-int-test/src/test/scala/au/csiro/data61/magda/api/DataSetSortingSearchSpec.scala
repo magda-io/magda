@@ -13,20 +13,24 @@ class DataSetSortingSearchSpec extends DataSetSearchSpecBase {
     describe("*") {
       it("should sort results by pure quality") {
         forAll(indexGen) {
-          case (_, dataSets, routes) ⇒
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
-              status shouldBe OK
-              contentType shouldBe `application/json`
-              val response = responseAs[SearchResult]
+          case indexTuple ⇒
+            indexTuple._1.map(tuple => {
+              val dataSets = tuple._2
+              val routes = tuple._3
+              Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
+                status shouldBe OK
+                contentType shouldBe `application/json`
+                val response = responseAs[SearchResult]
 
-              response.hitCount shouldEqual dataSets.length
-              MagdaMatchers.dataSetsEqual(response.dataSets, sortByQuality(dataSets))
-            }
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-              response.hitCount shouldEqual 0
-            }
+                response.hitCount shouldEqual dataSets.length
+                MagdaMatchers.dataSetsEqual(response.dataSets, sortByQuality(dataSets))
+              }
+              Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+                response.hitCount shouldEqual 0
+              }
+            })
         }
       }
     }

@@ -10,6 +10,7 @@ import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
 import org.scalacheck._
 
 import scala.collection.immutable
+import scala.concurrent.Future
 
 trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
 
@@ -124,60 +125,55 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
           list.exists(term => !Seq("and", "or").contains(term.trim.toLowerCase)) &&
           list.exists(!isAStopWord(_))
 
-      val indexAndTermsGen = smallIndexGen.flatMap {
-        case (indexName, dataSetsRaw, routes) ⇒
-          val indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
+      val indexAndTermsGen: Gen[(Gen[List[(DataSet, String)]], Future[(String, List[DataSet], Route)])] = for {
+        gen <- smallIndexGen
+        dataSetsRaw = gen._2
+        indexedDataSets = dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
+        dataSetAndTermGens = indexedDataSets.flatMap { dataSet =>
+          val rawTerms = getIndividualTerms(innerTermExtractor(dataSet))
 
-          val dataSetAndTermGens = indexedDataSets.flatMap { dataSet =>
-            val rawTerms = getIndividualTerms(innerTermExtractor(dataSet))
+          val termGen = if (keepOrder) {
+            val validTerms = rawTerms.filter(checkForSearchableTerm)
 
-            val termGen = if (keepOrder) {
-              val validTerms = rawTerms.filter(checkForSearchableTerm)
+            // Make sure there's _some_ sublist that can be successfully searched - if so try to generate one, otherwise return none
+            if (validTerms.nonEmpty) {
+              Some(Gen.oneOf(validTerms))
+            } else None
+          } else {
+            val terms = rawTerms.flatten
+              .filter(_.length > 2)
+              .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
+              .filterNot(isAStopWord)
 
-              // Make sure there's _some_ sublist that can be successfully searched - if so try to generate one, otherwise return none
-              if (validTerms.nonEmpty) {
-                Some(Gen.oneOf(validTerms))
-              } else None
-            } else {
-              val terms = rawTerms.flatten
-                .filter(_.length > 2)
-                .filterNot(term => Seq("and", "or", "").contains(term.trim.toLowerCase))
-                .filterNot(isAStopWord)
-
-              if (terms.nonEmpty) {
-                Some(for {
-                  noOfTerms <- Gen.choose(1, terms.length)
-                  selectedTerms <- Gen.pick(noOfTerms, terms) //Gen.pick shuffles the order
-                } yield selectedTerms)
-              } else None
-            }
-
-            termGen.map(gen => gen.map(list => (dataSet, list.mkString(" ")))).toSeq
+            if (terms.nonEmpty) {
+              Some(for {
+                noOfTerms <- Gen.choose(1, terms.length)
+                selectedTerms <- Gen.pick(noOfTerms, terms) //Gen.pick shuffles the order
+              } yield selectedTerms)
+            } else None
           }
 
-          val combinedDataSetAndTermGen = dataSetAndTermGens.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) =>
-            for {
-              currentInner <- current
-              list <- soFar
-            } yield currentInner :+ list)
+          termGen.map(gen => gen.map(list => (dataSet, list.mkString(" ")))).toSeq
+        }
 
-          combinedDataSetAndTermGen.map((indexName, _, routes)).filter(tuple => tuple._2.nonEmpty)
-      }
+        combinedDataSetAndTermGen = dataSetAndTermGens.foldRight(Gen.const(List[(DataSet, String)]()))((soFar, current) => {
+          for {
+            currentInner <- current
+            list <- soFar
+          } yield currentInner :+ list
+        }).map(x => x).filter(x => x.nonEmpty)
+
+      }yield (combinedDataSetAndTermGen, gen._1)
 
       forAll(indexAndTermsGen) {
-        case (_, tuples, routes) =>
-          assert(tuples.nonEmpty)
-
-          val terms: Seq[String] = for {
-            dataSetAndTerm <- tuples
-            term = dataSetAndTerm._2
-          } yield term
-
-          assert(checkForSearchableTerm(terms))
-
-          tuples.foreach {
-            case (dataSet, term) => test(dataSet, term, routes, tuples)
+        case (dataSetAndTerms, future) => future.map( gen => {
+          assert(gen._2.nonEmpty)
+          forAll(dataSetAndTerms) {
+            case list => {
+                gen._2.foreach(dataSet => test(dataSet, gen._1, gen._3, list))
+            }
           }
+        })
       }
     }
   }

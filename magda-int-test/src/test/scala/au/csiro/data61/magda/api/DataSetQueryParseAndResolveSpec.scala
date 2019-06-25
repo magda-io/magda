@@ -28,22 +28,24 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
       }yield gen
 
       forAll(emptyIndexGen, theQuery) { (indexTuple, queryTuple) ⇒
+        val future = indexTuple._1
         val (textQuery, query) = queryTuple
-        val (_, _, routes) = indexTuple
-        assert(validateQueryText(textQuery))
-//      println(s"***** Text query: $textQuery")
-        Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
+        future.map(tuple => {
+          assert(validateQueryText(textQuery))
+          //      println(s"***** Text query: $textQuery")
+          Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
 
-          queryEquals(response.query, query)
-        }
+            queryEquals(response.query, query)
+          }
 
-        Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
-          response.dataSets shouldBe empty
-        }
+          Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> tuple._3 ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
+            response.dataSets shouldBe empty
+          }
+        })
       }
     }
 
@@ -51,57 +53,58 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
       val thisQueryGen = set(innerRegionQueryGen).map(queryRegions => new Query(regions = queryRegions.map(Specified.apply)))
 
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) { (indexTuple, queryTuple) ⇒
+        val future = indexTuple._1
         val (textQuery, query) = queryTuple
-        val (_, _, routes) = indexTuple
+        future.map(tuple => {
+          Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
 
-        Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
+            response.query.regions.size should equal(query.regions.size)
 
-          response.query.regions.size should equal(query.regions.size)
+            val tuples = response.query.regions.map(region => (region, query.regions.find(_.get.queryRegion.equals(region.get.queryRegion)).get.get.queryRegion))
+            tuples.foreach {
+              case (responseRegion, queryRegion) =>
+                val (indexedRegion, regionSource, geometry) = findIndexedRegion(queryRegion)
 
-          val tuples = response.query.regions.map(region => (region, query.regions.find(_.get.queryRegion.equals(region.get.queryRegion)).get.get.queryRegion))
-          tuples.foreach {
-            case (responseRegion, queryRegion) =>
-              val (indexedRegion, regionSource, geometry) = findIndexedRegion(queryRegion)
+                responseRegion.get.queryRegion.regionId should equal(indexedRegion.queryRegion.regionId)
 
-              responseRegion.get.queryRegion.regionId should equal(indexedRegion.queryRegion.regionId)
+                if (regionSource.includeIdInName) {
+                  responseRegion.get.regionName.get should equal(indexedRegion.regionName.get + " - " + indexedRegion.queryRegion.regionId)
+                } else {
+                  responseRegion.get.regionName.get should equal(indexedRegion.regionName.get)
+                }
 
-              if (regionSource.includeIdInName) {
-                responseRegion.get.regionName.get should equal(indexedRegion.regionName.get + " - " + indexedRegion.queryRegion.regionId)
-              } else {
-                responseRegion.get.regionName.get should equal(indexedRegion.regionName.get)
-              }
+                val allCoords: Seq[Coordinate] = geometry match {
+                  case Point(coord)               => Seq(coord)
+                  case MultiPoint(coords)         => coords
+                  case LineString(coords)         => coords
+                  case MultiLineString(coordsSeq) => coordsSeq.flatten
+                  case Polygon(coordsSeq)         => coordsSeq.flatten
+                  case MultiPolygon(coordsSeqSeq) => coordsSeqSeq.flatten.flatten
+                }
+                val byY = allCoords.sortBy(_.y)
+                val byX = allCoords.sortBy(_.x)
 
-              val allCoords: Seq[Coordinate] = geometry match {
-                case Point(coord)               => Seq(coord)
-                case MultiPoint(coords)         => coords
-                case LineString(coords)         => coords
-                case MultiLineString(coordsSeq) => coordsSeq.flatten
-                case Polygon(coordsSeq)         => coordsSeq.flatten
-                case MultiPolygon(coordsSeqSeq) => coordsSeqSeq.flatten.flatten
-              }
-              val byY = allCoords.sortBy(_.y)
-              val byX = allCoords.sortBy(_.x)
+                val indexedBoundingBox = BoundingBox(byY.last.y, byX.head.x, byY.head.y, byX.last.x)
 
-              val indexedBoundingBox = BoundingBox(byY.last.y, byX.head.x, byY.head.y, byX.last.x)
+                responseRegion.get.boundingBox.isDefined should be(true)
 
-              responseRegion.get.boundingBox.isDefined should be(true)
+                val responseBoundingBox = responseRegion.get.boundingBox.get
 
-              val responseBoundingBox = responseRegion.get.boundingBox.get
-
-              withClue(s"responseBoundingBox $responseBoundingBox vs indexedBoundingBox $indexedBoundingBox with $geometry") {
-                responseBoundingBox should equal(indexedBoundingBox)
-              }
+                withClue(s"responseBoundingBox $responseBoundingBox vs indexedBoundingBox $indexedBoundingBox with $geometry") {
+                  responseBoundingBox should equal(indexedBoundingBox)
+                }
+            }
           }
-        }
 
-        Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
-          status shouldBe OK
-          val response = responseAs[SearchResult]
+          Get(s"/v0/datasets?$textQuery") ~> addTenantIdHeader(tenant1) ~> tuple._3 ~> check {
+            status shouldBe OK
+            val response = responseAs[SearchResult]
 
-          response.dataSets shouldBe empty
-        }
+            response.dataSets shouldBe empty
+          }
+        })
       }
     }
   }

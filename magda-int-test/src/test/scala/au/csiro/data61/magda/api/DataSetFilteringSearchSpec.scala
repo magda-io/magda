@@ -2,12 +2,16 @@ package au.csiro.data61.magda.api
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
+import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 import org.locationtech.jts.geom.GeometryFactory
+
+import scala.concurrent.Future
 
 
 class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
@@ -24,106 +28,107 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
 
         forAll(gen) {
           case (indexTuple, queryTuple) ⇒
-            val (_, dataSets, routes) = indexTuple
-            val (textQuery, query) = queryTuple
+            val future: Future[(String, List[DataSet], Route)] = indexTuple._1
+            future.map(tuple => {
+              val (textQuery, query) = queryTuple
+              Get(s"/v0/datasets?$textQuery&limit=${tuple._2.length}") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+                whenever(response.strategy.get == MatchAll) {
 
-            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-              whenever(response.strategy.get == MatchAll) {
+                  response.dataSets.foreach { dataSet =>
+                    val temporal = dataSet.temporal
+                    val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
+                    val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
 
-                response.dataSets.foreach { dataSet =>
-                  val temporal = dataSet.temporal
-                  val dataSetDateFrom = temporal.flatMap(innerTemporal => innerTemporal.start.flatMap(_.date).orElse(innerTemporal.end.flatMap(_.date)))
-                  val dataSetDateTo = temporal.flatMap(innerTemporal => innerTemporal.end.flatMap(_.date).orElse(innerTemporal.start.flatMap(_.date)))
-
-                  val dateUnspecified = (query.dateTo, query.dateFrom) match {
-                    case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
-                    case _ => false
-                  }
-
-                  val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
-                    case (Some(Specified(innerQueryDateTo)), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
-                    case _ => true
-                  }
-
-                  val dateToMatched = (query.dateFrom, dataSetDateTo) match {
-                    case (Some(Specified(innerQueryDateFrom)), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
-                    case _ => true
-                  }
-
-                  val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
-                  val publisherMatched = if (query.publishers.nonEmpty) {
-                    query.publishers.exists { queryPublisher =>
-                      queryPublisher match {
-                        case Specified(specifiedPublisher) => dataSetPublisherName.exists(innerDataSetPublisher =>
-                          MagdaMatchers.extractAlphaNum(innerDataSetPublisher).contains(MagdaMatchers.extractAlphaNum(specifiedPublisher)))
-                        case Unspecified() => dataSet.publisher.flatMap(_.name).isEmpty
-                      }
+                    val dateUnspecified = (query.dateTo, query.dateFrom) match {
+                      case (Some(Unspecified()), Some(Unspecified())) | (Some(Unspecified()), None) | (None, Some(Unspecified())) => dataSetDateFrom.isEmpty && dataSetDateTo.isEmpty
+                      case _ => false
                     }
-                  } else true
 
-                  val formatMatched = if (query.formats.nonEmpty) {
-                    query.formats.exists(queryFormat =>
-                      dataSet.distributions.exists(distribution =>
-                        queryFormat match {
-                          case Specified(specifiedFormat) => distribution.format.exists(dataSetFormat =>
-                            MagdaMatchers.extractAlphaNum(dataSetFormat).contains(MagdaMatchers.extractAlphaNum(specifiedFormat)))
-                          case Unspecified() => distribution.format.isEmpty
-                        }))
-                  } else true
+                    val dateFromMatched = (query.dateTo, dataSetDateFrom) match {
+                      case (Some(Specified(innerQueryDateTo)), Some(innerDataSetDateFrom)) => innerDataSetDateFrom.isBefore(innerQueryDateTo)
+                      case _ => true
+                    }
 
-                  val geometryFactory: GeometryFactory = new GeometryFactory
+                    val dateToMatched = (query.dateFrom, dataSetDateTo) match {
+                      case (Some(Specified(innerQueryDateFrom)), Some(innerDataSetDateTo)) => innerDataSetDateTo.isAfter(innerQueryDateFrom)
+                      case _ => true
+                    }
 
-                  val queryRegions = query.regions.filter(_.isDefined).map { region =>
-                    findIndexedRegion(region.get.queryRegion)
-                  }
-
-                  // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
-                  val distances = queryRegions.flatMap(queryRegion =>
-                    dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
-                      val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
-                      val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
-
-                      val length = {
-                        val jtsGeoEnv = jtsGeo.getEnvelopeInternal
-                        val jtsRegionEnv = jtsRegion.getEnvelopeInternal
-
-                        Seq(jtsGeoEnv.getHeight, jtsGeoEnv.getWidth, jtsRegionEnv.getHeight, jtsRegionEnv.getWidth).sorted.last
+                    val dataSetPublisherName = dataSet.publisher.flatMap(_.name)
+                    val publisherMatched = if (query.publishers.nonEmpty) {
+                      query.publishers.exists { queryPublisher =>
+                        queryPublisher match {
+                          case Specified(specifiedPublisher) => dataSetPublisherName.exists(innerDataSetPublisher =>
+                            MagdaMatchers.extractAlphaNum(innerDataSetPublisher).contains(MagdaMatchers.extractAlphaNum(specifiedPublisher)))
+                          case Unspecified() => dataSet.publisher.flatMap(_.name).isEmpty
+                        }
                       }
+                    } else true
 
-                      (jtsGeo.distance(jtsRegion), if (length > 0) length else 1)
-                    }))
+                    val formatMatched = if (query.formats.nonEmpty) {
+                      query.formats.exists(queryFormat =>
+                        dataSet.distributions.exists(distribution =>
+                          queryFormat match {
+                            case Specified(specifiedFormat) => distribution.format.exists(dataSetFormat =>
+                              MagdaMatchers.extractAlphaNum(dataSetFormat).contains(MagdaMatchers.extractAlphaNum(specifiedFormat)))
+                            case Unspecified() => distribution.format.isEmpty
+                          }))
+                    } else true
 
-                  val unspecifiedRegion = query.regions.exists(_.isEmpty)
-                  val geoMatched = if (query.regions.nonEmpty) {
-                    unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
-                  } else true
+                    val geometryFactory: GeometryFactory = new GeometryFactory
 
-                  val allValid = (dateUnspecified || (dateFromMatched && dateToMatched)) && publisherMatched && formatMatched && geoMatched
+                    val queryRegions = query.regions.filter(_.isDefined).map { region =>
+                      findIndexedRegion(region.get.queryRegion)
+                    }
 
-                  withClue(s"with query $textQuery \n and dataSet" +
-                    s"\n\tdateUnspecified $dateUnspecified" +
-                    s"\n\tdateTo $dataSetDateTo $dateToMatched" +
-                    s"\n\tdateFrom $dataSetDateFrom $dateFromMatched" +
-                    s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
-                    s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
-                    s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
-                    s"\n\tgeomatched ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
-                    s"\n\tqueryRegions $queryRegions\n") {
-                    allValid should be(true)
+                    // This one is trying to imitate an inaccurate ES query with JTS distance, which is also a bit flaky
+                    val distances = queryRegions.flatMap(queryRegion =>
+                      dataSet.spatial.flatMap(_.geoJson.map { geoJson =>
+                        val jtsGeo = GeometryConverter.toJTSGeo(geoJson, geometryFactory)
+                        val jtsRegion = GeometryConverter.toJTSGeo(queryRegion._3, geometryFactory)
+
+                        val length = {
+                          val jtsGeoEnv = jtsGeo.getEnvelopeInternal
+                          val jtsRegionEnv = jtsRegion.getEnvelopeInternal
+
+                          Seq(jtsGeoEnv.getHeight, jtsGeoEnv.getWidth, jtsRegionEnv.getHeight, jtsRegionEnv.getWidth).sorted.last
+                        }
+
+                        (jtsGeo.distance(jtsRegion), if (length > 0) length else 1)
+                      }))
+
+                    val unspecifiedRegion = query.regions.exists(_.isEmpty)
+                    val geoMatched = if (query.regions.nonEmpty) {
+                      unspecifiedRegion || distances.exists { case (distance, length) => distance <= length * 0.05 }
+                    } else true
+
+                    val allValid = (dateUnspecified || (dateFromMatched && dateToMatched)) && publisherMatched && formatMatched && geoMatched
+
+                    withClue(s"with query $textQuery \n and dataSet" +
+                      s"\n\tdateUnspecified $dateUnspecified" +
+                      s"\n\tdateTo $dataSetDateTo $dateToMatched" +
+                      s"\n\tdateFrom $dataSetDateFrom $dateFromMatched" +
+                      s"\n\tpublisher ${dataSet.publisher} $publisherMatched" +
+                      s"\n\tformats ${dataSet.distributions.map(_.format).mkString(",")} $formatMatched" +
+                      s"\n\tdistances ${distances.map(t => t._1 + "/" + t._2).mkString(",")}" +
+                      s"\n\tgeomatched ${dataSet.spatial.map(_.geoJson).mkString(",")} $geoMatched" +
+                      s"\n\tqueryRegions $queryRegions\n") {
+                      allValid should be(true)
+                    }
                   }
                 }
               }
-            }
 
-            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addTenantIdHeader(tenant1) ~> routes ~> check {
-              status shouldBe OK
-              val response = responseAs[SearchResult]
-              whenever(response.strategy.get == MatchAll) {
-                response.hitCount shouldBe 0
+              Get(s"/v0/datasets?$textQuery&limit=${tuple._2.length}") ~> addTenantIdHeader(tenant1) ~> tuple._3 ~> check {
+                status shouldBe OK
+                val response = responseAs[SearchResult]
+                whenever(response.strategy.get == MatchAll) {
+                  response.hitCount shouldBe 0
+                }
               }
-            }
+            })
         }
       } catch {
         case e: Throwable =>

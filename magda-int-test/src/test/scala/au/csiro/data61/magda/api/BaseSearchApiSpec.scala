@@ -15,6 +15,7 @@ import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.scalacheck.{Gen, Shrink}
 
 import scala.collection.mutable
+import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 
@@ -32,24 +33,24 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
       }
   }
 
-  def emptyIndexGen: Gen[(String, List[DataSet], Route)] =
+  def emptyIndexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] =
     Gen.delay {
       genIndexForSize(0)
     }
 
-  def indexGen: Gen[(String, List[DataSet], Route)] =
+  def indexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] =
     Gen.delay {
       Gen.choose(50, 70).flatMap { size =>
         genIndexForSize(size)
       }
     }
-  def smallIndexGen: Gen[(String, List[DataSet], Route)] =
+  def smallIndexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] =
     Gen.delay {
       Gen.choose(0, 10).flatMap { size =>
         genIndexForSize(size)
       }
     }
-  def mediumIndexGen: Gen[(String, List[DataSet], Route)] = indexGen
+  def mediumIndexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] = indexGen
 
   def tenantsIndexGen(tenantIds: List[BigInt]): Gen[(String, List[DataSet], Route)]  =
     Gen.delay {
@@ -70,14 +71,15 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     putDataSetsInIndex(dataSets)
   }
 
-  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
+  def genIndexForSize(rawSize: Int): (Future[(String, List[DataSet], Route)], List[DataSet]) = {
     val size = rawSize % 100
     // We are not using cached indexes anymore.  inputCache stays here simply to avoid
     // too many changes in the interfaces.
     val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
     val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
     inputCache.clear()
-    putDataSetsInIndex(dataSets)
+
+    (Future{putDataSetsInIndex(dataSets)}, dataSets)
   }
 
   def putDataSetsInIndex(dataSets: List[DataSet]): (String, List[DataSet], Route) = {

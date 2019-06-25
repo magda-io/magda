@@ -11,8 +11,10 @@ import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck._
 
+import scala.concurrent.Future
+
 trait FacetSpecBase extends BaseSearchApiSpec {
-  var defaultGen: Gen[((String, List[DataSet], Route), (String, Query), Seq[Nothing])] = _
+  var defaultGen: Gen[((Future[(String, List[DataSet], Route)], List[DataSet]), (String, Query), Seq[Nothing])] = _
   override def beforeAll(): Unit = {
     super.beforeAll()
     defaultGen = for {
@@ -21,18 +23,20 @@ trait FacetSpecBase extends BaseSearchApiSpec {
     } yield (tuple, query, Seq())
   }
 
-  def checkFacetsNoQuery(indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit): Unit = {
+  def checkFacetsNoQuery(indexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] = mediumIndexGen, facetSizeGen: Gen[Int] = Gen.posNum[Int])(inner: (List[DataSet], Int) ⇒ Unit): Unit = {
     try {
       forAll(indexGen, facetSizeGen, Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
-        val (_, dataSets, routes) = tuple
         val facetSize = Math.max(rawFacetSize, 1)
-
-        whenever(start >= 0 && limit >= 0) {
-          Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
-            status shouldBe OK
-            inner(dataSets, facetSize)
+        tuple._1.map(t => {
+          val dataSets = t._2
+          val routes = t._3
+          whenever(start >= 0 && limit >= 0) {
+            Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
+              status shouldBe OK
+              inner(dataSets, facetSize)
+            }
           }
-        }
+        })
       }
     } catch {
       case e: Throwable =>
@@ -42,25 +46,29 @@ trait FacetSpecBase extends BaseSearchApiSpec {
   }
 
 
-  def checkFacetsWithQueryGen(gen: Gen[((String, List[DataSet], Route), (String, Query), Seq[String])] = defaultGen, facetSizeGen: Gen[Int] = Gen.choose(1, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
+  def checkFacetsWithQueryGen(gen: Gen[((Future[(String, List[DataSet], Route)], List[DataSet]), (String, Query), Seq[Nothing])] = defaultGen, facetSizeGen: Gen[Int] = Gen.choose(1, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
     forAll(gen, facetSizeGen) {
       case ((tuple, query, _), rawFacetSize) ⇒
-        val (_, dataSets, routes) = tuple
         val (textQuery, objQuery) = query
         val facetSize = Math.max(rawFacetSize, 1)
 
-        Get(s"/v0/datasets?$textQuery&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
-          status shouldBe OK
-          inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
-        }
+        tuple._1.map(t => {
+          val dataSets = t._2
+          val routes = t._3
+          Get(s"/v0/datasets?$textQuery&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
+            status shouldBe OK
+            inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
+          }
+        })
     }
   }
 
-  def checkFacetsWithQuery(thisTextQueryGen: List[DataSet] => Gen[(String, Query)] = dataSets => textQueryGen(queryGen(dataSets)), thisIndexGen: Gen[(String, List[DataSet], Route)] = indexGen, facetSizeGen: Gen[Int] = Gen.choose(0, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
-    val gen: Gen[((String, List[DataSet], Route), (String, Query), Seq[String])] = for {
+  def checkFacetsWithQuery(thisTextQueryGen: List[DataSet] => Gen[(String, Query)] = dataSets => textQueryGen(queryGen(dataSets)), thisIndexGen: Gen[(Future[(String, List[DataSet], Route)], List[DataSet])] = indexGen, facetSizeGen: Gen[Int] = Gen.choose(0, 20))(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
+    val gen = for {
       tuple <- thisIndexGen
       query <- thisTextQueryGen(tuple._2)
-    } yield (tuple, query, Seq[String]())
+    } yield (tuple, query, Nil)
+
     checkFacetsWithQueryGen(gen, facetSizeGen)(inner)
   }
 

@@ -25,12 +25,15 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
     }
 
     forAll(gen) {
-      case ((_, dataSets, routes), dataSet, (textQuery, query)) =>
-        assert(dataSets.nonEmpty)
-        assert(dataSets.contains(dataSet))
-        doFilterTest(textQuery, dataSets, routes) { response =>
-          test(query, response, dataSet)
-        }
+      case (tuple, dataSet, (textQuery, query)) =>
+        tuple._1.map(indexTuple => {
+          val dataSets = indexTuple._2
+          assert(dataSets.nonEmpty)
+          assert(dataSets.contains(dataSet))
+          doFilterTest(textQuery, dataSets, indexTuple._3) { response =>
+            test(query, response, dataSet)
+          }
+        })
     }
   }
 
