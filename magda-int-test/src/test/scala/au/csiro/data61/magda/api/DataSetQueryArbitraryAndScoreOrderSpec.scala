@@ -9,7 +9,7 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import org.scalacheck.Arbitrary.{arbString, arbitrary}
 import org.scalacheck.Gen
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 
 class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
@@ -19,11 +19,12 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
     it("should not fail for queries that are full of arbitrary characters") {
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val future: Future[(String, List[DataSet], Route)] = indexTuple._1
-        future.map(tuple => {
+        val resultF = future.map(tuple => {
           Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
             status shouldBe OK
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
 
@@ -37,7 +38,7 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
         case (indexTuple, queryTuple) ⇒
           val (textQuery, _) = queryTuple
           val future: Future[(String, List[DataSet], Route)] = indexTuple._1
-          future.map(tuple => {
+          val resultF = future.map(tuple => {
             Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
@@ -47,6 +48,7 @@ class DataSetQueryArbitraryAndScoreOrderSpec extends DataSetSearchSpecBase {
               }
             }
           })
+          Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
   }

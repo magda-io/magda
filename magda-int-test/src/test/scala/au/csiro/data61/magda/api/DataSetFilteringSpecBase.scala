@@ -6,7 +6,7 @@ import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.test.util.ApiGenerators._
 import org.scalacheck.Gen
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 
 trait DataSetFilteringSpecBase extends DataSetSearchSpecBase {
@@ -20,13 +20,14 @@ trait DataSetFilteringSpecBase extends DataSetSearchSpecBase {
     forAll(theGen, textQueryGen(queryGen)) {
       case (tuple, (textQuery, _)) =>
         val future: Future[(String, List[DataSet], Route)] = tuple._1
-        future.map(tuple => {
+        val resultF = future.map(tuple => {
           doFilterTest(textQuery, tuple._2, tuple._3) { response =>
             whenever(response.dataSets.nonEmpty) {
               test(response)
             }
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
     }
   }
 }

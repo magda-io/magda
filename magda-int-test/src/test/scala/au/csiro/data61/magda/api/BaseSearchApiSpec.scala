@@ -21,6 +21,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protocols with ResponseDatasetAllowAll {
   val INSERTION_WAIT_TIME: FiniteDuration = 500 seconds
+  val SINGLE_TEST_WAIT_TIME: FiniteDuration = 500 seconds
 
   def queryToText(query: Query): String = {
     textQueryGen(Gen.const(query)).retryUntil(_ => true).sample.get._1

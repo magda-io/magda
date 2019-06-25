@@ -11,7 +11,7 @@ import au.csiro.data61.magda.test.util.MagdaMatchers
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 import org.locationtech.jts.geom.GeometryFactory
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 
 class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
@@ -29,7 +29,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
         forAll(gen) {
           case (indexTuple, queryTuple) ⇒
             val future: Future[(String, List[DataSet], Route)] = indexTuple._1
-            future.map(tuple => {
+            val resultF = future.map(tuple => {
               val (textQuery, query) = queryTuple
               Get(s"/v0/datasets?$textQuery&limit=${tuple._2.length}") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
                 status shouldBe OK
@@ -129,6 +129,7 @@ class DataSetFilteringSearchSpec extends DataSetFilteringSpecBase {
                 }
               }
             })
+            Await.result(resultF, SINGLE_TEST_WAIT_TIME)
         }
       } catch {
         case e: Throwable =>
