@@ -11,6 +11,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import com.monsanto.labs.mwundo.GeoJson._
 import org.scalacheck.Gen
 
+import scala.concurrent.Await
+
 
 trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
@@ -26,7 +28,7 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
 
     forAll(gen) {
       case (tuple, dataSet, (textQuery, query)) =>
-        tuple._1.map(indexTuple => {
+        val resultF = tuple._1.map(indexTuple => {
           val dataSets = indexTuple._2
           assert(dataSets.nonEmpty)
           assert(dataSets.contains(dataSet))
@@ -34,6 +36,7 @@ trait DataSetSearchSpecBase extends BaseSearchApiSpec with RegistryConverters {
             test(query, response, dataSet)
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
     }
   }
 

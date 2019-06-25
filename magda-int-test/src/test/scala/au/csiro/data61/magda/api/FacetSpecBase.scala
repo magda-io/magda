@@ -11,7 +11,7 @@ import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck._
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 trait FacetSpecBase extends BaseSearchApiSpec {
   var defaultGen: Gen[((Future[(String, List[DataSet], Route)], List[DataSet]), (String, Query), Seq[Nothing])] = _
@@ -27,7 +27,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
     try {
       forAll(indexGen, facetSizeGen, Gen.posNum[Int], Gen.posNum[Int]) { (tuple, rawFacetSize, start, limit) ⇒
         val facetSize = Math.max(rawFacetSize, 1)
-        tuple._1.map(t => {
+        val resultF = tuple._1.map(t => {
           val dataSets = t._2
           val routes = t._3
           whenever(start >= 0 && limit >= 0) {
@@ -37,6 +37,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             }
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     } catch {
       case e: Throwable =>
@@ -52,7 +53,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
         val (textQuery, objQuery) = query
         val facetSize = Math.max(rawFacetSize, 1)
 
-        tuple._1.map(t => {
+        val resultF = tuple._1.map(t => {
           val dataSets = t._2
           val routes = t._3
           Get(s"/v0/datasets?$textQuery&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -60,6 +61,7 @@ trait FacetSpecBase extends BaseSearchApiSpec {
             inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
     }
   }
 

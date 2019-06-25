@@ -6,6 +6,8 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.test.util.MagdaMatchers
 
+import scala.concurrent.Await
+
 
 class DataSetSortingSearchSpec extends DataSetSearchSpecBase {
 
@@ -13,8 +15,8 @@ class DataSetSortingSearchSpec extends DataSetSearchSpecBase {
     describe("*") {
       it("should sort results by pure quality") {
         forAll(indexGen) {
-          case indexTuple ⇒
-            indexTuple._1.map(tuple => {
+          indexTuple ⇒
+            val resultF = indexTuple._1.map(tuple => {
               val dataSets = tuple._2
               val routes = tuple._3
               Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -31,6 +33,7 @@ class DataSetSortingSearchSpec extends DataSetSearchSpecBase {
                 response.hitCount shouldEqual 0
               }
             })
+            Await.result(resultF, SINGLE_TEST_WAIT_TIME)
         }
       }
     }

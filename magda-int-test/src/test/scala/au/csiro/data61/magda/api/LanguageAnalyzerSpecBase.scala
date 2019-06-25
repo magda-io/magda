@@ -10,7 +10,7 @@ import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
 import org.scalacheck._
 
 import scala.collection.immutable
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
 
@@ -166,14 +166,17 @@ trait LanguageAnalyzerSpecBase extends BaseSearchApiSpec {
       }yield (combinedDataSetAndTermGen, gen._1)
 
       forAll(indexAndTermsGen) {
-        case (dataSetAndTerms, future) => future.map( gen => {
-          assert(gen._2.nonEmpty)
-          forAll(dataSetAndTerms) {
-            case list => {
+        case (dataSetAndTerms, future) => {
+          val resultF = future.map( gen => {
+            assert(gen._2.nonEmpty)
+            forAll(dataSetAndTerms) {
+              list => {
                 gen._2.foreach(dataSet => test(dataSet, gen._1, gen._3, list))
+              }
             }
-          }
-        })
+          })
+          Await.result(resultF, SINGLE_TEST_WAIT_TIME)
+        }
       }
     }
   }

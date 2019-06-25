@@ -8,6 +8,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.{Shrink, _}
 
+import scala.concurrent.Await
+
 class FacetPublisherSpec extends FacetSpecBase {
 
   describe("facets publisher") {
@@ -31,8 +33,7 @@ class FacetPublisherSpec extends FacetSpecBase {
           try {
             forAll(gen) {
               case (tuple, textQuery, facetSize) ⇒
-
-                tuple._1.map(t => {
+                val resultF = tuple._1.map(t => {
                   val dataSets = t._2
                   val routes = t._3
                   val publishers = dataSets.flatMap(_.publisher).distinct
@@ -57,6 +58,7 @@ class FacetPublisherSpec extends FacetSpecBase {
                     }
                   }
                 })
+                Await.result(resultF, SINGLE_TEST_WAIT_TIME)
             }
           } catch {
             case e: Throwable =>

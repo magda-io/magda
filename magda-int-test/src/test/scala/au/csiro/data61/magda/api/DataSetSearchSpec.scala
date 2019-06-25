@@ -10,6 +10,8 @@ import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
 import com.monsanto.labs.mwundo.GeoJson._
 import org.locationtech.jts.geom.GeometryFactory
 
+import scala.concurrent.Await
+
 
 
 class DataSetSearchSpec extends DataSetSearchSpecBase {
@@ -30,8 +32,8 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
 
   it("should return all results") {
     forAll(indexGen) {
-      case indexTuple ⇒
-        indexTuple._1.map(tuple => {
+      indexTuple ⇒
+        val resultF = indexTuple._1.map(tuple => {
           val dataSets = tuple._2
           val routes = tuple._3
           Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -48,6 +50,7 @@ class DataSetSearchSpec extends DataSetSearchSpecBase {
             response.hitCount shouldEqual 0
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
     }
   }
 }

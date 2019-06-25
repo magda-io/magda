@@ -8,6 +8,8 @@ import au.csiro.data61.magda.test.util.ApiGenerators._
 import com.monsanto.labs.mwundo.GeoJson._
 import org.scalacheck.Gen
 
+import scala.concurrent.Await
+
 
 class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
 
@@ -30,7 +32,7 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
       forAll(emptyIndexGen, theQuery) { (indexTuple, queryTuple) ⇒
         val future = indexTuple._1
         val (textQuery, query) = queryTuple
-        future.map(tuple => {
+        val resultF = future.map(tuple => {
           assert(validateQueryText(textQuery))
           //      println(s"***** Text query: $textQuery")
           Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
@@ -46,6 +48,7 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
             response.dataSets shouldBe empty
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
 
@@ -55,7 +58,7 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) { (indexTuple, queryTuple) ⇒
         val future = indexTuple._1
         val (textQuery, query) = queryTuple
-        future.map(tuple => {
+        val resultF = future.map(tuple => {
           Get(s"/v0/datasets?$textQuery") ~> addSingleTenantIdHeader ~> tuple._3 ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
@@ -105,6 +108,7 @@ class DataSetQueryParseAndResolveSpec extends DataSetQuerySearchSpecBase {
             response.dataSets shouldBe empty
           }
         })
+        Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
   }

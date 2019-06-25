@@ -5,7 +5,9 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.api.DataSetSearchSpecBase
 import au.csiro.data61.magda.api.model.SearchResult
 import org.scalacheck.Gen
+import org.scalatest.Assertion
 
+import scala.concurrent.{Await, Future}
 
 class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
 
@@ -21,7 +23,7 @@ class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
       forAll(gen) {
         case (indexTuple, start, limit) =>
           val future = indexTuple._1
-          future.map(tuple => {
+          val resultF: Future[Assertion] = future.map(tuple => {
             val dataSets = tuple._2
             val routes = tuple._3
             whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
@@ -42,6 +44,8 @@ class DataSetPaginationSearchSpec extends DataSetSearchSpecBase {
               }
             }
           })
+
+          Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
   }

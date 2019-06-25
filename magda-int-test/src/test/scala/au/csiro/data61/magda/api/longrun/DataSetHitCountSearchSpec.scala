@@ -6,6 +6,8 @@ import au.csiro.data61.magda.api.DataSetSearchSpecBase
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.test.util.MagdaMatchers
 
+import scala.concurrent.Await
+
 
 class DataSetHitCountSearchSpec extends DataSetSearchSpecBase {
 
@@ -13,9 +15,9 @@ class DataSetHitCountSearchSpec extends DataSetSearchSpecBase {
     describe("*") {
       it("hitCount should reflect all hits in the system, not just what is returned") {
         forAll(indexGen) {
-          case indexTuple ⇒
+          indexTuple ⇒
             val future = indexTuple._1
-            future.map( tuple => {
+            val resultF = future.map(tuple => {
               val dataSets = tuple._2
               val routes = tuple._3
               Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -31,6 +33,7 @@ class DataSetHitCountSearchSpec extends DataSetSearchSpecBase {
                 response.hitCount shouldEqual 0
               }
             })
+            Await.result(resultF, SINGLE_TEST_WAIT_TIME)
         }
       }
     }

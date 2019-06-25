@@ -10,6 +10,8 @@ import au.csiro.data61.magda.test.util.Generators.randomCaseGen
 import au.csiro.data61.magda.test.util.MagdaMatchers
 import org.scalacheck.{Gen, Shrink}
 
+import scala.concurrent.Await
+
 
 class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
 
@@ -47,7 +49,7 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
 
       forAll(quoteGen) {
         case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
-          routes.map(route => {
+          val resultF = routes.map(route => {
             assert(validateQuote(quote))
             assert(dataSets.nonEmpty)
 
@@ -95,6 +97,7 @@ class DataSetVerbatimSearchSpec extends DataSetSearchSpecBase {
               response.hitCount shouldBe 0
             }
           })
+          Await.result(resultF, SINGLE_TEST_WAIT_TIME)
       }
     }
   }
