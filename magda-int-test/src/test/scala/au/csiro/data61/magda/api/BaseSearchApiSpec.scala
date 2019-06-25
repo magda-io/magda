@@ -82,9 +82,9 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
       }
     }
 
-  def genIndexForTenantAndSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
+  def genIndexForTenantAndSize(rawSize: Int, tenantIds: List[BigInt]): (String, List[DataSet], Route) = {
     val size = rawSize % 100
-    // We are not using cached indexes anymore.  inputCache stays here simply to avoid
+    // We are not using cached indexes here.  inputCache stays here simply to avoid
     // too many changes in the interfaces.
     val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
     val dataSets = tenantIds.flatMap( tenantId =>
@@ -94,23 +94,22 @@ trait BaseSearchApiSpec extends BaseApiSpec with RegistryConverters with Protoco
     putDataSetsInIndex(dataSets)
   }
 
-  def genIndexForSize(rawSize: Int, tenantIds: List[BigInt] = List(MAGDA_ADMIN_PORTAL_ID)): (String, List[DataSet], Route) = {
+  def genIndexForSize(rawSize: Int): (String, List[DataSet], Route) = {
     val size = rawSize % 100
 
     getFromIndexCache(size) match {
-      case (_, None) ⇒
+      case (cacheKey, None) ⇒
         val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
 
-        if (tenantIds.nonEmpty){
-          val dataSets: List[DataSet] = tenantIds.flatMap( tenantId =>
-            Gen.listOfN(size, Generators.dataSetGen(inputCache, tenantId)).retryUntil(_ => true).sample.get
-          )
-          putDataSetsInIndex(dataSets)
-        }
-        else {
+        val future = Future {
           val dataSets = Gen.listOfN(size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get
           putDataSetsInIndex(dataSets)
         }
+
+        BaseSearchApiSpec.genCache.put(cacheKey, future)
+        logger.debug("Cache miss for {}", cacheKey)
+
+        future.await(INSERTION_WAIT_TIME)
 
       case (cacheKey, Some(cachedValue)) ⇒
         logger.debug("Cache hit for {}", cacheKey)
