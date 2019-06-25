@@ -170,7 +170,7 @@ class DataPreviewMap extends Component {
         if (!selectedDistribution) return null; // hide the section if no data available
 
         return (
-            <div>
+            <div class="no-print">
                 <h3 className="section-heading">Map Preview</h3>
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton

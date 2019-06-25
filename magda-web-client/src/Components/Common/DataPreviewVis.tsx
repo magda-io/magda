@@ -101,7 +101,7 @@ class DataPreviewVis extends Component<
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div className="data-preview-vis">
+            <div className="data-preview-vis no-print">
                 <h3 className="section-heading">Data Preview</h3>
                 {bodyRenderResult}
             </div>
