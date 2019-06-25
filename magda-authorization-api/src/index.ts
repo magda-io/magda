@@ -39,6 +39,10 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        })
+        .option("tenantId", {
+            describe: "The tenant id for intra-network communication",
+            type: "number"
         }).argv
 );
 
@@ -57,7 +61,8 @@ app.use(
         jwtSecret: argv.jwtSecret,
         registryApiUrl: argv.registryApiUrl,
         opaUrl: argv.opaUrl,
-        database
+        database,
+        tenantId: argv.tenantId
     })
 );
 
