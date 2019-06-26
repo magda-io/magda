@@ -42,7 +42,8 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
-            type: "number"
+            type: "number",
+            default: 0
         }).argv
 );
 
