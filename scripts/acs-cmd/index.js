@@ -15,15 +15,19 @@ program
             `  POSTGRES_USER: database username; If not available in env var, 'postgres' will be used.\n` +
             `  POSTGRES_PASSWORD: database password; If not available in env var, '' will be used.`
     )
-    .command("list", "List records (resources, operation etc.)")
+    .command("list", "List records (permissions, operations etc.)")
     .command("assign", "Assign a permission to a role or a role to a user")
     .command("remove", "Remove a permission from a role or a role from a user")
+    .command("create", "Create permissions, operations etc")
     .command(
         "jwt <userId> [jwtSecret]",
         "calculate JWT token (only for testing purpose)"
     )
     .on("command:*", function(cmds) {
-        if (["list", "assign", "remove", "jwt"].indexOf(cmds[0]) === -1) {
+        if (
+            ["list", "assign", "remove", "jwt", "create"].indexOf(cmds[0]) ===
+            -1
+        ) {
             console.error(
                 chalk.red(
                     `Invalid command: ${program.args.join(

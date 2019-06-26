@@ -56,7 +56,10 @@ class RecordAspectsServiceRO(system: ActorSystem, materializer: Materializer, co
       {
         DB readOnly { session =>
           recordPersistence.getRecordAspectById(session, recordId, aspectId) match {
-            case Some(recordAspect) => complete(recordAspect)
+            case Some(recordAspect) =>
+
+
+              complete(recordAspect)
             case None               => complete(StatusCodes.NotFound, BadRequest("No record aspect exists with that ID."))
           }
         }

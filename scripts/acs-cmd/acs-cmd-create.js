@@ -6,13 +6,12 @@ const chalk = require("chalk");
 program
     .version(pkg.version)
     .description(
-        `A tool for viewing magda access control data. Version: ${pkg.version}`
+        `A tool for creating magda access control data. Version: ${pkg.version}`
     )
-    .command("permissions", "List all permissions")
-    .command("roles", "List all roles")
-    .command("users", "List all users")
+    .command("permission", "Create permission")
+    .command("operation", "Create operation")
     .on("command:*", function(cmds) {
-        if (["permissions", "roles", "users"].indexOf(cmds[0]) === -1) {
+        if (["permission", "operation"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(
                     `Invalid command: ${program.args.join(

@@ -105,10 +105,7 @@ export default class Database {
     async getUserPermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
             `SELECT DISTINCT ON (p.id, op.id)
-                p.id, p.name, p.resource_id, res.uri AS resource_uri, 
-                p.user_ownership_constraint,
-                p.org_unit_ownership_constraint,
-                p.pre_authorised_constraint,
+                p.id, p.name,
                 op.id AS operation_id,
                 op.uri AS operation_uri,
                 op.name AS operation_name
@@ -117,7 +114,6 @@ export default class Database {
                 LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
-                LEFT JOIN resources res ON res.id = p.resource_id
                 WHERE ur.user_id = $1`,
             [id]
         );
@@ -159,7 +155,7 @@ export default class Database {
     async getRolePermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
             `SELECT  DISTINCT ON (p.id, op.id)
-            p.id, p.name, p.resource_id, res.uri AS resource_uri,
+            p.id, p.name,
             p.user_ownership_constraint,
             p.org_unit_ownership_constraint,
             p.pre_authorised_constraint,
@@ -170,7 +166,6 @@ export default class Database {
             LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
             LEFT JOIN operations op ON op.id = po.operation_id
             LEFT JOIN permissions p ON p.id = rp.permission_id
-            LEFT JOIN resources res ON res.id = p.resource_id
             WHERE rp.role_id = $1`,
             [id]
         );
