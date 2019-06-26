@@ -84,7 +84,7 @@ const argv = yargs
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("adminApiBaseUrl", {
+    .option("adminApiBaseURL", {
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
