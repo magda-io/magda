@@ -170,8 +170,8 @@ const webServerConfig = {
                 .segment("auth")
                 .toString()
     ),
-    adminApiBaseUrl: addTrailingSlash(
-        argv.adminApiBaseUrl ||
+    adminApiBaseURL: addTrailingSlash(
+        argv.adminApiBaseURL ||
             new URI(apiBaseUrl)
                 .segment("v0")
                 .segment("admin")
