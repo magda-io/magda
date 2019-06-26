@@ -24,8 +24,8 @@ spec:
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
-{{- if .Values.adminApiBaseURL }}
-            "--adminApiBaseURL", {{ .Values.adminApiBaseURL | quote }},
+{{- if .Values.adminApiBaseUrl }}
+            "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
 {{- end }}
             {{- range .Values.gapiIds }}
             "--gapiIds", {{ . | quote }},

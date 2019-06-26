@@ -84,7 +84,7 @@ const argv = yargs
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("adminApiBaseURL", {
+    .option("adminApiBaseUrl", {
         describe:
             "The base URL of the MAGDA admin API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
@@ -170,8 +170,8 @@ const webServerConfig = {
                 .segment("auth")
                 .toString()
     ),
-    adminApiBaseURL: addTrailingSlash(
-        argv.adminApiBaseURL ||
+    adminApiBaseUrl: addTrailingSlash(
+        argv.adminApiBaseUrl ||
             new URI(apiBaseUrl)
                 .segment("v0")
                 .segment("admin")

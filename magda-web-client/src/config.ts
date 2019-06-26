@@ -72,14 +72,14 @@ const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
 const adminApiURL =
-    serverConfig.adminApiBaseURL || fallbackApiHost + "api/v0/admin";
+    serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin";
 
 const vocabularyApiEndpoints =
     Array.isArray(serverConfig.vocabularyApiEndpoints) &&
     serverConfig.vocabularyApiEndpoints.length
         ? serverConfig.vocabularyApiEndpoints
-        // --- default endpoints
-        : [
+        : // --- default endpoints
+          [
               "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
               "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
           ];
