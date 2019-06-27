@@ -30,7 +30,7 @@ export default function FileIcon(props) {
                 </g>
                 <text
                     fill="#FFF"
-                    font-family="SFUIDisplay-Medium, SF UI Display"
+                    font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
                     font-size={fontSize}
                     font-weight="400"
                 >

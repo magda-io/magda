@@ -140,12 +140,15 @@ export default function DatasetFile({
                             {file.title}
                         </h3>
                         <div className="file-info">
-                            <div>Format: {file.format}</div>
                             <div>
-                                Size: {humanFileSize(file.byteSize, false)}
+                                <b>Format:</b> {file.format}
                             </div>
                             <div>
-                                Last Modified:{" "}
+                                <b>Size:</b>{" "}
+                                {humanFileSize(file.byteSize, false)}
+                            </div>
+                            <div>
+                                <b>Last Modified:</b>{" "}
                                 {Moment(file.modified).format("DD/MM/YYYY")}
                             </div>
                         </div>

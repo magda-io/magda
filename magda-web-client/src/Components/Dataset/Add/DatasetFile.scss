@@ -23,8 +23,8 @@
             width: 26px;
             height: 26px;
             border: none;
-            right: 100px;
-            top: 0px;
+            right: 95px;
+            top: 15px;
             padding: 1px 0px 0px 0px;
         }
         .file-icon-area {
@@ -53,7 +53,7 @@
                 }
             }
             .file-name {
-                width: 260px;
+                width: 242px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
@@ -102,6 +102,11 @@
     padding-left: 60px;
     width: 534px;
     height: 125px;
+    background-color: #f4f4f4;
+
+    .dataset-file-file-title {
+        font-weight: 300;
+    }
 
     .file-info {
         font-size: 13px;
@@ -118,7 +123,7 @@
         width: 26px;
         height: 26px;
         border: none;
-        right: 65px;
+        right: 45px;
         top: 10px;
         padding: 1px 0px 0px 0px;
     }
@@ -128,7 +133,7 @@
         width: 26px;
         height: 26px;
         border: none;
-        right: 30px;
+        right: 15px;
         top: 10px;
         padding: 1px 0px 0px 0px;
     }
