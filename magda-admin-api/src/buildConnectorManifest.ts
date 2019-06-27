@@ -51,7 +51,7 @@ export default function buildConnectorManifest({
                                 "--registryUrl",
                                 registryApiUrl,
                                 "--tenantId",
-                                tenantId,
+                                tenantId.toString(),
                                 ...(interactive
                                     ? [
                                           "--interactive",
