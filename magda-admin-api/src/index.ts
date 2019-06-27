@@ -64,6 +64,11 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "Secret for decoding JWTs to determine if the caller is an admin",
             type: "string"
+        })
+        .option("tenantId", {
+            describe: "Tenant id for used to create connectors",
+            type: "number",
+            default: 0
         }).argv
 );
 
@@ -82,6 +87,7 @@ app.use(
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,
         userId: argv.userId,
+        tenantId: argv.tenantId,
         namespace: argv.namespace
     })
 );

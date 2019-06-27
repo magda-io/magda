@@ -29,7 +29,6 @@ const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
     contentApiBaseUrl?: string;
-    adminApiBaseURL?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
     searchApiBaseUrl?: string;
@@ -71,9 +70,6 @@ const fetchOptions: RequestInit =
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
-const adminApiURL =
-    serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin";
-
 const vocabularyApiEndpoints =
     Array.isArray(serverConfig.vocabularyApiEndpoints) &&
     serverConfig.vocabularyApiEndpoints.length
@@ -90,7 +86,6 @@ export const config = {
     baseUrl,
     baseExternalUrl,
     contentApiURL,
-    adminApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     registryApiUrl: registryApiUrl,
