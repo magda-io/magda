@@ -36,6 +36,7 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
+import FlatMultiSelectBox from "../../Common/FlatMultiSelectBox";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -217,14 +218,12 @@ class NewDataset extends React.Component<Prop, State> {
                     <br />
                     <h4>What language(s) is the dataset available in?</h4>
                     <p>
-                        <AlwaysEditor
-                            value={dataset.languages}
+                        <FlatMultiSelectBox
+                            options={codelists.languages}
                             onChange={editDataset("languages")}
-                            editor={multiCodelistEditor(
-                                codelists.languages,
-                                true,
-                                "Add another language"
-                            )}
+                            value={
+                                dataset.languages ? dataset.languages : ["eng"]
+                            }
                         />
                     </p>
                     <hr />
