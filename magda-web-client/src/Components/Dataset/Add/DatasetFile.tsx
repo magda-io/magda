@@ -101,6 +101,15 @@ export default function DatasetFile({
                         Save
                     </button>
                     <div>
+                        <span>Name:&nbsp;&nbsp; </span>
+                        &nbsp;&nbsp;
+                        <AlwaysEditor
+                            value={file.title}
+                            onChange={editFormat}
+                            editor={textEditor}
+                        />
+                    </div>
+                    <div>
                         <span>Format: </span>
                         &nbsp;&nbsp;
                         <AlwaysEditor
