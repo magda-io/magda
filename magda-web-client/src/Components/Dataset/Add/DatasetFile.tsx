@@ -85,6 +85,8 @@ export default function DatasetFile({
 
     const editFormat = (newValue: string | undefined) =>
         onChange({ ...file, format: newValue });
+    const editTitle = (newValue: string | undefined) =>
+        onChange({ ...file, title: newValue! });
     const editModified = (newValue: Date | undefined) =>
         onChange({ ...file, modified: newValue! });
     const [editMode, setEditMode] = useState(false);
@@ -105,7 +107,7 @@ export default function DatasetFile({
                         &nbsp;&nbsp;
                         <AlwaysEditor
                             value={file.title}
-                            onChange={editFormat}
+                            onChange={editTitle}
                             editor={textEditor}
                         />
                     </div>
