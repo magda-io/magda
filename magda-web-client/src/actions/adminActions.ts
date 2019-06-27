@@ -8,17 +8,17 @@ export async function listConnectors() {
 export async function startConnector(connectorId) {
     return request(
         "POST",
-        `${config.adminApiUrl}connectors${connectorId}/start`
+        `${config.adminApiUrl}connectors/${connectorId}/start`
     );
 }
 
 export async function stopConnector(connectorId) {
     return request(
         "POST",
-        `${config.adminApiUrl}connectors${connectorId}/stop`
+        `${config.adminApiUrl}connectors/${connectorId}/stop`
     );
 }
 
 export async function deleteConnector(connectorId) {
-    return request("DELETE", `${config.adminApiUrl}connectors${connectorId}`);
+    return request("DELETE", `${config.adminApiUrl}connectors/${connectorId}`);
 }
