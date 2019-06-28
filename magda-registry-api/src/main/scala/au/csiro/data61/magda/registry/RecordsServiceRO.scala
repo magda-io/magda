@@ -288,7 +288,7 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
       getPageTokens ~
       getById ~
       getByIdSummary ~
-      new RecordAspectsServiceRO(system, materializer, config).route ~
+      new RecordAspectsServiceRO()(system, materializer, config).route ~
       new RecordHistoryService(system, materializer).route
 
 }

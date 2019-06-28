@@ -21,7 +21,7 @@ import com.typesafe.config.Config
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(value = "record aspects", produces = "application/json")
-class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends RecordAspectsServiceRO(system, materializer, config) {
+class RecordAspectsService(webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, config: Config) extends RecordAspectsServiceRO()(system, materializer, config) {
   private val recordPersistence = DefaultRecordPersistence
 
   /**

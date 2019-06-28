@@ -14,7 +14,7 @@ view {
 # Viewable by viewers under the owning org unit
 view {
     input.user.permissions[_].operations[_].uri == "object/aspect/view"
-    input.object.aspects["dataset-access-control"].orgUnitOwnerId == input.user.managingOrgUnitIds[_]
+    input.user.managingOrgUnitIds[_] == input.object.aspects["dataset-access-control"].orgUnitOwnerId
 }
 
 
