@@ -1,8 +1,10 @@
 import React, {
-    useMemo,
+    forwardRef,
     useRef,
+    useEffect,
     useImperativeHandle,
-    RefForwardingComponent
+    RefForwardingComponent,
+    RefObject
 } from "react";
 import "./FlatMultiSelectBox.scss";
 import dismissIcon from "../../assets/dismiss-white.svg";
@@ -27,46 +29,42 @@ type SelectProps = {
 
 type SelectOptionProps = {
     idx: number;
-    idPrefix: string;
     label: string;
     value: any;
     isSelected?: boolean;
     onClick?: (value: any, idx: number) => void;
 };
-/*
-const scrollToRef = ref => window.scrollTo(0, ref.current.offsetTop);
 
-
-const ReadyToScroll = () => {
-    const myRef = useRef(null); // Hook to ref object
-    const executeScroll = () => scrollToRef(myRef);
-
-    return (
-        <div className="label" ref={myRef}>
-            I wanna be seen
-        </div>
-    );
-};*/
 export interface OptionHandles {
-    getScollTop(): number;
+    scrollIntoView(parentRef: RefObject<HTMLDivElement>): void;
 }
 
-const FlatMultiSelectBoxOption: RefForwardingComponent<
+const FlatMultiSelectBoxOptionForwarding: RefForwardingComponent<
     OptionHandles,
     SelectOptionProps
 > = (props, ref) => {
-    const itemRef = useRef(null);
+    const itemRef: RefObject<HTMLButtonElement> = useRef(null);
     useImperativeHandle(ref, () => ({
-        getScollTop: () => {
-            if (!itemRef || !itemRef.current || !itemRef.current.scrollTop)
-                return -1;
-            return itemRef.current.scrollTop;
+        scrollIntoView: parentRef => {
+            if (
+                !itemRef ||
+                !itemRef.current ||
+                !parentRef ||
+                !parentRef.current
+            )
+                return;
+            parentRef.current.scrollBy({
+                top:
+                    itemRef.current.offsetTop -
+                    parentRef.current.offsetTop +
+                    parentRef.current.scrollTop,
+                behavior: "smooth"
+            });
         }
     }));
     return (
         <button
             ref={itemRef}
-            id={`${props.idPrefix}_${props.idx}`}
             className={`au-btn flat-multi-select-option ${
                 props.isSelected ? "selected" : ""
             }`}
@@ -83,11 +81,9 @@ const FlatMultiSelectBoxOption: RefForwardingComponent<
     );
 };
 
-const FlatMultiSelectBox = (props: SelectProps) => {
-    const optionIdPrefix = useMemo(() => {
-        return "FlatMultiSelectBox_" + (Math.random() + "").replace(".", "");
-    }, []);
+const FlatMultiSelectBoxOption = forwardRef(FlatMultiSelectBoxOptionForwarding);
 
+const FlatMultiSelectBox = (props: SelectProps) => {
     const value = props.value;
     let options: ArrayOptionItem[] = Array.isArray(props.options)
         ? props.options
@@ -110,14 +106,19 @@ const FlatMultiSelectBox = (props: SelectProps) => {
         return opt;
     });
 
-    return (
+    const optionRefs: RefObject<OptionHandles>[] = options.map(opt =>
+        useRef(null)
+    );
+    const scrollContainerRef: RefObject<HTMLDivElement> = useRef(null);
+
+    const renderResult = (
         <div className={"flat-multi-select-box"}>
-            <div className="inner-container">
+            <div className="inner-container" ref={scrollContainerRef}>
                 {options.map((item, idx) => (
                     <FlatMultiSelectBoxOption
                         key={idx}
                         idx={idx}
-                        idPrefix={optionIdPrefix}
+                        ref={optionRefs[idx]}
                         label={item.label}
                         value={item.value}
                         isSelected={item.isSelected}
@@ -149,6 +150,20 @@ const FlatMultiSelectBox = (props: SelectProps) => {
             </div>
         </div>
     );
+
+    useEffect(() => {
+        if (firstSelectedIdx === -1) return;
+        if (
+            !optionRefs[firstSelectedIdx] ||
+            !optionRefs[firstSelectedIdx].current
+        )
+            return;
+        const optionHandles = optionRefs[firstSelectedIdx]
+            .current as OptionHandles;
+        optionHandles.scrollIntoView(scrollContainerRef);
+    }, []);
+
+    return renderResult;
 };
 
 export default FlatMultiSelectBox;
