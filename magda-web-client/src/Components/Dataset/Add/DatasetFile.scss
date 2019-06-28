@@ -139,6 +139,12 @@
         padding: 1px 0px 0px 0px;
     }
 
+    .dataset-file-edit-button,
+    .dataset-file-delete-button {
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
     .dataset-file-edit-button:hover,
     .dataset-file-delete-button:hover {
         border: 1px solid #c0bebe;
