@@ -95,16 +95,14 @@ class RecordAspectsServiceRO(
       path(Segment / "aspects" / Segment) {
         (recordId: String, aspectId: String) =>
           {
-            DB readOnly { session =>
-              val queryer = new OpaQueryer()
+            val queryer = new OpaQueryer()
 
-              val opaFuture = queryer.query(jwt)
+            val opaFuture = queryer.query(jwt)
 
-              onSuccess(opaFuture) { opaResult =>
-                println(opaResult)
-
+            onSuccess(opaFuture) { opaResult =>
+              DB readOnly { session =>
                 recordPersistence
-                  .getRecordAspectById(session, recordId, aspectId) match {
+                  .getRecordAspectById(session, recordId, aspectId, opaResult) match {
                   case Some(recordAspect) =>
                     complete(recordAspect)
                   case None =>

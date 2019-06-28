@@ -12,52 +12,56 @@ import spray.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-sealed trait OpaOp extends OpaRef
-case object Eq extends OpaOp
-case object Neq extends OpaOp
-case object Lt extends OpaOp
-case object Gt extends OpaOp
-case object Lte extends OpaOp
-case object Gte extends OpaOp
+object OpaTypes {
+  sealed trait OpaOp extends OpaRef
+  case object Eq extends OpaOp
+  case object Neq extends OpaOp
+  case object Lt extends OpaOp
+  case object Gt extends OpaOp
+  case object Lte extends OpaOp
+  case object Gte extends OpaOp
 
-object OpaOp {
-  def apply(op: String) = op match {
-    case "equal" => Eq
-    case "eq"    => Eq
-    case "neq"   => Neq
-    case "lt"    => Lt
-    case "gt"    => Gt
-    case "lte"   => Lte
-    case "gte"   => Gte
-    case _       => throw new Exception("Could not match " + op + " to OpaOp")
+  object OpaOp {
+    def apply(op: String) = op match {
+      case "equal" => Eq
+      case "eq"    => Eq
+      case "neq"   => Neq
+      case "lt"    => Lt
+      case "gt"    => Gt
+      case "lte"   => Lte
+      case "gte"   => Gte
+      case _       => throw new Exception("Could not match " + op + " to OpaOp")
+    }
   }
+
+  sealed trait OpaRef
+// case class OpaRefVar(value: String) extends OpaRef
+  case object OpaRefAllInArray extends OpaRef
+  case class OpaRefObjectKey(key: String) extends OpaRef
+
+  sealed trait OpaValue
+  case class OpaValueString(value: String) extends OpaValue
+  case class OpaValueNumber(value: BigDecimal) extends OpaValue
+  case class OpaValueBoolean(value: Boolean) extends OpaValue
+
+  sealed trait OpaQuery
+  case class OpaQueryMatchValue(
+      path: List[OpaRef],
+      operation: OpaOp,
+      value: OpaValue
+  ) extends OpaQuery
+  case class OpaQueryExists(
+      path: List[OpaRef]
+  ) extends OpaQuery
+  case object OpaQueryMatchAll extends OpaQuery
+  case object OpaQueryMatchNone extends OpaQuery
+
+  case class OpaPartialResponse(
+      queries: List[OpaQuery]
+  )
 }
 
-sealed trait OpaRef
-// case class OpaRefVar(value: String) extends OpaRef
-case object OpaRefAllInArray extends OpaRef
-case class OpaRefObjectKey(key: String) extends OpaRef
-
-sealed trait OpaValue
-case class OpaValueString(value: String) extends OpaValue
-case class OpaValueNumber(value: BigDecimal) extends OpaValue
-case class OpaValueBoolean(value: Boolean) extends OpaValue
-
-sealed trait OpaQuery
-case class OpaQueryMatchValue(
-    path: List[OpaRef],
-    operation: OpaOp,
-    value: OpaValue
-) extends OpaQuery
-case class OpaQueryExists(
-    path: List[OpaRef]
-) extends OpaQuery
-case object OpaQueryMatchAll extends OpaQuery
-case object OpaQueryMatchNone extends OpaQuery
-
-case class OpaPartialResponse(
-    queries: List[OpaQuery]
-)
+import OpaTypes._
 
 /**
   * Part of a RegoRef - i.e. one element in the array of the AST like so:
@@ -268,9 +272,8 @@ class OpaQueryer()(
       |  "unknowns": ["input.object"]
       |}""".stripMargin
 
-    println(requestData)
+    // println(requestData)
 
-    println(jwtToken)
     var headers = List(RawHeader("X-Magda-Session", jwtToken.get))
     // if (!testSessionId.isEmpty) {
     //   // --- only used for testing so that MockServer can server different tests in parallel
@@ -313,7 +316,7 @@ class OpaQueryer()(
 
       res.entity.toStrict(10.seconds).map { entity =>
         val json = entity.data.utf8String.parseJson
-        println(json.prettyPrint)
+        // println(json.prettyPrint)
 
         val resultOpt = json.asJsObject.fields
           .get("result")
@@ -341,7 +344,7 @@ class OpaQueryer()(
             .flatMap(_.asInstanceOf[JsArray].elements.toList)
         } yield rulesFromSupports ++ rulesFromQueries
 
-        println(rulesOpt.get.foreach(_.prettyPrint))
+        // println(rulesOpt.get.foreach(_.prettyPrint))
 
         val parsedRules = rulesOpt match {
           case Some(rules) => rules.map(parseRule)
@@ -349,7 +352,7 @@ class OpaQueryer()(
             throw new Exception("Could not parse" + rulesOpt.toString)
         }
 
-        println(parsedRules)
+        // println(parsedRules)
 
         val opaQueries = parsedRules.flatMap {
           case List(
@@ -387,9 +390,9 @@ class OpaQueryer()(
   private def regoRefPathToOpaRefPath(path: List[RegoRefPart]): List[OpaRef] = {
     path.flatMap {
       case RegoRefPartVar(allInArrayPattern()) => Some(OpaRefAllInArray)
-      case RegoRefPartString(value)             => Some(OpaRefObjectKey(value))
-      case RegoRefPartVar("input")              => None
-      case x                                    => throw new Exception("Could not understand " + x)
+      case RegoRefPartString(value)            => Some(OpaRefObjectKey(value))
+      case RegoRefPartVar("input")             => None
+      case x                                   => throw new Exception("Could not understand " + x)
     }
   }
 

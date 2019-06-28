@@ -14,6 +14,7 @@ import akka.stream.scaladsl.Source
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.opa.OpaTypes._
 
 trait RecordPersistence {
   def getAll(implicit session: DBSession, pageToken: Option[String], start: Option[Int], limit: Option[Int]): RecordsPage[RecordSummary]
@@ -52,7 +53,7 @@ trait RecordPersistence {
                                    optionalAspectIds: Iterable[String] = Seq(),
                                    dereference: Option[Boolean] = None): RecordsPage[Record]
 
-  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject]
+  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, opaQueries: List[OpaQuery]): Option[JsObject]
 
   def getPageTokens(implicit session: DBSession,
                     aspectIds: Iterable[String],
@@ -160,11 +161,37 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String): Option[JsObject] = {
-    sql"""select RecordAspects.aspectId as aspectId, name as aspectName, data from RecordAspects
-          inner join Aspects using (aspectId)
+  def getRecordAspectById(implicit session: DBSession, recordId: String, aspectId: String, opaQueries: List[OpaQuery] = List()): Option[JsObject] = {
+    val opaWhereClauseParts = opaQueries.map{
+      case OpaQueryMatchValue(OpaRefObjectKey("object") :: OpaRefObjectKey("aspects") :: OpaRefObjectKey(aspectName) :: aspectPath, operation, value) => 
+        val query = AspectQuery(
+          aspectId = aspectName,
+          path= aspectPath.map {
+            case OpaRefObjectKey(key) => key
+            case _ => "[_]"
+          },
+          value= value match {
+            case OpaValueString(string) => string
+            case OpaValueBoolean(boolean) => boolean.toString()
+            case OpaValueNumber(bigDec) => bigDec.toString()
+          }
+        )  
+      
+      aspectQueryToWhereClause(query)
+      // case _ => 
+    }
+
+
+      
+    ///} => sqls"recordId=${id}"))    
+
+    sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data
+          from RecordAspects
+            inner join Aspects using (aspectId)
+            inner join Records using (recordId)
           where RecordAspects.recordId=$recordId
-          and RecordAspects.aspectId=$aspectId"""
+          and RecordAspects.aspectId=$aspectId
+          and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""
       .map(rowToAspect)
       .single.apply()
   }

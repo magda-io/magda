@@ -36,3 +36,7 @@ pancake
 package-lock.json
 */package-lock.json
 .nyc_*
+
+# VSCode specific
+.bloop
+.metals
