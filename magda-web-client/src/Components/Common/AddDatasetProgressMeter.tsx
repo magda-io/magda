@@ -96,6 +96,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
         }
         return (
             <div
+                key={idx}
                 className={`col-sm-2 step-item-container ${statusClass}`}
                 onClick={() => {
                     if (statusClass !== "past-item") {
