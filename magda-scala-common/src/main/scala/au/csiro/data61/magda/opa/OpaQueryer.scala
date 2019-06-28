@@ -266,9 +266,12 @@ class OpaQueryer()(
     hasErrors = false
   }
 
-  def query(jwtToken: Option[String]): Future[List[OpaQuery]] = {
+  def query(
+      jwtToken: Option[String],
+      policyId: String
+  ): Future[List[OpaQuery]] = {
     val requestData: String = s"""{
-      |  "query": "data.object.registry.aspect.orgunit.view",
+      |  "query": "data.${policyId}",
       |  "unknowns": ["input.object"]
       |}""".stripMargin
 
@@ -349,7 +352,7 @@ class OpaQueryer()(
         val parsedRules = rulesOpt match {
           case Some(rules) => rules.map(parseRule)
           case None =>
-            throw new Exception("Could not parse" + rulesOpt.toString)
+            List()
         }
 
         // println(parsedRules)

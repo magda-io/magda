@@ -97,9 +97,20 @@ class RecordAspectsServiceRO(
           {
             val queryer = new OpaQueryer()
 
-            val opaFuture = queryer.query(jwt)
+            val policyIds = DB readOnly { session =>
+              recordPersistence.getPolicyIds(session, Seq(aspectId), Some(recordId))
+            }
 
-            onSuccess(opaFuture) { opaResult =>
+            if (policyIds.size > 1) {
+              throw new Exception(
+                s"Multiple policy ids ($policyIds) found for a single aspect $aspectId on record $recordId"
+              )
+            }
+
+            val policyId = policyIds.head
+            val policyFuture = queryer.query(jwt, policyId + ".view")
+
+            onSuccess(policyFuture) { opaResult =>
               DB readOnly { session =>
                 recordPersistence
                   .getRecordAspectById(session, recordId, aspectId, opaResult) match {
