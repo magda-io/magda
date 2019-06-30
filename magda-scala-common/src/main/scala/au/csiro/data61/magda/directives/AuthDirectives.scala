@@ -23,6 +23,7 @@ import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.model.headers.HttpChallenge
 import au.csiro.data61.magda.Authentication
 import akka.event.Logging
+import au.csiro.data61.magda.opa.OpaQueryer
 
 object AuthDirectives {
 
@@ -119,4 +120,5 @@ object AuthDirectives {
       }
     }
   }
+
 }

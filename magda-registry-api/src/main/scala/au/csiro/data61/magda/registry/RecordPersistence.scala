@@ -28,6 +28,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -46,6 +47,7 @@ trait RecordPersistence {
   def getByIdWithAspects(
       implicit session: DBSession,
       id: String,
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -54,6 +56,7 @@ trait RecordPersistence {
   def getByIdsWithAspects(
       implicit session: DBSession,
       ids: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -62,6 +65,7 @@ trait RecordPersistence {
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
       ids: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -85,13 +89,15 @@ trait RecordPersistence {
   def putRecordById(
       implicit session: DBSession,
       id: String,
-      newRecord: Record
+      newRecord: Record,
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record]
 
   def patchRecordById(
       implicit session: DBSession,
       id: String,
-      recordPatch: JsonPatch
+      recordPatch: JsonPatch,
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -165,6 +171,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -177,6 +184,7 @@ object DefaultRecordPersistence
       session,
       aspectIds,
       optionalAspectIds,
+      opaQuery,
       pageToken,
       start,
       limit,
@@ -205,6 +213,7 @@ object DefaultRecordPersistence
   def getByIdWithAspects(
       implicit session: DBSession,
       id: String,
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -214,6 +223,7 @@ object DefaultRecordPersistence
         session,
         aspectIds,
         optionalAspectIds,
+        opaQuery,
         None,
         None,
         None,
@@ -227,6 +237,7 @@ object DefaultRecordPersistence
   def getByIdsWithAspects(
       implicit session: DBSession,
       ids: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -238,6 +249,7 @@ object DefaultRecordPersistence
         session,
         aspectIds,
         optionalAspectIds,
+        opaQuery,
         None,
         None,
         None,
@@ -249,6 +261,7 @@ object DefaultRecordPersistence
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
       ids: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -282,6 +295,7 @@ object DefaultRecordPersistence
         session,
         aspectIds,
         optionalAspectIds,
+        opaQuery,
         None,
         None,
         None,
@@ -390,7 +404,8 @@ object DefaultRecordPersistence
   def putRecordById(
       implicit session: DBSession,
       id: String,
-      newRecord: Record
+      newRecord: Record,
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -402,7 +417,7 @@ object DefaultRecordPersistence
             "The provided ID does not match the record's ID."
           )
         )
-      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id) match {
+      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id, opaQuery) match {
         case Some(record) => Success(record)
         // Possibility of a race condition here. The record doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
@@ -414,7 +429,7 @@ object DefaultRecordPersistence
           } match {
             case Success(record) => Success(record)
             case Failure(e) =>
-              this.getByIdWithAspects(session, id) match {
+              this.getByIdWithAspects(session, id, opaQuery) match {
                 case Some(record) => Success(record)
                 case None         => Failure(e)
               }
@@ -427,7 +442,7 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldRecordJson, newRecordJson, false)
       }
-      result <- patchRecordById(session, id, recordPatch)
+      result <- patchRecordById(session, id, recordPatch, opaQuery)
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
@@ -447,10 +462,11 @@ object DefaultRecordPersistence
   def patchRecordById(
       implicit session: DBSession,
       id: String,
-      recordPatch: JsonPatch
+      recordPatch: JsonPatch,
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record] = {
     for {
-      record <- this.getByIdWithAspects(session, id) match {
+      record <- this.getByIdWithAspects(session, id, opaQuery) match {
         case Some(record) => Success(record)
         case None =>
           Failure(new RuntimeException("No record exists with that ID."))
@@ -979,6 +995,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
