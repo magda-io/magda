@@ -1,5 +1,3 @@
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
-
 export default {
     id: "dataset-format",
     name: "Details about the format of the distribution",

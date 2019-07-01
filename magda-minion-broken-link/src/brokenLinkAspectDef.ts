@@ -1,5 +1,3 @@
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
-
 export default {
     id: "source-link-status",
     name: "Details about the downloadURL link status of a distribution",
