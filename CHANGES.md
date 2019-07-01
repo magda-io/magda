@@ -51,7 +51,7 @@ UI:
 
 Gateway:
 
--   Add ArcGIS/ESRI Authentication provider
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
 
 Access Control:
