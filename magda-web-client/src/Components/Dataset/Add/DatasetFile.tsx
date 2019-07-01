@@ -80,7 +80,7 @@ export default function DatasetFile({
     onDelete: () => void;
     onChange: (file: File) => void;
 }) {
-    if (file._state !== FileState.Ready || 1) {
+    if (file._state !== FileState.Ready) {
         return <FileInProgress file={file} onDelete={onDelete} />;
     }
 
