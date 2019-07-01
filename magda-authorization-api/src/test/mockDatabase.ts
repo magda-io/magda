@@ -8,6 +8,8 @@ import { Maybe } from "tsmonad";
 import * as sinon from "sinon";
 import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
 import Database from "../Database";
+import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
+import * as pg from "pg";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
@@ -81,5 +83,26 @@ export default class MockDatabase {
         db.getUser.callsFake(this.getUser);
         db.getCurrentUserInfo.callThrough();
         return await db.getCurrentUserInfo(req, jwtSecret);
+    }
+
+    getOrgQueryer() {
+        const orgQueryer: NestedSetModelQueryer = {
+            getNodeById: async (
+                id: string,
+                fields: string[] = null,
+                client: pg.Client = null
+            ): Promise<Maybe<NodeRecord>> => {
+                return Promise.resolve(Maybe.nothing());
+            },
+            getAllChildren: (
+                parentNodeId: string,
+                includeMyself: boolean = false,
+                fields: string[] = null,
+                client: pg.Client = null
+            ): Promise<NodeRecord[]> => {
+                return Promise.resolve([]);
+            }
+        } as NestedSetModelQueryer;
+        return orgQueryer;
     }
 }

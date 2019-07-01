@@ -31,9 +31,7 @@ const withHeader = <P extends {}>(
                     />
                 )}
 
-                {includeDatasetPageProgressMeter && (
-                    <AddDatasetProgressMeter step={1} datasetId={"111"} />
-                )}
+                {includeDatasetPageProgressMeter && <AddDatasetProgressMeter />}
 
                 <div
                     className={`${
