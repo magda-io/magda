@@ -10,7 +10,7 @@ import helpIcon from "assets/help-24.svg";
 export default function DataQualityTooltip(props) {
     return (
         <Tooltip
-            className="data-quality-tooltip"
+            className="data-quality-tooltip no-print"
             launcher={() => (
                 <Link to="/page/linked-data-rating">
                     <img

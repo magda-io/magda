@@ -222,11 +222,12 @@ const Routes = () => {
                     component={withHeader(CatalogRoutes, false)}
                 />
             )}
+            {/*
+                We can't load header here. ProgressMeter needs to go into header 
+                but the first route of the dataset route doesn't need a ProgressMeter.
+             */}
             {config.featureFlags.cataloguing && (
-                <Route
-                    path="/dataset/(add|list)"
-                    component={withHeader(DatasetRoutes, false)}
-                />
+                <Route path="/dataset/(add|list)" component={DatasetRoutes} />
             )}
 
             <Route

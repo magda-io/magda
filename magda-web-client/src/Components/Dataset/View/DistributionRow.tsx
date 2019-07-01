@@ -53,6 +53,20 @@ class DistributionRow extends Component<PropType> {
             )}/?q=${this.props.searchText}`;
         }
 
+        let apiUrl = "";
+
+        if (
+            distribution.ckanResource &&
+            distribution.ckanResource.datastore_active
+        ) {
+            apiUrl = get(distribution, "sourceDetails.url")
+                ? get(distribution, "sourceDetails.url", "").replace(
+                      "3/action/resource_show?",
+                      "1/util/snippet/api_info.html?resource_"
+                  )
+                : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api";
+        }
+
         return (
             <div
                 className="distribution-row row"
@@ -129,68 +143,72 @@ class DistributionRow extends Component<PropType> {
                     </div>
                 </div>
                 <div className="col-sm-4 button-area">
-                    {distribution.ckanResource &&
-                        distribution.ckanResource.datastore_active && (
-                            <a
-                                className="download-button au-btn au-btn--secondary au-float-left"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href={
-                                    get(distribution, "sourceDetails.url")
-                                        ? get(
-                                              distribution,
-                                              "sourceDetails.url",
-                                              ""
-                                          ).replace(
-                                              "3/action/resource_show?",
-                                              "1/util/snippet/api_info.html?resource_"
-                                          )
-                                        : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
-                                }
-                            >
-                                <img src={apiAccessIcon} alt="" /> Access Data
-                                API
-                            </a>
-                        )}{" "}
+                    {apiUrl && (
+                        <span>
+                            <span className="no-print">
+                                <a
+                                    className="download-button au-btn au-btn--secondary au-float-left"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={apiUrl}
+                                >
+                                    <img src={apiAccessIcon} alt="" /> Access
+                                    Data API
+                                </a>
+                            </span>
+                            <span className="block print-only">
+                                API: {apiUrl}
+                            </span>
+                        </span>
+                    )}{" "}
                     {distribution.downloadURL && (
-                        <a
-                            className="download-button au-btn au-btn--secondary"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            href={distribution.downloadURL}
-                            onClick={() => {
-                                // google analytics download tracking
-                                const resource_url = encodeURIComponent(
-                                    distribution.downloadURL!
-                                );
-                                if (resource_url) {
-                                    // legacy support
-                                    gapi.event({
-                                        category: "Resource",
-                                        action: "Download",
-                                        label: resource_url
-                                    });
-                                    // new events
-                                    gapi.event({
-                                        category: "Download by Dataset",
-                                        action: dataset.title,
-                                        label: resource_url
-                                    });
-                                    gapi.event({
-                                        category: "Download by Source",
-                                        action: dataset.source,
-                                        label: resource_url
-                                    });
-                                    gapi.event({
-                                        category: "Download by Publisher",
-                                        action: dataset.publisher.name,
-                                        label: resource_url
-                                    });
-                                }
-                            }}
-                        >
-                            <img src={downloadIcon} alt="download" /> Download
-                        </a>
+                        <span>
+                            <span className="no-print">
+                                <a
+                                    className="download-button au-btn au-btn--secondary"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={distribution.downloadURL}
+                                    onClick={() => {
+                                        // google analytics download tracking
+                                        const resource_url = encodeURIComponent(
+                                            distribution.downloadURL!
+                                        );
+                                        if (resource_url) {
+                                            // legacy support
+                                            gapi.event({
+                                                category: "Resource",
+                                                action: "Download",
+                                                label: resource_url
+                                            });
+                                            // new events
+                                            gapi.event({
+                                                category: "Download by Dataset",
+                                                action: dataset.title,
+                                                label: resource_url
+                                            });
+                                            gapi.event({
+                                                category: "Download by Source",
+                                                action: dataset.source,
+                                                label: resource_url
+                                            });
+                                            gapi.event({
+                                                category:
+                                                    "Download by Publisher",
+                                                action: dataset.publisher.name,
+                                                label: resource_url
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <img src={downloadIcon} alt="download" />{" "}
+                                    Download
+                                </a>
+                            </span>
+                            <span className="block print-only">
+                                Download: {distribution.downloadURL}
+                            </span>
+                        </span>
                     )}
                 </div>
             </div>

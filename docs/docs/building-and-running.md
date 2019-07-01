@@ -43,7 +43,7 @@ yarn install
 Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
 
 ```bash
-lerna run build --include-filtered-dependencies
+lerna run build --stream --concurrency=4 --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
@@ -76,7 +76,7 @@ Now you can build the docker containers locally - this might take quite a while 
 
 ```bash
 eval $(minikube docker-env) # (If you haven't run this already)
-lerna run docker-build-local --include-filtered-dependencies
+lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
 ```
 
 ### Create the necessary secrets with the secret creation script

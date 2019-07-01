@@ -19,6 +19,9 @@ export interface AuthRouterOptions {
     authorizationApi: string;
     externalUrl: string;
     userId: string;
+    vanguardWsFedIdpUrl: string;
+    vanguardWsFedRealm: string;
+    vanguardWsFedCertificate: string;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -89,6 +92,18 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                 aafClientUri: options.aafClientUri,
                 aafClientSecret: options.aafClientSecret,
                 externalUrl: options.externalUrl
+            })
+        },
+        {
+            id: "vanguard",
+            enabled: options.vanguardWsFedIdpUrl ? true : false,
+            authRouter: require("./oauth2/vanguard").default({
+                authorizationApi: authApi,
+                passport: passport,
+                wsFedIdpUrl: options.vanguardWsFedIdpUrl,
+                wsFedRealm: options.vanguardWsFedRealm,
+                wsFedCertificate: options.vanguardWsFedCertificate,
+                externalAuthHome: `${options.externalUrl}/auth`
             })
         }
     ];

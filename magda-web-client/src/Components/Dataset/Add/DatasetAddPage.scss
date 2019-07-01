@@ -1,5 +1,151 @@
 @import "variables";
 
+.add-dataset-page-container {
+    .borderLR {
+        border-left: #e4e4e4 1px solid;
+        border-right: #e4e4e4 1px solid;
+    }
+    .heading {
+        font-size: 64px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 179px;
+        height: 179px;
+        letter-spacing: normal;
+        color: #3c3c3c;
+    }
+    .heading-row {
+        margin-top: 2px;
+        background-color: #f4f4f4;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .lower-header {
+        height: 414px;
+        background-color: #fafafa;
+        .block {
+            text-align: center;
+        }
+        .icon-search {
+            margin-top: 90px;
+            margin-bottom: 15px;
+            width: 55px;
+            height: 69px;
+        }
+        .icon-document {
+            width: 64px;
+            height: 60px;
+            margin-top: 74px;
+            margin-bottom: 44px;
+        }
+        .icon-oval {
+            width: 61px;
+            height: 55px;
+            margin-top: 90px;
+            margin-bottom: 33px;
+        }
+    }
+    .text-block-container {
+        .text-block {
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.75;
+            letter-spacing: normal;
+            color: #484848;
+            strong {
+                font-weight: 600;
+            }
+            height: 162px;
+        }
+        .text-block-1 {
+            width: 241px;
+        }
+        .text-block-2 {
+            width: 269px;
+        }
+        .text-block-3 {
+            width: 241px;
+        }
+    }
+    .body-heading-row {
+        p {
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 85px;
+            margin-bottom: 66px;
+            width: 592px;
+            height: 96px;
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.26;
+            letter-spacing: normal;
+            text-align: center;
+            color: #484848;
+        }
+    }
+
+    .choice-Col:nth-child(2),
+    .choice-Col:nth-child(1) {
+        margin-bottom: 40px;
+    }
+
+    .choice-1 {
+        .choice-Icon {
+            width: 54px;
+            height: 58px;
+        }
+        .choice-buttonHeading {
+            margin-left: 8px;
+        }
+        .choice-Button {
+            background-color: $add-dataset-page-button-top-rows !important;
+        }
+    }
+
+    .choice-2 {
+        .choice-Icon {
+            width: 76px;
+            height: 54px;
+        }
+        .choice-buttonHeading {
+            margin-left: 8px;
+        }
+        .choice-Button {
+            background-color: $add-dataset-page-button-top-rows !important;
+        }
+    }
+
+    .choice-3 {
+        .choice-Icon {
+            width: 65px;
+            height: 39px;
+        }
+        .choice-buttonHeading {
+            margin-left: 8px;
+        }
+    }
+
+    .choice-4 {
+        .choice-Icon {
+            width: initial;
+            height: 67px;
+        }
+        .choice-buttonHeading {
+            margin-left: 1px;
+        }
+    }
+    .main-body-row {
+        padding-left: 25px;
+    }
+}
+
 .instruction-icon {
     width: 2em;
     height: 2em;
