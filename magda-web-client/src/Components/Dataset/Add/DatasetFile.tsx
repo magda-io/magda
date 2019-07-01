@@ -5,7 +5,7 @@ import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { dateEditor } from "Components/Editing/Editors/dateEditor";
 
-import FileIcon from "Components/Common/FileIcon";
+import { getFormatIcon } from "../View/DistributionIcon";
 
 import humanFileSize from "helpers/humanFileSize";
 
@@ -37,7 +37,8 @@ function FileInProgress({
                     <img src={dismissIcon} />
                 </button>
                 <div className="file-icon-area">
-                    <FileIcon width="48px" text={file.format} />
+                    <img className="format-icon" src={getFormatIcon(file)} />
+                    <div className="format-text">{file.format}</div>
                 </div>
                 <div className="file-info">
                     <div className="file-name-size">
@@ -79,7 +80,7 @@ export default function DatasetFile({
     onDelete: () => void;
     onChange: (file: File) => void;
 }) {
-    if (file._state !== FileState.Ready) {
+    if (file._state !== FileState.Ready || 1) {
         return <FileInProgress file={file} onDelete={onDelete} />;
     }
 
