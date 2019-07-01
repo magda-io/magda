@@ -64,6 +64,8 @@ import {
     saveState
 } from "./DatasetAddCommon";
 
+import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+
 import "./DatasetAddMetadataPage.scss";
 
 type Prop = {
@@ -179,7 +181,7 @@ class NewDataset extends React.Component<Prop, State> {
                                 ? this.state.isPublishing
                                     ? "Publishing as draft..."
                                     : "Publish draft dataset"
-                                : this.steps[step + 1].label}
+                                : ProgressMeterStepsConfig[step + 2].title}
                         </button>
                     </div>
                 </div>

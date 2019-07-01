@@ -12,6 +12,16 @@ export interface ArcGisOptions {
     clientId: string;
     clientSecret: string;
     externalAuthHome: string;
+    arcgisInstanceBaseUrl?: string;
+}
+
+interface StrategyOptions {
+    clientID: string;
+    clientSecret: string;
+    callbackURL: string;
+    authorizationURL?: string;
+    tokenURL?: string;
+    userProfileURL?: string;
 }
 
 export default function arcgis(options: ArcGisOptions) {
@@ -26,35 +36,51 @@ export default function arcgis(options: ArcGisOptions) {
         return undefined;
     }
 
+    const strategyOptions: StrategyOptions = {
+        clientID: clientId,
+        clientSecret: clientSecret,
+        callbackURL: `${loginBaseUrl}/arcgis/return`
+    };
+
+    // Expect options.arcgisInstanceBaseUrl to be something like https://some.portal.gov.au/arcgis
+    if (options.arcgisInstanceBaseUrl) {
+        // Overrides 'https://www.arcgis.com/sharing/oauth2/authorize'
+        strategyOptions.authorizationURL = `${
+            options.arcgisInstanceBaseUrl
+        }/sharing/oauth2/authorize`;
+
+        // Overrides 'https://www.arcgis.com/sharing/oauth2/token'
+        strategyOptions.tokenURL = `${
+            options.arcgisInstanceBaseUrl
+        }/sharing/oauth2/token`;
+
+        // Overrides 'https://www.arcgis.com/sharing/rest/community/self?f=json'
+        strategyOptions.userProfileURL = `${
+            options.arcgisInstanceBaseUrl
+        }/sharing/rest/community/self?f=json`;
+    }
+
     passport.use(
-        new ArcGISStrategy(
-            {
-                clientID: clientId,
-                clientSecret: clientSecret,
-                callbackURL: `${loginBaseUrl}/arcgis/return`
-            },
-            function(
-                accessToken: string,
-                refreshToken: string,
-                profile: Profile,
-                cb: (error: any, user?: any, info?: any) => void
-            ) {
-                // ArcGIS Passport provider incorrect defines email instead of emails
-                if ((profile as any).email) {
-                    profile.emails = profile.emails || [];
-                    profile.emails.push({ value: (profile as any).email });
-                }
-
-                profile.displayName =
-                    profile.displayName ||
-                    ((profile as any)._json &&
-                        (profile as any)._json.thumbnail);
-
-                createOrGetUserToken(authorizationApi, profile, "arcgis")
-                    .then(userId => cb(null, userId))
-                    .catch(error => cb(error));
+        new ArcGISStrategy(strategyOptions, function(
+            accessToken: string,
+            refreshToken: string,
+            profile: Profile,
+            cb: (error: any, user?: any, info?: any) => void
+        ) {
+            // ArcGIS Passport provider incorrect defines email instead of emails
+            if ((profile as any).email) {
+                profile.emails = profile.emails || [];
+                profile.emails.push({ value: (profile as any).email });
             }
-        )
+
+            profile.displayName =
+                profile.displayName ||
+                ((profile as any)._json && (profile as any)._json.thumbnail);
+
+            createOrGetUserToken(authorizationApi, profile, "arcgis")
+                .then(userId => cb(null, userId))
+                .catch(error => cb(error));
+        })
     );
 
     const router: express.Router = express.Router();

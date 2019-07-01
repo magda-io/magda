@@ -85,6 +85,18 @@ export default function Login(props) {
                             </a>
                         </li>
                     )}
+                    {props.providers.indexOf("vanguard") !== -1 && (
+                        <li className="login__provider">
+                            <a href={makeLoginUrl("vanguard")}>
+                                <img
+                                    src={aafLogo}
+                                    className="login__logo"
+                                    alt="logo"
+                                />
+                                Vanguard
+                            </a>
+                        </li>
+                    )}
                 </ul>
             </div>
             {props.providers.indexOf("ckan") !== -1 && (

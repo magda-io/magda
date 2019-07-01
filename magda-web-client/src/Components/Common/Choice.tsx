@@ -26,7 +26,7 @@ export default function Choice(props: ChoiceProps) {
                 <h2 className="choice-buttonHeading">{props.heading}</h2>{" "}
                 <div className="choice-IconRow">
                     <img className="choice-Icon" src={props.icon} />
-                    {props.blurb}
+                    <div className="text-content">{props.blurb}</div>
                 </div>
             </a>
         </div>
