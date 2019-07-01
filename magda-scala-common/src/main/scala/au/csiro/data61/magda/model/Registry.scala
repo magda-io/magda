@@ -73,12 +73,6 @@ object Registry {
     val name: String
   }
 
-  sealed trait TenantType {
-    val domainName: String
-    val id: BigInt
-    val enabled: Boolean
-  }
-
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects, unique for a tenant.")
   case class Record(
     @(ApiModelProperty @field)(value = "The identifier of the record", required = true) id: String,
@@ -347,21 +341,7 @@ object Registry {
 
       val publishing = hit.aspects.getOrElse("publishing", JsObject())
 
-
-      // In the previous Magda deployment (single tenant), a dataset was indexed with ID
-      // being set to UTF-8 encoded record id, which is guaranteed to be unique. However,
-      // in a multi-tenant case, a record id is not unique, which should not be used as
-      // dataset identifier.
-      // The special way of setting dataset identifier here is for backward compatibility.
-      // That is, the existing indexed documents in the Elastic Search can remain unchanged
-      // if this version of Magda is deployed in single tenant mode. In multi-tenant mode,
-      // all datasets will be indexed with identifiers consisting of record id and tenant id,
-      // which is guaranteed to be unique.
-      val theIdentifier: String =
-        if(hit.tenantId == MAGDA_ADMIN_PORTAL_ID)
-          DataSet.registryIdToIdentifier(hit.id)
-        else
-          DataSet.createUniqueId(hit.id, hit.tenantId.get)
+      val theIdentifier: String = DataSet.registryIdToIdentifier(hit.id, hit.tenantId.get)
 
       DataSet(
         identifier = theIdentifier,

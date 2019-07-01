@@ -120,7 +120,7 @@ function recordBrokenLinkAspect(
             result.distribution.id,
             "source-link-status",
             result.aspect,
-            Number(theTenantId)
+            theTenantId
         )
         .then(unionToThrowable);
 }

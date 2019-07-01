@@ -62,7 +62,6 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   }
 
   override def beforeAll {
-    println("Testing RegionLoadingTest")
     super.beforeAll
 
     client.execute(IndexDefinition.regions.definition(fakeIndices, config)).await

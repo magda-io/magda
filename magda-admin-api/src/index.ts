@@ -66,7 +66,7 @@ const argv = addJwtSecretFromEnvVar(
             type: "string"
         })
         .option("tenantId", {
-            describe: "Tenant id for used to create connectors",
+            describe: "Tenant ID used to create connectors",
             type: "number",
             default: 0
         }).argv

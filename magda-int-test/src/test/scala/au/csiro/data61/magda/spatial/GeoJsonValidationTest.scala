@@ -11,7 +11,6 @@ class GeoJsonValidationTest extends FunSpec with Matchers {
   val logger = LoggerFactory.getLogger(getClass)
 
   describe("GeoJson Data Validation") {
-    println("Testing GeoJsonValidationTest")
     it("should detect invalidation data with invalid Longitude"){
       println("  - Testing should detect invalidation data with invalid Longitude")
       val geoJson = "{\"type\": \"Polygon\", \"coordinates\": [[[20106.11903, -31.85658], [152.11903, -28.53715], [147.39402, -28.53715], [147.39402, -31.85658], [152.11903, -31.85658]]]}"

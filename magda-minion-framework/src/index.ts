@@ -9,11 +9,8 @@ import registerWebhook from "./registerWebhook";
 import resumeWebhook from "./resumeWebhook";
 import Crawler from "./Crawler";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
-import AuthorizedTenantClient  from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
-import {
-    MAGDA_ADMIN_PORTAL_ID,
-    MAGDA_SYSTEM_ID
-} from "@magda/typescript-common/dist/registry/TenantConsts";
+import AuthorizedTenantClient from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export default async function minion(options: MinionOptions): Promise<void> {
     checkOptions(options);
@@ -25,7 +22,7 @@ export default async function minion(options: MinionOptions): Promise<void> {
         tenantId: options.tenantId
     });
 
-    const tenantClient =  new AuthorizedTenantClient({
+    const tenantClient = new AuthorizedTenantClient({
         urlStr: options.argv.tenantUrl,
         maxRetries: 1,
         secondsBetweenRetries: 1,
@@ -33,11 +30,6 @@ export default async function minion(options: MinionOptions): Promise<void> {
         userId: options.argv.userId
     });
 
-    const tenantIds: number[] = await tenantClient
-        .getTenants()
-        .then((tenants: Tenant[]) => {
-            return tenants.map(t => t.id);
-        });
     const crawler = new Crawler(registry, options);
 
     options.express = options.express || (() => express());
@@ -115,21 +107,27 @@ export default async function minion(options: MinionOptions): Promise<void> {
         }
     }
 
-    // TODO: How to deal with new tenants that are not in the tenantIds?
     async function putAspectDefs() {
         const aspectDefsToAdd = options.writeAspectDefs;
         console.info(
             `Adding aspect defs ${aspectDefsToAdd.map(def => def.name)}`
         );
 
+        // If magda is deployed in multi-tenant mode, any datasets from any new tenants created
+        // after this call will be not be processed. To process them, run the minion again.
+        const tenantIds: number[] = await tenantClient
+            .getTenants()
+            .then((tenants: Tenant[]) => {
+                return tenants.map(t => t.id);
+            });
+
+        // We always create aspect definition for tenant with ID of MAGDA_ADMIN_PORTAL_ID
+        // because a minion does not know if magda is deployed in single- or multi-tenant mode.
+        // This approach will slightly increase the number of entries in the aspects table but
+        // make the implementation simple.
+        const theTenantIds: number[] = tenantIds.concat(MAGDA_ADMIN_PORTAL_ID);
         const addPromises = aspectDefsToAdd.map(aspectDef => {
-            if (options.tenantId === MAGDA_SYSTEM_ID && tenantIds.length > 1) {
-                tenantIds.map(id =>
-                    registry.putAspectDefinition(aspectDef, id)
-                );
-            } else {
-                registry.putAspectDefinition(aspectDef, MAGDA_ADMIN_PORTAL_ID);
-            }
+            theTenantIds.map(id => registry.putAspectDefinition(aspectDef, id));
         });
 
         return Promise.all(addPromises)

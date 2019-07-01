@@ -3,8 +3,7 @@ import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantCo
 export default {
     id: "dataset-format",
     name: "Details about the format of the distribution",
-    jsonSchema: require("@magda/registry-aspects/dataset-format.schema.json"),
-    tenantId: MAGDA_SYSTEM_ID
+    jsonSchema: require("@magda/registry-aspects/dataset-format.schema.json")
 };
 
 export interface FormatAspect {

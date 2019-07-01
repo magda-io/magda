@@ -65,7 +65,7 @@ export default function onRecordFound(
                         record.id,
                         "visualization-info",
                         visualizationInfo,
-                        Number(theTenantId)
+                        theTenantId
                     );
                 })
                 .catch(err => {

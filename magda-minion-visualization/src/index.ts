@@ -9,8 +9,7 @@ const aspectDefinition = {
     id: "visualization-info",
     name:
         "Information to power smart visualisations for distributions in the front-end",
-    jsonSchema: require("@magda/registry-aspects/visualization-info.schema.json"),
-    tenantId: MAGDA_SYSTEM_ID
+    jsonSchema: require("@magda/registry-aspects/visualization-info.schema.json")
 };
 
 minion({

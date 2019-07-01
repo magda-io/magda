@@ -3,8 +3,7 @@ import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantCo
 export default {
     id: "source-link-status",
     name: "Details about the downloadURL link status of a distribution",
-    jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json"),
-    tenantId: MAGDA_SYSTEM_ID
+    jsonSchema: require("@magda/registry-aspects/source-link-status.schema.json")
 };
 
 export interface BrokenLinkAspect {
