@@ -1,9 +1,11 @@
 .vocabulary-auto-complete-input {
+    position: relative;
     .suggestion-item {
         border: 1px solid grey;
         border-radius: 0.5em;
         padding: 0.5em;
         margin-bottom: 4px;
+        background-color: #ffffff;
     }
     .suggestion-item:hover {
         background-color: #f7f7f7;
@@ -15,5 +17,7 @@
     }
     .suggestions-container {
         margin-bottom: 10px;
+        position: absolute;
+        z-index: 999;
     }
 }
