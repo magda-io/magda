@@ -341,10 +341,8 @@ object Registry {
 
       val publishing = hit.aspects.getOrElse("publishing", JsObject())
 
-      val theIdentifier: String = DataSet.registryIdToIdentifier(hit.id, hit.tenantId.get)
-
       DataSet(
-        identifier = theIdentifier,
+        identifier = DataSet.registryIdToIdentifier(hit.id),
         tenantId = hit.tenantId.get,
         title = dcatStrings.extract[String]('title.?),
         catalog = source.extract[String]('name.?),

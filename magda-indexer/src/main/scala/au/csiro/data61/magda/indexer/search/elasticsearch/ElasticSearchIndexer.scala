@@ -4,7 +4,6 @@ import java.time.{Instant, OffsetDateTime}
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
-import akka.stream.javadsl.SourceQueueWithComplete
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
@@ -21,13 +20,11 @@ import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
 import com.sksamuel.elastic4s.http.index.CreateIndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.search.SearchResponse
-import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, RestoreSnapshotResponse, Snapshot}
+import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, RestoreSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.indexes.IndexRequest
 import com.sksamuel.elastic4s.snapshots._
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.http.snapshots.GetSnapshotResponse
-import org.elasticsearch.snapshots.SnapshotInfo
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -541,11 +538,10 @@ class ElasticSearchIndexer(
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now))
 
-    // A dataset's identifier is guaranteed to be unique among all tenants. See how a dataset's identifier is created in
-    // au.csiro.data61.magda.model.Registry.RegistryConverters.convertRegistryDataSet
+    val documentId = DataSet.uniqueEsDocumentId(rawDataSet.identifier, rawDataSet.tenantId)
     val indexDataSet = ElasticDsl
       .indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
-      .id(dataSet.identifier)
+      .id(documentId)
       .source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>

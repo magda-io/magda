@@ -15,9 +15,7 @@ import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_ADMIN_PORTAL_ID, R
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
-import spray.json.JsValue
 
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryConverters {
@@ -59,7 +57,7 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
               val tenantId = if (maybeTenantId.nonEmpty) maybeTenantId.head.convertTo[BigInt] else MAGDA_ADMIN_PORTAL_ID
               (recordId, tenantId)
             })
-            .map( result => DataSet.registryIdToIdentifier(result._1 ,result._2))
+            .map( result => DataSet.uniqueEsDocumentId(result._1 ,result._2))
 
           val deleteOp = () => idsToDelete match {
             case Nil  => Future.successful(Unit)

@@ -11,11 +11,8 @@ import spray.json._
 
 import scala.runtime.ScalaRunTime
 import scala.util.{Failure, Success, Try}
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 
 package misc {
-
-  import java.io
 
   import scala.util.matching.Regex
 
@@ -108,22 +105,18 @@ package misc {
   }
 
   object DataSet {
-    // In the previous Magda version (single tenant), a dataset was indexed with ID
-    // being set to UTF-8 encoded record id, which is guaranteed to be unique. However,
-    // in a multi-tenant case, a record id is not unique, which should not be used as
-    // dataset identifier.
-    // The special way of setting dataset identifier here is for backward compatibility.
-    // That is, the existing indexed documents in the Elastic Search can remain unchanged
-    // if this version of Magda is deployed in single tenant mode. In multi-tenant mode,
-    // all datasets will be indexed with identifiers consisting of record id and tenant id,
-    // which is guaranteed to be unique.
-    def registryIdToIdentifier(registryId: String, tenantId: BigInt): String = {
-      val rawIdentifier =
-        if(tenantId == MAGDA_ADMIN_PORTAL_ID)
-          registryId
-        else
-          registryId + "-" + tenantId
+    def registryIdToIdentifier(registryId: String): String = {
+      java.net.URLEncoder.encode(registryId, "UTF-8")
+    }
 
+    // A dataset identifier is the record id in the registry. It is not unique among all tenants.
+    // In the previous Magda version (single tenant only), an indexed dataset has ES document ID
+    // being set to UTF-8 encoded record id, which is guaranteed to be unique. However, in a multi-tenant
+    // case, a record id is not unique, which should not be used as document ID in the ES database.
+    // With this new version, regardless the deployment mode, all document IDs will consist of record identifier
+    // and tenant id. The ES document IDs will be unique.
+    def uniqueEsDocumentId(registryId: String, tenantId: BigInt): String = {
+      val rawIdentifier = registryId + "---" + tenantId
       java.net.URLEncoder.encode(rawIdentifier, "UTF-8")
     }
   }

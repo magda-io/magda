@@ -10,7 +10,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
   val eventStreamPageSize = 1000
   val recordPersistence = DefaultRecordPersistence
 
-  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set()) = {
+  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
     Source.unfold(sinceEventId)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -19,13 +19,14 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           start = None,
           limit = Some(eventStreamPageSize),
           recordId = recordId,
-          aspectIds = aspectIds)
+          aspectIds = aspectIds,
+          tenantId = tenantId)
       }
       events.events.lastOption.map(last => (last.id.get, events))
     }).mapConcat(page => page.events)
   }
 
-  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set()) = {
+  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
     Source.unfold(0L)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -35,7 +36,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           limit = Some(eventStreamPageSize),
           lastEventId = Some(lastEventId),
           recordId = recordId,
-          aspectIds = aspectIds)
+          aspectIds = aspectIds,
+          tenantId = tenantId)
       }
       events.events.lastOption.map(last => (last.id.get, events))
     }).mapConcat(page => page.events)
@@ -59,12 +61,14 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                 recordId: Option[String] = None,
                 aspectIds: Set[String] = Set(),
                 eventTypes: Set[EventType] = Set(),
-                tenantId: Option[BigInt] = None): EventsPage = {
-    val filters = Seq(
+                tenantId: BigInt): EventsPage = {
+    val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
-      tenantId.map(v => sqls"tenantId = $v"),
-      recordId.map(v => sqls"data->>'recordId' = $v")).filter(_.isDefined)
+      recordId.map(v => sqls"data->>'recordId' = $v"))
+
+    val tenantFilter: Option[SQLSyntax] = if (tenantId == MAGDA_SYSTEM_ID) None else Some(sqls"tenantId = $tenantId")
+    val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
 
     val eventTypesFilter = if (eventTypes.isEmpty) sqls"1=1" else
       SQLSyntax.joinWithOr(eventTypes.map(v => v.value).map(v => sqls"eventtypeid = $v").toArray: _*)
@@ -86,7 +90,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val aspectsSql = if (aspectIds.isEmpty) None else Some(SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*))
     val dereferenceSelectorsSql = if (dereferenceSelectors.isEmpty) None else Some(SQLSyntax.joinWithOr(dereferenceSelectors.toArray: _*))
 
-    val whereClause = SQLSyntax.where((SQLSyntax.joinWithAnd((filters.map(_.get)): _*)).and((aspectsSql, dereferenceSelectorsSql) match {
+    val whereClause = SQLSyntax.where((SQLSyntax.joinWithAnd((theFilters.map(_.get)): _*)).and((aspectsSql, dereferenceSelectorsSql) match {
       case (Some(aspectSql), Some(dereferenceSql)) => aspectSql.or(dereferenceSql)
       case (Some(aspectSql), None)                 => aspectSql
       case (None, Some(dereferenceSql))            => dereferenceSql

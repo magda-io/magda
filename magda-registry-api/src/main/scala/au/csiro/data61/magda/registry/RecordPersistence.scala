@@ -106,8 +106,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                         limit: Option[Int] = None,
                         dereference: Option[Boolean] = None,
                         aspectQueries: Iterable[AspectQuery] = Nil): RecordsPage[Record] = {
-    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
-    val selectors = Iterable(Some(recordClause)) ++ aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
+    val selectors = aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
@@ -116,7 +115,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                tenantId: BigInt,
                aspectIds: Iterable[String],
                aspectQueries: Iterable[AspectQuery] = Nil): Long = {
-    val recordClause: SQLSyntax = sqls"Records.tenantId = $tenantId"
+    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
     val selectors: Iterable[Some[SQLSyntax]] = Iterable(Some(recordClause)) ++ aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getCountInner(session, tenantId, aspectIds, selectors)
@@ -132,9 +131,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
-
-    val selector = if (tenantId == MAGDA_SYSTEM_ID) List(None) else List(Some(sqls"recordId=$id and tenantId=$tenantId"))
-    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, selector).records.headOption
+    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=${id}"))).records.headOption
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
@@ -168,6 +165,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          from RecordAspects
                          where RecordAspects.recordId=Records.recordId
                          and aspectId=$aspectId
+                         and tenantId=$tenantId
                          and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
       }
 
@@ -614,7 +612,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       Map[String, PropertyWithLink]()
     }
 
-    val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ recordSelector) :+ pageToken.map(token => sqls"Records.sequence > ${token.toLong}")
+    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
+    val theRecordSelector = recordSelector ++ Iterable(Some(recordClause))
+    val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector) :+ pageToken.map(token => sqls"Records.sequence > $token")
     val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val limit = rawLimit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)
