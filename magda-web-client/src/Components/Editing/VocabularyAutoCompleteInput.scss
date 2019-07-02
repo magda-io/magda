@@ -6,9 +6,10 @@
         padding: 0.5em;
         margin-bottom: 4px;
         background-color: #ffffff;
+        cursor: pointer;
     }
     .suggestion-item:hover {
-        background-color: #f7f7f7;
+        background-color: #e7e7e7;
     }
     .suggestions-list {
         list-style-type: none;

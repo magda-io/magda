@@ -53,6 +53,9 @@ import uuidv4 from "uuid/v4";
 
 import * as codelists from "constants/DatasetConstants";
 
+import { Map, TileLayer, Rectangle } from "react-leaflet";
+import TagInput from "Components/Common/TagInput";
+
 import "./DatasetAddFilesPage.scss";
 
 import {
@@ -831,9 +834,6 @@ class YesNoToggle extends React.Component<any, any> {
         );
     }
 }
-
-import { Map, TileLayer, Rectangle } from "react-leaflet";
-import TagInput from "Components/Common/TagInput";
 
 function BBOXPreview(props) {
     let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
