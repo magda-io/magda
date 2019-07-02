@@ -10,7 +10,6 @@ import { expect } from "chai";
 import jsc from "@magda/typescript-common/dist/test/jsverify";
 import mockDatabase from "./mockDatabase";
 import mockUserDataStore from "@magda/typescript-common/dist/test/mockUserDataStore";
-import NestedSetModelQueryer from "../NestedSetModelQueryer";
 import Database from "../Database";
 import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
@@ -46,7 +45,12 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
             database: new mockDatabase() as Database,
-            orgQueryer: {} as NestedSetModelQueryer
+            opaUrl: process.env["OPA_URL"]
+                ? process.env["OPA_URL"]
+                : "http://localhost:8181/",
+            registryApiUrl: process.env["REGISTRY_API_URL"]
+                ? process.env["REGISTRY_API_URL"]
+                : "http://localhost:6101/v0"
         });
 
         const app = express();

@@ -39,24 +39,32 @@ matrix:
       node_js: "8"
       services:
         - postgresql
+        - docker
       cache:
         directories:
           - $HOME/.ivy2/cache
           - $HOME/.sbt
           - .yarn
       before_install:
+        - docker info
+        - docker-compose --version
         - yarn config set cache-folder .yarn
       before_cache:
         # Cleanup the cached directories to avoid unnecessary cache updates
         - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
         - find $HOME/.sbt        -name "*.lock"               -print -delete
       script:
+        - cd deploy/helm/magda/charts/opa
+        - docker-compose up -d
+        - cd ../../../../..
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test
         - yarn run in-submodules -- -f categories.connector=true -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.connector=true -- run test
         - yarn run in-submodules -- -f categories.minion=true -- run build --include-filtered-dependencies
         - yarn run in-submodules -- -f categories.minion=true -- run test
+        - cd deploy/helm/magda/charts/opa
+        - docker-compose down
       env:
         global:
           - CI=true

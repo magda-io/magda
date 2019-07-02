@@ -54,7 +54,8 @@ UI:
 
 Gateway:
 
--   Add ArcGIS/ESRI Authentication provider
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
 
 Access Control:
 
@@ -65,6 +66,7 @@ Access Control:
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
 -   Filter datasets based on user's current organization unit
+-   Added API to see what users will approve a potential dataset
 
 Others:
 
