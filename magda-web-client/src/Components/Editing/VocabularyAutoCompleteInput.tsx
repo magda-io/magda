@@ -162,7 +162,8 @@ class VocabularyAutoCompleteInput extends React.Component<
                     container: "vocabulary-auto-complete-input",
                     suggestion: "suggestion-item",
                     suggestionsList: "suggestions-list",
-                    suggestionsContainer: "suggestions-container"
+                    suggestionsContainer: "suggestions-container",
+                    suggestionHighlighted: "suggestion-item--highlighted"
                 }}
             />
         );

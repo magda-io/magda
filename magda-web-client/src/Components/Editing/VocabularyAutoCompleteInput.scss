@@ -11,6 +11,9 @@
     .suggestion-item:hover {
         background-color: #e7e7e7;
     }
+    .suggestion-item--highlighted {
+        background-color: #e7e7e7;
+    }
     .suggestions-list {
         list-style-type: none;
         padding-inline-start: unset;
