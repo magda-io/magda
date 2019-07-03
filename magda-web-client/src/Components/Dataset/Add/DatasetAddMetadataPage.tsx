@@ -265,6 +265,7 @@ class NewDataset extends React.Component<Prop, State> {
                                 value={dataset.keywords}
                                 onChange={editDataset("keywords")}
                                 placeHolderText="Type in keyword and press ENTER…"
+                                useVocabularyAutoCompleteInput={true}
                             />
                         </div>
                     </div>
