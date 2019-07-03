@@ -62,7 +62,7 @@ package misc {
      sourceSystem: Option[String] = None,
      likelihoodOfRelease: Option[String] = None,
      isOpenData: Option[Boolean] = None,
-     affiliatedOrganisation: Option[String] = None)
+     affiliatedOrganisation: Option[Seq[String]] = None)
 
   case class AccessControl(
      ownerId: Option[String] = None,
