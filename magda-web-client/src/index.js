@@ -20,10 +20,6 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import "./i18n";
-// --- implment the Scroll Behavior specification
-// --- http://iamdustan.com/smoothscroll/
-import smoothscroll from "smoothscroll-polyfill";
-smoothscroll.polyfill();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
