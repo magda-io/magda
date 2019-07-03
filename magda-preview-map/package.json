@@ -12,7 +12,8 @@
     "url": "http://github.com/TerriaJS/TerriaMap"
   },
   "dependencies": {
-    "terriajs-server": "^2.9.1"
+    "terriajs-server": "^2.9.1",
+    "snyk": "^1.189.0"
   },
   "config": {
     "awsProfile": "terria",
@@ -86,12 +87,15 @@
     "retag-and-push": "retag-and-push",
     "compile": "gulp release",
     "build": "yarn run gulp release",
-    "dev": "yarn start && gulp watch"
+    "dev": "yarn start && gulp watch",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "magda": {
     "language": "javascript",
     "categories": {
       "map": true
     }
-  }
+  },
+  "snyk": true
 }
