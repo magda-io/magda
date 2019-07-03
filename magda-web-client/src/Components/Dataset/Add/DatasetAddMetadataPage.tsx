@@ -35,7 +35,9 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
-import FlatMultiSelectBox from "../../Common/FlatMultiSelectBox";
+import ReactSelect from "react-select";
+import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
+import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -222,12 +224,29 @@ class NewDataset extends React.Component<Prop, State> {
                     <br />
                     <h4>What language(s) is the dataset available in?</h4>
                     <div>
-                        <FlatMultiSelectBox
-                            options={codelists.languages}
-                            onChange={editDataset("languages")}
-                            value={
-                                dataset.languages ? dataset.languages : ["eng"]
+                        <ReactSelect
+                            className="react-select"
+                            isMulti={true}
+                            isSearchable={true}
+                            components={{
+                                MultiValueRemove: CustomMultiValueRemove
+                            }}
+                            options={codelists.languageOptions as any}
+                            onChange={values =>
+                                editDataset("languages")(
+                                    Array.isArray(values)
+                                        ? values.map(item => item.value)
+                                        : []
+                                )
                             }
+                            styles={ReactSelectStyles}
+                            value={(dataset.languages
+                                ? dataset.languages
+                                : ["eng"]
+                            ).map(item => ({
+                                label: codelists.languages[item],
+                                value: item
+                            }))}
                         />
                     </div>
                     <hr />
