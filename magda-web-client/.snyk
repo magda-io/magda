@@ -1,0 +1,40 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.5
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-450202:
+    - '@gov.au/page-alerts > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - react-dates > lodash:
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/pancake-sass > node-sass > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/core > @gov.au/pancake-sass > node-sass > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/pancake-sass > node-sass > sass-graph > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/link-list > @gov.au/pancake-sass > node-sass > sass-graph > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/link-list > @gov.au/body > @gov.au/pancake-sass > node-sass > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/pancake-sass > node-sass > gaze > globule > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@craco/craco > webpack-merge > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/page-alerts > @gov.au/core > @gov.au/pancake-sass > node-sass > sass-graph > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/cta-link > @gov.au/pancake-sass > node-sass > gaze > globule > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > gaze > globule > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/breadcrumbs > @gov.au/link-list > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/link-list > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > sass-graph > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/page-alerts > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > gaze > globule > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/breadcrumbs > @gov.au/link-list > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > sass-graph > lodash':
+        patched: '2019-07-03T22:08:58.011Z'
+    - '@gov.au/breadcrumbs > @gov.au/link-list > @gov.au/body > @gov.au/core > @gov.au/pancake-sass > node-sass > gaze > globule > lodash':
+        patched: '2019-07-03T22:08:58.011Z'

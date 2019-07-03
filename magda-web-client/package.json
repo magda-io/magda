@@ -13,7 +13,9 @@
     "build": "pancake && craco build --react-scripts ../node_modules/react-scripts",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
-    "analyze": "source-map-explorer 'build/static/js/*.js'"
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@craco/craco": "^5.0.2",
@@ -58,7 +60,8 @@
     "retext": "^6.0.1",
     "retext-keywords": "^4.0.2",
     "source-map-explorer": "^1.7.0",
-    "urijs": "^1.19.1"
+    "urijs": "^1.19.1",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "@craco/craco": "^3.6.0",
@@ -182,5 +185,6 @@
         "ui": true
       }
     }
-  }
+  },
+  "snyk": true
 }
