@@ -135,6 +135,8 @@ class VocabularyAutoCompleteInput extends React.Component<
         const {
             className: incomingClassName,
             defaultValue,
+            suggestionSize,
+            onNewTag,
             ...restProps
         } = this.props;
 
