@@ -9,7 +9,6 @@ type OptionType = {
 
 const CustomMultiValueRemove = (props: MultiValueProps<OptionType>) => {
     const { data, innerProps } = props;
-    debugger;
     return (
         <button {...innerProps} aria-label={`Remove option ${data.label}`}>
             <img src={dismissIcon} />
