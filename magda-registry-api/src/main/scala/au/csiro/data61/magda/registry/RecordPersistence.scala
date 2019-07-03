@@ -131,7 +131,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
-    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=${id}"))).records.headOption
+    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=$id and tenantId=$tenantId"))).records.headOption
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
