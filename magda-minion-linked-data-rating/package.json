@@ -11,7 +11,9 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-    "retag-and-push": "retag-and-push"
+    "retag-and-push": "retag-and-push",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -34,7 +36,8 @@
     "@magda/minion-framework": "^0.0.56-0",
     "@magda/registry-aspects": "^0.0.56-0",
     "@magda/typescript-common": "^0.0.56-0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "snyk": "^1.189.0"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",
@@ -50,5 +53,6 @@
     "categories": {
       "minion": true
     }
-  }
+  },
+  "snyk": true
 }
