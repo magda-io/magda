@@ -53,4 +53,15 @@ const customStyles = {
     })
 };
 
+export const customStylesWithWidth = (width: string = null) =>
+    width
+        ? {
+              ...customStyles,
+              container: provided => ({
+                  ...provided,
+                  width
+              })
+          }
+        : customStyles;
+
 export default customStyles;
