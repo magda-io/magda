@@ -22,13 +22,11 @@ export interface ApiRouterOptions {
     routes: {
         [localRoute: string]: ProxyTarget;
     };
+    tenantMode: TenantMode;
 }
 
-export default function createApiRouter(
-    options: ApiRouterOptions,
-    tenantMode: TenantMode
-): Router {
-    var proxy = createBaseProxy(tenantMode);
+export default function createApiRouter(options: ApiRouterOptions): Router {
+    var proxy = createBaseProxy(options.tenantMode);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;

@@ -19,7 +19,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
-import setupTenantMode, { TenantConfig } from "./setupTenantMode";
+import setupTenantMode from "./setupTenantMode";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -78,7 +78,7 @@ type Config = {
 };
 
 export default function buildApp(config: Config) {
-    const tenantMode = setupTenantMode(config as TenantConfig);
+    const tenantMode = setupTenantMode(config);
 
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
@@ -182,14 +182,12 @@ export default function buildApp(config: Config) {
 
     app.use(
         "/api/v0",
-        createApiRouter(
-            {
-                authenticator: authenticator,
-                jwtSecret: config.jwtSecret,
-                routes
-            },
+        createApiRouter({
+            authenticator: authenticator,
+            jwtSecret: config.jwtSecret,
+            routes,
             tenantMode
-        )
+        })
     );
     app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
