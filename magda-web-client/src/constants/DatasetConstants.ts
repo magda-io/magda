@@ -518,7 +518,8 @@ export const accrualPeriodicity = {
     fortnightly: "Every Fortnight",
     monthly: "Every Month",
     yearly: "Every Year",
-    asNeeded: "As Needed"
+    asNeeded: "As Needed",
+    custom: "Custom..."
 };
 
 export const accessLevel = {

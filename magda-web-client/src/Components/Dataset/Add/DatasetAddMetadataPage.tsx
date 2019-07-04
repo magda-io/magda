@@ -36,9 +36,7 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import ReactSelect from "react-select";
-import ReactSelectStyles, {
-    customStylesWithWidth as ReactSelectStylesWithWidth
-} from "../../Common/react-select/ReactSelectStyles";
+import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
 import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
 
 const aspects = {
@@ -59,6 +57,8 @@ import * as codelists from "constants/DatasetConstants";
 
 import { Map, TileLayer, Rectangle } from "react-leaflet";
 import TagInput from "Components/Common/TagInput";
+
+import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 
 import "./DatasetAddFilesPage.scss";
 
@@ -307,36 +307,7 @@ class NewDataset extends React.Component<Prop, State> {
                     </div>
                     <h4>How frequently is the dataset updated?</h4>
                     <div>
-                        <ReactSelect
-                            className="react-select"
-                            isMulti={false}
-                            options={
-                                Object.keys(codelists.accrualPeriodicity).map(
-                                    key => ({
-                                        label:
-                                            codelists.accrualPeriodicity[key],
-                                        value: key
-                                    })
-                                ) as any
-                            }
-                            onChange={value =>
-                                editDataset("accrualPeriodicity")(
-                                    value && value.value ? value.value : ""
-                                )
-                            }
-                            styles={ReactSelectStylesWithWidth("560px")}
-                            value={
-                                dataset.accrualPeriodicity
-                                    ? {
-                                          label:
-                                              codelists.accrualPeriodicity[
-                                                  dataset.accrualPeriodicity
-                                              ],
-                                          value: dataset.accrualPeriodicity
-                                      }
-                                    : null
-                            }
-                        />
+                        <AccrualPeriodicityInput />
                     </div>
                     <h4>What time period(s) does the dataset cover?</h4>
                     <div>
