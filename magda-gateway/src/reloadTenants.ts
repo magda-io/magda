@@ -3,8 +3,6 @@ import { throttle, Cancelable } from "lodash";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
 import AuthorizedTenantClient from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
 
-let tenantApiClient: AuthorizedTenantClient;
-
 type TenantsLoaderConfig = {
     tenantUrl: string;
     jwtSecret: string;
@@ -13,10 +11,11 @@ type TenantsLoaderConfig = {
 };
 
 export default class TenantsLoader {
+    private tenantApiClient: AuthorizedTenantClient;
     tenantsTable = new Map<String, Tenant>();
 
     private async updateTenants() {
-        const tenants = <Tenant[]>await tenantApiClient.getTenants();
+        const tenants = <Tenant[]>await this.tenantApiClient.getTenants();
         this.tenantsTable.clear();
         tenants.forEach(t => {
             if (t.enabled === true) {
@@ -32,7 +31,7 @@ export default class TenantsLoader {
         console.debug(
             `TenantsLoader throttle interval = ${config.minReqIntervalInMs}`
         );
-        tenantApiClient = new AuthorizedTenantClient({
+        this.tenantApiClient = new AuthorizedTenantClient({
             urlStr: config.tenantUrl,
             userId: config.userId,
             jwtSecret: config.jwtSecret
