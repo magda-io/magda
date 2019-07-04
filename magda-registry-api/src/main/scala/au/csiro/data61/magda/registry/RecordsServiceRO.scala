@@ -192,11 +192,10 @@ class RecordsServiceRO(config: Config, system: ActorSystem, materializer: Materi
       pathEnd {
         requiresTenantId { tenantId =>
           import scalikejdbc._
-          val selector = if (tenantId == MAGDA_ADMIN_PORTAL_ID) List(None) else List(Some(sqls"tenantId=$tenantId"))
           parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
             complete {
               DB readOnly { session =>
-                "0" :: recordPersistence.getPageTokens(session, tenantId, aspect, limit, selector)
+                "0" :: recordPersistence.getPageTokens(session, tenantId, aspect, limit)
               }
             }
           }

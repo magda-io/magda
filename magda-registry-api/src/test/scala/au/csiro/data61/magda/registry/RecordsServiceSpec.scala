@@ -147,6 +147,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       describe("count") {
         it("returns the right count when no parameters are given") { param =>
+          // Create some records for tenant 1.
           for (i <- 1 to 5) {
             val recordWithoutAspects = Record("id" + i, "name" + i, Map())
             param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
@@ -154,16 +155,33 @@ class RecordsServiceSpec extends ApiSpec {
             }
           }
 
+          // Tenant 2 should not count records of tenant 1.
+          Get("/v0/records/count") ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 0
+          }
+
+          // Create some records for tenant 2.
+          for (i <- 1 to 3) {
+            val recordWithoutAspects = Record("id" + i, "name" + i, Map())
+            param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+          }
+
+          // Tenant 1 should count records of its own.
           Get("/v0/records/count") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             val countResponse = responseAs[CountResponse]
             countResponse.count shouldBe 5
           }
 
-          Get("/v0/records/count") ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
+          // System tenant should count all records of all tenants.
+          Get("/v0/records/count") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             val countResponse = responseAs[CountResponse]
-            countResponse.count shouldBe 0
+            countResponse.count shouldBe 5+3
           }
         }
       }
@@ -1004,13 +1022,13 @@ class RecordsServiceSpec extends ApiSpec {
             valuesToTest.foreach {
               case TestValues(pageSize, recordCount) =>
                 it(s"for pageSize $pageSize and recordCount $recordCount") { param =>
-                  // Add an aspect for our records
+                  // Add an aspect for our records for tenant 1
                   val aspectDefinition = AspectDefinition("test", "test", None)
                   param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
                     status shouldEqual StatusCodes.OK
                   }
 
-                  // Add some records
+                  // Add some records for tenant 1
                   if (recordCount > 0) {
                     for (i <- 1 to recordCount) {
                       val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
@@ -1020,7 +1038,7 @@ class RecordsServiceSpec extends ApiSpec {
                     }
                   }
 
-                  // Get the page tokens
+                  // Get the page tokens for tenant 1
                   Get(s"/v0/records/pagetokens?limit=$pageSize") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
                     status shouldEqual StatusCodes.OK
                     val pageTokens = responseAs[List[String]]
@@ -1039,6 +1057,29 @@ class RecordsServiceSpec extends ApiSpec {
                         }
                       }
                     }
+                  }
+
+                  // Add an aspect for our records for tenant 2
+                  param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+                    status shouldEqual StatusCodes.OK
+                  }
+
+                  // Add some records for tenant 2
+                  if (recordCount > 0) {
+                    for (i <- 1 to recordCount) {
+                      val record = Record(i.toString, i.toString, Map("test" -> JsObject("value" -> JsNumber(i))))
+                      param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+                        status shouldEqual StatusCodes.OK
+                      }
+                    }
+                  }
+
+                  // Get the page tokens for system tenant
+                  val totalPageSize = pageSize * 2
+                  Get(s"/v0/records/pagetokens?limit=$totalPageSize") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
+                    status shouldEqual StatusCodes.OK
+                    val pageTokens = responseAs[List[String]]
+                    pageTokens.length shouldBe recordCount*2 / Math.max(1, totalPageSize) + 1
                   }
                 }
             }

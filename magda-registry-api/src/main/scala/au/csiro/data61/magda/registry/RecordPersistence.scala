@@ -1,19 +1,18 @@
 package au.csiro.data61.magda.registry
 
-import scalikejdbc._
-import spray.json._
-import spray.json.lenses.JsonLenses._
-
-import scala.util.Try
-import scala.util.{Failure, Success}
 import java.sql.SQLException
 
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_ADMIN_PORTAL_ID, MAGDA_SYSTEM_ID, Record, RecordSummary, RegistryEvent}
+import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
+import scalikejdbc._
+import spray.json._
+import spray.json.lenses.JsonLenses._
+
+import scala.util.{Failure, Success, Try}
 
 // TODO: Not to filter results by tenant ID for magda internal use only functions.
 // For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
@@ -115,8 +114,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                tenantId: BigInt,
                aspectIds: Iterable[String],
                aspectQueries: Iterable[AspectQuery] = Nil): Long = {
-    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
-    val selectors: Iterable[Some[SQLSyntax]] = Iterable(Some(recordClause)) ++ aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
+    val selectors: Iterable[Some[SQLSyntax]] = aspectQueries.map(query => aspectQueryToWhereClause(tenantId, query)).map(Some.apply)
 
     this.getCountInner(session, tenantId, aspectIds, selectors)
   }
@@ -131,7 +129,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                          aspectIds: Iterable[String] = Seq(),
                          optionalAspectIds: Iterable[String] = Seq(),
                          dereference: Option[Boolean] = None): Option[Record] = {
-    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=$id and tenantId=$tenantId"))).records.headOption
+    this.getRecords(session, tenantId, aspectIds, optionalAspectIds, None, None, None, dereference, List(Some(sqls"recordId=$id"))).records.headOption
   }
 
   def getByIdsWithAspects(implicit session: DBSession,
@@ -190,7 +188,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                     aspectIds: Iterable[String],
                     limit: Option[Int] = None,
                     recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): List[String] = {
-    val whereClauseParts = aspectIdsToWhereClause(tenantId, aspectIds) ++ recordSelector
+    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
+    val whereClauseParts = aspectIdsToWhereClause(tenantId, aspectIds) ++ recordSelector :+ Some(recordsFilteredByTenantClause)
 
     //    val whereClause = aspectIds.map(aspectId => s"recordaspects.aspectid = '$aspectId'").mkString(" AND ")
 
@@ -612,8 +611,8 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
       Map[String, PropertyWithLink]()
     }
 
-    val recordClause: SQLSyntax = if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
-    val theRecordSelector = recordSelector ++ Iterable(Some(recordClause))
+    val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(tenantId)
+    val theRecordSelector = recordSelector ++ Iterable(Some(recordsFilteredByTenantClause))
     val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector) :+ pageToken.map(token => sqls"Records.sequence > $token")
     val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
@@ -649,17 +648,19 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
                             tenantId: BigInt,
                             aspectIds: Iterable[String],
                             recordSelector: Iterable[Option[SQLSyntax]] = Iterable()): Long = {
+    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
+    val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector
     val statement = if (aspectIds.size == 1) {
       // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
       // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
       // is equivalent to counting the records with that type
       val aspectIdsWhereClause = aspectIds.map(aspectId => sqls"RecordAspects.tenantId=$tenantId and RecordAspects.aspectId=$aspectId").toSeq
-      val recordSelectorWhereClause = recordSelector.flatten.map(recordSelectorInner => sqls"EXISTS(SELECT 1 FROM Records WHERE Records.tenantId=$tenantId AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)").toSeq
+      val recordSelectorWhereClause = theRecordSelector.flatten.map(recordSelectorInner => sqls"EXISTS(SELECT 1 FROM Records WHERE Records.tenantId=$tenantId AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)").toSeq
       val clauses = (aspectIdsWhereClause ++ recordSelectorWhereClause).map(Some.apply)
       sql"select count(*) from RecordAspects ${makeWhereClause(clauses)}"
     } else {
       // If there's zero or > 1 aspect ids involved then there's no advantage to querying record aspects instead.
-      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(tenantId, aspectIds) ++ recordSelector)}"
+      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector)}"
     }
 
     statement.map(_.long(1)).single.apply().getOrElse(0l)
@@ -796,18 +797,19 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
+  private def filterRecordsByTenantClause(tenantId: BigInt) = {
+    if (tenantId == MAGDA_SYSTEM_ID) sqls"true" else sqls"Records.tenantId=$tenantId"
+  }
+
   private def aspectIdsToWhereClause(tenantId: BigInt, aspectIds: Iterable[String]): Seq[Option[SQLSyntax]] = {
     aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq
   }
 
   private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
-    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    Some(sqls"$filteredByTenant exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))")
+    Some(sqls"exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))")
   }
 
-
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
-    val filteredByTenant = if (tenantId == MAGDA_SYSTEM_ID) sqls"" else sqls"Records.tenantId=$tenantId and"
-    sqls"$filteredByTenant EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
+    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})"
   }
 }
