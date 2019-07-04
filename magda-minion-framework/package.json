@@ -6,7 +6,9 @@
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
     "watch": "tsc -p tsconfig-build.json --watch",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -42,7 +44,8 @@
     "express": "^4.15.3",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.4",
-    "yargs": "^12.0.5"
+    "yargs": "^12.0.5",
+    "snyk": "^1.189.0"
   },
   "config": {
     "docker": {
@@ -55,5 +58,6 @@
       "minion": true,
       "library": true
     }
-  }
+  },
+  "snyk": true
 }
