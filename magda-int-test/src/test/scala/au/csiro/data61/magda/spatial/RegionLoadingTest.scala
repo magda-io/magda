@@ -74,7 +74,6 @@ class RegionLoadingTest extends TestKit(TestActorSystem.actorSystem) with FunSpe
   }
 
   it("should load scalacheck-generated regions reasonably accurately") {
-    println("  - Testing should load scalacheck-generated regions reasonably accurately")
     val dir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "magda-test")
     implicit val config = ConfigFactory.parseMap(Map(
       "regionLoading.cachePath" -> dir.getFileName.toFile().toString()

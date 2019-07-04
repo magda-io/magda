@@ -3,8 +3,6 @@ import { throttle, Cancelable } from "lodash";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
 import AuthorizedTenantClient from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
 
-export const tenantsTable = new Map<String, Tenant>();
-
 let tenantApiClient: AuthorizedTenantClient;
 
 type TenantsLoaderConfig = {
@@ -15,12 +13,14 @@ type TenantsLoaderConfig = {
 };
 
 export default class TenantsLoader {
+    tenantsTable = new Map<String, Tenant>();
+
     private async updateTenants() {
         const tenants = <Tenant[]>await tenantApiClient.getTenants();
-        tenantsTable.clear();
+        this.tenantsTable.clear();
         tenants.forEach(t => {
             if (t.enabled === true) {
-                tenantsTable.set(t.domainname.toLowerCase(), t);
+                this.tenantsTable.set(t.domainname.toLowerCase(), t);
                 console.debug(`${t.domainname.toLowerCase()} : ${t.id}`);
             }
         });

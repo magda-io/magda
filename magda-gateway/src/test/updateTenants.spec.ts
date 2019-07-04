@@ -1,5 +1,5 @@
 import setupTenantMode from "../setupTenantMode";
-import TenantsLoader, { tenantsTable } from "../reloadTenants";
+import TenantsLoader from "../reloadTenants";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
 import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
@@ -32,10 +32,6 @@ describe("Test reload tenants", () => {
         setupTenantMode(config);
     });
 
-    beforeEach(() => {
-        tenantsTable.clear();
-    });
-
     afterEach(() => {
         nock.cleanAll();
     });
@@ -53,9 +49,11 @@ describe("Test reload tenants", () => {
 
         await tenantLoader.reloadTenants();
 
-        expect(tenantsTable.get("built.in").id).to.equal(0);
-        expect(tenantsTable.get("built.in").enabled).to.equal(true);
-        expect(tenantsTable.size).to.equal(1);
+        expect(tenantLoader.tenantsTable.get("built.in").id).to.equal(0);
+        expect(tenantLoader.tenantsTable.get("built.in").enabled).to.equal(
+            true
+        );
+        expect(tenantLoader.tenantsTable.size).to.equal(1);
     });
 
     it("should reload tenants table with enabled tenants only", async () => {
@@ -75,10 +73,10 @@ describe("Test reload tenants", () => {
 
         await tenantLoader.reloadTenants();
 
-        expect(tenantsTable.size).to.equal(2);
-        expect(tenantsTable.get("built.in").id).to.equal(0);
-        expect(tenantsTable.get("web1.com")).to.equal(undefined);
-        expect(tenantsTable.get("web2.com").id).to.equal(2);
+        expect(tenantLoader.tenantsTable.size).to.equal(2);
+        expect(tenantLoader.tenantsTable.get("built.in").id).to.equal(0);
+        expect(tenantLoader.tenantsTable.get("web1.com")).to.equal(undefined);
+        expect(tenantLoader.tenantsTable.get("web2.com").id).to.equal(2);
     });
 
     it("should remove disabled tenants", async () => {
@@ -98,22 +96,22 @@ describe("Test reload tenants", () => {
         const tenant1 = { domainname: "web1.com", enabled: true, id: 1 };
         const tenant2 = { domainname: "web1.com", enabled: true, id: 2 };
 
-        tenantsTable.set(tenant0.domainname, tenant0);
-        tenantsTable.set(tenant1.domainname, tenant1);
-        tenantsTable.set(tenant2.domainname, tenant2);
-
         const tenantLoader = new TenantsLoader({
             tenantUrl: config.tenantUrl,
             jwtSecret: config.jwtSecret,
             userId: config.userId
         });
 
+        tenantLoader.tenantsTable.set(tenant0.domainname, tenant0);
+        tenantLoader.tenantsTable.set(tenant1.domainname, tenant1);
+        tenantLoader.tenantsTable.set(tenant2.domainname, tenant2);
+
         await tenantLoader.reloadTenants();
 
-        expect(tenantsTable.size).to.equal(2);
-        expect(tenantsTable.get("built.in").id).to.equal(0);
-        expect(tenantsTable.get("web1.com").id).to.equal(1);
-        expect(tenantsTable.get("web2.com")).to.equal(undefined);
+        expect(tenantLoader.tenantsTable.size).to.equal(2);
+        expect(tenantLoader.tenantsTable.get("built.in").id).to.equal(0);
+        expect(tenantLoader.tenantsTable.get("web1.com").id).to.equal(1);
+        expect(tenantLoader.tenantsTable.get("web2.com")).to.equal(undefined);
     });
 
     it("should fetch tenants only once if the interval of two requests is less than the min wait time", async () => {
@@ -130,34 +128,32 @@ describe("Test reload tenants", () => {
             minReqIntervalInMs: minReqIntervalInMs
         });
 
-        const request1 = requestScope
-            .get("/tenants")
-            .reply(200, [
-                {
-                    domainname: `${testDomainName}`,
-                    enabled: true,
-                    id: expectedTenantId
-                }
-            ]);
+        const request1 = requestScope.get("/tenants").reply(200, [
+            {
+                domainname: `${testDomainName}`,
+                enabled: true,
+                id: expectedTenantId
+            }
+        ]);
 
         await tenantLoader.reloadTenants();
         expect(request1.isDone()).to.equal(true);
 
-        const request2 = requestScope
-            .get("/tenants")
-            .reply(200, [
-                {
-                    domainname: `${testDomainName}`,
-                    enabled: true,
-                    id: otherTenantId
-                }
-            ]);
+        const request2 = requestScope.get("/tenants").reply(200, [
+            {
+                domainname: `${testDomainName}`,
+                enabled: true,
+                id: otherTenantId
+            }
+        ]);
 
         await delay(() => {}, theReqIntervalInMs);
         await tenantLoader.reloadTenants();
 
         expect(request2.isDone()).to.equal(false);
-        expect(tenantsTable.get(testDomainName).id).to.equal(expectedTenantId);
+        expect(tenantLoader.tenantsTable.get(testDomainName).id).to.equal(
+            expectedTenantId
+        );
     });
 
     it("should fetch tenants twice if the interval of two requests is greater than the min wait time", async () => {
@@ -174,33 +170,31 @@ describe("Test reload tenants", () => {
             minReqIntervalInMs: minReqIntervalInMs
         });
 
-        const request1 = requestScope
-            .get("/tenants")
-            .reply(200, [
-                {
-                    domainname: `${testDomainName}`,
-                    enabled: true,
-                    id: otherTenantId
-                }
-            ]);
+        const request1 = requestScope.get("/tenants").reply(200, [
+            {
+                domainname: `${testDomainName}`,
+                enabled: true,
+                id: otherTenantId
+            }
+        ]);
 
         await tenantLoader.reloadTenants();
         expect(request1.isDone()).to.equal(true);
 
-        const request2 = requestScope
-            .get("/tenants")
-            .reply(200, [
-                {
-                    domainname: `${testDomainName}`,
-                    enabled: true,
-                    id: expectedTenantId
-                }
-            ]);
+        const request2 = requestScope.get("/tenants").reply(200, [
+            {
+                domainname: `${testDomainName}`,
+                enabled: true,
+                id: expectedTenantId
+            }
+        ]);
 
         await delay(() => {}, theReqIntervalInMs);
         await tenantLoader.reloadTenants();
 
         expect(request2.isDone()).to.equal(true);
-        expect(tenantsTable.get(testDomainName).id).to.equal(expectedTenantId);
+        expect(tenantLoader.tenantsTable.get(testDomainName).id).to.equal(
+            expectedTenantId
+        );
     });
 });

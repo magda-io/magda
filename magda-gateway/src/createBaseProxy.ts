@@ -4,7 +4,7 @@ import * as express from "express";
 import { TenantMode } from "./setupTenantMode";
 
 import groupBy = require("lodash/groupBy");
-import { tenantsTable } from "./reloadTenants";
+
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
@@ -95,7 +95,9 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
                     MAGDA_ADMIN_PORTAL_ID
                 );
             } else {
-                const tenant = tenantsTable.get(domainName);
+                const tenant = tenantMode.tenantsLoader.tenantsTable.get(
+                    domainName
+                );
 
                 if (tenant !== undefined) {
                     proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
