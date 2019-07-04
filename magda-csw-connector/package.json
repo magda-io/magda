@@ -13,7 +13,9 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "license": "Apache-2.0",
   "devDependencies": {
@@ -43,7 +45,8 @@
     "urijs": "^1.18.12",
     "xml2js": "^0.4.17",
     "xmldom": "^0.1.27",
-    "yargs": "^12.0.5"
+    "yargs": "^12.0.5",
+    "snyk": "^1.189.0"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",
@@ -59,5 +62,6 @@
     "categories": {
       "connector": true
     }
-  }
+  },
+  "snyk": true
 }
