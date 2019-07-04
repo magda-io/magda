@@ -40,7 +40,9 @@
     "eslint": "./node_modules/.bin/eslint magda-web-client/src/",
     "create-secrets": "create-secrets",
     "start-opa": "opa run deploy/helm/magda/charts/opa/policies",
-    "test-opa": "opa test deploy/helm/magda/charts/opa/policies -v"
+    "test-opa": "opa test deploy/helm/magda/charts/opa/policies -v",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "pancake": {
     "auto-save": true,
@@ -86,6 +88,8 @@
     }
   },
   "dependencies": {
-    "@gov.au/pancake-sass": "^2.3.4"
-  }
+    "@gov.au/pancake-sass": "^2.3.4",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
