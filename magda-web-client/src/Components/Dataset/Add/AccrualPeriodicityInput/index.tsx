@@ -1,14 +1,14 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select";
 import CustomStyles from "./CustomStyles";
 import { accrualPeriodicity } from "constants/DatasetConstants";
-import { RRule, Frequency, WeekdayStr } from "rrule";
+import { RRule, Options as RRuleOptions, WeekdayStr } from "rrule";
 import "./index.scss";
 
 interface PropsType {
-    onAccrualPeriodicityChange?: (AccrualPeriodicity: string) => void;
-    onAccrualPeriodicityRecurrenceRule?: (
-        AccrualPeriodicityRecurrenceRule: string
+    onAccrualPeriodicityChange?: (accrualPeriodicity: string) => void;
+    onAccrualPeriodicityRecurrenceRuleChange?: (
+        accrualPeriodicityRecurrenceRule: string
     ) => void;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
@@ -37,47 +37,126 @@ const REPEAT_OPTIONS = [
     }
 ];
 
-interface StateType {
-    accrualPeriodicity: string;
-    accrualPeriodicityRecurrenceRule: string;
-    repeatInputValue: string;
-    repeatSelectValue: Frequency;
-    selectedWeekDays: WeekdayStr[];
-}
-
-const initialState: StateType = {
-    accrualPeriodicity: "",
-    accrualPeriodicityRecurrenceRule: "",
-    repeatInputValue: "1",
-    repeatSelectValue: RRule.WEEKLY,
-    selectedWeekDays: ["MO"]
+const DEFAULT_CUSTOM_INPUT_VALUE = {
+    interval: 1,
+    freq: RRule.WEEKLY,
+    byweekday: ["MO"] as WeekdayStr[]
 };
 
 const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
-    const [state, setState] = useState(initialState);
-    const onWeekDayClick = (state: StateType, weekday: WeekdayStr) => {
+    debugger;
+    const recurrenceRuleOptions = props.accrualPeriodicityRecurrenceRule
+        ? RRule.parseString(props.accrualPeriodicityRecurrenceRule)
+        : DEFAULT_CUSTOM_INPUT_VALUE;
+
+    const onWeekDayClick = (
+        recurrenceRuleOptions: Partial<RRuleOptions>,
+        weekday: WeekdayStr
+    ) => {
         return () => {
-            const idx = state.selectedWeekDays.indexOf(weekday);
-            if (idx === -1) {
-                setState({
-                    ...state,
-                    selectedWeekDays: [...state.selectedWeekDays, weekday]
-                });
-            } else {
-                setState({
-                    ...state,
-                    selectedWeekDays: state.selectedWeekDays.filter(
-                        item => item !== weekday
-                    )
-                });
+            const selectedWeekDays: WeekdayStr[] = Array.isArray(
+                recurrenceRuleOptions.byweekday
+            )
+                ? (recurrenceRuleOptions.byweekday as WeekdayStr[])
+                : [];
+            const idx = selectedWeekDays.indexOf(weekday);
+
+            const newSelectedWeekDays =
+                idx === -1
+                    ? [...selectedWeekDays, weekday]
+                    : selectedWeekDays.filter(item => item !== weekday);
+
+            const newRecurrenceRuleOptions = {
+                ...recurrenceRuleOptions,
+                byweekday: newSelectedWeekDays
+            };
+
+            const rruleStr = new RRule(newRecurrenceRuleOptions).toString();
+
+            if (
+                typeof props.onAccrualPeriodicityRecurrenceRuleChange ===
+                "function"
+            ) {
+                props.onAccrualPeriodicityRecurrenceRuleChange(rruleStr);
             }
         };
     };
-    const getWeekDayActiveClass = (state: StateType, weekday: WeekdayStr) => {
-        const idx = state.selectedWeekDays.indexOf(weekday);
+
+    const getWeekDayActiveClass = (
+        recurrenceRuleOptions: Partial<RRuleOptions>,
+        weekday: WeekdayStr
+    ) => {
+        const selectedWeekDays: WeekdayStr[] = Array.isArray(
+            recurrenceRuleOptions.byweekday
+        )
+            ? (recurrenceRuleOptions.byweekday as WeekdayStr[])
+            : [];
+        const idx = selectedWeekDays.indexOf(weekday);
         if (idx === -1) return "";
         return "active";
     };
+
+    const onAccrualPeriodicitySelectChange = (
+        recurrenceRuleOptions: Partial<RRuleOptions>
+    ) => {
+        return option => {
+            const value = option.value;
+            if (typeof props.onAccrualPeriodicityChange === "function") {
+                props.onAccrualPeriodicityChange(value);
+            }
+
+            if (
+                value !== "custom" &&
+                typeof props.accrualPeriodicityRecurrenceRule === "function"
+            ) {
+                // --- reset custom Recurrence Rule input
+                props.onAccrualPeriodicityRecurrenceRuleChange("");
+            }
+        };
+    };
+
+    const onRepeatInputChange = (
+        recurrenceRuleOptions: Partial<RRuleOptions>
+    ) => {
+        return event => {
+            if (
+                typeof props.onAccrualPeriodicityRecurrenceRuleChange !==
+                "function"
+            )
+                return;
+            let interval = DEFAULT_CUSTOM_INPUT_VALUE.interval;
+            try {
+                const number = parseInt(event.currentTarget.value);
+                if (!isNaN(number)) interval = number;
+            } catch (e) {}
+
+            const newRecurrenceRuleOptions: Partial<RRuleOptions> = {
+                ...recurrenceRuleOptions,
+                interval
+            };
+            const rruleStr = new RRule(newRecurrenceRuleOptions).toString();
+            props.onAccrualPeriodicityRecurrenceRuleChange(rruleStr);
+        };
+    };
+
+    const onRepeatSelectChange = (
+        recurrenceRuleOptions: Partial<RRuleOptions>
+    ) => {
+        return option => {
+            if (
+                typeof props.onAccrualPeriodicityRecurrenceRuleChange !==
+                "function"
+            )
+                return;
+            const newRecurrenceRuleOptions: Partial<RRuleOptions> = {
+                ...recurrenceRuleOptions,
+                freq: option.value
+            };
+            const rruleStr = new RRule(newRecurrenceRuleOptions).toString();
+            props.onAccrualPeriodicityRecurrenceRuleChange(rruleStr);
+        };
+    };
+
     return (
         <div className="accrual-periodicity-input-container clearfix">
             <ReactSelect
@@ -94,36 +173,19 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                     })) as any
                 }
                 value={
-                    state.accrualPeriodicity
+                    props.accrualPeriodicity
                         ? {
                               label:
-                                  accrualPeriodicity[state.accrualPeriodicity],
-                              value: state.accrualPeriodicity
+                                  accrualPeriodicity[props.accrualPeriodicity],
+                              value: props.accrualPeriodicity
                           }
                         : null
                 }
-                onChange={option => {
-                    const value = option.value;
-                    if (value !== "custom") {
-                        // --- reset custom Recurrence Rule input
-                        setState({
-                            ...state,
-                            accrualPeriodicity: option.value,
-                            accrualPeriodicityRecurrenceRule:
-                                initialState.accrualPeriodicityRecurrenceRule,
-                            repeatInputValue: initialState.repeatInputValue,
-                            repeatSelectValue: initialState.repeatSelectValue,
-                            selectedWeekDays: [...initialState.selectedWeekDays]
-                        });
-                    } else {
-                        setState({
-                            ...state,
-                            accrualPeriodicity: option.value
-                        });
-                    }
-                }}
+                onChange={onAccrualPeriodicitySelectChange(
+                    recurrenceRuleOptions
+                )}
             />
-            {state.accrualPeriodicity === "custom" ? (
+            {props.accrualPeriodicity === "custom" ? (
                 <div className="custom-recurrence-input">
                     <div className="custom-recurrence-input-header">
                         <h1>Custom recurrence</h1>
@@ -135,14 +197,10 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                 className="repeat-input au-text-input"
                                 type="number"
                                 min={1}
-                                value={state.repeatInputValue}
-                                onChange={event => {
-                                    setState({
-                                        ...state,
-                                        repeatInputValue:
-                                            event.currentTarget.value
-                                    });
-                                }}
+                                value={recurrenceRuleOptions.interval}
+                                onChange={onRepeatInputChange(
+                                    recurrenceRuleOptions
+                                )}
                             />
                             <ReactSelect
                                 className="repeat-select"
@@ -155,18 +213,15 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                                 REPEAT_OPTIONS.map(
                                                     item => item.value
                                                 ).indexOf(
-                                                    state.repeatSelectValue
+                                                    recurrenceRuleOptions.freq
                                                 )
                                             ].label,
-                                        value: state.repeatSelectValue
+                                        value: recurrenceRuleOptions.freq
                                     } as any
                                 }
-                                onChange={value => {
-                                    setState({
-                                        ...state,
-                                        repeatSelectValue: value.value
-                                    });
-                                }}
+                                onChange={onRepeatSelectChange(
+                                    recurrenceRuleOptions
+                                )}
                                 styles={{
                                     control: provided => ({
                                         ...provided,
@@ -175,7 +230,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                 }}
                             />
                         </div>
-                        {state.repeatSelectValue === RRule.WEEKLY ? (
+                        {recurrenceRuleOptions.freq === RRule.WEEKLY ? (
                             <div className="repeat-on-section">
                                 <div className="repeat-on-heading">
                                     Repeat on
@@ -183,64 +238,85 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                 <div className="repeat-on-options">
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "SU"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "SU")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "SU"
+                                        )}
                                     >
                                         S
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "MO"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "MO")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "MO"
+                                        )}
                                     >
                                         M
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "TU"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "TU")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "TU"
+                                        )}
                                     >
                                         T
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "WE"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "WE")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "WE"
+                                        )}
                                     >
                                         W
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "TH"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "TH")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "TH"
+                                        )}
                                     >
                                         T
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "FR"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "FR")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "FR"
+                                        )}
                                     >
                                         F
                                     </button>
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
-                                            state,
+                                            recurrenceRuleOptions,
                                             "SA"
                                         )}`}
-                                        onClick={onWeekDayClick(state, "SA")}
+                                        onClick={onWeekDayClick(
+                                            recurrenceRuleOptions,
+                                            "SA"
+                                        )}
                                     >
                                         S
                                     </button>

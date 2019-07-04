@@ -35,9 +35,14 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+<<<<<<< HEAD
+import FlatMultiSelectBox from "../../Common/FlatMultiSelectBox";
+=======
+import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
 import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
+>>>>>>> issue/2261
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -57,8 +62,6 @@ import * as codelists from "constants/DatasetConstants";
 
 import { Map, TileLayer, Rectangle } from "react-leaflet";
 import TagInput from "Components/Common/TagInput";
-
-import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 
 import "./DatasetAddFilesPage.scss";
 
@@ -225,7 +228,15 @@ class NewDataset extends React.Component<Prop, State> {
                     </div>
                     <br />
                     <h4>What language(s) is the dataset available in?</h4>
+<<<<<<< HEAD
                     <div>
+                        <FlatMultiSelectBox
+                            options={codelists.languages}
+                            onChange={editDataset("languages")}
+                            value={
+                                dataset.languages ? dataset.languages : ["eng"]
+=======
+                    <p>
                         <ReactSelect
                             className="react-select"
                             isMulti={true}
@@ -240,6 +251,7 @@ class NewDataset extends React.Component<Prop, State> {
                                         ? values.map(item => item.value)
                                         : []
                                 )
+>>>>>>> issue/2261
                             }
                             styles={ReactSelectStyles}
                             value={(dataset.languages
@@ -267,7 +279,6 @@ class NewDataset extends React.Component<Prop, State> {
                                 value={dataset.keywords}
                                 onChange={editDataset("keywords")}
                                 placeHolderText="Type in keyword and press ENTER…"
-                                useVocabularyAutoCompleteInput={true}
                             />
                         </div>
                     </div>
@@ -307,19 +318,12 @@ class NewDataset extends React.Component<Prop, State> {
                     </div>
                     <h4>How frequently is the dataset updated?</h4>
                     <div>
-                        <AccrualPeriodicityInput
-                            accrualPeriodicity={dataset.accrualPeriodicity}
-                            onAccrualPeriodicityChange={value =>
-                                editDataset("accrualPeriodicity")(
-                                    value ? value : ""
-                                )
-                            }
-                            onAccrualPeriodicityRecurrenceRuleChange={rule => {
-                                debugger;
-                                editDataset("accrualPeriodicityRecurrenceRule")(
-                                    rule
-                                );
-                            }}
+                        <AlwaysEditor
+                            value={dataset.accrualPeriodicity}
+                            onChange={editDataset("accrualPeriodicity")}
+                            editor={codelistEditor(
+                                codelists.accrualPeriodicity
+                            )}
                         />
                     </div>
                     <h4>What time period(s) does the dataset cover?</h4>
