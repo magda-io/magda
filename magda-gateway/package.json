@@ -12,7 +12,9 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-0",
@@ -49,7 +51,8 @@
     "request": "^2.88.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
-    "yargs": "^12.0.5"
+    "yargs": "^12.0.5",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.56-0",
@@ -96,5 +99,6 @@
     "categories": {
       "api": true
     }
-  }
+  },
+  "snyk": true
 }
