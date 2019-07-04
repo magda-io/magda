@@ -11,7 +11,7 @@ export type MinionArguments = {
     registryUrl: string;
     tenantUrl: string;
     retries: string | number;
-    tenantId: number;
+    tenantId: string | number;
 };
 
 /**
