@@ -50,7 +50,7 @@ const initialState: StateType = {
     accrualPeriodicityRecurrenceRule: "",
     repeatInputValue: "1",
     repeatSelectValue: RRule.WEEKLY,
-    selectedWeekDays: []
+    selectedWeekDays: ["MO"]
 };
 
 const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
@@ -247,9 +247,6 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                 </div>
                             </div>
                         ) : null}
-                        <div className="apply-button-row">
-                            <button className="au-btn">Apply</button>
-                        </div>
                     </div>
                 </div>
             ) : null}

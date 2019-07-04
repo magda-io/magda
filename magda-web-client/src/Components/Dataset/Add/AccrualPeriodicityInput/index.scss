@@ -6,6 +6,7 @@
     .custom-recurrence-input {
         float: left;
         width: 360px;
+        padding-bottom: 33px;
         border-radius: 2px;
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1),
             0 4px 11px hsla(0, 0%, 0%, 0.1);
@@ -81,7 +82,6 @@
             button {
                 float: right;
                 margin-right: 33px;
-                margin-bottom: 33px;
                 width: 87px;
                 height: 30px;
                 border-radius: 4px;
