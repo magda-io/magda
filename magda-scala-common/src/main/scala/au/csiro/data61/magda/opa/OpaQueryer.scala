@@ -9,10 +9,16 @@ import com.typesafe.config.Config
 import akka.util.ByteString
 import scala.concurrent.duration._
 import spray.json._
+import au.csiro.data61.magda.Authentication
+import akka.http.scaladsl.model.headers.RawHeader
+import com.auth0.jwt.JWT
 
 import scala.concurrent.{ExecutionContext, Future}
+import com.google.common.collect.Lists
 
 object OpaTypes {
+  case class OpaQueryPair(policyId: String, queries: List[OpaQuery])
+
   sealed trait OpaOp extends OpaRef
   case object Eq extends OpaOp
   case object Neq extends OpaOp
@@ -266,7 +272,18 @@ class OpaQueryer()(
     hasErrors = false
   }
 
-  def query(
+  def queryAsDefaultUser(
+      policyId: String
+  ): Future[List[OpaQuery]] = {
+    val jwt = JWT
+      .create()
+      .withClaim("userId", config.getString("auth.userId"))
+      .sign(Authentication.algorithm)
+
+    queryPolicy(Some(jwt), policyId)
+  }
+
+  def queryPolicy(
       jwtToken: Option[String],
       policyId: String
   ): Future[List[OpaQuery]] = {
@@ -277,7 +294,10 @@ class OpaQueryer()(
 
     // println(requestData)
 
-    var headers = List(RawHeader("X-Magda-Session", jwtToken.get))
+    var headers = jwtToken match {
+      case Some(jwt) => List(RawHeader("X-Magda-Session", jwt))
+      case None      => List()
+    }
     // if (!testSessionId.isEmpty) {
     //   // --- only used for testing so that MockServer can server different tests in parallel
     //   headers = RawHeader("x-test-session-id", testSessionId.get) :: headers
@@ -333,11 +353,34 @@ class OpaQueryer()(
               _.asJsObject.fields.get("rules").map(_.asInstanceOf[JsArray])
             )
             .flatMap(_.elements.toList)
-            .flatMap(
-              _.asJsObject.fields
-                .get("body")
-                .map(_.asInstanceOf[JsArray])
-            )
+            .flatMap { element =>
+              val fields = element.asJsObject.fields
+              val isDefault = fields
+                .get("default")
+                .getOrElse(JsFalse)
+                .asInstanceOf[JsBoolean]
+                .value
+              val headValue =
+                element.asJsObject
+                  .fields("head")
+                  .asJsObject
+                  .fields("value")
+
+              headValue.asJsObject
+                .fields("value") match {
+                case JsBoolean(true) =>
+                  element.asJsObject.fields
+                    .get("body")
+                    .map(_.asInstanceOf[JsArray])
+                case JsBoolean(false) if (isDefault) =>
+                  Seq(JsArray(List(JsObject("terms" -> headValue))))
+                case _ =>
+                  throw new Exception(
+                    "Found head value with value other than true that wasn't default"
+                  )
+              }
+
+            }
             .flatMap(_.elements.toList)
           queriesElement <- result.asJsObject.fields.get("queries")
           rulesFromQueries = queriesElement
@@ -355,7 +398,7 @@ class OpaQueryer()(
             List()
         }
 
-        // println(parsedRules)
+        println(parsedRules)
 
         val opaQueries = parsedRules.flatMap {
           case List(
@@ -381,7 +424,8 @@ class OpaQueryer()(
             )
           case List(RegoTermRef(RegoRefPartVar("input") :: path)) =>
             Some(OpaQueryExists(regoRefPathToOpaRefPath(path)))
-          case _ => None
+          case List(RegoTermBoolean(false)) => Some(OpaQueryMatchNone)
+          case _                            => None
         }
 
         opaQueries

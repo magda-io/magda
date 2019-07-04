@@ -156,9 +156,6 @@ export default class Database {
         const result = await this.pool.query(
             `SELECT  DISTINCT ON (p.id, op.id)
             p.id, p.name,
-            p.user_ownership_constraint,
-            p.org_unit_ownership_constraint,
-            p.pre_authorised_constraint,
             op.id AS operation_id,
             op.uri AS operation_uri,
             op.name AS operation_name

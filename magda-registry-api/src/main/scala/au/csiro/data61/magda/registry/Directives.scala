@@ -1,6 +1,5 @@
 package au.csiro.data61.magda.registry.directives
 
-import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -24,45 +23,27 @@ import akka.http.scaladsl.model.headers.HttpChallenge
 import au.csiro.data61.magda.Authentication
 import akka.event.Logging
 import au.csiro.data61.magda.opa.OpaQueryer
-import au.csiro.data61.magda.registry.RecordPersistence
-import scalikejdbc.DB
 import au.csiro.data61.magda.directives.AuthDirectives
-import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
+import au.csiro.data61.magda.opa.OpaTypes._
+import au.csiro.data61.magda.registry.RegistryOpaQueryer
 
 object Directives {
-  def withOpaQuery(aspectIds: Seq[String], recordId: Option[String])(
+
+  def withOpaQuery(aspectIds: Seq[String])(
       implicit config: Config,
       system: ActorSystem,
       materializer: Materializer,
-      ec: ExecutionContext,
-      recordPersistence: RecordPersistence
-  ): Directive1[List[OpaQuery]] = {
+      ec: ExecutionContext
+  ): Directive1[Seq[OpaQueryPair]] = {
     val queryer =
-      new OpaQueryer()(config, system, system.dispatcher, materializer)
+      new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
 
-    val policyIds = DB readOnly { session =>
-      recordPersistence
-        .getPolicyIds(session, aspectIds)
-    }
+    AuthDirectives.getJwt().flatMap { jwt =>
+      val future = queryer.queryForAspects(jwt, aspectIds)
 
-    AuthDirectives.getJwt().flatMap {
-      case Some(jwt) =>
-        val future = Future.sequence(
-          policyIds.map(policyId => queryer.query(Some(jwt), policyId))
-        )
-
-        
-
-        onComplete(future).flatMap { queryResults =>
-          provide(queryResults)
-        }
-      case None =>
-        reject(
-          AuthenticationFailedRejection(
-            AuthenticationFailedRejection.CredentialsRejected,
-            HttpChallenge("magda", None)
-          )
-        )
+      onSuccess(future).flatMap { queryResults =>
+        provide(queryResults)
+      }
     }
   }
 }

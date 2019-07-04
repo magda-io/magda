@@ -325,7 +325,7 @@ object WebHookActor {
     case object WakeUp
     import context.dispatcher
     private val SOURCE_QUEUE_BUFFER_SIZE = config.getInt("webhooks.SingleWebHookActorSourceQueueSize")
-    private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher)
+    private val processor = new WebHookProcessor(context.system, registryApiBaseUrl, context.dispatcher, config)
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     private var isProcessing: Boolean = false
     private var currentQueueLength = 0

@@ -32,6 +32,7 @@ import javax.ws.rs.Path
 import scalikejdbc.DB
 import au.csiro.data61.magda.opa.OpaQueryer
 import au.csiro.data61.magda.directives.AuthDirectives.getJwt
+import au.csiro.data61.magda.registry.directives.Directives.withOpaQuery
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -142,56 +143,45 @@ class RecordsServiceRO(
   )
   def getAll = get {
     pathEnd {
-      getJwt() { jwt =>
-        parameters(
-          'aspect.*,
-          'optionalAspect.*,
-          'pageToken.as[Long] ?,
-          'start.as[Int].?,
-          'limit.as[Int].?,
-          'dereference.as[Boolean].?,
-          'aspectQuery.*
-        ) {
-          (
-              aspects,
-              optionalAspects,
-              pageToken,
-              start,
-              limit,
-              dereference,
-              aspectQueries
-          ) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-
-            val queryer =
-              new OpaQueryer()(config, system, system.dispatcher, materializer)
-
-            val policyIds = DB readOnly { session =>
-              recordPersistence
-                .getPolicyIds(session, aspects.toSeq ++ optionalAspects.toSeq)
-            }
-
-            val future = Future.sequence(
-              policyIds.map(policyId => queryer.query(jwt, policyId))
-            )
-
-            onComplete(future) { queryResults =>
-              complete {
-                DB readOnly { session =>
-                  recordPersistence.getAllWithAspects(
-                    session,
-                    aspects,
-                    optionalAspects,
-                    pageToken,
-                    start,
-                    limit,
-                    dereference,
-                    parsedAspectQueries
-                  )
-                }
+      parameters(
+        'aspect.*,
+        'optionalAspect.*,
+        'pageToken.as[Long] ?,
+        'start.as[Int].?,
+        'limit.as[Int].?,
+        'dereference.as[Boolean].?,
+        'aspectQuery.*
+      ) {
+        (
+            aspects,
+            optionalAspects,
+            pageToken,
+            start,
+            limit,
+            dereference,
+            aspectQueries
+        ) =>
+          withOpaQuery(aspects.toSeq ++ optionalAspects.toSeq)(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQueries =>
+            complete {
+              DB readOnly { session =>
+                recordPersistence.getAllWithAspects(
+                  session,
+                  aspects,
+                  optionalAspects,
+                  opaQueries,
+                  pageToken,
+                  start,
+                  limit,
+                  dereference
+                )
               }
             }
-        }
+          }
       }
     }
   }
@@ -257,6 +247,7 @@ class RecordsServiceRO(
   )
   def getAllSummary = get {
     path("summary") {
+
       parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
         (pageToken, start, limit) =>
           complete {
@@ -378,9 +369,16 @@ class RecordsServiceRO(
     path("pagetokens") {
       pathEnd {
         parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-          complete {
-            DB readOnly { session =>
-              "0" :: recordPersistence.getPageTokens(session, aspect, limit)
+          withOpaQuery(aspect.toSeq)(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQueries =>
+            complete {
+              DB readOnly { session =>
+                "0" :: recordPersistence.getPageTokens(session, aspect, opaQueries, limit)
+              }
             }
           }
         }
@@ -467,22 +465,30 @@ class RecordsServiceRO(
     path(Segment) { id =>
       parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
         (aspects, optionalAspects, dereference) =>
-          DB readOnly { session =>
-            recordPersistence.getByIdWithAspects(
-              session,
-              id,
-              aspects,
-              optionalAspects,
-              dereference
-            ) match {
-              case Some(record) => complete(record)
-              case None =>
-                complete(
-                  StatusCodes.NotFound,
-                  BadRequest(
-                    "No record exists with that ID or it does not have the required aspects."
+          withOpaQuery(aspects.toSeq ++ optionalAspects.toSeq)(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQueries =>
+            DB readOnly { session =>
+              recordPersistence.getByIdWithAspects(
+                session,
+                id,
+                opaQueries,
+                aspects,
+                optionalAspects,
+                dereference
+              ) match {
+                case Some(record) => complete(record)
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    BadRequest(
+                      "No record exists with that ID or it does not have the required aspects."
+                    )
                   )
-                )
+              }
             }
           }
       }

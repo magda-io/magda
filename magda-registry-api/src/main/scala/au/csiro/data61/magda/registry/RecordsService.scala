@@ -33,6 +33,7 @@ import javax.ws.rs.Path
 import scalikejdbc.DB
 
 import au.csiro.data61.magda.registry.directives.Directives.withOpaQuery
+import gnieh.diffson._
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -300,12 +301,12 @@ class RecordsService(
   def putById = put {
     path(Segment) { (id: String) =>
       {
-        entity(as[Record]) { record =>
-          withOpaQuery(aspectIds, Some(id))(
+        entity(as[Record]) { record: Record =>
+          withOpaQuery(record.aspects.keySet.toSeq)(
+            config,
             system,
             materializer,
-            ec,
-            recordPersistence
+            ec
           ) { opaQueries =>
             val result = DB localTx { session =>
               recordPersistence
@@ -390,30 +391,45 @@ class RecordsService(
   )
   def patchById = patch {
     path(Segment) { (id: String) =>
-      requireIsAdmin(authClient)(system, config) { _ =>
-        {
-          entity(as[JsonPatch]) { recordPatch =>
-            val result = DB localTx { session =>
-              recordPersistence
-                .patchRecordById(session, id, recordPatch) match {
-                case Success(result) =>
-                  complete(result)
-                case Failure(exception) =>
-                  logger.error(
-                    exception,
-                    "Exception encountered while PATCHing record {} with {}",
-                    id,
-                    recordPatch.toJson.prettyPrint
-                  )
-                  complete(
-                    StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
-                  )
-              }
+      entity(as[JsonPatch]) { recordPatch =>
+        val aspects = (recordPatch.collect {
+          case op: Operation =>
+            val splitPath = op.path.toString().split("/").toList
+
+            splitPath match {
+              case "" :: "aspects" :: (aspectId: String) :: restOfPath =>
+                Some(aspectId)
+              case _ => None
             }
-            webHookActor ! WebHookActor.Process(false, Some(List(id)))
-            result
+          case _ => None
+        }).flatten
+
+        withOpaQuery(aspects)(
+          config,
+          system,
+          materializer,
+          ec
+        ) { opaQueries =>
+          val result = DB localTx { session =>
+            recordPersistence
+              .patchRecordById(session, id, recordPatch, opaQueries) match {
+              case Success(result) =>
+                complete(result)
+              case Failure(exception) =>
+                logger.error(
+                  exception,
+                  "Exception encountered while PATCHing record {} with {}",
+                  id,
+                  recordPatch.toJson.prettyPrint
+                )
+                complete(
+                  StatusCodes.BadRequest,
+                  BadRequest(exception.getMessage)
+                )
+            }
           }
+          webHookActor ! WebHookActor.Process(false, Some(List(id)))
+          result
         }
       }
     }
