@@ -1,6 +1,9 @@
 .dataset-add-file-page {
+    .top-area-row {
+        padding-bottom: 100px;
+        position: relative;
+    }
     .top-text-area {
-        padding-bottom: 88px;
         h1 {
             font-size: 38px;
             font-weight: normal;
@@ -20,6 +23,23 @@
             line-height: 1.62;
             letter-spacing: normal;
             color: #484848;
+        }
+    }
+    .tip-area {
+        position: absolute;
+        bottom: 35px;
+        .tooltip-root {
+            max-width: none;
+            font-size: 14px;
+            font-weight: 300;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.57;
+            letter-spacing: normal;
+            color: #636363;
+            img {
+                margin-right: 7px;
+            }
         }
     }
     .files-area {

@@ -1,6 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router";
-import FileIcon from "Components/Common/FileIcon";
+import { getFormatIcon } from "../View/DistributionIcon";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
@@ -127,7 +127,7 @@ class NewDataset extends React.Component<Prop, State> {
             this.props.history.push(`/dataset/${lastDatasetId}`);
         }
         return (
-            <div className="dataset-add-files-root">
+            <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
                     <div className="col-sm-12">
                         <div className="dataset-add-files">
@@ -139,17 +139,20 @@ class NewDataset extends React.Component<Prop, State> {
                                 Please review carefully, and update any fields
                                 as required.
                             </p>
-                            <div>
+                            <div className="file-icons-container">
                                 {files.map((file, i) => (
-                                    <p key={i}>
-                                        &nbsp; &nbsp;
-                                        <FileIcon
-                                            width="1em"
-                                            text={file.format}
+                                    <div
+                                        key={i}
+                                        className="file-icon-item clearfix"
+                                    >
+                                        <img
+                                            className="file-icon"
+                                            src={getFormatIcon(file)}
                                         />
-                                        &nbsp; &nbsp;
-                                        {file.title}
-                                    </p>
+                                        <div className="file-titile">
+                                            {file.title}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -205,7 +208,7 @@ class NewDataset extends React.Component<Prop, State> {
         const editTemporalCoverage = this.edit("temporalCoverage");
         const editSpatialCoverage = this.edit("spatialCoverage");
         return (
-            <div className="row">
+            <div className="row dataset-details-and-contents-page">
                 <div className="col-sm-12">
                     <h2>Dataset details and contents</h2>
                     <hr />
@@ -348,7 +351,7 @@ class NewDataset extends React.Component<Prop, State> {
 
         const editDataset = this.edit("dataset");
         return (
-            <div className="row">
+            <div className="row people-and-production-page">
                 <div className="col-sm-12">
                     <h2>People and production</h2>
                     <hr />
@@ -438,7 +441,7 @@ class NewDataset extends React.Component<Prop, State> {
         const editDatasetAccess = this.edit("datasetAccess");
         const editDatasetUsage = this.edit("datasetUsage");
         return (
-            <div className="row">
+            <div className="row dataset-access-and-use-page">
                 <div className="col-sm-12">
                     <h2>Dataset access and use</h2>
                     <hr />
@@ -535,9 +538,9 @@ class NewDataset extends React.Component<Prop, State> {
                                 return (
                                     <div className="fileBlock">
                                         <span className="fileBlock-icon">
-                                            <FileIcon
-                                                text={file.format}
-                                                width="1.5em"
+                                            <img
+                                                className="file-icon"
+                                                src={getFormatIcon(file)}
                                             />
                                         </span>
                                         <span className="fileBlock-text">
@@ -665,7 +668,7 @@ class NewDataset extends React.Component<Prop, State> {
         const { dataset } = this.state;
         const editDataset = this.edit("dataset");
         return (
-            <div className="row">
+            <div className="row dataset-description-page">
                 <div className="col-sm-12">
                     <h2>Dataset description</h2>
                     <h3>Please describe the dataset</h3>

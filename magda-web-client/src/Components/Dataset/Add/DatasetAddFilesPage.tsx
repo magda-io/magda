@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
 import { Link } from "react-router-dom";
+import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 
@@ -179,7 +180,7 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
     render() {
         return (
             <div className="container-fluid dataset-add-file-page">
-                <div className="row">
+                <div className="row top-area-row">
                     <div className="col-xs-12 top-text-area">
                         <h1>Add files to pre-populate metadata</h1>
                         <p>
@@ -193,6 +194,16 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             edit or delete the metadata at any time.
                         </p>
                     </div>
+
+                    {this.state.files.length > 0 && (
+                        <div className="col-xs-12 tip-area">
+                            <ToolTip>
+                                We recommend ensuring dataset file names are
+                                descriptive so users can easily understand the
+                                contents.
+                            </ToolTip>
+                        </div>
+                    )}
                 </div>
 
                 <div className="row files-area">
