@@ -50,6 +50,7 @@ UI:
 -   New add dataset page design
 -   Added new progress meter
 -   New design for file upload area
+-   New dropdown box design on `Dataset details and contents` page
 
 Gateway:
 

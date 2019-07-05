@@ -36,6 +36,9 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
+import ReactSelect from "react-select";
+import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
+import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -222,14 +225,29 @@ class NewDataset extends React.Component<Prop, State> {
                     <br />
                     <h4>What language(s) is the dataset available in?</h4>
                     <p>
-                        <AlwaysEditor
-                            value={dataset.languages}
-                            onChange={editDataset("languages")}
-                            editor={multiCodelistEditor(
-                                codelists.languages,
-                                true,
-                                "Add another language"
-                            )}
+                        <ReactSelect
+                            className="react-select"
+                            isMulti={true}
+                            isSearchable={true}
+                            components={{
+                                MultiValueRemove: CustomMultiValueRemove
+                            }}
+                            options={codelists.languageOptions as any}
+                            onChange={values =>
+                                editDataset("languages")(
+                                    Array.isArray(values)
+                                        ? values.map(item => item.value)
+                                        : []
+                                )
+                            }
+                            styles={ReactSelectStyles}
+                            value={(dataset.languages
+                                ? dataset.languages
+                                : ["eng"]
+                            ).map(item => ({
+                                label: codelists.languages[item],
+                                value: item
+                            }))}
                         />
                     </p>
                     <hr />
