@@ -48,6 +48,7 @@ UI:
 -   Extracted keyword will be filtered by vocabulary APIs
 -   New add dataset page design
 -   Added new progress meter
+-   New design for file upload area
 
 Gateway:
 

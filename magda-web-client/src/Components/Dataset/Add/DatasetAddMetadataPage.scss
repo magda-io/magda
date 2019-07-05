@@ -1,39 +1,54 @@
 @import "variables";
 
-.leaflet-container {
-    height: 400px;
-    width: 100%;
-}
+.dataset-add-meta-data-pages {
+    .file-icon-item {
+        padding-left: 10px;
+        margin-bottom: 20px;
+        .file-title,
+        img.file-icon {
+            float: left;
+            margin-right: 10px;
+        }
+        img.file-icon {
+            width: 24px;
+        }
+    }
 
-.dataset-add-files {
-    box-sizing: border-box;
-    padding: 1em;
-    margin: 1em 0 1em 0;
-    border: 1px solid $AU-color-foreground-action;
-}
+    .leaflet-container {
+        height: 400px;
+        width: 100%;
+    }
 
-.fileBlock {
-    border: 1px solid #cccccc;
-    overflow: auto;
-    line-height: 100%;
-}
+    .dataset-add-files {
+        box-sizing: border-box;
+        padding: 1em;
+        margin: 1em 0 1em 0;
+        border: 1px solid $AU-color-foreground-action;
+    }
 
-.fileBlock-icon {
-    float: left;
-    padding: 0.8em;
-}
+    .fileBlock {
+        border: 1px solid #cccccc;
+        overflow: auto;
+        line-height: 100%;
+    }
 
-.fileBlock-control {
-    float: right;
-    padding: 0.5em;
-}
+    .fileBlock-icon {
+        float: left;
+        padding: 0.8em;
+    }
 
-.fileBlock-text {
-    display: inline-block;
-    padding: 1em;
-}
+    .fileBlock-control {
+        float: right;
+        padding: 0.5em;
+    }
 
-.snippet-heading {
-    display: inline-block;
-    vertical-align: middle;
+    .fileBlock-text {
+        display: inline-block;
+        padding: 1em;
+    }
+
+    .snippet-heading {
+        display: inline-block;
+        vertical-align: middle;
+    }
 }
