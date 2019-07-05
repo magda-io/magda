@@ -257,7 +257,7 @@ class NewDataset extends React.Component<Prop, State> {
                     <hr />
                     <h3>Contents</h3>
                     <div>
-                        <h4>What keywords best describe this dataset?</h4>
+                        <h4>Which keywords best describe this dataset?</h4>
                         <ToolTip>
                             Keywords are specific words that your dataset
                             contains, and they help people search for specific
