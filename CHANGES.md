@@ -7,6 +7,7 @@ Search:
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
+-   Fixed indexer throws an error when affiliatedOrganisation field is created
 
 Registry:
 

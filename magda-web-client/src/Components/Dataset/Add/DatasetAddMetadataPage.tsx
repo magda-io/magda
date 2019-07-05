@@ -35,6 +35,7 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
 import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
