@@ -51,6 +51,7 @@ UI:
 -   New design for file upload area
 -   New dropdown box design on `Dataset details and contents` page
 -   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
+-   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
 
 Gateway:
 

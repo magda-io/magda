@@ -68,7 +68,6 @@ const TagInput: FunctionComponent<TagInputProps> = props => {
                     key={idx}
                     className="au-btn tag-item"
                     onClick={() => {
-                        debugger;
                         if (typeof props.onChange !== "function") return;
                         props.onChange(value.filter(v => v !== item));
                     }}
