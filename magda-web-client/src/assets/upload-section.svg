@@ -4,7 +4,7 @@
     </defs>
     <g fill="none" fill-rule="evenodd">
         <path fill="#F4F4F4" stroke="#979797" stroke-dasharray="10,10" stroke-width="2" d="M6 1h1110a5 5 0 0 1 5 5v167a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V6a5 5 0 0 1 5-5z"/>
-        <text fill="#3C3C3C" font-family="SFUIDisplay-Regular, SF UI Display" font-size="18" transform="translate(1 1)">
+        <text fill="#3C3C3C" font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"' font-size="18" transform="translate(1 1)">
             <tspan x="546.247" y="117.323">Drag your files here</tspan>
         </text>
         <path stroke="#979797" stroke-dasharray="10,10" stroke-linecap="square" stroke-width="2" d="M139.333 1l-.39 177"/>
