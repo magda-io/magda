@@ -105,10 +105,6 @@ package misc {
   }
 
   object DataSet {
-    def registryIdToIdentifier(registryId: String): String = {
-      java.net.URLEncoder.encode(registryId, "UTF-8")
-    }
-
     // A dataset identifier is the record id in the registry. It is not unique among all tenants.
     // In the previous Magda version (single tenant only), an indexed dataset has ES document ID
     // being set to UTF-8 encoded record id, which is guaranteed to be unique. However, in a multi-tenant
