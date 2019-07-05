@@ -175,9 +175,6 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                 className="accrual-periodicity-select"
                 styles={CustomStyles}
                 isSearchable={false}
-                defaultMenuIsOpen={true}
-                menuIsOpen={true}
-                closeMenuOnSelect={false}
                 options={
                     Object.keys(accrualPeriodicity).map(key => ({
                         label: accrualPeriodicity[key],
@@ -199,10 +196,10 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
             />
             {props.accrualPeriodicity === "custom" ? (
                 <div className="custom-recurrence-input">
-                    <div className="custom-recurrence-input-header">
+                    <div className="custom-recurrence-input-header clearfix">
                         <h1>Custom recurrence</h1>
                     </div>
-                    <div className="custom-recurrence-input-body">
+                    <div className="custom-recurrence-input-body clearfix">
                         <div className="repeat-row clearfix">
                             <div className="repeat-heading">Repeat every</div>
                             <input
@@ -243,7 +240,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                             />
                         </div>
                         {recurrenceRuleOptions.freq === RRule.WEEKLY ? (
-                            <div className="repeat-on-section">
+                            <div className="repeat-on-section clearfix">
                                 <div className="repeat-on-heading">
                                     Repeat on
                                 </div>

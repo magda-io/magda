@@ -3,11 +3,9 @@ const customStyles = {
         return {
             ...provided,
             width: "560px",
-            position: "static",
             borderRadius: "2px",
             marginTop: "0px",
-            overflow: "hidden",
-            zIndex: 0
+            zIndex: 3
         };
     },
     menuList: provided => ({
