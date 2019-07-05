@@ -5,7 +5,7 @@ import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { dateEditor } from "Components/Editing/Editors/dateEditor";
 
-import FileIcon from "Components/Common/FileIcon";
+import { getFormatIcon } from "../View/DistributionIcon";
 
 import humanFileSize from "helpers/humanFileSize";
 
@@ -37,7 +37,8 @@ function FileInProgress({
                     <img src={dismissIcon} />
                 </button>
                 <div className="file-icon-area">
-                    <FileIcon width="48px" text={file.format} />
+                    <img className="format-icon" src={getFormatIcon(file)} />
+                    <div className="format-text">{file.format}</div>
                 </div>
                 <div className="file-info">
                     <div className="file-name-size">
@@ -85,6 +86,8 @@ export default function DatasetFile({
 
     const editFormat = (newValue: string | undefined) =>
         onChange({ ...file, format: newValue });
+    const editTitle = (newValue: string | undefined) =>
+        onChange({ ...file, title: newValue! });
     const editModified = (newValue: Date | undefined) =>
         onChange({ ...file, modified: newValue! });
     const [editMode, setEditMode] = useState(false);
@@ -100,6 +103,15 @@ export default function DatasetFile({
                     >
                         Save
                     </button>
+                    <div>
+                        <span>Name:&nbsp;&nbsp; </span>
+                        &nbsp;&nbsp;
+                        <AlwaysEditor
+                            value={file.title}
+                            onChange={editTitle}
+                            editor={textEditor}
+                        />
+                    </div>
                     <div>
                         <span>Format: </span>
                         &nbsp;&nbsp;
@@ -140,12 +152,15 @@ export default function DatasetFile({
                             {file.title}
                         </h3>
                         <div className="file-info">
-                            <div>Format: {file.format}</div>
                             <div>
-                                Size: {humanFileSize(file.byteSize, false)}
+                                <b>Format:</b> {file.format}
                             </div>
                             <div>
-                                Last Modified:{" "}
+                                <b>Size:</b>{" "}
+                                {humanFileSize(file.byteSize, false)}
+                            </div>
+                            <div>
+                                <b>Last Modified:</b>{" "}
                                 {Moment(file.modified).format("DD/MM/YYYY")}
                             </div>
                         </div>

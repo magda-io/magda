@@ -17,19 +17,20 @@
     }
 
     .file-in-progress {
-        height: 93px;
+        height: 123px;
         .dataset-file-delete-button {
             position: absolute;
             width: 26px;
             height: 26px;
             border: none;
-            right: 100px;
-            top: 0px;
+            right: 95px;
+            top: 15px;
             padding: 1px 0px 0px 0px;
         }
         .file-icon-area {
             float: left;
             margin-right: 57px;
+            margin-top: 5px;
             .format-icon {
                 width: 48px;
             }
@@ -53,7 +54,7 @@
                 }
             }
             .file-name {
-                width: 260px;
+                width: 242px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
@@ -101,14 +102,20 @@
     background-repeat: no-repeat;
     padding-left: 60px;
     width: 534px;
-    height: 125px;
+    height: 155px;
+    background-color: #f4f4f4;
+
+    .dataset-file-file-title {
+        margin-top: 4px;
+        font-weight: 300;
+    }
 
     .file-info {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: normal;
         font-style: normal;
         font-stretch: normal;
-        line-height: 1.54;
+        line-height: 1.84;
         letter-spacing: normal;
         color: #484848;
         font-weight: 300;
@@ -118,8 +125,8 @@
         width: 26px;
         height: 26px;
         border: none;
-        right: 65px;
-        top: 10px;
+        right: 45px;
+        top: 20px;
         padding: 1px 0px 0px 0px;
     }
 
@@ -128,9 +135,15 @@
         width: 26px;
         height: 26px;
         border: none;
-        right: 30px;
-        top: 10px;
+        right: 15px;
+        top: 20px;
         padding: 1px 0px 0px 0px;
+    }
+
+    .dataset-file-edit-button,
+    .dataset-file-delete-button {
+        border: 1px solid transparent;
+        border-radius: 4px;
     }
 
     .dataset-file-edit-button:hover,
