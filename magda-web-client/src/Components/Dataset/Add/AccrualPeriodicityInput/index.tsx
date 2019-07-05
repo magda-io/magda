@@ -2,7 +2,7 @@ import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select";
 import CustomStyles from "./CustomStyles";
 import { accrualPeriodicity } from "constants/DatasetConstants";
-import { RRule, Options as RRuleOptions, WeekdayStr } from "rrule";
+import { RRule, Options as RRuleOptions, Frequency, Weekday } from "rrule";
 import "./index.scss";
 
 interface PropsType {
@@ -40,24 +40,23 @@ const REPEAT_OPTIONS = [
 const DEFAULT_CUSTOM_INPUT_VALUE = {
     interval: 1,
     freq: RRule.WEEKLY,
-    byweekday: ["MO"] as WeekdayStr[]
+    byweekday: [RRule.MO] as Weekday[]
 };
 
 const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
-    debugger;
     const recurrenceRuleOptions = props.accrualPeriodicityRecurrenceRule
         ? RRule.parseString(props.accrualPeriodicityRecurrenceRule)
         : DEFAULT_CUSTOM_INPUT_VALUE;
 
     const onWeekDayClick = (
         recurrenceRuleOptions: Partial<RRuleOptions>,
-        weekday: WeekdayStr
+        weekday: Weekday
     ) => {
         return () => {
-            const selectedWeekDays: WeekdayStr[] = Array.isArray(
+            const selectedWeekDays: Weekday[] = Array.isArray(
                 recurrenceRuleOptions.byweekday
             )
-                ? (recurrenceRuleOptions.byweekday as WeekdayStr[])
+                ? (recurrenceRuleOptions.byweekday as Weekday[])
                 : [];
             const idx = selectedWeekDays.indexOf(weekday);
 
@@ -84,12 +83,12 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
 
     const getWeekDayActiveClass = (
         recurrenceRuleOptions: Partial<RRuleOptions>,
-        weekday: WeekdayStr
+        weekday: Weekday
     ) => {
-        const selectedWeekDays: WeekdayStr[] = Array.isArray(
+        const selectedWeekDays: Weekday[] = Array.isArray(
             recurrenceRuleOptions.byweekday
         )
-            ? (recurrenceRuleOptions.byweekday as WeekdayStr[])
+            ? (recurrenceRuleOptions.byweekday as Weekday[])
             : [];
         const idx = selectedWeekDays.indexOf(weekday);
         if (idx === -1) return "";
@@ -106,11 +105,18 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
             }
 
             if (
-                value !== "custom" &&
-                typeof props.accrualPeriodicityRecurrenceRule === "function"
+                typeof props.onAccrualPeriodicityRecurrenceRuleChange ===
+                "function"
             ) {
-                // --- reset custom Recurrence Rule input
-                props.onAccrualPeriodicityRecurrenceRuleChange("");
+                if (value !== "custom") {
+                    // --- reset custom Recurrence Rule input
+                    props.onAccrualPeriodicityRecurrenceRuleChange("");
+                } else {
+                    const rruleStr = new RRule(
+                        DEFAULT_CUSTOM_INPUT_VALUE
+                    ).toString();
+                    props.onAccrualPeriodicityRecurrenceRuleChange(rruleStr);
+                }
             }
         };
     };
@@ -152,6 +158,12 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                 ...recurrenceRuleOptions,
                 freq: option.value
             };
+            if (option.value !== RRule.WEEKLY) {
+                delete newRecurrenceRuleOptions.byweekday;
+            } else {
+                newRecurrenceRuleOptions.byweekday =
+                    DEFAULT_CUSTOM_INPUT_VALUE.byweekday;
+            }
             const rruleStr = new RRule(newRecurrenceRuleOptions).toString();
             props.onAccrualPeriodicityRecurrenceRuleChange(rruleStr);
         };
@@ -213,7 +225,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                                 REPEAT_OPTIONS.map(
                                                     item => item.value
                                                 ).indexOf(
-                                                    recurrenceRuleOptions.freq
+                                                    recurrenceRuleOptions.freq as Frequency
                                                 )
                                             ].label,
                                         value: recurrenceRuleOptions.freq
@@ -239,11 +251,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "SU"
+                                            RRule.SU
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "SU"
+                                            RRule.SU
                                         )}
                                     >
                                         S
@@ -251,11 +263,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "MO"
+                                            RRule.MO
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "MO"
+                                            RRule.MO
                                         )}
                                     >
                                         M
@@ -263,11 +275,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "TU"
+                                            RRule.TU
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "TU"
+                                            RRule.TU
                                         )}
                                     >
                                         T
@@ -275,11 +287,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "WE"
+                                            RRule.WE
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "WE"
+                                            RRule.WE
                                         )}
                                     >
                                         W
@@ -287,11 +299,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "TH"
+                                            RRule.TH
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "TH"
+                                            RRule.TH
                                         )}
                                     >
                                         T
@@ -299,11 +311,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "FR"
+                                            RRule.FR
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "FR"
+                                            RRule.FR
                                         )}
                                     >
                                         F
@@ -311,11 +323,11 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     <button
                                         className={`repeat-on-option ${getWeekDayActiveClass(
                                             recurrenceRuleOptions,
-                                            "SA"
+                                            RRule.SA
                                         )}`}
                                         onClick={onWeekDayClick(
                                             recurrenceRuleOptions,
-                                            "SA"
+                                            RRule.SA
                                         )}
                                     >
                                         S

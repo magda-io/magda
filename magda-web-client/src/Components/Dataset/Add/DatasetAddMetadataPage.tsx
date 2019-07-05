@@ -309,13 +309,15 @@ class NewDataset extends React.Component<Prop, State> {
                     <div>
                         <AccrualPeriodicityInput
                             accrualPeriodicity={dataset.accrualPeriodicity}
+                            accrualPeriodicityRecurrenceRule={
+                                dataset.accrualPeriodicityRecurrenceRule
+                            }
                             onAccrualPeriodicityChange={value =>
                                 editDataset("accrualPeriodicity")(
                                     value ? value : ""
                                 )
                             }
                             onAccrualPeriodicityRecurrenceRuleChange={rule => {
-                                debugger;
                                 editDataset("accrualPeriodicityRecurrenceRule")(
                                     rule
                                 );

@@ -53,7 +53,7 @@ const customStyles = {
     })
 };
 
-export const customStylesWithWidth = (width: string = null) =>
+export const customStylesWithWidth = (width: string) =>
     width
         ? {
               ...customStyles,
