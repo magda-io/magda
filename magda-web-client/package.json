@@ -58,7 +58,6 @@
     "react-simplemde-editor": "^4.0.0",
     "retext": "^6.0.1",
     "retext-keywords": "^4.0.2",
-    "smoothscroll-polyfill": "^0.4.4",
     "source-map-explorer": "^1.7.0",
     "urijs": "^1.19.1"
   },

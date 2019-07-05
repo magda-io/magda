@@ -37,7 +37,8 @@ import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 import ReactSelect from "react-select";
-import ReactSelectStyles from "../../Common/ReactSelectStyles";
+import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
+import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -228,10 +229,15 @@ class NewDataset extends React.Component<Prop, State> {
                             className="react-select"
                             isMulti={true}
                             isSearchable={true}
+                            components={{
+                                MultiValueRemove: CustomMultiValueRemove
+                            }}
                             options={codelists.languageOptions as any}
                             onChange={values =>
                                 editDataset("languages")(
-                                    values.map(item => item.value)
+                                    Array.isArray(values)
+                                        ? values.map(item => item.value)
+                                        : []
                                 )
                             }
                             styles={ReactSelectStyles}

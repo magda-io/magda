@@ -40,11 +40,12 @@ const customStyles = {
         overflow: "hidden",
         padding: "0px"
     }),
-    multiValueRemove: provided => ({
-        ...provided,
+    multiValueRemove: () => ({
         padding: "0px",
         marginLeft: "16px",
-        marginTop: "3px",
+        marginTop: "0px",
+        border: "none",
+        cursor: "pointer",
         "&:hover": {
             backgroundColor: "transparent",
             color: "#ffffff"
