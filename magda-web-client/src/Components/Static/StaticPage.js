@@ -57,32 +57,34 @@ class StaticPage extends Component {
         return (
             <MagdaDocumentTitle prefixes={[title]}>
                 <div
-                    className={`static-page-container container page-${
-                        this.props.path
-                    }`}
+                    className={`static-page-container page-${this.props.path}`}
                 >
                     <Medium>
                         <Breadcrumbs breadcrumbs={breadcrumb} />
                     </Medium>
-                    <h1>
-                        <ToggleEditor
-                            enabled={hasEditPermissions}
-                            value={title}
-                            onChange={save("title")}
-                            editor={textEditor}
-                        />
-                    </h1>
-                    <ToggleEditor
-                        enabled={hasEditPermissions}
-                        value={bodyContent}
-                        onChange={save("content")}
-                        editor={markdownEditor}
-                    />{" "}
-                    {hasEditPermissions && (
-                        <p>
-                            <a href="/admin/pages">Manage Pages</a>
-                        </p>
-                    )}
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <h1>
+                                <ToggleEditor
+                                    enabled={hasEditPermissions}
+                                    value={title}
+                                    onChange={save("title")}
+                                    editor={textEditor}
+                                />
+                            </h1>
+                            <ToggleEditor
+                                enabled={hasEditPermissions}
+                                value={bodyContent}
+                                onChange={save("content")}
+                                editor={markdownEditor}
+                            />{" "}
+                            {hasEditPermissions && (
+                                <p>
+                                    <a href="/admin/pages">Manage Pages</a>
+                                </p>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </MagdaDocumentTitle>
         );

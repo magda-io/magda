@@ -20,6 +20,7 @@ Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 -   Index datasets with tenant ID.
+-   Fixed indexer throws an error when affiliatedOrganisation field is created
 
 Registry:
 
@@ -59,10 +60,14 @@ UI:
 -   Show Database ownership information on dataset page (Admin Only)
 -   Added vocabulary suggestion for keywords & themes input on new dataset page
 -   Extracted keyword will be filtered by vocabulary APIs
+-   New add dataset page design
+-   Added new progress meter
+-   New design for file upload area
+-   New dropdown box design on `Dataset details and contents` page
 
 Gateway:
 
--   Add ArcGIS/ESRI Authentication provider
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
 
 Access Control:

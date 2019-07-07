@@ -14,6 +14,7 @@ export interface AuthRouterOptions {
     aafClientSecret: string;
     arcgisClientId: string;
     arcgisClientSecret: string;
+    arcgisInstanceBaseUrl: string;
     ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
@@ -68,6 +69,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                 passport: passport,
                 clientId: options.arcgisClientId,
                 clientSecret: options.arcgisClientSecret,
+                arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
                 externalAuthHome: `${options.externalUrl}/auth`
             })
         },

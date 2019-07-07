@@ -38,6 +38,21 @@ export enum FileState {
     Ready
 }
 
+export function fileStateToText(state: FileState) {
+    switch (state) {
+        case FileState.Added:
+            return "Added";
+        case FileState.Reading:
+            return "Reading";
+        case FileState.Processing:
+            return "Processing";
+        case FileState.Ready:
+            return "Ready";
+        default:
+            return "Unknown";
+    }
+}
+
 type Dataset = {
     title: string;
     description?: string;
