@@ -17,7 +17,12 @@ case class RegionSource(
   disabled: Boolean,
   order: Int,
   simplifyToleranceRatio: Double = 0.01,
-  requireSimplify: Boolean = true)
+  requireSimplify: Boolean = true,
+  STEIdField: Option[String] = None,
+  SA4IdField: Option[String] = None,
+  SA3IdField: Option[String] = None,
+  SA2IdField: Option[String] = None,
+  STEAbbrevField: Option[String] = None)
 
 object RegionSource {
   def generateRegionId(regionType: String, id: String) = s"${regionType}/$id".toLowerCase
@@ -30,6 +35,10 @@ class RegionSources(config: Config) {
 
   def forName(name: String): Option[RegionSource] = lookup.get(name.toLowerCase)
 
+  private def getOptionalStringConfig(fieldName: String, regionSourceConfig: Config):Option[String] = {
+    if (regionSourceConfig.hasPath(fieldName)) Some(regionSourceConfig.getString(fieldName)) else None
+  }
+
   private def loadFromConfig(config: Config): Seq[RegionSource] = {
     config.root().map {
       case (name: String, config: ConfigObject) =>
@@ -39,7 +48,7 @@ class RegionSources(config: Config) {
           url = new URL(regionSourceConfig.getString("url")),
           idProperty = regionSourceConfig.getString("idField"),
           nameProperty = regionSourceConfig.getString("nameField"),
-          shortNameProperty = if (regionSourceConfig.hasPath("shortNameField")) Some(regionSourceConfig.getString("shortNameField")) else None,
+          shortNameProperty = getOptionalStringConfig("shortNameField", regionSourceConfig),
           includeIdInName = if (regionSourceConfig.hasPath("includeIdInName")) regionSourceConfig.getBoolean("includeIdInName") else false,
           disabled = regionSourceConfig.hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
           order = regionSourceConfig.getInt("order"),
@@ -50,7 +59,12 @@ class RegionSources(config: Config) {
           requireSimplify =
             if (regionSourceConfig.hasPath("requireSimplify"))
               regionSourceConfig.getBoolean("requireSimplify")
-            else true
+            else true,
+          STEIdField = getOptionalStringConfig("STEIdField", regionSourceConfig),
+          SA4IdField = getOptionalStringConfig("SA4IdField", regionSourceConfig),
+          SA3IdField = getOptionalStringConfig("SA3IdField", regionSourceConfig),
+          SA2IdField = getOptionalStringConfig("SA2IdField", regionSourceConfig),
+          STEAbbrevField = getOptionalStringConfig("STEAbbrevField", regionSourceConfig)
         )
     }.toSeq.filterNot(_.disabled)
   }

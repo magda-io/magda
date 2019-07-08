@@ -29,6 +29,7 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.RegionSources
+import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import spray.json._
 import com.sksamuel.elastic4s.mappings.FieldDefinition
@@ -261,7 +262,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 23,
+      version = 24,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
       createIndex(indices.getIndex(config, Indices.RegionsIndex))
@@ -273,6 +274,10 @@ object IndexDefinition extends DefaultJsonProtocol {
             keywordField("regionId"),
             magdaTextField("regionName"),
             magdaTextField("regionShortName"),
+            keywordField("STEId"),
+            keywordField("SA4Id"),
+            keywordField("SA3Id"),
+            keywordField("SA2Id"),
             textField("regionSearchId")
               .analyzer("regionSearchIdIndex")
               .searchAnalyzer("regionSearchIdInput"),
@@ -394,6 +399,51 @@ object IndexDefinition extends DefaultJsonProtocol {
   implicit val geometryFactory =
     JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
+  def getOptionalIdFieldValue(configFieldName:String, jsonRegion: JsObject, regionSource: RegionSource):JsValue = {
+    val field = regionSource.getClass.getDeclaredField(configFieldName)
+    field.setAccessible(true)
+    val fieldConfigValue: Option[String] = field.get(regionSource).asInstanceOf[Option[String]]
+    val properties = jsonRegion.fields("properties").asJsObject
+    fieldConfigValue match {
+      case Some(jsFieldName) =>
+        configFieldName match {
+          case "STEAbbrevField" =>
+            properties.getFields(jsFieldName).headOption match {
+              case Some(JsString(stateAbbrev)) => stateAbbrev match {
+                case "NSW" => JsString("1")
+                case "VIC" => JsString("2")
+                case "QLD" => JsString("3")
+                case "SA" => JsString("4")
+                case "WA" => JsString("5")
+                case "TAS" => JsString("6")
+                case "NT" => JsString("7")
+                case "ACT" => JsString("8")
+                case "OT" => JsString("9")
+                case _ => JsNull
+              }
+              case _ => JsNull
+            }
+          case _ =>
+            properties.getFields(jsFieldName).headOption match {
+              case Some(id: JsString) => id
+              case _ => JsNull
+            }
+        }
+      case None => JsNull
+    }
+  }
+
+  def getRegionSTEId(jsonRegion: JsObject, regionSource: RegionSource):JsValue = {
+    val id = getOptionalIdFieldValue("STEIdField", jsonRegion, regionSource)
+    id match {
+      case id: JsString => id
+      case _ => getOptionalIdFieldValue("STEAbbrevField", jsonRegion, regionSource) match {
+        case id: JsString => id
+        case _ => JsNull
+      }
+    }
+  }
+
   def setupRegions(client: ElasticClient, loader: RegionLoader, indices: Indices)(
     implicit
     config: Config,
@@ -496,7 +546,11 @@ object IndexDefinition extends DefaultJsonProtocol {
                     EsBoundingBoxFormat
                   ),
                   "geometry" -> geometry.toJson,
-                  "order" -> JsNumber(regionSource.order)
+                  "order" -> JsNumber(regionSource.order),
+                  "STEId" -> getRegionSTEId(jsonRegion, regionSource),
+                  "SA4Id" -> getOptionalIdFieldValue("SA4IdField", jsonRegion, regionSource),
+                  "SA3Id" -> getOptionalIdFieldValue("SA3IdField", jsonRegion, regionSource),
+                  "SA2Id" -> getOptionalIdFieldValue("SA2IdField", jsonRegion, regionSource)
                 ).toJson)
           )
 
