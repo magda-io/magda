@@ -22,11 +22,11 @@ let defaultBasePath = "http://localhost/api/v0/registry/";
 /* tslint:disable:no-unused-variable */
 
 /**
- * A type of aspect in the registry.
+ * A type of aspect in the registry, unique for a tenant.
  */
 export class AspectDefinition {
     /**
-     * The unique identifier for the aspect type.
+     * The identifier for the aspect type.
      */
     "id": string;
     /**
@@ -96,11 +96,11 @@ export class MultipleDeleteResult {
 export class Operation {}
 
 /**
- * A record in the registry, usually including data for one or more aspects.
+ * A record in the registry, usually including data for one or more aspects, unique for a tenant.
  */
 export class Record {
     /**
-     * The unique identifier of the record
+     * The identifier of the record
      */
     "id": string;
     /**
@@ -115,6 +115,10 @@ export class Record {
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
     "sourceTag": string;
+    /**
+     * The identifier of a tenant
+     */
+    "tenantId": number;
 }
 
 /**
@@ -122,7 +126,7 @@ export class Record {
  */
 export class RecordSummary {
     /**
-     * The unique identifier of the record
+     * The identifier of the record
      */
     "id": string;
     /**
@@ -133,6 +137,10 @@ export class RecordSummary {
      * The list of aspect IDs for which this record has data
      */
     "aspects": Array<string>;
+    /**
+     * The identifier of the tenant
+     */
+    "tenantId": number;
 }
 
 export class RegistryEvent {
@@ -290,10 +298,12 @@ export class AspectDefinitionsApi {
     /**
      * Create a new aspect
      *
+     * @param xMagdaTenantId 0
      * @param aspect The definition of the new aspect.
      * @param xMagdaSession Magda internal session id
      */
     public create(
+        xMagdaTenantId: number,
         aspect: AspectDefinition,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
@@ -301,6 +311,13 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling create."
+            );
+        }
 
         // verify required parameter 'aspect' is not null or undefined
         if (aspect === null || aspect === undefined) {
@@ -315,6 +332,8 @@ export class AspectDefinitionsApi {
                 "Required parameter xMagdaSession was null or undefined when calling create."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -362,8 +381,11 @@ export class AspectDefinitionsApi {
     /**
      * Get a list of all aspects
      *
+     * @param xMagdaTenantId 0
      */
-    public getAll(): Promise<{
+    public getAll(
+        xMagdaTenantId: number
+    ): Promise<{
         response: http.IncomingMessage;
         body: Array<AspectDefinition>;
     }> {
@@ -371,6 +393,15 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAll."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -415,9 +446,11 @@ export class AspectDefinitionsApi {
     /**
      * Get an aspect by ID
      *
+     * @param xMagdaTenantId 0
      * @param id ID of the aspect to be fetched.
      */
     public getById(
+        xMagdaTenantId: number,
         id: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
@@ -427,12 +460,21 @@ export class AspectDefinitionsApi {
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getById."
+            );
+        }
+
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
             throw new Error(
                 "Required parameter id was null or undefined when calling getById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -477,11 +519,13 @@ export class AspectDefinitionsApi {
     /**
      * Modify an aspect by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+     * @param xMagdaTenantId 0
      * @param id ID of the aspect to be saved.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
      */
     public patchById(
+        xMagdaTenantId: number,
         id: string,
         aspectPatch: Array<Operation>,
         xMagdaSession: string
@@ -492,6 +536,13 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -513,6 +564,8 @@ export class AspectDefinitionsApi {
                 "Required parameter xMagdaSession was null or undefined when calling patchById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -560,11 +613,13 @@ export class AspectDefinitionsApi {
     /**
      * Modify an aspect by ID
      * Modifies the aspect with a given ID.  If an aspect with the ID does not yet exist, it is created.
+     * @param xMagdaTenantId 0
      * @param id ID of the aspect to be saved.
      * @param aspect The aspect to save.
      * @param xMagdaSession Magda internal session id
      */
     public putById(
+        xMagdaTenantId: number,
         id: string,
         aspect: AspectDefinition,
         xMagdaSession: string
@@ -575,6 +630,13 @@ export class AspectDefinitionsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -596,6 +658,8 @@ export class AspectDefinitionsApi {
                 "Required parameter xMagdaSession was null or undefined when calling putById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -682,11 +746,13 @@ export class RecordAspectsApi {
      * @param recordId ID of the record for which to delete an aspect.
      * @param aspectId ID of the aspect to delete.
      * @param xMagdaSession Magda internal session id
+     * @param xMagdaTenantId 0
      */
     public deleteById(
         recordId: string,
         aspectId: string,
-        xMagdaSession: string
+        xMagdaSession: string,
+        xMagdaTenantId: number
     ): Promise<{ response: http.IncomingMessage; body: DeleteResult }> {
         const localVarPath =
             this.basePath +
@@ -718,7 +784,16 @@ export class RecordAspectsApi {
             );
         }
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling deleteById."
+            );
+        }
+
         headerParams["X-Magda-Session"] = xMagdaSession;
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -763,10 +838,12 @@ export class RecordAspectsApi {
     /**
      * Get a record aspect by ID
      *
+     * @param xMagdaTenantId 0
      * @param recordId ID of the record for which to fetch an aspect.
      * @param aspectId ID of the aspect to fetch.
      */
     public getById(
+        xMagdaTenantId: number,
         recordId: string,
         aspectId: string
     ): Promise<{ response: http.IncomingMessage; body: any }> {
@@ -778,6 +855,13 @@ export class RecordAspectsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getById."
+            );
+        }
 
         // verify required parameter 'recordId' is not null or undefined
         if (recordId === null || recordId === undefined) {
@@ -792,6 +876,8 @@ export class RecordAspectsApi {
                 "Required parameter aspectId was null or undefined when calling getById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -839,12 +925,14 @@ export class RecordAspectsApi {
      * @param aspectId ID of the aspect to fetch.
      * @param aspectPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
+     * @param xMagdaTenantId 0
      */
     public patchById(
         recordId: string,
         aspectId: string,
         aspectPatch: Array<Operation>,
-        xMagdaSession: string
+        xMagdaSession: string,
+        xMagdaTenantId: number
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
@@ -883,7 +971,16 @@ export class RecordAspectsApi {
             );
         }
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchById."
+            );
+        }
+
         headerParams["X-Magda-Session"] = xMagdaSession;
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -932,12 +1029,14 @@ export class RecordAspectsApi {
      * @param aspectId ID of the aspect to update.
      * @param aspect The record aspect to save.
      * @param xMagdaSession Magda internal session id
+     * @param xMagdaTenantId 0
      */
     public putById(
         recordId: string,
         aspectId: string,
         aspect: any,
-        xMagdaSession: string
+        xMagdaSession: string,
+        xMagdaTenantId: number
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
@@ -976,7 +1075,16 @@ export class RecordAspectsApi {
             );
         }
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putById."
+            );
+        }
+
         headerParams["X-Magda-Session"] = xMagdaSession;
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1057,9 +1165,11 @@ export class RecordHistoryApi {
     /**
      * Get a list of all events affecting this record
      *
+     * @param xMagdaTenantId 0
      * @param recordId ID of the record for which to fetch history.
      */
     public history(
+        xMagdaTenantId: number,
         recordId: string
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
@@ -1072,12 +1182,21 @@ export class RecordHistoryApi {
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling history."
+            );
+        }
+
         // verify required parameter 'recordId' is not null or undefined
         if (recordId === null || recordId === undefined) {
             throw new Error(
                 "Required parameter recordId was null or undefined when calling history."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1122,10 +1241,12 @@ export class RecordHistoryApi {
     /**
      * Get the version of a record that existed after a given event was applied
      *
+     * @param xMagdaTenantId 0
      * @param recordId ID of the record to fetch.
      * @param eventId The ID of the last event to be applied to the record.  The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.
      */
     public version(
+        xMagdaTenantId: number,
         recordId: string,
         eventId: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
@@ -1137,6 +1258,13 @@ export class RecordHistoryApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling version."
+            );
+        }
 
         // verify required parameter 'recordId' is not null or undefined
         if (recordId === null || recordId === undefined) {
@@ -1151,6 +1279,8 @@ export class RecordHistoryApi {
                 "Required parameter eventId was null or undefined when calling version."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1230,10 +1360,12 @@ export class RecordsApi {
     /**
      * Create a new record
      *
+     * @param xMagdaTenantId 0
      * @param record The definition of the new record.
      * @param xMagdaSession Magda internal session id
      */
     public create(
+        xMagdaTenantId: number,
         record: Record,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
@@ -1241,6 +1373,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling create."
+            );
+        }
 
         // verify required parameter 'record' is not null or undefined
         if (record === null || record === undefined) {
@@ -1255,6 +1394,8 @@ export class RecordsApi {
                 "Required parameter xMagdaSession was null or undefined when calling create."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -1301,10 +1442,12 @@ export class RecordsApi {
     /**
      * Delete a record
      *
+     * @param xMagdaTenantId 0
      * @param recordId ID of the record to delete.
      * @param xMagdaSession Magda internal session id
      */
     public deleteById(
+        xMagdaTenantId: number,
         recordId: string,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: DeleteResult }> {
@@ -1317,6 +1460,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling deleteById."
+            );
+        }
 
         // verify required parameter 'recordId' is not null or undefined
         if (recordId === null || recordId === undefined) {
@@ -1331,6 +1481,8 @@ export class RecordsApi {
                 "Required parameter xMagdaSession was null or undefined when calling deleteById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -1377,6 +1529,7 @@ export class RecordsApi {
     /**
      * Get a list of all records
      *
+     * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
      * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
@@ -1386,6 +1539,7 @@ export class RecordsApi {
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
      */
     public getAll(
+        xMagdaTenantId: number,
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
         pageToken?: string,
@@ -1398,6 +1552,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAll."
+            );
+        }
 
         if (aspect !== undefined) {
             queryParameters["aspect"] = aspect;
@@ -1426,6 +1587,8 @@ export class RecordsApi {
         if (aspectQuery !== undefined) {
             queryParameters["aspectQuery"] = aspectQuery;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1470,11 +1633,13 @@ export class RecordsApi {
     /**
      * Get a list of all records as summaries
      *
+     * @param xMagdaTenantId 0
      * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      */
     public getAllSummary(
+        xMagdaTenantId: number,
         pageToken?: string,
         start?: number,
         limit?: number
@@ -1483,6 +1648,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAllSummary."
+            );
+        }
 
         if (pageToken !== undefined) {
             queryParameters["pageToken"] = pageToken;
@@ -1495,6 +1667,8 @@ export class RecordsApi {
         if (limit !== undefined) {
             queryParameters["limit"] = limit;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1540,12 +1714,14 @@ export class RecordsApi {
      * Get a record by ID
      * Gets a complete record, including data for all aspects.
      * @param id ID of the record to be fetched.
+     * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
      */
     public getById(
         id: string,
+        xMagdaTenantId: number,
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
         dereference?: boolean
@@ -1564,6 +1740,13 @@ export class RecordsApi {
             );
         }
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getById."
+            );
+        }
+
         if (aspect !== undefined) {
             queryParameters["aspect"] = aspect;
         }
@@ -1575,6 +1758,8 @@ export class RecordsApi {
         if (dereference !== undefined) {
             queryParameters["dereference"] = dereference;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1619,9 +1804,11 @@ export class RecordsApi {
      * Get a summary record by ID
      * Gets a summary record, including all the aspect ids for which this record has data.
      * @param id ID of the record to be fetched.
+     * @param xMagdaTenantId 0
      */
     public getByIdSummary(
-        id: string
+        id: string,
+        xMagdaTenantId: number
     ): Promise<{ response: http.IncomingMessage; body: RecordSummary }> {
         const localVarPath =
             this.basePath +
@@ -1636,6 +1823,15 @@ export class RecordsApi {
                 "Required parameter id was null or undefined when calling getByIdSummary."
             );
         }
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getByIdSummary."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1680,10 +1876,12 @@ export class RecordsApi {
     /**
      * Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
      *
+     * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
      */
     public getCount(
+        xMagdaTenantId: number,
         aspect?: Array<string>,
         aspectQuery?: Array<string>
     ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
@@ -1692,6 +1890,13 @@ export class RecordsApi {
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getCount."
+            );
+        }
+
         if (aspect !== undefined) {
             queryParameters["aspect"] = aspect;
         }
@@ -1699,6 +1904,8 @@ export class RecordsApi {
         if (aspectQuery !== undefined) {
             queryParameters["aspectQuery"] = aspectQuery;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1743,10 +1950,12 @@ export class RecordsApi {
     /**
      * Get a list tokens for paging through the records
      *
+     * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param limit The size of each page to get tokens for.
      */
     public getPageTokens(
+        xMagdaTenantId: number,
         aspect?: Array<string>,
         limit?: number
     ): Promise<{ response: http.IncomingMessage; body: Array<string> }> {
@@ -1755,6 +1964,13 @@ export class RecordsApi {
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
 
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getPageTokens."
+            );
+        }
+
         if (aspect !== undefined) {
             queryParameters["aspect"] = aspect;
         }
@@ -1762,6 +1978,8 @@ export class RecordsApi {
         if (limit !== undefined) {
             queryParameters["limit"] = limit;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         let useFormData = false;
 
@@ -1806,11 +2024,13 @@ export class RecordsApi {
     /**
      * Modify a record by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+     * @param xMagdaTenantId 0
      * @param id ID of the aspect to be saved.
      * @param recordPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
      */
     public patchById(
+        xMagdaTenantId: number,
         id: string,
         recordPatch: Array<Operation>,
         xMagdaSession: string
@@ -1821,6 +2041,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -1842,6 +2069,8 @@ export class RecordsApi {
                 "Required parameter xMagdaSession was null or undefined when calling patchById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -1889,11 +2118,13 @@ export class RecordsApi {
     /**
      * Modify a record by ID
      * Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.
+     * @param xMagdaTenantId 0
      * @param id ID of the record to be fetched.
      * @param record The record to save.
      * @param xMagdaSession Magda internal session id
      */
     public putById(
+        xMagdaTenantId: number,
         id: string,
         record: Record,
         xMagdaSession: string
@@ -1904,6 +2135,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putById."
+            );
+        }
 
         // verify required parameter 'id' is not null or undefined
         if (id === null || id === undefined) {
@@ -1925,6 +2163,8 @@ export class RecordsApi {
                 "Required parameter xMagdaSession was null or undefined when calling putById."
             );
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 
@@ -1971,11 +2211,13 @@ export class RecordsApi {
     /**
      * Trim by source tag
      * Trims records with the provided source that DON&#39;T have the supplied source tag
+     * @param xMagdaTenantId 0
      * @param sourceTagToPreserve Source tag of the records to PRESERVE.
      * @param sourceId Source id of the records to delete.
      * @param xMagdaSession Magda internal session id
      */
     public trimBySourceTag(
+        xMagdaTenantId: number,
         sourceTagToPreserve: string,
         sourceId: string,
         xMagdaSession: string
@@ -1984,6 +2226,13 @@ export class RecordsApi {
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling trimBySourceTag."
+            );
+        }
 
         // verify required parameter 'sourceTagToPreserve' is not null or undefined
         if (sourceTagToPreserve === null || sourceTagToPreserve === undefined) {
@@ -2013,6 +2262,8 @@ export class RecordsApi {
         if (sourceId !== undefined) {
             queryParameters["sourceId"] = sourceId;
         }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
 

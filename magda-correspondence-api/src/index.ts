@@ -3,7 +3,7 @@ import * as yargs from "yargs";
 import * as path from "path";
 
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
-
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 import createApiRouter from "./createApiRouter";
 import { NodeMailerSMTPMailer } from "./SMTPMailer";
 import ContentApiDirMapper from "./ContentApiDirMapper";
@@ -89,6 +89,12 @@ const argv = yargs
             "The user id to use when making authenticated requests to the registry",
         type: "string",
         default: process.env.USER_ID || process.env.npm_package_config_userId
+    })
+    .option("tenantId", {
+        describe: "The tenant id when making requests to the registry",
+        type: "number",
+        // TODO: Check if this is OK in multi-tenant mode.
+        default: MAGDA_ADMIN_PORTAL_ID
     }).argv;
 
 const app = express();
@@ -125,7 +131,10 @@ const templateRender = new EmailTemplateRender(contentDirMapper);
 app.use(
     "/v0",
     createApiRouter({
-        registry: new RegistryClient({ baseUrl: argv.registryUrl }),
+        registry: new RegistryClient({
+            baseUrl: argv.registryUrl,
+            tenantId: argv.tenantId
+        }),
         templateRender,
         defaultRecipient: argv.defaultRecipient,
         externalUrl: argv.externalUrl,

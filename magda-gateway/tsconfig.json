@@ -8,6 +8,9 @@
             ],
             "@magda/typescript-common/dist/*": [
                 "../node_modules/@magda/typescript-common/src/*"
+            ],
+            "@magda/tenant-api/dist/*": [
+                "../node_modules/@magda/tenant-api/src/*"
             ]
         }
     }

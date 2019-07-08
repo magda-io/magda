@@ -7,6 +7,7 @@ import request from "@magda/typescript-common/dist/request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 import coerceJson from "@magda/typescript-common/dist/coerceJson";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -293,12 +294,14 @@ app.use("/robots.txt", (_, res) => {
     res.status(200).send(robotsTxt);
 });
 
+// TODO: Use proper tenant id in multi-tenant mode.
 app.use(
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
-            maxRetries: 0
+            maxRetries: 0,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         })
     })
 );

@@ -22,6 +22,8 @@ describe("JsonTransformer", () => {
         nock.cleanAll();
     });
 
+    const TENANT_ID_1 = 1;
+
     function setupCrawlTest(
         config: JsonConnectorConfig,
         datasetAspectBuilders: AspectBuilder[] = undefined,
@@ -44,7 +46,8 @@ describe("JsonTransformer", () => {
             datasetAspectBuilders,
             distributionAspectBuilders,
             organizationAspectBuilders,
-            libraries
+            libraries,
+            tenantId: TENANT_ID_1
         });
 
         const registryScope = nock("http://example.com").log(console.log);
@@ -54,7 +57,8 @@ describe("JsonTransformer", () => {
             baseUrl: "http://example.com",
             jwtSecret: "squirrel",
             userId: "1",
-            maxRetries: 0
+            maxRetries: 0,
+            tenantId: TENANT_ID_1
         });
 
         const connector = new JsonConnector({

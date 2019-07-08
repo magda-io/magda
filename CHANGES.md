@@ -1,12 +1,25 @@
 ## 0.0.56
 
+Add multi-tenant support. Deployed as single tenant by default.
+
+Registry:
+
+-   Changed database schema.
+-   Provide services based on Tenant IDs.
+
+Gateway:
+
+-   Add tenant ID header to client requests.
+
 Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
+-   Add tenant specific search.
 
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
+-   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 
 Registry:

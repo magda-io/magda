@@ -45,7 +45,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
         baseUrl: registryUrl,
         jwtSecret: secret,
         userId: "1",
-        maxRetries: 0
+        maxRetries: 0,
+        tenantId: 1
     });
     let registryScope: nock.Scope;
     let clients: { [s: string]: Client[] };
@@ -263,8 +264,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                         success === "success"
                             ? "active"
                             : downloadUnknown || accessUnknown
-                                ? "unknown"
-                                : "broken";
+                            ? "unknown"
+                            : "broken";
 
                     registryScope
                         .put(

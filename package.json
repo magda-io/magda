@@ -86,6 +86,6 @@
     }
   },
   "dependencies": {
-    "@gov.au/pancake-sass": "^2.3.4"
+    "@gov.au/pancake-sass": "^2.3.7"
   }
 }

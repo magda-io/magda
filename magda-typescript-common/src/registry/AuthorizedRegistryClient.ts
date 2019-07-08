@@ -24,17 +24,30 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     protected jwt: string;
 
     constructor(options: AuthorizedRegistryOptions) {
-        super(options);
+        if (options.tenantId === undefined) {
+            throw Error("A tenant id must be defined.");
+        }
 
+        if (options.userId === undefined) {
+            throw Error("A user id must be defined.");
+        }
+
+        if (options.jwtSecret === undefined) {
+            throw Error("Some jwt secret must be defined.");
+        }
+
+        super(options);
         this.options = options;
         this.jwt = buildJwt(options.jwtSecret, options.userId);
     }
 
     putAspectDefinition(
-        aspectDefinition: AspectDefinition
+        aspectDefinition: AspectDefinition,
+        tenantId: number = this.tenantId
     ): Promise<AspectDefinition | Error> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
+                tenantId,
                 encodeURIComponent(aspectDefinition.id),
                 aspectDefinition,
                 this.jwt
@@ -121,19 +134,21 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         }
                     }
                 );
-        return <any>retry(
-            operation,
-            this.secondsBetweenRetries,
-            this.maxRetries,
-            (e, retriesLeft) =>
-                console.log(
-                    formatServiceError(
-                        `Failed to GET hook ${hookId}`,
-                        e,
-                        retriesLeft
+        return <any>(
+            retry(
+                operation,
+                this.secondsBetweenRetries,
+                this.maxRetries,
+                (e, retriesLeft) =>
+                    console.log(
+                        formatServiceError(
+                            `Failed to GET hook ${hookId}`,
+                            e,
+                            retriesLeft
+                        )
                     )
-                )
-        ).catch(createServiceError);
+            ).catch(createServiceError)
+        );
     }
 
     getHooks(): Promise<WebHook[] | Error> {
@@ -181,9 +196,13 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(createServiceError);
     }
 
-    putRecord(record: Record): Promise<Record | Error> {
+    putRecord(
+        record: Record,
+        tenantId: number = this.tenantId
+    ): Promise<Record | Error> {
         const operation = () =>
             this.recordsApi.putById(
+                tenantId,
                 encodeURIComponent(record.id),
                 record,
                 this.jwt
@@ -210,14 +229,16 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     putRecordAspect(
         recordId: string,
         aspectId: string,
-        aspect: any
+        aspect: any,
+        tenantId: number = this.tenantId
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.putById(
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
-                this.jwt
+                this.jwt,
+                tenantId
             );
         return retry(
             operation,
@@ -239,14 +260,16 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     patchRecordAspect(
         recordId: string,
         aspectId: string,
-        aspectPatch: Operation[]
+        aspectPatch: Operation[],
+        tenantId: number = this.tenantId
     ): Promise<Record | Error> {
         const operation = () =>
             this.recordAspectsApi.patchById(
                 encodeURIComponent(recordId),
                 aspectId,
                 aspectPatch,
-                this.jwt
+                this.jwt,
+                tenantId
             );
         return retry(
             operation,
@@ -267,11 +290,17 @@ export default class AuthorizedRegistryClient extends RegistryClient {
 
     deleteBySource(
         sourceTagToPreserve: string,
-        sourceId: string
+        sourceId: string,
+        tenantId: number = this.tenantId
     ): Promise<MultipleDeleteResult | "Processing" | Error> {
         const operation = () =>
             this.recordsApi
-                .trimBySourceTag(sourceTagToPreserve, sourceId, this.jwt)
+                .trimBySourceTag(
+                    tenantId,
+                    sourceTagToPreserve,
+                    sourceId,
+                    this.jwt
+                )
                 .then(result => {
                     if (result.response.statusCode === 202) {
                         return "Processing" as "Processing";

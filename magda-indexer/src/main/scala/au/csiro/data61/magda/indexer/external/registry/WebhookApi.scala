@@ -11,7 +11,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.model.Registry.{EventType, RegistryConverters, WebHookPayload}
+import au.csiro.data61.magda.model.Registry.{EventType, MAGDA_ADMIN_PORTAL_ID, RegistryConverters, WebHookPayload}
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
@@ -49,8 +49,15 @@ class WebhookApi(indexer: SearchIndexer)(implicit system: ActorSystem, config: C
         entity(as[WebHookPayload]) { payload =>
           val events = payload.events.getOrElse(List())
           val idsToDelete = events.filter(_.eventType == EventType.DeleteRecord)
-            .map(event => event.data.getFields("recordId").head.convertTo[String])
-            .map(DataSet.registryIdToIdentifier)
+            .map(event => {
+              val recordId = event.data.getFields("recordId").head.convertTo[String]
+              // Events created in the old system (single tenant) do not have tenantId field in the data object.
+              // Newly created events always have tenantId field in the data object.
+              val maybeTenantId = event.data.getFields("tenantId")
+              val tenantId = if (maybeTenantId.nonEmpty) maybeTenantId.head.convertTo[BigInt] else MAGDA_ADMIN_PORTAL_ID
+              (recordId, tenantId)
+            })
+            .map( result => DataSet.uniqueEsDocumentId(result._1 ,result._2))
 
           val deleteOp = () => idsToDelete match {
             case Nil  => Future.successful(Unit)

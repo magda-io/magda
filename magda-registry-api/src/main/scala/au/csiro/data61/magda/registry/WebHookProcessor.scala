@@ -62,6 +62,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         // Get records directly modified by these events.
         val directRecords = if (directRecordIds.isEmpty) RecordsPage(hasMore = false, None, List()) else recordPersistence.getByIdsWithAspects(
           session,
+          MAGDA_SYSTEM_ID,
           directRecordIds,
           webHook.config.aspects.getOrElse(List()),
           webHook.config.optionalAspects.getOrElse(List()),
@@ -78,6 +79,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             } else {
               recordPersistence.getRecordsLinkingToRecordIds(
                 session,
+                MAGDA_ADMIN_PORTAL_ID,  // TODO: Not working in multi-tenant mode
                 allRecordIds,
                 directRecords.records.map(_.id),
                 webHook.config.aspects.getOrElse(List()),

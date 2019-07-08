@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 import * as request from "supertest";
 import * as express from "express";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import fakeArgv from "@magda/typescript-common/dist/test/fakeArgv";
 import createApiRouter from "../createApiRouter";
@@ -50,7 +51,8 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 : "http://localhost:8181/",
             registryApiUrl: process.env["REGISTRY_API_URL"]
                 ? process.env["REGISTRY_API_URL"]
-                : "http://localhost:6101/v0"
+                : "http://localhost:6101/v0",
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         });
 
         const app = express();
