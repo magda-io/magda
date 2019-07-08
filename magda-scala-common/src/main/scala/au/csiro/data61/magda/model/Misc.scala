@@ -237,7 +237,11 @@ package misc {
     queryRegion: QueryRegion,
     regionName: Option[String] = None,
     boundingBox: Option[BoundingBox] = None,
-    regionShortName: Option[String] = None)
+    regionShortName: Option[String] = None,
+    STEId: Option[String] = None,
+    SA4Id: Option[String] = None,
+    SA3Id: Option[String] = None,
+    SA2Id: Option[String] = None)
 
   case class Distribution(
     identifier: Option[String] = None,
@@ -425,11 +429,17 @@ package misc {
 
     class RegionFormat(bbFormat: JsonFormat[BoundingBox]) extends JsonFormat[Region] {
       override def write(region: Region): JsValue = JsObject(Map(
-        "regionId" -> region.queryRegion.regionId.toJson,
-        "regionType" -> region.queryRegion.regionType.toJson,
-        "regionName" -> region.regionName.toJson,
-        "regionShortName" -> region.regionShortName.toJson,
-        "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson).filter(x => !x._2.equals(JsNull)))
+          "regionId" -> region.queryRegion.regionId.toJson,
+          "regionType" -> region.queryRegion.regionType.toJson,
+          "regionName" -> region.regionName.toJson,
+          "regionShortName" -> region.regionShortName.toJson,
+          "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson,
+          "STEId" -> region.STEId.toJson,
+          "SA4Id" -> region.SA4Id.toJson,
+          "SA3Id" -> region.SA3Id.toJson,
+          "SA2Id" -> region.SA2Id.toJson
+        ).filter(x => !x._2.equals(JsNull))
+      )
 
       override def read(jsonRaw: JsValue): Region = {
         val json = jsonRaw.asJsObject
@@ -437,13 +447,19 @@ package misc {
         Region(
           QueryRegion(
             regionId = json.getFields("regionId").head.convertTo[String],
-            regionType = json.getFields("regionType").head.convertTo[String]),
-            regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
-            boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
-            regionShortName = json.getFields("regionShortName").headOption.flatMap { shortName => shortName match {
-              case JsNull => None
-              case _ => Some(shortName.convertTo[String])
-            }})
+            regionType = json.getFields("regionType").head.convertTo[String]
+          ),
+          regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
+          boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
+          regionShortName = json.getFields("regionShortName").headOption.flatMap { shortName => shortName match {
+            case JsNull => None
+            case _ => Some(shortName.convertTo[String])
+          }},
+          STEId = json.getFields("STEId").headOption.map(_.convertTo[String]),
+          SA4Id = json.getFields("SA4Id").headOption.map(_.convertTo[String]),
+          SA3Id = json.getFields("SA3Id").headOption.map(_.convertTo[String]),
+          SA2Id = json.getFields("SA2Id").headOption.map(_.convertTo[String])
+        )
       }
     }
 

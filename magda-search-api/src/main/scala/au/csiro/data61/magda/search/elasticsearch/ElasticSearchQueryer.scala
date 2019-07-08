@@ -560,23 +560,53 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   override def searchRegions(
     query: Option[String],
+    regionType: Option[String],
+    STEId: Option[String],
+    SA4Id: Option[String],
+    SA3Id: Option[String],
+    SA2Id: Option[String],
     start: Long,
     limit: Int): Future[RegionSearchResult] = {
+
+    val otherFilters = (regionType.map(matchQuery("regionType", _)).toList ++
+      STEId.map(matchQuery("STEId", _)).toList ++
+      SA4Id.map(matchQuery("SA4Id", _)).toList ++
+      SA3Id.map(matchQuery("SA3Id", _)).toList ++
+      SA2Id.map(matchQuery("SA2Id", _)).toList)
+
+    val queryConditions:Seq[QueryDefinition] = query match {
+      case Some(queryString) =>
+        boolQuery().should(
+          matchPhrasePrefixQuery(
+            "regionShortName",
+            queryString).boost(2),
+          matchPhrasePrefixQuery(
+            "regionName",
+            queryString)
+        ) :: otherFilters
+      case None => otherFilters
+    }
+
+    boolQuery().should(
+        matchPhrasePrefixQuery(
+          "regionShortName",
+          query.getOrElse("*")).boost(2),
+        matchPhrasePrefixQuery(
+          "regionName",
+          query.getOrElse("*"))
+    ) :: otherFilters
+
+    val maxLimit = 1000
+
     clientFuture.flatMap { client =>
       client
         .execute(
           ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
             query {
-              boolQuery().should(
-                matchPhrasePrefixQuery(
-                "regionShortName",
-                query.getOrElse("*")).boost(2),
-                matchPhrasePrefixQuery(
-                  "regionName",
-                  query.getOrElse("*")))
+              boolQuery().must(queryConditions)
             }
             start start.toInt
-            limit limit
+            limit (if(limit>maxLimit) maxLimit else limit)
             sortBy (fieldSort("order") order SortOrder.ASC,
               scoreSort order SortOrder.DESC)
               sourceExclude "geometry")
