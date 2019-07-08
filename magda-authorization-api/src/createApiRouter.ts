@@ -15,6 +15,7 @@ import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import { AuthorizedRegistryOptions } from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import getUsersAllowedOperationOnDataset from "./getUsersAllowedOperationOnDataset";
@@ -24,6 +25,7 @@ export interface ApiRouterOptions {
     registryApiUrl: string;
     opaUrl: string;
     jwtSecret: string;
+    tenantId: number;
 }
 
 /**
@@ -218,11 +220,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const datasetId = req.query.datasetId;
                 if (datasetId) {
                     // --- load dataset info from registry
-                    const registryClient = new Registry({
+                    const registryOptions: AuthorizedRegistryOptions = {
                         baseUrl: options.registryApiUrl,
                         jwtSecret: options.jwtSecret,
-                        userId: (req as any).userId
-                    });
+                        userId: (req as any).userId,
+                        tenantId: options.tenantId
+                    };
+
+                    const registryClient = new Registry(registryOptions);
                     const record: Record = unionToThrowable(
                         await registryClient.getRecord(datasetId, undefined, [
                             "publishing",

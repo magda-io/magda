@@ -15,6 +15,7 @@ export default abstract class JsonTransformer {
     private organizationAspects: CompiledAspects;
     private datasetAspects: CompiledAspects;
     private distributionAspects: CompiledAspects;
+    private tenantId: number;
 
     constructor({
         sourceId,
@@ -229,7 +230,8 @@ export default abstract class JsonTransformer {
             id: id && id.toString(),
             name: name,
             aspects: generatedAspects,
-            sourceTag: undefined
+            sourceTag: undefined,
+            tenantId: this.tenantId
         };
     }
 }
@@ -282,6 +284,7 @@ export interface JsonTransformerOptions {
     distributionAspectBuilders?: AspectBuilder[];
     organizationAspectBuilders?: AspectBuilder[];
     maxConcurrency?: number;
+    tenantId: number;
 }
 
 interface CompiledAspects {

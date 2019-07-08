@@ -6,6 +6,7 @@ export type Options = {
     registryApiUrl: string;
     pullPolicy: string;
     userId: string;
+    tenantId: number;
     interactive?: boolean;
 };
 
@@ -17,6 +18,7 @@ export default function buildConnectorManifest({
     registryApiUrl,
     pullPolicy,
     userId,
+    tenantId,
     interactive = false
 }: Options) {
     const jobName = interactive
@@ -48,6 +50,8 @@ export default function buildConnectorManifest({
                                 "/etc/config/connector.json",
                                 "--registryUrl",
                                 registryApiUrl,
+                                "--tenantId",
+                                tenantId.toString(),
                                 ...(interactive
                                     ? [
                                           "--interactive",

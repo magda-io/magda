@@ -22,6 +22,7 @@ export interface Options {
     pullPolicy: string;
     k8sApi: K8SApi;
     userId: string;
+    tenantId: number;
 }
 
 export default function buildInteractiveConnectorRouter(options: Options) {
@@ -71,6 +72,7 @@ async function createInteractiveJob(
             registryApiUrl: options.registryApiUrl,
             pullPolicy: options.pullPolicy,
             userId: options.userId,
+            tenantId: options.tenantId,
             interactive: true
         })
     );

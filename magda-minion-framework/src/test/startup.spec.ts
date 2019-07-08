@@ -18,6 +18,7 @@ import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "on startup",
@@ -30,6 +31,7 @@ baseSpec(
         jsc.property(
             "should properly crawl existing records if no webhook was found",
             lcAlphaNumStringArbNe,
+            lcAlphaNumStringArbNe,
             jsc.array(jsc.nestring),
             jsc.array(jsc.nestring),
             jsc.array(recordArb),
@@ -38,6 +40,7 @@ baseSpec(
             lcAlphaNumStringArbNe,
             (
                 registryHost,
+                tenantHost,
                 aspects,
                 optionalAspects,
                 records,
@@ -47,9 +50,12 @@ baseSpec(
             ) => {
                 beforeEachProperty();
                 const registryUrl = `http://${registryHost}.com`;
+                const tenantUrl = `http://${tenantHost}.com`;
                 const registryScope = nock(registryUrl);
+                const tenantScope = nock(tenantUrl);
                 registryScope.get(/\/hooks\/.*/).reply(404);
                 registryScope.put(/\/hooks\/.*/).reply(201);
+                tenantScope.get("/tenants").reply(200, []);
 
                 let index = 0;
                 const pages = _.groupBy(records, (element: any) => {
@@ -97,9 +103,11 @@ baseSpec(
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
                         registryUrl,
+                        tenantUrl,
                         jwtSecret,
                         userId,
-                        listenPort: listenPort()
+                        listenPort: listenPort(),
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     }),
                     id: "id",
                     aspects: aspects,
@@ -109,7 +117,8 @@ baseSpec(
                     maxRetries: 0,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(() => Promise.resolve())
+                        .callsFake(() => Promise.resolve()),
+                    tenantId: MAGDA_ADMIN_PORTAL_ID
                 };
 
                 const minionPromise = makePromiseQueryable(minion(options));
@@ -185,8 +194,10 @@ baseSpec(
                         internalUrl: internalUrl,
                         listenPort: port,
                         registryUrl: "",
+                        tenantUrl: "",
                         jwtSecret,
-                        userId
+                        userId,
+                        tenantId: MAGDA_ADMIN_PORTAL_ID
                     }),
                     id: id,
                     aspects: aspects,
@@ -196,7 +207,8 @@ baseSpec(
                     concurrency,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(record => Promise.resolve())
+                        .callsFake(record => Promise.resolve()),
+                    tenantId: MAGDA_ADMIN_PORTAL_ID
                 };
 
                 return minion(options)

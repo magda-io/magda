@@ -2,6 +2,7 @@ import * as yargs from "yargs";
 import * as _ from "lodash";
 
 import buildApp from "./buildApp";
+
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 const coerceJson = (path?: string) => path && require(path);
@@ -238,11 +239,32 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("enableMultiTenants", {
+            describe:
+                "Whether to run in multi-tenant mode. If true, magdaAdminPortalName must refer to a real portal.",
+            type: "boolean",
+            default: false
+        })
+        .option("tenantUrl", {
+            describe: "The base URL of the tenant API.",
+            type: "string",
+            default: "http://localhost:6130/v0"
+        })
+        .option("magdaAdminPortalName", {
+            describe:
+                "Magda admin portal host name. Must not be the same as gateway external URL or any other tenant website URL",
+            type: "string",
+            default: "unknown_portal_host_name"
+        })
+        .option("minReqIntervalInMs", {
+            describe: "Minimal interval in ms to fetch tenants from DB.",
+            type: "number",
+            default: 60000
         }).argv
 );
 
 const app = buildApp(argv as any);
-
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 

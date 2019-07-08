@@ -61,7 +61,8 @@ function recordFormatAspect(
     distribution: Record,
     aspect: FormatAspect
 ): Promise<Record> {
+    const theTenantId = distribution.tenantId;
     return registry
-        .putRecordAspect(distribution.id, "dataset-format", aspect)
+        .putRecordAspect(distribution.id, "dataset-format", aspect, theTenantId)
         .then(unionToThrowable);
 }

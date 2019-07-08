@@ -64,6 +64,12 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe:
+                "The magda tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true
         }).argv
 );
 
@@ -76,7 +82,8 @@ const source = new ProjectOpenData({
 const registry = new Registry({
     baseUrl: argv.registryUrl,
     jwtSecret: argv.jwtSecret,
-    userId: argv.userId
+    userId: argv.userId,
+    tenantId: argv.tenantId
 });
 
 const transformerOptions = {
@@ -86,7 +93,8 @@ const transformerOptions = {
     registryUrl: argv.registryUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    tenantId: argv.tenantId
 };
 
 const transformer = createTransformer(transformerOptions);

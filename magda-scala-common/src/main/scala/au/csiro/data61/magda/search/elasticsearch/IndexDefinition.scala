@@ -1,39 +1,28 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.concurrent.Future
-import scala.math.BigDecimal.double2bigDecimal
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext
-import com.monsanto.labs.mwundo.GeoJson
-import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.mappings.{Analysis, Nulls}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
-import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
-import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, NamedStopTokenFilter, StandardTokenizer, StemmerTokenFilter, StopTokenFilter, TokenFilterDefinition, Tokenizer, UppercaseTokenFilter, WhitespaceTokenizer}
-import com.typesafe.config.Config
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.LinearRing
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.model.misc.BoundingBox
-import au.csiro.data61.magda.model.misc.Format
-import au.csiro.data61.magda.model.misc.Publisher
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.RegionSources
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources}
 import au.csiro.data61.magda.util.MwundoJTSConversions._
-import spray.json._
+import com.monsanto.labs.mwundo.GeoJson
+import com.sksamuel.elastic4s.analyzers._
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.bulk.BulkResponse
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.mappings.FieldDefinition
+import com.typesafe.config.Config
+import org.locationtech.jts.geom._
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import spray.json._
 
-import scala.collection.JavaConverters._
+import scala.concurrent.Future
+import scala.math.BigDecimal.double2bigDecimal
 
 case class IndexDefinition(
   name: String,
@@ -170,6 +159,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
                * */
             keywordField("identifier"),
+            keywordField("tenantId"),
             objectField("contactPoint").fields(keywordField("identifier")),
             dateField("indexed"),
             keywordField("publishingState")

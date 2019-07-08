@@ -73,9 +73,18 @@ spec:
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
-            "--web", "http://web",
+            "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
+            "--tenantUrl", "http://tenant-api/v0",
             "--previewMap", "http://preview-map:6110",
+{{- if .Values.enableMultiTenants }}
+            "--enableMultiTenants", {{ .Values.enableMultiTenants | quote }},
+{{- end }}
+{{- if .Values.global.magdaAdminPortalName }}
+            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote}}
+{{- else if .Values.magdaAdminPortalName }}
+            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
+{{- end }}
         ]
         volumeMounts:
           - name: config

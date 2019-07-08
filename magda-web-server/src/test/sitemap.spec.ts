@@ -20,7 +20,8 @@ describe("sitemap router", () => {
     const registryUrl = "http://registry.example.com";
     const registry = new Registry({
         baseUrl: registryUrl,
-        maxRetries: 0
+        maxRetries: 0,
+        tenantId: 1
     });
 
     let router: express.Router;

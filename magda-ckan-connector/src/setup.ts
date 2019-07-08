@@ -72,6 +72,12 @@ export const argv: any = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe:
+                "The magda tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true
         }).argv
 );
 
@@ -196,7 +202,8 @@ export const transformerOptions = {
     registryUrl: argv.registryUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    tenantId: argv.tenantId
 };
 
 export const transformer: any = createTransformer(transformerOptions);

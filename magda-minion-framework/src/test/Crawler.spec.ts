@@ -14,6 +14,7 @@ import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "Crawler",
@@ -46,15 +47,19 @@ baseSpec(
             beforeEachProperty();
 
             const internalUrl = `http://${domain}.com`;
-            const registryDomain = "example_" + registryDomainCounter;
+            const registryDomain = "registry_" + registryDomainCounter;
+            const tenantDomain = "tenant_" + registryDomainCounter;
             registryDomainCounter++;
             const registryUrl = `http://${registryDomain}.com:80`;
+            const tenantUrl = `http://${tenantDomain}.com:80`;
             const registryScope = nock(registryUrl);
+            const tenantId = MAGDA_ADMIN_PORTAL_ID;
 
             const registry = new Registry({
                 baseUrl: registryUrl,
                 jwtSecret: jwtSecret,
-                userId: userId
+                userId: userId,
+                tenantId: tenantId
             });
 
             let context: any = {
@@ -76,9 +81,11 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl,
                     registryUrl,
+                    tenantUrl,
                     jwtSecret,
                     userId,
-                    listenPort: listenPort()
+                    listenPort: listenPort(),
+                    tenantId: tenantId
                 }),
                 id: "id",
                 aspects: [],
@@ -87,7 +94,8 @@ baseSpec(
                 async,
                 express: expressApp,
                 concurrency: concurrency,
-                onRecordFound: onRecordFound.bind(context)
+                onRecordFound: onRecordFound.bind(context),
+                tenantId: tenantId
             };
 
             registryScope
@@ -146,7 +154,8 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -230,7 +239,8 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         }));
                     return {
                         totalCrawledRecordsNumber,

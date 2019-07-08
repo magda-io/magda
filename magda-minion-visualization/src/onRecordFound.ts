@@ -22,6 +22,8 @@ export default function onRecordFound(
     record: Record,
     registry: Registry
 ): Promise<void> {
+    const theTenantId = record.tenantId;
+
     const { downloadURL, format } = record.aspects["dcat-distribution-strings"];
     if (downloadURL && /csv/i.test(format)) {
         const parsedURL = new URI(downloadURL);
@@ -62,7 +64,8 @@ export default function onRecordFound(
                     await registry.putRecordAspect(
                         record.id,
                         "visualization-info",
-                        visualizationInfo
+                        visualizationInfo,
+                        theTenantId
                     );
                 })
                 .catch(err => {

@@ -2,12 +2,13 @@ package au.csiro.data61.magda.api
 
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{ StatusCodes }
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.api.{ model => apimodel }
+import au.csiro.data61.magda.api.{model => apimodel}
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.search.SearchQueryer
 import com.typesafe.config.Config
 
@@ -62,37 +63,39 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
        *       ]
        *    }
        */
-        pathPrefix("facets") {
+        pathPrefix("facets") {requiresTenantId { tenantId =>
           extractRequest { request =>
             path(Segment / "options") { facetId ⇒
               (get & parameters(
-                'facetQuery?,
+                'facetQuery ?,
                 "start" ? 0,
                 "limit" ? 10,
-                'generalQuery?,
-                'publisher*,
-                'dateFrom?,
-                'dateTo?,
-                'region*,
-                'format*,
-                'publishingState*)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
-                  val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
+                'generalQuery ?,
+                'publisher *,
+                'dateFrom ?,
+                'dateTo ?,
+                'region *,
+                'format *,
+                'publishingState *)) { (facetQuery, start, limit, generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState) =>
+                val query = Query.fromQueryParams(generalQuery, publishers, dateFrom, dateTo, regions, formats, publishingState)
 
-                  FacetType.fromId(facetId) match {
-                    case Some(facetType) ⇒ complete(
-                      searchQueryer.searchFacets(
-                        request.headers.find(_.is("x-magda-session")).map(_.value()),
-                        facetType,
-                        facetQuery,
-                        query,
-                        start,
-                        limit
+                FacetType.fromId(facetId) match {
+                  case Some(facetType) ⇒ complete(
+                    searchQueryer.searchFacets(
+                      request.headers.find(_.is("x-magda-session")).map(_.value()),
+                      facetType,
+                      facetQuery,
+                      query,
+                      start,
+                      limit,
+                      tenantId
                     ))
-                    case None            ⇒ complete(NotFound)
-                  }
+                  case None ⇒ complete(NotFound)
                 }
+              }
             }
           }
+        }
         } ~
         /**
          * @apiGroup Search
@@ -184,8 +187,9 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
          *    }
          *
          */
-          pathPrefix("datasets") {
+          pathPrefix("datasets") { requiresTenantId { tenantId =>
             extractRequest { request =>
+
               (get & parameters(
                 'query ?,
                 "start" ? 0,
@@ -205,8 +209,8 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                     query,
                     start,
                     limit,
-                    facetSize))
-                { result =>
+                    facetSize,
+                    tenantId)) { result =>
                   val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
 
                   pathPrefix("datasets") {
@@ -228,6 +232,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
                 }
               }
             }
+          }
           } ~
           /**
            * @apiGroup Search
@@ -262,17 +267,18 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *       ]
            *    }
            */
-          pathPrefix("organisations") {
+          pathPrefix("organisations") {requiresTenantId { tenantId =>
             (get & parameters(
-              'query?,
+              'query ?,
               "start" ? 0,
               "limit" ? 10
-              )) { (generalQuery, start, limit) ⇒
-              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit)) { result =>
+            )) { (generalQuery, start, limit) ⇒
+              onSuccess(searchQueryer.searchOrganisations(generalQuery, start, limit, tenantId)) { result =>
                 val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
                 complete(status, result)
               }
             }
+          }
           } ~
           /**
            * @apiGroup Search
@@ -314,10 +320,11 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *        "regions": []
            *    }
            */
-          path("regions") {
-            (get & parameters('query?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-              complete(searchQueryer.searchRegions(query, start, limit))
+          path("regions") {requiresTenantId { tenantId =>
+            (get & parameters('query ?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, start, limit, tenantId))
             }
+          }
           } ~
           pathPrefix("status") {
             path("live") { complete("OK") } ~

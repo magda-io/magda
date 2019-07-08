@@ -1,33 +1,17 @@
 package au.csiro.data61.magda.indexer
 
-import au.csiro.data61.magda.registry.{ ApiSpec => BaseRegistryApiSpec, Api => RegistryApi }
-import au.csiro.data61.magda.model.Registry.{ WebHook, WebHookConfig, WebHookAcknowledgement, WebHookAcknowledgementResponse }
-import au.csiro.data61.magda.model.Registry.RegistryConstants
-import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
-import au.csiro.data61.magda.test.util.TestActorSystem
-import akka.actor.ActorSystem
-import akka.stream.Materializer
-import scala.concurrent.ExecutionContext
-import akka.stream.scaladsl.Flow
-import akka.http.scaladsl.Http
-import scala.util.Try
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.HttpMethods
-import au.csiro.data61.magda.client.RegistryExternalInterface
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.client.HttpFetcherImpl
-import java.net.URL
-import akka.http.scaladsl.model.HttpHeader
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import scala.concurrent.Future
-import spray.json._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
+import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import au.csiro.data61.magda.registry.Full
+import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
+import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.registry.{Full, ApiSpec => BaseRegistryApiSpec}
+import au.csiro.data61.magda.test.util.TestActorSystem
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
 class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
   implicit val config = TestActorSystem.config

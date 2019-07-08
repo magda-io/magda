@@ -1,65 +1,26 @@
 package au.csiro.data61.magda.api
 
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoField
-import java.time.temporal.TemporalField
-import java.util.Calendar
-import java.util.GregorianCalendar
-
-import org.scalacheck.Arbitrary.arbString
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
-import org.scalacheck.Shrink
-
-import com.monsanto.labs.mwundo.GeoJson.Coordinate
-import com.monsanto.labs.mwundo.GeoJson.Geometry
-import com.monsanto.labs.mwundo.GeoJson.LineString
-import com.monsanto.labs.mwundo.GeoJson.MultiLineString
-import com.monsanto.labs.mwundo.GeoJson.MultiPoint
-import com.monsanto.labs.mwundo.GeoJson.MultiPolygon
-import com.monsanto.labs.mwundo.GeoJson.Point
-import com.monsanto.labs.mwundo.GeoJson.Polygon
-import org.locationtech.jts.geom.GeometryFactory
+import java.time.temporal.{ChronoField, TemporalField}
+import java.util.{Calendar, GregorianCalendar}
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.misc.BoundingBox
-import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.model.misc.Location
-import au.csiro.data61.magda.model.misc.QueryRegion
-import au.csiro.data61.magda.model.misc.Region
-import au.csiro.data61.magda.model.misc.Agent
+import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
-import au.csiro.data61.magda.test.util.ApiGenerators.innerRegionQueryGen
-import au.csiro.data61.magda.test.util.ApiGenerators.queryGen
-import au.csiro.data61.magda.test.util.Generators.randomCaseGen
-import au.csiro.data61.magda.test.util.ApiGenerators.regionJsonToQueryRegion
-import au.csiro.data61.magda.test.util.ApiGenerators.set
-import au.csiro.data61.magda.test.util.Generators.smallSet
-import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
-import au.csiro.data61.magda.test.util.Generators
-import au.csiro.data61.magda.test.util.Generators.coordGen
-import au.csiro.data61.magda.test.util.Generators.geometryGen
-import au.csiro.data61.magda.test.util.Generators.publisherGen
-import au.csiro.data61.magda.test.util.Generators.regionGen
-import au.csiro.data61.magda.test.util.MagdaMatchers
+import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
+import au.csiro.data61.magda.test.util.Generators.{coordGen, geometryGen, randomCaseGen, regionGen}
+import au.csiro.data61.magda.test.util.{ApiGenerators, Generators, MagdaMatchers}
 import au.csiro.data61.magda.util.MwundoJTSConversions.GeometryConverter
-import au.csiro.data61.magda.test.util.ApiGenerators
-import au.csiro.data61.magda.model.Registry.RegistryConverters
-import au.csiro.data61.magda.search.elasticsearch.Indices
-
-import scala.concurrent.duration.DurationInt
-import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.spatial.{RegionLoader,RegionSource}
-import akka.stream.scaladsl.Source
-import spray.json.JsObject
-
-
-
+import com.monsanto.labs.mwundo.GeoJson._
+import org.locationtech.jts.geom.GeometryFactory
+import org.scalacheck.Arbitrary.{arbString, arbitrary}
+import org.scalacheck.{Gen, Shrink}
 
 
 class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
@@ -85,7 +46,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       it("should return all results") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
               val response = responseAs[SearchResult]
@@ -99,7 +60,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       it("hitCount should reflect all hits in the system, not just what is returned") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -112,7 +73,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       it("should sort results by pure quality") {
         forAll(indexGen) {
           case (indexName, dataSets, routes) ⇒
-            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
               val response = responseAs[SearchResult]
@@ -159,7 +120,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
           forAll(searchKeywordGen) {
             case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
-              Get(s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}""") ~> routes ~> check {
+              Get(s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val response = responseAs[SearchResult]
 
@@ -217,7 +178,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
           forAll(randomCaseAcronymGen) {
             case GenResult(randomCaseAcronym, datasetWithPublisher) =>
-              Get(s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}""") ~> routes ~> check {
+              Get(s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val response = responseAs[SearchResult]
 
@@ -267,6 +228,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
     val qldDataset = DataSet(
         identifier="ds-region-in-query-test-1",
+        tenantId=0,
         title=Some("Wildlife density in rural areas"),
         description=Some("Wildlife density as measured by the state survey"),
         catalog=Some("region-in-query-test-catalog"),
@@ -277,6 +239,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       )
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
+      tenantId=0,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -286,6 +249,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
+      tenantId=0,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in queensland."),
       catalog=Some("region-in-query-test-catalog"),
@@ -302,7 +266,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 3
@@ -312,7 +276,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
@@ -330,6 +294,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
     val saDataset = DataSet(
       identifier="ds-region-in-query-test-1",
+      tenantId=0,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
@@ -339,6 +304,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       publishingState=Some("published"))
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
+      tenantId=0,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -347,6 +313,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       publishingState=Some("published"))
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
+      tenantId=0,
       title=Some("Wildlife density in rural areas south"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in SA."),
       catalog=Some("region-in-query-test-catalog"),
@@ -363,7 +330,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 3
@@ -373,7 +340,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
@@ -382,7 +349,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       }
 
       // Verify that half the name doesn't boost results
-      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 3
@@ -407,6 +374,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
     val alfDataset = DataSet(
       identifier="ds-region-in-query-test-1",
+      tenantId=0,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density as measured by the state survey"),
       catalog=Some("region-in-query-test-catalog"),
@@ -416,6 +384,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       publishingState=Some("published"))
     val nationalDataset1 = DataSet(
       identifier="ds-region-in-query-test-2",
+      tenantId=0,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density."),
       catalog=Some("region-in-query-test-catalog"),
@@ -424,6 +393,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       publishingState=Some("published"))
     val nationalDataset2 = DataSet(
       identifier="ds-region-in-query-test-3",
+      tenantId=0,
       title=Some("Wildlife density in rural areas"),
       description=Some("Wildlife density aggregated from states' measures of wildlife density in Alfredton."),
       catalog=Some("region-in-query-test-catalog"),
@@ -440,7 +410,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       blockUntilExactCount(3, indexName)
 
       // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 3
@@ -450,7 +420,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
 
       }
 
-      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> routes ~> check {
+      Get(s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val response = responseAs[SearchResult]
         response.dataSets.size shouldEqual 2
@@ -491,7 +461,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       forAll(quoteGen) {
         case (dataSets, routes, quote, reverseOrderQuote, sourceDataSet) =>
           whenever(!dataSets.isEmpty && quote.forall(_.toInt >= 32) && !quote.toLowerCase.contains("or") && !quote.toLowerCase.contains("and") && quote.exists(_.isLetterOrDigit)) {
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$quote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -509,7 +479,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
             }
 
             // Just to make sure we're matching on the quote in order, run it backwards.
-            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> routes ~> check {
+            Get(s"""/v0/datasets?query=${encodeForUrl(s""""$reverseOrderQuote"""")}&limit=${dataSets.length}""") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
 
@@ -542,7 +512,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
             val (_, dataSets, routes) = indexTuple
             val (textQuery, query) = queryTuple
 
-            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> routes ~> check {
+            Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
               whenever(response.strategy.get == MatchAll) {
@@ -780,7 +750,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
   }
 
   def doFilterTest(query: String, dataSets: List[DataSet], routes: Route)(test: (SearchResult) => Unit) = {
-    Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> routes ~> check {
+    Get(s"/v0/datasets?${query}&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       val response = responseAs[SearchResult]
 
@@ -821,7 +791,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
           whenever(start >= 0 && start <= dataSets.size && limit >= 0 && limit <= dataSets.size) {
             val sortedDataSets =
 
-              Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> routes ~> check {
+              Get(s"/v0/datasets?query=*&start=${start}&limit=${limit}") ~> addSingleTenantIdHeader ~> routes ~> check {
                 status shouldBe OK
                 val result = responseAs[SearchResult]
                 val sortedDataSets = sortByQuality(dataSets)
@@ -884,7 +854,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         whenever(textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
           !textQuery.toLowerCase.contains("or") && !textQuery.toLowerCase.contains("and")) {
 
-          Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
 
@@ -901,7 +871,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         val (textQuery, query) = queryTuple
         val (_, _, routes) = indexTuple
 
-        Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
+        Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val response = responseAs[SearchResult]
 
@@ -949,7 +919,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
       forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) { (indexTuple, textQuery) =>
         val (_, _, routes) = indexTuple
 
-        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> routes ~> check {
+        Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
         }
       }
@@ -966,7 +936,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
           val (textQuery, _) = queryTuple
           val (_, _, routes) = indexTuple
 
-          Get(s"/v0/datasets?${textQuery}") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
             val response = responseAs[SearchResult]
             whenever(response.hitCount > 0) {

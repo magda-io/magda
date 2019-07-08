@@ -75,6 +75,14 @@ dependencies:
     tags:
       - all
       - opa
+  - name: tenant-api
+    tags:
+      - all
+      - tenant-api
+  - name: tenant-db
+    tags:
+      - all
+      - tenant-db
 
 # Minions
   - name: minion-broken-link

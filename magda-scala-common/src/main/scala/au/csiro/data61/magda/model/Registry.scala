@@ -1,31 +1,53 @@
 package au.csiro.data61.magda.model
 
-import io.swagger.annotations.{ ApiModel, ApiModelProperty }
-import enumeratum.values.{ IntEnum, IntEnumEntry }
-
-import scala.annotation.meta.field
-import spray.json.{ DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat }
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
-import java.time.{ OffsetDateTime, ZoneOffset }
-import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.Temporal.{ ApiDate, PeriodOfTime, Periodicity }
-import spray.json.{ DefaultJsonProtocol, JsArray, JsObject }
-import spray.json.lenses.JsonLenses._
-import spray.json.DefaultJsonProtocol._
-import spray.json._
-import au.csiro.data61.magda.model.misc.{ Protocols => ModelProtocols }
-
-import scala.util.{ Failure, Success, Try }
-import java.time.format.DateTimeFormatter
+import java.time.{OffsetDateTime, ZoneOffset}
 
 import akka.event.LoggingAdapter
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
+import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.util.DateParser
+import enumeratum.values.{IntEnum, IntEnumEntry}
+import io.swagger.annotations.{ApiModel, ApiModelProperty}
+import spray.json.lenses.JsonLenses._
+import spray.json.{DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat, _}
+
+import scala.annotation.meta.field
+import scala.util.{Failure, Success, Try}
 
 object Registry {
-  @ApiModel(description = "A type of aspect in the registry.")
+  /**
+  * == MAGDA_ADMIN_PORTAL_ID and MAGDA_SYSTEM_ID play different roles. ==
+  * 
+  * === 1. Role of MAGDA_ADMIN_PORTAL_ID in single tenant mode===
+  * Tenant IDs are foreign keys in many tables. When migrating the existing DB, all existing entries in table aspects,
+  * records, recordaspects and events must have non-null values in field of tenantId. They are all set to
+  * MAGDA_ADMIN_PORTAL_ID. MAGDA_ADMIN_PORTAL_ID is the tenant id in single tenant deployment (default deployment).
+  * <p/>
+  * === 2. Role of MAGDA_ADMIN_PORTAL_ID in multi-tenant mode ===
+  * It manages tenants only. It creates, enables or disable tenants.
+  * <p/>
+  * === 3. Role of MAGDA_SYSTEM_ID ===
+  * It is not important in single tenant mode but necessary in multi-tenant mode. It is mainly used to perform global
+  * operations. For example, when re-indexing datasets, it will retrieve records and record aspects of all tenants from
+  * DB. Many minions also take this role, e.g. a broken link minion.
+ */
+  val MAGDA_ADMIN_PORTAL_ID: BigInt = 0
+
+  /**
+    * Request with this tenant ID can perform global operations on registry.
+    *
+    * @see [[au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID]]
+    */
+  val MAGDA_SYSTEM_ID: BigInt = -1
+
+  /**
+    * The header name of tenant ID.
+    */
+  val MAGDA_TENANT_ID_HEADER: String = "X-Magda-Tenant-Id"
+
+  @ApiModel(description = "A type of aspect in the registry, unique for a tenant.")
   case class AspectDefinition(
-    @(ApiModelProperty @field)(value = "The unique identifier for the aspect type.", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier for the aspect type.", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the aspect.", required = true) name: String,
 
@@ -51,24 +73,28 @@ object Registry {
     val name: String
   }
 
-  @ApiModel(description = "A record in the registry, usually including data for one or more aspects.")
+  @ApiModel(description = "A record in the registry, usually including data for one or more aspects, unique for a tenant.")
   case class Record(
-    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
     @(ApiModelProperty @field)(value = "The aspects included in this record", required = true, dataType = "object") aspects: Map[String, JsObject],
 
     @(ApiModelProperty @field)(value = "A tag representing the action by the source of this record " +
-      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None) extends RecordType
+      "(e.g. an id for a individual crawl of a data portal).", required = false, allowEmptyValue = true) sourceTag: Option[String] = None,
+
+    @(ApiModelProperty @field)(value = "The identifier of a tenant", required = false) tenantId: Option[BigInt] = None) extends RecordType
 
   @ApiModel(description = "A summary of a record in the registry.  Summaries specify which aspects are available, but do not include data for any aspects.")
   case class RecordSummary(
-    @(ApiModelProperty @field)(value = "The unique identifier of the record", required = true) id: String,
+    @(ApiModelProperty @field)(value = "The identifier of the record", required = true) id: String,
 
     @(ApiModelProperty @field)(value = "The name of the record", required = true) name: String,
 
-    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String]) extends RecordType
+    @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String],
+
+    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = false) tenantId: BigInt) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
@@ -149,7 +175,7 @@ object Registry {
       def read(value: JsValue) = EventType.values.find(e => e.toString == value.asInstanceOf[JsString].value).get
     }
 
-    implicit val recordFormat = jsonFormat4(Record.apply)
+    implicit val recordFormat = jsonFormat5(Record.apply)
     implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
     implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
     implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
@@ -159,7 +185,7 @@ object Registry {
     implicit def qualityRatingAspectFormat = jsonFormat2(QualityRatingAspect.apply)
     implicit val webHookAcknowledgementFormat = jsonFormat3(WebHookAcknowledgement.apply)
     implicit val webHookAcknowledgementResponse = jsonFormat1(WebHookAcknowledgementResponse.apply)
-    implicit val recordSummaryFormat = jsonFormat3(RecordSummary.apply)
+    implicit val recordSummaryFormat = jsonFormat4(RecordSummary.apply)
     implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
 
     implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
@@ -224,7 +250,13 @@ object Registry {
       val source = hit.aspects.getOrElse("source", JsObject())
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
-      val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
+      val publisher: Option[Record] = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?)
+        .map((dataSet: JsObject) => {
+          val theDataSet = JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
+          val record = theDataSet.convertTo[Record]
+          record
+        })
+
       val accessControl = hit.aspects.get("dataset-access-control") match {
         case Some(JsObject(accessControlData)) => Some(AccessControl(
           ownerId = accessControlData.get("ownerId") match {
@@ -245,6 +277,7 @@ object Registry {
         ))
         case _ => None
       }
+
 
       val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -310,6 +343,7 @@ object Registry {
 
       DataSet(
         identifier = hit.id,
+        tenantId = hit.tenantId.get,
         title = dcatStrings.extract[String]('title.?),
         catalog = source.extract[String]('name.?),
         description = getNullableStringField(dcatStrings, "description"),
@@ -339,7 +373,8 @@ object Registry {
     }
 
     private def convertDistribution(distribution: JsObject, hit: Record)(implicit defaultOffset: ZoneOffset): Distribution = {
-      val distributionRecord = distribution.convertTo[Record]
+      val theDistribution = JsObject(distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
+      val distributionRecord: Record = theDistribution.convertTo[Record]
       val dcatStrings = distributionRecord.aspects.getOrElse("dcat-distribution-strings", JsObject())
       val datasetFormatAspect = distributionRecord.aspects.getOrElse("dataset-format", JsObject())
 

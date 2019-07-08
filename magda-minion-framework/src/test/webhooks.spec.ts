@@ -19,6 +19,7 @@ import minion from "../index";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "webhooks",
@@ -101,6 +102,9 @@ baseSpec(
                             const registryDomain = "example";
                             const registryUrl = `http://${registryDomain}.com:80`;
                             const registryScope = nock(registryUrl);
+                            const tenantDomain = "tenant";
+                            const tenantUrl = `http://${tenantDomain}.com:80`;
+                            const tenantScope = nock(tenantUrl);
 
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
@@ -119,9 +123,11 @@ baseSpec(
                                 argv: fakeArgv({
                                     internalUrl,
                                     registryUrl,
+                                    tenantUrl,
                                     jwtSecret,
                                     userId,
-                                    listenPort: listenPort()
+                                    listenPort: listenPort(),
+                                    tenantId: MAGDA_ADMIN_PORTAL_ID
                                 }),
                                 id: "id",
                                 aspects: [],
@@ -144,7 +150,8 @@ baseSpec(
                                         return match.success
                                             ? Promise.resolve()
                                             : Promise.reject(fakeError);
-                                    })
+                                    }),
+                                tenantId: MAGDA_ADMIN_PORTAL_ID
                             };
 
                             registryScope.get(/\/hooks\/.*/).reply(200, {
@@ -159,6 +166,8 @@ baseSpec(
                                 }
                             });
                             registryScope.post(/\/hooks\/.*/).reply(201, {});
+
+                            tenantScope.get("/tenants").reply(200, []);
 
                             return minion(options)
                                 .then(() =>
@@ -217,7 +226,7 @@ baseSpec(
                                                 // The hook should only return 500 if it's failed synchronously.
                                                 .expect(
                                                     async ||
-                                                    batch.overallSuccess
+                                                        batch.overallSuccess
                                                         ? 201
                                                         : 500
                                                 )
