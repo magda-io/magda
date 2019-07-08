@@ -32,7 +32,7 @@ import javax.ws.rs.Path
 import scalikejdbc.DB
 import au.csiro.data61.magda.opa.OpaQueryer
 import au.csiro.data61.magda.directives.AuthDirectives.getJwt
-import au.csiro.data61.magda.registry.directives.Directives.withOpaQuery
+import au.csiro.data61.magda.registry.Directives.withAspectOpaQuery
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -161,7 +161,7 @@ class RecordsServiceRO(
             dereference,
             aspectQueries
         ) =>
-          withOpaQuery(aspects.toSeq ++ optionalAspects.toSeq)(
+          withAspectOpaQuery(aspects.toSeq ++ optionalAspects.toSeq, AuthOperations.read)(
             config,
             system,
             materializer,
@@ -369,7 +369,7 @@ class RecordsServiceRO(
     path("pagetokens") {
       pathEnd {
         parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-          withOpaQuery(aspect.toSeq)(
+          withAspectOpaQuery(aspect.toSeq, AuthOperations.read)(
             config,
             system,
             materializer,
@@ -465,7 +465,7 @@ class RecordsServiceRO(
     path(Segment) { id =>
       parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
         (aspects, optionalAspects, dereference) =>
-          withOpaQuery(aspects.toSeq ++ optionalAspects.toSeq)(
+          withAspectOpaQuery(aspects.toSeq ++ optionalAspects.toSeq, AuthOperations.read)(
             config,
             system,
             materializer,

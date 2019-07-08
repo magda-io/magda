@@ -225,7 +225,7 @@ object Registry {
       val temporalCoverage = hit.aspects.getOrElse("temporal-coverage", JsObject())
       val distributions = hit.aspects.getOrElse("dataset-distributions", JsObject("distributions" -> JsArray()))
       val publisher = hit.aspects.getOrElse("dataset-publisher", JsObject()).extract[JsObject]('publisher.?).map(_.convertTo[Record])
-      val accessControl = hit.aspects.get("dataset-access-control") match {
+      val accessControl = hit.aspects.get("access-control") match {
         case Some(JsObject(accessControlData)) => Some(AccessControl(
           ownerId = accessControlData.get("ownerId") match {
             case Some(JsString(ownerId)) => Some(ownerId)
@@ -395,6 +395,6 @@ object Registry {
       "dataset-format",
       "publishing",
       "spatial-coverage",
-      "dataset-access-control")
+      "access-control")
   }
 }

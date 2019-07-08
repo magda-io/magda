@@ -18,30 +18,36 @@ class RegistryOpaQueryer()(
 
   def queryForAspects(
       jwt: Option[String],
-      aspectIds: Seq[String]
+      aspectIds: Seq[String],
+      operationType: AuthOperations.OperationType
   ): Future[Seq[OpaQueryPair]] = {
     this.queryForAspects(
       aspectIds,
-      (policyId: String) => super.queryPolicy(jwt, policyId + ".view")
+      operationType,
+      (policyId: String) =>
+        super.queryPolicy(jwt, policyId)
     )
   }
 
   def queryForAspectsAsDefaultUser(
-      aspectIds: Seq[String]
+      aspectIds: Seq[String],
+      operationType: AuthOperations.OperationType
   ): Future[Seq[OpaQueryPair]] = {
     this.queryForAspects(
       aspectIds,
+      operationType,
       (policyId: String) => super.queryAsDefaultUser(policyId)
     )
   }
 
   private def queryForAspects(
       aspectIds: Seq[String],
+      operationType: AuthOperations.OperationType,
       fn: String => Future[List[OpaQuery]]
   ): Future[Seq[OpaQueryPair]] = {
     val policyIds: Set[String] = DB readOnly { session =>
       DefaultRecordPersistence
-        .getPolicyIds(session, aspectIds)
+        .getPolicyIds(session, aspectIds, operationType)
     }
 
     val futures = policyIds.toSeq.map(
@@ -51,5 +57,12 @@ class RegistryOpaQueryer()(
     )
 
     Future.sequence(futures)
+  }
+
+  def queryForRecord(
+      jwt: Option[String],
+      operationType: AuthOperations.OperationType
+  ): Future[Boolean] = {
+    super.queryBoolean(jwt, "data.object.registry.record." + operationType.id)
   }
 }

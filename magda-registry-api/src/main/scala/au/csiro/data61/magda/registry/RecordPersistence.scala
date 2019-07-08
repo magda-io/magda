@@ -91,7 +91,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       id: String,
       newRecord: Record,
-      opaQuery: Seq[OpaQueryPair]
+      opaQueryUpdate: Seq[OpaQueryPair]
   ): Try[Record]
 
   def patchRecordById(
@@ -148,6 +148,7 @@ trait RecordPersistence {
   def getPolicyIds(
       implicit session: DBSession,
       aspectIds: Seq[String],
+      operation: AuthOperations.OperationType,
       recordId: Option[String] = None
   ): Set[String]
 }
@@ -309,6 +310,7 @@ object DefaultRecordPersistence
   def getPolicyIds(
       implicit session: DBSession,
       aspectIds: Seq[String],
+      operation: AuthOperations.OperationType,
       recordId: Option[String] = None
   ): Set[String] = {
     val aspectIdStatements =
@@ -319,15 +321,17 @@ object DefaultRecordPersistence
       case None           => SQLSyntax.empty
     }
 
-    sql"""SELECT DISTINCT authpolicy
+    val column = getColumnNameForOperation(operation)
+
+    sql"""SELECT DISTINCT ${column}
       FROM recordaspects 
       WHERE ${SQLSyntax.joinWithAnd(
-      sqls"authpolicy IS NOT NULL",
+      sqls"${column} IS NOT NULL",
       SQLSyntax
         .joinWithOr(aspectIdStatements: _*),
       recordIdClause
     )}"""
-      .map(rs => rs.string("authpolicy"))
+      .map(rs => rs.string(column))
       .list()
       .apply()
       .toSet
@@ -390,7 +394,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       id: String,
       newRecord: Record,
-      opaQuery: Seq[OpaQueryPair]
+      opaQueryUpdate: Seq[OpaQueryPair]
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -402,21 +406,35 @@ object DefaultRecordPersistence
             "The provided ID does not match the record's ID."
           )
         )
-      oldRecordWithoutAspects <- this.getByIdWithAspects(session, id, opaQuery) match {
+      oldRecordWithoutAspects <- this.getByIdWithAspects(
+        session,
+        id,
+        opaQueryUpdate
+      ) match {
         case Some(record) => Success(record)
         // Possibility of a race condition here. The record doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
         case None =>
-          DB.localTx { nested =>
-            createRecord(nested, newRecord).map(_.copy(aspects = Map()))
-          } match {
-            case Success(record) => Success(record)
-            case Failure(e) =>
-              this.getByIdWithAspects(session, id, opaQuery) match {
-                case Some(record) => Success(record)
-                case None         => Failure(e)
+          // Check if record exists without any auth
+          this.getById(session, id) match {
+            case Some(record) =>
+              Failure(
+                new RuntimeException(
+                  "You don't have permission to create this record."
+                )
+              )
+            case None =>
+              DB.localTx { nested =>
+                createRecord(nested, newRecord).map(_.copy(aspects = Map()))
+              } match {
+                case Success(record) => Success(record)
+                case Failure(e) =>
+                  this.getByIdWithAspects(session, id, opaQueryUpdate) match {
+                    case Some(record) => Success(record)
+                    case None         => Failure(e)
+                  }
               }
           }
       }
@@ -427,7 +445,7 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldRecordJson, newRecordJson, false)
       }
-      result <- patchRecordById(session, id, recordPatch, opaQuery)
+      result <- patchRecordById(session, id, recordPatch, opaQueryUpdate)
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
@@ -1002,6 +1020,7 @@ object DefaultRecordPersistence
     val aspectSelectors = aspectIdsToSelectClauses(
       List.concat(aspectIds, optionalAspectIds),
       opaQuery,
+      AuthOperations.read,
       dereferenceDetails
     )
 
@@ -1192,12 +1211,13 @@ object DefaultRecordPersistence
   private def aspectIdsToSelectClauses(
       aspectIds: Iterable[String],
       opaQueries: Seq[OpaQueryPair],
+      operationType: AuthOperations.OperationType,
       dereferenceDetails: Map[String, PropertyWithLink] = Map()
   ) = {
     val opaSql = sqls"""(${SQLSyntax.joinWithOr(opaQueries.map {
       case OpaQueryPair(policyId, queries) =>
         sqls"(${SQLSyntax.joinWithAnd(
-          sqls"RecordAspects.authpolicy = ${policyId}",
+          sqls"RecordAspects.${getColumnNameForOperation(operationType)} = ${policyId}",
           SQLSyntax
             .joinWithOr(opaQueriesToWhereClauseParts(queries): _*)
         )})"
@@ -1320,6 +1340,15 @@ object DefaultRecordPersistence
         throw new Exception(
           "Could not convert query " + unmatched + " to where clause"
         )
+    }
+  }
+
+  private def getColumnNameForOperation(operation: AuthOperations.OperationType) = {
+    operation match {
+      case AuthOperations.read => sqls"authpolicyread"
+      case AuthOperations.update => sqls"authpolicyupdate"
+      case AuthOperations.delete => sqls"authpolicydelete"
+      case _ => throw new Exception("Could not find a column for auth operation " + operation)
     }
   }
 }

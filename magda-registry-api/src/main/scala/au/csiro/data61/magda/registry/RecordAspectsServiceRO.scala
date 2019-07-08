@@ -98,7 +98,7 @@ class RecordAspectsServiceRO(
             val queryer = new RegistryOpaQueryer()
 
             val policyIds = DB readOnly { session =>
-              recordPersistence.getPolicyIds(session, Seq(aspectId), Some(recordId))
+              recordPersistence.getPolicyIds(session, Seq(aspectId), AuthOperations.read, Some(recordId))
             }
 
             if (policyIds.size > 1) {
@@ -108,7 +108,7 @@ class RecordAspectsServiceRO(
             }
 
             val policyId = policyIds.head
-            val policyFuture = queryer.queryPolicy(jwt, policyId + ".view")
+            val policyFuture = queryer.queryPolicy(jwt, policyId)
 
             onSuccess(policyFuture) { opaResult =>
               DB readOnly { session =>

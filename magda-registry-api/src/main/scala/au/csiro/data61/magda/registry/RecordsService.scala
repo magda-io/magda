@@ -32,7 +32,7 @@ import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
 
-import au.csiro.data61.magda.registry.directives.Directives.withOpaQuery
+import au.csiro.data61.magda.registry.Directives._
 import gnieh.diffson._
 
 @Path("/records")
@@ -101,20 +101,38 @@ class RecordsService(
   )
   def deleteById = delete {
     path(Segment) { (recordId: String) =>
-      requireIsAdmin(authClient)(system, config) { _ =>
-        {
-          val result = DB localTx { session =>
-            recordPersistence.deleteRecord(session, recordId) match {
-              case Success(result) => complete(DeleteResult(result))
-              case Failure(exception) =>
-                complete(
-                  StatusCodes.BadRequest,
-                  BadRequest(exception.getMessage)
-                )
+      DB readOnly { session =>
+        recordPersistence.getById(session, recordId) match {
+          case Some(record) =>
+            withRecordOpaQuery(
+              recordId,
+              record.aspects,
+              AuthOperations.delete
+            )(config, system, materializer, ec) { opaQueriesOpt =>
+              opaQueriesOpt match {
+                case Some(opaQueries) =>
+                  val result = DB localTx { session =>
+                    recordPersistence.deleteRecord(session, recordId) match {
+                      case Success(result) => complete(DeleteResult(result))
+                      case Failure(exception) =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          BadRequest(exception.getMessage)
+                        )
+                    }
+                  }
+                  webHookActor ! WebHookActor.Process()
+                  result
+                case None =>
+                  complete(
+                    StatusCodes.NotFound
+                  )
+              }
             }
-          }
-          webHookActor ! WebHookActor.Process()
-          result
+          case None =>
+            complete(
+              StatusCodes.NotFound
+            )
         }
       }
     }
@@ -302,7 +320,10 @@ class RecordsService(
     path(Segment) { (id: String) =>
       {
         entity(as[Record]) { record: Record =>
-          withOpaQuery(record.aspects.keySet.toSeq)(
+          withAspectOpaQuery(
+            record.aspects.keySet.toSeq,
+            AuthOperations.update
+          )(
             config,
             system,
             materializer,
@@ -404,7 +425,7 @@ class RecordsService(
           case _ => None
         }).flatten
 
-        withOpaQuery(aspects)(
+        withAspectOpaQuery(aspects, AuthOperations.update)(
           config,
           system,
           materializer,

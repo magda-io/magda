@@ -1,7 +1,7 @@
-package object.registry.aspect.orgunit
+package object.registry.aspect.partial
 
 test_orgunit_happy {
-    view with input as {
+    orgunit with input as {
         "user": {
             "managingOrgUnitIds": ["1", "2", "3", "4"],
             "permissions": [
@@ -10,7 +10,7 @@ test_orgunit_happy {
         },
         "object": {
             "aspects": {
-                "dataset-access-control": {
+                "access-control": {
                     "orgUnitOwnerId": "3"
                 }
             }
@@ -19,7 +19,7 @@ test_orgunit_happy {
 }
 
 test_orgunit_adhoc {
-    view with input as {
+    orgunit with input as {
         "user": {
             "managingOrgUnitIds": ["1", "2", "3", "4"],
             "permissions": [
@@ -28,7 +28,7 @@ test_orgunit_adhoc {
         },
         "object": {
             "aspects": {
-                "dataset-access-control": {
+                "access-control": {
                     "adhocViewerOrgUnitIds": ["3"]
                 }
             }
@@ -37,7 +37,7 @@ test_orgunit_adhoc {
 }
 
 test_orgunit_wrong_org_unit {
-    not view with input as {
+    not orgunit with input as {
         "user": {
             "managingOrgUnitIds": ["1", "2", "3", "4"],
             "permissions": [
@@ -46,7 +46,7 @@ test_orgunit_wrong_org_unit {
         },
         "object": {
             "aspects": {
-                "dataset-access-control": {
+                "access-control": {
                     "orgUnitOwnerId": "5"
                 }
             }
@@ -55,7 +55,7 @@ test_orgunit_wrong_org_unit {
 }
 
 test_orgunit_no_access_control {
-    not view with input as {
+    not orgunit with input as {
         "user": {
             "managingOrgUnitIds": ["1", "2", "3", "4"],
             "permissions": [
@@ -70,7 +70,7 @@ test_orgunit_no_access_control {
 }
 
 test_orgunit_user_not_in_org_tree {
-    not view with input as {
+    not orgunit with input as {
         "user": {
             "managingOrgUnitIds": [],
             "permissions": [
@@ -79,7 +79,7 @@ test_orgunit_user_not_in_org_tree {
         },
         "object": {
             "aspects": {
-                "dataset-access-control": {
+                "access-control": {
                     "orgUnitOwnerId": "5"
                 }
             }

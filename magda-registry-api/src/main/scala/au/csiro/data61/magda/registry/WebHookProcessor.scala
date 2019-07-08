@@ -98,7 +98,8 @@ class WebHookProcessor(
           val optionalAspects =
             webHook.config.optionalAspects.getOrElse(List())
           lazy val opaQueriesFuture = opaQueryer.queryForAspectsAsDefaultUser(
-            aspects ++ optionalAspects
+            aspects ++ optionalAspects,
+            AuthOperations.read
           )
 
           // Get records directly modified by these events.
