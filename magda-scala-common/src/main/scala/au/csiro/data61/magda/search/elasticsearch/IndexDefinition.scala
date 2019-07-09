@@ -646,9 +646,9 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     BoundingBox(
       indexedEnvelope.getMaxY,
-      indexedEnvelope.getMinX,
+      indexedEnvelope.getMaxX,
       indexedEnvelope.getMinY,
-      indexedEnvelope.getMaxX
+      indexedEnvelope.getMinX
     )
   }
 }

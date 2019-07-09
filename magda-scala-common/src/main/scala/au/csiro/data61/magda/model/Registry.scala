@@ -297,7 +297,27 @@ object Registry {
         case (start, end)                           => Some(PeriodOfTime(Some(start), Some(end)))
       }
 
-      val spatialData = Try(dcatStrings.extract[String]('spatial.?).map(Location(_))) match {
+      val spatialData = Try{
+        hit.aspects.get("spatial-coverage") match {
+          case Some(JsObject(spatialCoverage)) =>
+            spatialCoverage.get("bbox") match {
+              case Some(bbox: JsArray) =>
+                if(bbox.elements.size != 4) {
+                  None
+                } else {
+                  Some(
+                    BoundingBox(
+                      bbox.elements(3).convertTo[Double],
+                      bbox.elements(2).convertTo[Double],
+                      bbox.elements(0).convertTo[Double],
+                      bbox.elements(1).convertTo[Double]
+                    )
+                  ).map(Location(_))
+                }
+              case _ => dcatStrings.extract[String]('spatial.?).map(Location(_))
+            }
+        }
+      } match {
         case Success(location) => location
         case Failure(e) =>
           if(logger.isDefined) {

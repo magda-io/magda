@@ -152,6 +152,10 @@ package misc {
       new Location(Some(text), processedGeoJson)
     }
 
+    def apply(bbox:BoundingBox): Location = {
+      Location.applySanitised(bbox.toString, fromBoundingBox(Seq(bbox)))
+    }
+
     def apply(stringWithNewLines: String): Location = {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
