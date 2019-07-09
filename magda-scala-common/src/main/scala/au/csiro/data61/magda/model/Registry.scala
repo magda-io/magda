@@ -392,7 +392,7 @@ object Registry {
         case (start, end)                           => Some(PeriodOfTime(Some(start), Some(end)))
       }
 
-      val spatialData = Try {
+      val spatialData = (Try {
         hit.aspects.get("spatial-coverage") match {
           case Some(JsObject(spatialCoverage)) =>
             spatialCoverage.get("bbox") match {
@@ -409,17 +409,27 @@ object Registry {
                     )
                   ).map(Location(_))
                 }
-              case _ => dcatStrings.extract[String]('spatial.?).map(Location(_))
+              case _ => None
             }
         }
       } match {
         case Success(location) => location
         case Failure(e) =>
-          if (logger.isDefined) {
-            logger.get.error(
-              s"Failed to parse spatial data for dataset ${hit.id}: ${e.getMessage}")
+          if(logger.isDefined) {
+            logger.get.error(s"Failed to covert bounding box to spatial data for dataset ${hit.id}: ${e.getMessage}")
           }
           None
+      }) match {
+        case Some(location) => Some(location)
+        case None =>
+          Try(dcatStrings.extract[String]('spatial.?).map(Location(_))) match {
+            case Success(location) => location
+            case Failure(e) =>
+              if(logger.isDefined) {
+                logger.get.error(s"Failed to parse spatial data for dataset ${hit.id}: ${e.getMessage}")
+              }
+              None
+          }
       }
 
       val publishing = hit.aspects.getOrElse("publishing", JsObject())
