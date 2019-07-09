@@ -441,6 +441,13 @@ package misc {
         ).filter(x => !x._2.equals(JsNull))
       )
 
+      private def convertOptionalStringField(json: JsObject, fieldName: String):Option[String] = {
+        json.getFields(fieldName).headOption.flatMap { fieldValue => fieldValue match {
+          case JsNull => None
+          case _ => Some(fieldValue.convertTo[String])
+        }}
+      }
+
       override def read(jsonRaw: JsValue): Region = {
         val json = jsonRaw.asJsObject
 
@@ -451,14 +458,11 @@ package misc {
           ),
           regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
           boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
-          regionShortName = json.getFields("regionShortName").headOption.flatMap { shortName => shortName match {
-            case JsNull => None
-            case _ => Some(shortName.convertTo[String])
-          }},
-          STEId = json.getFields("STEId").headOption.map(_.convertTo[String]),
-          SA4Id = json.getFields("SA4Id").headOption.map(_.convertTo[String]),
-          SA3Id = json.getFields("SA3Id").headOption.map(_.convertTo[String]),
-          SA2Id = json.getFields("SA2Id").headOption.map(_.convertTo[String])
+          regionShortName = convertOptionalStringField(json, "regionShortName"),
+          STEId = convertOptionalStringField(json, "STEId"),
+          SA4Id = convertOptionalStringField(json, "SA4Id"),
+          SA3Id = convertOptionalStringField(json, "SA3Id"),
+          SA2Id = convertOptionalStringField(json, "SA2Id")
         )
       }
     }

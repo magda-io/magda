@@ -3,16 +3,12 @@ package au.csiro.data61.magda.api
 import java.net.URL
 
 import akka.event.Logging
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
-import akka.testkit.TestKit
-import au.csiro.data61.magda.api.model.{Protocols, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{Protocols, RegionSearchResult}
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
-import au.csiro.data61.magda.test.api.BaseApiSpec
-import au.csiro.data61.magda.test.util.{MagdaElasticSugar, MagdaGeneratorTest, MagdaMatchers, TestActorSystem}
+import au.csiro.data61.magda.test.util.{MagdaElasticSugar, TestActorSystem}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
+import com.sksamuel.elastic4s.http.{ElasticClient}
 import com.typesafe.config.Config
 import org.scalatest.{BeforeAndAfterAll, FunSpecLike, Matchers}
 import spray.json._
@@ -21,7 +17,6 @@ import scala.concurrent.duration._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
 
@@ -56,12 +51,16 @@ class RegionsApiSpec
         case Indices.FormatsIndex =>
           throw new RuntimeException(
             "Why are we here this is the regions test?")
-        case Indices.RegionsIndex => "regions_test"
+        case Indices.RegionsIndex => "regions_test_regions_api_spec"
       }
   }
 
   override def beforeAll {
     super.beforeAll
+
+    deleteIndex(fakeIndices.getIndex(config, Indices.RegionsIndex))
+
+    refreshAll()
 
     client
       .execute(IndexDefinition.regions.definition(fakeIndices, config))
@@ -69,13 +68,14 @@ class RegionsApiSpec
 
     val fakeRegionLoader = new RegionLoader {
       override def setupRegions(): Source[(RegionSource, JsObject), _] =
-        Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
+        Source.fromIterator(() => indexedRegions.toIterator)
     }
 
     logger.info("Setting up regions")
     IndexDefinition
-      .setupRegions(client, fakeRegionLoader, DefaultIndices)
+      .setupRegions(client, fakeRegionLoader, fakeIndices)
       .await(60 seconds)
+    refresh(fakeIndices.getIndex(config, Indices.RegionsIndex))
     logger.info("Finished setting up regions")
   }
 
@@ -85,14 +85,151 @@ class RegionsApiSpec
     deleteIndex(fakeIndices.getIndex(config, Indices.RegionsIndex))
   }
 
-  it("should return SA4 regions with extra id Fields") {
+  it("should return same correct number of regions") {
     Get(s"/v0/regions") ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
 
       response.hitCount shouldEqual indexedRegions.length
-      1+1
+    }
+  }
+
+  it("should return SA4 regions with `STEId` Fields") {
+    Get(s"/v0/regions?type=SA4") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 2
+
+      response.regions.exists { region =>
+        region.STEId.isDefined &&
+        !region.SA4Id.isDefined &&
+        !region.SA3Id.isDefined &&
+        !region.SA2Id.isDefined
+      } shouldBe true
+
+    }
+  }
+
+  it("should return SA3 regions with `STEId` & `SA4Id` Fields") {
+    Get(s"/v0/regions?type=SA3") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 2
+
+      response.regions.exists { region =>
+        region.STEId.isDefined &&
+        region.SA4Id.isDefined &&
+        !region.SA3Id.isDefined &&
+        !region.SA2Id.isDefined
+      } shouldBe true
+
+    }
+  }
+
+  it("should return SA2 regions with `STEId`, `SA4Id` & `SA3Id` Fields") {
+    Get(s"/v0/regions?type=SA2") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 2
+
+      response.regions.exists { region =>
+        region.STEId.isDefined &&
+        region.SA4Id.isDefined &&
+        region.SA3Id.isDefined &&
+        !region.SA2Id.isDefined
+      } shouldBe true
+
+    }
+  }
+
+  it(
+    "should return SA1 regions with `STEId`, `SA4Id`, `SA3Id` & `SA2Id` Fields") {
+    Get(s"/v0/regions?type=SA1") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 2
+
+      response.regions.exists { region =>
+        region.STEId.isDefined &&
+        region.SA4Id.isDefined &&
+        region.SA3Id.isDefined &&
+        region.SA2Id.isDefined
+      } shouldBe true
+
+    }
+  }
+
+  it("should only return Test SA4 2 regions when specify STE region Id 3") {
+    Get(s"/v0/regions?type=SA4&STEId=3") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 1
+
+      response.regions.head.STEId.get shouldEqual "3"
+      response.regions.head.regionName.get shouldEqual "Test SA4 2"
+
+    }
+  }
+
+  it(
+    "should only return Test SA3 2 regions when specify STE region Id 3 & SA4Id 301") {
+    Get(s"/v0/regions?type=SA3&STEId=3&SA4Id=301") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 1
+
+      response.regions.head.STEId.get shouldEqual "3"
+      response.regions.head.SA4Id.get shouldEqual "301"
+      response.regions.head.regionName.get shouldEqual "Test SA3 2"
+
+    }
+  }
+
+  it(
+    "should only return Test SA2 2 regions when specify STE region Id 3 & SA4Id 301 & SA3Id 30101") {
+    Get(s"/v0/regions?type=SA2&STEId=3&SA4Id=301&SA3Id=30101") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 1
+
+      response.regions.head.STEId.get shouldEqual "3"
+      response.regions.head.SA4Id.get shouldEqual "301"
+      response.regions.head.SA3Id.get shouldEqual "30101"
+      response.regions.head.regionName.get shouldEqual "Test SA2 2"
+
+    }
+  }
+
+  it(
+    "should only return Test SA1 2 regions when specify STE region Id 3 & SA4Id 301 & SA3Id 30101 & SA2Id 301011001") {
+    Get(s"/v0/regions?type=SA1&STEId=3&SA4Id=301&SA3Id=30101&SA2Id=301011001") ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 1
+
+      response.regions.head.STEId.get shouldEqual "3"
+      response.regions.head.SA4Id.get shouldEqual "301"
+      response.regions.head.SA3Id.get shouldEqual "30101"
+      response.regions.head.SA2Id.get shouldEqual "301011001"
+      response.regions.head.regionName.get shouldEqual "Test SA1 2"
+
     }
   }
 
@@ -394,7 +531,7 @@ class RegionsApiSpec
         |  "properties": {
         |    "SA2_MAIN11": "101011001",
         |    "SA3_CODE11": "10101",
-        |    "SA3_NAME11": "Test SA2 1",
+        |    "SA2_NAME11": "Test SA2 1",
         |    "SA4_CODE11": "101",
         |    "STE_CODE11": "1"
         |  },
@@ -446,7 +583,7 @@ class RegionsApiSpec
         |  "properties": {
         |    "SA2_MAIN11": "301011001",
         |    "SA3_CODE11": "30101",
-        |    "SA3_NAME11": "Test SA2 2",
+        |    "SA2_NAME11": "Test SA2 2",
         |    "SA4_CODE11": "301",
         |    "STE_CODE11": "3"
         |  },
@@ -483,7 +620,7 @@ class RegionsApiSpec
        "SA1",
        new URL("http://example.com"),
        "SA1_MAIN11",
-       "SA1_MAIN11",
+       "SA1_NAME11",
        None,
        false,
        false,
@@ -500,7 +637,7 @@ class RegionsApiSpec
         |    "SA1_MAIN11": "10101100101",
         |    "SA2_MAIN11": "101011001",
         |    "SA3_CODE11": "10101",
-        |    "SA3_NAME11": "Test SA2 1",
+        |    "SA1_NAME11": "Test SA1 1",
         |    "SA4_CODE11": "101",
         |    "STE_CODE11": "1"
         |  },
@@ -537,7 +674,7 @@ class RegionsApiSpec
        "SA1",
        new URL("http://example.com"),
        "SA1_MAIN11",
-       "SA1_MAIN11",
+       "SA1_NAME11",
        None,
        false,
        false,
@@ -554,7 +691,7 @@ class RegionsApiSpec
         |    "SA1_MAIN11": "30101100101",
         |    "SA2_MAIN11": "301011001",
         |    "SA3_CODE11": "30101",
-        |    "SA3_NAME11": "Test SA2 2",
+        |    "SA1_NAME11": "Test SA1 2",
         |    "SA4_CODE11": "301",
         |    "STE_CODE11": "3"
         |  },

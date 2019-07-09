@@ -46,7 +46,7 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.IllegalArgumentException
 import com.sksamuel.elastic4s.http.search.{Aggregations, FilterAggregationResult, SearchResponse}
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
-import com.sksamuel.elastic4s.searches.queries.matches.MatchNoneQuery
+import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
 
 class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   implicit val config: Config,
@@ -584,17 +584,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             "regionName",
             queryString)
         ) :: otherFilters
-      case None => otherFilters
+      case None => if(otherFilters.size != 0) otherFilters else List(MatchAllQuery())
     }
-
-    boolQuery().should(
-        matchPhrasePrefixQuery(
-          "regionShortName",
-          query.getOrElse("*")).boost(2),
-        matchPhrasePrefixQuery(
-          "regionName",
-          query.getOrElse("*"))
-    ) :: otherFilters
 
     val maxLimit = 1000
 
