@@ -238,10 +238,10 @@ package misc {
     regionName: Option[String] = None,
     boundingBox: Option[BoundingBox] = None,
     regionShortName: Option[String] = None,
-    STEId: Option[String] = None,
-    SA4Id: Option[String] = None,
-    SA3Id: Option[String] = None,
-    SA2Id: Option[String] = None)
+    steId: Option[String] = None,
+    sa4Id: Option[String] = None,
+    sa3Id: Option[String] = None,
+    sa2Id: Option[String] = None)
 
   case class Distribution(
     identifier: Option[String] = None,
@@ -434,10 +434,10 @@ package misc {
           "regionName" -> region.regionName.toJson,
           "regionShortName" -> region.regionShortName.toJson,
           "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson,
-          "STEId" -> region.STEId.toJson,
-          "SA4Id" -> region.SA4Id.toJson,
-          "SA3Id" -> region.SA3Id.toJson,
-          "SA2Id" -> region.SA2Id.toJson
+          "steId" -> region.steId.toJson,
+          "sa4Id" -> region.sa4Id.toJson,
+          "sa3Id" -> region.sa3Id.toJson,
+          "sa2Id" -> region.sa2Id.toJson
         ).filter(x => !x._2.equals(JsNull))
       )
 
@@ -459,10 +459,10 @@ package misc {
           regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
           boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
           regionShortName = convertOptionalStringField(json, "regionShortName"),
-          STEId = convertOptionalStringField(json, "STEId"),
-          SA4Id = convertOptionalStringField(json, "SA4Id"),
-          SA3Id = convertOptionalStringField(json, "SA3Id"),
-          SA2Id = convertOptionalStringField(json, "SA2Id")
+          steId = convertOptionalStringField(json, "steId"),
+          sa4Id = convertOptionalStringField(json, "sa4Id"),
+          sa3Id = convertOptionalStringField(json, "sa3Id"),
+          sa2Id = convertOptionalStringField(json, "sa2Id")
         )
       }
     }

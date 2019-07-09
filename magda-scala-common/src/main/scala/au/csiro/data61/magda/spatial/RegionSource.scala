@@ -17,10 +17,10 @@ case class RegionSource(name: String,
                         order: Int,
                         simplifyToleranceRatio: Double = 0.01,
                         requireSimplify: Boolean = true,
-                        STEIdField: Option[String] = None,
-                        SA4IdField: Option[String] = None,
-                        SA3IdField: Option[String] = None,
-                        SA2IdField: Option[String] = None,
+                        steIdField: Option[String] = None,
+                        sa4IdField: Option[String] = None,
+                        sa3IdField: Option[String] = None,
+                        sa2IdField: Option[String] = None,
                         STEAbbrevField: Option[String] = None)
 
 object RegionSource {
@@ -72,14 +72,14 @@ class RegionSources(config: Config) {
               if (regionSourceConfig.hasPath("requireSimplify"))
                 regionSourceConfig.getBoolean("requireSimplify")
               else true,
-            STEIdField =
-              getOptionalStringConfig("STEIdField", regionSourceConfig),
-            SA4IdField =
-              getOptionalStringConfig("SA4IdField", regionSourceConfig),
-            SA3IdField =
-              getOptionalStringConfig("SA3IdField", regionSourceConfig),
-            SA2IdField =
-              getOptionalStringConfig("SA2IdField", regionSourceConfig),
+            steIdField =
+              getOptionalStringConfig("steIdField", regionSourceConfig),
+            sa4IdField =
+              getOptionalStringConfig("sa4IdField", regionSourceConfig),
+            sa3IdField =
+              getOptionalStringConfig("sa3IdField", regionSourceConfig),
+            sa2IdField =
+              getOptionalStringConfig("sa2IdField", regionSourceConfig),
             STEAbbrevField =
               getOptionalStringConfig("STEAbbrevField", regionSourceConfig)
           )

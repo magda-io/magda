@@ -9,6 +9,28 @@
             "items": {
                 "type": "number"
             }
+        },
+        "spatialDataInputMethod": {
+            "title": "the spatial coverage has been specified by which type of data. Map reserves for future use only",
+            "type": "string",
+            "enum": ["bbox", "region", "map"]
+        },
+        "uiHierarchy": {
+            "type": "object",
+            "properties": {
+                "steId": {
+                    "title": "STE region Id",
+                    "type": "string"
+                },
+                "sa4Id": {
+                    "title": "SA4 region Id",
+                    "type": "string"
+                },
+                "sa3Id": {
+                    "title": "SA4 region Id",
+                    "type": "string"
+                }
+            }
         }
     }
 }

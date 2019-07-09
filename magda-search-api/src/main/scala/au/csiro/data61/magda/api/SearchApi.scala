@@ -315,8 +315,8 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *    }
            */
           path("regions") {
-            (get & parameters('query?, "type"?, "STEId"?, "SA4Id"?, "SA3Id"?, "SA2Id"?, "start" ? 0, "limit" ? 10)) { (query, regionType, STEId, SA4Id, SA3Id, SA2Id, start, limit) ⇒
-              complete(searchQueryer.searchRegions(query, regionType, STEId, SA4Id, SA3Id, SA2Id, start, limit))
+            (get & parameters('query?, "type"?, "steId"?, "sa4Id"?, "sa3Id"?, "sa2Id"?, "start" ? 0, "limit" ? 10)) { (query, regionType, steId, sa4Id, sa3Id, sa2Id, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, regionType, steId, sa4Id, sa3Id, sa2Id, start, limit))
             }
           } ~
           pathPrefix("status") {

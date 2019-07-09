@@ -292,10 +292,10 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("regionId"),
               magdaTextField("regionName"),
               magdaTextField("regionShortName"),
-              keywordField("STEId"),
-              keywordField("SA4Id"),
-              keywordField("SA3Id"),
-              keywordField("SA2Id"),
+              keywordField("steId"),
+              keywordField("sa4Id"),
+              keywordField("sa3Id"),
+              keywordField("sa2Id"),
               textField("regionSearchId")
                 .analyzer("regionSearchIdIndex")
                 .searchAnalyzer("regionSearchIdInput"),
@@ -455,9 +455,9 @@ object IndexDefinition extends DefaultJsonProtocol {
     }
   }
 
-  def getRegionSTEId(jsonRegion: JsObject,
+  def getRegionSteId(jsonRegion: JsObject,
                      regionSource: RegionSource): JsValue = {
-    val id = getOptionalIdFieldValue("STEIdField", jsonRegion, regionSource)
+    val id = getOptionalIdFieldValue("steIdField", jsonRegion, regionSource)
     id match {
       case id: JsString => id
       case _ =>
@@ -583,14 +583,14 @@ object IndexDefinition extends DefaultJsonProtocol {
                   ),
                   "geometry" -> geometry.toJson,
                   "order" -> JsNumber(regionSource.order),
-                  "STEId" -> getRegionSTEId(jsonRegion, regionSource),
-                  "SA4Id" -> getOptionalIdFieldValue("SA4IdField",
+                  "steId" -> getRegionSteId(jsonRegion, regionSource),
+                  "sa4Id" -> getOptionalIdFieldValue("sa4IdField",
                                                      jsonRegion,
                                                      regionSource),
-                  "SA3Id" -> getOptionalIdFieldValue("SA3IdField",
+                  "sa3Id" -> getOptionalIdFieldValue("sa3IdField",
                                                      jsonRegion,
                                                      regionSource),
-                  "SA2Id" -> getOptionalIdFieldValue("SA2IdField",
+                  "sa2Id" -> getOptionalIdFieldValue("sa2IdField",
                                                      jsonRegion,
                                                      regionSource)
                 ).toJson)
