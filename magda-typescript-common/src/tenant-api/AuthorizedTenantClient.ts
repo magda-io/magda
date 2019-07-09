@@ -1,6 +1,6 @@
 require("isomorphic-fetch");
 import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
-import {Tenant} from "../tenant-api/Tenant"
+import { Tenant } from "../tenant-api/Tenant";
 import * as lodash from "lodash";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
@@ -24,11 +24,11 @@ export interface AuthorizedTenantOptions extends TenantOptions {
 export default class AuthorizedTenantClient {
     private jwt: string = null;
     private requestInitOption: RequestInit = null;
-    
+
     protected url: string;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
-    protected defaultHeaders : any = {};
+    protected defaultHeaders: any = {};
 
     constructor({
         urlStr,
@@ -54,20 +54,23 @@ export default class AuthorizedTenantClient {
         };
     }
 
-    private getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit {
+    private getMergeRequestInitOption(
+        extraOptions: RequestInit = null
+    ): RequestInit {
         return lodash.merge({}, this.requestInitOption, extraOptions);
     }
 
     private async get() {
-        const res = await fetch(`${this.url}`+ "/tenants", 
-        this.getMergeRequestInitOption({method: "GET"}))
+        const res = await fetch(
+            `${this.url}` + "/tenants",
+            this.getMergeRequestInitOption({ method: "GET" })
+        );
 
         return <Promise<Tenant[]>>res.json();
     }
 
     getTenants(): Promise<Tenant[] | Error> {
-        const operation = () => () =>
-            this.get();
+        const operation = () => () => this.get();
 
         return <any>retry(
             operation(),
@@ -78,7 +81,7 @@ export default class AuthorizedTenantClient {
                     formatServiceError("Failed to GET tenants.", e, retriesLeft)
                 )
         )
-        .then(result => result)
-        .catch(createServiceError);
+            .then(result => result)
+            .catch(createServiceError);
     }
 }

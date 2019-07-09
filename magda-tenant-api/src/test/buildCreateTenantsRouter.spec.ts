@@ -10,7 +10,10 @@ import mockDatabase from "./mockDatabase";
 import Database from "../Database";
 import mockTenantDataStore from "@magda/typescript-common/dist/test/mockTenantDataStore";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
-import { MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+import {
+    MAGDA_TENANT_ID_HEADER,
+    MAGDA_ADMIN_PORTAL_ID
+} from "@magda/typescript-common/dist/registry/TenantConsts";
 
 describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
     let app: express.Express;
@@ -23,7 +26,7 @@ describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
         app = buildExpressApp();
     };
 
-    beforeEach(beforeEachInner)
+    beforeEach(beforeEachInner);
 
     const afterEachInner = () => {
         nock.cleanAll();
@@ -43,12 +46,12 @@ describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
             isAdmin,
             jwtSecret,
             request(app)
-            .get("/tenants")
-            .set(`${MAGDA_TENANT_ID_HEADER}`, tenantId.toString())
+                .get("/tenants")
+                .set(`${MAGDA_TENANT_ID_HEADER}`, tenantId.toString())
         );
     }
 
-    function addTenant (
+    function addTenant(
         tenantId: number,
         newTenant: any,
         app: express.Application,
@@ -60,9 +63,9 @@ describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
             isAdmin,
             jwtSecret,
             request(app)
-            .post("/tenants")
-            .set(`${MAGDA_TENANT_ID_HEADER}`, tenantId.toString())
-            .send(newTenant)
+                .post("/tenants")
+                .set(`${MAGDA_TENANT_ID_HEADER}`, tenantId.toString())
+                .send(newTenant)
         );
     }
 
@@ -81,11 +84,12 @@ describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
     }
 
     describe("Tenant API", () => {
-        
         it("should return all tenants", async () => {
             const res = await getTenants(MAGDA_ADMIN_PORTAL_ID, app, jwtSecret);
             const actualTenants: Tenant[] = res.body;
-            return expect(actualTenants).to.deep.equal(mockTenantDataStore.getTenants());
+            return expect(actualTenants).to.deep.equal(
+                mockTenantDataStore.getTenants()
+            );
         });
 
         it("should reject get tenants request if tenant ID is incorrect", async () => {
@@ -94,26 +98,38 @@ describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should add a tenant", async () => {
-            const newTenant =  {
-                domainname: 'test.com',
+            const newTenant = {
+                domainname: "test.com",
                 enabled: true
             };
 
-            const res = await addTenant(MAGDA_ADMIN_PORTAL_ID, newTenant, app, jwtSecret);
+            const res = await addTenant(
+                MAGDA_ADMIN_PORTAL_ID,
+                newTenant,
+                app,
+                jwtSecret
+            );
             const actualTenant: Tenant = res.body;
-            expect(actualTenant.id).to.equal(mockTenantDataStore.countTenants() - 1);
-            expect(actualTenant.domainname).to.equal('test.com');
+            expect(actualTenant.id).to.equal(
+                mockTenantDataStore.countTenants() - 1
+            );
+            expect(actualTenant.domainname).to.equal("test.com");
             return expect(actualTenant.enabled).to.equal(true);
-        })
+        });
 
         it("should reject add tenant request if tenant ID is incorrect", async () => {
-            const newTenant =  {
-                domainname: 'test.com',
+            const newTenant = {
+                domainname: "test.com",
                 enabled: true
             };
 
-            const res = await addTenant(nonAdminPortalId, newTenant, app, jwtSecret);
+            const res = await addTenant(
+                nonAdminPortalId,
+                newTenant,
+                app,
+                jwtSecret
+            );
             return expect(res.status).to.equal(400);
-        })
+        });
     });
 });

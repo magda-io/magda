@@ -53,7 +53,7 @@ const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     show: (x: string) => x
 });
 
-const intArb = jsc.integer(48, 57)
+const intArb = jsc.integer(48, 57);
 
 export const recordArb = jsc.record<Record>({
     id: uuidArb,

@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from "react";
 import "./TagInput.scss";
 import VocabularyAutoCompleteInput from "../Editing/VocabularyAutoCompleteInput";
-import dismissIcon from "../../assets/dismiss-white.svg";
+import dismissIconWhite from "../../assets/dismiss-white.svg";
+import dismissIcon from "../../assets/dismiss.svg";
 
 interface SelfManagedTextInputProps {
     className?: string;
@@ -67,13 +68,13 @@ const TagInput: FunctionComponent<TagInputProps> = props => {
                 <button
                     key={idx}
                     className="au-btn tag-item"
+                    ariel-label="Remove"
                     onClick={() => {
-                        debugger;
                         if (typeof props.onChange !== "function") return;
                         props.onChange(value.filter(v => v !== item));
                     }}
                 >
-                    <img src={dismissIcon} />
+                    <img src={dismissIconWhite} />
                     <div className="label">{item}</div>
                 </button>
             ))}
@@ -83,6 +84,7 @@ const TagInput: FunctionComponent<TagInputProps> = props => {
                         className="au-text-input tag-input"
                         onNewTag={onNewTag}
                         placeholder={placeHolderText}
+                        excludeKeywords={value}
                     />
                 ) : (
                     <SelfManagedTextInput
@@ -92,6 +94,16 @@ const TagInput: FunctionComponent<TagInputProps> = props => {
                     />
                 )}
             </div>
+            <button
+                className="au-btn clear-all-button"
+                ariel-label="Remove all selection"
+                onClick={() => {
+                    if (typeof props.onChange !== "function") return;
+                    props.onChange([]);
+                }}
+            >
+                <img src={dismissIcon} />
+            </button>
         </div>
     );
 };

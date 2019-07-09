@@ -10,8 +10,7 @@ const argv = addJwtSecretFromEnvVar(
         .config()
         .help()
         .option("listenPort", {
-            describe:
-                "The TCP/IP port on which the tenant api should listen.",
+            describe: "The TCP/IP port on which the tenant api should listen.",
             type: "number",
             default: 6130
         })
@@ -28,7 +27,8 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
-        }) .option("authApiUrl", {
+        })
+        .option("authApiUrl", {
             describe: "The authorization api URL",
             type: "string"
         }).argv

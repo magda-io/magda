@@ -8,6 +8,7 @@
     padding-left: 28px;
     padding-right: 45px;
     float: left;
+    position: relative;
     .input-container {
         float: left;
     }
@@ -56,5 +57,19 @@
             position: absolute;
             right: 18px;
         }
+    }
+    .clear-all-button {
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        background-color: transparent !important;
+        border: none;
+        width: 24px;
+        height: 24px;
+        padding: 0px !important;
+        opacity: 0.3;
+    }
+    .clear-all-button:hover {
+        opacity: 0.5;
     }
 }

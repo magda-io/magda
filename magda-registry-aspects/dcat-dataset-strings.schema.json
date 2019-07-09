@@ -37,6 +37,10 @@
             "title": "The frequency at which the dataset is published.",
             "type": "string"
         },
+        "accrualPeriodicityRecurrenceRule": {
+            "title": "The recurrence rule that describes the frequency at which the dataset is published. Only used when `accrualPeriodicity`'s value is `custom`",
+            "type": "string"
+        },
         "spatial": {
             "title": "Spatial coverage of the dataset.",
             "type": "string"

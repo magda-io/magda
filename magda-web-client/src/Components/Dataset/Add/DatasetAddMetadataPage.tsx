@@ -58,6 +58,8 @@ import * as codelists from "constants/DatasetConstants";
 import { Map, TileLayer, Rectangle } from "react-leaflet";
 import TagInput from "Components/Common/TagInput";
 
+import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
+
 import "./DatasetAddFilesPage.scss";
 
 import {
@@ -255,7 +257,7 @@ class NewDataset extends React.Component<Prop, State> {
                     <hr />
                     <h3>Contents</h3>
                     <div>
-                        <h4>What keywords best describe this dataset?</h4>
+                        <h4>Which keywords best describe this dataset?</h4>
                         <ToolTip>
                             Keywords are specific words that your dataset
                             contains, and they help people search for specific
@@ -308,12 +310,21 @@ class NewDataset extends React.Component<Prop, State> {
                     </div>
                     <h4>How frequently is the dataset updated?</h4>
                     <div>
-                        <AlwaysEditor
-                            value={dataset.accrualPeriodicity}
-                            onChange={editDataset("accrualPeriodicity")}
-                            editor={codelistEditor(
-                                codelists.accrualPeriodicity
-                            )}
+                        <AccrualPeriodicityInput
+                            accrualPeriodicity={dataset.accrualPeriodicity}
+                            accrualPeriodicityRecurrenceRule={
+                                dataset.accrualPeriodicityRecurrenceRule
+                            }
+                            onAccrualPeriodicityChange={value =>
+                                editDataset("accrualPeriodicity")(
+                                    value ? value : ""
+                                )
+                            }
+                            onAccrualPeriodicityRecurrenceRuleChange={rule => {
+                                editDataset("accrualPeriodicityRecurrenceRule")(
+                                    rule
+                                );
+                            }}
                         />
                     </div>
                     <h4>What time period(s) does the dataset cover?</h4>

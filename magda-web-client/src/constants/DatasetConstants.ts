@@ -511,18 +511,15 @@ export const status = {
 };
 
 export const accrualPeriodicity = {
-    continual: "Continual",
+    continual: "In Real Time",
     hourly: "Every Hour",
     daily: "Every Day",
     weekly: "Every Week",
     fortnightly: "Every Fortnight",
     monthly: "Every Month",
     yearly: "Every Year",
-    quinquennialy: "Every 5 years",
-    decennially: "Every 10 years",
-    centennially: "Every 100 years",
     asNeeded: "As Needed",
-    notUpdated: "Not Updated"
+    custom: "Custom..."
 };
 
 export const accessLevel = {

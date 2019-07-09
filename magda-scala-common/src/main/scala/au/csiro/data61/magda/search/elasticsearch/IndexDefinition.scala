@@ -65,7 +65,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 42,
+    version = 43,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -77,6 +77,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("accrualPeriodicity").fields(
               magdaTextField("text")
             ),
+            keywordField("accrualPeriodicityRecurrenceRule"),
             objectField("temporal").fields(
               objectField("start").fields(
                 dateField("date"),

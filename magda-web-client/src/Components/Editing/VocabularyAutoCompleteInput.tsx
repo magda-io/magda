@@ -16,6 +16,7 @@ interface Props {
 
 interface DefaultProps {
     suggestionSize: number;
+    excludeKeywords: string[];
 }
 
 type PropsWithDefaults = Props &
@@ -30,7 +31,8 @@ class VocabularyAutoCompleteInput extends React.Component<
     StateData
 > {
     static defaultProps: DefaultProps = {
-        suggestionSize: 10
+        suggestionSize: 10,
+        excludeKeywords: []
     };
 
     readonly state = {
@@ -86,6 +88,15 @@ class VocabularyAutoCompleteInput extends React.Component<
             keywords = Array.isArray(keywords) ? keywords : [];
             if (keywords.length > this.props.suggestionSize) {
                 keywords = keywords.slice(0, this.props.suggestionSize);
+            }
+            if (
+                Array.isArray(this.props.excludeKeywords) &&
+                this.props.excludeKeywords.length
+            ) {
+                keywords = keywords.filter(
+                    keyword =>
+                        this.props.excludeKeywords.indexOf(keyword) === -1
+                );
             }
             this.setState(state => ({
                 ...state,

@@ -50,6 +50,7 @@ import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
 import RemoteTextContentBox from "../RemoteTextContentBox";
+import { RRule } from "rrule";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -651,18 +652,25 @@ class RecordHandler extends React.Component {
                                                 updated?
                                             </h4>
                                             <div>
-                                                <ToggleEditor
-                                                    enabled={hasEditPermissions}
-                                                    value={
-                                                        dataset.accrualPeriodicity
-                                                    }
-                                                    onChange={datasetChange(
-                                                        "accrualPeriodicity"
-                                                    )}
-                                                    editor={codelistEditor(
-                                                        codelists.accrualPeriodicity
-                                                    )}
-                                                />
+                                                {(() => {
+                                                    if (
+                                                        !dataset.accrualPeriodicity
+                                                    )
+                                                        return "[NOT SET]";
+                                                    if (
+                                                        dataset.accrualPeriodicity !==
+                                                        "custom"
+                                                    )
+                                                        return dataset.accrualPeriodicity;
+                                                    if (
+                                                        !dataset.accrualPeriodicityRecurrenceRule
+                                                    )
+                                                        return "[NOT SET]";
+                                                    const r = RRule.fromString(
+                                                        dataset.accrualPeriodicityRecurrenceRule
+                                                    );
+                                                    return r.toText();
+                                                })()}
                                             </div>
                                             <h4>
                                                 What time period does the

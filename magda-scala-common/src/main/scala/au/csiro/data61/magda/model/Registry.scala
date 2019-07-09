@@ -352,6 +352,7 @@ object Registry {
         languages = dcatStrings.extract[String]('languages.? / *).toSet,
         publisher = publisher.map(convertPublisher),
         accrualPeriodicity = dcatStrings.extract[String]('accrualPeriodicity.?).map(Periodicity.fromString(_)),
+        accrualPeriodicityRecurrenceRule = dcatStrings.extract[String]('accrualPeriodicityRecurrenceRule.?),
         spatial = spatialData, // TODO: move this to the CKAN Connector
         temporal = temporal,
         themes = dcatStrings.extract[String]('themes.? / *),

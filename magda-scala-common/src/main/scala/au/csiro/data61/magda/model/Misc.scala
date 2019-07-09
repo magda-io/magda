@@ -97,7 +97,8 @@ package misc {
       creation: Option[DcatCreation] = None,
       score: Option[Float],
       publishingState: Option[String] = None,
-      accessControl: Option[AccessControl] = None) {
+      accessControl: Option[AccessControl] = None,
+      accrualPeriodicityRecurrenceRule: Option[String] = None) {
 
     override def toString: String = s"Dataset(identifier = $identifier, tenantId = $tenantId, title=$title)"
 
@@ -486,6 +487,7 @@ package misc {
           "languages" -> dataSet.languages.toJson,
           "publisher" -> dataSet.publisher.toJson,
           "accrualPeriodicity" -> dataSet.accrualPeriodicity.toJson,
+          "accrualPeriodicityRecurrenceRule" -> dataSet.accrualPeriodicityRecurrenceRule.toJson,
           "spatial" -> dataSet.spatial.toJson,
           "temporal" -> dataSet.temporal.toJson,
           "themes" -> dataSet.themes.toJson,
@@ -550,7 +552,8 @@ package misc {
           creation = convertOptionField[DcatCreation]("creation", json),
           score = convertOptionField[Float]("score", json),
           publishingState = convertOptionField[String]("publishingState", json),
-          accessControl = convertOptionField[AccessControl]("accessControl", json)
+          accessControl = convertOptionField[AccessControl]("accessControl", json),
+          accrualPeriodicityRecurrenceRule = convertOptionField[String]("accrualPeriodicityRecurrenceRule", json)
         )
       }
     }

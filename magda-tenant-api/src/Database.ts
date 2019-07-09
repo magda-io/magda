@@ -16,18 +16,14 @@ export default class Database {
     }
 
     async getTenants(): Promise<Tenant[]> {
-        const res = await this.pool
-            .query(`SELECT * FROM tenants`);
+        const res = await this.pool.query(`SELECT * FROM tenants`);
         return res.rows;
     }
 
     async createTenant(tenant: Tenant): Promise<Tenant> {
         const result = await this.pool.query(
-            'INSERT INTO tenants(domainname, enabled) VALUES($1, $2) RETURNING domainname, id, enabled',
-            [
-                tenant.domainname,
-                tenant.enabled
-            ]
+            "INSERT INTO tenants(domainname, enabled) VALUES($1, $2) RETURNING domainname, id, enabled",
+            [tenant.domainname, tenant.enabled]
         );
         const theTenant: Tenant = result.rows[0];
         return theTenant;
