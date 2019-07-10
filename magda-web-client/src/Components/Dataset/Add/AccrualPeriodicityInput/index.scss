@@ -1,0 +1,123 @@
+.accrual-periodicity-input-container {
+    .accrual-periodicity-select {
+        margin-right: 20px;
+    }
+    .custom-recurrence-input {
+        margin-top: 20px;
+        width: 360px;
+        padding-top: 1px;
+        padding-bottom: 33px;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1),
+            0 4px 11px hsla(0, 0%, 0%, 0.1);
+        .custom-recurrence-input-header {
+            width: 100%;
+            border-bottom: solid 1px #cccaca;
+            h1 {
+                margin-left: 25px;
+                margin-top: 15px;
+                margin-bottom: 16px;
+                font-size: 16px;
+                font-weight: 500;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                color: #3c3c3c;
+            }
+        }
+        .repeat-row {
+            margin-top: 23px;
+            padding-left: 25px;
+            .repeat-heading {
+                float: left;
+                font-size: 16px;
+                font-weight: 500;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 38px;
+                letter-spacing: normal;
+                color: #3c3c3c;
+            }
+            .repeat-input {
+                z-index: 2;
+                // --- needs to be on a layer higher than recat-select div
+                position: relative;
+                float: left;
+                width: 60px;
+                height: 38px;
+                border-radius: 8px;
+                background-color: #f4f4f4;
+                border: none;
+                font-size: 16px;
+                font-weight: 500;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                color: #3c3c3c;
+                padding-left: 13px;
+                padding-right: 10px;
+
+                margin-left: 18px;
+                margin-right: 10px;
+            }
+        }
+        .repeat-on-section {
+            padding-left: 25px;
+            margin-top: 25px;
+            .repeat-on-heading {
+                font-size: 16px;
+                font-weight: 500;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                color: #3c3c3c;
+                margin-bottom: 18px;
+            }
+        }
+        .apply-button-row {
+            margin-top: 33px;
+            button {
+                float: right;
+                margin-right: 33px;
+                width: 87px;
+                height: 30px;
+                border-radius: 4px;
+                background-color: #30384d;
+
+                font-size: 15px;
+                font-weight: 500;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                color: #f4f4f4;
+                border: none;
+                padding: 5px 24px 7px 24px;
+            }
+        }
+        .repeat-on-option {
+            border: none;
+            width: 33px;
+            height: 33px;
+            border-radius: 33px;
+            margin-right: 10px;
+            background-color: #f4f4f4;
+            font-size: 16px;
+            font-weight: 500;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            text-align: center;
+            color: #3c3c3c;
+            cursor: pointer;
+        }
+        .repeat-on-option.active {
+            background-color: #30384d;
+            color: #f4f4f4;
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { InputHTMLAttributes } from "react";
 import Autosuggest from "react-autosuggest";
 import { query } from "../../helpers/VocabularyApis";
 import throttle from "lodash/throttle";
@@ -10,30 +10,46 @@ type StateData = {
     suggestions: string[];
 };
 
-type Prop = {
+interface Props {
+    onNewTag: (tag: string) => void;
+}
+
+interface DefaultProps {
     suggestionSize: number;
-    [key: string]: any;
-};
+    excludeKeywords: string[];
+}
+
+type PropsWithDefaults = Props &
+    DefaultProps &
+    InputHTMLAttributes<HTMLInputElement>;
 
 const throttledQuery = throttle(query, 500);
 const debouncedQuery = debounce(query, 500);
 
-class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
+class VocabularyAutoCompleteInput extends React.Component<
+    PropsWithDefaults,
+    StateData
+> {
+    static defaultProps: DefaultProps = {
+        suggestionSize: 10,
+        excludeKeywords: []
+    };
+
+    readonly state = {
+        value: "",
+        suggestions: []
+    };
+
     private currentQuery: string;
-    private inputRef: HTMLInputElement | null = null;
     private key: string = `VocabularyAutoCompleteInput_${Math.random()}`.replace(
         ".",
         ""
     );
 
-    static defaultProps = {
-        suggestionSize: 10
-    };
-
     constructor(props) {
         super(props);
         this.state = {
-            value: this.props.defaultValue ? this.props.defaultValue : "",
+            value: "",
             suggestions: []
         };
         this.currentQuery = "";
@@ -45,6 +61,7 @@ class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
         );
         this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
         this.onChange = this.onChange.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
     }
 
     async onSuggestionsFetchRequested({ value }) {
@@ -72,6 +89,15 @@ class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
             if (keywords.length > this.props.suggestionSize) {
                 keywords = keywords.slice(0, this.props.suggestionSize);
             }
+            if (
+                Array.isArray(this.props.excludeKeywords) &&
+                this.props.excludeKeywords.length
+            ) {
+                keywords = keywords.filter(
+                    keyword =>
+                        this.props.excludeKeywords.indexOf(keyword) === -1
+                );
+            }
             this.setState(state => ({
                 ...state,
                 suggestions: keywords ? keywords : []
@@ -86,83 +112,50 @@ class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
         this.setState(state => ({ ...state, suggestions: [] }));
     }
 
+    onKeyUp(event: KeyboardEvent) {
+        const value = (event.currentTarget as HTMLInputElement).value.trim();
+        if (event.keyCode === 13 && value !== "") {
+            this.setState(state => ({
+                ...state,
+                value: ""
+            }));
+            if (typeof this.props.onNewTag === "function") {
+                this.props.onNewTag(value);
+            }
+        }
+    }
+
     onChange(event, { newValue }) {
         this.setState(state => ({
             ...state,
             value: newValue
         }));
-
-        const { onChange: incomingOnChange } = this.props;
-        if (incomingOnChange) {
-            incomingOnChange(event);
-        }
     }
 
     onSuggestionSelected(event, { suggestionValue, method }) {
-        if (this.inputRef) {
-            this.inputRef.value = suggestionValue;
+        this.setState(state => ({
+            ...state,
+            value: ""
+        }));
+        if (typeof this.props.onNewTag === "function") {
+            this.props.onNewTag(suggestionValue);
         }
-        // --- manually trigger event to trigger action of wrapper components
-        // --- we probably should define a proper interface rather than rely on event
-        if (typeof this.props.onChange === "function") {
-            this.props.onChange({
-                preventDefault: () => {},
-                target: this.inputRef,
-                current: this.inputRef,
-                value: suggestionValue
-            });
-        }
-        setTimeout(() => {
-            if (typeof this.props.onKeyUp === "function") {
-                this.props.onKeyUp({
-                    preventDefault: () => {},
-                    target: this.inputRef,
-                    current: this.inputRef,
-                    keyCode: 13,
-                    which: 13
-                });
-                this.setState(state => ({
-                    ...state,
-                    value: ""
-                }));
-                this.props.onChange({
-                    preventDefault: () => {},
-                    target: this.inputRef,
-                    current: this.inputRef,
-                    value: ""
-                });
-            }
-        }, 1);
     }
 
     render() {
         const {
             className: incomingClassName,
             defaultValue,
+            suggestionSize,
+            onNewTag,
             ...restProps
         } = this.props;
 
         const inputProps = {
             ...restProps,
+            onKeyUp: this.onKeyUp,
             onChange: this.onChange,
             value: this.state.value
-        };
-
-        const renderInputComponent = inputProps => {
-            const { ref: propsRef } = inputProps;
-            // -- we need ref of input as well
-            // -- we will retrieve the ref and share with other components
-            return (
-                <input
-                    {...inputProps}
-                    ref={ref => {
-                        this.inputRef = ref;
-                        if (typeof propsRef === "function") {
-                            propsRef(ref);
-                        }
-                    }}
-                />
-            );
         };
 
         return (
@@ -175,7 +168,6 @@ class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
                 getSuggestionValue={getSuggestionValue}
                 renderSuggestion={renderSuggestion}
                 onSuggestionSelected={this.onSuggestionSelected}
-                renderInputComponent={renderInputComponent}
                 theme={{
                     input: incomingClassName
                         ? `react-autosuggest__input ${incomingClassName}`
@@ -183,7 +175,8 @@ class VocabularyAutoCompleteInput extends React.Component<Prop, StateData> {
                     container: "vocabulary-auto-complete-input",
                     suggestion: "suggestion-item",
                     suggestionsList: "suggestions-list",
-                    suggestionsContainer: "suggestions-container"
+                    suggestionsContainer: "suggestions-container",
+                    suggestionHighlighted: "suggestion-item--highlighted"
                 }}
             />
         );

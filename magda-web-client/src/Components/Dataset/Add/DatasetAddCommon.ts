@@ -67,6 +67,7 @@ type Dataset = {
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     creation_affiliatedOrganisation?: string[];
     creation_sourceSystem?: string;
     creation_mechanism?: string;

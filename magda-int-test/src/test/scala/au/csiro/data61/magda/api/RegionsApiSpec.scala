@@ -8,7 +8,7 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.util.{MagdaElasticSugar, TestActorSystem}
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticClient}
+import com.sksamuel.elastic4s.http.ElasticClient
 import com.typesafe.config.Config
 import org.scalatest.{BeforeAndAfterAll, FunSpecLike, Matchers}
 import spray.json._
@@ -17,8 +17,10 @@ import scala.concurrent.duration._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
 
 class RegionsApiSpec
     extends FunSpecLike
@@ -55,6 +57,10 @@ class RegionsApiSpec
       }
   }
 
+  def addTenantIdHeader: RawHeader = {
+    RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID.toString)
+  }
+
   override def beforeAll {
     super.beforeAll
 
@@ -86,7 +92,7 @@ class RegionsApiSpec
   }
 
   it("should return same correct number of regions") {
-    Get(s"/v0/regions") ~> api.routes ~> check {
+    Get(s"/v0/regions") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -96,7 +102,7 @@ class RegionsApiSpec
   }
 
   it("should return SA4 regions with `steId` Fields") {
-    Get(s"/v0/regions?type=SA4") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA4") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -114,7 +120,7 @@ class RegionsApiSpec
   }
 
   it("should return SA3 regions with `steId` & `sa4Id` Fields") {
-    Get(s"/v0/regions?type=SA3") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA3") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -132,7 +138,7 @@ class RegionsApiSpec
   }
 
   it("should return SA2 regions with `steId`, `sa4Id` & `sa3Id` Fields") {
-    Get(s"/v0/regions?type=SA2") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA2") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -151,7 +157,7 @@ class RegionsApiSpec
 
   it(
     "should return SA1 regions with `steId`, `sa4Id`, `sa3Id` & `sa2Id` Fields") {
-    Get(s"/v0/regions?type=SA1") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA1") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -169,7 +175,7 @@ class RegionsApiSpec
   }
 
   it("should only return Test SA4 2 regions when specify STE region Id 3") {
-    Get(s"/v0/regions?type=SA4&steId=3") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA4&steId=3") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -184,7 +190,7 @@ class RegionsApiSpec
 
   it(
     "should only return Test SA3 2 regions when specify STE region Id 3 & sa4Id 301") {
-    Get(s"/v0/regions?type=SA3&steId=3&sa4Id=301") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA3&steId=3&sa4Id=301") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -200,7 +206,7 @@ class RegionsApiSpec
 
   it(
     "should only return Test SA2 2 regions when specify STE region Id 3 & sa4Id 301 & sa3Id 30101") {
-    Get(s"/v0/regions?type=SA2&steId=3&sa4Id=301&sa3Id=30101") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA2&steId=3&sa4Id=301&sa3Id=30101") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
@@ -217,7 +223,7 @@ class RegionsApiSpec
 
   it(
     "should only return Test SA1 2 regions when specify STE region Id 3 & sa4Id 301 & sa3Id 30101 & sa2Id 301011001") {
-    Get(s"/v0/regions?type=SA1&steId=3&sa4Id=301&sa3Id=30101&sa2Id=301011001") ~> api.routes ~> check {
+    Get(s"/v0/regions?type=SA1&steId=3&sa4Id=301&sa3Id=30101&sa2Id=301011001") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]

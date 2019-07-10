@@ -19,6 +19,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
+import setupTenantMode from "./setupTenantMode";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -69,12 +70,17 @@ type Config = {
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
+    fetchTenantsMinIntervalInMs?: number;
+    tenantUrl?: string;
+    enableMultiTenants?: boolean;
     vanguardWsFedIdpUrl?: string;
     vanguardWsFedRealm?: string;
     vanguardWsFedCertificate?: string;
 };
 
 export default function buildApp(config: Config) {
+    const tenantMode = setupTenantMode(config);
+
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
@@ -181,10 +187,11 @@ export default function buildApp(config: Config) {
         createApiRouter({
             authenticator: authenticator,
             jwtSecret: config.jwtSecret,
-            routes
+            routes,
+            tenantMode
         })
     );
-    app.use("/preview-map", createGenericProxy(config.previewMap));
+    app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
@@ -203,7 +210,7 @@ export default function buildApp(config: Config) {
     }
 
     // Proxy any other URL to magda-web
-    app.use("/", createGenericProxy(config.web));
+    app.use("/", createGenericProxy(config.web, tenantMode));
 
     return app;
 }

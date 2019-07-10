@@ -35,7 +35,6 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
-import VocabularyAutoCompleteInput from "../../Editing/VocabularyAutoCompleteInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
 import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
@@ -55,6 +54,11 @@ import uuidv1 from "uuid/v1";
 import uuidv4 from "uuid/v4";
 
 import * as codelists from "constants/DatasetConstants";
+
+import { Map, TileLayer, Rectangle } from "react-leaflet";
+import TagInput from "Components/Common/TagInput";
+
+import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 
 import "./DatasetAddFilesPage.scss";
 
@@ -215,16 +219,16 @@ class NewDataset extends React.Component<Prop, State> {
                     <hr />
                     <h3>Title and language</h3>
                     <h4>What is the title of the dataset?</h4>
-                    <p>
+                    <div>
                         <AlwaysEditor
                             value={dataset.title}
                             onChange={editDataset("title")}
                             editor={textEditorEx({ required: true })}
                         />
-                    </p>
+                    </div>
                     <br />
                     <h4>What language(s) is the dataset available in?</h4>
-                    <p>
+                    <div>
                         <ReactSelect
                             className="react-select"
                             isMulti={true}
@@ -249,29 +253,28 @@ class NewDataset extends React.Component<Prop, State> {
                                 value: item
                             }))}
                         />
-                    </p>
+                    </div>
                     <hr />
                     <h3>Contents</h3>
-                    <h4>What keywords best describe this dataset?</h4>
-                    <ToolTip>
-                        Keywords are specific words that your dataset contains,
-                        and they help people search for specific datasets. We
-                        recommend keywords and kept to 10-15 words. We've
-                        identified the top keywords from your document.
-                    </ToolTip>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.keywords}
-                            onChange={editDataset("keywords")}
-                            editor={multiTextEditorEx(
-                                {
-                                    placeholder: "Add a keyword",
-                                    redrawOnEmpty: false
-                                },
-                                VocabularyAutoCompleteInput
-                            )}
-                        />
-                    </p>
+                    <div>
+                        <h4>Which keywords best describe this dataset?</h4>
+                        <ToolTip>
+                            Keywords are specific words that your dataset
+                            contains, and they help people search for specific
+                            datasets. We recommend keywords and kept to 10-15
+                            words. We've identified the top keywords from your
+                            document.
+                        </ToolTip>
+                        <div className="clearfix">
+                            <TagInput
+                                value={dataset.keywords}
+                                onChange={editDataset("keywords")}
+                                placeHolderText="Type in keyword and press ENTER…"
+                                useVocabularyAutoCompleteInput={true}
+                            />
+                        </div>
+                    </div>
+
                     <h4>Which themes does this dataset cover?</h4>
                     <ToolTip>
                         Themes are the topics your dataset covers and they help
@@ -280,73 +283,80 @@ class NewDataset extends React.Component<Prop, State> {
                         identified themes from your document, that are
                         consistent with similar datasets.
                     </ToolTip>
-                    <p>
-                        <AlwaysEditor
+                    <div className="clearfix">
+                        <TagInput
                             value={dataset.themes}
                             onChange={editDataset("themes")}
-                            editor={multiTextEditorEx({
-                                placeholder: "Add a theme"
-                            })}
+                            placeHolderText="Type a theme and press ENTER…"
                         />
-                    </p>
+                    </div>
                     <hr />
                     <h3>Dates and updates</h3>
                     <h4>When was the data first issued?</h4>
-                    <p>
+                    <div>
                         <AlwaysEditor
                             value={dataset.issued}
                             onChange={editDataset("issued")}
                             editor={dateEditor}
                         />
-                    </p>
+                    </div>
                     <h4>When was the dataset most recently modified?</h4>
-                    <p>
+                    <div>
                         <AlwaysEditor
                             value={dataset.modified}
                             onChange={editDataset("modified")}
                             editor={dateEditor}
                         />
-                    </p>
+                    </div>
                     <h4>How frequently is the dataset updated?</h4>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.accrualPeriodicity}
-                            onChange={editDataset("accrualPeriodicity")}
-                            editor={codelistEditor(
-                                codelists.accrualPeriodicity
-                            )}
+                    <div>
+                        <AccrualPeriodicityInput
+                            accrualPeriodicity={dataset.accrualPeriodicity}
+                            accrualPeriodicityRecurrenceRule={
+                                dataset.accrualPeriodicityRecurrenceRule
+                            }
+                            onAccrualPeriodicityChange={value =>
+                                editDataset("accrualPeriodicity")(
+                                    value ? value : ""
+                                )
+                            }
+                            onAccrualPeriodicityRecurrenceRuleChange={rule => {
+                                editDataset("accrualPeriodicityRecurrenceRule")(
+                                    rule
+                                );
+                            }}
                         />
-                    </p>
+                    </div>
                     <h4>What time period(s) does the dataset cover?</h4>
-                    <p>
+                    <div>
                         <AlwaysEditor
                             value={temporalCoverage.intervals}
                             onChange={editTemporalCoverage("intervals")}
                             editor={multiDateIntervalEditor}
                         />
-                    </p>
+                    </div>
                     <hr />
                     <h3>Spatial area</h3>
                     <h4>
                         We've determined that the spatial extent of your data
                         is:
                     </h4>
-                    <p>
+                    <div>
                         <AlwaysEditor
                             value={spatialCoverage.bbox}
                             onChange={editSpatialCoverage("bbox")}
                             editor={bboxEditor}
                         />
-                    </p>
+                    </div>
 
                     <h4>Would you like to show a spatial preview?</h4>
 
-                    <p>
+                    <div>
                         <YesNoToggle yes={!!spatialCoverage.bbox}>
                             <p>Map preview: </p>
                             <BBOXPreview bbox={spatialCoverage.bbox} />
                         </YesNoToggle>
-                    </p>
+                    </div>
                 </div>
             </div>
         );
@@ -858,8 +868,6 @@ class YesNoToggle extends React.Component<any, any> {
         );
     }
 }
-
-import { Map, TileLayer, Rectangle } from "react-leaflet";
 
 function BBOXPreview(props) {
     let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];

@@ -58,6 +58,7 @@
     "react-simplemde-editor": "^4.0.0",
     "retext": "^6.0.1",
     "retext-keywords": "^4.0.2",
+    "rrule": "^2.6.2",
     "source-map-explorer": "^1.7.0",
     "urijs": "^1.19.1"
   },
@@ -73,6 +74,7 @@
     "@types/react": "^16.8.17",
     "@types/react-dates": "^17.1.5",
     "@types/react-select": "^3.0.0",
+    "@types/rrule": "^2.2.9",
     "babel-core": "^6.26.0",
     "browser-detect": "^0.2.22",
     "d3-collection": "^1.0.4",

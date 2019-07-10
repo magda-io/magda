@@ -137,6 +137,8 @@ export type ParsedDistribution = {
 export type ParsedDataset = {
     identifier?: string;
     title: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -490,6 +492,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
         informationSecurity: datasetInfo["informationSecurity"] || {},
-        accessControl
+        accessControl,
+        accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
+        accrualPeriodicityRecurrenceRule:
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
     };
 }

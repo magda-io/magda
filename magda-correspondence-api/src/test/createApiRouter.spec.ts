@@ -20,7 +20,8 @@ const CONTENT_API_URL: string = "https://content-api.example.com";
 const registry: RegistryClient = new RegistryClient({
     baseUrl: REGISTRY_URL,
     maxRetries: 0,
-    secondsBetweenRetries: 0
+    secondsBetweenRetries: 0,
+    tenantId: 1
 });
 
 const contentMapper = new ContentApiDirMapper(

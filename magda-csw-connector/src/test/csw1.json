@@ -11,8 +11,7 @@
                 "id": "connector",
                 "name": "Connector",
                 "type": "csw-distribution",
-                "url":
-                    "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
+                "url": "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
             }
         },
         "id": "dist-connector-IDIDID-0",
@@ -31,8 +30,7 @@
                 "id": "connector",
                 "name": "Connector",
                 "type": "csw-distribution",
-                "url":
-                    "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
+                "url": "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
             }
         },
         "id": "dist-connector-IDIDID-1",
@@ -59,8 +57,7 @@
                 "issued": "2000-01-02",
                 "modified": "2000-01-02",
                 "publisher": "DEPT",
-                "spatial":
-                    "POLYGON((137.5 -29.5, 154.0 -29.5, 154.0 -8.5, 137.5 -8.5, 137.5 -29.5))",
+                "spatial": "POLYGON((137.5 -29.5, 154.0 -29.5, 154.0 -8.5, 137.5 -8.5, 137.5 -29.5))",
                 "temporal": {
                     "end": "2017-09-22",
                     "start": "2003-11-23"
@@ -72,8 +69,7 @@
                 "id": "connector",
                 "name": "Connector",
                 "type": "csw-dataset",
-                "url":
-                    "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
+                "url": "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=IDIDID"
             },
             "temporal-coverage": {
                 "intervals": [

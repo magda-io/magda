@@ -1,5 +1,14 @@
 import * as httpProxy from "http-proxy";
+import * as express from "express";
+
+import { TenantMode } from "./setupTenantMode";
+
 import groupBy = require("lodash/groupBy");
+
+import {
+    MAGDA_TENANT_ID_HEADER,
+    MAGDA_ADMIN_PORTAL_ID
+} from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -16,7 +25,7 @@ const doNotProxyHeaderLookup = groupBy(
     (x: string) => x
 );
 
-export default function createBaseProxy(): httpProxy {
+export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
     const proxy = httpProxy.createProxyServer({
         prependUrl: false,
         changeOrigin: true
@@ -73,6 +82,40 @@ export default function createBaseProxy(): httpProxy {
                 proxyRes.headers[headerKey] = undefined;
             }
         });
+    });
+
+    proxy.on("proxyReq", async function(proxyReq, req, res) {
+        if (tenantMode.multiTenantsMode === true) {
+            const theRequest = <express.Request>req;
+            const domainName = theRequest.hostname.toLowerCase();
+
+            if (domainName === tenantMode.magdaAdminPortalName) {
+                proxyReq.setHeader(
+                    MAGDA_TENANT_ID_HEADER,
+                    MAGDA_ADMIN_PORTAL_ID
+                );
+            } else {
+                const tenant = tenantMode.tenantsLoader.tenantsTable.get(
+                    domainName
+                );
+
+                if (tenant !== undefined) {
+                    proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, tenant.id);
+                } else {
+                    // If await reloadTenants() then set header, an error message will occur:
+                    //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
+                    // So we just let user try again.
+                    // See https://github.com/nodejitsu/node-http-proxy/issues/1328
+                    tenantMode.tenantsLoader.reloadTenants();
+                    res.writeHead(400, { "Content-Type": "text/plain" });
+                    res.end(
+                        `Unable to process ${domainName} right now. Please try again shortly.`
+                    );
+                }
+            }
+        } else {
+            proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
+        }
     });
 
     return proxy;

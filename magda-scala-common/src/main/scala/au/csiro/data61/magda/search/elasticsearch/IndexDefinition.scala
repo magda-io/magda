@@ -1,65 +1,35 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.concurrent.Future
-import scala.math.BigDecimal.double2bigDecimal
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext
-import com.monsanto.labs.mwundo.GeoJson
-import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.mappings.{Analysis, Nulls}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{
-  ElasticClient,
-  RequestFailure,
-  RequestSuccess
-}
-import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
-import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{
-  CustomAnalyzerDefinition,
-  KeywordTokenizer,
-  LowercaseTokenFilter,
-  NamedStopTokenFilter,
-  StandardTokenizer,
-  StemmerTokenFilter,
-  StopTokenFilter,
-  TokenFilterDefinition,
-  Tokenizer,
-  UppercaseTokenFilter,
-  WhitespaceTokenizer
-}
-import com.typesafe.config.Config
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.LinearRing
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.model.misc.BoundingBox
-import au.csiro.data61.magda.model.misc.Format
-import au.csiro.data61.magda.model.misc.Publisher
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.RegionSources
-import au.csiro.data61.magda.spatial.RegionSource
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources, RegionSource}
 import au.csiro.data61.magda.util.MwundoJTSConversions._
-import spray.json._
+import com.monsanto.labs.mwundo.GeoJson
+import com.sksamuel.elastic4s.analyzers._
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.bulk.BulkResponse
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.mappings.FieldDefinition
+import com.typesafe.config.Config
+import org.locationtech.jts.geom._
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import spray.json._
 
-import scala.collection.JavaConverters._
+import scala.concurrent.Future
+import scala.math.BigDecimal.double2bigDecimal
 
 case class IndexDefinition(
-    name: String,
-    version: Int,
-    indicesIndex: Indices.Index,
-    definition: (Indices, Config) => CreateIndexRequest,
-    create: Option[(ElasticClient, Indices, Config) => (
-        Materializer,
-        ActorSystem) => Future[Any]] = None
+  name: String,
+  version: Int,
+  indicesIndex: Indices.Index,
+  definition: (Indices, Config) => CreateIndexRequest,
+  create: Option[(ElasticClient, Indices, Config) => (Materializer, ActorSystem) => Future[Any]] = None
 ) {}
 
 object IndexDefinition extends DefaultJsonProtocol {
@@ -95,178 +65,180 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 42,
+    version = 43,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
-      val baseDefinition =
-        createIndex(indices.getIndex(config, Indices.DataSetsIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.DataSetsIndexType)).fields(
-              objectField("accrualPeriodicity").fields(
-                magdaTextField("text")
+    val baseDefinition =
+      createIndex(indices.getIndex(config, Indices.DataSetsIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(
+          mapping(indices.getType(Indices.DataSetsIndexType)).fields(
+            objectField("accrualPeriodicity").fields(
+              magdaTextField("text")
+            ),
+            keywordField("accrualPeriodicityRecurrenceRule"),
+            objectField("temporal").fields(
+              objectField("start").fields(
+                dateField("date"),
+                textField("text")
               ),
-              objectField("temporal").fields(
-                objectField("start").fields(
-                  dateField("date"),
-                  textField("text")
-                ),
-                objectField("end").fields(
-                  dateField("date"),
-                  textField("text")
-                )
-              ),
-              objectField("publisher").fields(
-                keywordField("identifier"),
-                textField("acronym")
-                  .analyzer("keyword")
-                  .searchAnalyzer("uppercase"),
-                magdaTextField("jurisdiction"),
-                // --- the field used to merge org records by jurisdiction
-                // --- if jurisdiction is not null, its value is jurisdiction + org name
-                // --- if null, its value is org record identifier (thus, avoid merging)
-                textField("aggregation_keywords").analyzer("keyword"),
-                magdaTextField("description"),
-                keywordField("imageUrl"),
-                keywordField("phone"),
-                keywordField("email"),
-                magdaTextField("addrStreet", keywordField("keyword")),
-                magdaTextField("addrSuburb", keywordField("keyword")),
-                magdaTextField("addrState", keywordField("keyword")),
-                keywordField("addrPostCode"),
-                keywordField("addrCountry"),
-                keywordField("website"),
-                magdaTextField(
-                  "name",
-                  keywordField("keyword"),
-                  textField("keyword_lowercase")
-                    .analyzer("quote")
-                    .fielddata(true)
-                )
-              ),
-              nestedField("distributions").fields(
-                keywordField("identifier"),
-                magdaTextField("title"),
-                magdaSynonymTextField("description"),
-                magdaTextField(
-                  "format",
-                  textField("keyword_lowercase")
-                    .analyzer("quote")
-                    .fielddata(true)
-                )
-              ),
-              objectField("spatial").fields(geoshapeField("geoJson")),
+              objectField("end").fields(
+                dateField("date"),
+                textField("text")
+              )
+            ),
+            objectField("publisher").fields(
+              keywordField("identifier"),
+              textField("acronym")
+                .analyzer("keyword")
+                .searchAnalyzer("uppercase"),
+              magdaTextField("jurisdiction"),
+              // --- the field used to merge org records by jurisdiction
+              // --- if jurisdiction is not null, its value is jurisdiction + org name
+              // --- if null, its value is org record identifier (thus, avoid merging)
+              textField("aggregation_keywords").analyzer("keyword"),
+              magdaTextField("description"),
+              keywordField("imageUrl"),
+              keywordField("phone"),
+              keywordField("email"),
+              magdaTextField("addrStreet", keywordField("keyword")),
+              magdaTextField("addrSuburb", keywordField("keyword")),
+              magdaTextField("addrState", keywordField("keyword")),
+              keywordField("addrPostCode"),
+              keywordField("addrCountry"),
+              keywordField("website"),
+              magdaTextField(
+                "name",
+                keywordField("keyword"),
+                textField("keyword_lowercase")
+                  .analyzer("quote")
+                  .fielddata(true)
+              )
+            ),
+            nestedField("distributions").fields(
+              keywordField("identifier"),
               magdaTextField("title"),
               magdaSynonymTextField("description"),
-              magdaTextField("keywords"),
-              magdaSynonymTextField("themes"),
-              doubleField("quality"),
-              booleanField("hasQuality"),
-              keywordField("catalog"),
-              objectField("source").fields(
-                keywordField("id"),
-                magdaTextField("name"),
-                objectField("extras").dynamic(true)
-              ),
-              objectField("creation").fields(
-                booleanField("isInternallyProduced"),
-                magdaTextField("mechanism"),
-                magdaTextField("sourceSystem"),
-                magdaTextField("likelihoodOfRelease"),
-                booleanField("isOpenData"),
-                magdaTextField("affiliatedOrganisation")
-              ),
-              objectField("accessControl").fields(
-                keywordField("ownerId"),
-                keywordField("orgUnitOwnerId"),
-                keywordField("preAuthorisedPermissionIds")
-              ),
-              keywordField("years"),
-              /*
+              magdaTextField(
+                "format",
+                textField("keyword_lowercase")
+                  .analyzer("quote")
+                  .fielddata(true)
+              )
+            ),
+            objectField("spatial").fields(geoshapeField("geoJson")),
+            magdaTextField("title"),
+            magdaSynonymTextField("description"),
+            magdaTextField("keywords"),
+            magdaSynonymTextField("themes"),
+            doubleField("quality"),
+            booleanField("hasQuality"),
+            keywordField("catalog"),
+            objectField("source").fields(
+              keywordField("id"),
+              magdaTextField("name"),
+              objectField("extras").dynamic(true)
+            ),
+            objectField("creation").fields(
+              booleanField("isInternallyProduced"),
+              magdaTextField("mechanism"),
+              magdaTextField("sourceSystem"),
+              magdaTextField("likelihoodOfRelease"),
+              booleanField("isOpenData"),
+              magdaTextField("affiliatedOrganisation")
+            ),
+            objectField("accessControl").fields(
+              keywordField("ownerId"),
+              keywordField("orgUnitOwnerId"),
+              keywordField("preAuthorisedPermissionIds")
+            ),
+            keywordField("years"),
+            /*
                * not sure whether is Elasticsearch or elastic4s
                * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
                * */
-              keywordField("identifier"),
-              objectField("contactPoint").fields(keywordField("identifier")),
-              dateField("indexed"),
-              keywordField("publishingState")
-            )
+            keywordField("identifier"),
+            keywordField("tenantId"),
+            objectField("contactPoint").fields(keywordField("identifier")),
+            dateField("indexed"),
+            keywordField("publishingState")
           )
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter
-            ),
-            /*
+        )
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          /*
             allow quoted query string match a portion of the field content rather than whole field
             the exact form of whole quoted query string still have to be matched exactly in field content
              */
-            CustomAnalyzerDefinition(
-              "quote_partial_match",
-              StandardTokenizer,
-              LowercaseTokenFilter
-            ),
-            CustomAnalyzerDefinition(
-              "uppercase",
-              KeywordTokenizer,
-              UppercaseTokenFilter
-            ),
-            /* Customised from new english analyzer as per:
+          CustomAnalyzerDefinition(
+            "quote_partial_match",
+            StandardTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "uppercase",
+            KeywordTokenizer,
+            UppercaseTokenFilter
+          ),
+          /* Customised from new english analyzer as per:
              https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
              In order to apply synonym filter
              */
-            CustomAnalyzerDefinition(
-              "english_with_synonym",
-              StandardTokenizer,
-              List(
-                LowercaseTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StemmerTokenFilter("light_english_stemmer", "light_english"),
-                //Es 6.x doesn't allow `stop` before Synonym
-                //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-                MagdaSynonymTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StopTokenFilter(
-                  "english_stop",
-                  Some(NamedStopTokenFilter.English)
-                )
+          CustomAnalyzerDefinition(
+            "english_with_synonym",
+            StandardTokenizer,
+            List(
+              LowercaseTokenFilter,
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
+              //Es 6.x doesn't allow `stop` before Synonym
+              //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+              MagdaSynonymTokenFilter,
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
+              StopTokenFilter(
+                "english_stop",
+                Some(NamedStopTokenFilter.English)
               )
-            ),
-            CustomAnalyzerDefinition(
-              "english_without_synonym_for_search",
-              StandardTokenizer,
-              List(
-                LowercaseTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StemmerTokenFilter("light_english_stemmer", "light_english"),
-                StopTokenFilter(
-                  "english_stop",
-                  Some(NamedStopTokenFilter.English)
-                )
+            )
+          ),
+          CustomAnalyzerDefinition(
+            "english_without_synonym_for_search",
+            StandardTokenizer,
+            List(
+              LowercaseTokenFilter,
+              StemmerTokenFilter(
+                "english_possessive_stemmer",
+                "possessive_english"
+              ),
+              StemmerTokenFilter("light_english_stemmer", "light_english"),
+              StopTokenFilter(
+                "english_stop",
+                Some(NamedStopTokenFilter.English)
               )
             )
           )
-
-      if (config.hasPath("indexer.refreshInterval")) {
-        baseDefinition.indexSetting(
-          "refresh_interval",
-          config.getString("indexer.refreshInterval")
         )
-      } else {
-        baseDefinition
-      }
+
+    if (config.hasPath("indexer.refreshInterval")) {
+      baseDefinition.indexSetting(
+        "refresh_interval",
+        config.getString("indexer.refreshInterval")
+      )
+    } else {
+      baseDefinition
     }
+  }
   )
 
   val MagdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
@@ -302,29 +274,28 @@ object IndexDefinition extends DefaultJsonProtocol {
               geoshapeField("boundingBox"),
               geoshapeField("geometry"),
               intField("order")
+            ))
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "regionSearchIdInput",
+            WhitespaceTokenizer,
+            List(
+              LowercaseTokenFilter,
+              MagdaRegionSynonymTokenFilter
+            )
+          ),
+          CustomAnalyzerDefinition(
+            "regionSearchIdIndex",
+            KeywordTokenizer,
+            List(
+              LowercaseTokenFilter
             )
           )
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter
-            ),
-            CustomAnalyzerDefinition(
-              "regionSearchIdInput",
-              WhitespaceTokenizer,
-              List(
-                LowercaseTokenFilter,
-                MagdaRegionSynonymTokenFilter
-              )
-            ),
-            CustomAnalyzerDefinition(
-              "regionSearchIdIndex",
-              KeywordTokenizer,
-              List(
-                LowercaseTokenFilter
-              )
-            )
         ),
       create = Some((client, indices, config) =>
         (materializer, actorSystem) =>
@@ -337,40 +308,40 @@ object IndexDefinition extends DefaultJsonProtocol {
       version = 4,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.PublishersIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(mapping(indices.getType(Indices.PublisherIndexType)).fields(
-            keywordField("identifier"),
-            textField("acronym")
-              .analyzer("keyword")
-              .searchAnalyzer("uppercase"),
-            magdaTextField("jurisdiction"),
-            textField("aggregation_keywords").analyzer("keyword"),
-            magdaTextField("value"),
-            magdaTextField("description"),
-            keywordField("imageUrl"),
-            keywordField("phone"),
-            keywordField("email"),
-            magdaTextField("addrStreet", keywordField("keyword")),
-            magdaTextField("addrSuburb", keywordField("keyword")),
-            magdaTextField("addrState", keywordField("keyword")),
-            keywordField("addrPostCode"),
-            keywordField("addrCountry"),
-            keywordField("website"),
-            dateField("indexed")
-          ))
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter
-            ),
-            CustomAnalyzerDefinition(
-              "uppercase",
-              KeywordTokenizer,
-              UppercaseTokenFilter
-            )
+      createIndex(indices.getIndex(config, Indices.PublishersIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(mapping(indices.getType(Indices.PublisherIndexType)).fields(
+          keywordField("identifier"),
+          textField("acronym")
+            .analyzer("keyword")
+            .searchAnalyzer("uppercase"),
+          magdaTextField("jurisdiction"),
+          textField("aggregation_keywords").analyzer("keyword"),
+          magdaTextField("value"),
+          magdaTextField("description"),
+          keywordField("imageUrl"),
+          keywordField("phone"),
+          keywordField("email"),
+          magdaTextField("addrStreet", keywordField("keyword")),
+          magdaTextField("addrSuburb", keywordField("keyword")),
+          magdaTextField("addrState", keywordField("keyword")),
+          keywordField("addrPostCode"),
+          keywordField("addrCountry"),
+          keywordField("website"),
+          dateField("indexed")
+        ))
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          ),
+          CustomAnalyzerDefinition(
+            "uppercase",
+            KeywordTokenizer,
+            UppercaseTokenFilter
+          )
         )
     )
 
@@ -380,31 +351,31 @@ object IndexDefinition extends DefaultJsonProtocol {
       version = 1,
       indicesIndex = Indices.FormatsIndex,
       definition = (indices, config) =>
-        createIndex(indices.getIndex(config, Indices.FormatsIndex))
-          .shards(config.getInt("elasticSearch.shardCount"))
-          .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.FormatsIndexType)).fields(
-              magdaTextField("value"),
-              dateField("indexed")
-            )
+      createIndex(indices.getIndex(config, Indices.FormatsIndex))
+        .shards(config.getInt("elasticSearch.shardCount"))
+        .replicas(config.getInt("elasticSearch.replicaCount"))
+        .mappings(
+          mapping(indices.getType(Indices.FormatsIndexType)).fields(
+            magdaTextField("value"),
+            dateField("indexed")
           )
-          .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter
-            )
+        )
+        .analysis(
+          CustomAnalyzerDefinition(
+            "quote",
+            KeywordTokenizer,
+            LowercaseTokenFilter
+          )
         )
     )
 
   val indices = Seq(dataSets, regions, publishers, formats)
 
   def setupRegions(client: ElasticClient, indices: Indices)(
-      implicit
-      config: Config,
-      materializer: Materializer,
-      system: ActorSystem
+    implicit
+    config: Config,
+    materializer: Materializer,
+    system: ActorSystem
   ): Future[Any] = {
     val regionSourceConfig = config.getConfig("regionSources")
     val regionSources = new RegionSources(regionSourceConfig)
@@ -494,17 +465,15 @@ object IndexDefinition extends DefaultJsonProtocol {
             properties.fields(shortNameProp).convertTo[String])
 
           // --- allow simplifyToleranceRatio to be specified per file or per region
-          val simplifyToleranceRatio: Double = properties
+          val simplifyToleranceRatio:Double = properties
             .getFields("simplifyToleranceRatio")
-            .headOption
-            .map(_.convertTo[Double])
+            .headOption.map(_.convertTo[Double])
             .getOrElse(regionSource.simplifyToleranceRatio)
 
           // --- allow requireSimplify to be specified per file or per region
-          val requireSimplify: Boolean = properties
+          val requireSimplify:Boolean = properties
             .getFields("requireSimplify")
-            .headOption
-            .map(_.convertTo[Boolean])
+            .headOption.map(_.convertTo[Boolean])
             .getOrElse(regionSource.requireSimplify)
 
           val geometryOpt = jsonRegion.fields("geometry") match {
@@ -512,15 +481,11 @@ object IndexDefinition extends DefaultJsonProtocol {
               val geometry = jsGeometry.convertTo[GeoJson.Geometry]
 
               if (!requireSimplify) {
-                logger.info("Skipped simplifying GeoData {}/{}/{}",
-                            regionSource.idProperty,
-                            id,
-                            name)
+                logger.info("Skipped simplifying GeoData {}/{}/{}", regionSource.idProperty, id, name)
                 Some(geometry)
               } else {
 
-                val jtsGeo =
-                  GeometryConverter.toJTSGeo(geometry, geometryFactory)
+                val jtsGeo = GeometryConverter.toJTSGeo(geometry, geometryFactory)
 
                 val shortestSide = {
                   val env = jtsGeo.getEnvelopeInternal
@@ -533,8 +498,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                   )
 
                 def removeInvalidHoles(polygon: Polygon): Polygon = {
-                  val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield
-                    polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
+                  val holes = for { i <- 0 to polygon.getNumInteriorRing - 1 } yield polygon.getInteriorRingN(i).asInstanceOf[LinearRing]
                   val filteredHoles = holes.filter(_.within(simplified))
                   new Polygon(
                     polygon.getExteriorRing.asInstanceOf[LinearRing],
@@ -544,19 +508,16 @@ object IndexDefinition extends DefaultJsonProtocol {
                 }
 
                 // Remove holes that intersect the edge of the shape - TODO: Can we do something clever like use an intersection to trim the hole?
-                val simplifiedFixed: Geometry =
-                  simplified.getGeometryType match {
-                    case "Polygon" =>
-                      val x = simplified.asInstanceOf[Polygon]
-                      removeInvalidHoles(x)
-                    case "MultiPolygon" =>
-                      val x = simplified.asInstanceOf[MultiPolygon]
-                      val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield
-                        removeInvalidHoles(
-                          x.getGeometryN(i).asInstanceOf[Polygon])
-                      new MultiPolygon(geometries.toArray, geometryFactory)
-                    case _ => simplified
-                  }
+                val simplifiedFixed: Geometry = simplified.getGeometryType match {
+                  case "Polygon" =>
+                    val x = simplified.asInstanceOf[Polygon]
+                    removeInvalidHoles(x)
+                  case "MultiPolygon" =>
+                    val x = simplified.asInstanceOf[MultiPolygon]
+                    val geometries = for { i <- 0 to x.getNumGeometries - 1 } yield removeInvalidHoles(x.getGeometryN(i).asInstanceOf[Polygon])
+                    new MultiPolygon(geometries.toArray, geometryFactory)
+                  case _ => simplified
+                }
 
                 Some(GeometryConverter.fromJTSGeo(simplifiedFixed))
               }
@@ -611,11 +572,11 @@ object IndexDefinition extends DefaultJsonProtocol {
       }
       .map { result =>
         result match {
-          case failure: RequestFailure =>
+          case failure:RequestFailure =>
             logger.error("Failure: {}", failure.error)
             0
-          case results: RequestSuccess[BulkResponse] =>
-            if (result.result.errors) {
+          case results:RequestSuccess[BulkResponse] =>
+            if(result.result.errors) {
               logger.error("Failure: {}", result.body)
               0
             } else {

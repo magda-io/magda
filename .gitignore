@@ -36,3 +36,10 @@ pancake
 package-lock.json
 */package-lock.json
 .nyc_*
+
+# docker specific
+docker-context-*/
+
+#tenant-api specific
+magda-tenant-api/lib/
+
