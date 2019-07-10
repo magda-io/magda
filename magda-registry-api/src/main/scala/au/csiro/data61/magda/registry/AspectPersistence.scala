@@ -21,11 +21,13 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and tenantId=$tenantId""".map(rowToAspect).single.apply()
   }
 
-  def getByIds(implicit session: DBSession, ids: Iterable[String]): List[AspectDefinition] = {
+  def getByIds(implicit session: DBSession, ids: Iterable[String], tenantId: BigInt): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
-    else
-      sql"select aspectId, name, jsonSchema, tenantId from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
+    else {
+      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${if (tenantId == MAGDA_SYSTEM_ID) SQLSyntax.empty else sqls"tenantId = $tenantId and"} aspectId in ($ids)"""
+        .map(rowToAspect).list.apply()
+    }
   }
 
   def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
