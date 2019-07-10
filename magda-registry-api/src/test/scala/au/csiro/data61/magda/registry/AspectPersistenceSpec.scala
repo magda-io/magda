@@ -5,21 +5,30 @@ import scalikejdbc.DB
 import spray.json.JsObject
 
 class AspectPersistenceSpec extends ApiSpec {
-  it("filter aspect by tenant id") {_ =>
-    val a = AspectDefinition(id = "a test aspect id", name = "a test aspect name", jsonSchema = Some(JsObject()))
-    DB localTx { implicit session => AspectPersistence.create(session, a, TENANT_1) }
+  it("Fetch aspects should be filtered by tenant id") { _ =>
+    val aspectA = AspectDefinition(id = "aspect A", name = "aspect A name", jsonSchema = Some(JsObject()))
+    val aspectB = AspectDefinition(id = "aspect B", name = "aspect B name", jsonSchema = Some(JsObject()))
+    val aspects = List(aspectA, aspectB)
+    val aspectIds = aspects.map(a => a.id)
 
-    val responseToOwner = DB readOnly {
-      implicit session => AspectPersistence.getByIds(session, List(a.id), TENANT_1)}
-    responseToOwner shouldEqual List(a)
+    aspects.foreach(testAspect => {
+      DB localTx {
+        implicit session => AspectPersistence.create(session, testAspect, TENANT_1)
+      }
+    })
 
-    val responseToSystemId = DB readOnly {
-      implicit session => AspectPersistence.getByIds(session, List(a.id), MAGDA_SYSTEM_ID)}
-    responseToSystemId shouldEqual List(a)
+    List(TENANT_1, MAGDA_SYSTEM_ID).foreach(tenantId => {
+      val result = DB readOnly {
+        implicit session => AspectPersistence.getByIds(session, aspectIds, tenantId)
+      }
+      result shouldEqual aspects
+    })
 
-    val responseToOtherTenant = DB readOnly {
-      implicit session => AspectPersistence.getByIds(session, List(a.id), MAGDA_ADMIN_PORTAL_ID)}
-
-    responseToOtherTenant shouldEqual Nil
+    List(TENANT_2, MAGDA_ADMIN_PORTAL_ID).foreach(tenantId => {
+      val result = DB readOnly {
+        implicit session => AspectPersistence.getByIds(session, aspectIds, tenantId)
+      }
+      result shouldEqual Nil
+    })
   }
 }
