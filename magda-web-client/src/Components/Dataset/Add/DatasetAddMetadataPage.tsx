@@ -19,7 +19,6 @@ import {
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
-import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import HelpSnippet from "Components/Common/HelpSnippet";
 
@@ -59,6 +58,8 @@ import { Map, TileLayer, Rectangle } from "react-leaflet";
 import TagInput from "Components/Common/TagInput";
 
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
+
+import SpatialAreaInput from "./SpatialAreaInput";
 
 import "./DatasetAddFilesPage.scss";
 
@@ -211,7 +212,7 @@ class NewDataset extends React.Component<Prop, State> {
         const { dataset, spatialCoverage, temporalCoverage } = this.state;
         const editDataset = this.edit("dataset");
         const editTemporalCoverage = this.edit("temporalCoverage");
-        const editSpatialCoverage = this.edit("spatialCoverage");
+        //const editSpatialCoverage = this.edit("spatialCoverage");
         return (
             <div className="row dataset-details-and-contents-page">
                 <div className="col-sm-12">
@@ -342,11 +343,7 @@ class NewDataset extends React.Component<Prop, State> {
                         is:
                     </h4>
                     <div>
-                        <AlwaysEditor
-                            value={spatialCoverage.bbox}
-                            onChange={editSpatialCoverage("bbox")}
-                            editor={bboxEditor}
-                        />
+                        <SpatialAreaInput />
                     </div>
 
                     <h4>Would you like to show a spatial preview?</h4>
