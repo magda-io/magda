@@ -1,26 +1,44 @@
-import React, { InputHTMLAttributes } from "react";
+import React from "react";
 
-import { query } from "api-clients/VocabularyApis";
+import { autocompletePublishers } from "api-clients/PublisherApis";
 import AutoCompleteInput from "Components/Editing/AutoCompleteInput";
+import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
 
 type Props = {
-    suggestionSize?: number;
-    onNewTag: (tag: string) => void;
-    excludeKeywords: string[];
-} & InputHTMLAttributes<HTMLInputElement>;
+    onOrgSelected: (choice: OrganisationAutocompleteChoice) => void;
+    defaultValue?: OrganisationAutocompleteChoice;
+};
+
+async function query(term: string) {
+    const apiResult = await autocompletePublishers({}, term);
+
+    return apiResult.options.map(
+        searchPublisher =>
+            new OrganisationAutocompleteChoice(
+                searchPublisher.value,
+                searchPublisher.identifier
+            )
+    );
+}
 
 export default function OrganisationAutocomplete(props: Props) {
-    const { suggestionSize, onNewTag, excludeKeywords, ...otherProps } = props;
+    const { onOrgSelected, defaultValue } = props;
+
+    const handleNewOrg = (orgName: string) =>
+        onOrgSelected(new OrganisationAutocompleteChoice(orgName));
 
     return (
-        <AutoCompleteInput<string>
-            suggestionSize={props.suggestionSize}
+        <AutoCompleteInput<OrganisationAutocompleteChoice>
+            suggestionSize={5}
             query={query}
-            objectToString={x => x}
-            onSuggestionSelected={props.onNewTag}
-            onTypedValueSelected={props.onNewTag}
-            exclude={excludeKeywords}
-            {...otherProps}
+            objectToString={x => x.name}
+            onSuggestionSelected={props.onOrgSelected}
+            onTypedValueSelected={handleNewOrg}
+            defaultValue={defaultValue}
+            emptyOnSelect={false}
+            inputProps={{
+                className: "au-text-input tag-input"
+            }}
         />
     );
 }

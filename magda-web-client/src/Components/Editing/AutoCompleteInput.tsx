@@ -1,9 +1,13 @@
-import React, { InputHTMLAttributes } from "react";
-import Autosuggest from "react-autosuggest";
+import React, { KeyboardEvent } from "react";
+import Autosuggest, {
+    InputProps as AutosuggestInputProps
+} from "react-autosuggest";
 import throttle from "lodash/throttle";
 import debounce from "lodash/debounce";
 import keyBy from "lodash/keyBy";
 import memoize from "memoize-one";
+
+// import {Omit} from "helpers/helper-types";
 
 import "./AutoCompleteInput.scss";
 
@@ -18,16 +22,21 @@ interface DefaultProps<T> {
     exclude: T[];
 }
 
+export type InputProps<T> = Omit<
+    AutosuggestInputProps<T>,
+    "onChange" | "value"
+>;
+
 interface Props<T> {
     onSuggestionSelected: (value: T) => void;
     onTypedValueSelected: (value: string) => void;
     query: (query: string) => Promise<T[]>;
     objectToString: (object: T) => string;
+    defaultValue?: T;
+    inputProps?: InputProps<T>;
 }
 
-type PropsWithDefaults<T> = Props<T> &
-    DefaultProps<T> &
-    InputHTMLAttributes<HTMLInputElement>;
+type PropsWithDefaults<T> = Props<T> & DefaultProps<T>;
 
 class AutoCompleteInput<T> extends React.Component<
     PropsWithDefaults<T>,
@@ -150,29 +159,18 @@ class AutoCompleteInput<T> extends React.Component<
     );
 
     render() {
-        console.log(this.getExcludeLookup(this.props.exclude));
-
-        const {
-            className: incomingClassName,
-            defaultValue,
-            suggestionSize,
-            onSuggestionSelected,
-            onTypedValueSelected,
-            query,
-            objectToString,
-            emptyOnSelect,
-            ...restProps
-        } = this.props;
-
-        const inputProps = {
-            ...restProps,
+        const inputProps: AutosuggestInputProps<T> = {
+            ...this.props.inputProps,
             onKeyUp: this.onKeyUp,
             onChange: this.onChange,
-            value: this.state.value
+            value: this.state.value,
+            defaultValue:
+                this.props.defaultValue &&
+                this.props.objectToString(this.props.defaultValue)
         };
 
         return (
-            <Autosuggest
+            <Autosuggest<T>
                 id={this.key}
                 inputProps={inputProps}
                 suggestions={this.state.suggestions}
@@ -182,8 +180,8 @@ class AutoCompleteInput<T> extends React.Component<
                 renderSuggestion={this.renderSuggestion}
                 onSuggestionSelected={this.onSuggestionSelected}
                 theme={{
-                    input: incomingClassName
-                        ? `react-autosuggest__input ${incomingClassName}`
+                    input: inputProps.className
+                        ? `react-autosuggest__input ${inputProps.className}`
                         : "react-autosuggest__input",
                     container: "vocabulary-auto-complete-input",
                     suggestion: "suggestion-item",

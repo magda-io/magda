@@ -1,16 +1,17 @@
-import React, { InputHTMLAttributes } from "react";
+import React from "react";
 
 import { query } from "api-clients/VocabularyApis";
-import AutoCompleteInput from "./AutoCompleteInput";
+import AutoCompleteInput, { InputProps } from "./AutoCompleteInput";
 
 type Props = {
     suggestionSize?: number;
     onNewTag: (tag: string) => void;
     excludeKeywords: string[];
-} & InputHTMLAttributes<HTMLInputElement>;
+    inputProps?: InputProps<string>;
+};
 
 export default function VocabularyAutoCompleteInput(props: Props) {
-    const { suggestionSize, onNewTag, excludeKeywords, ...otherProps } = props;
+    const { excludeKeywords } = props;
 
     return (
         <AutoCompleteInput<string>
@@ -20,7 +21,7 @@ export default function VocabularyAutoCompleteInput(props: Props) {
             onSuggestionSelected={props.onNewTag}
             onTypedValueSelected={props.onNewTag}
             exclude={excludeKeywords}
-            {...otherProps}
+            inputProps={props.inputProps}
         />
     );
 }

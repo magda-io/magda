@@ -81,10 +81,12 @@ const TagInput: FunctionComponent<TagInputProps> = props => {
             <div className="input-container">
                 {useVocabularyAutoCompleteInput ? (
                     <VocabularyAutoCompleteInput
-                        className="au-text-input tag-input"
                         onNewTag={onNewTag}
-                        placeholder={placeHolderText}
                         excludeKeywords={value}
+                        inputProps={{
+                            placeholder: placeHolderText,
+                            className: "au-text-input tag-input"
+                        }}
                     />
                 ) : (
                     <SelfManagedTextInput

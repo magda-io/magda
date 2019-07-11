@@ -16,7 +16,6 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "dependencies": {
-    "@craco/craco": "^5.0.2",
     "@gov.au/accordion": "^7.0.7",
     "@gov.au/animate": "^1.0.0",
     "@gov.au/body": "^2.1.1",
@@ -63,7 +62,7 @@
     "urijs": "^1.19.1"
   },
   "devDependencies": {
-    "@craco/craco": "^3.6.0",
+    "@craco/craco": "^5.0.2",
     "@magda/registry-aspects": "^0.0.56-0",
     "@magda/scripts": "^0.0.56-0",
     "@storybook/addon-actions": "^3.3.3",
@@ -72,6 +71,7 @@
     "@storybook/react": "^3.2.17",
     "@types/papaparse": "^4.5.7",
     "@types/react": "^16.8.17",
+    "@types/react-autosuggest": "^9.3.9",
     "@types/react-dates": "^17.1.5",
     "@types/react-select": "^3.0.0",
     "@types/rrule": "^2.2.9",
@@ -124,6 +124,7 @@
     "redux-thunk": "^2.1.0",
     "rss-parser": "^2.9.0",
     "traverse": "^0.6.6",
+    "typescript": "^3.5.3",
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"

@@ -2,7 +2,6 @@ import React from "react";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
-    textEditor,
     multilineTextEditor,
     multiTextEditorEx
 } from "Components/Editing/Editors/textEditor";
@@ -10,6 +9,7 @@ import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
 import { Dataset } from "Components/Dataset/Add/DatasetAddCommon";
+import OrganisationAutoComplete from "./OrganisationAutocomplete";
 
 function YesNoEditReveal(props) {
     const yes = !!props.value;
@@ -90,11 +90,15 @@ export default function DatasetAddPeoplePage(props: Props) {
                     dataset?
                 </h4>
                 <p>
-                    <AlwaysEditor
+                    <OrganisationAutoComplete
+                        defaultValue={dataset.publisher}
+                        onOrgSelected={editDataset("publisher")}
+                    />
+                    {/* <AlwaysEditor
                         value={dataset.publisher}
                         onChange={editDataset("publisher")}
                         editor={textEditor}
-                    />
+                    /> */}
                 </p>
                 <h4>Who is the primary contact point(s) for this dataset?</h4>
                 <p>

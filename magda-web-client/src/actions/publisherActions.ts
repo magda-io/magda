@@ -3,7 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { FetchError } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
-import { searchPublishers } from "api-clients/PublisherApi";
+import { searchPublishers } from "api-clients/PublisherApis";
 
 export function requestPublishers(): FacetAction {
     return {

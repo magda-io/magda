@@ -53,6 +53,14 @@ export function fileStateToText(state: FileState) {
     }
 }
 
+export class OrganisationAutocompleteChoice {
+    constructor(readonly name: string, readonly existingId?: string) {}
+
+    alreadyExists(): boolean {
+        return !!this.existingId;
+    }
+}
+
 export type Dataset = {
     title: string;
     description?: string;
@@ -63,7 +71,7 @@ export type Dataset = {
     themes?: string[];
     contactPointFull?: Contact[];
     contactPointDisplay?: string;
-    publisher?: string;
+    publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
