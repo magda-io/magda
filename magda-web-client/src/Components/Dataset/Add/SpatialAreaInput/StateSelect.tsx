@@ -1,8 +1,12 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select/async";
+import { ValueType } from "react-select/src";
 import fetch from "isomorphic-fetch";
 import { config } from "config";
 import StateSelectStyles from "./StateSelectStyles";
+
+import { Region } from "helpers/datasetSearch";
+export type OptionType = Region;
 
 const loadOptions = async inputValue => {
     const queryStr = inputValue.trim();
@@ -18,20 +22,30 @@ const loadOptions = async inputValue => {
     if (!data || !Array.isArray(data.regions)) {
         throw new Error("Invalid server response");
     }
-    return data.regions.map((item: any) => ({
-        label: item.regionName,
-        value: item
-    }));
+    return data.regions;
 };
 
-const StateSelect = props => {
+interface PropsType {
+    value?: ValueType<Region>;
+    onChange?: (option: ValueType<Region>) => void;
+}
+
+const StateSelect: FunctionComponent<PropsType> = props => {
     return (
         <div className="state-select">
-            <ReactSelect
+            <ReactSelect<Region>
                 cacheOptions
                 defaultOptions
+                value={props.value}
                 loadOptions={loadOptions}
+                getOptionLabel={option => option.regionName as string}
+                getOptionValue={option => option.regionId as string}
+                placeholder={"Please select a state..."}
                 styles={StateSelectStyles}
+                onChange={option =>
+                    typeof props.onChange === "function" &&
+                    props.onChange(option)
+                }
             />
         </div>
     );

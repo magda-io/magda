@@ -80,16 +80,22 @@ type Facet = {
     options: Array<FacetOption>;
 };
 
+export type BoundingBox = {
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+};
+
 export type Region = {
     regionId?: string;
     regionType?: string;
     regionName?: string;
-    boundingBox: {
-        west: number;
-        south: number;
-        east: number;
-        north: number;
-    };
+    steId?: string;
+    sa4Id?: string;
+    sa3Id?: string;
+    sa2Id?: string;
+    boundingBox: BoundingBox;
 };
 
 export type Query = {

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-
+import { config } from "config";
 import Tabs from "./Tabs";
+import RegionPanel from "./RegionPanel";
 import BBoxEditor from "./BBoxEditor";
 import SpatialDataPreviewer from "./SpatialDataPreviewer";
-import StateSelect from "./StateSelect";
-import RegionSelect from "./RegionSelect";
-import AreaSelect from "./AreaSelect";
+
+import { BoundingBox } from "helpers/datasetSearch";
 
 import helpIcon from "assets/help.svg";
 import "./index.scss";
@@ -26,35 +26,26 @@ const CoordinatesPanel = props => {
     );
 };
 
-const RegionPanel = props => {
-    return (
-        <div className="region-panel">
-            <div className="row">
-                <div className="col-sm-3 state-select-container">
-                    <div className="state-select-heading">State</div>
-                    <StateSelect />
-                </div>
-                <div className="col-sm-9 region-select-container">
-                    <div className="region-select-heading">
-                        Region (ABS SA4) <span>(optional)</span>
-                    </div>
-                    <RegionSelect />
-                </div>
-            </div>
-            <div className="row">
-                <div className="col-sm-6 area-select-container">
-                    <div className="area-select-heading">
-                        Area (ABS SA3) <span>(optional)</span>
-                    </div>
-                    <AreaSelect />
-                </div>
-            </div>
-        </div>
-    );
-};
+interface StateType {
+    activeTabIndex: number;
+    steId?: string;
+    sa4Id?: string;
+    sa3Id?: string;
+    sa2Id?: string;
+    bbox: BoundingBox;
+}
 
-const initialState = {
-    activeTabIndex: 0
+const initialState: StateType = {
+    activeTabIndex: 0,
+    steId: "",
+    sa4Id: "",
+    sa3Id: "",
+    bbox: {
+        west: config.boundingBox.west,
+        north: config.boundingBox.north,
+        south: config.boundingBox.south,
+        east: config.boundingBox.east
+    }
 };
 
 const SpatialAreaInput = props => {
