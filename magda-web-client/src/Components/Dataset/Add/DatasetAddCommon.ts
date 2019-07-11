@@ -53,7 +53,7 @@ export function fileStateToText(state: FileState) {
     }
 }
 
-type Dataset = {
+export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
