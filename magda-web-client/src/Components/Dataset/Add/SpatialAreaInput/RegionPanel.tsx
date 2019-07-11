@@ -11,10 +11,10 @@ interface StateType {
 }
 
 interface PropsType {
-    steRegion?: Region;
-    sa4Region?: Region;
-    sa3Region?: Region;
-    onChange?: () => void;
+    steId?: string;
+    sa4Id?: string;
+    sa3Id?: string;
+    onChange?: (region?: Region) => void;
 }
 
 export type OptionType = Region;
@@ -27,7 +27,19 @@ const initialState = props => ({
 
 const RegionPanel: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState<StateType>(initialState(props));
-    console.log(state);
+    const onChange: (newState: StateType) => void = newState => {
+        if (typeof props.onChange !== "function") return;
+        if (newState.sa3Region) {
+            props.onChange(newState.sa3Region);
+        } else if (newState.sa4Region) {
+            props.onChange(newState.sa4Region);
+        } else if (newState.steRegion) {
+            props.onChange(newState.steRegion);
+        } else {
+            props.onChange();
+        }
+    };
+
     return (
         <div className="region-panel">
             <div className="row">
@@ -35,13 +47,20 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                     <div className="state-select-heading">State</div>
                     <StateSelect
                         value={state.steRegion}
+                        regionId={props.steId}
                         onChange={option =>
-                            setState(state => ({
-                                ...state,
-                                steRegion: option ? { ...option } : option,
-                                sa4Region: undefined,
-                                sa3Region: undefined
-                            }))
+                            setState(state => {
+                                const newState = {
+                                    ...state,
+                                    steRegion: option
+                                        ? { ...option }
+                                        : undefined,
+                                    sa4Region: undefined,
+                                    sa3Region: undefined
+                                };
+                                onChange(newState);
+                                return newState;
+                            })
                         }
                     />
                 </div>
@@ -51,13 +70,20 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                     </div>
                     <RegionSelect
                         value={state.sa4Region}
+                        regionId={props.sa4Id}
                         steRegion={state.steRegion}
                         onChange={option =>
-                            setState(state => ({
-                                ...state,
-                                sa4Region: option ? { ...option } : option,
-                                sa3Region: undefined
-                            }))
+                            setState(state => {
+                                const newState = {
+                                    ...state,
+                                    sa4Region: option
+                                        ? { ...option }
+                                        : undefined,
+                                    sa3Region: undefined
+                                };
+                                onChange(newState);
+                                return newState;
+                            })
                         }
                     />
                 </div>
@@ -69,13 +95,20 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                     </div>
                     <AreaSelect
                         value={state.sa3Region}
+                        regionId={props.sa3Id}
                         steRegion={state.steRegion}
                         sa4Region={state.sa4Region}
                         onChange={option =>
-                            setState(state => ({
-                                ...state,
-                                sa3Region: option ? { ...option } : option
-                            }))
+                            setState(state => {
+                                const newState = {
+                                    ...state,
+                                    sa3Region: option
+                                        ? { ...option }
+                                        : undefined
+                                };
+                                onChange(newState);
+                                return newState;
+                            })
                         }
                     />
                 </div>

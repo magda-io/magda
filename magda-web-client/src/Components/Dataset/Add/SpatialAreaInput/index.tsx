@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, FunctionComponent } from "react";
 import { config } from "config";
+import { Region } from "helpers/datasetSearch";
 import Tabs from "./Tabs";
 import RegionPanel from "./RegionPanel";
 import BBoxEditor from "./BBoxEditor";
@@ -32,7 +33,20 @@ interface StateType {
     sa4Id?: string;
     sa3Id?: string;
     sa2Id?: string;
-    bbox: BoundingBox;
+    bbox?: BoundingBox;
+}
+
+interface PropsType {
+    steId?: string;
+    sa4Id?: string;
+    sa3Id?: string;
+    bbox?: BoundingBox;
+    onChange?: (
+        bbox?: BoundingBox,
+        steId?: string,
+        sa4Id?: string,
+        sa3Id?: string
+    ) => void;
 }
 
 const initialState: StateType = {
@@ -48,9 +62,31 @@ const initialState: StateType = {
     }
 };
 
-const SpatialAreaInput = props => {
+const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState(initialState);
-
+    const onRegionPanelChange = (region?: Region) => {
+        if (typeof props.onChange !== "function") return;
+        console.log("onRegionPanelChange: ", region);
+        if (!region) {
+            props.onChange();
+            return;
+        }
+        // --- regionId should be used depends on current region type
+        props.onChange(
+            region.boundingBox,
+            region.steId ? region.steId : region.regionId,
+            region.sa4Id
+                ? region.sa4Id
+                : region.steId
+                ? region.regionId
+                : undefined,
+            region.sa3Id
+                ? region.sa3Id
+                : region.sa4Id
+                ? region.regionId
+                : undefined
+        );
+    };
     return (
         <div className="spatial-area-input">
             <div className="row">
@@ -78,7 +114,14 @@ const SpatialAreaInput = props => {
                         {(() => {
                             switch (state.activeTabIndex) {
                                 case 0:
-                                    return <RegionPanel />;
+                                    return (
+                                        <RegionPanel
+                                            steId={props.steId}
+                                            sa4Id={props.sa4Id}
+                                            sa3Id={props.sa3Id}
+                                            onChange={onRegionPanelChange}
+                                        />
+                                    );
                                 case 1:
                                     return <CoordinatesPanel />;
                                 default:

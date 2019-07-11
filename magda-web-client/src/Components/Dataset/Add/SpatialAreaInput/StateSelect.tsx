@@ -27,6 +27,7 @@ const loadOptions = async inputValue => {
 
 interface PropsType {
     value?: ValueType<Region>;
+    regionId?: string;
     onChange?: (option: ValueType<Region>) => void;
 }
 
@@ -41,6 +42,13 @@ const StateSelect: FunctionComponent<PropsType> = props => {
                 loadOptions={loadOptions}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
+                isOptionSelected={option =>
+                    option &&
+                    option.regionId &&
+                    option.regionId === props.regionId
+                        ? true
+                        : false
+                }
                 placeholder={"Please select a state..."}
                 styles={StateSelectStyles}
                 onChange={option =>

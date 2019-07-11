@@ -73,6 +73,7 @@ import {
 import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
 
 import "./DatasetAddMetadataPage.scss";
+import { BoundingBox } from "helpers/datasetSearch";
 
 type Prop = {
     createRecord: Function;
@@ -212,7 +213,6 @@ class NewDataset extends React.Component<Prop, State> {
         const { dataset, spatialCoverage, temporalCoverage } = this.state;
         const editDataset = this.edit("dataset");
         const editTemporalCoverage = this.edit("temporalCoverage");
-        //const editSpatialCoverage = this.edit("spatialCoverage");
         return (
             <div className="row dataset-details-and-contents-page">
                 <div className="col-sm-12">
@@ -343,7 +343,55 @@ class NewDataset extends React.Component<Prop, State> {
                         is:
                     </h4>
                     <div>
-                        <SpatialAreaInput />
+                        <SpatialAreaInput
+                            steId={spatialCoverage.steId}
+                            sa4Id={spatialCoverage.sa4Id}
+                            sa3Id={spatialCoverage.sa3Id}
+                            bbox={(() => {
+                                if (
+                                    !Array.isArray(spatialCoverage.bbox) ||
+                                    spatialCoverage.bbox.length < 4
+                                ) {
+                                    return undefined;
+                                }
+                                return {
+                                    west: spatialCoverage.bbox[0],
+                                    south: spatialCoverage.bbox[1],
+                                    east: spatialCoverage.bbox[2],
+                                    north: spatialCoverage.bbox[3]
+                                };
+                            })()}
+                            onChange={(
+                                bbox?: BoundingBox,
+                                steId?: string,
+                                sa4Id?: string,
+                                sa3Id?: string
+                            ) =>
+                                this.setState(state => {
+                                    const spatialCoverage: any = {};
+
+                                    if (bbox) {
+                                        // --- According to existing JSON schema:
+                                        // --- "Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)""
+                                        spatialCoverage.bbox = [
+                                            bbox.west,
+                                            bbox.south,
+                                            bbox.east,
+                                            bbox.north
+                                        ];
+                                    }
+
+                                    if (steId) spatialCoverage.steId = steId;
+                                    if (sa4Id) spatialCoverage.sa4Id = sa4Id;
+                                    if (sa3Id) spatialCoverage.sa3Id = sa3Id;
+
+                                    return {
+                                        ...state,
+                                        spatialCoverage
+                                    };
+                                })
+                            }
+                        />
                     </div>
 
                     <h4>Would you like to show a spatial preview?</h4>

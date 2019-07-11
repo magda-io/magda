@@ -83,6 +83,9 @@ type DatasetPublishing = {
 
 type SpatialCoverage = {
     bbox?: [number, number, number, number];
+    steId?: string;
+    sa4Id?: string;
+    sa3Id?: string;
 };
 
 export type State = {

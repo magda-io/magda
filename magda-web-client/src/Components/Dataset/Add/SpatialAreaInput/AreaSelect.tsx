@@ -34,6 +34,7 @@ interface PropsType {
     steRegion?: ValueType<Region>;
     sa4Region?: ValueType<Region>;
     value?: ValueType<Region>;
+    regionId?: string;
     onChange?: (option: ValueType<Region>) => void;
 }
 
@@ -69,6 +70,13 @@ const AreaSelect: FunctionComponent<PropsType> = props => {
                 loadOptions={loadOptions(steRegion, sa4Region)}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
+                isOptionSelected={option =>
+                    option &&
+                    option.regionId &&
+                    option.regionId === props.regionId
+                        ? true
+                        : false
+                }
                 styles={AreaSelectStyles}
                 placeholder={placeHolderText}
                 isDisabled={isDisabled}
