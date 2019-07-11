@@ -66,7 +66,6 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState(initialState);
     const onRegionPanelChange = (region?: Region) => {
         if (typeof props.onChange !== "function") return;
-        console.log("onRegionPanelChange: ", region);
         if (!region) {
             props.onChange();
             return;

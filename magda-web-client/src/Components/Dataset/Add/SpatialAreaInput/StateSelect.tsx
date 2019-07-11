@@ -8,7 +8,7 @@ import StateSelectStyles from "./StateSelectStyles";
 import { Region } from "helpers/datasetSearch";
 export type OptionType = Region;
 
-const loadOptions = async inputValue => {
+const loadOptions = (props: PropsType) => async inputValue => {
     const queryStr = inputValue.trim();
     const res = await fetch(
         `${config.searchApiUrl}regions?type=STE${
@@ -22,6 +22,14 @@ const loadOptions = async inputValue => {
     if (!data || !Array.isArray(data.regions)) {
         throw new Error("Invalid server response");
     }
+    if (props.regionId && !props.value) {
+        // --- set initial prepopulated value
+        data.regions.forEach(region => {
+            if (region.regionId === props.regionId) {
+                typeof props.onChange === "function" && props.onChange(region);
+            }
+        });
+    }
     return data.regions;
 };
 
@@ -34,12 +42,13 @@ interface PropsType {
 const StateSelect: FunctionComponent<PropsType> = props => {
     return (
         <div className="state-select">
-            <ReactSelect<Region>
+            <ReactSelect<OptionType>
+                key={props.regionId ? props.regionId : ""}
                 isClearable
                 cacheOptions
                 defaultOptions
                 value={props.value}
-                loadOptions={loadOptions}
+                loadOptions={loadOptions(props)}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
                 isOptionSelected={option =>
