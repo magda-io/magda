@@ -1,7 +1,7 @@
 import React, { InputHTMLAttributes } from "react";
 
 import { query } from "api-clients/VocabularyApis";
-import AutoCompleteInput from "./AutoCompleteInput";
+import AutoCompleteInput from "Components/Editing/AutoCompleteInput";
 
 type Props = {
     suggestionSize?: number;
@@ -9,7 +9,7 @@ type Props = {
     excludeKeywords: string[];
 } & InputHTMLAttributes<HTMLInputElement>;
 
-export default function VocabularyAutoCompleteInput(props: Props) {
+export default function OrganisationAutocomplete(props: Props) {
     const { suggestionSize, onNewTag, excludeKeywords, ...otherProps } = props;
 
     return (

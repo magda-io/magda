@@ -42,7 +42,7 @@ import {
     loadState,
     saveState
 } from "./DatasetAddCommon";
-import DatasetAddPeoplePage from "./Pages/DatasetAddPeoplePage";
+import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";

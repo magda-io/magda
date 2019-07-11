@@ -9,7 +9,7 @@ import {
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
-import { Dataset } from "../DatasetAddCommon";
+import { Dataset } from "Components/Dataset/Add/DatasetAddCommon";
 
 function YesNoEditReveal(props) {
     const yes = !!props.value;
