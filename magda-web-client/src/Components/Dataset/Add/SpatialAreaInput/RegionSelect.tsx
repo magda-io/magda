@@ -43,6 +43,7 @@ const RegionSelect: FunctionComponent<PropsType> = props => {
         <div className="region-select">
             <ReactSelect<Region>
                 key={steRegion ? steRegion.regionId : ""}
+                isClearable
                 cacheOptions
                 defaultOptions
                 value={props.value}

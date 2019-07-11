@@ -62,7 +62,8 @@ const AreaSelect: FunctionComponent<PropsType> = props => {
                     ];
                     return keyItems.join("|");
                 })()}
-                cacheOptions={false}
+                isClearable
+                cacheOptions
                 defaultOptions
                 value={props.value}
                 loadOptions={loadOptions(steRegion, sa4Region)}

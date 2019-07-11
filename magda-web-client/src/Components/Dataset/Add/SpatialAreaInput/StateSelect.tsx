@@ -34,6 +34,7 @@ const StateSelect: FunctionComponent<PropsType> = props => {
     return (
         <div className="state-select">
             <ReactSelect<Region>
+                isClearable
                 cacheOptions
                 defaultOptions
                 value={props.value}
