@@ -964,6 +964,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
+        Util.waitUntilAllDone()
+
         val expectedEventIds = List(8)
         assertPayload(expectedEventIds)
         payloads.head.records.get.length shouldBe 1
