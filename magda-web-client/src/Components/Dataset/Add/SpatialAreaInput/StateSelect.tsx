@@ -26,7 +26,8 @@ const loadOptions = (props: PropsType) => async inputValue => {
         // --- set initial prepopulated value
         data.regions.forEach(region => {
             if (region.regionId === props.regionId) {
-                typeof props.onChange === "function" && props.onChange(region);
+                typeof props.onChange === "function" &&
+                    props.onChange(region, true);
             }
         });
     }
@@ -36,7 +37,10 @@ const loadOptions = (props: PropsType) => async inputValue => {
 interface PropsType {
     value?: ValueType<Region>;
     regionId?: string;
-    onChange?: (option: ValueType<Region>) => void;
+    onChange?: (
+        option: ValueType<Region>,
+        notResetOtherRegions?: Boolean
+    ) => void;
 }
 
 const StateSelect: FunctionComponent<PropsType> = props => {
@@ -51,13 +55,6 @@ const StateSelect: FunctionComponent<PropsType> = props => {
                 loadOptions={loadOptions(props)}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
-                isOptionSelected={option =>
-                    option &&
-                    option.regionId &&
-                    option.regionId === props.regionId
-                        ? true
-                        : false
-                }
                 placeholder={"Please select a state..."}
                 styles={StateSelectStyles}
                 onChange={option =>

@@ -7,17 +7,18 @@ import AreaSelectStyles from "./AreaSelectStyles";
 
 import { Region } from "helpers/datasetSearch";
 
-const loadOptions = (
-    steRegion: ValueType<Region>,
-    sa4Region: ValueType<Region>
-) => async inputValue => {
-    if (!steRegion || !sa4Region) return [];
+const loadOptions = (props: PropsType) => async inputValue => {
+    if (!props.steRegion || !props.sa4Region) return [];
     const queryStr = inputValue.trim();
     const res = await fetch(
         `${config.searchApiUrl}regions?type=SA3${
-            steRegion ? `&steId=${encodeURIComponent(steRegion.regionId)}` : ""
+            props.steRegion
+                ? `&steId=${encodeURIComponent(props.steRegion.regionId)}`
+                : ""
         }${
-            sa4Region ? `&sa4Id=${encodeURIComponent(sa4Region.regionId)}` : ""
+            props.sa4Region
+                ? `&sa4Id=${encodeURIComponent(props.sa4Region.regionId)}`
+                : ""
         }${queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""}`
     );
     if (res.status !== 200) {
@@ -27,6 +28,15 @@ const loadOptions = (
     if (!data || !Array.isArray(data.regions)) {
         throw new Error("Invalid server response");
     }
+    if (props.regionId && !props.value) {
+        // --- set initial prepopulated value
+        data.regions.forEach(region => {
+            if (region.regionId === props.regionId) {
+                typeof props.onChange === "function" &&
+                    props.onChange(region, true);
+            }
+        });
+    }
     return data.regions;
 };
 
@@ -35,7 +45,10 @@ interface PropsType {
     sa4Region?: ValueType<Region>;
     value?: ValueType<Region>;
     regionId?: string;
-    onChange?: (option: ValueType<Region>) => void;
+    onChange?: (
+        option: ValueType<Region>,
+        notResetOtherRegions?: Boolean
+    ) => void;
 }
 
 const AreaSelect: FunctionComponent<PropsType> = props => {
@@ -58,6 +71,7 @@ const AreaSelect: FunctionComponent<PropsType> = props => {
                     // --- otherwise, the ajax option loading function won't be updated internally
                     // --- there is no good way in React do that unless an inter-component messaging solution :-)
                     const keyItems = [
+                        props.regionId ? props.regionId : "",
                         steRegion ? steRegion.regionId : "",
                         sa4Region ? sa4Region.regionId : ""
                     ];
@@ -67,16 +81,9 @@ const AreaSelect: FunctionComponent<PropsType> = props => {
                 cacheOptions
                 defaultOptions
                 value={props.value}
-                loadOptions={loadOptions(steRegion, sa4Region)}
+                loadOptions={loadOptions(props)}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
-                isOptionSelected={option =>
-                    option &&
-                    option.regionId &&
-                    option.regionId === props.regionId
-                        ? true
-                        : false
-                }
                 styles={AreaSelectStyles}
                 placeholder={placeHolderText}
                 isDisabled={isDisabled}

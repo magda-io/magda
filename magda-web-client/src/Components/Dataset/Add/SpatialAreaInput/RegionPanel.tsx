@@ -4,6 +4,8 @@ import StateSelect from "./StateSelect";
 import RegionSelect from "./RegionSelect";
 import AreaSelect from "./AreaSelect";
 
+import { BoundingBox } from "helpers/datasetSearch";
+
 interface StateType {
     steRegion?: Region;
     sa4Region?: Region;
@@ -14,7 +16,14 @@ interface PropsType {
     steId?: string;
     sa4Id?: string;
     sa3Id?: string;
-    onChange?: (region?: Region) => void;
+    bbox?: BoundingBox;
+    onChange?: (
+        region?: Region,
+        steId?: string,
+        sa4?: string,
+        sa3?: string,
+        bbox?: BoundingBox
+    ) => void;
 }
 
 export type OptionType = Region;
@@ -27,16 +36,32 @@ const initialState = props => ({
 
 const RegionPanel: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState<StateType>(initialState(props));
-    const onChange: (newState: StateType) => void = newState => {
+    const onChange: (state: StateType, props: PropsType) => void = (
+        state,
+        props
+    ) => {
         if (typeof props.onChange !== "function") return;
-        if (newState.sa3Region) {
-            props.onChange(newState.sa3Region);
-        } else if (newState.sa4Region) {
-            props.onChange(newState.sa4Region);
-        } else if (newState.steRegion) {
-            props.onChange(newState.steRegion);
+        if (state.sa3Region) {
+            props.onChange(state.sa3Region);
+        } else if (state.sa4Region) {
+            props.onChange(state.sa4Region, undefined, undefined, props.sa3Id);
+        } else if (state.steRegion) {
+            props.onChange(
+                state.steRegion,
+                undefined,
+                props.sa4Id,
+                props.sa3Id
+            );
         } else {
-            props.onChange();
+            props.onChange(
+                undefined,
+                props.steId,
+                props.sa4Id,
+                props.sa3Id,
+                props.steId || props.sa4Id || props.sa3Id
+                    ? props.bbox
+                    : undefined
+            );
         }
     };
 
@@ -48,17 +73,22 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                     <StateSelect
                         value={state.steRegion}
                         regionId={props.steId}
-                        onChange={option =>
+                        onChange={(option, notResetOtherRegions) =>
                             setState(state => {
+                                notResetOtherRegions = notResetOtherRegions
+                                    ? true
+                                    : false;
                                 const newState = {
                                     ...state,
                                     steRegion: option
                                         ? { ...option }
-                                        : undefined,
-                                    sa4Region: undefined,
-                                    sa3Region: undefined
+                                        : undefined
                                 };
-                                onChange(newState);
+                                if (!notResetOtherRegions) {
+                                    newState.sa4Region = undefined;
+                                    newState.sa3Region = undefined;
+                                }
+                                onChange(newState, props);
                                 return newState;
                             })
                         }
@@ -72,16 +102,18 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                         value={state.sa4Region}
                         regionId={props.sa4Id}
                         steRegion={state.steRegion}
-                        onChange={option =>
+                        onChange={(option, notResetOtherRegions) =>
                             setState(state => {
                                 const newState = {
                                     ...state,
                                     sa4Region: option
                                         ? { ...option }
-                                        : undefined,
-                                    sa3Region: undefined
+                                        : undefined
                                 };
-                                onChange(newState);
+                                if (!notResetOtherRegions) {
+                                    newState.sa3Region = undefined;
+                                }
+                                onChange(newState, props);
                                 return newState;
                             })
                         }
@@ -106,7 +138,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                         ? { ...option }
                                         : undefined
                                 };
-                                onChange(newState);
+                                onChange(newState, props);
                                 return newState;
                             })
                         }

@@ -64,12 +64,19 @@ const initialState: StateType = {
 
 const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState(initialState);
-    const onRegionPanelChange = (region?: Region) => {
+    const onRegionPanelChange = (
+        region?: Region,
+        steId?: string,
+        sa4Id?: string,
+        sa3Id?: string,
+        bbox?: BoundingBox
+    ) => {
         if (typeof props.onChange !== "function") return;
         if (!region) {
-            props.onChange();
+            props.onChange(bbox, steId, sa4Id, sa3Id);
             return;
         }
+
         // --- regionId should be used depends on current region type
         props.onChange(
             region.boundingBox,
@@ -78,11 +85,15 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                 ? region.sa4Id
                 : region.steId
                 ? region.regionId
+                : sa4Id
+                ? sa4Id
                 : undefined,
             region.sa3Id
                 ? region.sa3Id
                 : region.sa4Id
                 ? region.regionId
+                : sa3Id
+                ? sa3Id
                 : undefined
         );
     };
@@ -118,6 +129,7 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                                             steId={props.steId}
                                             sa4Id={props.sa4Id}
                                             sa3Id={props.sa3Id}
+                                            bbox={props.bbox}
                                             onChange={onRegionPanelChange}
                                         />
                                     );

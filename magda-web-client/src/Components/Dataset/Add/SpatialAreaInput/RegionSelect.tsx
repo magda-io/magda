@@ -7,12 +7,14 @@ import RegionSelectStyles from "./RegionSelectStyles";
 
 import { Region } from "helpers/datasetSearch";
 
-const loadOptions = (region: ValueType<Region>) => async inputValue => {
-    if (!region) return [];
+const loadOptions = (props: PropsType) => async inputValue => {
+    if (!props.steRegion) return [];
     const queryStr = inputValue.trim();
     const res = await fetch(
         `${config.searchApiUrl}regions?type=SA4${
-            region ? `&steId=${encodeURIComponent(region.regionId)}` : ""
+            props.steRegion && props.steRegion.regionId
+                ? `&steId=${encodeURIComponent(props.steRegion.regionId)}`
+                : ""
         }${queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""}`
     );
     if (res.status !== 200) {
@@ -22,6 +24,15 @@ const loadOptions = (region: ValueType<Region>) => async inputValue => {
     if (!data || !Array.isArray(data.regions)) {
         throw new Error("Invalid server response");
     }
+    if (props.regionId && !props.value) {
+        // --- set initial prepopulated value
+        data.regions.forEach(region => {
+            if (region.regionId === props.regionId) {
+                typeof props.onChange === "function" &&
+                    props.onChange(region, true);
+            }
+        });
+    }
     return data.regions;
 };
 
@@ -29,7 +40,10 @@ interface PropsType {
     steRegion?: ValueType<Region>;
     value?: ValueType<Region>;
     regionId?: string;
-    onChange?: (option: ValueType<Region>) => void;
+    onChange?: (
+        option: ValueType<Region>,
+        notResetOtherRegions?: Boolean
+    ) => void;
 }
 
 const RegionSelect: FunctionComponent<PropsType> = props => {
@@ -43,21 +57,20 @@ const RegionSelect: FunctionComponent<PropsType> = props => {
     return (
         <div className="region-select">
             <ReactSelect<Region>
-                key={steRegion ? steRegion.regionId : ""}
+                key={(() => {
+                    const keyParts = [
+                        props.regionId ? props.regionId : "",
+                        steRegion ? steRegion.regionId : ""
+                    ];
+                    return keyParts.join("|");
+                })()}
                 isClearable
                 cacheOptions
                 defaultOptions
                 value={props.value}
-                loadOptions={loadOptions(steRegion)}
+                loadOptions={loadOptions(props)}
                 getOptionLabel={option => option.regionName as string}
                 getOptionValue={option => option.regionId as string}
-                isOptionSelected={option =>
-                    option &&
-                    option.regionId &&
-                    option.regionId === props.regionId
-                        ? true
-                        : false
-                }
                 styles={RegionSelectStyles}
                 placeholder={placeHolderText}
                 isDisabled={isDisabled}
