@@ -1,9 +1,20 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Map, TileLayer, Rectangle } from "react-leaflet";
+import { BoundingBox } from "helpers/datasetSearch";
+import { config } from "config";
 
-const SpatialDataPreviewer = props => {
-    let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
-    let [minlon, minlat, maxlon, maxlat] = bbox;
+interface PropsType {
+    bbox?: BoundingBox;
+}
+
+const SpatialDataPreviewer: FunctionComponent<PropsType> = props => {
+    let bbox = props.bbox || { ...config.boundingBox };
+    let [minlon, minlat, maxlon, maxlat] = [
+        bbox.west,
+        bbox.south,
+        bbox.east,
+        bbox.north
+    ];
     const isValid =
         !isNaN(minlon) && !isNaN(minlat) && !isNaN(maxlon) && !isNaN(maxlat);
     const bounds = [[minlat, minlon], [maxlat, maxlon]];

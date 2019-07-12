@@ -3,6 +3,7 @@ import { Region } from "helpers/datasetSearch";
 import StateSelect from "./StateSelect";
 import RegionSelect from "./RegionSelect";
 import AreaSelect from "./AreaSelect";
+import SpatialDataPreviewer from "./SpatialDataPreviewer";
 
 import { BoundingBox } from "helpers/datasetSearch";
 
@@ -141,6 +142,17 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                 onChange(newState, props);
                                 return newState;
                             })
+                        }
+                    />
+                </div>
+            </div>
+            <div className="row">
+                <div className="col-sm-12 spatial-data-previewer-container">
+                    <SpatialDataPreviewer
+                        bbox={
+                            props.steId || props.sa4Id || props.sa3Id
+                                ? props.bbox
+                                : undefined
                         }
                     />
                 </div>

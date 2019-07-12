@@ -3,29 +3,12 @@ import { config } from "config";
 import { Region } from "helpers/datasetSearch";
 import Tabs from "./Tabs";
 import RegionPanel from "./RegionPanel";
-import BBoxEditor from "./BBoxEditor";
-import SpatialDataPreviewer from "./SpatialDataPreviewer";
+import CoordinatesPanel from "./CoordinatesPanel";
 
 import { BoundingBox } from "helpers/datasetSearch";
 
 import helpIcon from "assets/help.svg";
 import "./index.scss";
-
-const CoordinatesPanel = props => {
-    return (
-        <div className="coordinates-panel">
-            <div className="editor-heading">Map preview:</div>
-            <div className="row">
-                <div className="col-sm-6">
-                    <BBoxEditor />
-                </div>
-                <div className="col-sm-6">
-                    <SpatialDataPreviewer />
-                </div>
-            </div>
-        </div>
-    );
-};
 
 interface StateType {
     activeTabIndex: number;
@@ -49,8 +32,22 @@ interface PropsType {
     ) => void;
 }
 
-const initialState: StateType = {
-    activeTabIndex: 0,
+const initialState = (props: PropsType) => ({
+    activeTabIndex: (() => {
+        if (
+            props.bbox &&
+            props.bbox.east &&
+            props.bbox.north &&
+            props.bbox.south &&
+            props.bbox.west &&
+            !props.steId &&
+            !props.sa4Id &&
+            !props.sa3Id
+        ) {
+            return 1;
+        }
+        return 0;
+    })(),
     steId: "",
     sa4Id: "",
     sa3Id: "",
@@ -60,10 +57,10 @@ const initialState: StateType = {
         south: config.boundingBox.south,
         east: config.boundingBox.east
     }
-};
+});
 
 const SpatialAreaInput: FunctionComponent<PropsType> = props => {
-    const [state, setState] = useState(initialState);
+    const [state, setState] = useState<StateType>(initialState(props));
     const onRegionPanelChange = (
         region?: Region,
         steId?: string,
@@ -97,6 +94,13 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                 : undefined
         );
     };
+
+    const onCoordinatesPanelChange = (bbox?: BoundingBox) => {
+        if (typeof bbox === "undefined" || typeof props.onChange !== "function")
+            return;
+        props.onChange(bbox);
+    };
+
     return (
         <div className="spatial-area-input">
             <div className="row">
@@ -134,7 +138,12 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                                         />
                                     );
                                 case 1:
-                                    return <CoordinatesPanel />;
+                                    return (
+                                        <CoordinatesPanel
+                                            bbox={props.bbox}
+                                            onChange={onCoordinatesPanelChange}
+                                        />
+                                    );
                                 default:
                                     throw new Error(
                                         "Invalid tab index: " +

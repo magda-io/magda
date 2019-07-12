@@ -54,7 +54,6 @@ import uuidv4 from "uuid/v4";
 
 import * as codelists from "constants/DatasetConstants";
 
-import { Map, TileLayer, Rectangle } from "react-leaflet";
 import TagInput from "Components/Common/TagInput";
 
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
@@ -392,15 +391,6 @@ class NewDataset extends React.Component<Prop, State> {
                                 })
                             }
                         />
-                    </div>
-
-                    <h4>Would you like to show a spatial preview?</h4>
-
-                    <div>
-                        <YesNoToggle yes={!!spatialCoverage.bbox}>
-                            <p>Map preview: </p>
-                            <BBOXPreview bbox={spatialCoverage.bbox} />
-                        </YesNoToggle>
                     </div>
                 </div>
             </div>
@@ -873,70 +863,6 @@ function denormalise(values) {
     }
 
     return output;
-}
-
-class YesNoToggle extends React.Component<any, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            yes: !!props.yes
-        };
-    }
-
-    updateState(update: any) {
-        this.setState(Object.assign({}, this.state, update));
-    }
-    render() {
-        const { yes } = this.state;
-        return (
-            <div>
-                <p>
-                    <button
-                        className={"au-btn " + (yes || "au-btn--secondary")}
-                        onClick={this.updateState.bind(this, {
-                            yes: true
-                        })}
-                    >
-                        Yes
-                    </button>
-                    <button
-                        className={"au-btn " + (!yes || "au-btn--secondary")}
-                        onClick={this.updateState.bind(this, {
-                            yes: false
-                        })}
-                    >
-                        No
-                    </button>
-                </p>
-                {yes && this.props.children}
-            </div>
-        );
-    }
-}
-
-function BBOXPreview(props) {
-    let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
-    let [minlon, minlat, maxlon, maxlat] = bbox;
-    const isValid =
-        !isNaN(minlon) && !isNaN(minlat) && !isNaN(maxlon) && !isNaN(maxlat);
-    const bounds = [[minlat, minlon], [maxlat, maxlon]];
-    return (
-        <div>
-            {isValid ? (
-                <Map bounds={bounds} animate={true}>
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    <Rectangle bounds={bounds} />
-                </Map>
-            ) : (
-                <div className={"leaflet-container"}>
-                    Please enter valid coordinates
-                </div>
-            )}
-        </div>
-    );
 }
 
 function YesNoEditReveal(props) {
