@@ -10,7 +10,7 @@ Integrated →  Shell → Windows → C:\Windows\System32\WindowsPowerShell\v1.0
 7.	(Skip this step. Don't install nodejs in Windows.) Install nodejs → https://nodejs.org/en/download/ (Ref https://code.visualstudio.com/docs/nodejs/nodejs-tutoril)
 8.	(Skip this step. Don't install yarn in Windows.) Install Chocolatey etc → https://chocolatey.org/install → (PowerShell as admin)
 9.	@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-10.	# Re-open the terminal before continuing the next step.
+10.	Re-open the terminal before continuing the next step.
 11.	choco upgrade chocolatey
 choco install yarn
 12.	Run a local docker registry 
