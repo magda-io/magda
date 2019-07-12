@@ -52,7 +52,9 @@ class AutoCompleteInput<T> extends React.Component<
 
     readonly state: StateData<T> = {
         suggestions: [],
-        value: ""
+        value: this.props.defaultValue
+            ? this.props.objectToString(this.props.defaultValue)
+            : ""
     };
 
     private currentQuery: string = "";
@@ -94,13 +96,9 @@ class AutoCompleteInput<T> extends React.Component<
                 .filter(option => {
                     const stringOption = this.props.objectToString(option);
 
-                    return (
-                        this.state.value &&
-                        (stringOption !== this.state.value &&
-                            !this.getExcludeLookup(this.props.exclude)[
-                                stringOption.toLowerCase()
-                            ])
-                    );
+                    return !this.getExcludeLookup(this.props.exclude)[
+                        stringOption.toLowerCase()
+                    ];
                 })
                 .slice(0, this.props.suggestionSize);
 
@@ -116,6 +114,10 @@ class AutoCompleteInput<T> extends React.Component<
 
     clearSuggestions = () => {
         this.setState({ suggestions: [] });
+    };
+
+    onFocus = (event: FocusEvent) => {
+        this.onSelect(this.state.value);
     };
 
     onKeyUp = (event: KeyboardEvent) => {

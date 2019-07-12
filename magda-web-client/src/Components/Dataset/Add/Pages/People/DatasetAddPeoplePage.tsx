@@ -79,6 +79,7 @@ export default function DatasetAddPeoplePage(props: Props) {
     const { dataset } = props;
 
     const editDataset = props.edit("dataset");
+
     return (
         <div className="row people-and-production-page">
             <div className="col-sm-12">
@@ -89,7 +90,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                     Which organisation is responsible for publishing this
                     dataset?
                 </h4>
-                <p>
+                <div>
                     <OrganisationAutoComplete
                         defaultValue={dataset.publisher}
                         onOrgSelected={editDataset("publisher")}
@@ -99,20 +100,20 @@ export default function DatasetAddPeoplePage(props: Props) {
                         onChange={editDataset("publisher")}
                         editor={textEditor}
                     /> */}
-                </p>
+                </div>
                 <h4>Who is the primary contact point(s) for this dataset?</h4>
-                <p>
+                <div>
                     <AlwaysEditor
                         value={dataset.contactPointFull}
                         onChange={editDataset("contactPointFull")}
                         editor={multiContactEditor({})}
                     />
-                </p>
+                </div>
                 <h4>
                     How should the contact point(s) be referenced in the
                     metadata?
                 </h4>
-                <p>
+                <div>
                     <AlwaysEditor
                         value={dataset.contactPointDisplay}
                         onChange={editDataset("contactPointDisplay")}
@@ -120,14 +121,14 @@ export default function DatasetAddPeoplePage(props: Props) {
                             codelists.contactPointDisplay
                         )}
                     />
-                </p>
+                </div>
                 <hr />
                 <h3>Production</h3>
                 <h4>
                     Was this dataset produced in collaboration with with other
                     organisations?
                 </h4>
-                <p>
+                <div>
                     <YesNoEditReveal
                         value={dataset.creation_affiliatedOrganisation}
                         defaultValue={[]}
@@ -146,15 +147,15 @@ export default function DatasetAddPeoplePage(props: Props) {
                             })}
                         />
                     </YesNoEditReveal>
-                </p>
+                </div>
                 <h4>How was the dataset produced?</h4>
-                <p>
+                <div>
                     <AlwaysEditor
                         value={dataset.creation_mechanism}
                         onChange={editDataset("creation_mechanism")}
                         editor={multilineTextEditor}
                     />
-                </p>
+                </div>
             </div>
         </div>
     );
