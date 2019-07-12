@@ -192,7 +192,9 @@ export default class EsriPortal implements ConnectorSource {
                             item: any,
                             index: number
                         ) {
-                            item.distributions = [values[index]];
+                            const distForDataset: any = values[index];
+                            distForDataset.id = `${item.id}-0`;
+                            item.distributions = [distForDataset];
                         },
                         this);
                         resolve(body);
