@@ -19,12 +19,20 @@ interface StateType {
     bbox?: BoundingBox;
 }
 
+/**
+ * bbox: CoordinatesPanel input
+ * region: RegionPanel input
+ * map: reserve for future usage
+ */
+export type InputMethod = "bbox" | "region" | "map";
+
 interface PropsType {
     steId?: string;
     sa4Id?: string;
     sa3Id?: string;
     bbox?: BoundingBox;
     onChange?: (
+        method: InputMethod,
         bbox?: BoundingBox,
         steId?: string,
         sa4Id?: string,
@@ -70,12 +78,13 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     ) => {
         if (typeof props.onChange !== "function") return;
         if (!region) {
-            props.onChange(bbox, steId, sa4Id, sa3Id);
+            props.onChange("region", bbox, steId, sa4Id, sa3Id);
             return;
         }
 
         // --- regionId should be used depends on current region type
         props.onChange(
+            "region",
             region.boundingBox,
             region.steId ? region.steId : region.regionId,
             region.sa4Id
@@ -98,7 +107,7 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     const onCoordinatesPanelChange = (bbox?: BoundingBox) => {
         if (typeof bbox === "undefined" || typeof props.onChange !== "function")
             return;
-        props.onChange(bbox);
+        props.onChange("bbox", bbox);
     };
 
     return (

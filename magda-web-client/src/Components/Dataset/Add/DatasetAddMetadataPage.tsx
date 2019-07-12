@@ -58,7 +58,9 @@ import TagInput from "Components/Common/TagInput";
 
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 
-import SpatialAreaInput from "./SpatialAreaInput";
+import SpatialAreaInput, {
+    InputMethod as SpatialAreaInputInputMethod
+} from "./SpatialAreaInput";
 
 import "./DatasetAddFilesPage.scss";
 
@@ -361,13 +363,16 @@ class NewDataset extends React.Component<Prop, State> {
                                 };
                             })()}
                             onChange={(
+                                method: SpatialAreaInputInputMethod,
                                 bbox?: BoundingBox,
                                 steId?: string,
                                 sa4Id?: string,
                                 sa3Id?: string
                             ) =>
                                 this.setState(state => {
-                                    const spatialCoverage: any = {};
+                                    const spatialCoverage: any = {
+                                        spatialDataInputMethod: method
+                                    };
 
                                     if (bbox) {
                                         // --- According to existing JSON schema:

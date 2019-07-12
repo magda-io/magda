@@ -4,7 +4,8 @@ const StateSelectStyles = {
             ...provided,
             borderRadius: "2px",
             marginTop: "0px",
-            zIndex: 3
+            // --- float over leaflet map zoom ctrl
+            zIndex: 1001
         };
     },
     menuList: provided => ({
