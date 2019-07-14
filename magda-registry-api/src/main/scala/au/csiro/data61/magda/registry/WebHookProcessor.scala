@@ -162,6 +162,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
     // definitions in a notification payload.
     // In the future, if some web hooks request them, tenant id field should be added to the definitions.
     // For now, aspectDefinitions is only as place holder. It equals to None anyway.
+    // TODO: Create a ticket in github.
     val aspectDefinitions = webHook.config.includeAspectDefinitions match {
       case Some(false) | None => None
       case Some(true)         => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds, MAGDA_SYSTEM_ID)) }

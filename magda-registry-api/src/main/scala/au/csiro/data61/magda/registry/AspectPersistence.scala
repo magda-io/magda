@@ -73,7 +73,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
       eventId <- Try {
         if (testAspectPatch.ops.length > 0) {
-          val event = PatchAspectDefinitionEvent(id, aspectPatch).toJson.compactPrint
+          val event = PatchAspectDefinitionEvent(id, aspectPatch, tenantId).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, 0, $tenantId, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
@@ -99,7 +99,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def create(implicit session: DBSession, aspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
     // Create a 'Create Aspect' event
-    val eventJson = CreateAspectDefinitionEvent(aspect.id, aspect.name, aspect.jsonSchema).toJson.compactPrint
+    val eventJson = CreateAspectDefinitionEvent(aspect.id, aspect.name, aspect.jsonSchema, tenantId).toJson.compactPrint
     val eventId = sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey().apply()
 
     // Create the actual Aspect
