@@ -789,7 +789,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         //
         // We could have let TENANT_1 make the request in this test case. Instead, we let TENANT_2 make the request
         // in order to highlight a potential "ghost" link problem.
-        // TODO: Create a ticket in github.
+        // See https://github.com/magda-io/magda/issues/2339.
         param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }

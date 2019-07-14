@@ -2,23 +2,20 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MessageEntity, Uri}
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import au.csiro.data61.magda.model.Registry._
 import scalikejdbc._
 import spray.json.JsString
-import au.csiro.data61.magda.model.Registry._
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
-import akka.http.scaladsl.model.StatusCode
 
 import scala.collection.mutable
-import scala.collection.mutable.HashMap
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 /**
   * The processor sends notifications to a subscriber via web hook.
@@ -162,7 +159,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
     // definitions in a notification payload.
     // In the future, if some web hooks request them, tenant id field should be added to the definitions.
     // For now, aspectDefinitions is only as place holder. It equals to None anyway.
-    // TODO: Create a ticket in github.
+    // See https://github.com/magda-io/magda/issues/2078.
     val aspectDefinitions = webHook.config.includeAspectDefinitions match {
       case Some(false) | None => None
       case Some(true)         => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds, MAGDA_SYSTEM_ID)) }
