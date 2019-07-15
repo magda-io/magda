@@ -15,22 +15,17 @@
             "type": "string",
             "enum": ["bbox", "region", "map"]
         },
-        "uiHierarchy": {
-            "type": "object",
-            "properties": {
-                "steId": {
-                    "title": "STE region Id",
-                    "type": "string"
-                },
-                "sa4Id": {
-                    "title": "SA4 region Id",
-                    "type": "string"
-                },
-                "sa3Id": {
-                    "title": "SA4 region Id",
-                    "type": "string"
-                }
-            }
+        "steId": {
+            "title": "STE region Id",
+            "type": "string"
+        },
+        "sa4Id": {
+            "title": "SA4 region Id",
+            "type": "string"
+        },
+        "sa3Id": {
+            "title": "SA3 region Id",
+            "type": "string"
         }
     }
 }
