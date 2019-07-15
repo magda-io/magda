@@ -1,13 +1,15 @@
 import * as express from "express";
 import * as URI from "urijs";
 import * as _ from "lodash";
-import request from "@magda/typescript-common/dist/request";
+import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import { escapeRegExp } from "lodash";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
     ckanRedirectionPath: string;
     registryApiBaseUrlInternal: string;
+    tenantId: number;
 };
 
 export type genericUrlRedirectConfig =
@@ -73,9 +75,14 @@ export function covertGenericUrlRedirectConfigToFullArgList(
 export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
     ckanRedirectionPath,
-    registryApiBaseUrlInternal
+    registryApiBaseUrlInternal,
+    tenantId
 }: CkanRedirectionRouterOptions): express.Router {
     const router = express.Router();
+    const registry = new Registry({
+        baseUrl: registryApiBaseUrlInternal,
+        tenantId
+    });
 
     /**
      * Redirect a path to ckan system
@@ -152,16 +159,7 @@ export default function buildCkanRedirectionRouter({
         );
     });
 
-    class GenericError extends Error {
-        constructor(message = "Unknown Error", errorData: any = null) {
-            super(message);
-            this.errorData = errorData;
-        }
-
-        errorData: any = null;
-    }
-
-    function queryRegistryRecordApi(
+    async function queryRegistryRecordApi(
         aspectQuery: string[],
         aspect: string[],
         limit: number = 1
@@ -176,64 +174,18 @@ export default function buildCkanRedirectionRouter({
             queryParameters["aspect"] = aspect;
         }
 
-        const requestOptions = {
-            uri: `${registryApiBaseUrlInternal}/records`,
-            method: "GET",
-            qs: queryParameters,
-            qsStringifyOptions: {
-                arrayFormat: "repeat"
-            },
-            json: false,
-            encoding: "utf-8"
-        };
+        const records = unionToThrowable(
+            await registry.getRecords(
+                aspect,
+                null,
+                null,
+                null,
+                limit,
+                aspectQuery
+            )
+        );
 
-        return new Promise((resolve, reject) => {
-            try {
-                request(requestOptions, (error, response, body) => {
-                    try {
-                        if (error) {
-                            if (_.isError(error)) {
-                                reject(error);
-                            } else {
-                                reject(
-                                    new GenericError(
-                                        "Failed to send request to Registry API.",
-                                        error
-                                    )
-                                );
-                            }
-                        } else {
-                            if (
-                                response.statusCode >= 200 &&
-                                response.statusCode <= 299
-                            ) {
-                                try {
-                                    resolve(JSON.parse(body));
-                                } catch (e) {
-                                    reject(
-                                        new GenericError(
-                                            "Failed to parse response.",
-                                            response
-                                        )
-                                    );
-                                }
-                            } else {
-                                reject(
-                                    new GenericError(
-                                        "Registry API failed to process response.",
-                                        response
-                                    )
-                                );
-                            }
-                        }
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-            } catch (e) {
-                reject(e);
-            }
-        });
+        return records;
     }
 
     async function queryCkanAspect(

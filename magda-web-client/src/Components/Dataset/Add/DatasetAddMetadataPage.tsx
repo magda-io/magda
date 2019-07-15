@@ -1,7 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router";
 import { Map, TileLayer, Rectangle } from "react-leaflet";
-import uuidv1 from "uuid/v1";
 import uuidv4 from "uuid/v4";
 import ReactSelect from "react-select";
 
@@ -36,13 +35,10 @@ import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgre
 import * as codelists from "constants/DatasetConstants";
 import TagInput from "Components/Common/TagInput";
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
-import {
-    State,
-    createBlankState,
-    loadState,
-    saveState
-} from "./DatasetAddCommon";
+import { State, saveState } from "./DatasetAddCommon";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
+import { createPublisher } from "api-clients/RegistryApis";
+import withAddDatasetState from "./withAddDatasetState";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -55,6 +51,8 @@ import accessAspect from "@magda/registry-aspects/access.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
+import { autocompletePublishers } from "api-clients/SearchApis";
+import publisher from "reducers/publisherReducer";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -67,29 +65,29 @@ const aspects = {
     access: accessAspect
 };
 
-type Prop = {
+type Props = {
+    initialState: State;
     createRecord: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
     step: number;
-    dataset: string;
+    datasetId: string;
     isNewDataset: boolean;
     history: any;
 };
 
-class NewDataset extends React.Component<Prop, State> {
-    state: State = createBlankState();
+class NewDataset extends React.Component<Props, State> {
+    state: State = this.props.initialState;
 
-    componentWillMount() {
+    componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.dataset}/${this.props.step}`
+                `/dataset/add/metadata/${this.props.datasetId}/${
+                    this.props.step
+                }`
             );
         }
-        this.setState(state =>
-            Object.assign({}, state, loadState(this.props.dataset))
-        );
     }
 
     steps: any = [
@@ -197,13 +195,13 @@ class NewDataset extends React.Component<Prop, State> {
     }
 
     saveAndExit() {
-        saveState(this.state, this.props.dataset);
+        saveState(this.state, this.props.datasetId);
         this.props.history.push(`/dataset/list`);
     }
 
     gotoStep(step) {
-        saveState(this.state, this.props.dataset);
-        this.props.history.push("../" + this.props.dataset + "/" + step);
+        saveState(this.state, this.props.datasetId);
+        this.props.history.push("../" + this.props.datasetId + "/" + step);
     }
 
     renderBasicDetails() {
@@ -628,7 +626,7 @@ class NewDataset extends React.Component<Prop, State> {
     }
 
     async publishDataset() {
-        saveState(this.state, this.props.dataset);
+        saveState(this.state, this.props.datasetId);
 
         const id = createId("ds");
         const {
@@ -641,6 +639,62 @@ class NewDataset extends React.Component<Prop, State> {
             datasetUsage,
             datasetAccess
         } = this.state;
+
+        if (!dataset.publisher) {
+            throw new Error("No publisher selected");
+        }
+
+        console.log(dataset.publisher);
+
+        this.setState({
+            isPublishing: true
+        });
+
+        let publisherId: string;
+        if (!dataset.publisher.existingId) {
+            // Do a last check to make sure the publisher really doesn't exist
+            const existingPublishers = await autocompletePublishers(
+                {},
+                dataset.publisher.name
+            );
+
+            const match = existingPublishers.options.find(
+                publisher =>
+                    publisher.value.toLowerCase().trim() ===
+                    dataset.publisher!.name.toLowerCase().trim()
+            );
+
+            if (!match) {
+                publisherId = uuidv4();
+
+                // OK no publisher, lets add it
+                await createPublisher({
+                    id: publisherId,
+                    name: dataset.publisher.name,
+                    aspects: {
+                        "organization-details": {
+                            name: dataset.publisher.name,
+                            title: dataset.publisher.name,
+                            imageUrl: "",
+                            description:
+                                "Added manually during dataset creation"
+                        }
+                    }
+                });
+            } else {
+                publisherId = match.identifier;
+            }
+
+            const newPublisher = {
+                name: publisher.name,
+                publisherId
+            };
+
+            this.edit("dataset")("publisher")(newPublisher);
+        } else {
+            publisherId = dataset.publisher.existingId;
+        }
+
         const inputDistributions = files.map(file => {
             let usage: any = undefined;
             if (_licenseLevel !== "dataset") {
@@ -673,22 +727,21 @@ class NewDataset extends React.Component<Prop, State> {
                     distributions: inputDistributions.map(d => d.id)
                 },
                 access: datasetAccess,
-                usage
+                usage,
+                "dataset-publisher": {
+                    publisher: publisherId
+                }
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
-
-        this.setState({
-            isPublishing: true
-        });
     }
 }
 
 function mapStateToProps(state, old) {
-    let dataset = old.match.params.dataset;
+    let datasetId = old.match.params.dataset;
     let isNewDataset = false;
-    if (!dataset || dataset === "-") {
-        dataset = "dataset-" + uuidv4();
+    if (!datasetId || datasetId === "-") {
+        datasetId = "dataset-" + uuidv4();
         isNewDataset = true;
     }
     const step = parseInt(old.match.params.step);
@@ -702,7 +755,7 @@ function mapStateToProps(state, old) {
         state.record.newDataset.dataset &&
         state.record.newDataset.dataset.id;
     return {
-        dataset,
+        datasetId,
         isNewDataset,
         step,
         isCreating,
@@ -720,15 +773,17 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default withRouter(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(NewDataset)
+export default withAddDatasetState(
+    withRouter(
+        connect(
+            mapStateToProps,
+            mapDispatchToProps
+        )(NewDataset)
+    )
 );
 
 function createId(type = "ds") {
-    return `magda-${type}-${uuidv1()}--${uuidv4()}`;
+    return `magda-${type}-${uuidv4()}`;
 }
 
 function denormalise(values) {

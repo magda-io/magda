@@ -121,6 +121,10 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("vocabularyApiEndpoints"),
         default: "[]"
+    })
+    .option("defaultOrganizationId", {
+        describe: "The id of a default organization to use for new datasets",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -194,7 +198,8 @@ const webServerConfig = {
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
     featureFlags: argv.featureFlags || {},
-    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[]
+    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
+    defaultOrganizationId: argv.defaultOrganizationId
 };
 
 app.get("/server-config.js", function(req, res) {

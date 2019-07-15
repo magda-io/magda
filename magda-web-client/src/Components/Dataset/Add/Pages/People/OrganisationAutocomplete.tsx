@@ -1,6 +1,6 @@
 import React from "react";
 
-import { autocompletePublishers } from "api-clients/PublisherApis";
+import { autocompletePublishers } from "api-clients/SearchApis";
 import AutoCompleteInput from "Components/Editing/AutoCompleteInput";
 import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
 
@@ -12,20 +12,16 @@ type Props = {
 async function query(term: string) {
     const apiResult = await autocompletePublishers({}, term);
 
-    return apiResult.options.map(
-        searchPublisher =>
-            new OrganisationAutocompleteChoice(
-                searchPublisher.value,
-                searchPublisher.identifier
-            )
-    );
+    return apiResult.options.map(searchPublisher => ({
+        name: searchPublisher.value,
+        existingId: searchPublisher.identifier
+    }));
 }
 
 export default function OrganisationAutocomplete(props: Props) {
     const { onOrgSelected, defaultValue } = props;
 
-    const handleNewOrg = (orgName: string) =>
-        onOrgSelected(new OrganisationAutocompleteChoice(orgName));
+    const handleNewOrg = (orgName: string) => onOrgSelected({ name: orgName });
 
     return (
         <AutoCompleteInput<OrganisationAutocompleteChoice>

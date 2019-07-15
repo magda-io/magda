@@ -1,7 +1,7 @@
 import { actionTypes } from "../constants/ActionTypes";
 import { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
 import { FetchError } from "../types";
-import { autocompletePublishers } from "api-clients/PublisherApis";
+import { autocompletePublishers } from "api-clients/SearchApis";
 import { Query as SearchQuery } from "../helpers/buildSearchQueryString";
 
 export function requestPublishers(facetQuery): FacetAction {

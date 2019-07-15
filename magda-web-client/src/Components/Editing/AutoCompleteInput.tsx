@@ -2,12 +2,9 @@ import React, { KeyboardEvent } from "react";
 import Autosuggest, {
     InputProps as AutosuggestInputProps
 } from "react-autosuggest";
-import throttle from "lodash/throttle";
 import debounce from "lodash/debounce";
 import keyBy from "lodash/keyBy";
 import memoize from "memoize-one";
-
-// import {Omit} from "helpers/helper-types";
 
 import "./AutoCompleteInput.scss";
 
@@ -60,33 +57,24 @@ class AutoCompleteInput<T> extends React.Component<
     private currentQuery: string = "";
     private key: string = `AutoCompleteInput_${AutoCompleteInput.key++}`;
 
-    throttledQuery = throttle(this.props.query, 500);
-    debouncedQuery = debounce(this.props.query, 500);
-
     getExcludeLookup: (excludes: T[]) => string[] = memoize((excludes: T[]) =>
         keyBy(excludes, exclude =>
             this.props.objectToString(exclude).toLowerCase()
         )
     );
 
-    onSuggestionsFetchRequested = async ({ value }) => {
+    onSuggestionsFetchRequested = debounce(async ({ value }) => {
+        this.clearSuggestions();
+
         let inputValue = typeof value === "string" && value ? value : "";
         inputValue = inputValue.trim().toLowerCase();
         if (!inputValue.length) {
-            this.setState(state => ({ ...state, suggestions: [] }));
             return;
         }
         this.currentQuery = inputValue;
 
         try {
-            // --- we respond quicker in the beginning as people need more hints
-            // --- and slow down when input content is longer than 5
-            const queryFn =
-                inputValue.length < 5 || inputValue.endsWith(" ")
-                    ? this.throttledQuery
-                    : this.debouncedQuery;
-
-            const optionsResult = await queryFn(inputValue);
+            const optionsResult = await this.props.query(inputValue);
 
             if (this.currentQuery !== inputValue) {
                 return;
@@ -108,9 +96,8 @@ class AutoCompleteInput<T> extends React.Component<
             }));
         } catch (e) {
             console.error(e);
-            this.clearSuggestions();
         }
-    };
+    }, 200);
 
     clearSuggestions = () => {
         this.setState({ suggestions: [] });
@@ -118,6 +105,12 @@ class AutoCompleteInput<T> extends React.Component<
 
     onFocus = (event: FocusEvent) => {
         this.onSelect(this.state.value);
+    };
+
+    onBlur = () => {
+        if (!this.props.emptyOnSelect) {
+            this.onSelect(this.state.value);
+        }
     };
 
     onKeyUp = (event: KeyboardEvent) => {
@@ -165,11 +158,11 @@ class AutoCompleteInput<T> extends React.Component<
             ...this.props.inputProps,
             onKeyUp: this.onKeyUp,
             onChange: this.onChange,
-            value: this.state.value,
-            defaultValue:
-                this.props.defaultValue &&
-                this.props.objectToString(this.props.defaultValue)
+            onBlur: this.onBlur,
+            value: this.state.value
         };
+
+        console.log(this.state.value);
 
         return (
             <Autosuggest<T>
