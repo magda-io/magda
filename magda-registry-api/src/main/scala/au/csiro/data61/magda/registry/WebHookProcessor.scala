@@ -79,7 +79,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
             } else {
               recordPersistence.getRecordsLinkingToRecordIds(
                 session,
-                MAGDA_ADMIN_PORTAL_ID,  // TODO: Not working in multi-tenant mode
+                MAGDA_ADMIN_PORTAL_ID,  // TODO: Make it also work in multi-tenant mode.
                 allRecordIds,
                 directRecords.records.map(_.id),
                 webHook.config.aspects.getOrElse(List()),
@@ -92,9 +92,10 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
       }
     }
 
+    // TODO: Make it also work in multi-tenant mode.
     val aspectDefinitions = webHook.config.includeAspectDefinitions match {
       case Some(false) | None => None
-      case Some(true)         => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds)) }
+      case Some(true)         => DB readOnly { implicit session => Some(AspectPersistence.getByIds(session, aspectDefinitionIds, MAGDA_ADMIN_PORTAL_ID)) }
     }
 
     val payload = WebHookPayload(
