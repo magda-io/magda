@@ -2,4 +2,4 @@ image: {}
 resources:
   requests:
     cpu: 50m
-    memory: 30Mi
+    memory: 50Mi
