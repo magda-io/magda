@@ -124,7 +124,8 @@ const argv = yargs
     })
     .option("defaultOrganizationId", {
         describe: "The id of a default organization to use for new datasets",
-        type: "string"
+        type: "string",
+        required: false
     }).argv;
 
 var app = express();

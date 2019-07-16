@@ -33,6 +33,7 @@ export default function OrganisationAutocomplete(props: Props) {
             defaultValue={defaultValue}
             emptyOnSelect={false}
             inputProps={{
+                placeholder: "Search for an Organisation",
                 className: "au-text-input tag-input"
             }}
         />
