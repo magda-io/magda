@@ -37,7 +37,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe testId
@@ -52,8 +52,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -67,7 +67,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
@@ -76,7 +76,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
         val testId = "testId"
@@ -86,7 +86,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(
+        assertEventsInPayloads(List(
           ExpectedEventIdAndTenantId(4, TENANT_1),
           ExpectedEventIdAndTenantId(5, TENANT_1),
           ExpectedEventIdAndTenantId(6, TENANT_1)))
@@ -99,8 +99,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -214,7 +214,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
@@ -233,7 +233,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
@@ -242,8 +242,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
       }
     }
 
@@ -265,7 +265,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
         val testId = "testId"
@@ -275,7 +275,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(6, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(6, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
@@ -284,8 +284,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -301,9 +301,9 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateRecord
-          assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+          assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         }
       }
 
@@ -316,7 +316,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateAspectDefinition
           payloads.head.aspectDefinitions.get.length shouldBe 1
         }
@@ -341,9 +341,9 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateRecordAspect
-          assertRecords(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
+          assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         }
       }
 
@@ -365,7 +365,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.DeleteRecord
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("recordId") shouldBe JsString(testId)
@@ -389,7 +389,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           Util.waitUntilAllDone()
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchAspectDefinition
           val theMap = payloads(0).events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("aspectId") shouldBe JsString(testId)
@@ -414,7 +414,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchAspectDefinition
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("aspectId") shouldBe JsString(testId)
@@ -439,7 +439,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecord
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("recordId") shouldBe JsString(testId)
@@ -464,7 +464,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecord
           val theMap = payloads(0).events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("recordId") shouldBe JsString(testId)
@@ -492,7 +492,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecordAspect
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("recordId") shouldBe JsString(testId)
@@ -517,7 +517,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecordAspect
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
           theMap("recordId") shouldBe JsString(testId)
@@ -535,7 +535,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
         
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
@@ -553,7 +553,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
@@ -576,7 +576,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
@@ -595,7 +595,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
@@ -633,7 +633,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val testId = "testId"
@@ -643,15 +643,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
-
         val modified = record.copy(name = "new name")
         // Generate and process event with ID of 4.
         param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1)), payloadsSize = 2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1), ExpectedEventIdAndTenantId(4, TENANT_1)), payloadsSize = 2)
 
         for (i <- 1 to 50) {
           val withAspect = modified.copy(aspects = Map("A" -> JsObject(Map("a" -> JsString(i.toString)))))
@@ -745,7 +743,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val datasetId = "dataset"
@@ -755,7 +753,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
         val distributionId = "distribution"
@@ -765,7 +763,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
 
         // Generate and process event with ID of 5.
         param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
@@ -794,8 +792,76 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(7, TENANT_2)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_2)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
+      }
+    }
+
+    it("includes a record when a distribution is added to it, excluding same ID distribution from other tenant.") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { (payloads, _) =>
+        val jsonSchema =
+          """
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with a single link",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLink": {
+            |            "title": "A link to another record.",
+            |            "type": "string",
+            |            "links": [
+            |                {
+            |                    "href": "/api/v0/registry/records/{$}",
+            |                    "rel": "item"
+            |                }
+            |            ]
+            |        }
+            |    }
+            |}
+          """.stripMargin
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        // Generate and process event with ID of 2 - 7.
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map())
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+
+        Util.waitUntilAllDone()
+        payloads.clear()
+
+        val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString(distributionId))))
+        // Generate and process events with ID of 8, 9.
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1), ExpectedEventIdAndTenantId(9, TENANT_2)), payloadsSize = 2)
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1), ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
       }
     }
 
@@ -866,8 +932,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(10, TENANT_2)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(10, TENANT_2)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
       }
     }
 
@@ -927,8 +993,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(6, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(6, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -991,8 +1057,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         }
 
         Util.waitUntilAllDone()
-        assertPayload2(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1058,8 +1124,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1121,8 +1187,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1184,8 +1250,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
-        assertRecords(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
 
         val embeddedDistribution = payloads.head.records.get.head.aspects("A").fields("someLink").asJsObject
         val bAspect = embeddedDistribution.fields("aspects").asJsObject.fields("B").asJsObject
@@ -1251,7 +1317,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val expectedEventIds = List(2)
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.clear()
 
           resumeHook()
@@ -1296,7 +1362,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
           
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1318,7 +1384,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             responseAs[Record] shouldBe dataset.copy(tenantId = Some(TENANT_1))
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1340,7 +1406,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1356,7 +1422,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       it("when actor is sent Process() (i.e. on registry startup)") { param =>
         doTestAsync(param) { () =>
           param.webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = true)
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         }
       }
 
@@ -1382,34 +1448,34 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
           // Because the subscriber post ack as failure, two events should be sent,
           // with the first event being re-sent.
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1), ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1), ExpectedEventIdAndTenantId(3, TENANT_1)))
         }
       }
     }
   }
 
-  private def assertPayload2(expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId], payloadsSize: Int = 1) = {
+  private def assertEventsInPayloads(expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId], payloadsSize: Int = 1) = {
     Util.waitUntilAllDone(200)
     payloads.length shouldBe payloadsSize
-    val thePayload: WebHookPayload = payloads.last
-    val events = thePayload.events.get
-    val eventsSize = events.size
-    eventsSize shouldBe expectedEventIdAndTenantIds.size
-    for(i <- 0 until eventsSize) {
-      events(i).id.get shouldBe expectedEventIdAndTenantIds(i).eventId
-      RegistryEvent.getTenantId(events(i)) shouldBe expectedEventIdAndTenantIds(i).tenantId
-    }
-    thePayload.lastEventId shouldBe expectedEventIdAndTenantIds(eventsSize - 1).eventId
+    val events = payloads.foldLeft[List[RegistryEvent]](Nil)((a, payload) => a ++ payload.events.get)
+
+    events.size shouldBe expectedEventIdAndTenantIds.size
+    events.zip(expectedEventIdAndTenantIds).map(pair => {
+      val actual = pair._1
+      val expected = pair._2
+        actual.id.get shouldBe expected.eventId
+        RegistryEvent.getTenantId(actual) shouldBe expected.tenantId
+    })
   }
 
-  private def assertRecords(expectedRecordIdAndTenantIds: Seq[ExpectedRecordIdAndTenantId]) = {
-    val records = payloads.head.records.get
-    records.length shouldBe expectedRecordIdAndTenantIds.size
-    records.zip(expectedRecordIdAndTenantIds).foreach(pair => {
-      val actualRecord = pair._1
+  private def assertRecordsInPayloads(expectedRecordIdAndTenantIds: Seq[ExpectedRecordIdAndTenantId]) = {
+    payloads.size shouldBe expectedRecordIdAndTenantIds.size
+    val records = payloads.foldLeft[List[Record]](Nil)((a, payload) => a ++ payload.records.get)
+    records.zip(expectedRecordIdAndTenantIds).map(pair => {
+      val actual = pair._1
       val expected = pair._2
-      actualRecord.id shouldBe expected.recordId
-      actualRecord.tenantId shouldBe Some(expected.tenantId)
+      actual.id shouldBe expected.recordId
+      actual.tenantId shouldBe Some(expected.tenantId)
     })
   }
 
@@ -1460,7 +1526,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < 2L
         }
         
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId"
@@ -1474,7 +1540,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId"
@@ -1491,7 +1557,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(lastEventId)
         }
 
-        assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId2"
@@ -1519,7 +1585,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.clear()
 
           param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
@@ -1545,7 +1611,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             responseAs[Registry.AspectDefinition].id shouldBe "testId"
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           val lastEventId = payloads(0).lastEventId
           payloads.clear()
 
@@ -1592,7 +1658,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           val lastEventId = payloads.head.lastEventId
           payloads.clear()
 
@@ -1611,7 +1677,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         }
       }
 
@@ -1640,7 +1706,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          assertPayload2(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
