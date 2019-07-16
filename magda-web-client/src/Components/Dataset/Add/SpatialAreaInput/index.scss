@@ -8,11 +8,14 @@
     .tab-list-item {
         list-style: none;
         float: left;
-        width: 200px;
+        width: 210px;
         height: 68px;
+        margin: 0px;
         padding: 25px 20px 13px 17px;
         border-bottom: solid 1px #cccaca;
         border-right: solid 1px #cccaca;
+        border-top: 0px;
+        border-left: 0px;
         font-size: 18px;
         font-weight: normal;
         font-style: normal;

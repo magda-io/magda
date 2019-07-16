@@ -285,6 +285,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
         spatial.minLng !== Number.MAX_SAFE_INTEGER
     ) {
         return {
+            spatialDataInputMethod: "bbox",
             bbox: [
                 spatial.minLng,
                 spatial.minLat,
