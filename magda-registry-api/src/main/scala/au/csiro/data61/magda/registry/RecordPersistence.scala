@@ -614,7 +614,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(tenantId)
     val theRecordSelector = recordSelector ++ Iterable(Some(recordsFilteredByTenantClause))
     val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector) :+ pageToken.map(token => sqls"Records.sequence > $token")
-    val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
+    val aspectSelectors = aspectIdsToSelectClauses(tenantId, List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val limit = rawLimit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)
     val result =
@@ -747,7 +747,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
+  private def aspectIdsToSelectClauses(tenantId: BigInt, aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.
@@ -758,6 +758,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                CASE WHEN
             |                        EXISTS (
             |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)
+            |                            where RecordAspects.tenantId = $tenantId
             |                        )
             |                    THEN(
             |                        select jsonb_set(
@@ -779,7 +780,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                                    )
             |                                )
             |                        from Records
-            |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId
+            |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
             |                    )
             |                    ELSE(
             |                        select data
