@@ -342,9 +342,7 @@ package misc {
 
   case class License(name: Option[String] = None, url: Option[String] = None)
 
-
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
-
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(DataSouce.apply)
     implicit val dcatCreationFormat: RootJsonFormat[DcatCreation] = jsonFormat6(DcatCreation.apply)
 
@@ -514,8 +512,6 @@ package misc {
         })
       }
 
-      def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
-
       def convertCollectionField[T:JsonReader](fieldName: String, json: JsValue): Seq[T] = json match {
         case JsObject(jsData) => jsData.get(fieldName) match {
           case Some(JsArray(items)) => items.map(_.convertTo[T])
@@ -527,14 +523,14 @@ package misc {
       override def read(json: JsValue): DataSet= {
 
         DataSet(
-          identifier = convertField[String]("identifier", json),
-          tenantId = convertField[BigInt]("tenantId", json),
+          identifier = Protocols.convertField[String]("identifier", json),
+          tenantId = Protocols.convertField[BigInt]("tenantId", json),
           title = convertOptionField[String]("title", json),
           catalog = convertOptionField[String]("catalog", json),
           description = convertOptionField[String]("description", json),
           issued = convertOptionField[OffsetDateTime]("issued", json),
           modified = convertOptionField[OffsetDateTime]("modified", json),
-          languages = convertField[Set[String]]("languages", json),
+          languages = Protocols.convertField[Set[String]]("languages", json),
           publisher = convertOptionField[Agent]("publisher", json),
           accrualPeriodicity = convertOptionField[Periodicity]("accrualPeriodicity", json),
           spatial = convertOptionField[Location]("spatial", json),
@@ -546,8 +542,8 @@ package misc {
           landingPage = convertOptionField[String]("landingPage", json),
           years = convertOptionField[String]("years", json),
           indexed = convertOptionField[OffsetDateTime]("indexed", json),
-          quality = convertField[Double]("quality", json),
-          hasQuality = convertField[Boolean]("hasQuality", json),
+          quality = Protocols.convertField[Double]("quality", json),
+          hasQuality = Protocols.convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
           creation = convertOptionField[DcatCreation]("creation", json),
           score = convertOptionField[Float]("score", json),
@@ -561,5 +557,6 @@ package misc {
   }
 
   object Protocols extends Protocols {
+    def convertField[T:JsonReader](fieldName: String, jsData: JsValue): T = jsData.asJsObject.getFields(fieldName).head.convertTo[T]
   }
 }

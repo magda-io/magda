@@ -25,33 +25,35 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     Util.clearWebHookActorsCache()
   }
 
+  case class ExpectedEventIdAndTenantId(eventId: Int, tenantId: BigInt)
+  case class ExpectedRecordIdAndTenantId(recordId: String, tenantId: BigInt)
+
   describe("includes") {
     it("aspectDefinitions if events modified them") { param =>
       testWebHook(param, None) { (payloads, _) =>
-        val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        val testId = "testId"
+        val aspectDefinition = AspectDefinition(testId, "testName", Some(JsObject()))
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(2)
-        assertPayload(expectedEventIds)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
-        payloads.head.aspectDefinitions.get.head.id shouldBe "testId"
+        payloads.head.aspectDefinitions.get.head.id shouldBe testId
       }
     }
 
     it("records if events modified them") { param =>
       testWebHook(param, None) { (payloads, _) =>
-        val record = Record("testId", "testName", Map())
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        val testId = "testId"
+        val record = Record(testId, "testName", Map())
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(2)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "testId"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -61,44 +63,44 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_2 = List(3)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
-        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        val testId = "testId"
+        val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
         // Generate and process events with IDs of 4, 5, 6.
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_3 = List(4, 5, 6)
-        assertPayload(expectedEventIds_3)
+        assertEventsInPayloads(List(
+          ExpectedEventIdAndTenantId(4, TENANT_1),
+          ExpectedEventIdAndTenantId(5, TENANT_1),
+          ExpectedEventIdAndTenantId(6, TENANT_1)))
+
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate and process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_4 = List(7)
-        assertPayload(expectedEventIds_4)
-        payloads.head.events.get.length shouldBe 1
-        payloads.head.records.get.length shouldBe 1
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -107,17 +109,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A", "B"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -125,7 +127,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -139,17 +141,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A")), optionalAspects = Some(List("B"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -157,7 +159,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -173,17 +175,17 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -191,7 +193,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -208,43 +210,40 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Will not process this event (with ID of 3).
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         Util.waitUntilAllDone()
         payloads.length shouldBe 0
 
-
-        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        val testId = "testId"
+        val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
         // Generate events with IDs of 4, 5, 6 but only process 4, 5.
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_2 = List(4, 5)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")), "B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate and process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_3 = List(7)
-        assertPayload(expectedEventIds_3)
-        payloads.head.records.get.length shouldBe 1
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
       }
     }
 
@@ -253,7 +252,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate but not process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -262,33 +261,31 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(3)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
-        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        val testId = "testId"
+        val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
         // Generate events with IDs of 4, 5, 6 but only process 4 and 6.
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_2 = List(4, 6)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(6, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate and process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_3 = List(7)
-        assertPayload(expectedEventIds_3)
-        payloads.head.records.get.length shouldBe 1
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         payloads.head.aspectDefinitions.get.length shouldBe 0
       }
     }
@@ -297,16 +294,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       it("record created") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.CreateRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val record = Record("testId", "testName", Map())
+          val testId = "testId"
+          val record = Record(testId, "testName", Map())
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateRecord
-          payloads.head.records.get.length shouldBe 1
+          assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         }
       }
 
@@ -315,12 +312,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateAspectDefinition
           payloads.head.aspectDefinitions.get.length shouldBe 1
         }
@@ -331,31 +327,33 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           Util.waitUntilAllDone()
           payloads.length shouldBe 0
 
-          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          val testId = "testId"
+          val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
           // Generate events with IDs of 3 and 4 but only process 4.
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(4)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.CreateRecordAspect
+          assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(testId, TENANT_1)))
         }
       }
 
       it("record deleted") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.DeleteRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val record = Record("testId", "testName", Map())
+          val testId = "testId"
+          val record = Record(testId, "testName", Map())
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -363,47 +361,48 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           payloads.length shouldBe 0
 
           // Generate and process event with ID of 3.
-          param.asAdmin(Delete("/v0/records/testId")) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Delete(s"/v0/records/$testId")) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.DeleteRecord
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("recordId") shouldBe JsString("testId")
+          theMap("recordId") shouldBe JsString(testId)
         }
       }
 
       it("patching an aspect definition") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val a = AspectDefinition("A", "A", Some(JsObject()))
+          val testId = "A"
+          val a = AspectDefinition(testId, "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           Util.waitUntilAllDone()
           payloads.length shouldBe 0
 
-          param.asAdmin(Patch("/v0/aspects/A", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Patch(s"/v0/aspects/$testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          Util.waitUntilAllDone()
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchAspectDefinition
           val theMap = payloads(0).events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("aspectId") shouldBe JsString("A")
+          theMap("aspectId") shouldBe JsString(testId)
         }
       }
 
       it("overwriting an aspect definition") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchAspectDefinition))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val a = AspectDefinition("A", "A", Some(JsObject()))
+          val testId = "A"
+          val a = AspectDefinition(testId, "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -411,24 +410,24 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           payloads.length shouldBe 0
 
           // Generate and process event with ID of 3.
-          param.asAdmin(Put("/v0/aspects/A", a.copy(name = "B"))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put(s"/v0/aspects/$testId", a.copy(name = "B"))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchAspectDefinition
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("aspectId") shouldBe JsString("A")
+          theMap("aspectId") shouldBe JsString(testId)
         }
       }
 
       it("patching a record") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val record = Record("testId", "testName", Map())
+          val testId = "testId"
+          val record = Record(testId, "testName", Map())
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -436,24 +435,24 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           payloads.length shouldBe 0
 
           // Generate and process event with ID of 3.
-          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Patch(s"/v0/records/$testId", JsonPatch(Replace(Pointer.root / "name", JsString("foo"))))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecord
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("recordId") shouldBe JsString("testId")
+          theMap("recordId") shouldBe JsString(testId)
         }
       }
 
       it("overwriting a record") { param =>
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
-          val record = Record("testId", "testName", Map())
+          val testId = "testId"
+          val record = Record(testId, "testName", Map())
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -461,15 +460,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           payloads.length shouldBe 0
 
           // Generate and process event with ID of 3.
-          param.asAdmin(Put("/v0/records/testId", record.copy(name = "blah"))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put(s"/v0/records/$testId", record.copy(name = "blah"))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecord
           val theMap = payloads(0).events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("recordId") shouldBe JsString("testId")
+          theMap("recordId") shouldBe JsString(testId)
         }
       }
 
@@ -478,26 +476,26 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           // Generate but not process event with ID of 3.
-          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          val testId = "testId"
+          val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
           // Generate events with IDs of 4 and 5 but only process 5.
-          param.asAdmin(Patch("/v0/records/testId", JsonPatch(Replace(Pointer.root / "aspects" / "A" / "foo", JsString("bar2"))))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Patch(s"/v0/records/$testId", JsonPatch(Replace(Pointer.root / "aspects" / "A" / "foo", JsString("bar2"))))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(5)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecordAspect
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("recordId") shouldBe JsString("testId")
+          theMap("recordId") shouldBe JsString(testId)
         }
       }
 
@@ -505,24 +503,24 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         val webHook = defaultWebHook.copy(eventTypes = Set(EventType.PatchRecordAspect))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val a = AspectDefinition("A", "A", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
-          param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          val testId = "testId"
+          val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar"))))
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Put("/v0/records/testId", record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")))))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put(s"/v0/records/$testId", record.copy(aspects = Map("A" -> JsObject("foo" -> JsString("bar2")))))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(5)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(5, TENANT_1)))
           payloads.head.events.get.head.eventType shouldBe EventType.PatchRecordAspect
           val theMap = payloads.head.events.get.head.data.convertTo[Map[String, JsValue]]
-          theMap("recordId") shouldBe JsString("testId")
+          theMap("recordId") shouldBe JsString(testId)
         }
       }
     }
@@ -533,17 +531,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
-
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate but not process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -552,17 +549,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         // Generate events with IDs of 4, 5, 6 but only process 4, 5.
         val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(4, 5)
-        assertPayload(expectedEventIds)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate but not process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put("/v0/records/testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -576,17 +572,16 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val a = AspectDefinition("A", "A", Some(JsObject()))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate but not process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -594,18 +589,18 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.length shouldBe 0
 
         // Generate events with IDs of 4, 5, 6 but only process 4, 5
-        val record = Record("testId", "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        val testId = "testId"
+        val record = Record(testId, "testName", Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject("bvalue" -> JsString("yep"))))
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_2 = List(4, 5)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1), ExpectedEventIdAndTenantId(5, TENANT_1)))
         payloads.clear()
 
         val modified = record.copy(aspects = Map("B" -> JsObject("bvalue" -> JsString("new value"))))
         // Generate but not process event with ID of 7.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -634,36 +629,31 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
-        val record = Record("testId", "testName", Map())
+        val testId = "testId"
+        val record = Record(testId, "testName", Map())
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/records", record)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
-
-        val expectedEventIds_2 = List(3)
-        assertPayload(expectedEventIds_2)
 
         val modified = record.copy(name = "new name")
         // Generate and process event with ID of 4.
-        param.asAdmin(Put("/v0/records/testId", modified)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$testId", modified)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-
-        val expectedEventIds_3 = List(4)
-        assertPayload(expectedEventIds_3, 2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1), ExpectedEventIdAndTenantId(4, TENANT_1)), payloadsSize = 2)
 
         for (i <- 1 to 50) {
           val withAspect = modified.copy(aspects = Map("A" -> JsObject(Map("a" -> JsString(i.toString)))))
-          param.asAdmin(Put("/v0/records/testId", withAspect)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put(s"/v0/records/$testId", withAspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
         }
@@ -675,7 +665,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         val records = payloads.foldLeft(List[Record]())((a, payload) => payload.records.getOrElse(Nil) ++ a)
         records.length shouldBe payloads.length
         records.map(_.id).distinct.length shouldBe 1
-        records.map(_.id).distinct.head shouldBe "testId"
+        records.map(_.id).distinct.head shouldBe testId
       }
     }
 
@@ -696,7 +686,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |}
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -706,7 +696,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         for (i <- 1 to 50) {
           val withAspect = a.copy(name = i.toString)
-          param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put("/v0/aspects/A", withAspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
         }
@@ -749,44 +739,129 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.clear()
 
-        val dataset = Record("dataset", "dataset", Map())
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map())
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_2 = List(3)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.clear()
 
-        val distribution = Record("distribution", "distribution", Map())
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
         // Generate and process event with ID of 4.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_3 = List(4)
-        assertPayload(expectedEventIds_3)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(4, TENANT_1)))
+
+        // Generate and process event with ID of 5.
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // Generate and process event with ID of 6.
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Util.waitUntilAllDone()
         payloads.clear()
 
-        val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        // Generate and process event with ID of 5.
-        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString(distributionId))))
+        // Generate and process event with ID of 7.
+        // Note that the following request will modify dataset of TENANT_2 to have an aspect that links to dataset
+        // with ID of distributionId. If following the "someLink" aspect, no record with distributionId can be found.
+        // This is because TENANT_2 did not have record with ID of distributionId. Only TENANT_1 has that record.
+        // We need to have a mechanism to prevent from creating a record aspect that links to a "ghost" record.
+        //
+        // We could have let TENANT_1 make the request in this test case. Instead, we let TENANT_2 make the request
+        // in order to highlight a potential "ghost" link problem.
+        // See https://github.com/magda-io/magda/issues/2339.
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_4 = List(5)
-        assertPayload(expectedEventIds_4)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(7, TENANT_2)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
+      }
+    }
+
+    it("includes a record when a distribution is added to it, excluding same ID distribution from other tenant.") { param =>
+      val webHook = defaultWebHook.copy(config = defaultWebHook.config.copy(aspects = Some(List("A"))))
+      testWebHook(param, Some(webHook)) { (payloads, _) =>
+        val jsonSchema =
+          """
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with a single link",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLink": {
+            |            "title": "A link to another record.",
+            |            "type": "string",
+            |            "links": [
+            |                {
+            |                    "href": "/api/v0/registry/records/{$}",
+            |                    "rel": "item"
+            |                }
+            |            ]
+            |        }
+            |    }
+            |}
+          """.stripMargin
+        val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
+        // Generate and process event with ID of 2 - 7.
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map())
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+
+        Util.waitUntilAllDone()
+        payloads.clear()
+
+        val recordWithLink = dataset.copy(aspects = Map("A" -> JsObject("someLink" -> JsString(distributionId))))
+        // Generate and process events with ID of 8, 9.
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        param.asAdmin(Put("/v0/records/dataset", recordWithLink)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1), ExpectedEventIdAndTenantId(9, TENANT_2)), payloadsSize = 2)
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1), ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
       }
     }
 
@@ -795,39 +870,56 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       testWebHook(param, Some(webHook)) { (payloads, _) =>
         val jsonSchema =
           """
-                |{
-                |    "$schema": "http://json-schema.org/hyper-schema#",
-                |    "title": "An aspect with a single link",
-                |    "type": "object",
-                |    "properties": {
-                |        "someLink": {
-                |            "title": "A link to another record.",
-                |            "type": "string",
-                |            "links": [
-                |                {
-                |                    "href": "/api/v0/registry/records/{$}",
-                |                    "rel": "item"
-                |                }
-                |            ]
-                |        }
-                |    }
-                |}
-              """.stripMargin
+            |{
+            |    "$schema": "http://json-schema.org/hyper-schema#",
+            |    "title": "An aspect with a single link",
+            |    "type": "object",
+            |    "properties": {
+            |        "someLink": {
+            |            "title": "A link to another record.",
+            |            "type": "string",
+            |            "links": [
+            |                {
+            |                    "href": "/api/v0/registry/records/{$}",
+            |                    "rel": "item"
+            |                }
+            |            ]
+            |        }
+            |    }
+            |}
+          """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map())
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
-        // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
+        // Generate and process event with ID of 4.
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // Generate and process event with ID of 5.
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("someLink" -> JsString(distributionId))))
+        // Generate and process events with IDs of 6, 7.
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // Generate and process events with IDs of 8, 9.
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -835,15 +927,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val modifiedDistribution = distribution.copy(name = "new name")
-        // Generate and process event with ID of 6.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        // Generate and process event with ID of 10.
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(6)
-        assertPayload(expectedEventIds)
-        payloads(0).records.get.length shouldBe 1
-        payloads(0).records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(10, TENANT_2)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_2)))
       }
     }
 
@@ -876,19 +966,21 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map())
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString("distribution")))))
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString(distributionId)))))
         // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -897,14 +989,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modifiedDistribution = distribution.copy(name = "new name")
         // Generate and process event with ID of 6.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(6)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(6, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -933,25 +1023,27 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
         // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("someLink" -> JsString(distributionId))))
         // Generate and process events with IDs of 6, 7.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -960,14 +1052,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modifiedDistribution = distribution.copy(aspects = Map("B" -> JsObject("value" -> JsString("different"))))
         // Generate and process event with ID of 8.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(8)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        Util.waitUntilAllDone()
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1000,25 +1091,27 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map("B" -> JsObject("value" -> JsString("something"))))
         // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString("distribution")))))
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("distributions" -> JsArray(JsString(distributionId)))))
         // Generate and process events with IDs of 6, 7.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1027,14 +1120,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modifiedDistribution = distribution.copy(aspects = Map("B" -> JsObject("value" -> JsString("different"))))
         // Generate and process event with ID of 8.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(8)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1063,25 +1154,27 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map())
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map())
         // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution")), "B" -> JsObject()))
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("someLink" -> JsString(distributionId)), "B" -> JsObject()))
         // Generate and process events with IDs of 6, 7.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1090,14 +1183,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modifiedDistribution = distribution.copy(name = "new name")
         // Generate and process event with ID of 8.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(8)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
       }
     }
 
@@ -1126,25 +1217,27 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
               """.stripMargin
         val a = AspectDefinition("A", "A", Some(JsonParser(jsonSchema).asJsObject))
         // Generate and process event with ID of 2.
-        param.asAdmin(Post("/v0/aspects", a)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", a)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val b = AspectDefinition("B", "B", Some(JsObject()))
         // Generate and process event with ID of 3.
-        param.asAdmin(Post("/v0/aspects", b)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", b)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val distribution = Record("distribution", "distribution", Map("B" -> JsObject("foo" -> JsString("bar"))))
+        val distributionId = "distribution"
+        val distribution = Record(distributionId, "distribution", Map("B" -> JsObject("foo" -> JsString("bar"))))
         // Generate and process events with IDs of 4, 5.
-        param.asAdmin(Post("/v0/records", distribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val dataset = Record("dataset", "dataset", Map("A" -> JsObject("someLink" -> JsString("distribution"))))
+        val datasetId = "dataset"
+        val dataset = Record(datasetId, "dataset", Map("A" -> JsObject("someLink" -> JsString(distributionId))))
         // Generate and process events with IDs of 6, 7.
-        param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1153,14 +1246,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
         val modifiedDistribution = distribution.copy(name = "new name")
         // Generate and process event with ID of 8.
-        param.asAdmin(Put("/v0/records/distribution", modifiedDistribution)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Put(s"/v0/records/$distributionId", modifiedDistribution)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds = List(8)
-        assertPayload(expectedEventIds)
-        payloads.head.records.get.length shouldBe 1
-        payloads.head.records.get.head.id shouldBe "dataset"
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(8, TENANT_1)))
+        assertRecordsInPayloads(List(ExpectedRecordIdAndTenantId(datasetId, TENANT_1)))
 
         val embeddedDistribution = payloads.head.records.get.head.aspects("A").fields("someLink").asJsObject
         val bAspect = embeddedDistribution.fields("aspects").asJsObject.fields("B").asJsObject
@@ -1199,7 +1290,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           // Generate but fail to process event with ID of 2.
-          param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1226,7 +1317,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.clear()
 
           resumeHook()
@@ -1267,12 +1358,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       it("when new event is created") { param =>
         doTestSync(param) { () =>
           // Generate and process event with ID of 3.
-          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah"))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Put("/v0/records/" + dataset.id, dataset.copy(name = "blah"))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-
-          val expectedEventIds = List(3)
-          assertPayload(expectedEventIds)
+          
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1289,13 +1379,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
       def doTestAsync(param: FixtureParam)(resumeHook: () => Any) {
         testAsyncWebHook(param, Some(defaultWebHook)) { (payloads, _) =>
-          param.asAdmin(Post("/v0/records", dataset)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[Record] shouldBe dataset.copy(tenantId = Some(SINGLE_TENANT_ID))
+            responseAs[Record] shouldBe dataset.copy(tenantId = Some(TENANT_1))
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1317,8 +1406,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/" + defaultWebHook.id.get)) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1334,16 +1422,14 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
       it("when actor is sent Process() (i.e. on registry startup)") { param =>
         doTestAsync(param) { () =>
           param.webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = true)
-
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         }
       }
 
       it("should not resume when new event is created, but should include both events when resumed") { param =>
         doTestAsync(param) { () =>
           param.asAdmin(Put("/v0/records/" + dataset.id,
-            dataset.copy(name = "blah2"))) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+            dataset.copy(name = "blah2"))) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[Record].id shouldBe "dataset"
             responseAs[Record].name shouldBe "blah2"
@@ -1362,30 +1448,42 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
           // Because the subscriber post ack as failure, two events should be sent,
           // with the first event being re-sent.
-          val expectedEventIds = List(2, 3)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1), ExpectedEventIdAndTenantId(3, TENANT_1)))
         }
       }
     }
   }
 
-  private def assertPayload(expectedEventIds: Seq[Int], payloadsSize: Int = 1) = {
-//    Util.waitUntilPayloadsReady(payloads, payloadsSize)
+  private def assertEventsInPayloads(expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId], payloadsSize: Int = 1) = {
     Util.waitUntilAllDone(200)
     payloads.length shouldBe payloadsSize
-    val thePayload: WebHookPayload = payloads.last
-    val events = thePayload.events.get
-    val eventsSize = events.size
-    eventsSize shouldBe expectedEventIds.size
-    for(i <- 0 until eventsSize) events(i).id.get shouldBe expectedEventIds(i)
-    thePayload.lastEventId shouldBe expectedEventIds(eventsSize - 1)
+    val events = payloads.foldLeft[List[RegistryEvent]](Nil)((a, payload) => a ++ payload.events.get)
+
+    events.size shouldBe expectedEventIdAndTenantIds.size
+    events.zip(expectedEventIdAndTenantIds).map(pair => {
+      val actual = pair._1
+      val expected = pair._2
+        actual.id.get shouldBe expected.eventId
+        RegistryEvent.getTenantId(actual) shouldBe expected.tenantId
+    })
+  }
+
+  private def assertRecordsInPayloads(expectedRecordIdAndTenantIds: Seq[ExpectedRecordIdAndTenantId]) = {
+    payloads.size shouldBe expectedRecordIdAndTenantIds.size
+    val records = payloads.foldLeft[List[Record]](Nil)((a, payload) => a ++ payload.records.get)
+    records.zip(expectedRecordIdAndTenantIds).map(pair => {
+      val actual = pair._1
+      val expected = pair._2
+      actual.id shouldBe expected.recordId
+      actual.tenantId shouldBe Some(expected.tenantId)
+    })
   }
 
   describe("async web hooks") {
     it("delays further notifications until previous one is acknowledged") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1399,7 +1497,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1411,7 +1509,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("retries an unsuccessful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1427,9 +1525,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           status shouldEqual StatusCodes.OK
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be < 2L
         }
-
-        val expectedEventIds = List(2)
-        assertPayload(expectedEventIds)
+        
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId"
@@ -1439,12 +1536,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     it("sends the next events after a successful notification") { param =>
       testAsyncWebHook(param, None) { (payloads, _) =>
         val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val expectedEventIds_1 = List(2)
-        assertPayload(expectedEventIds_1)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId"
@@ -1452,7 +1548,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         payloads.clear()
 
         val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+        param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
@@ -1461,8 +1557,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           responseAs[WebHookAcknowledgementResponse].lastEventIdReceived should be(lastEventId)
         }
 
-        val expectedEventIds_2 = List(3)
-        assertPayload(expectedEventIds_2)
+        assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         payloads.head.records.get.length shouldBe 0
         payloads.head.aspectDefinitions.get.length shouldBe 1
         payloads.head.aspectDefinitions.get.head.id shouldBe "testId2"
@@ -1486,14 +1581,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds_1 = List(2)
-          assertPayload(expectedEventIds_1)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           payloads.clear()
-
 
           param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1502,7 +1595,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
           }
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           payloads.length should be(0)
@@ -1513,13 +1606,12 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testAsyncWebHook(param, None) { (payloads, _) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[Registry.AspectDefinition].id shouldBe "testId"
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           val lastEventId = payloads(0).lastEventId
           payloads.clear()
 
@@ -1553,7 +1645,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
         testAsyncWebHook(param, Some(defaultWebHook.copy(active = false))) { (payloads, _) =>
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate but not process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1566,14 +1658,13 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds_1 = List(2)
-          assertPayload(expectedEventIds_1)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
           val lastEventId = payloads.head.lastEventId
           payloads.clear()
 
           val aspectDefinition2 = AspectDefinition("testId2", "testName2", Some(JsObject()))
           // Generate but not process event with ID of 3 as the hook is waiting for ack.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1586,8 +1677,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds_2 = List(3)
-          assertPayload(expectedEventIds_2)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(3, TENANT_1)))
         }
       }
 
@@ -1612,12 +1702,11 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
           val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
           // Generate and process event with ID of 2.
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          val expectedEventIds = List(2)
-          assertPayload(expectedEventIds)
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
 
           param.asAdmin(Get("/v0/hooks/test")) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1659,7 +1748,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
 
       val aspectDefinition = AspectDefinition("testId", "testName", Some(JsObject()))
       // Generate but not process event with ID of 2 as the hook is inactive.
-      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addSingleTenantIdHeader ~> param.api(Full).routes ~> check {
+      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
         status shouldEqual StatusCodes.OK
       }
 

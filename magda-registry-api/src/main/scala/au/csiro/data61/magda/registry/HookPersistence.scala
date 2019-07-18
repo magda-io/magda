@@ -55,21 +55,40 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       .map(rowToHook).single.apply()
   }
 
+  /**
+    * Register a new web hook. The new hook subscribes to receive new events that occur after the registration
+    * and meet the criteria specified by the hook:
+    *
+    *   1. the event types (specified in hook.eventTypes).
+    *   2. the aspect IDs (specified in hook.config, both compulsory and optional aspect IDs.
+    *       See [[au.csiro.data61.magda.model.Registry.WebHookConfig]] for other config parameters.).
+    *
+    * The registry will use the above criteria to find events from events table then send them to the hook.
+    * In the current implementation, all web hooks are tenant independent. That is, in multi-tenant mode, a web
+    * hook will receive events belonging to all tenants.
+    *
+    * See [[au.csiro.data61.magda.registry.WebHookActor.SingleWebHookActor]] for the implementation that provides
+    * event service for all web hooks, such as indexer and minions.
+    *
+    * @param session
+    * @param hook
+    * @return
+    */
   def create(implicit session: DBSession, hook: WebHook): Try[WebHook] = {
-    val id = hook.id match {
+    val theHookId = hook.id match {
       case None     => UUID.randomUUID().toString()
       case Some(id) => id
     }
 
     sql"""insert into WebHooks (webHookId, userId, name, active, lastEvent, url, config, enabled)
-          values (${id}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})"""
+          values ($theHookId, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})"""
       .update.apply()
 
-    val batchParameters = hook.eventTypes.map(eventType => Seq('webhookId -> id, 'eventTypeId -> eventType.value)).toSeq
+    val batchParameters = hook.eventTypes.map(eventType => Seq('webhookId -> theHookId, 'eventTypeId -> eventType.value)).toSeq
     sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})""".batchByName(batchParameters: _*).apply()
 
     Success(WebHook(
-      id = Some(id),
+      id = Some(theHookId),
       userId = Some(0),
       name = hook.name,
       active = hook.active,
