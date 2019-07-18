@@ -2,7 +2,7 @@ image: {}
 resources:
   requests:
     cpu: 10m
-    memory: 50Mi
+    memory: 60Mi
   limits:
     cpu: 50m
 smtpPort: 587
