@@ -7,36 +7,19 @@ return {
     title: dataset.title || dataset.name,
 
     description: dataset.description || dataset.serviceDescription,
-    issued: dataset.created,
-    modified: dataset.modified,
+    issued: moment.utc(dataset.created).format(),
+    modified: moment.utc(dataset.created).format(),
     languages: dataset.culture ? [dataset.culture] : [],
     publisher: dataset.owner,
     accrualPeriodicity: undefined,
-
-    // Note that the portal item extent has a slightly different structure
-    // compared to the extent of the associated map service
-    spatial: [
-        dataset.extent[0][0],
-        dataset.extent[0][1],
-        dataset.extent[1][0],
-        dataset.extent[1][1]
-    ],
-    // spatial: [dataset.fullExtent.xmin, dataset.fullExtent.ymin, dataset.fullExtent.xmax, dataset.fullExtent.ymax],
-
-    // Note that the portal item iteself doesn't have time information
-    // although the associated map service does
+    spatial: `${dataset.extent[0][0]}, ${dataset.extent[0][1]}, ${
+        dataset.extent[1][0]
+    }, ${dataset.extent[1][1]}`,
     temporal: undefined,
-    // temporal: {
-    //     start: dataset.timeInfo.timeExtent[0],
-    //     end: dataset.timeInfo.timeExtent[1]
-    // },
 
     // What does this equate to?
     themes: undefined,
-    // themes: (dataset.groups || []).map(group => group.title),
-
     keywords: dataset.tags,
-
     contactPoint: dataset.owner,
     landingPage: esriPortal.getDatasetLandingPageUrl(dataset.id)
 };

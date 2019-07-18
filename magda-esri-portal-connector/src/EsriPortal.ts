@@ -151,15 +151,18 @@ export default class EsriPortal implements ConnectorSource {
     private requestDistributionInformation(
         distributionUrl: string
     ): Promise<any> {
-        const jsonDistUrl = this.urlBuilder.getResource(distributionUrl);
         return new Promise<any>((resolve, reject) => {
-            request(jsonDistUrl, { json: true }, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                    return;
+            request(
+                this.urlBuilder.getResource(distributionUrl),
+                { json: true },
+                (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    resolve(body);
                 }
-                resolve(body);
-            });
+            );
         });
     }
 
@@ -171,36 +174,186 @@ export default class EsriPortal implements ConnectorSource {
         pageUrl.addSearch("start", startIndex);
         pageUrl.addSearch("num", this.pageSize);
         const that = this;
-        const operation = () =>
+        const operation = async () =>
             new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
                 const requestUrl = pageUrl.toString();
                 console.log("Requesting " + requestUrl);
-                request(requestUrl, { json: true }, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                        return;
-                    }
-                    const distributionPromises: any = [];
-                    body.results.forEach(function(item: any) {
-                        distributionPromises.push(
-                            that.requestDistributionInformation(item.url)
-                        );
-                    }, this);
 
-                    Promise.all(distributionPromises).then(values => {
-                        body.results.forEach(function(
-                            item: any,
-                            index: number
-                        ) {
-                            const distForDataset: any = values[index];
-                            distForDataset.id = `${item.id}-0`;
-                            item.distributions = [distForDataset];
-                        },
-                        this);
+                request(
+                    requestUrl,
+                    { json: true },
+                    async (error, response, body) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        // A single portal item only has one distribution in the form of a url.
+                        // That url however may represent a single layer, or a map (containing multiple layers)
+                        // The bulk of the distribution information needs to be retrieved
+                        // from the map or feature service endpoint
+                        // An individual item may result in one or many additional requests
+
+                        for (let i = 0; i < body.results.length; ++i) {
+                            const item = body.results[i];
+                            const distUri = new URI(item.url);
+                            console.log(distUri);
+                            // We're looking at a tiled layer
+                            if (item.typeKeywords.indexOf("Tiled") > -1) {
+                                const distInfo = await that.requestDistributionInformation(
+                                    item.url
+                                );
+                                if (distInfo.error) continue;
+                                const dist = {
+                                    name: distInfo.documentInfo.Title,
+                                    description: distInfo.serviceDescription,
+                                    accessURL: item.url,
+                                    type: "Esri Tiled Map Service",
+                                    id: `${item.id}-0`
+                                };
+                                const mainDist = JSON.stringify(dist);
+                                item.distributions = [dist];
+
+                                if (
+                                    distInfo.supportedExtensions.indexOf(
+                                        "WMSServer"
+                                    ) > -1
+                                ) {
+                                    const wmtsDist = JSON.parse(mainDist);
+                                    wmtsDist.name = wmtsDist.name.concat(
+                                        " WMTS"
+                                    );
+                                    wmtsDist.id = `${item.id}-1`;
+                                    wmtsDist.accessURL = distUri
+                                        .clone()
+                                        .segment("WMTS")
+                                        .segment("1.0.0")
+                                        .segment("WMTSCapabilities.xml")
+                                        .toString()
+                                        .replace("/rest", "");
+                                    wmtsDist.type = "WMTS";
+                                    item.distributions.push(wmtsDist);
+                                }
+
+                                // We're looking at a set of layers
+                                // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer
+                            } else if (
+                                (distUri.segment(-1) === "MapServer" ||
+                                    "FeatureServer") &&
+                                item.typeKeywords.indexOf("Tiled") === -1
+                            ) {
+                                const distInfo = await that.requestDistributionInformation(
+                                    item.url
+                                );
+                                if (distInfo.error) continue;
+                                if (distUri.segment(-1) === "MapServer") {
+                                    const name =
+                                        distInfo.documentInfo.Title.length > 0
+                                            ? distInfo.documentInfo.Title
+                                            : distInfo.mapName;
+                                    const dist = {
+                                        title: name,
+                                        name: name,
+                                        description:
+                                            distInfo.description.length > 0
+                                                ? distInfo.description
+                                                : distInfo.serviceDescription,
+                                        accessURL: distUri.clone().toString(),
+                                        type: `Esri ${item.type}`,
+                                        id: `${item.id}-0`
+                                    };
+
+                                    item.distributions = [dist];
+                                    const mainDist = JSON.stringify(dist);
+
+                                    if (
+                                        distInfo.supportedExtensions.indexOf(
+                                            "WMSServer"
+                                        ) > -1
+                                    ) {
+                                        const wmsDist = JSON.parse(mainDist);
+                                        wmsDist.name = wmsDist.name.concat(
+                                            " WMS"
+                                        );
+                                        wmsDist.id = `${item.id}-1`;
+                                        wmsDist.accessURL = distUri
+                                            .clone()
+                                            .segment("WMSServer")
+                                            .addSearch({
+                                                request: "GetCapabilities",
+                                                service: "WMS"
+                                            })
+                                            .toString()
+                                            .replace("/rest", "");
+                                        wmsDist.type = "WMS";
+                                        item.distributions.push(wmsDist);
+                                    }
+                                } else {
+                                    item.distributions = [];
+                                }
+                                for (
+                                    let ii = 0;
+                                    ii < distInfo.layers.length;
+                                    ++ii
+                                ) {
+                                    const lyr = distInfo.layers[ii];
+                                    const lyrUrl = distUri
+                                        .clone()
+                                        .segment(lyr.id.toString())
+                                        .toString();
+                                    const subDistInfo = await that.requestDistributionInformation(
+                                        lyrUrl
+                                    );
+                                    if (subDistInfo.error) continue;
+                                    const subDist = {
+                                        accessURL: lyrUrl,
+                                        title: subDistInfo.name,
+                                        name: subDistInfo.name,
+                                        description: subDistInfo.description,
+                                        type: `Esri ${subDistInfo.type}`,
+                                        id: `${item.id}-c${lyr.id}`
+                                    };
+                                    item.distributions.push(subDist);
+                                }
+
+                                // We're looking at an individual layer (coule be either map or feature service)
+                                // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
+                            } else if (!isNaN(parseInt(distUri.segment(-1)))) {
+                                const distInfo = await that.requestDistributionInformation(
+                                    item.url
+                                );
+                                if (distInfo.error) continue;
+                                const dist = {
+                                    title: distInfo.name,
+                                    name: distInfo.name,
+                                    description: distInfo.description,
+                                    accessURL: distUri.clone().toString(),
+                                    type: distInfo.type,
+                                    id: `${item.id}-0`
+                                };
+                                item.distributions = [dist];
+                            }
+                        }
                         resolve(body);
-                    });
-                    // console.log("Received@",  body);
-                });
+                    }
+                );
+
+                // Promise.all(distributionPromises).then(values => {
+                //     body.results.forEach(function(
+                //         item: any,
+                //         index: number
+                //     ) {
+                //         const distributionForDataset: any = values[index];
+                //         distributionForDataset.id = `${item.id}-0`;
+                //         // distributionForDataset.type = item.type
+                //         // distributionForDataset.accessUrl = item.url
+                //         // distributionForDataset.license = item.license
+                //         item.distributions = [distributionForDataset];
+                //     },
+                //     this);
+                //     resolve(body);
+                // });
+                // console.log("Received@",  body);
             });
 
         return retry(

@@ -32,7 +32,7 @@ export default class EsriPortalTransformer extends JsonTransformer {
         sourceId: string
     ): ConnectorRecordId {
         return new ConnectorRecordId(
-            `${jsonDataset.id}-0`,
+            jsonDistribution.id,
             "Distribution",
             sourceId
         );
@@ -51,7 +51,9 @@ export default class EsriPortalTransformer extends JsonTransformer {
         jsonDataset: any
     ): string {
         return (
-            jsonDataset.title || jsonDistribution.name || jsonDistribution.id
+            jsonDistribution.title ||
+            jsonDistribution.name ||
+            jsonDistribution.id
         );
     }
 }
