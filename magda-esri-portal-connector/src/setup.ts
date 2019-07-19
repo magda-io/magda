@@ -60,6 +60,24 @@ export const argv: any = addJwtSecretFromEnvVar(
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
+        .option("arcgisUserId", {
+            describe:
+                "The arcgis portal user id to use when making authenticated requests to the portal",
+            type: "string",
+            demand: false,
+            default:
+                process.env.ARCGIS_USER_ID ||
+                process.env.npm_package_config_arcgisUserId
+        })
+        .option("arcgisUserPassword", {
+            describe:
+                "The password of a, arcgis portal user to use when making authenticated requests to the portal",
+            type: "string",
+            demand: false,
+            default:
+                process.env.ARCGIS_USER_PASSWORD ||
+                process.env.npm_package_config_arcgisUserPassword
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",

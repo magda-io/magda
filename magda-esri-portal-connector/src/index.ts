@@ -10,26 +10,38 @@ const esriPortal = new EsriPortal({
     pageSize: argv.pageSize
 });
 
-const registry = new Registry({
-    baseUrl: argv.registryUrl,
-    jwtSecret: argv.jwtSecret,
-    userId: argv.userId
-});
-
-const connector = new JsonConnector({
-    source: esriPortal,
-    transformer: transformer,
-    registry: registry
-});
-
-if (!argv.interactive) {
-    connector.run().then(result => {
-        console.log(result.summarize());
-    });
+if (argv.arcgisUserId !== null) {
+    esriPortal
+        .getToken(argv.arcgisUserId, argv.arcgisUserPassword)
+        .then(function() {
+            runConnector();
+        });
 } else {
-    connector.runInteractive({
-        timeoutSeconds: argv.timeout,
-        listenPort: argv.listenPort,
-        transformerOptions: transformerOptions
+    runConnector();
+}
+
+function runConnector() {
+    const registry = new Registry({
+        baseUrl: argv.registryUrl,
+        jwtSecret: argv.jwtSecret,
+        userId: argv.userId
     });
+
+    const connector = new JsonConnector({
+        source: esriPortal,
+        transformer: transformer,
+        registry: registry
+    });
+
+    if (!argv.interactive) {
+        connector.run().then(result => {
+            console.log(result.summarize());
+        });
+    } else {
+        connector.runInteractive({
+            timeoutSeconds: argv.timeout,
+            listenPort: argv.listenPort,
+            transformerOptions: transformerOptions
+        });
+    }
 }

@@ -11,12 +11,22 @@ export default class EsriPortalUrlBuilder {
     public readonly name: string;
     public readonly baseUrl: uri.URI;
     public readonly apiBaseUrl: uri.URI;
+    public token: string;
 
     constructor(options: EsriPortalUrlBuilderOptions) {
         this.id = options.id;
         this.name = options.name || options.id;
         this.baseUrl = new URI(options.baseUrl);
         this.apiBaseUrl = this.baseUrl.clone().segment("sharing/rest");
+        this.token = null;
+    }
+
+    // https://someportal/arcgis/sharing/rest/generateToken
+    public getTokenUrl(): string {
+        return this.apiBaseUrl
+            .clone()
+            .segment("generateToken")
+            .toString();
     }
 
     // https://someportal/arcgis/sharing/rest/search?f=pjson&q=(type:"Map Service" OR type:"Feature Service")
@@ -26,7 +36,8 @@ export default class EsriPortalUrlBuilder {
             .segment("search")
             .addSearch({
                 f: "pjson",
-                q: '(type:"Map Service" OR type:"Feature Service")'
+                q: '(type:"Map Service" OR type:"Feature Service")',
+                token: this.token
             })
             .toString();
     }
@@ -36,7 +47,10 @@ export default class EsriPortalUrlBuilder {
         return this.apiBaseUrl
             .clone()
             .segment("portals/self")
-            .addSearch({ f: "pjson" })
+            .addSearch({
+                f: "pjson",
+                token: this.token
+            })
             .toString();
     }
 
@@ -46,7 +60,10 @@ export default class EsriPortalUrlBuilder {
             .clone()
             .segment("content/items")
             .segment(id)
-            .addSearch({ f: "pjson" })
+            .addSearch({
+                f: "pjson",
+                token: this.token
+            })
             .toString();
     }
 
@@ -55,7 +72,9 @@ export default class EsriPortalUrlBuilder {
     public getResource(resouceUrl: string): string {
         return new URI(resouceUrl)
             .removeSearch("f")
-            .addSearch({ f: "pjson" })
+            .addSearch({
+                f: "pjson"
+            })
             .toString();
     }
 
