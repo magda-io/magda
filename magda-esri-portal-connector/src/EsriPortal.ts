@@ -289,6 +289,13 @@ export default class EsriPortal implements ConnectorSource {
                                 }
                             }
                         }
+                        // We occassionally end up with Portal Data Items that we can't
+                        // effectively crawl for distributions so strip them out
+                        body.results = body.results.filter(function(
+                            result: any
+                        ) {
+                            return result.distributions.length > 0;
+                        });
                         resolve(body);
                     }
                 );
@@ -335,11 +342,17 @@ export default class EsriPortal implements ConnectorSource {
         distUri: any
     ) {
         try {
-            // An image service doesnt have documentInfo
-            const distName =
-                item.type === "Map Service"
-                    ? distInfo.documentInfo.Title
-                    : distInfo.name;
+            let distName = null;
+            if (item.type === "Map Service") {
+                // Sometimes people don't populate the documentInfo
+                distName =
+                    distInfo.documentInfo.Title.length > 0
+                        ? distInfo.documentInfo.Title
+                        : distInfo.mapName;
+            } else {
+                // An image service doesnt have documentInfo
+                distName = distInfo.name;
+            }
             const dist = {
                 name: distName,
                 description: distInfo.serviceDescription,
@@ -404,10 +417,17 @@ export default class EsriPortal implements ConnectorSource {
         distInfo: any,
         distUri: any
     ) {
-        const distName =
-            distInfo.documentInfo.Title.length > 0
-                ? distInfo.documentInfo.Title
-                : distInfo.mapName;
+        let distName = null;
+        if (item.type === "Map Service") {
+            // Sometimes people don't populate the documentInfo
+            distName =
+                distInfo.documentInfo.Title.length > 0
+                    ? distInfo.documentInfo.Title
+                    : distInfo.mapName;
+        } else {
+            // An image service doesnt have documentInfo
+            distName = distInfo.name;
+        }
         const distDesc = distInfo.description;
         const dist = {
             name: distName,
