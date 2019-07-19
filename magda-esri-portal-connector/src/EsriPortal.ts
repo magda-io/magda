@@ -222,161 +222,69 @@ export default class EsriPortal implements ConnectorSource {
                         // An individual item may result in one or many additional requests
                         for (let i = 0; i < body.results.length; ++i) {
                             const item = body.results[i];
+                            item.distributions = [];
+
                             const distUri = new URI(item.url);
 
-                            // We're looking at a tiled layer
-                            if (item.typeKeywords.indexOf("Tiled") > -1) {
+                            // We're looking at an individual layer (coule be either map or feature service)
+                            // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
+                            if (!isNaN(parseInt(distUri.segment(-1)))) {
                                 try {
-                                    const distInfo = await that.requestDistributionInformation(
-                                        item.url
+                                    await this.processIndividualLayerAsDataset(
+                                        item,
+                                        distUri
                                     );
-                                    if (distInfo.error) continue;
-                                    const dist = {
-                                        name: distInfo.documentInfo.Title,
-                                        description:
-                                            distInfo.serviceDescription,
-                                        accessURL: item.url,
-                                        type: "Esri Tiled Map Service",
-                                        id: `${item.id}-0`
-                                    };
-                                    const mainDist = JSON.stringify(dist);
-                                    item.distributions = [dist];
-
-                                    if (
-                                        distInfo.supportedExtensions.indexOf(
-                                            "WMSServer"
-                                        ) > -1
-                                    ) {
-                                        const wmtsDist = JSON.parse(mainDist);
-                                        wmtsDist.name = wmtsDist.name.concat(
-                                            " WMTS"
-                                        );
-                                        wmtsDist.id = `${item.id}-1`;
-                                        wmtsDist.accessURL = distUri
-                                            .clone()
-                                            .segment("WMTS")
-                                            .segment("1.0.0")
-                                            .segment("WMTSCapabilities.xml")
-                                            .toString()
-                                            .replace("/rest", "");
-                                        wmtsDist.type = "WMTS";
-                                        item.distributions.push(wmtsDist);
-                                    }
                                 } catch (err) {
+                                    console.log("Broke on ", item.url);
                                     console.log(err);
                                 }
 
-                                // We're looking at a set of layers
+                                // We're looking at a group of layers which we may need to iterate over
+                                // to get multiple distributions
                                 // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer
-                            } else if (
-                                (distUri.segment(-1) === "MapServer" ||
-                                    "FeatureServer") &&
-                                item.typeKeywords.indexOf("Tiled") === -1
-                            ) {
+                            } else {
                                 try {
                                     const distInfo = await that.requestDistributionInformation(
                                         item.url
                                     );
                                     if (distInfo.error) continue;
-                                    if (distUri.segment(-1) === "MapServer") {
-                                        const name =
-                                            distInfo.documentInfo.Title.length >
-                                            0
-                                                ? distInfo.documentInfo.Title
-                                                : distInfo.mapName;
-                                        const dist = {
-                                            title: name,
-                                            name: name,
-                                            description:
-                                                distInfo.description.length > 0
-                                                    ? distInfo.description
-                                                    : distInfo.serviceDescription,
-                                            accessURL: distUri
-                                                .clone()
-                                                .toString(),
-                                            type: `Esri ${item.type}`,
-                                            id: `${item.id}-0`
-                                        };
 
-                                        item.distributions = [dist];
-                                        const mainDist = JSON.stringify(dist);
-
-                                        if (
-                                            distInfo.supportedExtension &&
-                                            distInfo.supportedExtensions.indexOf(
-                                                "WMSServer"
-                                            ) > -1
-                                        ) {
-                                            const wmsDist = JSON.parse(
-                                                mainDist
-                                            );
-                                            wmsDist.name = wmsDist.name.concat(
-                                                " WMS"
-                                            );
-                                            wmsDist.id = `${item.id}-1`;
-                                            wmsDist.accessURL = distUri
-                                                .clone()
-                                                .segment("WMSServer")
-                                                .addSearch({
-                                                    request: "GetCapabilities",
-                                                    service: "WMS"
-                                                })
-                                                .toString()
-                                                .replace("/rest", "");
-                                            wmsDist.type = "WMS";
-                                            item.distributions.push(wmsDist);
-                                        }
-                                    } else {
-                                        item.distributions = [];
+                                    // We're dealing with a tiled layer that doesn't have crawlable sublayers
+                                    if (
+                                        item.type !== "Feature Service" &&
+                                        distInfo.singleFusedMapCache !== false
+                                    ) {
+                                        await that.processTiledLayerAsDistribution(
+                                            item,
+                                            distInfo,
+                                            distUri
+                                        );
+                                        continue;
                                     }
+
+                                    // For a MapServer treat the root as a distribution (eg the group of layers)
+                                    if (distUri.segment(-1) === "MapServer") {
+                                        await that.processRootMapServiceAsDistribution(
+                                            item,
+                                            distInfo,
+                                            distUri
+                                        );
+                                    }
+
                                     for (
                                         let ii = 0;
                                         ii < distInfo.layers.length;
                                         ++ii
                                     ) {
                                         const lyr = distInfo.layers[ii];
-                                        const lyrUrl = distUri
-                                            .clone()
-                                            .segment(lyr.id.toString())
-                                            .toString();
-                                        const subDistInfo = await that.requestDistributionInformation(
-                                            lyrUrl
+                                        await that.processLayerAsDistribution(
+                                            lyr,
+                                            item,
+                                            distUri
                                         );
-                                        if (subDistInfo.error) continue;
-                                        const subDist = {
-                                            accessURL: lyrUrl,
-                                            title: subDistInfo.name,
-                                            name: subDistInfo.name,
-                                            description:
-                                                subDistInfo.description,
-                                            type: `Esri ${subDistInfo.type}`,
-                                            id: `${item.id}-c${lyr.id}`
-                                        };
-                                        item.distributions.push(subDist);
                                     }
                                 } catch (err) {
                                     console.log("Broke on ", item.url);
-                                    console.log(err);
-                                }
-
-                                // We're looking at an individual layer (coule be either map or feature service)
-                                // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
-                            } else if (!isNaN(parseInt(distUri.segment(-1)))) {
-                                try {
-                                    const distInfo = await that.requestDistributionInformation(
-                                        item.url
-                                    );
-                                    if (distInfo.error) continue;
-                                    const dist = {
-                                        title: distInfo.name,
-                                        name: distInfo.name,
-                                        description: distInfo.description,
-                                        accessURL: distUri.clone().toString(),
-                                        type: distInfo.type,
-                                        id: `${item.id}-0`
-                                    };
-                                    item.distributions = [dist];
-                                } catch (err) {
                                     console.log(err);
                                 }
                             }
@@ -384,23 +292,6 @@ export default class EsriPortal implements ConnectorSource {
                         resolve(body);
                     }
                 );
-
-                // Promise.all(distributionPromises).then(values => {
-                //     body.results.forEach(function(
-                //         item: any,
-                //         index: number
-                //     ) {
-                //         const distributionForDataset: any = values[index];
-                //         distributionForDataset.id = `${item.id}-0`;
-                //         // distributionForDataset.type = item.type
-                //         // distributionForDataset.accessUrl = item.url
-                //         // distributionForDataset.license = item.license
-                //         item.distributions = [distributionForDataset];
-                //     },
-                //     this);
-                //     resolve(body);
-                // });
-                // console.log("Received@",  body);
             });
 
         return retry(
@@ -416,5 +307,137 @@ export default class EsriPortal implements ConnectorSource {
                     )
                 )
         );
+    }
+
+    private async processIndividualLayerAsDataset(item: any, distUri: any) {
+        try {
+            const distInfo = await this.requestDistributionInformation(
+                item.url
+            );
+            if (distInfo.error) return;
+            const dist = {
+                title: distInfo.name,
+                name: distInfo.name,
+                description: distInfo.description,
+                accessURL: distUri.clone().toString(),
+                type: distInfo.type,
+                id: `${item.id}-0`
+            };
+            item.distributions.push(dist);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    private async processTiledLayerAsDistribution(
+        item: any,
+        distInfo: any,
+        distUri: any
+    ) {
+        try {
+            // An image service doesnt have documentInfo
+            const distName =
+                item.type === "Map Service"
+                    ? distInfo.documentInfo.Title
+                    : distInfo.name;
+            const dist = {
+                name: distName,
+                description: distInfo.serviceDescription,
+                accessURL: item.url,
+                type: "Esri Tiled Map Service",
+                id: `${item.id}-0`
+            };
+            item.distributions.push(dist);
+
+            if (
+                distInfo.supportedExtensions &&
+                distInfo.supportedExtensions.indexOf("WMSServer") > -1
+            ) {
+                const wmtsDist = JSON.parse(JSON.stringify(dist));
+                wmtsDist.name = wmtsDist.name.concat(" WMTS");
+                wmtsDist.id = `${item.id}-1`;
+                wmtsDist.accessURL = distUri
+                    .clone()
+                    .segment("WMTS")
+                    .segment("1.0.0")
+                    .segment("WMTSCapabilities.xml")
+                    .toString()
+                    .replace("/rest", "");
+                wmtsDist.type = "WMTS";
+                item.distributions.push(wmtsDist);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    private async processLayerAsDistribution(
+        lyr: any,
+        item: any,
+        distUri: any
+    ) {
+        try {
+            const lyrUrl = distUri
+                .clone()
+                .segment(lyr.id.toString())
+                .toString();
+            const subDistInfo = await this.requestDistributionInformation(
+                lyrUrl
+            );
+            if (subDistInfo.error) return;
+            const subDist = {
+                accessURL: lyrUrl,
+                title: subDistInfo.name,
+                name: subDistInfo.name,
+                description: subDistInfo.description,
+                type: `Esri ${subDistInfo.type}`,
+                id: `${item.id}-c${lyr.id}`
+            };
+            item.distributions.push(subDist);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    private async processRootMapServiceAsDistribution(
+        item: any,
+        distInfo: any,
+        distUri: any
+    ) {
+        const distName =
+            distInfo.documentInfo.Title.length > 0
+                ? distInfo.documentInfo.Title
+                : distInfo.mapName;
+        const distDesc = distInfo.description;
+        const dist = {
+            name: distName,
+            description:
+                distDesc.length > 0 ? distDesc : distInfo.serviceDescription,
+            accessURL: distUri.clone().toString(),
+            type: `Esri ${item.type}`,
+            id: `${item.id}-0`
+        };
+
+        item.distributions.push(dist);
+
+        if (
+            distInfo.supportedExtensions &&
+            distInfo.supportedExtensions.indexOf("WMSServer") > -1
+        ) {
+            const wmsDist = JSON.parse(JSON.stringify(dist));
+            wmsDist.name = wmsDist.name.concat(" WMS");
+            wmsDist.id = `${item.id}-1`;
+            wmsDist.accessURL = distUri
+                .clone()
+                .segment("WMSServer")
+                .addSearch({
+                    request: "GetCapabilities",
+                    service: "WMS"
+                })
+                .toString()
+                .replace("/rest", "");
+            wmsDist.type = "WMS";
+            item.distributions.push(wmsDist);
+        }
     }
 }

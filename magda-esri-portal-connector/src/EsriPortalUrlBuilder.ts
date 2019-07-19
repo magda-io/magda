@@ -36,7 +36,8 @@ export default class EsriPortalUrlBuilder {
             .segment("search")
             .addSearch({
                 f: "pjson",
-                q: '(type:"Map Service" OR type:"Feature Service")',
+                q:
+                    '(type:"Map Service" OR type:"Feature Service" OR type:"Image Service" OR type:"Scene Service")',
                 token: this.token
             })
             .toString();
