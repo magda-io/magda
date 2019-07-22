@@ -644,8 +644,6 @@ class NewDataset extends React.Component<Props, State> {
             throw new Error("No publisher selected");
         }
 
-        console.log(dataset.publisher);
-
         this.setState({
             isPublishing: true
         });

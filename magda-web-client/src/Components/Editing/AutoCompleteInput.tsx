@@ -162,8 +162,6 @@ class AutoCompleteInput<T> extends React.Component<
             value: this.state.value
         };
 
-        console.log(this.state.value);
-
         return (
             <Autosuggest<T>
                 id={this.key}

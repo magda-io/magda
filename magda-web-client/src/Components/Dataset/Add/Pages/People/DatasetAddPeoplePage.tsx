@@ -95,11 +95,6 @@ export default function DatasetAddPeoplePage(props: Props) {
                         defaultValue={dataset.publisher}
                         onOrgSelected={editDataset("publisher")}
                     />
-                    {/* <AlwaysEditor
-                        value={dataset.publisher}
-                        onChange={editDataset("publisher")}
-                        editor={textEditor}
-                    /> */}
                 </div>
                 <h4>Who is the primary contact point(s) for this dataset?</h4>
                 <div>
