@@ -110,6 +110,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
 
+  // If a system tenant makes the request with aspectIds, it will always return 0.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(implicit session: DBSession,
                tenantId: BigInt,
                aspectIds: Iterable[String],
@@ -558,6 +561,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
+  // The current implementation assumes this API is not used by the system tenant.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], rawLimit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
     val countWhereClauseParts = if (recordId.nonEmpty) Seq(recordId.map(id => sqls"recordId=$id and Records.tenantId=$tenantId")) else Seq(Some(sqls"Records.tenantId=$tenantId"))
 
@@ -674,7 +680,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
-    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), rs.bigInt("tenantId"))
+    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), Some(rs.bigInt("tenantId")))
   }
 
   private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {

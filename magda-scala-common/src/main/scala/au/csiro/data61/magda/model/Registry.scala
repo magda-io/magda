@@ -334,6 +334,7 @@ object Registry extends RegistryConverters {
   sealed trait RecordType {
     val id: String
     val name: String
+    val tenantId: Option[BigInt]
   }
 
   @ApiModel(description = "A record in the registry, usually including data for one or more aspects, unique for a tenant.")
@@ -357,7 +358,7 @@ object Registry extends RegistryConverters {
 
     @(ApiModelProperty @field)(value = "The list of aspect IDs for which this record has data", required = true) aspects: List[String],
 
-    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = false) tenantId: BigInt) extends RecordType
+    @(ApiModelProperty @field)(value = "The identifier of the tenant", required = false) tenantId: Option[BigInt]) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
   @ApiModel(description = "The JSON data for an aspect of a record.")
