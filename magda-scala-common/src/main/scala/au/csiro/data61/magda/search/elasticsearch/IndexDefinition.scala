@@ -264,10 +264,11 @@ object IndexDefinition extends DefaultJsonProtocol {
               keywordField("regionId"),
               magdaTextField("regionName"),
               magdaTextField("regionShortName"),
-              keywordField("steId"),
-              keywordField("sa4Id"),
-              keywordField("sa3Id"),
-              keywordField("sa2Id"),
+              keywordField("lv1Id"),
+              keywordField("lv2Id"),
+              keywordField("lv3Id"),
+              keywordField("lv4Id"),
+              keywordField("lv5Id"),
               textField("regionSearchId")
                 .analyzer("regionSearchIdIndex")
                 .searchAnalyzer("regionSearchIdInput"),
@@ -388,53 +389,26 @@ object IndexDefinition extends DefaultJsonProtocol {
   implicit val geometryFactory =
     JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def getOptionalIdFieldValue(configFieldName: String,
+  def getRegionSourceConfigValue(regionSource: RegionSource, fieldName: String): Option[String] = {
+    val field = regionSource.getClass.getDeclaredField(fieldName)
+    field.setAccessible(true)
+    field.get(regionSource).asInstanceOf[Option[String]]
+  }
+
+  def getOptionalIdFieldValue(idLevel: Int,
                               jsonRegion: JsObject,
                               regionSource: RegionSource): JsValue = {
-    val field = regionSource.getClass.getDeclaredField(configFieldName)
-    field.setAccessible(true)
-    val fieldConfigValue: Option[String] =
-      field.get(regionSource).asInstanceOf[Option[String]]
-    val properties = jsonRegion.fields("properties").asJsObject
-    fieldConfigValue match {
-      case Some(jsFieldName) =>
-        configFieldName match {
-          case "STEAbbrevField" =>
-            properties.getFields(jsFieldName).headOption match {
-              case Some(JsString(stateAbbrev)) =>
-                stateAbbrev match {
-                  case "NSW" => JsString("1")
-                  case "VIC" => JsString("2")
-                  case "QLD" => JsString("3")
-                  case "SA"  => JsString("4")
-                  case "WA"  => JsString("5")
-                  case "TAS" => JsString("6")
-                  case "NT"  => JsString("7")
-                  case "ACT" => JsString("8")
-                  case "OT"  => JsString("9")
-                  case _     => JsNull
-                }
-              case _ => JsNull
-            }
-          case _ =>
-            properties.getFields(jsFieldName).headOption match {
+    getRegionSourceConfigValue(regionSource, s"""lv${idLevel}Id""") match {
+      case Some(idValue: String) => JsString(idValue)
+      case None =>
+        getRegionSourceConfigValue(regionSource, s"""lv${idLevel}IdField""") match {
+          case None => JsNull
+          case Some(idFieldConfig: String) =>
+            val properties = jsonRegion.fields("properties").asJsObject
+            properties.getFields(idFieldConfig).headOption match {
               case Some(id: JsString) => id
               case _                  => JsNull
             }
-        }
-      case None => JsNull
-    }
-  }
-
-  def getRegionSteId(jsonRegion: JsObject,
-                     regionSource: RegionSource): JsValue = {
-    val id = getOptionalIdFieldValue("steIdField", jsonRegion, regionSource)
-    id match {
-      case id: JsString => id
-      case _ =>
-        getOptionalIdFieldValue("STEAbbrevField", jsonRegion, regionSource) match {
-          case id: JsString => id
-          case _            => JsNull
         }
     }
   }
@@ -544,16 +518,11 @@ object IndexDefinition extends DefaultJsonProtocol {
                   ),
                   "geometry" -> geometry.toJson,
                   "order" -> JsNumber(regionSource.order),
-                  "steId" -> getRegionSteId(jsonRegion, regionSource),
-                  "sa4Id" -> getOptionalIdFieldValue("sa4IdField",
-                                                     jsonRegion,
-                                                     regionSource),
-                  "sa3Id" -> getOptionalIdFieldValue("sa3IdField",
-                                                     jsonRegion,
-                                                     regionSource),
-                  "sa2Id" -> getOptionalIdFieldValue("sa2IdField",
-                                                     jsonRegion,
-                                                     regionSource)
+                  "lv1Id" -> getOptionalIdFieldValue(1, jsonRegion, regionSource),
+                  "lv2Id" -> getOptionalIdFieldValue(2, jsonRegion, regionSource),
+                  "lv3Id" -> getOptionalIdFieldValue(3, jsonRegion, regionSource),
+                  "lv4Id" -> getOptionalIdFieldValue(4, jsonRegion, regionSource),
+                  "lv5Id" -> getOptionalIdFieldValue(5, jsonRegion, regionSource)
                 ).toJson)
           )
 

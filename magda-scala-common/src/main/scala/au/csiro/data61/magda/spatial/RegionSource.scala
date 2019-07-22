@@ -17,11 +17,18 @@ case class RegionSource(name: String,
                         order: Int,
                         simplifyToleranceRatio: Double = 0.01,
                         requireSimplify: Boolean = true,
-                        steIdField: Option[String] = None,
-                        sa4IdField: Option[String] = None,
-                        sa3IdField: Option[String] = None,
-                        sa2IdField: Option[String] = None,
-                        STEAbbrevField: Option[String] = None)
+                        // --- `lvxIdField` config field allow to specify the property field that the id value can be retrieved from
+                        lv1IdField: Option[String] = None,
+                        lv2IdField: Option[String] = None,
+                        lv3IdField: Option[String] = None,
+                        lv4IdField: Option[String] = None,
+                        lv5IdField: Option[String] = None,
+                        // --- `lvxId` config field allow to specify the id value directly
+                        lv1Id: Option[String] = None,
+                        lv2Id: Option[String] = None,
+                        lv3Id: Option[String] = None,
+                        lv4Id: Option[String] = None,
+                        lv5Id: Option[String] = None)
 
 object RegionSource {
   def generateRegionId(regionType: String, id: String) =
@@ -72,16 +79,26 @@ class RegionSources(config: Config) {
               if (regionSourceConfig.hasPath("requireSimplify"))
                 regionSourceConfig.getBoolean("requireSimplify")
               else true,
-            steIdField =
-              getOptionalStringConfig("steIdField", regionSourceConfig),
-            sa4IdField =
-              getOptionalStringConfig("sa4IdField", regionSourceConfig),
-            sa3IdField =
-              getOptionalStringConfig("sa3IdField", regionSourceConfig),
-            sa2IdField =
-              getOptionalStringConfig("sa2IdField", regionSourceConfig),
-            STEAbbrevField =
-              getOptionalStringConfig("STEAbbrevField", regionSourceConfig)
+            lv1IdField =
+              getOptionalStringConfig("lv1IdField", regionSourceConfig),
+            lv2IdField =
+              getOptionalStringConfig("lv2IdField", regionSourceConfig),
+            lv3IdField =
+              getOptionalStringConfig("lv3IdField", regionSourceConfig),
+            lv4IdField =
+              getOptionalStringConfig("lv4IdField", regionSourceConfig),
+            lv5IdField =
+              getOptionalStringConfig("lv5IdField", regionSourceConfig),
+            lv1Id =
+              getOptionalStringConfig("lv1Id", regionSourceConfig),
+            lv2Id =
+              getOptionalStringConfig("lv2Id", regionSourceConfig),
+            lv3Id =
+              getOptionalStringConfig("lv3Id", regionSourceConfig),
+            lv4Id =
+              getOptionalStringConfig("lv4Id", regionSourceConfig),
+            lv5Id =
+              getOptionalStringConfig("lv5Id", regionSourceConfig)
           )
       }
       .toSeq
