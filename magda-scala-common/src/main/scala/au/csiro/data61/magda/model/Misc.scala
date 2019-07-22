@@ -245,10 +245,11 @@ package misc {
                     regionName: Option[String] = None,
                     boundingBox: Option[BoundingBox] = None,
                     regionShortName: Option[String] = None,
-                    steId: Option[String] = None,
-                    sa4Id: Option[String] = None,
-                    sa3Id: Option[String] = None,
-                    sa2Id: Option[String] = None)
+                    lv1Id: Option[String] = None,
+                    lv2Id: Option[String] = None,
+                    lv3Id: Option[String] = None,
+                    lv4Id: Option[String] = None,
+                    lv5Id: Option[String] = None)
 
   case class Distribution(
     identifier: Option[String] = None,
@@ -444,10 +445,11 @@ package misc {
             "regionName" -> region.regionName.toJson,
             "regionShortName" -> region.regionShortName.toJson,
             "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson,
-            "steId" -> region.steId.toJson,
-            "sa4Id" -> region.sa4Id.toJson,
-            "sa3Id" -> region.sa3Id.toJson,
-            "sa2Id" -> region.sa2Id.toJson
+            "lv1Id" -> region.lv1Id.toJson,
+            "lv2Id" -> region.lv2Id.toJson,
+            "lv3Id" -> region.lv3Id.toJson,
+            "lv4Id" -> region.lv4Id.toJson,
+            "lv5Id" -> region.lv5Id.toJson
           ).filter(x => !x._2.equals(JsNull)))
 
       private def convertOptionalStringField(
@@ -476,10 +478,11 @@ package misc {
             .headOption
             .map(_.convertTo[BoundingBox](bbFormat)),
           regionShortName = convertOptionalStringField(json, "regionShortName"),
-          steId = convertOptionalStringField(json, "steId"),
-          sa4Id = convertOptionalStringField(json, "sa4Id"),
-          sa3Id = convertOptionalStringField(json, "sa3Id"),
-          sa2Id = convertOptionalStringField(json, "sa2Id")
+          lv1Id = convertOptionalStringField(json, "lv1Id"),
+          lv2Id = convertOptionalStringField(json, "lv2Id"),
+          lv3Id = convertOptionalStringField(json, "lv3Id"),
+          lv4Id = convertOptionalStringField(json, "lv4Id"),
+          lv5Id = convertOptionalStringField(json, "lv5Id")
         )
       }
     }

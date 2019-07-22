@@ -561,19 +561,21 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   override def searchRegions(
     query: Option[String],
     regionType: Option[String],
-    steId: Option[String],
-    sa4Id: Option[String],
-    sa3Id: Option[String],
-    sa2Id: Option[String],
+    lv1Id: Option[String],
+    lv2Id: Option[String],
+    lv3Id: Option[String],
+    lv4Id: Option[String],
+    lv5Id: Option[String],
     start: Long,
     limit: Int,
     tenantId: BigInt): Future[RegionSearchResult] = {
 
     val otherFilters = (regionType.map(matchQuery("regionType", _)).toList ++
-      steId.map(matchQuery("steId", _)).toList ++
-      sa4Id.map(matchQuery("sa4Id", _)).toList ++
-      sa3Id.map(matchQuery("sa3Id", _)).toList ++
-      sa2Id.map(matchQuery("sa2Id", _)).toList)
+      lv1Id.map(matchQuery("lv1Id", _)).toList ++
+      lv2Id.map(matchQuery("lv2Id", _)).toList ++
+      lv3Id.map(matchQuery("lv3Id", _)).toList ++
+      lv4Id.map(matchQuery("lv4Id", _)).toList ++
+      lv5Id.map(matchQuery("lv5Id", _)).toList)
 
     val queryConditions:Seq[QueryDefinition] = query match {
       case Some(queryString) =>

@@ -20,7 +20,10 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
+import au.csiro.data61.magda.model.Registry.{
+  MAGDA_ADMIN_PORTAL_ID,
+  MAGDA_TENANT_ID_HEADER
+}
 
 class RegionsApiSpec
     extends FunSpecLike
@@ -101,7 +104,7 @@ class RegionsApiSpec
     }
   }
 
-  it("should return SA4 regions with `steId` Fields") {
+  it("should return SA4 regions with `lv1Id` & `lv2Id` Fields") {
     Get(s"/v0/regions?type=SA4") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
@@ -110,16 +113,17 @@ class RegionsApiSpec
       response.hitCount shouldEqual 2
 
       response.regions.exists { region =>
-        region.steId.isDefined &&
-        !region.sa4Id.isDefined &&
-        !region.sa3Id.isDefined &&
-        !region.sa2Id.isDefined
+        region.lv1Id.isDefined &&
+        region.lv2Id.isDefined &&
+        !region.lv3Id.isDefined &&
+        !region.lv4Id.isDefined &&
+        !region.lv5Id.isDefined
       } shouldBe true
 
     }
   }
 
-  it("should return SA3 regions with `steId` & `sa4Id` Fields") {
+  it("should return SA3 regions with `lv1Id`, `lv2Id` & `lv3Id` Fields") {
     Get(s"/v0/regions?type=SA3") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
@@ -128,16 +132,18 @@ class RegionsApiSpec
       response.hitCount shouldEqual 2
 
       response.regions.exists { region =>
-        region.steId.isDefined &&
-        region.sa4Id.isDefined &&
-        !region.sa3Id.isDefined &&
-        !region.sa2Id.isDefined
+        region.lv1Id.isDefined &&
+        region.lv2Id.isDefined &&
+        region.lv3Id.isDefined &&
+        !region.lv4Id.isDefined &&
+        !region.lv5Id.isDefined
       } shouldBe true
 
     }
   }
 
-  it("should return SA2 regions with `steId`, `sa4Id` & `sa3Id` Fields") {
+  it(
+    "should return SA2 regions with `lv1Id`, `lv2Id`, `lv3Id` & `lv4Id` Fields") {
     Get(s"/v0/regions?type=SA2") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
@@ -146,17 +152,18 @@ class RegionsApiSpec
       response.hitCount shouldEqual 2
 
       response.regions.exists { region =>
-        region.steId.isDefined &&
-        region.sa4Id.isDefined &&
-        region.sa3Id.isDefined &&
-        !region.sa2Id.isDefined
+        region.lv1Id.isDefined &&
+        region.lv2Id.isDefined &&
+        region.lv3Id.isDefined &&
+        region.lv4Id.isDefined &&
+        !region.lv5Id.isDefined
       } shouldBe true
 
     }
   }
 
   it(
-    "should return SA1 regions with `steId`, `sa4Id`, `sa3Id` & `sa2Id` Fields") {
+    "should return SA1 regions with `lv1Id`, `lv2Id`, `lv3Id`, `lv4Id` & `lv5Id` Fields") {
     Get(s"/v0/regions?type=SA1") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
@@ -165,75 +172,76 @@ class RegionsApiSpec
       response.hitCount shouldEqual 2
 
       response.regions.exists { region =>
-        region.steId.isDefined &&
-        region.sa4Id.isDefined &&
-        region.sa3Id.isDefined &&
-        region.sa2Id.isDefined
+        region.lv1Id.isDefined &&
+        region.lv2Id.isDefined &&
+        region.lv3Id.isDefined &&
+        region.lv4Id.isDefined &&
+        region.lv5Id.isDefined
       } shouldBe true
 
     }
   }
 
-  it("should only return Test SA4 2 regions when specify STE region Id 3") {
-    Get(s"/v0/regions?type=SA4&steId=3") ~> addTenantIdHeader ~> api.routes ~> check {
+  it("should only return Test SA4 2 regions when specify lv2 region Id 3") {
+    Get(s"/v0/regions?type=SA4&lv2Id=3") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
 
       response.hitCount shouldEqual 1
 
-      response.regions.head.steId.get shouldEqual "3"
+      response.regions.head.lv2Id.get shouldEqual "3"
       response.regions.head.regionName.get shouldEqual "Test SA4 2"
 
     }
   }
 
   it(
-    "should only return Test SA3 2 regions when specify STE region Id 3 & sa4Id 301") {
-    Get(s"/v0/regions?type=SA3&steId=3&sa4Id=301") ~> addTenantIdHeader ~> api.routes ~> check {
+    "should only return Test SA3 2 regions when specify lv2 region Id 3 & lv3Id 301") {
+    Get(s"/v0/regions?type=SA3&lv2Id=3&lv3Id=301") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
 
       response.hitCount shouldEqual 1
 
-      response.regions.head.steId.get shouldEqual "3"
-      response.regions.head.sa4Id.get shouldEqual "301"
+      response.regions.head.lv2Id.get shouldEqual "3"
+      response.regions.head.lv3Id.get shouldEqual "301"
       response.regions.head.regionName.get shouldEqual "Test SA3 2"
 
     }
   }
 
   it(
-    "should only return Test SA2 2 regions when specify STE region Id 3 & sa4Id 301 & sa3Id 30101") {
-    Get(s"/v0/regions?type=SA2&steId=3&sa4Id=301&sa3Id=30101") ~> addTenantIdHeader ~> api.routes ~> check {
+    "should only return Test SA2 2 regions when specify lv2 region Id 3 & lv3Id 301 & lv4Id 30101") {
+    Get(s"/v0/regions?type=SA2&lv2Id=3&lv3Id=301&lv4Id=30101") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
 
       response.hitCount shouldEqual 1
 
-      response.regions.head.steId.get shouldEqual "3"
-      response.regions.head.sa4Id.get shouldEqual "301"
-      response.regions.head.sa3Id.get shouldEqual "30101"
+      response.regions.head.lv2Id.get shouldEqual "3"
+      response.regions.head.lv3Id.get shouldEqual "301"
+      response.regions.head.lv4Id.get shouldEqual "30101"
       response.regions.head.regionName.get shouldEqual "Test SA2 2"
 
     }
   }
 
   it(
-    "should only return Test SA1 2 regions when specify STE region Id 3 & sa4Id 301 & sa3Id 30101 & sa2Id 301011001") {
-    Get(s"/v0/regions?type=SA1&steId=3&sa4Id=301&sa3Id=30101&sa2Id=301011001") ~> addTenantIdHeader ~> api.routes ~> check {
+    "should only return Test SA1 2 regions when specify lv2 region Id 3 & lv3Id 301 & lv4Id 30101 & lv5Id 301011001") {
+    Get(s"/v0/regions?type=SA1&lv2Id=3&lv3Id=301&lv4Id=30101&lv5Id=301011001") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[RegionSearchResult]
 
       response.hitCount shouldEqual 1
 
-      response.regions.head.steId.get shouldEqual "3"
-      response.regions.head.sa4Id.get shouldEqual "301"
-      response.regions.head.sa3Id.get shouldEqual "30101"
-      response.regions.head.sa2Id.get shouldEqual "301011001"
+      response.regions.head.lv2Id.get shouldEqual "3"
+      response.regions.head.lv3Id.get shouldEqual "301"
+      response.regions.head.lv4Id.get shouldEqual "30101"
+      response.regions.head.lv5Id.get shouldEqual "301011001"
       response.regions.head.regionName.get shouldEqual "Test SA1 2"
 
     }
@@ -247,7 +255,8 @@ class RegionsApiSpec
                       Some("STE_ABBREV"),
                       false,
                       false,
-                      10),
+                      10,
+                      lv1Id = Some("1")),
      """
         |{
         |  "type": "Feature",
@@ -292,7 +301,8 @@ class RegionsApiSpec
                       Some("STE_ABBREV"),
                       false,
                       false,
-                      10),
+                      10,
+                      lv1Id = Some("1")),
      """
         |{
         |  "type": "Feature",
@@ -338,7 +348,8 @@ class RegionsApiSpec
                       false,
                       false,
                       10,
-                      steIdField = Some("STE_CODE11")),
+                      lv1Id = Some("1"),
+                      lv2IdField = Some("STE_CODE11")),
      """
         |{
         |  "type": "Feature",
@@ -384,7 +395,8 @@ class RegionsApiSpec
                       false,
                       false,
                       10,
-                      steIdField = Some("STE_CODE11")),
+                      lv1Id = Some("1"),
+                      lv2IdField = Some("STE_CODE11")),
      """
         |{
         |  "type": "Feature",
@@ -422,16 +434,19 @@ class RegionsApiSpec
         |  }
         |}
       """.stripMargin.parseJson.asJsObject),
-    (new RegionSource("SA3",
-                      new URL("http://example.com"),
-                      "SA3_CODE11",
-                      "SA3_NAME11",
-                      None,
-                      false,
-                      false,
-                      10,
-                      steIdField = Some("STE_CODE11"),
-                      sa4IdField = Some("SA4_CODE11")),
+    (new RegionSource(
+       "SA3",
+       new URL("http://example.com"),
+       "SA3_CODE11",
+       "SA3_NAME11",
+       None,
+       false,
+       false,
+       10,
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11")
+     ),
      """
         |{
         |  "type": "Feature",
@@ -470,16 +485,19 @@ class RegionsApiSpec
         |  }
         |}
       """.stripMargin.parseJson.asJsObject),
-    (new RegionSource("SA3",
-                      new URL("http://example.com"),
-                      "SA3_CODE11",
-                      "SA3_NAME11",
-                      None,
-                      false,
-                      false,
-                      10,
-                      steIdField = Some("STE_CODE11"),
-                      sa4IdField = Some("SA4_CODE11")),
+    (new RegionSource(
+       "SA3",
+       new URL("http://example.com"),
+       "SA3_CODE11",
+       "SA3_NAME11",
+       None,
+       false,
+       false,
+       10,
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11")
+     ),
      """
         |{
         |  "type": "Feature",
@@ -527,9 +545,10 @@ class RegionsApiSpec
        false,
        false,
        10,
-       steIdField = Some("STE_CODE11"),
-       sa4IdField = Some("SA4_CODE11"),
-       sa3IdField = Some("SA3_CODE11")
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11"),
+       lv4IdField = Some("SA3_CODE11")
      ),
      """
         |{
@@ -579,9 +598,10 @@ class RegionsApiSpec
        false,
        false,
        10,
-       steIdField = Some("STE_CODE11"),
-       sa4IdField = Some("SA4_CODE11"),
-       sa3IdField = Some("SA3_CODE11")
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11"),
+       lv4IdField = Some("SA3_CODE11")
      ),
      """
         |{
@@ -631,10 +651,11 @@ class RegionsApiSpec
        false,
        false,
        10,
-       steIdField = Some("STE_CODE11"),
-       sa4IdField = Some("SA4_CODE11"),
-       sa3IdField = Some("SA3_CODE11"),
-       sa2IdField = Some("SA2_MAIN11")
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11"),
+       lv4IdField = Some("SA3_CODE11"),
+       lv5IdField = Some("SA2_MAIN11")
      ),
      """
         |{
@@ -685,10 +706,11 @@ class RegionsApiSpec
        false,
        false,
        10,
-       steIdField = Some("STE_CODE11"),
-       sa4IdField = Some("SA4_CODE11"),
-       sa3IdField = Some("SA3_CODE11"),
-       sa2IdField = Some("SA2_MAIN11")
+       lv1Id = Some("1"),
+       lv2IdField = Some("STE_CODE11"),
+       lv3IdField = Some("SA4_CODE11"),
+       lv4IdField = Some("SA3_CODE11"),
+       lv5IdField = Some("SA2_MAIN11")
      ),
      """
         |{
