@@ -1,9 +1,8 @@
-import fetch from "isomorphic-fetch";
-import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { FacetAction, FacetSearchJson } from "../helpers/datasetSearch";
 import { FetchError } from "../types";
-import buildSearchQueryString from "../helpers/buildSearchQueryString";
+import { autocompletePublishers } from "api-clients/SearchApis";
+import { Query as SearchQuery } from "../helpers/buildSearchQueryString";
 
 export function requestPublishers(facetQuery): FacetAction {
     return {
@@ -38,35 +37,14 @@ export function resetPublisherSearch(): FacetAction {
 }
 
 export function fetchPublisherSearchResults(
-    generalQuery: any,
+    generalQuery: SearchQuery,
     facetQuery: string
 ) {
     return (dispatch: (action: FacetAction) => void) => {
         if (facetQuery && facetQuery.length > 0) {
             dispatch(requestPublishers(facetQuery));
 
-            const generalQueryString = buildSearchQueryString({
-                ...generalQuery,
-                start: 0,
-                limit: 10,
-                q: null,
-                publisher: null
-            });
-
-            return fetch(
-                config.searchApiUrl +
-                    `facets/publisher/options?generalQuery=${encodeURIComponent(
-                        generalQuery.q || "*"
-                    )}&${generalQueryString}&facetQuery=${facetQuery}`,
-                config.fetchOptions
-            )
-                .then(response => {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    } else {
-                        return response.json();
-                    }
-                })
+            autocompletePublishers(generalQuery, facetQuery)
                 .then((json: FacetSearchJson) => {
                     return dispatch(receivePublishers(facetQuery, json));
                 })

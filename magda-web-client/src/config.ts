@@ -41,6 +41,7 @@ const serverConfig: {
         [id: string]: boolean;
     };
     vocabularyApiEndpoints: string[];
+    defaultOrganizationId?: string;
 } = window.magda_server_config || {};
 
 const registryApiUrl =
@@ -145,7 +146,8 @@ export const config = {
     featureFlags:
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
-    vocabularyApiEndpoints
+    vocabularyApiEndpoints,
+    defaultOrganizationId: serverConfig.defaultOrganizationId
 };
 
 export const defaultConfiguration = {

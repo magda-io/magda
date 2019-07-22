@@ -1,13 +1,15 @@
 import React from "react";
 import { withRouter } from "react-router";
+import { Map, TileLayer, Rectangle } from "react-leaflet";
+import uuidv4 from "uuid/v4";
+import ReactSelect from "react-select";
+
 import { getFormatIcon } from "../View/DistributionIcon";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
-    textEditor,
     textEditorEx,
-    multilineTextEditor,
-    multiTextEditorEx
+    multilineTextEditor
 } from "Components/Editing/Editors/textEditor";
 import {
     dateEditor,
@@ -18,7 +20,6 @@ import {
     codelistRadioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
-import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import HelpSnippet from "Components/Common/HelpSnippet";
@@ -26,6 +27,18 @@ import HelpSnippet from "Components/Common/HelpSnippet";
 import { createRecord } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
+
+import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
+import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
+import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+
+import * as codelists from "constants/DatasetConstants";
+import TagInput from "Components/Common/TagInput";
+import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
+import { State, saveState } from "./DatasetAddCommon";
+import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
+import { createPublisher } from "api-clients/RegistryApis";
+import withAddDatasetState from "./withAddDatasetState";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -35,9 +48,11 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
-import ReactSelect from "react-select";
-import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
-import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
+
+import "./DatasetAddMetadataPage.scss";
+import "./DatasetAddFilesPage.scss";
+import { autocompletePublishers } from "api-clients/SearchApis";
+import publisher from "reducers/publisherReducer";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -50,57 +65,39 @@ const aspects = {
     access: accessAspect
 };
 
-import uuidv1 from "uuid/v1";
-import uuidv4 from "uuid/v4";
-
-import * as codelists from "constants/DatasetConstants";
-
-import { Map, TileLayer, Rectangle } from "react-leaflet";
-import TagInput from "Components/Common/TagInput";
-
-import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
-
-import "./DatasetAddFilesPage.scss";
-
-import {
-    State,
-    createBlankState,
-    loadState,
-    saveState
-} from "./DatasetAddCommon";
-
-import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
-
-import "./DatasetAddMetadataPage.scss";
-
-type Prop = {
+type Props = {
+    initialState: State;
     createRecord: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
     step: number;
-    dataset: string;
+    datasetId: string;
     isNewDataset: boolean;
     history: any;
 };
 
-class NewDataset extends React.Component<Prop, State> {
-    state: State = createBlankState();
+class NewDataset extends React.Component<Props, State> {
+    state: State = this.props.initialState;
 
-    componentWillMount() {
+    componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.dataset}/${this.props.step}`
+                `/dataset/add/metadata/${this.props.datasetId}/${
+                    this.props.step
+                }`
             );
         }
-        this.setState(state =>
-            Object.assign({}, state, loadState(this.props.dataset))
-        );
     }
 
     steps: any = [
         this.renderBasicDetails.bind(this),
-        this.renderProduction.bind(this),
+        () => (
+            <DatasetAddPeoplePage
+                edit={this.edit}
+                dataset={this.state.dataset}
+            />
+        ),
         this.renderRestriction.bind(this),
         this.renderDescription.bind(this)
     ];
@@ -198,13 +195,13 @@ class NewDataset extends React.Component<Prop, State> {
     }
 
     saveAndExit() {
-        saveState(this.state, this.props.dataset);
+        saveState(this.state, this.props.datasetId);
         this.props.history.push(`/dataset/list`);
     }
 
     gotoStep(step) {
-        saveState(this.state, this.props.dataset);
-        this.props.history.push("../" + this.props.dataset + "/" + step);
+        saveState(this.state, this.props.datasetId);
+        this.props.history.push("../" + this.props.datasetId + "/" + step);
     }
 
     renderBasicDetails() {
@@ -362,88 +359,6 @@ class NewDataset extends React.Component<Prop, State> {
         );
     }
 
-    renderProduction() {
-        const { dataset } = this.state;
-
-        const editDataset = this.edit("dataset");
-        return (
-            <div className="row people-and-production-page">
-                <div className="col-sm-12">
-                    <h2>People and production</h2>
-                    <hr />
-                    <h3>People</h3>
-                    <h4>
-                        What organisation is responsible for publishing this
-                        dataset?
-                    </h4>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.publisher}
-                            onChange={editDataset("publisher")}
-                            editor={textEditor}
-                        />
-                    </p>
-                    <h4>
-                        Who is the primary contact point(s) for this dataset?
-                    </h4>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.contactPointFull}
-                            onChange={editDataset("contactPointFull")}
-                            editor={multiContactEditor({})}
-                        />
-                    </p>
-                    <h4>
-                        How should the contact point(s) be referenced in the
-                        metadata?
-                    </h4>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.contactPointDisplay}
-                            onChange={editDataset("contactPointDisplay")}
-                            editor={codelistRadioEditor(
-                                codelists.contactPointDisplay
-                            )}
-                        />
-                    </p>
-                    <hr />
-                    <h3>Production</h3>
-                    <h4>
-                        Was this dataset produced in collaboration with with
-                        other organisations?
-                    </h4>
-                    <p>
-                        <YesNoEditReveal
-                            value={dataset.creation_affiliatedOrganisation}
-                            defaultValue={[]}
-                            nullValue={null}
-                            onChange={editDataset(
-                                "creation_affiliatedOrganisation"
-                            )}
-                        >
-                            <AlwaysEditor
-                                value={dataset.creation_affiliatedOrganisation}
-                                onChange={editDataset(
-                                    "creation_affiliatedOrganisation"
-                                )}
-                                editor={multiTextEditorEx({
-                                    placeholder: "Add an organisation"
-                                })}
-                            />
-                        </YesNoEditReveal>
-                    </p>
-                    <h4>How was the dataset produced?</h4>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.creation_mechanism}
-                            onChange={editDataset("creation_mechanism")}
-                            editor={multilineTextEditor}
-                        />
-                    </p>
-                </div>
-            </div>
-        );
-    }
     renderRestriction() {
         let {
             files,
@@ -711,7 +626,7 @@ class NewDataset extends React.Component<Prop, State> {
     }
 
     async publishDataset() {
-        saveState(this.state, this.props.dataset);
+        saveState(this.state, this.props.datasetId);
 
         const id = createId("ds");
         const {
@@ -724,6 +639,60 @@ class NewDataset extends React.Component<Prop, State> {
             datasetUsage,
             datasetAccess
         } = this.state;
+
+        if (!dataset.publisher) {
+            throw new Error("No publisher selected");
+        }
+
+        this.setState({
+            isPublishing: true
+        });
+
+        let publisherId: string;
+        if (!dataset.publisher.existingId) {
+            // Do a last check to make sure the publisher really doesn't exist
+            const existingPublishers = await autocompletePublishers(
+                {},
+                dataset.publisher.name
+            );
+
+            const match = existingPublishers.options.find(
+                publisher =>
+                    publisher.value.toLowerCase().trim() ===
+                    dataset.publisher!.name.toLowerCase().trim()
+            );
+
+            if (!match) {
+                publisherId = uuidv4();
+
+                // OK no publisher, lets add it
+                await createPublisher({
+                    id: publisherId,
+                    name: dataset.publisher.name,
+                    aspects: {
+                        "organization-details": {
+                            name: dataset.publisher.name,
+                            title: dataset.publisher.name,
+                            imageUrl: "",
+                            description:
+                                "Added manually during dataset creation"
+                        }
+                    }
+                });
+            } else {
+                publisherId = match.identifier;
+            }
+
+            const newPublisher = {
+                name: publisher.name,
+                publisherId
+            };
+
+            this.edit("dataset")("publisher")(newPublisher);
+        } else {
+            publisherId = dataset.publisher.existingId;
+        }
+
         const inputDistributions = files.map(file => {
             let usage: any = undefined;
             if (_licenseLevel !== "dataset") {
@@ -756,22 +725,21 @@ class NewDataset extends React.Component<Prop, State> {
                     distributions: inputDistributions.map(d => d.id)
                 },
                 access: datasetAccess,
-                usage
+                usage,
+                "dataset-publisher": {
+                    publisher: publisherId
+                }
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
-
-        this.setState({
-            isPublishing: true
-        });
     }
 }
 
 function mapStateToProps(state, old) {
-    let dataset = old.match.params.dataset;
+    let datasetId = old.match.params.dataset;
     let isNewDataset = false;
-    if (!dataset || dataset === "-") {
-        dataset = "dataset-" + uuidv4();
+    if (!datasetId || datasetId === "-") {
+        datasetId = "dataset-" + uuidv4();
         isNewDataset = true;
     }
     const step = parseInt(old.match.params.step);
@@ -785,7 +753,7 @@ function mapStateToProps(state, old) {
         state.record.newDataset.dataset &&
         state.record.newDataset.dataset.id;
     return {
-        dataset,
+        datasetId,
         isNewDataset,
         step,
         isCreating,
@@ -803,15 +771,17 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default withRouter(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(NewDataset)
+export default withAddDatasetState(
+    withRouter(
+        connect(
+            mapStateToProps,
+            mapDispatchToProps
+        )(NewDataset)
+    )
 );
 
 function createId(type = "ds") {
-    return `magda-${type}-${uuidv1()}--${uuidv4()}`;
+    return `magda-${type}-${uuidv4()}`;
 }
 
 function denormalise(values) {
@@ -890,65 +860,6 @@ function BBOXPreview(props) {
                     Please enter valid coordinates
                 </div>
             )}
-        </div>
-    );
-}
-
-function YesNoEditReveal(props) {
-    const yes = !!props.value;
-    const name = Math.random() + "";
-    const yesOpts: any = {
-        name,
-        value: "yes"
-    };
-    const noOpts: any = { name, value: "no" };
-    if (yes) {
-        yesOpts.checked = "checked";
-    } else {
-        noOpts.checked = true;
-    }
-    yesOpts.onChange = noOpts.onChange = e => {
-        if (e.target.value === "yes") {
-            props.onChange(props.defaultValue);
-        } else {
-            props.onChange(props.nullValue);
-        }
-    };
-    return (
-        <div>
-            <div>
-                <div className="au-control-input">
-                    <input
-                        className="au-control-input__input"
-                        type="radio"
-                        id={name + "-no"}
-                        {...noOpts}
-                    />
-                    <label
-                        htmlFor={name + "-no"}
-                        className="au-control-input__text"
-                    >
-                        No
-                    </label>
-                </div>
-            </div>
-            <div>
-                <div className="au-control-input">
-                    <input
-                        className="au-control-input__input"
-                        type="radio"
-                        id={name + "-yes"}
-                        {...yesOpts}
-                    />
-                    <label
-                        className="au-control-input__text"
-                        htmlFor={name + "-yes"}
-                    >
-                        Yes
-                    </label>
-                </div>
-            </div>
-            {yes && props.children}
         </div>
     );
 }

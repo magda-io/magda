@@ -203,7 +203,8 @@ export default function buildApp(config: Config) {
                 createCkanRedirectionRouter({
                     ckanRedirectionDomain: config.ckanRedirectionDomain,
                     ckanRedirectionPath: config.ckanRedirectionPath,
-                    registryApiBaseUrlInternal: routes.registry.to
+                    registryApiBaseUrlInternal: routes.registry.to,
+                    tenantId: 0 // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.
                 })
             );
         }

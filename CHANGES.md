@@ -1,15 +1,20 @@
 ## 0.0.56
 
-Add multi-tenant support. Deployed as single tenant by default.
+General:
+
+-   Add multi-tenant support. Deployed as single tenant by default.
 
 Registry:
 
 -   Changed database schema.
 -   Provide services based on Tenant IDs.
+-   Fixed PATCH request to registry won't trigger notification to webhook
 
 Gateway:
 
 -   Add tenant ID header to client requests.
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
 
 Search:
 
@@ -21,18 +26,6 @@ Indexer:
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
-
-Registry:
-
--   PATCH request to registry won't trigger notification to webhook
-
-Others:
-
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
 
 Cataloging:
 
@@ -66,11 +59,7 @@ UI:
 -   New dropdown box design on `Dataset details and contents` page
 -   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
 -   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
-
-Gateway:
-
--   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
--   Add Vanguard (WS-FED) Authentication provider
+-   Made organisation field an autocomplete in add dataset page.
 
 Access Control:
 
@@ -85,6 +74,11 @@ Access Control:
 
 Others:
 
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
 -   Made registry-api DB pool settings configurable via Helm
 -   Make broken link sleuther recrawl period configurable via Helm
 -   Format minion will trust dcat format if other measures indicate a ZIP format
