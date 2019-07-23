@@ -345,9 +345,9 @@ class NewDataset extends React.Component<Prop, State> {
                     </h4>
                     <div>
                         <SpatialAreaInput
-                            steId={spatialCoverage.steId}
-                            sa4Id={spatialCoverage.sa4Id}
-                            sa3Id={spatialCoverage.sa3Id}
+                            steId={spatialCoverage.lv2Id}
+                            sa4Id={spatialCoverage.lv3Id}
+                            sa3Id={spatialCoverage.lv4Id}
                             bbox={(() => {
                                 if (
                                     !Array.isArray(spatialCoverage.bbox) ||
@@ -385,9 +385,9 @@ class NewDataset extends React.Component<Prop, State> {
                                         ];
                                     }
 
-                                    if (steId) spatialCoverage.steId = steId;
-                                    if (sa4Id) spatialCoverage.sa4Id = sa4Id;
-                                    if (sa3Id) spatialCoverage.sa3Id = sa3Id;
+                                    if (steId) spatialCoverage.lv2Id = steId;
+                                    if (sa4Id) spatialCoverage.lv3Id = sa4Id;
+                                    if (sa3Id) spatialCoverage.lv4Id = sa3Id;
 
                                     return {
                                         ...state,

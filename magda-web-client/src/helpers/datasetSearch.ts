@@ -91,6 +91,7 @@ export type Region = {
     regionId?: string;
     regionType?: string;
     regionName?: string;
+    countryId?: string;
     steId?: string;
     sa4Id?: string;
     sa3Id?: string;

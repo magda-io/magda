@@ -13,11 +13,11 @@ const loadOptions = (props: PropsType) => async inputValue => {
     const res = await fetch(
         `${config.searchApiUrl}regions?type=SA3${
             props.steRegion
-                ? `&steId=${encodeURIComponent(props.steRegion.regionId)}`
+                ? `&lv2Id=${encodeURIComponent(props.steRegion.regionId)}`
                 : ""
         }${
             props.sa4Region
-                ? `&sa4Id=${encodeURIComponent(props.sa4Region.regionId)}`
+                ? `&lv3Id=${encodeURIComponent(props.sa4Region.regionId)}`
                 : ""
         }${queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""}`
     );

@@ -15,16 +15,24 @@
             "type": "string",
             "enum": ["bbox", "region", "map"]
         },
-        "steId": {
-            "title": "STE region Id",
+        "lv1Id": {
+            "title": "Level 1 Region ID. e.g. country",
             "type": "string"
         },
-        "sa4Id": {
-            "title": "SA4 region Id",
+        "lv2Id": {
+            "title": "Level 2 Region ID. e.g. state",
             "type": "string"
         },
-        "sa3Id": {
-            "title": "SA3 region Id",
+        "lv3Id": {
+            "title": "Level 3 Region ID. e.g. region",
+            "type": "string"
+        },
+        "lv4Id": {
+            "title": "Level 4 Region ID. e.g. area",
+            "type": "string"
+        },
+        "lv5Id": {
+            "title": "Level 5 Region ID.",
             "type": "string"
         }
     }

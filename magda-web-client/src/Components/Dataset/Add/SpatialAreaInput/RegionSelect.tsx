@@ -13,7 +13,7 @@ const loadOptions = (props: PropsType) => async inputValue => {
     const res = await fetch(
         `${config.searchApiUrl}regions?type=SA4${
             props.steRegion && props.steRegion.regionId
-                ? `&steId=${encodeURIComponent(props.steRegion.regionId)}`
+                ? `&lv2Id=${encodeURIComponent(props.steRegion.regionId)}`
                 : ""
         }${queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""}`
     );
