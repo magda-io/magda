@@ -84,7 +84,7 @@
 
     .text-row {
         margin-top: 51px;
-        margin-bottom: 72px;
+        margin-bottom: 48px;
         position: relative;
         font-size: 16px;
         font-weight: normal;
@@ -123,7 +123,35 @@
     }
 
     .region-panel {
+        .country-select-container {
+            .country-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+            }
+        }
+
+        .offshore-territories-select-container {
+            margin-top: 48px;
+            .offshore-territories-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+            }
+        }
+
         .state-select-container {
+            margin-top: 48px;
             .state-select-heading {
                 font-size: 16px;
                 font-weight: normal;
@@ -137,6 +165,7 @@
         }
 
         .region-select-container {
+            margin-top: 48px;
             .region-select-heading {
                 font-size: 16px;
                 font-weight: normal;

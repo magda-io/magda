@@ -12,7 +12,8 @@ import "./index.scss";
 
 interface StateType {
     activeTabIndex: number;
-    steId?: string;
+    countryId?: string;
+    territoryOrSteId?: string;
     sa4Id?: string;
     sa3Id?: string;
     sa2Id?: string;
@@ -27,14 +28,16 @@ interface StateType {
 export type InputMethod = "bbox" | "region" | "map";
 
 interface PropsType {
-    steId?: string;
+    countryId?: string;
+    territoryOrSteId?: string;
     sa4Id?: string;
     sa3Id?: string;
     bbox?: BoundingBox;
     onChange?: (
         method: InputMethod,
         bbox?: BoundingBox,
-        steId?: string,
+        countryId?: string,
+        territoryOrSteId?: string,
         sa4Id?: string,
         sa3Id?: string
     ) => void;
@@ -48,7 +51,8 @@ const initialState = (props: PropsType) => ({
             props.bbox.north &&
             props.bbox.south &&
             props.bbox.west &&
-            !props.steId &&
+            !props.countryId &&
+            !props.territoryOrSteId &&
             !props.sa4Id &&
             !props.sa3Id
         ) {
@@ -56,7 +60,8 @@ const initialState = (props: PropsType) => ({
         }
         return 0;
     })(),
-    steId: "",
+    countryId: "",
+    steIdOrTerritoryId: "",
     sa4Id: "",
     sa3Id: "",
     bbox: {
@@ -71,32 +76,46 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState<StateType>(initialState(props));
     const onRegionPanelChange = (
         region?: Region,
-        steId?: string,
+        countryId?: string,
+        territoryOrSteId?: string,
         sa4Id?: string,
         sa3Id?: string,
         bbox?: BoundingBox
     ) => {
         if (typeof props.onChange !== "function") return;
         if (!region) {
-            props.onChange("region", bbox, steId, sa4Id, sa3Id);
+            props.onChange(
+                "region",
+                bbox,
+                countryId,
+                territoryOrSteId,
+                sa4Id,
+                sa3Id
+            );
             return;
         }
-
         // --- regionId should be used depends on current region type
         props.onChange(
             "region",
             region.boundingBox,
-            region.steId ? region.steId : region.regionId,
-            region.sa4Id
-                ? region.sa4Id
-                : region.steId
+            region.lv1Id ? region.lv1Id : region.regionId,
+            region.lv2Id
+                ? region.lv2Id
+                : region.lv1Id
+                ? region.regionId
+                : territoryOrSteId
+                ? territoryOrSteId
+                : undefined,
+            region.lv3Id
+                ? region.lv3Id
+                : region.lv2Id
                 ? region.regionId
                 : sa4Id
                 ? sa4Id
                 : undefined,
-            region.sa3Id
-                ? region.sa3Id
-                : region.sa4Id
+            region.lv4Id
+                ? region.lv4Id
+                : region.lv3Id
                 ? region.regionId
                 : sa3Id
                 ? sa3Id
@@ -139,7 +158,10 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                                 case 0:
                                     return (
                                         <RegionPanel
-                                            steId={props.steId}
+                                            countryId={props.countryId}
+                                            territoryOrSteId={
+                                                props.territoryOrSteId
+                                            }
                                             sa4Id={props.sa4Id}
                                             sa3Id={props.sa3Id}
                                             bbox={props.bbox}

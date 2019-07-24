@@ -37,6 +37,7 @@ const loadOptions = (props: PropsType) => async inputValue => {
 };
 
 interface PropsType {
+    countryRegion?: ValueType<Region>;
     steRegion?: ValueType<Region>;
     value?: ValueType<Region>;
     regionId?: string;
@@ -47,12 +48,17 @@ interface PropsType {
 }
 
 const RegionSelect: FunctionComponent<PropsType> = props => {
-    const { steRegion } = props;
+    const { countryRegion, steRegion } = props;
 
-    const placeHolderText = steRegion
-        ? "Please select region..."
-        : "Please select a state first.";
-    const isDisabled = steRegion ? false : true;
+    let placeHolderText = "Please select region...";
+
+    if (!countryRegion && !steRegion) {
+        placeHolderText = "Please select country and state first.";
+    } else if (!steRegion) {
+        placeHolderText = "Please select state first.";
+    }
+
+    const isDisabled = countryRegion && steRegion ? false : true;
 
     return (
         <div className="region-select">
@@ -60,6 +66,7 @@ const RegionSelect: FunctionComponent<PropsType> = props => {
                 key={(() => {
                     const keyParts = [
                         props.regionId ? props.regionId : "",
+                        countryRegion ? countryRegion.regionId : "",
                         steRegion ? steRegion.regionId : ""
                     ];
                     return keyParts.join("|");

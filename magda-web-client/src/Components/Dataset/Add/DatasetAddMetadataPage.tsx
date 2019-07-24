@@ -345,7 +345,8 @@ class NewDataset extends React.Component<Prop, State> {
                     </h4>
                     <div>
                         <SpatialAreaInput
-                            steId={spatialCoverage.lv2Id}
+                            countryId={spatialCoverage.lv1Id}
+                            territoryOrSteId={spatialCoverage.lv2Id}
                             sa4Id={spatialCoverage.lv3Id}
                             sa3Id={spatialCoverage.lv4Id}
                             bbox={(() => {
@@ -365,7 +366,8 @@ class NewDataset extends React.Component<Prop, State> {
                             onChange={(
                                 method: SpatialAreaInputInputMethod,
                                 bbox?: BoundingBox,
-                                steId?: string,
+                                countryId?: string,
+                                territoryOrSteId?: string,
                                 sa4Id?: string,
                                 sa3Id?: string
                             ) =>
@@ -385,7 +387,10 @@ class NewDataset extends React.Component<Prop, State> {
                                         ];
                                     }
 
-                                    if (steId) spatialCoverage.lv2Id = steId;
+                                    if (countryId)
+                                        spatialCoverage.lv1Id = countryId;
+                                    if (territoryOrSteId)
+                                        spatialCoverage.lv2Id = territoryOrSteId;
                                     if (sa4Id) spatialCoverage.lv3Id = sa4Id;
                                     if (sa3Id) spatialCoverage.lv4Id = sa3Id;
 

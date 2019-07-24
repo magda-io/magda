@@ -50,7 +50,7 @@ function isTheSameBboxQueueItem(
 }
 
 // --- how long time to defer bounds update? in mils seconds
-const UPDATE_DEFER_TIME = 300;
+const UPDATE_DEFER_TIME = 400;
 class SpatialDataPreviewer extends React.Component<PropsType, BoundsQueueItem> {
     constructor(props) {
         super(props);

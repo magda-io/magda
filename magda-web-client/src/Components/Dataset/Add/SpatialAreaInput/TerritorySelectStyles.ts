@@ -1,4 +1,4 @@
-const RegionSelectStyles = {
+const TerritorySelectStyles = {
     menu: provided => {
         return {
             ...provided,
@@ -20,4 +20,4 @@ const RegionSelectStyles = {
     })
 };
 
-export default RegionSelectStyles;
+export default TerritorySelectStyles;

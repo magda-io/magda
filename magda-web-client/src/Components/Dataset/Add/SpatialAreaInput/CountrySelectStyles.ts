@@ -1,8 +1,7 @@
-const RegionSelectStyles = {
+const CountrySelectStyles = {
     menu: provided => {
         return {
             ...provided,
-            width: "560px",
             borderRadius: "2px",
             marginTop: "0px",
             // --- float over leaflet map zoom ctrl
@@ -15,9 +14,8 @@ const RegionSelectStyles = {
     }),
     control: provided => ({
         ...provided,
-        width: "560px",
         borderRadius: "2px"
     })
 };
 
-export default RegionSelectStyles;
+export default CountrySelectStyles;

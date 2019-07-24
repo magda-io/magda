@@ -91,11 +91,11 @@ export type Region = {
     regionId?: string;
     regionType?: string;
     regionName?: string;
-    countryId?: string;
-    steId?: string;
-    sa4Id?: string;
-    sa3Id?: string;
-    sa2Id?: string;
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
     boundingBox: BoundingBox;
 };
 
