@@ -44,6 +44,7 @@ trait RegistryProtocols
     with ModelProtocols {
   implicit object EventTypeFormat extends RootJsonFormat[EventType] {
     def write(e: EventType) = JsString(e.toString)
+
     def read(value: JsValue) =
       EventType.values
         .find(e => e.toString == value.asInstanceOf[JsString].value)
@@ -71,6 +72,7 @@ trait RegistryProtocols
   implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
 
   implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
+
     def write(obj: RecordType) = obj match {
       case x: Record ⇒ x.toJson
       case y: RecordSummary ⇒ y.toJson
@@ -477,6 +479,7 @@ object Registry extends RegistryConverters {
   )
 
   object RegistryEvent {
+
     def getTenantId(event: RegistryEvent): BigInt = {
       // Events created in the old system (single tenant) do not have tenantId field in the data object.
       // Newly created events always have tenantId field in the data object.
@@ -555,16 +558,22 @@ object Registry extends RegistryConverters {
   @ApiModel(description = "The type of a registry modification event.")
   sealed abstract class EventType(val value: Int, val name: String)
       extends IntEnumEntry {
+
     def isRecordEvent =
       this == EventType.CreateRecord || this == EventType.DeleteRecord || this == EventType.PatchRecord
+
     def isAspectDefinitionEvent =
       this == EventType.CreateAspectDefinition || this == EventType.PatchAspectDefinition || this == EventType.DeleteAspectDefinition
+
     def isRecordAspectEvent =
       this == EventType.CreateRecordAspect || this == EventType.DeleteRecordAspect || this == EventType.PatchRecordAspect
+
     def isCreateEvent =
       this == EventType.CreateRecord || this == EventType.CreateRecordAspect || this == EventType.CreateAspectDefinition
+
     def isDeleteEvent =
       this == EventType.DeleteRecord || this == EventType.DeleteRecordAspect || this == EventType.DeleteAspectDefinition
+
     def isPatchEvent =
       this == EventType.PatchRecord || this == EventType.PatchRecordAspect || this == EventType.PatchAspectDefinition
   }
