@@ -84,13 +84,18 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                 // --- select main land
                 props.onChange(
                     state.countryRegion,
+                    props.countryId,
                     props.territoryOrSteId,
                     props.sa4Id,
                     props.sa3Id
                 );
             } else {
                 // --- offshore territory
-                props.onChange(state.countryRegion);
+                props.onChange(
+                    state.countryRegion,
+                    props.countryId,
+                    props.territoryOrSteId
+                );
             }
         } else {
             props.onChange(
