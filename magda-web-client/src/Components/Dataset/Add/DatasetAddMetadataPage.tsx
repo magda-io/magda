@@ -294,7 +294,7 @@ class NewDataset extends React.Component<Prop, State> {
                     </div>
                     <hr />
                     <h3>Dates and updates</h3>
-                    <h4>When was the data first issued?</h4>
+                    <h4>When was the dataset first issued?</h4>
                     <div>
                         <AlwaysEditor
                             value={dataset.issued}
