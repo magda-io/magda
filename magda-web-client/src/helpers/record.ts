@@ -168,7 +168,7 @@ export type ParsedDataset = {
     };
 };
 
-export const defaultPublisher: Publisher = {
+export const emptyPublisher: Publisher = {
     id: "",
     name: "",
     aspects: {
@@ -198,7 +198,7 @@ const defaultDatasetAspects = {
         distributions: []
     },
     "temporal-coverage": null,
-    "dataset-publisher": { publisher: defaultPublisher },
+    "dataset-publisher": { publisher: emptyPublisher },
     source: {
         url: "",
         name: "",
@@ -393,7 +393,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
 
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
-        : defaultPublisher;
+        : emptyPublisher;
     const contactPoint: string = datasetInfo.contactPoint;
     const source: string | undefined = aspects["source"]
         ? aspects["source"]["type"] !== "csv-dataset"

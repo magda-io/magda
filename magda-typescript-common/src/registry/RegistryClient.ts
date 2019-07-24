@@ -124,7 +124,8 @@ export default class RegistryClient {
         optionalAspect?: Array<string>,
         pageToken?: string,
         dereference?: boolean,
-        limit?: number
+        limit?: number,
+        aspectQueries?: string[]
     ): Promise<RecordsPage<I> | Error> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
@@ -134,7 +135,8 @@ export default class RegistryClient {
                 pageToken,
                 undefined,
                 limit,
-                dereference
+                dereference,
+                aspectQueries
             );
         return <any>retry(
             operation(pageToken),

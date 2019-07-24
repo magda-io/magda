@@ -3,31 +3,22 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
 import { Link } from "react-router-dom";
-import ToolTip from "Components/Dataset/Add/ToolTip";
 
+import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 
 import { getFiles } from "helpers/readFile";
 
+import { State, File, FileState, saveState } from "./DatasetAddCommon";
+import withAddDatasetState from "./withAddDatasetState";
+
 import "./DatasetAddFilesPage.scss";
 
-import {
-    State,
-    File,
-    FileState,
-    createBlankState,
-    loadState,
-    saveState
-} from "./DatasetAddCommon";
-
-class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
-    state = createBlankState();
-
-    componentDidMount() {
-        this.setState(state =>
-            Object.assign({}, state, loadState(this.props.dataset))
-        );
-    }
+class DatasetAddFilesPage extends React.Component<
+    { dataset: string; initialState: State },
+    State
+> {
+    state = this.props.initialState;
 
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
@@ -363,4 +354,6 @@ function fileFormat(file): string {
     }
 }
 
-export default withRouter(connect(mapStateToProps)(DatasetAddFilesPage));
+export default withAddDatasetState(
+    withRouter(connect(mapStateToProps)(DatasetAddFilesPage))
+);

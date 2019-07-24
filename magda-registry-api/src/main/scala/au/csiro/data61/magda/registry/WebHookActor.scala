@@ -318,6 +318,20 @@ object WebHookActor {
     }
   }
 
+  /**
+    * An instance of this class provides subscription service to its subscriber via web hook processor.
+    * See [[au.csiro.data61.magda.registry.WebHookProcessor]].
+    * In multi-tenant mode, it will send events belonging to all tenants to the subscriber.
+    * The subscriber is therefore considered tenant independent. That is, the subscriber
+    * will process events for all tenants.
+    *
+    * In the future, it may provide event service to tenant specific subscriber.
+    *
+    * @param id
+    * @param registryApiBaseUrl
+    * @param forceWakeUpInterval
+    * @param config
+    */
   private class SingleWebHookActor(val id: String,
                                    val registryApiBaseUrl: String,
                                    forceWakeUpInterval: Long)
@@ -406,7 +420,6 @@ object WebHookActor {
 
                 processor
                   .sendSomeNotificationsForOneWebHook(
-                    this.id,
                     webHook,
                     eventPage
                   )

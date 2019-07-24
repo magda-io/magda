@@ -51,8 +51,25 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           limit 1""".map(rs => rs.long("eventId")).headOption().apply()
   }
 
-
-  //  If tenantId is NONE, will get all events of all tenants.
+  /**
+    * Find events that meet the given criteria. This is a fundamental api mainly used by the registry to find
+    * and send events to their subscribers, such as an indexer.
+    *
+    * See [[au.csiro.data61.magda.registry.WebHookActor.SingleWebHookActor]] for the implementation that provides
+    * event service for all web hooks, such as indexer and minions.
+    *
+    * @param session an implicit DB session
+    * @param pageToken The ID of event must be greater than the specified value. Optional and default to None.
+    * @param start Specify the number of initial events to be dropped. Optional and default to None.
+    * @param limit Specify the max number of events to be returned. Optional and default to None.
+    * @param lastEventId The ID of event must NOT be greater than the specified value. Optional and default to None.
+    * @param recordId The data recordId field of event must equal to this value. Optional and default to None.
+    * @param aspectIds The data aspectId field of event must equal to one of the specified values. Optional and default to empty Set.
+    * @param eventTypes The type of event must equal to one of the specified values. Optional and default to empty Set.
+    * @param tenantId The returned events will be filtered by this tenant ID.
+    *                 If it is a system ID, events belonging to all tenants are included (no tenant filtering).
+    * @return EventsPage containing events that meet the specified requirements
+    */
   def getEvents(implicit session: DBSession,
                 pageToken: Option[Long] = None,
                 start: Option[Int] = None,
@@ -90,7 +107,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val aspectsSql = if (aspectIds.isEmpty) None else Some(SQLSyntax.joinWithOr((aspectIds.map(v => sqls"data->>'aspectId' = $v") + sqls"data->>'aspectId' IS NULL").toArray: _*))
     val dereferenceSelectorsSql = if (dereferenceSelectors.isEmpty) None else Some(SQLSyntax.joinWithOr(dereferenceSelectors.toArray: _*))
 
-    val whereClause = SQLSyntax.where((SQLSyntax.joinWithAnd((theFilters.map(_.get)): _*)).and((aspectsSql, dereferenceSelectorsSql) match {
+    val whereClause = SQLSyntax.where(SQLSyntax.joinWithAnd(theFilters.map(_.get): _*).and((aspectsSql, dereferenceSelectorsSql) match {
       case (Some(aspectSql), Some(dereferenceSql)) => aspectSql.or(dereferenceSql)
       case (Some(aspectSql), None)                 => aspectSql
       case (None, Some(dereferenceSql))            => dereferenceSql

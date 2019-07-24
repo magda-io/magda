@@ -14,6 +14,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.RegistryConverters
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
 import com.auth0.jwt.JWT
@@ -26,6 +27,18 @@ trait RegistryInterface {
   def getDataSetsToken(token: String, size: Int): Future[(Option[String], List[DataSet])]
 }
 
+/**
+  * An instance of this class is not tenant specific. That is, when making request to the registry,
+  * it adds request header "X-Magda-Tenant-Id" with the value of MAGDA_SYSTEM_ID. The request will
+  * be made directly to the registry instead of via the gateway. Therefore, this class should only
+  * be used internally.
+  *
+  * @param httpFetcher
+  * @param config
+  * @param system
+  * @param executor
+  * @param materializer
+  */
 class RegistryExternalInterface(httpFetcher: HttpFetcher)
                                (implicit val config: Config,
                                 implicit val system: ActorSystem,
@@ -41,7 +54,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   implicit val logger = Logging(system, getClass)
 
   val authHeader = RawHeader(Authentication.headerName, JWT.create().withClaim("userId", config.getString("auth.userId")).sign(Authentication.algorithm))
-  val tenantIdHeader = RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID.toString())
+  val systemIdHeader = RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID.toString())
   val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
   val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
@@ -55,7 +68,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(tenantIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(systemIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -68,7 +81,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(tenantIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(systemIdHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -81,7 +94,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getWebhooks(): Future[List[WebHook]] = {
-    fetcher.get(path = s"$baseApiPath/hooks", headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseApiPath/hooks", headers = Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[List[WebHook]]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -90,7 +103,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getWebhook(id: String): Future[Option[WebHook]] = {
-    fetcher.get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK       => Unmarshal(response.entity).to[WebHook].map(Some.apply)
         case NotFound => Future(None)
@@ -100,7 +113,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def putWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.put(path = s"$baseApiPath/hooks/${webhook.id.get}", payload = webhook, headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
+    fetcher.put(path = s"$baseApiPath/hooks/${webhook.id.get}", payload = webhook, headers = Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -108,8 +121,14 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
     }
   }
 
+  /**
+    * A created web hook is tenant independent, e.g. indexer and minion web hooks.
+    * In the future, tenant specific web hooks may be supported.
+    * @param webhook
+    * @return
+    */
   def createWebhook(webhook: WebHook): Future[WebHook] = {
-    fetcher.post(path = s"$baseApiPath/hooks", payload = webhook, headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
+    fetcher.post(path = s"$baseApiPath/hooks", payload = webhook, headers = Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHook]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -118,7 +137,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def resumeWebhook(webhookId: String): Future[WebHookAcknowledgementResponse] = {
-    fetcher.post(path = s"$baseApiPath/hooks/$webhookId/ack", payload = WebHookAcknowledgement(succeeded = false), headers = Seq(authHeader, tenantIdHeader)).flatMap { response =>
+    fetcher.post(path = s"$baseApiPath/hooks/$webhookId/ack", payload = WebHookAcknowledgement(succeeded = false), headers = Seq(authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[WebHookAcknowledgementResponse]
         case _  => Unmarshal(response.entity).to[String].flatMap(onError(response))

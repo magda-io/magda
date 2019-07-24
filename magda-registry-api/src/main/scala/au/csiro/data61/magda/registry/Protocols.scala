@@ -1,9 +1,8 @@
 package au.csiro.data61.magda.registry
 
-import spray.json._
+import au.csiro.data61.magda.model.Registry.{Record, RecordSummary, RecordType}
+import au.csiro.data61.magda.model.{RegistryProtocols => CommonRegistryProtocols}
 import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.model.Registry.{ RegistryProtocols => CommonRegistryProtocols, Record, RecordSummary, RecordType}
-
 
 final case class ReadyStatus(ready: Boolean = false)
 
@@ -12,8 +11,8 @@ trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply[Record])
   implicit val recordSummariesPageFormat = jsonFormat3(RecordsPage.apply[RecordSummary])
   implicit val recordSummariesPageFormat2 = jsonFormat3(RecordsPage.apply[RecordType])
-  implicit val patchAspectDefinitionEventFormat = jsonFormat2(PatchAspectDefinitionEvent.apply)
-  implicit val createAspectDefinitionEventFormat = jsonFormat3(CreateAspectDefinitionEvent.apply)
+  implicit val patchAspectDefinitionEventFormat = jsonFormat3(PatchAspectDefinitionEvent.apply)
+  implicit val createAspectDefinitionEventFormat = jsonFormat4(CreateAspectDefinitionEvent.apply)
   implicit val createRecordEventFormat = jsonFormat3(CreateRecordEvent.apply)
   implicit val createRecordAspectEventFormat = jsonFormat4(CreateRecordAspectEvent.apply)
   implicit val deleteRecordAspectEventFormat = jsonFormat3(DeleteRecordAspectEvent.apply)

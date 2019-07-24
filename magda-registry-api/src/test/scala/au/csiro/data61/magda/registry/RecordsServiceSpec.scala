@@ -525,14 +525,23 @@ class RecordsServiceSpec extends ApiSpec {
           param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
 
           val source = Record("source", "source", Map("withLink" -> JsObject("someLink" -> JsString("target"))))
           param.asAdmin(Post("/v0/records", source)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
+          param.asAdmin(Post("/v0/records", source)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
 
           val target = Record("target", "target", Map("withLink" -> JsObject("someLink" -> JsString("source"))))
           param.asAdmin(Post("/v0/records", target)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.asAdmin(Post("/v0/records", target)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -548,19 +557,16 @@ class RecordsServiceSpec extends ApiSpec {
               "someLink" -> JsString("target"))
           }
 
-          Get("/v0/records/source?aspect=withLink&dereference=true") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+          Get("/v0/records/source?optionalAspect=withLink&dereference=true") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[Record].aspects("withLink") shouldBe JsObject(
+            val theRecord = responseAs[Record]
+            theRecord.aspects("withLink") shouldBe JsObject(
               "someLink" -> JsObject(
                 "id" -> JsString("target"),
                 "name" -> JsString("target"),
                 "aspects" -> JsObject(
                   "withLink" -> JsObject(
                     "someLink" -> JsString("source")))))
-          }
-
-          Get("/v0/records/source?aspect=withLink") ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
-            status shouldEqual StatusCodes.NotFound
           }
         }
 
@@ -593,9 +599,14 @@ class RecordsServiceSpec extends ApiSpec {
           param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-
+          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
           val source = Record("source", "source", Map("withLinks" -> JsObject("someLinks" -> JsArray(JsString("target"), JsString("anotherTarget")))))
           param.asAdmin(Post("/v0/records", source)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.asAdmin(Post("/v0/records", source)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -603,9 +614,15 @@ class RecordsServiceSpec extends ApiSpec {
           param.asAdmin(Post("/v0/records", target)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
+          param.asAdmin(Post("/v0/records", target)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
 
           val anotherTarget = Record("anotherTarget", "anotherTarget", Map("withLinks" -> JsObject("someLinks" -> JsArray(JsString("source")))))
           param.asAdmin(Post("/v0/records", anotherTarget)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.asAdmin(Post("/v0/records", anotherTarget)) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -623,7 +640,8 @@ class RecordsServiceSpec extends ApiSpec {
 
           Get("/v0/records/source?aspect=withLinks&dereference=true") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[Record].aspects("withLinks") shouldBe JsObject(
+            val theRecord = responseAs[Record]
+            theRecord.aspects("withLinks") shouldBe JsObject(
               "someLinks" -> JsArray(
                 JsObject(
                   "id" -> JsString("target"),

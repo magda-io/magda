@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.Registry.RegistryConverters
+import au.csiro.data61.magda.model.RegistryConverters
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
