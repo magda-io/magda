@@ -355,7 +355,7 @@ object Registry {
         case Success(location) => location
         case Failure(e) =>
           if(logger.isDefined) {
-            logger.get.error(s"Failed to covert bounding box to spatial data for dataset ${hit.id}: ${e.getMessage}")
+            logger.get.error(s"Failed to convert bounding box to spatial data for dataset ${hit.id}: ${e.getMessage}")
           }
           None
       }) match {
