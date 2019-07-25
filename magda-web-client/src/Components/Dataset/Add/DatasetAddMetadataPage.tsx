@@ -49,6 +49,7 @@ import accessAspect from "@magda/registry-aspects/access.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
+import "./DatasetAddCommon.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import publisher from "reducers/publisherReducer";
 
@@ -171,14 +172,7 @@ class NewDataset extends React.Component<Props, State> {
                 <div className="row">
                     <div className="col-sm-12">
                         <button
-                            className="au-btn au-btn--secondary"
-                            onClick={this.saveAndExit.bind(this)}
-                        >
-                            Save and exit
-                        </button>
-                        <button
-                            className="au-btn"
-                            style={{ float: "right" }}
+                            className="au-btn next-button"
                             onClick={
                                 nextIsPublish
                                     ? this.publishDataset.bind(this)
@@ -191,6 +185,12 @@ class NewDataset extends React.Component<Props, State> {
                                     ? "Publishing as draft..."
                                     : "Publish draft dataset"
                                 : ProgressMeterStepsConfig[step + 2].title}
+                        </button>
+                        <button
+                            className="au-btn au-btn--secondary save-button"
+                            onClick={this.saveAndExit.bind(this)}
+                        >
+                            Save and exit
                         </button>
                     </div>
                 </div>
