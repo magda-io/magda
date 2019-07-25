@@ -1,5 +1,6 @@
 import React, { ReactEventHandler } from "react";
 import Editor from "./Editor";
+import editIcon from "assets/edit.svg";
 
 import { ListMultiItemEditor } from "./multiItem";
 
@@ -40,17 +41,22 @@ export function textEditorEx(
                     {...extraProps}
                 />
             ) : (
-                <input
-                    className={
-                        options.fullWidth
-                            ? "au-text-input full-width-ctrl textEditorEx"
-                            : "au-text-input non-full-width-ctrl textEditorEx"
-                    }
-                    defaultValue={value as string}
-                    onChange={callback}
-                    {...options}
-                    {...extraProps}
-                />
+                <div className="textEditorEx-outter-container">
+                    <input
+                        className={
+                            options.fullWidth
+                                ? "au-text-input full-width-ctrl textEditorEx"
+                                : "au-text-input non-full-width-ctrl textEditorEx"
+                        }
+                        defaultValue={value as string}
+                        onChange={callback}
+                        {...options}
+                        {...extraProps}
+                    />
+                    <div className="edit-icon-container">
+                        <img className="edit-icon" src={editIcon} />
+                    </div>
+                </div>
             );
         },
         view: (value: any) => {
@@ -68,12 +74,17 @@ export const multilineTextEditor: Editor<string> = {
             onChange(event.target.value);
         };
         return (
-            <textarea
-                className="au-text-input full-width-ctrl au-text-input--block"
-                style={{ width: "100%" }}
-                onChange={callback}
-                defaultValue={value as string}
-            />
+            <div className="multilineTextEditor-outter-container">
+                <textarea
+                    className="au-text-input full-width-ctrl au-text-input--block"
+                    style={{ width: "100%" }}
+                    onChange={callback}
+                    defaultValue={value as string}
+                />
+                <div className="edit-icon-container">
+                    <img className="edit-icon" src={editIcon} />
+                </div>
+            </div>
         ); //<input defaultValue={value as string} onChange={callback} />;
     },
     view: (value: any) => {

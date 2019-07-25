@@ -5,7 +5,47 @@
     margin-bottom: 5px;
 }
 
-.toggle-editor-container {
+.textEditorEx-outter-container {
+    position: relative;
+    .edit-icon-container {
+        position: absolute;
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+    input {
+        padding-right: 43px;
+    }
+}
+
+.textEditorEx.au-text-input {
+    border-radius: 8px;
+    border: solid 1px #cccaca;
+}
+
+.multilineTextEditor-outter-container {
+    position: relative;
+    .edit-icon-container {
+        position: absolute;
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+    textarea {
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+        display: inline !important;
+        padding-right: 35px;
+    }
+}
+
+.multilineTextEditor-outter-container .toggle-editor-container {
     position: relative;
     .toggle-edit-button {
         display: none;
