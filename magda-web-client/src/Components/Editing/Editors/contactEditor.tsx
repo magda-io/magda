@@ -97,7 +97,7 @@ class ContactEditorComponent extends React.Component<any, any> {
             <div>
                 <div>
                     <input
-                        className="au-text-input"
+                        className="au-text-input contact-editor-input"
                         type="search"
                         placeholder="Search for a contact"
                         onChange={this.search.bind(this)}

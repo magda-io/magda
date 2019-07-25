@@ -31,4 +31,17 @@
         text-align: center;
         color: #30384d !important;
     }
+
+    .org-auto-complete-input,
+    .contact-editor-input {
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+        font-size: 15px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.6;
+        letter-spacing: normal;
+        color: #979797;
+    }
 }
