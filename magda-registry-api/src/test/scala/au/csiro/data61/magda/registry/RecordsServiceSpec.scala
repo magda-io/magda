@@ -722,6 +722,68 @@ class RecordsServiceSpec extends ApiSpec {
                     withLinkAspectId -> JsObject(
                       "someLink" -> JsString(sourceRecordId)))))))
           }
+
+          Get(s"/v0/records?optionalAspect=$withLinkAspectId&dereference=true") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val theRecordPage: RecordsPage[Record] = responseAs[RecordsPage[Record]]
+            val theRecords: List[Record] = theRecordPage.records
+            theRecords.length shouldBe 4 // (1 source + 1 target) * 2 tenants.
+
+            val expectedSourceRecord = sourceRecord.copy(
+              aspects = Map(withLinkAspectId -> JsObject(
+                "someLink" -> JsObject(
+                  "id" -> JsString(targetRecordId),
+                  "name" -> JsString(targetRecordName),
+                  "aspects" -> JsObject(
+                    withLinkAspectId -> JsObject(
+                      "someLink" -> JsString(sourceRecordId)))))))
+
+            theRecords.head shouldBe expectedSourceRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(1) shouldBe expectedSourceRecord.copy(tenantId = Some(TENANT_2))
+
+            val expectedTargetRecord = targetRecord.copy(
+              aspects = Map(withLinkAspectId -> JsObject(
+                "someLink" -> JsObject(
+                  "id" -> JsString(sourceRecordId),
+                  "name" -> JsString(sourceRecordName),
+                  "aspects" -> JsObject(
+                    withLinkAspectId -> JsObject(
+                      "someLink" -> JsString(targetRecordId)))))))
+
+            theRecords(2) shouldBe expectedTargetRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(3) shouldBe expectedTargetRecord.copy(tenantId = Some(TENANT_2))
+          }
+
+          Get(s"/v0/records?aspect=$withLinkAspectId&dereference=true") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val theRecordPage: RecordsPage[Record] = responseAs[RecordsPage[Record]]
+            val theRecords: List[Record] = theRecordPage.records
+            theRecords.length shouldBe 4 // (1 source + 1 target) * 2 tenants.
+
+            val expectedSourceRecord = sourceRecord.copy(
+              aspects = Map(withLinkAspectId -> JsObject(
+                "someLink" -> JsObject(
+                  "id" -> JsString(targetRecordId),
+                  "name" -> JsString(targetRecordName),
+                  "aspects" -> JsObject(
+                    withLinkAspectId -> JsObject(
+                      "someLink" -> JsString(sourceRecordId)))))))
+
+            theRecords.head shouldBe expectedSourceRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(1) shouldBe expectedSourceRecord.copy(tenantId = Some(TENANT_2))
+
+            val expectedTargetRecord = targetRecord.copy(
+              aspects = Map(withLinkAspectId -> JsObject(
+                "someLink" -> JsObject(
+                  "id" -> JsString(sourceRecordId),
+                  "name" -> JsString(sourceRecordName),
+                  "aspects" -> JsObject(
+                    withLinkAspectId -> JsObject(
+                      "someLink" -> JsString(targetRecordId)))))))
+
+            theRecords(2) shouldBe expectedTargetRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(3) shouldBe expectedTargetRecord.copy(tenantId = Some(TENANT_2))
+          }
         }
 
         it("dereferences an array of links if requested") { param =>
@@ -758,9 +820,7 @@ class RecordsServiceSpec extends ApiSpec {
             responseAs[Record] shouldBe withLinksSourceRecord.copy(
               tenantId = Some(TENANT_1),
               aspects = Map(withLinksAspectId -> JsObject(
-                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId))
-              ))
-            )
+                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId)))))
           }
 
           Get(s"/v0/records/$withLinksSourceRecordId?optionalAspect=$withLinksAspectId") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
@@ -768,9 +828,7 @@ class RecordsServiceSpec extends ApiSpec {
             responseAs[Record] shouldBe withLinksSourceRecord.copy(
               tenantId = Some(TENANT_1),
               aspects = Map(withLinksAspectId -> JsObject(
-                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId))
-              ))
-            )
+                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId)))))
           }
 
           Get(s"/v0/records/$withLinksSourceRecordId?aspect=$withLinksAspectId&dereference=false") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
@@ -778,19 +836,14 @@ class RecordsServiceSpec extends ApiSpec {
             responseAs[Record] shouldBe withLinksSourceRecord.copy(
               tenantId = Some(TENANT_1),
               aspects = Map(withLinksAspectId -> JsObject(
-                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId))
-              ))
-            )
-          }
+                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId)))))}
 
           Get(s"/v0/records/$withLinksSourceRecordId?optionalAspect=$withLinksAspectId&dereference=false") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[Record] shouldBe withLinksSourceRecord.copy(
               tenantId = Some(TENANT_1),
               aspects = Map(withLinksAspectId -> JsObject(
-                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId))
-              ))
-            )
+                "someLinks" -> JsArray(JsString(withLinksTargetRecordId), JsString(withLinksAnotherTargetRecordId)))))
           }
 
           Get(s"/v0/records/$withLinksSourceRecordId?aspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
@@ -810,11 +863,7 @@ class RecordsServiceSpec extends ApiSpec {
                     "name" -> JsString(withLinksAnotherTargetRecordName),
                     "aspects" -> JsObject(
                       withLinksAspectId -> JsObject(
-                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId)))))
-                )
-              ))
-            )
-          }
+                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId)))))))))}
 
           Get(s"/v0/records/$withLinksSourceRecordId?optionalAspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -833,10 +882,64 @@ class RecordsServiceSpec extends ApiSpec {
                     "name" -> JsString(withLinksAnotherTargetRecordName),
                     "aspects" -> JsObject(
                       withLinksAspectId -> JsObject(
-                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId)))))
-                )
-              ))
-            )
+                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId)))))))))}
+
+          // An indexing crawler will act as a system tenant and make similar request like this.
+          // There is no difference between using query parameter "aspect" and "optionalAspect" for dereferencing.
+          Get(s"/v0/records?optionalAspect=$withLinksAspectId&dereference=true") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val theRecordsPage = responseAs[RecordsPage[Record]]
+            val theRecords = theRecordsPage.records
+            theRecords.length shouldBe 6  // (1 source + 1 target + 1 anotherTarget) * 2 tenants
+
+            val expectedWithLinksSourceRecord = withLinksSourceRecord.copy(
+              aspects = Map(withLinksAspectId -> JsObject(
+                "someLinks" -> JsArray(
+                  JsObject(
+                    "id" -> JsString(withLinksTargetRecordId),
+                    "name" -> JsString(withLinksTargetRecordName),
+                    "aspects" -> JsObject(
+                      withLinksAspectId -> JsObject(
+                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId))))),
+                  JsObject(
+                    "id" -> JsString(withLinksAnotherTargetRecordId),
+                    "name" -> JsString(withLinksAnotherTargetRecordName),
+                    "aspects" -> JsObject(
+                      withLinksAspectId -> JsObject(
+                        "someLinks" -> JsArray(JsString(withLinksSourceRecordId)))))))))
+
+            theRecords.head shouldBe expectedWithLinksSourceRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(1) shouldBe expectedWithLinksSourceRecord.copy(tenantId = Some(TENANT_2))
+
+            val expectedWithLinksTargetRecord = withLinksTargetRecord.copy(
+              aspects = Map(withLinksAspectId -> JsObject(
+                "someLinks" -> JsArray(
+                  JsObject(
+                    "id" -> JsString(withLinksSourceRecordId),
+                    "name" -> JsString(withLinksSourceRecordName),
+                    "aspects" -> JsObject(
+                      withLinksAspectId -> JsObject(
+                        "someLinks" -> JsArray(
+                          JsString(withLinksTargetRecordId),
+                          JsString(withLinksAnotherTargetRecordId)))))))))
+
+            theRecords(2) shouldBe expectedWithLinksTargetRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(3) shouldBe expectedWithLinksTargetRecord.copy(tenantId = Some(TENANT_2))
+
+            val expectedWithLinksAnotherTargetRecord = withLinksAnotherTargetRecord.copy(
+              aspects = Map(withLinksAspectId -> JsObject(
+                "someLinks" -> JsArray(
+                  JsObject(
+                    "id" -> JsString(withLinksSourceRecordId),
+                    "name" -> JsString(withLinksSourceRecordName),
+                    "aspects" -> JsObject(
+                      withLinksAspectId -> JsObject(
+                        "someLinks" -> JsArray(
+                          JsString(withLinksTargetRecordId),
+                          JsString(withLinksAnotherTargetRecordId)))))))))
+
+            theRecords(4) shouldBe expectedWithLinksAnotherTargetRecord.copy(tenantId = Some(TENANT_1))
+            theRecords(5) shouldBe expectedWithLinksAnotherTargetRecord.copy(tenantId = Some(TENANT_2))
           }
         }
 

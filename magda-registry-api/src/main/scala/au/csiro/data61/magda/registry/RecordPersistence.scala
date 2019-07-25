@@ -764,7 +764,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                CASE WHEN
             |                        EXISTS (
             |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)
-            |                            where RecordAspects.tenantId = $tenantId
+            |                            where RecordAspects.recordid = Records.recordid and RecordAspects.tenantId = Records.tenantId
             |                        )
             |                    THEN(
             |                        select jsonb_set(
