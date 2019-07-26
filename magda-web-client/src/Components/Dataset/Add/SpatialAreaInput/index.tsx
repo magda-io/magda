@@ -143,11 +143,33 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                         }
                     />
                     <div className="text-row">
-                        <span>
-                            This helps data users understand the scope of your
-                            dataset. We’ve determined that the coordinates of
-                            your data are:
-                        </span>
+                        {(() => {
+                            switch (state.activeTabIndex) {
+                                case 0:
+                                    return (
+                                        <span>
+                                            This helps data users understand the
+                                            scope of your dataset. Select the
+                                            appropriate region that best matches
+                                            the spatial extent of your dataset:
+                                        </span>
+                                    );
+                                case 1:
+                                    return (
+                                        <span>
+                                            This helps data users understand the
+                                            scope of your dataset. We’ve
+                                            determined that the coordinates of
+                                            your data are:
+                                        </span>
+                                    );
+                                default:
+                                    throw new Error(
+                                        "Invalid tab index: " +
+                                            state.activeTabIndex
+                                    );
+                            }
+                        })()}
                         <div className="help-icon-container">
                             <img src={helpIcon} />
                         </div>
