@@ -59,6 +59,8 @@ import SpatialAreaInput, {
 
 import { BoundingBox } from "helpers/datasetSearch";
 
+import ReviewFilesList from "./ReviewFilesList";
+
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -128,6 +130,8 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
+        console.log(step);
+
         const nextIsPublish = step + 1 >= this.steps.length;
 
         if (lastDatasetId) {
@@ -137,32 +141,11 @@ class NewDataset extends React.Component<Props, State> {
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
                     <div className="col-sm-12">
-                        <div className="dataset-add-files">
-                            <p>
-                                Magda has reviewed your files and pre-populated
-                                metadata fields based on the contents.
-                            </p>
-                            <p>
-                                Please review carefully, and update any fields
-                                as required.
-                            </p>
-                            <div className="file-icons-container">
-                                {files.map((file, i) => (
-                                    <div
-                                        key={i}
-                                        className="file-icon-item clearfix"
-                                    >
-                                        <img
-                                            className="file-icon"
-                                            src={getFormatIcon(file)}
-                                        />
-                                        <div className="file-titile">
-                                            {file.title}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <ReviewFilesList
+                            key={step}
+                            files={files}
+                            isOpen={step < 1 ? true : false}
+                        />
                     </div>
                 </div>
                 {this.steps[step]()}
