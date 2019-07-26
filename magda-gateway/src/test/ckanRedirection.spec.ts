@@ -38,7 +38,8 @@ describe("ckanRedirectionRouter router", () => {
         const router = createCkanRedirectionRouter({
             ckanRedirectionDomain,
             ckanRedirectionPath,
-            registryApiBaseUrlInternal: registryUrl
+            registryApiBaseUrlInternal: registryUrl,
+            tenantId: 1
         });
         app = express();
         app.use(router);

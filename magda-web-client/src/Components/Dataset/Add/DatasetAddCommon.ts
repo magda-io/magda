@@ -2,6 +2,8 @@ import uuidv4 from "uuid/v4";
 
 import { Contact } from "Components/Editing/Editors/contactEditor";
 import { licenseLevel } from "constants/DatasetConstants";
+import { fetchOrganization } from "api-clients/RegistryApis";
+import { config } from "config";
 
 export type File = {
     title: string;
@@ -53,7 +55,12 @@ export function fileStateToText(state: FileState) {
     }
 }
 
-type Dataset = {
+export type OrganisationAutocompleteChoice = {
+    existingId?: string;
+    name: string;
+};
+
+export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
@@ -63,7 +70,7 @@ type Dataset = {
     themes?: string[];
     contactPointFull?: Contact[];
     contactPointDisplay?: string;
-    publisher?: string;
+    publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
@@ -83,6 +90,11 @@ type DatasetPublishing = {
 
 type SpatialCoverage = {
     bbox?: [number, number, number, number];
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
 };
 
 export type State = {
@@ -122,7 +134,7 @@ type Access = {
     downloadURL?: string;
 };
 
-export function createBlankState(): State {
+function createBlankState(): State {
     return {
         files: [],
         processing: false,
@@ -152,13 +164,27 @@ export function createBlankState(): State {
 
 // saving data in the local storage for now
 // TODO: consider whether it makes sense to store this in registery as a custom state or something
-export function loadState(id) {
-    let dataset = localStorage[id];
-    if (dataset) {
-        dataset = JSON.parse(dataset);
-        return dataset;
+export async function loadState(id: string): Promise<State> {
+    const stateString = localStorage[id];
+    let state: State;
+    if (stateString) {
+        state = JSON.parse(stateString);
+    } else {
+        state = createBlankState();
     }
-    return {};
+
+    if (
+        !state.dataset.publisher &&
+        typeof config.defaultOrganizationId !== "undefined"
+    ) {
+        const org = await fetchOrganization(config.defaultOrganizationId);
+        state.dataset.publisher = {
+            name: org.name,
+            existingId: org.id
+        };
+    }
+
+    return state;
 }
 
 export function saveState(state: State, id = "") {

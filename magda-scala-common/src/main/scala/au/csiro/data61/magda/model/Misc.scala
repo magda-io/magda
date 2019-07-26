@@ -36,23 +36,17 @@ package misc {
     override def id = "Format"
   }
 
-  case class FacetSearchResult(
-    hitCount: Long,
-    options: Seq[FacetOption])
+  case class FacetSearchResult(hitCount: Long, options: Seq[FacetOption])
 
-  case class Facet(
-    id: String,
-    options: Seq[FacetOption])
+  case class Facet(id: String, options: Seq[FacetOption])
 
-  case class FacetOption(
-    identifier: Option[String], // = None
-    value: String,
-    hitCount: Long,
-    upperBound: Option[Int] = None,
-    lowerBound: Option[Int] = None,
-    matched: Boolean = false,
-    countErrorUpperBound: Long = 0)
-
+  case class FacetOption(identifier: Option[String], // = None
+                         value: String,
+                         hitCount: Long,
+                         upperBound: Option[Int] = None,
+                         lowerBound: Option[Int] = None,
+                         matched: Boolean = false,
+                         countErrorUpperBound: Long = 0)
 
   final case class ReadyStatus(ready: Boolean = false)
 
@@ -163,6 +157,10 @@ package misc {
       new Location(Some(text), processedGeoJson)
     }
 
+    def apply(bbox: BoundingBox): Location = {
+      Location.applySanitised(bbox.toString, fromBoundingBox(Seq(bbox)))
+    }
+
     def apply(stringWithNewLines: String): Location = {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(string, string match {
@@ -243,11 +241,15 @@ package misc {
     override def toString = s"$regionType:$regionId"
   }
 
-  case class Region(
-    queryRegion: QueryRegion,
-    regionName: Option[String] = None,
-    boundingBox: Option[BoundingBox] = None,
-    regionShortName: Option[String] = None)
+  case class Region(queryRegion: QueryRegion,
+                    regionName: Option[String] = None,
+                    boundingBox: Option[BoundingBox] = None,
+                    regionShortName: Option[String] = None,
+                    lv1Id: Option[String] = None,
+                    lv2Id: Option[String] = None,
+                    lv3Id: Option[String] = None,
+                    lv4Id: Option[String] = None,
+                    lv5Id: Option[String] = None)
 
   case class Distribution(
     identifier: Option[String] = None,
@@ -431,13 +433,33 @@ package misc {
 
     implicit val queryRegionFormat: RootJsonFormat[QueryRegion] = jsonFormat2(QueryRegion.apply)
 
-    class RegionFormat(bbFormat: JsonFormat[BoundingBox]) extends JsonFormat[Region] {
-      override def write(region: Region): JsValue = JsObject(Map(
-        "regionId" -> region.queryRegion.regionId.toJson,
-        "regionType" -> region.queryRegion.regionType.toJson,
-        "regionName" -> region.regionName.toJson,
-        "regionShortName" -> region.regionShortName.toJson,
-        "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson).filter(x => !x._2.equals(JsNull)))
+    class RegionFormat(bbFormat: JsonFormat[BoundingBox])
+        extends JsonFormat[Region] {
+      override def write(region: Region): JsValue =
+        JsObject(
+          Map(
+            "regionId" -> region.queryRegion.regionId.toJson,
+            "regionType" -> region.queryRegion.regionType.toJson,
+            "regionName" -> region.regionName.toJson,
+            "regionShortName" -> region.regionShortName.toJson,
+            "boundingBox" -> region.boundingBox.map(_.toJson(bbFormat)).toJson,
+            "lv1Id" -> region.lv1Id.toJson,
+            "lv2Id" -> region.lv2Id.toJson,
+            "lv3Id" -> region.lv3Id.toJson,
+            "lv4Id" -> region.lv4Id.toJson,
+            "lv5Id" -> region.lv5Id.toJson
+          ).filter(x => !x._2.equals(JsNull)))
+
+      private def convertOptionalStringField(
+          json: JsObject,
+          fieldName: String): Option[String] = {
+        json.getFields(fieldName).headOption.flatMap { fieldValue =>
+          fieldValue match {
+            case JsNull => None
+            case _      => Some(fieldValue.convertTo[String])
+          }
+        }
+      }
 
       override def read(jsonRaw: JsValue): Region = {
         val json = jsonRaw.asJsObject
@@ -445,13 +467,21 @@ package misc {
         Region(
           QueryRegion(
             regionId = json.getFields("regionId").head.convertTo[String],
-            regionType = json.getFields("regionType").head.convertTo[String]),
-            regionName = json.getFields("regionName").headOption.map(_.convertTo[String]),
-            boundingBox = json.getFields("boundingBox").headOption.map(_.convertTo[BoundingBox](bbFormat)),
-            regionShortName = json.getFields("regionShortName").headOption.flatMap { shortName => shortName match {
-              case JsNull => None
-              case _ => Some(shortName.convertTo[String])
-            }})
+            regionType = json.getFields("regionType").head.convertTo[String]
+          ),
+          regionName =
+            json.getFields("regionName").headOption.map(_.convertTo[String]),
+          boundingBox = json
+            .getFields("boundingBox")
+            .headOption
+            .map(_.convertTo[BoundingBox](bbFormat)),
+          regionShortName = convertOptionalStringField(json, "regionShortName"),
+          lv1Id = convertOptionalStringField(json, "lv1Id"),
+          lv2Id = convertOptionalStringField(json, "lv2Id"),
+          lv3Id = convertOptionalStringField(json, "lv3Id"),
+          lv4Id = convertOptionalStringField(json, "lv4Id"),
+          lv5Id = convertOptionalStringField(json, "lv5Id")
+        )
       }
     }
 

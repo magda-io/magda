@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources}
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources, RegionSource}
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.analyzers._
@@ -252,26 +252,30 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 23,
+      version = 24,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
-      createIndex(indices.getIndex(config, Indices.RegionsIndex))
-        .shards(config.getInt("elasticSearch.shardCount"))
-        .replicas(config.getInt("elasticSearch.replicaCount"))
-        .mappings(
-          mapping(indices.getType(Indices.RegionsIndexType)).fields(
-            keywordField("regionType"),
-            keywordField("regionId"),
-            magdaTextField("regionName"),
-            magdaTextField("regionShortName"),
-            textField("regionSearchId")
-              .analyzer("regionSearchIdIndex")
-              .searchAnalyzer("regionSearchIdInput"),
-            geoshapeField("boundingBox"),
-            geoshapeField("geometry"),
-            intField("order")
-          )
-        )
+        createIndex(indices.getIndex(config, Indices.RegionsIndex))
+          .shards(config.getInt("elasticSearch.shardCount"))
+          .replicas(config.getInt("elasticSearch.replicaCount"))
+          .mappings(
+            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+              keywordField("regionType"),
+              keywordField("regionId"),
+              magdaTextField("regionName"),
+              magdaTextField("regionShortName"),
+              keywordField("lv1Id"),
+              keywordField("lv2Id"),
+              keywordField("lv3Id"),
+              keywordField("lv4Id"),
+              keywordField("lv5Id"),
+              textField("regionSearchId")
+                .analyzer("regionSearchIdIndex")
+                .searchAnalyzer("regionSearchIdInput"),
+              geoshapeField("boundingBox"),
+              geoshapeField("geometry"),
+              intField("order")
+            ))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
@@ -385,11 +389,37 @@ object IndexDefinition extends DefaultJsonProtocol {
   implicit val geometryFactory =
     JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: ElasticClient, loader: RegionLoader, indices: Indices)(
-    implicit
-    config: Config,
-    materializer: Materializer,
-    system: ActorSystem
+  def getRegionSourceConfigValue(regionSource: RegionSource, fieldName: String): Option[String] = {
+    val field = regionSource.getClass.getDeclaredField(fieldName)
+    field.setAccessible(true)
+    field.get(regionSource).asInstanceOf[Option[String]]
+  }
+
+  def getOptionalIdFieldValue(idLevel: Int,
+                              jsonRegion: JsObject,
+                              regionSource: RegionSource): JsValue = {
+    getRegionSourceConfigValue(regionSource, s"""lv${idLevel}Id""") match {
+      case Some(idValue: String) => JsString(idValue)
+      case None =>
+        getRegionSourceConfigValue(regionSource, s"""lv${idLevel}IdField""") match {
+          case None => JsNull
+          case Some(idFieldConfig: String) =>
+            val properties = jsonRegion.fields("properties").asJsObject
+            properties.getFields(idFieldConfig).headOption match {
+              case Some(id: JsString) => id
+              case _                  => JsNull
+            }
+        }
+    }
+  }
+
+  def setupRegions(client: ElasticClient,
+                   loader: RegionLoader,
+                   indices: Indices)(
+      implicit
+      config: Config,
+      materializer: Materializer,
+      system: ActorSystem
   ): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
@@ -487,7 +517,12 @@ object IndexDefinition extends DefaultJsonProtocol {
                     EsBoundingBoxFormat
                   ),
                   "geometry" -> geometry.toJson,
-                  "order" -> JsNumber(regionSource.order)
+                  "order" -> JsNumber(regionSource.order),
+                  "lv1Id" -> getOptionalIdFieldValue(1, jsonRegion, regionSource),
+                  "lv2Id" -> getOptionalIdFieldValue(2, jsonRegion, regionSource),
+                  "lv3Id" -> getOptionalIdFieldValue(3, jsonRegion, regionSource),
+                  "lv4Id" -> getOptionalIdFieldValue(4, jsonRegion, regionSource),
+                  "lv5Id" -> getOptionalIdFieldValue(5, jsonRegion, regionSource)
                 ).toJson)
           )
 
@@ -541,9 +576,9 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     BoundingBox(
       indexedEnvelope.getMaxY,
-      indexedEnvelope.getMinX,
+      indexedEnvelope.getMaxX,
       indexedEnvelope.getMinY,
-      indexedEnvelope.getMaxX
+      indexedEnvelope.getMinX
     )
   }
 }

@@ -1,7 +1,7 @@
 import retext from "retext";
 import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
-import { isValidKeyword } from "../../../helpers/VocabularyApis";
+import { isValidKeyword } from "api-clients/VocabularyApis";
 
 /**
  * Extract keywords from text based file formats
