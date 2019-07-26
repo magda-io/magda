@@ -337,10 +337,6 @@ class NewDataset extends React.Component<Props, State> {
                     </div>
                     <hr />
                     <h3>Spatial area</h3>
-                    <h4>
-                        We've determined that the spatial extent of your data
-                        is:
-                    </h4>
                     <div>
                         <SpatialAreaInput
                             countryId={spatialCoverage.lv1Id}

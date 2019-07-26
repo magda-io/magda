@@ -76,8 +76,7 @@ class SpatialDataPreviewer extends React.Component<PropsType, BoundsQueueItem> {
 
     render() {
         this.processBboxProp();
-        const animate =
-            typeof this.props.animate === "undefined" ? true : false;
+        const animate = this.props.animate ? true : false;
         return (
             <div className="spatial-data-previewer">
                 {this.state.isValid ? (
