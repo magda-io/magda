@@ -59,6 +59,12 @@ UI:
 -   New dropdown box design on `Dataset details and contents` page
 -   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
 -   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
+-   New Design Spatial area input on `Dataset details and contents` page
+
+Gateway:
+
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
 
 Access Control:

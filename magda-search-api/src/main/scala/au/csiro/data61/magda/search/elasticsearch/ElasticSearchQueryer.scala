@@ -29,6 +29,7 @@ import com.sksamuel.elastic4s.searches.queries.term.TermQuery
 import com.sksamuel.elastic4s.searches.queries.{InnerHit => InnerHitDefinition, Query => QueryDefinition, SimpleStringQuery => SimpleStringQueryDefinition}
 import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
+import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
 import com.typesafe.config.Config
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -559,24 +560,47 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   override def searchRegions(
     query: Option[String],
+    regionType: Option[String],
+    lv1Id: Option[String],
+    lv2Id: Option[String],
+    lv3Id: Option[String],
+    lv4Id: Option[String],
+    lv5Id: Option[String],
     start: Long,
     limit: Int,
     tenantId: BigInt): Future[RegionSearchResult] = {
+
+    val otherFilters = (regionType.map(matchQuery("regionType", _)).toList ++
+      lv1Id.map(matchQuery("lv1Id", _)).toList ++
+      lv2Id.map(matchQuery("lv2Id", _)).toList ++
+      lv3Id.map(matchQuery("lv3Id", _)).toList ++
+      lv4Id.map(matchQuery("lv4Id", _)).toList ++
+      lv5Id.map(matchQuery("lv5Id", _)).toList)
+
+    val queryConditions:Seq[QueryDefinition] = query match {
+      case Some(queryString) =>
+        boolQuery().should(
+          matchPhrasePrefixQuery(
+            "regionShortName",
+            queryString).boost(2),
+          matchPhrasePrefixQuery(
+            "regionName",
+            queryString)
+        ) :: otherFilters
+      case None => if(otherFilters.size != 0) otherFilters else List(MatchAllQuery())
+    }
+
+    val maxLimit = 1000
+
     clientFuture.flatMap { client =>
       client
         .execute(
           ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
             query {
-              boolQuery().should(
-                matchPhrasePrefixQuery(
-                "regionShortName",
-                query.getOrElse("*")).boost(2),
-                matchPhrasePrefixQuery(
-                  "regionName",
-                  query.getOrElse("*")))
+              boolQuery().must(queryConditions)
             }
             start start.toInt
-            limit limit
+            limit (if(limit>maxLimit) maxLimit else limit)
             sortBy (fieldSort("order") order SortOrder.ASC,
               scoreSort order SortOrder.DESC)
               sourceExclude "geometry")

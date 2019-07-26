@@ -1,6 +1,5 @@
 import React from "react";
 import { withRouter } from "react-router";
-import { Map, TileLayer, Rectangle } from "react-leaflet";
 import uuidv4 from "uuid/v4";
 import ReactSelect from "react-select";
 
@@ -20,7 +19,6 @@ import {
     codelistRadioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
-import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import HelpSnippet from "Components/Common/HelpSnippet";
 
@@ -53,6 +51,12 @@ import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import publisher from "reducers/publisherReducer";
+
+import SpatialAreaInput, {
+    InputMethod as SpatialAreaInputInputMethod
+} from "./SpatialAreaInput";
+
+import { BoundingBox } from "helpers/datasetSearch";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -208,7 +212,6 @@ class NewDataset extends React.Component<Props, State> {
         const { dataset, spatialCoverage, temporalCoverage } = this.state;
         const editDataset = this.edit("dataset");
         const editTemporalCoverage = this.edit("temporalCoverage");
-        const editSpatialCoverage = this.edit("spatialCoverage");
         return (
             <div className="row dataset-details-and-contents-page">
                 <div className="col-sm-12">
@@ -289,7 +292,7 @@ class NewDataset extends React.Component<Props, State> {
                     </div>
                     <hr />
                     <h3>Dates and updates</h3>
-                    <h4>When was the data first issued?</h4>
+                    <h4>When was the dataset first issued?</h4>
                     <div>
                         <AlwaysEditor
                             value={dataset.issued}
@@ -334,25 +337,64 @@ class NewDataset extends React.Component<Props, State> {
                     </div>
                     <hr />
                     <h3>Spatial area</h3>
-                    <h4>
-                        We've determined that the spatial extent of your data
-                        is:
-                    </h4>
                     <div>
-                        <AlwaysEditor
-                            value={spatialCoverage.bbox}
-                            onChange={editSpatialCoverage("bbox")}
-                            editor={bboxEditor}
+                        <SpatialAreaInput
+                            countryId={spatialCoverage.lv1Id}
+                            territoryOrSteId={spatialCoverage.lv2Id}
+                            sa4Id={spatialCoverage.lv3Id}
+                            sa3Id={spatialCoverage.lv4Id}
+                            bbox={(() => {
+                                if (
+                                    !Array.isArray(spatialCoverage.bbox) ||
+                                    spatialCoverage.bbox.length < 4
+                                ) {
+                                    return undefined;
+                                }
+                                return {
+                                    west: spatialCoverage.bbox[0],
+                                    south: spatialCoverage.bbox[1],
+                                    east: spatialCoverage.bbox[2],
+                                    north: spatialCoverage.bbox[3]
+                                };
+                            })()}
+                            onChange={(
+                                method: SpatialAreaInputInputMethod,
+                                bbox?: BoundingBox,
+                                countryId?: string,
+                                territoryOrSteId?: string,
+                                sa4Id?: string,
+                                sa3Id?: string
+                            ) =>
+                                this.setState(state => {
+                                    const spatialCoverage: any = {
+                                        spatialDataInputMethod: method
+                                    };
+
+                                    if (bbox) {
+                                        // --- According to existing JSON schema:
+                                        // --- "Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)""
+                                        spatialCoverage.bbox = [
+                                            bbox.west,
+                                            bbox.south,
+                                            bbox.east,
+                                            bbox.north
+                                        ];
+                                    }
+
+                                    if (countryId)
+                                        spatialCoverage.lv1Id = countryId;
+                                    if (territoryOrSteId)
+                                        spatialCoverage.lv2Id = territoryOrSteId;
+                                    if (sa4Id) spatialCoverage.lv3Id = sa4Id;
+                                    if (sa3Id) spatialCoverage.lv4Id = sa3Id;
+
+                                    return {
+                                        ...state,
+                                        spatialCoverage
+                                    };
+                                })
+                            }
                         />
-                    </div>
-
-                    <h4>Would you like to show a spatial preview?</h4>
-
-                    <div>
-                        <YesNoToggle yes={!!spatialCoverage.bbox}>
-                            <p>Map preview: </p>
-                            <BBOXPreview bbox={spatialCoverage.bbox} />
-                        </YesNoToggle>
                     </div>
                 </div>
             </div>
@@ -798,68 +840,4 @@ function denormalise(values) {
     }
 
     return output;
-}
-
-class YesNoToggle extends React.Component<any, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            yes: !!props.yes
-        };
-    }
-
-    updateState(update: any) {
-        this.setState(Object.assign({}, this.state, update));
-    }
-    render() {
-        const { yes } = this.state;
-        return (
-            <div>
-                <p>
-                    <button
-                        className={"au-btn " + (yes || "au-btn--secondary")}
-                        onClick={this.updateState.bind(this, {
-                            yes: true
-                        })}
-                    >
-                        Yes
-                    </button>
-                    <button
-                        className={"au-btn " + (!yes || "au-btn--secondary")}
-                        onClick={this.updateState.bind(this, {
-                            yes: false
-                        })}
-                    >
-                        No
-                    </button>
-                </p>
-                {yes && this.props.children}
-            </div>
-        );
-    }
-}
-
-function BBOXPreview(props) {
-    let bbox = props.bbox || [-180.0, -90.0, 180.0, 90.0];
-    let [minlon, minlat, maxlon, maxlat] = bbox;
-    const isValid =
-        !isNaN(minlon) && !isNaN(minlat) && !isNaN(maxlon) && !isNaN(maxlat);
-    const bounds = [[minlat, minlon], [maxlat, maxlon]];
-    return (
-        <div>
-            {isValid ? (
-                <Map bounds={bounds} animate={true}>
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    <Rectangle bounds={bounds} />
-                </Map>
-            ) : (
-                <div className={"leaflet-container"}>
-                    Please enter valid coordinates
-                </div>
-            )}
-        </div>
-    );
 }
