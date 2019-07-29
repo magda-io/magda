@@ -20,16 +20,16 @@ INSERT INTO operations (uri, name) VALUES ('object/registry/record/update', 'Upd
 INSERT INTO operations (uri, name) VALUES ('object/registry/record/delete', 'Delete registry record/aspect');
 
 INSERT INTO permission_operations (permission_id, operation_id) VALUES (
-    (SELECT id FROM permissions WHERE name='Create Registry Record'), (SELECT id FROM operations WHERE uri='object/record/create') 
+    (SELECT id FROM permissions WHERE name='Create Registry Record'), (SELECT id FROM operations WHERE uri='object/registry/record/create')
 );
 INSERT INTO permission_operations (permission_id, operation_id) VALUES (
-    (SELECT id FROM permissions WHERE name='Read Registry Record'), (SELECT id FROM operations WHERE uri='object/record/read') 
+    (SELECT id FROM permissions WHERE name='Read Registry Record'), (SELECT id FROM operations WHERE uri='object/registry/record/read')
 );
 INSERT INTO permission_operations (permission_id, operation_id) VALUES (
-    (SELECT id FROM permissions WHERE name='Update Registry Record'), (SELECT id FROM operations WHERE uri='object/record/update') 
+    (SELECT id FROM permissions WHERE name='Update Registry Record'), (SELECT id FROM operations WHERE uri='object/registry/record/update')
 );
 INSERT INTO permission_operations (permission_id, operation_id) VALUES (
-    (SELECT id FROM permissions WHERE name='Delete Registry Record'), (SELECT id FROM operations WHERE uri='object/record/delete') 
+    (SELECT id FROM permissions WHERE name='Delete Registry Record'), (SELECT id FROM operations WHERE uri='object/registry/record/delete')
 );
 
 INSERT INTO role_permissions (role_id, permission_id) VALUES (
