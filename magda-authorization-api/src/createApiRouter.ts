@@ -458,6 +458,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiDescription Gets org units matching a name
      *
      * @apiParam (query) {string} nodeName the name of the org unit to look up
+     * @apiParam (query) {boolean} onlyLeafNodes Whether only leaf nodes should be returned
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -481,7 +482,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 throw new Error("No nodeName parameter specified");
             }
 
-            const nodes = await orgQueryer.getNodesByName(nodeName);
+            const nodes = await orgQueryer.getNodes(nodeName);
             res.status(200).json(nodes);
         } catch (e) {
             respondWithError("/public/orgunits", res, e);

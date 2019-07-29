@@ -36,6 +36,11 @@ export type CompareNodeResult =
     | "descendant"
     | "equal"
     | "unrelated";
+
+type NodesQuery = {
+    name?: string;
+    leafNodesOnly?: boolean;
+};
 class NestedSetModelQueryer {
     private pool: pg.Pool;
     private tableName: string;
@@ -150,16 +155,36 @@ class NestedSetModelQueryer {
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
-    async getNodesByName(
-        name: string,
+    async getNodes(
+        nodesQuery: NodesQuery = {},
         fields: string[] = null,
         client: pg.Client = null
     ): Promise<NodeRecord[]> {
+        const getParamPlaceholder = (() => {
+            let currentPlaceholder = 1;
+
+            return () => currentPlaceholder++;
+        })();
+
+        const clauses = [
+            nodesQuery.name && {
+                sql: `"name" = $${getParamPlaceholder()}`,
+                values: [nodesQuery.name]
+            },
+            nodesQuery.leafNodesOnly && {
+                sql: `"left" = ( "right" - 1 )`
+            }
+        ].filter(x => !!x);
+
+        const query = `SELECT ${this.selectFields("", fields)} FROM "${
+            this.tableName
+        }" WHERE ${clauses.map(({ sql }) => sql).join(" AND ")}`;
+
+        // console.log(query);
+
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("", fields)} FROM "${
-                this.tableName
-            }" WHERE "name" = $1`,
-            [name]
+            query,
+            _.flatMap(clauses, ({ values }) => values || [])
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -211,22 +236,6 @@ class NestedSetModelQueryer {
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
         return Maybe.just(result.rows[0]);
-    }
-
-    /**
-     * Leaf Nodes are the nodes that has no children under it
-     *
-     * @returns {Promise<NodeRecord[]>}
-     * @memberof NestedSetModelQueryer
-     */
-    async getLeafNodes(): Promise<NodeRecord[]> {
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields()} FROM "${
-                this.tableName
-            }" WHERE "left" = ( "right" - 1 )`
-        );
-        if (!result || !result.rows || !result.rows.length) return [];
-        return result.rows;
     }
 
     /**
