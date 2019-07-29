@@ -549,7 +549,7 @@ object Registry extends RegistryConverters {
       @(ApiModelProperty @field)(
         value = "The identifier of the tenant",
         required = false
-      ) tenantId: BigInt
+      ) tenantId: Option[BigInt]
   ) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
