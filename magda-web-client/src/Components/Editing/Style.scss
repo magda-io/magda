@@ -56,6 +56,19 @@
         line-height: 1.33;
         letter-spacing: normal;
         color: #636363;
+        max-width: none !important;
+        height: 217px;
+    }
+    .word-count-row {
+        font-size: 14px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.57;
+        letter-spacing: normal;
+        color: #636363;
+        margin-top: 13px;
+        margin-left: 10px;
     }
 }
 

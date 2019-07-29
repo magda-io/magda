@@ -51,4 +51,77 @@
         display: inline-block;
         vertical-align: middle;
     }
+
+    .dataset-details-and-contents-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #484848;
+            margin-top: 60px;
+            margin-bottom: 80px;
+        }
+        h3 {
+            font-size: 29px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.03;
+            letter-spacing: normal;
+            color: #484848;
+            padding-bottom: 15px;
+        }
+
+        h3.with-underline {
+            border-bottom: solid 1px #cccaca;
+            margin-bottom: 50px;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.25;
+            letter-spacing: normal;
+            color: #484848;
+        }
+
+        .question-title {
+            margin-bottom: 58px;
+        }
+
+        .question-language {
+            margin-bottom: 72px;
+        }
+
+        .tooltip-root {
+            font-size: 14px;
+            font-weight: 300;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.57;
+            letter-spacing: normal;
+            color: #636363;
+            max-width: 978px;
+            margin-bottom: 32px;
+        }
+
+        .question-keyword {
+            margin-bottom: 50px;
+        }
+        .question-theme {
+            margin-bottom: 49px;
+        }
+
+        .question-description {
+            margin-bottom: 100px;
+            .tooltip-root {
+                max-width: 728px;
+            }
+        }
+    }
 }

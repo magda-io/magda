@@ -1,4 +1,4 @@
-import React, { ReactEventHandler } from "react";
+import React, { ReactEventHandler, FunctionComponent } from "react";
 import Editor from "./Editor";
 import editIcon from "assets/edit.svg";
 
@@ -67,6 +67,56 @@ export function textEditorEx(
 
 export const textEditor = textEditorEx({});
 export const textEditorFullWidth = textEditorEx({ fullWidth: true });
+
+interface MultilineTextEditorPropType {
+    isEditorMode?: boolean;
+    charsLimit?: number;
+    value?: string;
+    placerHolder?: string;
+    onChange?: (value: string) => void;
+}
+
+export const MultilineTextEditor: FunctionComponent<
+    MultilineTextEditorPropType
+> = props => {
+    const isEditorMode = props.isEditorMode === false ? false : true;
+    const placerHolder = props.placerHolder ? props.placerHolder : "";
+    const value = props.value ? props.value : "";
+    const charsLimit = props.charsLimit ? props.charsLimit : 0;
+    console.log(value);
+    return isEditorMode ? (
+        <div className="multilineTextEditor-outter-container">
+            <textarea
+                className="au-text-input full-width-ctrl au-text-input--block"
+                onChange={event => {
+                    if (typeof props.onChange === "function") {
+                        let inputValue = event.target.value
+                            ? event.target.value
+                            : "";
+                        if (charsLimit && inputValue.length > charsLimit) {
+                            inputValue = inputValue.substr(0, charsLimit);
+                        }
+                        props.onChange(inputValue);
+                    }
+                }}
+                placeholder={placerHolder}
+                value={props.value as string}
+            />
+            <div className="edit-icon-container">
+                <img className="edit-icon" src={editIcon} />
+            </div>
+            <div className="word-count-row">
+                {(() => {
+                    let count = charsLimit - value.length;
+                    return count < 0 ? 0 : count;
+                })()}{" "}
+                words remaining
+            </div>
+        </div>
+    ) : (
+        <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>
+    );
+};
 
 export const multilineTextEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
