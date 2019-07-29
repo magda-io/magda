@@ -60,6 +60,8 @@ UI:
 -   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
 -   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
 -   New Design Spatial area input on `Dataset details and contents` page
+-   New Design for text input & text area input on add dataset pages
+-   Next & save button style adjustment on add dataset pages
 
 Gateway:
 

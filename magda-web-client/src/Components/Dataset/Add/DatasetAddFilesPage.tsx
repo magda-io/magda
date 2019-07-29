@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router";
 import FileDrop from "react-file-drop";
-import { Link } from "react-router-dom";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
@@ -13,6 +12,7 @@ import { State, File, FileState, saveState } from "./DatasetAddCommon";
 import withAddDatasetState from "./withAddDatasetState";
 
 import "./DatasetAddFilesPage.scss";
+import "./DatasetAddCommon.scss";
 
 class DatasetAddFilesPage extends React.Component<
     { dataset: string; initialState: State },
@@ -248,26 +248,19 @@ class DatasetAddFilesPage extends React.Component<
                         ).length === this.state.files.length && (
                             <React.Fragment>
                                 <button
-                                    className="au-btn au-btn--secondary"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and Exit
-                                </button>
-                                <button
-                                    className="au-btn"
-                                    style={{ float: "right" }}
+                                    className="au-btn next-button"
                                     onClick={this.reviewMetadata.bind(this)}
                                 >
                                     Next: Review Metadata
                                 </button>
+                                <button
+                                    className="au-btn au-btn--secondary save-button"
+                                    onClick={this.saveAndExit.bind(this)}
+                                >
+                                    Save and Exit
+                                </button>
                             </React.Fragment>
                         )}
-                        <br />
-                        <Link to="/dataset/add">
-                            <a className="au-btn au-btn--tertiary">
-                                Escape Hatch
-                            </a>
-                        </Link>
                     </div>
                 </div>
             </div>

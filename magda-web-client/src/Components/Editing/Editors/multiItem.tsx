@@ -108,7 +108,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                 )}
                 {!enabled && (!value || !value.length) && "NOT SET"}
                 {!enabled && (!value || !value.length) ? null : (
-                    <div className="multi-list-item-editor-container">
+                    <div className="multi-list-item-editor-container clearfix">
                         {value.map((val, i) => {
                             return (
                                 <div
