@@ -241,7 +241,10 @@ class DatasetAddFilesPage extends React.Component<
                     </div>
                 </div>
 
-                <div className="row" style={{ marginTop: "3em" }}>
+                <div
+                    className="row next-save-button-row"
+                    style={{ marginTop: "6em" }}
+                >
                     <div className="col-xs-12">
                         {this.state.files.filter(
                             (file: File) => file._state === FileState.Ready
