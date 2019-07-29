@@ -150,7 +150,7 @@ class NewDataset extends React.Component<Props, State> {
                 <br />
                 <br />
                 <br />
-                <div className="row">
+                <div className="row next-save-button-row">
                     <div className="col-sm-12">
                         <button
                             className="au-btn next-button"
