@@ -36,7 +36,6 @@
 .multilineTextEditor-outter-container {
     position: relative;
     .edit-icon-container {
-        position: absolute;
         display: inline;
         .edit-icon {
             position: absolute;
@@ -85,7 +84,8 @@
     }
 }
 
-.multilineTextEditor-outter-container .toggle-editor-container {
+.multilineTextEditor-outter-container,
+.toggle-editor-container {
     position: relative;
     .toggle-edit-button {
         display: none;
