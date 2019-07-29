@@ -43,5 +43,16 @@
         line-height: 1.6;
         letter-spacing: normal;
         color: #979797;
+        padding-right: 50px;
+    }
+
+    .org-auto-complete-input-outer-container {
+        position: relative;
+        .edit-icon {
+            position: absolute;
+            left: 445px;
+            top: 10px;
+            z-index: 1;
+        }
     }
 }
