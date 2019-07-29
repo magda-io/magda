@@ -298,24 +298,30 @@ class NewDataset extends React.Component<Props, State> {
                     </div>
 
                     <h3 className="with-underline">Dates and updates</h3>
-                    <h4>When was the dataset first issued?</h4>
-                    <div>
-                        <AlwaysEditor
-                            value={dataset.issued}
-                            onChange={editDataset("issued")}
-                            editor={dateEditor}
-                        />
+
+                    <div className="row date-row">
+                        <div className="col-sm-4 question-issue-date">
+                            <h4>When was the dataset first issued?</h4>
+                            <AlwaysEditor
+                                value={dataset.issued}
+                                onChange={editDataset("issued")}
+                                editor={dateEditor}
+                            />
+                        </div>
+                        <div className="col-sm-4 question-recent-modify-date">
+                            <h4>
+                                When was the dataset most recently modified?
+                            </h4>
+                            <AlwaysEditor
+                                value={dataset.modified}
+                                onChange={editDataset("modified")}
+                                editor={dateEditor}
+                            />
+                        </div>
                     </div>
-                    <h4>When was the dataset most recently modified?</h4>
-                    <div>
-                        <AlwaysEditor
-                            value={dataset.modified}
-                            onChange={editDataset("modified")}
-                            editor={dateEditor}
-                        />
-                    </div>
-                    <h4>How frequently is the dataset updated?</h4>
-                    <div>
+
+                    <div className="question-update-frequency">
+                        <h4>How frequently is the dataset updated?</h4>
                         <AccrualPeriodicityInput
                             accrualPeriodicity={dataset.accrualPeriodicity}
                             accrualPeriodicityRecurrenceRule={
@@ -333,8 +339,9 @@ class NewDataset extends React.Component<Props, State> {
                             }}
                         />
                     </div>
-                    <h4>What time period(s) does the dataset cover?</h4>
-                    <div>
+
+                    <div className="question-time-period">
+                        <h4>What time period(s) does the dataset cover?</h4>
                         <AlwaysEditor
                             value={temporalCoverage.intervals}
                             onChange={editTemporalCoverage("intervals")}

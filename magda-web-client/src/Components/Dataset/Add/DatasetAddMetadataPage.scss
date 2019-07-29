@@ -123,5 +123,41 @@
                 max-width: 728px;
             }
         }
+
+        .question-issue-date {
+            h4 {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+            }
+        }
+
+        .question-recent-modify-date {
+            h4 {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+            }
+        }
+
+        .date-row {
+            margin-bottom: 68px;
+        }
+
+        .question-update-frequency {
+            margin-bottom: 68px;
+        }
+
+        .question-time-period {
+            margin-bottom: 50px;
+        }
     }
 }
