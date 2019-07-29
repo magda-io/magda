@@ -105,13 +105,15 @@ export const MultilineTextEditor: FunctionComponent<
             <div className="edit-icon-container">
                 <img className="edit-icon" src={editIcon} />
             </div>
-            <div className="word-count-row">
-                {(() => {
-                    let count = charsLimit - value.length;
-                    return count < 0 ? 0 : count;
-                })()}{" "}
-                words remaining
-            </div>
+            {charsLimit ? (
+                <div className="word-count-row">
+                    {(() => {
+                        let count = charsLimit - value.length;
+                        return count < 0 ? 0 : count;
+                    })()}{" "}
+                    words remaining
+                </div>
+            ) : null}
         </div>
     ) : (
         <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>
