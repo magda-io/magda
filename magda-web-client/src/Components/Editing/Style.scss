@@ -59,6 +59,19 @@
     }
 }
 
+.contact-editor-input-outter-container {
+    position: relative;
+    .edit-icon-container {
+        position: absolute;
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+}
+
 .multilineTextEditor-outter-container .toggle-editor-container {
     position: relative;
     .toggle-edit-button {
