@@ -61,6 +61,8 @@ import { BoundingBox } from "helpers/datasetSearch";
 
 import ReviewFilesList from "./ReviewFilesList";
 
+import helpIcon from "assets/help.svg";
+
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -301,7 +303,12 @@ class NewDataset extends React.Component<Props, State> {
 
                     <div className="row date-row">
                         <div className="col-sm-4 question-issue-date">
-                            <h4>When was the dataset first issued?</h4>
+                            <h4>
+                                <span>When was the dataset first issued?</span>
+                                <span className="help-icon-container">
+                                    <img src={helpIcon} />
+                                </span>
+                            </h4>
                             <AlwaysEditor
                                 value={dataset.issued}
                                 onChange={editDataset("issued")}

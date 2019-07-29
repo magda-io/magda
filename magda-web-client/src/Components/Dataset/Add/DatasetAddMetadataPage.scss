@@ -133,6 +133,13 @@
                 line-height: 1.25;
                 letter-spacing: normal;
                 color: #484848;
+                position: relative;
+            }
+
+            .help-icon-container {
+                position: absolute;
+                top: -2px;
+                padding-left: 10px;
             }
         }
 
