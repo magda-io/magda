@@ -293,7 +293,7 @@ class NewDataset extends React.Component<Props, State> {
                             <MultilineTextEditor
                                 value={dataset.description}
                                 placerHolder="Enter description text"
-                                charsLimit={250}
+                                limit={250}
                                 onChange={this.edit("dataset")("description")}
                             />
                         </div>

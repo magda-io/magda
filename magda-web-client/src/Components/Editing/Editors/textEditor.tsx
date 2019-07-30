@@ -70,11 +70,34 @@ export const textEditorFullWidth = textEditorEx({ fullWidth: true });
 
 interface MultilineTextEditorPropType {
     isEditorMode?: boolean;
-    charsLimit?: number;
+    limit?: number;
     value?: string;
     placerHolder?: string;
     onChange?: (value: string) => void;
 }
+
+const wordsCount = (str: string): number => {
+    if (typeof str !== "string" || !str) return 0;
+    return str.trim().split(/\W+/).length;
+};
+
+// --- truncate by words count & preserve non-words chars parttern
+// --- this is required by line breaks
+const truncateByWordsCount = (str: string, limit: number): string => {
+    const count = wordsCount(str);
+    if (count <= limit) return str;
+
+    const nonWords = str.trim().match(/\W+/g);
+    const words = str.trim().split(/\W+/);
+    if (!nonWords || !words.length) return str;
+
+    const newStrItems: string[] = [];
+    for (let i = 0; i < limit; i++) {
+        if (i !== 0) newStrItems.push(nonWords[i - 1]);
+        newStrItems.push(words[i]);
+    }
+    return newStrItems.join("");
+};
 
 export const MultilineTextEditor: FunctionComponent<
     MultilineTextEditorPropType
@@ -82,8 +105,8 @@ export const MultilineTextEditor: FunctionComponent<
     const isEditorMode = props.isEditorMode === false ? false : true;
     const placerHolder = props.placerHolder ? props.placerHolder : "";
     const value = props.value ? props.value : "";
-    const charsLimit = props.charsLimit ? props.charsLimit : 0;
-    console.log(value);
+    const limit = props.limit ? props.limit : 0;
+
     return isEditorMode ? (
         <div className="multilineTextEditor-outter-container">
             <textarea
@@ -93,8 +116,11 @@ export const MultilineTextEditor: FunctionComponent<
                         let inputValue = event.target.value
                             ? event.target.value
                             : "";
-                        if (charsLimit && inputValue.length > charsLimit) {
-                            inputValue = inputValue.substr(0, charsLimit);
+                        if (limit && wordsCount(inputValue) > limit) {
+                            inputValue = truncateByWordsCount(
+                                inputValue,
+                                limit
+                            );
                         }
                         props.onChange(inputValue);
                     }
@@ -105,10 +131,10 @@ export const MultilineTextEditor: FunctionComponent<
             <div className="edit-icon-container">
                 <img className="edit-icon" src={editIcon} />
             </div>
-            {charsLimit ? (
+            {limit ? (
                 <div className="word-count-row">
                     {(() => {
-                        let count = charsLimit - value.length;
+                        let count = limit - wordsCount(value);
                         return count < 0 ? 0 : count;
                     })()}{" "}
                     words remaining
