@@ -86,7 +86,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
         const { newValue } = this.state;
         const value = this.value();
         return (
-            <React.Fragment>
+            <div className="list-multi-item-editor-container">
                 {enabled && (
                     <React.Fragment>
                         {editor.edit(newValue, this.change.bind(this), value, {
@@ -129,7 +129,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                         })}
                     </div>
                 )}
-            </React.Fragment>
+            </div>
         );
     }
 
