@@ -667,7 +667,7 @@ class NewDataset extends React.Component<Props, State> {
                     <h3>
                         Optional space to leave a note for the dataset Approver
                     </h3>
-                    <ToolTip>
+                    <ToolTip icon={helpIcon}>
                         Leave any additional comments you feel relevant to this
                         dataset
                     </ToolTip>
