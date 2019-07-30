@@ -108,7 +108,7 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderRestriction.bind(this),
-        this.renderDescription.bind(this)
+        this.renderSubmitPage.bind(this)
     ];
 
     edit = (aspectField: string) => (field: string) => (newValue: any) => {
@@ -656,31 +656,30 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    renderDescription() {
-        const { dataset } = this.state;
-        const editDataset = this.edit("dataset");
+    renderSubmitPage() {
+        const { datasetPublishing } = this.state;
         return (
-            <div className="row dataset-description-page">
+            <div className="row dataset-submit-page">
                 <div className="col-sm-12">
-                    <h2>Dataset description</h2>
-                    <h3>Please describe the dataset</h3>
+                    <h2 className="with-underline">
+                        Additional notes or comments
+                    </h2>
+                    <h3>
+                        Optional space to leave a note for the dataset Approver
+                    </h3>
                     <ToolTip>
-                        A good dataset description clearly and succinctly
-                        explains the contents, purpose and value of the dataset.{" "}
-                        <br />
-                        This is how users primarily identify and select your
-                        dataset from others
-                        <br />
-                        Here you can also include information that you have not
-                        already covered in the other metadata.
+                        Leave any additional comments you feel relevant to this
+                        dataset
                     </ToolTip>
-                    <p>
+                    <div>
                         <MultilineTextEditor
-                            value={dataset.description}
-                            placerHolder="Enter description text"
-                            onChange={editDataset("description")}
+                            value={datasetPublishing.notesToApprover}
+                            placerHolder="Enter additional notes"
+                            onChange={this.edit("datasetPublishing")(
+                                "notesToApprover"
+                            )}
                         />
-                    </p>
+                    </div>
                 </div>
             </div>
         );
