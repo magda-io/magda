@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import left_arrow from "assets/left-arrow.svg";
-import right_arrow from "assets/right-arrow.svg";
 import "./Pagination.scss";
 import { needsContent } from "helpers/content";
 
@@ -17,25 +15,31 @@ class Pagination extends Component {
     }
     renderPrevButton(currentIndex) {
         return (
-            <button
-                onClick={this.onClick.bind(this, currentIndex - 1)}
-                className="btn-prev"
-            >
-                {" "}
-                <img src={left_arrow} alt="previous page" />{" "}
-            </button>
+            <li>
+                <a
+                    onClick={this.onClick.bind(this, currentIndex - 1)}
+                    className="btn-prev"
+                    aria-label="previous page"
+                    href=""
+                >
+                    {"<"}
+                </a>
+            </li>
         );
     }
 
     renderNextButton(currentIndex) {
         return (
-            <button
-                onClick={this.onClick.bind(this, currentIndex + 1)}
-                className="btn-nexty"
-            >
-                {" "}
-                <img src={right_arrow} alt="next page" />{" "}
-            </button>
+            <li>
+                <a
+                    onClick={this.onClick.bind(this, currentIndex + 1)}
+                    className="btn-next"
+                    aria-label="next page"
+                    href=""
+                >
+                    {">"}
+                </a>
+            </li>
         );
     }
 
@@ -129,22 +133,24 @@ class Pagination extends Component {
         }
 
         return (
-            <ul className="pagination-list">
+            <ul className="pagination-list ">
                 {current > 1 && this.renderPrevButton(current)}
                 {pageButtons.map(i => (
                     <li key={i}>
-                        <button
+                        <a
                             onClick={this.onClick.bind(
                                 this,
                                 //-- if i===0 then it's `...` button, Rule 6 applies
                                 i === 0 ? current - 4 : i
                             )}
+                            href=""
                             className={`${
                                 i === current ? "current" : "non-current"
                             }`}
+                            aria-current={i === current ? "true" : "false"}
                         >
                             {i === 0 ? "..." : i}
-                        </button>
+                        </a>
                     </li>
                 ))}
                 {current < max && this.renderNextButton(current)}
@@ -158,9 +164,13 @@ class Pagination extends Component {
             .searchResultsPerPage;
 
         return (
-            <div className="pagination">
+            <div
+                className="pagination"
+                role="navigation"
+                aria-label="Page navigation"
+            >
                 {this.renderPageList(this.props.maxPage, currentPage)}
-                <div className="pagination-summray">
+                <div className="pagination-summary">
                     {" "}
                     {(currentPage - 1) * searchResultsPerPage + 1} -{" "}
                     {Math.min(
