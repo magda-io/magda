@@ -110,6 +110,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     this.getRecords(session, tenantId, aspectIds, optionalAspectIds, pageToken, start, limit, dereference, selectors)
   }
 
+  // If a system tenant makes the request with aspectIds, it will always return 0.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(implicit session: DBSession,
                tenantId: BigInt,
                aspectIds: Iterable[String],
@@ -558,6 +561,9 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
+  // The current implementation assumes this API is not used by the system tenant.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(implicit session: DBSession, tenantId: BigInt, pageToken: Option[String], start: Option[Int], rawLimit: Option[Int], recordId: Option[String] = None): RecordsPage[RecordSummary] = {
     val countWhereClauseParts = if (recordId.nonEmpty) Seq(recordId.map(id => sqls"recordId=$id and Records.tenantId=$tenantId")) else Seq(Some(sqls"Records.tenantId=$tenantId"))
 
@@ -614,7 +620,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(tenantId)
     val theRecordSelector = recordSelector ++ Iterable(Some(recordsFilteredByTenantClause))
     val whereClauseParts = (aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector) :+ pageToken.map(token => sqls"Records.sequence > $token")
-    val aspectSelectors = aspectIdsToSelectClauses(tenantId, List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
+    val aspectSelectors = aspectIdsToSelectClauses(List.concat(aspectIds, optionalAspectIds), dereferenceDetails)
 
     val limit = rawLimit.map(l => Math.min(l, maxResultCount)).getOrElse(defaultResultCount)
     val result =
@@ -674,7 +680,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
-    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), rs.bigInt("tenantId"))
+    RecordSummary(rs.string("recordId"), rs.string("recordName"), rs.arrayOpt("aspects").map(_.getArray().asInstanceOf[Array[String]].toList).getOrElse(List()), Some(rs.bigInt("tenantId")))
   }
 
   private def rowToRecord(aspectIds: Iterable[String])(rs: WrappedResultSet): Record = {
@@ -747,7 +753,7 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
     }
   }
 
-  private def aspectIdsToSelectClauses(tenantId: BigInt, aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
+  private def aspectIdsToSelectClauses(aspectIds: Iterable[String], dereferenceDetails: Map[String, PropertyWithLink] = Map()) = {
     aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.
@@ -758,7 +764,6 @@ object DefaultRecordPersistence extends Protocols with DiffsonProtocol with Reco
             |                CASE WHEN
             |                        EXISTS (
             |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)
-            |                            where RecordAspects.tenantId = $tenantId
             |                        )
             |                    THEN(
             |                        select jsonb_set(
