@@ -11,8 +11,19 @@ interface PropsType {
     isOpen?: boolean;
 }
 
+interface StateType {
+    isOpen: boolean;
+    showMore: boolean;
+}
+
+const ITEM_NUM_TRIGGER_SHOW_MORE = 5;
+
 const ReviewFilesList: FunctionComponent<PropsType> = props => {
-    const [isOpen, setIsOpen] = useState<boolean>(props.isOpen ? true : false);
+    const [state, setState] = useState<StateType>({
+        isOpen: props.isOpen === false ? false : true,
+        showMore: false
+    });
+    const { isOpen, showMore } = state;
     if (!props.files || !Array.isArray(props.files) || !props.files.length)
         return null;
     return (
@@ -27,7 +38,12 @@ const ReviewFilesList: FunctionComponent<PropsType> = props => {
                                 : "Expand Review File List"
                         }
                         className="expand-button"
-                        onClick={() => setIsOpen(isOpen ? false : true)}
+                        onClick={() =>
+                            setState(state => ({
+                                ...state,
+                                isOpen: state.isOpen ? false : true
+                            }))
+                        }
                     >
                         <img
                             src={isOpen ? iconWhiteArrowLeft : iconWhiteArrowUp}
@@ -47,21 +63,45 @@ const ReviewFilesList: FunctionComponent<PropsType> = props => {
                             </p>
                         </div>
                         <div className="file-icons-container">
-                            {props.files.map((file, i) => (
-                                <div
-                                    key={i}
-                                    className="file-icon-item clearfix"
-                                >
-                                    <img
-                                        className="file-icon"
-                                        src={getFormatIcon(file)}
-                                    />
-                                    <div className="file-titile">
-                                        {file.title}
+                            {props.files.map((file, i) =>
+                                (i > ITEM_NUM_TRIGGER_SHOW_MORE - 1 &&
+                                    showMore) ||
+                                i < ITEM_NUM_TRIGGER_SHOW_MORE ? (
+                                    <div
+                                        key={i}
+                                        className="file-icon-item clearfix"
+                                    >
+                                        <img
+                                            className="file-icon"
+                                            src={getFormatIcon(file)}
+                                        />
+                                        <div className="file-titile">
+                                            {file.title}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ) : null
+                            )}
                         </div>
+                        {props.files.length > ITEM_NUM_TRIGGER_SHOW_MORE ? (
+                            <div className="show-more-button-container">
+                                <button
+                                    className="show-more-button"
+                                    aria-label={
+                                        showMore ? "Show Less" : "Show More"
+                                    }
+                                    onClick={() =>
+                                        setState(state => ({
+                                            ...state,
+                                            showMore: state.showMore
+                                                ? false
+                                                : true
+                                        }))
+                                    }
+                                >
+                                    {showMore ? "Show Less..." : "Show More..."}
+                                </button>
+                            </div>
+                        ) : null}
                     </div>
                 ) : null}
             </div>
