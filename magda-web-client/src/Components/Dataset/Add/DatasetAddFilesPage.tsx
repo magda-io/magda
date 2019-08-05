@@ -108,13 +108,14 @@ class DatasetAddFilesPage extends React.Component<
                                     break;
 
                                 case "author":
-                                    dataset.contactPointFull =
-                                        dataset.contactPointFull || [];
-                                    dataset.contactPointFull.push({
-                                        name: file.author
-                                    });
-                                    file[key] = undefined;
-                                    break;
+                                // dataset.contactPointFull =
+                                //     dataset.contactPointFull || [];
+                                // dataset.contactPointFull.push({
+                                //     name: file.author
+                                // });
+                                // file[key] = undefined;
+                                // break;
+                                // FIXME: Partial match against teams?
 
                                 case "spatialCoverage":
                                     Object.assign(spatialCoverage, file[key]);

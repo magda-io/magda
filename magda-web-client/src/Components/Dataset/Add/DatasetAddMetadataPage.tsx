@@ -728,6 +728,9 @@ class NewDataset extends React.Component<Props, State> {
                 usage,
                 "dataset-publisher": {
                     publisher: publisherId
+                },
+                "dataset-access-control": {
+                    orgUnitOwnerId: dataset.owningOrgUnitId
                 }
             }
         };

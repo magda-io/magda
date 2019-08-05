@@ -48,7 +48,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status, "/public");
 
     function respondWithError(route: string, res: express.Response, e: Error) {
-        console.error(`Error happened when processed "${route}": ${e}`);
+        console.error(`Error happened when processed "${route}"`);
+        console.error(e);
 
         if (e instanceof NodeNotFoundError) {
             res.status(404).json({
@@ -458,7 +459,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiDescription Gets org units matching a name
      *
      * @apiParam (query) {string} nodeName the name of the org unit to look up
-     * @apiParam (query) {boolean} onlyLeafNodes Whether only leaf nodes should be returned
+     * @apiParam (query) {boolean} leafNodesOnly Whether only leaf nodes should be returned
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -476,13 +477,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.get("/public/orgunits", MUST_BE_ADMIN, async (req, res) => {
         try {
-            const nodeName = req.query.nodeName;
+            const nodeName: string = req.query.nodeName;
+            const leafNodesOnly: string = req.query.leafNodesOnly;
 
-            if (!nodeName || nodeName.length === 0) {
-                throw new Error("No nodeName parameter specified");
-            }
-
-            const nodes = await orgQueryer.getNodes(nodeName);
+            const nodes = await orgQueryer.getNodes({
+                name: nodeName,
+                leafNodesOnly: leafNodesOnly === "true"
+            });
             res.status(200).json(nodes);
         } catch (e) {
             respondWithError("/public/orgunits", res, e);

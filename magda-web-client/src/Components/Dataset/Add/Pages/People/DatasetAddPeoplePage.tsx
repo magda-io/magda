@@ -5,11 +5,11 @@ import {
     multilineTextEditor,
     multiTextEditorEx
 } from "Components/Editing/Editors/textEditor";
-import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
 import { Dataset } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
+import OrgUnitDropdown from "./OrgUnitDropdown";
 
 function YesNoEditReveal(props) {
     const yes = !!props.value;
@@ -98,11 +98,15 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </div>
                 <h4>What team is responsible for maintaining this dataset?</h4>
                 <div>
-                    <AlwaysEditor
+                    <OrgUnitDropdown
+                        orgUnitId={dataset.owningOrgUnitId}
+                        onChange={editDataset("owningOrgUnitId")}
+                    />
+                    {/* <AlwaysEditor
                         value={dataset.contactPointFull}
                         onChange={editDataset("contactPointFull")}
                         editor={multiContactEditor({})}
-                    />
+                    /> */}
                 </div>
                 <h4>
                     How should the contact point(s) be referenced in the

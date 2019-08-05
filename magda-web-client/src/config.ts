@@ -11,9 +11,9 @@ declare global {
 }
 
 // Local minikube/docker k8s cluster
-// const fallbackApiHost = "http://localhost:30100/";
+const fallbackApiHost = "http://localhost:30100/";
 // Dev server
-const fallbackApiHost = "https://dev.magda.io/";
+// const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true

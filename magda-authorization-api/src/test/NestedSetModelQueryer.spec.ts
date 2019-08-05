@@ -155,6 +155,20 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(Object.keys(node)).to.have.members(["id", "left"]);
     });
 
+    it("`getNodes with no parameters should return all nodes", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        const nodes = await queryer.getNodes();
+        expect(nodes.map(n => n.name)).to.have.members([
+            "Albert",
+            "Bert",
+            "Chuck",
+            "Donna",
+            "Eddie",
+            "Fred"
+        ]);
+    });
+
     it("`getNodes({ leafNodesOnly: true })` should return all leaf nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);

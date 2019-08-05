@@ -1,6 +1,5 @@
 import uuidv4 from "uuid/v4";
 
-import { Contact } from "Components/Editing/Editors/contactEditor";
 import { licenseLevel } from "constants/DatasetConstants";
 import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
@@ -68,7 +67,7 @@ export type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPointFull?: Contact[];
+    owningOrgUnitId?: string;
     contactPointDisplay?: string;
     publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;

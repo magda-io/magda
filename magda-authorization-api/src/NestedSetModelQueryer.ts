@@ -176,9 +176,14 @@ class NestedSetModelQueryer {
             }
         ].filter(x => !!x);
 
+        const whereClause =
+            clauses.length > 0
+                ? `WHERE ${clauses.map(({ sql }) => sql).join(" AND ")}`
+                : "";
+
         const query = `SELECT ${this.selectFields("", fields)} FROM "${
             this.tableName
-        }" WHERE ${clauses.map(({ sql }) => sql).join(" AND ")}`;
+        }" ${whereClause}`;
 
         // console.log(query);
 
