@@ -1,4 +1,4 @@
-package object.registry.record.partial
+package object.registry.record
 
 test_allow_correct_orgunit {
     orgunit with input as {

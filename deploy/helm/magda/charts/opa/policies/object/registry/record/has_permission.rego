@@ -1,4 +1,4 @@
-package object.registry.record.partial.has_permission
+package object.registry.record.has_permission
 
 has_permission(permission) {
     input.user.permissions[_].operations[_].uri == permission

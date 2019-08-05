@@ -1,4 +1,4 @@
-package object.registry.record.partial.has_permission
+package object.registry.record.has_permission
 
 test_allow_right_permission {
     read with input as {
