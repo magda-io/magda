@@ -1,0 +1,58 @@
+package object.registry.record.partial
+
+test_allow_correct_orgunit {
+    orgunit with input as {
+        "user": {
+            "managingOrgUnitIds": ["1", "2", "3", "4"]
+        },
+        "object": {
+            "records": {
+                "access-control": {
+                    "orgUnitOwnerId": "3"
+                }
+            }
+        }
+    }
+}
+
+test_deny_wrong_orgunit {
+    not orgunit with input as {
+        "user": {
+            "managingOrgUnitIds": ["1", "2", "3", "4"]
+        },
+        "object": {
+            "records": {
+                "access-control": {
+                    "orgUnitOwnerId": "5"
+                }
+            }
+        }
+    }
+}
+
+test_deny_no_access_control_info {
+    not orgunit with input as {
+        "user": {
+            "managingOrgUnitIds": ["1", "2", "3", "4"]
+        },
+        "object": {
+            "records": {
+            }
+        }
+    }
+}
+
+test_deny_empty_managing_orgunit_ids {
+    not orgunit with input as {
+        "user": {
+            "managingOrgUnitIds": []
+        },
+        "object": {
+            "records": {
+                "access-control": {
+                    "orgUnitOwnerId": "5"
+                }
+            }
+        }
+    }
+}
