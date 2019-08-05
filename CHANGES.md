@@ -59,6 +59,14 @@ UI:
 -   New dropdown box design on `Dataset details and contents` page
 -   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
 -   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
+-   New Design Spatial area input on `Dataset details and contents` page
+-   New Design for text input & text area input on add dataset pages
+-   Next & save button style adjustment on add dataset pages
+
+Gateway:
+
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
 
 Access Control:
@@ -106,6 +114,7 @@ Others:
 -   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
 -   Fixed Unable to use Google / Facebook Login on Preview Site
 -   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
+-   Fixed docker build cache issue that causes DB image not build
 
 ## 0.0.54
 

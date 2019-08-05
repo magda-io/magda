@@ -307,7 +307,11 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            * @apiGroup Search
            * @api {get} /v0/search/regions Get Regions
            * @apiDescription Returns a list of regions
-           *
+           * @apiParam (Query) {number} [lv1Id=None] filter by level 1 region Id
+           * @apiParam (Query) {number} [lv2Id=None] filter by level 2 region Id
+           * @apiParam (Query) {number} [lv3Id=None] filter by level 3 region Id
+           * @apiParam (Query) {number} [lv4Id=None] filter by level 4 region Id
+           * @apiParam (Query) {number} [lv5Id=None] filter by level 5 region Id
            * @apiParam (Query) {number} [start=0] index of first item to return
            * @apiParam (Query) {number} [limit=10] number of items to return
            *
@@ -321,8 +325,8 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
            *    }
            */
           path("regions") {requiresTenantId { tenantId =>
-            (get & parameters('query ?, "start" ? 0, "limit" ? 10)) { (query, start, limit) ⇒
-              complete(searchQueryer.searchRegions(query, start, limit, tenantId))
+            (get & parameters('query ?, "type"?, "lv1Id"?, "lv2Id"?, "lv3Id"?, "lv4Id"?, "lv5Id"?, "start" ? 0, "limit" ? 10)) { (query, regionType, lv1Id, lv2Id, lv3Id, lv4Id, lv5Id, start, limit) ⇒
+              complete(searchQueryer.searchRegions(query, regionType, lv1Id, lv2Id, lv3Id, lv4Id, lv5Id, start, limit, tenantId))
             }
           }
           } ~
