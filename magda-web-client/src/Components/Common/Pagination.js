@@ -38,7 +38,7 @@ class Pagination extends Component {
                     aria-label="previous page"
                 >
                     {" "}
-                    <img src={left_arrow} alt="previous page" />{" "}
+                    <img src={left_arrow} alt="" />{" "}
                 </Link>
             </li>
         );
@@ -53,7 +53,7 @@ class Pagination extends Component {
                     aria-label="next page"
                 >
                     {" "}
-                    <img src={right_arrow} alt="next page" />{" "}
+                    <img src={right_arrow} alt="" />{" "}
                 </Link>
             </li>
         );
