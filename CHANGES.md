@@ -62,6 +62,7 @@ UI:
 -   New Design Spatial area input on `Dataset details and contents` page
 -   New Design for text input & text area input on add dataset pages
 -   Next & save button style adjustment on add dataset pages
+-   Update pagination to meet WCAG and use correct semantic HTML tags.
 
 Gateway:
 
