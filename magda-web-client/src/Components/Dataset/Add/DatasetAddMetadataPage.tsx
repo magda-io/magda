@@ -46,6 +46,7 @@ import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distribu
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
 import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
+import datasetAccessControl from "@magda/registry-aspects/dataset-access-control.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -71,7 +72,8 @@ const aspects = {
     "dataset-distributions": datasetDistributionsAspect,
     "dcat-distribution-strings": dcatDistributionStringsAspect,
     usage: usageAspect,
-    access: accessAspect
+    access: accessAspect,
+    "dataset-access-control": datasetAccessControl
 };
 
 type Props = {
