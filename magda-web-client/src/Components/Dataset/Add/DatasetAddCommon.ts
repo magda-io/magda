@@ -85,6 +85,7 @@ export type Dataset = {
 type DatasetPublishing = {
     state: string;
     level: string;
+    notesToApprover?: string;
 };
 
 type SpatialCoverage = {

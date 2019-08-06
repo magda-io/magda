@@ -36,7 +36,6 @@
 .multilineTextEditor-outter-container {
     position: relative;
     .edit-icon-container {
-        position: absolute;
         display: inline;
         .edit-icon {
             position: absolute;
@@ -49,6 +48,9 @@
         border: solid 1px #cccaca;
         display: inline !important;
         padding-right: 35px;
+        padding-left: 27px;
+        padding-top: 12px;
+        padding-bottom: 12px;
         font-size: 15px;
         font-weight: 300;
         font-style: normal;
@@ -56,6 +58,19 @@
         line-height: 1.33;
         letter-spacing: normal;
         color: #636363;
+        max-width: none !important;
+        height: 217px;
+    }
+    .word-count-row {
+        font-size: 14px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.57;
+        letter-spacing: normal;
+        color: #636363;
+        margin-top: 13px;
+        margin-left: 10px;
     }
 }
 
@@ -72,7 +87,8 @@
     }
 }
 
-.multilineTextEditor-outter-container .toggle-editor-container {
+.multilineTextEditor-outter-container,
+.toggle-editor-container {
     position: relative;
     .toggle-edit-button {
         display: none;
