@@ -11,10 +11,16 @@
         list-style: none;
 
         a {
+            display: flex;
+            height: 46px;
+            min-width: 46px;
+            padding: 0px;
+            align-items: center;
+            justify-content: center;
+
             border-radius: $AU-border-radius;
             text-decoration: none;
             @include AU-fontgrid(xs);
-            @include AU-space(padding, 0.7unit 0.95unit);
             border: 3px solid $AU-color-foreground-action;
             &:hover,
             &:focus {

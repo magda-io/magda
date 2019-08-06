@@ -1,8 +1,12 @@
 import React, { Component } from "react";
-import "./Pagination.scss";
 import { needsContent } from "helpers/content";
 import { Link } from "react-router-dom";
 import queryString from "query-string";
+
+import "./Pagination.scss";
+
+import left_arrow from "assets/left-arrow.svg";
+import right_arrow from "assets/right-arrow.svg";
 
 class Pagination extends Component {
     constructor(props) {
@@ -16,6 +20,7 @@ class Pagination extends Component {
     generateRoute(page) {
         return (
             this.props.location.pathname +
+            "?" +
             queryString.stringify(
                 Object.assign(queryString.parse(this.props.location.search), {
                     page: page
@@ -31,9 +36,9 @@ class Pagination extends Component {
                     to={this.generateRoute(currentIndex - 1)}
                     className="btn-prev"
                     aria-label="previous page"
-                    href=""
                 >
-                    {"<"}
+                    {" "}
+                    <img src={left_arrow} alt="previous page" />{" "}
                 </Link>
             </li>
         );
@@ -46,9 +51,9 @@ class Pagination extends Component {
                     to={this.generateRoute(currentIndex + 1)}
                     className="btn-next"
                     aria-label="next page"
-                    href=""
                 >
-                    {">"}
+                    {" "}
+                    <img src={right_arrow} alt="next page" />{" "}
                 </Link>
             </li>
         );
