@@ -102,11 +102,6 @@ export default function DatasetAddPeoplePage(props: Props) {
                         orgUnitId={dataset.owningOrgUnitId}
                         onChange={editDataset("owningOrgUnitId")}
                     />
-                    {/* <AlwaysEditor
-                        value={dataset.contactPointFull}
-                        onChange={editDataset("contactPointFull")}
-                        editor={multiContactEditor({})}
-                    /> */}
                 </div>
                 <h4>
                     How should the contact point(s) be referenced in the

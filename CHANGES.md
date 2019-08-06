@@ -68,6 +68,7 @@ UI:
 -   Adjusted tooltip style & layout
 -   Overall page layout adjustment for `Details and Content` page
 -   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Added ability to set the owning org unit in Add Dataset flow.
 
 Gateway:
 
