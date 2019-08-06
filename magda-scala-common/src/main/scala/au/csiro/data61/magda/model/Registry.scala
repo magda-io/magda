@@ -496,6 +496,7 @@ object Registry extends RegistryConverters {
   sealed trait RecordType {
     val id: String
     val name: String
+    val tenantId: Option[BigInt]
   }
 
   @ApiModel(
@@ -548,7 +549,7 @@ object Registry extends RegistryConverters {
       @(ApiModelProperty @field)(
         value = "The identifier of the tenant",
         required = false
-      ) tenantId: BigInt
+      ) tenantId: Option[BigInt]
   ) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.
@@ -567,7 +568,7 @@ object Registry extends RegistryConverters {
 
     def isRecordAspectEvent =
       this == EventType.CreateRecordAspect || this == EventType.DeleteRecordAspect || this == EventType.PatchRecordAspect
-
+        
     def isCreateEvent =
       this == EventType.CreateRecord || this == EventType.CreateRecordAspect || this == EventType.CreateAspectDefinition
 
