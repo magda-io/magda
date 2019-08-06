@@ -8,7 +8,7 @@ import { getFormatIcon } from "../View/DistributionIcon";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
     textEditorEx,
-    multilineTextEditor
+    MultilineTextEditor
 } from "Components/Editing/Editors/textEditor";
 import {
     dateEditor,
@@ -59,6 +59,10 @@ import SpatialAreaInput, {
 
 import { BoundingBox } from "helpers/datasetSearch";
 
+import ReviewFilesList from "./ReviewFilesList";
+
+import helpIcon from "assets/help.svg";
+
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -104,7 +108,7 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderRestriction.bind(this),
-        this.renderDescription.bind(this)
+        this.renderSubmitPage.bind(this)
     ];
 
     edit = (aspectField: string) => (field: string) => (newValue: any) => {
@@ -137,39 +141,18 @@ class NewDataset extends React.Component<Props, State> {
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
                     <div className="col-sm-12">
-                        <div className="dataset-add-files">
-                            <p>
-                                Magda has reviewed your files and pre-populated
-                                metadata fields based on the contents.
-                            </p>
-                            <p>
-                                Please review carefully, and update any fields
-                                as required.
-                            </p>
-                            <div className="file-icons-container">
-                                {files.map((file, i) => (
-                                    <div
-                                        key={i}
-                                        className="file-icon-item clearfix"
-                                    >
-                                        <img
-                                            className="file-icon"
-                                            src={getFormatIcon(file)}
-                                        />
-                                        <div className="file-titile">
-                                            {file.title}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <ReviewFilesList
+                            key={step}
+                            files={files}
+                            isOpen={step < 1 ? true : false}
+                        />
                     </div>
                 </div>
                 {this.steps[step]()}
                 <br />
                 <br />
                 <br />
-                <div className="row">
+                <div className="row next-save-button-row">
                     <div className="col-sm-12">
                         <button
                             className="au-btn next-button"
@@ -215,48 +198,51 @@ class NewDataset extends React.Component<Props, State> {
         return (
             <div className="row dataset-details-and-contents-page">
                 <div className="col-sm-12">
-                    <h2>Dataset details and contents</h2>
-                    <hr />
-                    <h3>Title and language</h3>
-                    <h4>What is the title of the dataset?</h4>
-                    <div>
-                        <AlwaysEditor
-                            value={dataset.title}
-                            onChange={editDataset("title")}
-                            editor={textEditorEx({ required: true })}
-                        />
+                    <h2>Details and Contents</h2>
+                    <h3 className="with-underline">Title and language</h3>
+                    <div className="question-title">
+                        <h4>What is the title of the dataset?</h4>
+                        <div>
+                            <AlwaysEditor
+                                value={dataset.title}
+                                onChange={editDataset("title")}
+                                editor={textEditorEx({ required: true })}
+                            />
+                        </div>
                     </div>
-                    <br />
-                    <h4>What language(s) is the dataset available in?</h4>
-                    <div>
-                        <ReactSelect
-                            className="react-select"
-                            isMulti={true}
-                            isSearchable={true}
-                            components={{
-                                MultiValueRemove: CustomMultiValueRemove
-                            }}
-                            options={codelists.languageOptions as any}
-                            onChange={values =>
-                                editDataset("languages")(
-                                    Array.isArray(values)
-                                        ? values.map(item => item.value)
-                                        : []
-                                )
-                            }
-                            styles={ReactSelectStyles}
-                            value={(dataset.languages
-                                ? dataset.languages
-                                : ["eng"]
-                            ).map(item => ({
-                                label: codelists.languages[item],
-                                value: item
-                            }))}
-                        />
+
+                    <div className="question-language">
+                        <h4>What language(s) is the dataset available in?</h4>
+                        <div>
+                            <ReactSelect
+                                className="react-select"
+                                isMulti={true}
+                                isSearchable={true}
+                                components={{
+                                    MultiValueRemove: CustomMultiValueRemove
+                                }}
+                                options={codelists.languageOptions as any}
+                                onChange={values =>
+                                    editDataset("languages")(
+                                        Array.isArray(values)
+                                            ? values.map(item => item.value)
+                                            : []
+                                    )
+                                }
+                                styles={ReactSelectStyles}
+                                value={(dataset.languages
+                                    ? dataset.languages
+                                    : ["eng"]
+                                ).map(item => ({
+                                    label: codelists.languages[item],
+                                    value: item
+                                }))}
+                            />
+                        </div>
                     </div>
-                    <hr />
-                    <h3>Contents</h3>
-                    <div>
+
+                    <h3 className="with-underline">Contents</h3>
+                    <div className="question-keyword">
                         <h4>Which keywords best describe this dataset?</h4>
                         <ToolTip>
                             Keywords are specific words that your dataset
@@ -275,41 +261,74 @@ class NewDataset extends React.Component<Props, State> {
                         </div>
                     </div>
 
-                    <h4>Which themes does this dataset cover?</h4>
-                    <ToolTip>
-                        Themes are the topics your dataset covers and they help
-                        people find related datasets within a topic. We
-                        recommend themes are kept to 5-10 topics. We've
-                        identified themes from your document, that are
-                        consistent with similar datasets.
-                    </ToolTip>
-                    <div className="clearfix">
-                        <TagInput
-                            value={dataset.themes}
-                            onChange={editDataset("themes")}
-                            placeHolderText="Type a theme and press ENTER…"
-                        />
+                    <div className="question-theme">
+                        <h4>Which themes does this dataset cover?</h4>
+                        <ToolTip>
+                            Themes are the topics your dataset covers and they
+                            help people find related datasets within a topic. We
+                            recommend themes are kept to 5-10 topics. We've
+                            identified themes from your document, that are
+                            consistent with similar datasets.
+                        </ToolTip>
+                        <div className="clearfix">
+                            <TagInput
+                                value={dataset.themes}
+                                onChange={editDataset("themes")}
+                                placeHolderText="Type a theme and press ENTER…"
+                            />
+                        </div>
                     </div>
-                    <hr />
-                    <h3>Dates and updates</h3>
-                    <h4>When was the dataset first issued?</h4>
-                    <div>
-                        <AlwaysEditor
-                            value={dataset.issued}
-                            onChange={editDataset("issued")}
-                            editor={dateEditor}
-                        />
+
+                    <div className="question-description">
+                        <h4>Please add a description for this dataset</h4>
+                        <ToolTip>
+                            A good dataset description clearly and succintly
+                            explains the contents, purpose and value of the
+                            dataset. This is how users primarily identify and
+                            select your dataset from others. Here you can also
+                            include information that you have not already
+                            covered in the metadata.
+                        </ToolTip>
+                        <div className="clearfix">
+                            <MultilineTextEditor
+                                value={dataset.description}
+                                placerHolder="Enter description text"
+                                limit={250}
+                                onChange={this.edit("dataset")("description")}
+                            />
+                        </div>
                     </div>
-                    <h4>When was the dataset most recently modified?</h4>
-                    <div>
-                        <AlwaysEditor
-                            value={dataset.modified}
-                            onChange={editDataset("modified")}
-                            editor={dateEditor}
-                        />
+
+                    <h3 className="with-underline">Dates and updates</h3>
+
+                    <div className="row date-row">
+                        <div className="col-sm-4 question-issue-date">
+                            <h4>
+                                <span>When was the dataset first issued?</span>
+                                <span className="help-icon-container">
+                                    <img src={helpIcon} />
+                                </span>
+                            </h4>
+                            <AlwaysEditor
+                                value={dataset.issued}
+                                onChange={editDataset("issued")}
+                                editor={dateEditor}
+                            />
+                        </div>
+                        <div className="col-sm-4 question-recent-modify-date">
+                            <h4>
+                                When was the dataset most recently modified?
+                            </h4>
+                            <AlwaysEditor
+                                value={dataset.modified}
+                                onChange={editDataset("modified")}
+                                editor={dateEditor}
+                            />
+                        </div>
                     </div>
-                    <h4>How frequently is the dataset updated?</h4>
-                    <div>
+
+                    <div className="question-update-frequency">
+                        <h4>How frequently is the dataset updated?</h4>
                         <AccrualPeriodicityInput
                             accrualPeriodicity={dataset.accrualPeriodicity}
                             accrualPeriodicityRecurrenceRule={
@@ -327,15 +346,15 @@ class NewDataset extends React.Component<Props, State> {
                             }}
                         />
                     </div>
-                    <h4>What time period(s) does the dataset cover?</h4>
-                    <div>
+
+                    <div className="question-time-period">
+                        <h4>What time period(s) does the dataset cover?</h4>
                         <AlwaysEditor
                             value={temporalCoverage.intervals}
                             onChange={editTemporalCoverage("intervals")}
                             editor={multiDateIntervalEditor}
                         />
                     </div>
-                    <hr />
                     <h3>Spatial area</h3>
                     <div>
                         <SpatialAreaInput
@@ -439,10 +458,10 @@ class NewDataset extends React.Component<Props, State> {
                         how to arrange access etc.
                     </ToolTip>
                     <p>
-                        <AlwaysEditor
+                        <MultilineTextEditor
                             value={datasetAccess.notes}
+                            placerHolder="Enter access notes"
                             onChange={editDatasetAccess("notes")}
-                            editor={multilineTextEditor}
                         />
                     </p>
                     <hr />
@@ -637,31 +656,30 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    renderDescription() {
-        const { dataset } = this.state;
-        const editDataset = this.edit("dataset");
+    renderSubmitPage() {
+        const { datasetPublishing } = this.state;
         return (
-            <div className="row dataset-description-page">
+            <div className="row dataset-submit-page">
                 <div className="col-sm-12">
-                    <h2>Dataset description</h2>
-                    <h3>Please describe the dataset</h3>
-                    <ToolTip>
-                        A good dataset description clearly and succinctly
-                        explains the contents, purpose and value of the dataset.{" "}
-                        <br />
-                        This is how users primarily identify and select your
-                        dataset from others
-                        <br />
-                        Here you can also include information that you have not
-                        already covered in the other metadata.
+                    <h2 className="with-underline">
+                        Additional notes or comments
+                    </h2>
+                    <h3>
+                        Optional space to leave a note for the dataset Approver
+                    </h3>
+                    <ToolTip icon={helpIcon}>
+                        Leave any additional comments you feel relevant to this
+                        dataset
                     </ToolTip>
-                    <p>
-                        <AlwaysEditor
-                            value={dataset.description}
-                            onChange={editDataset("description")}
-                            editor={multilineTextEditor}
+                    <div>
+                        <MultilineTextEditor
+                            value={datasetPublishing.notesToApprover}
+                            placerHolder="Enter additional notes"
+                            onChange={this.edit("datasetPublishing")(
+                                "notesToApprover"
+                            )}
                         />
-                    </p>
+                    </div>
                 </div>
             </div>
         );
