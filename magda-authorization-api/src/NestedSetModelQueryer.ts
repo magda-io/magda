@@ -185,8 +185,6 @@ class NestedSetModelQueryer {
             this.tableName
         }" ${whereClause}`;
 
-        // console.log(query);
-
         const result = await (client ? client : this.pool).query(
             query,
             _.flatMap(clauses, ({ values }) => values || [])
