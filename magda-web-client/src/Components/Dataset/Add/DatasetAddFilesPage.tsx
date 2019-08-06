@@ -10,6 +10,7 @@ import { getFiles } from "helpers/readFile";
 
 import { State, File, FileState, saveState } from "./DatasetAddCommon";
 import withAddDatasetState from "./withAddDatasetState";
+import uniq from "lodash/uniq";
 
 import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
@@ -103,7 +104,7 @@ class DatasetAddFilesPage extends React.Component<
                                 case "themes":
                                     const value1: string[] = dataset[key] || [];
                                     const value2: string[] = file[key] || [];
-                                    dataset[key] = value1.concat(value2);
+                                    dataset[key] = uniq(value1.concat(value2));
                                     file[key] = undefined;
                                     break;
 
