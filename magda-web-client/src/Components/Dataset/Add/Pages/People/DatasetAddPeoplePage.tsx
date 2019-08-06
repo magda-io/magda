@@ -96,7 +96,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                         onOrgSelected={editDataset("publisher")}
                     />
                 </div>
-                <h4>What team is responsible for maintaining this dataset?</h4>
+                <h4>Which team is responsible for maintaining this dataset?</h4>
                 <div>
                     <OrgUnitDropdown
                         orgUnitId={dataset.owningOrgUnitId}
