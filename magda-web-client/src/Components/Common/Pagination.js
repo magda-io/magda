@@ -15,7 +15,7 @@ class Pagination extends Component {
     // generates the href for each link-list-item in pagination list.
     generateRoute(page) {
         return (
-            `search?` +
+            this.props.location.pathname +
             queryString.stringify(
                 Object.assign(queryString.parse(this.props.location.search), {
                     page: page
