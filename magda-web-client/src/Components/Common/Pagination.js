@@ -1,29 +1,39 @@
 import React, { Component } from "react";
 import "./Pagination.scss";
 import { needsContent } from "helpers/content";
+import { Link } from "react-router-dom";
+import queryString from "query-string";
 
 class Pagination extends Component {
     constructor(props) {
         super(props);
-        this.onClick = this.onClick.bind(this);
         this.renderNextButton = this.renderNextButton.bind(this);
         this.renderPrevButton = this.renderPrevButton.bind(this);
+        this.generateRoute = this.generateRoute.bind(this);
     }
 
-    onClick(page) {
-        this.props.onPageChange(page);
+    generateRoute(page) {
+        return (
+            `search?` +
+            queryString.stringify(
+                Object.assign(queryString.parse(this.props.location.search), {
+                    page: page
+                })
+            )
+        );
     }
+
     renderPrevButton(currentIndex) {
         return (
             <li>
-                <a
-                    onClick={this.onClick.bind(this, currentIndex - 1)}
+                <Link
+                    to={this.generateRoute(currentIndex - 1)}
                     className="btn-prev"
                     aria-label="previous page"
                     href=""
                 >
                     {"<"}
-                </a>
+                </Link>
             </li>
         );
     }
@@ -31,14 +41,14 @@ class Pagination extends Component {
     renderNextButton(currentIndex) {
         return (
             <li>
-                <a
-                    onClick={this.onClick.bind(this, currentIndex + 1)}
+                <Link
+                    to={this.generateRoute(currentIndex + 1)}
                     className="btn-next"
                     aria-label="next page"
                     href=""
                 >
                     {">"}
-                </a>
+                </Link>
             </li>
         );
     }
@@ -137,20 +147,16 @@ class Pagination extends Component {
                 {current > 1 && this.renderPrevButton(current)}
                 {pageButtons.map(i => (
                     <li key={i}>
-                        <a
-                            onClick={this.onClick.bind(
-                                this,
-                                //-- if i===0 then it's `...` button, Rule 6 applies
-                                i === 0 ? current - 4 : i
-                            )}
-                            href=""
+                        <Link
+                            to={this.generateRoute(i)}
                             className={`${
                                 i === current ? "current" : "non-current"
                             }`}
                             aria-current={i === current ? "true" : "false"}
+                            aria-label={`Page ${i}`}
                         >
                             {i === 0 ? "..." : i}
-                        </a>
+                        </Link>
                     </li>
                 ))}
                 {current < max && this.renderNextButton(current)}
