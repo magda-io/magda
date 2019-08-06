@@ -12,6 +12,7 @@ class Pagination extends Component {
         this.generateRoute = this.generateRoute.bind(this);
     }
 
+    // generates the href for each link-list-item in pagination list.
     generateRoute(page) {
         return (
             `search?` +
