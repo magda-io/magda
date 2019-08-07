@@ -1,7 +1,10 @@
 import uuidv4 from "uuid/v4";
 
 import { Contact } from "Components/Editing/Editors/contactEditor";
-import { licenseLevel } from "constants/DatasetConstants";
+import {
+    licenseLevel,
+    ContactPointDisplayOption
+} from "constants/DatasetConstants";
 import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
 
@@ -69,7 +72,6 @@ export type Dataset = {
     keywords?: string[];
     themes?: string[];
     contactPointFull?: Contact[];
-    contactPointDisplay?: string;
     publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
@@ -83,10 +85,11 @@ export type Dataset = {
     accessNotesTemp?: string;
 };
 
-type DatasetPublishing = {
+export type DatasetPublishing = {
     state: string;
     level: string;
     notesToApprover?: string;
+    contactPointDisplay?: ContactPointDisplayOption;
 };
 
 type SpatialCoverage = {
@@ -141,12 +144,12 @@ function createBlankState(): State {
         processing: false,
         dataset: {
             title: "Untitled",
-            languages: ["eng"],
-            contactPointDisplay: "role"
+            languages: ["eng"]
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency"
+            level: "agency",
+            contactPointDisplay: "members"
         },
         spatialCoverage: {},
         temporalCoverage: {

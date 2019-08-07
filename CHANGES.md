@@ -69,6 +69,7 @@ UI:
 -   Adjusted tooltip style & layout
 -   Overall page layout adjustment for `Details and Content` page
 -   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Restricted dataset contact point display options to team members, team or org and made it save in the registry.
 
 Gateway:
 
