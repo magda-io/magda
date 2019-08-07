@@ -26,6 +26,10 @@ bin
 # IntelliJ specific
 .idea
 
+# VS Code
+.bloop
+.metals
+
 regions
 snapshots
 .cache-tests
