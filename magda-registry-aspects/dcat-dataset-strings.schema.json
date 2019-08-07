@@ -90,39 +90,6 @@
             "description": "URI or description to identify a standardized specification the dataset conforms to",
             "type": "string"
         },
-        "creation": {
-            "title": "Data creation metadata",
-            "type": "object",
-            "properties": {
-                "isInternallyProduced": {
-                    "title": "Was it internally produced by the metadata?",
-                    "type": "boolean"
-                },
-                "mechanism": {
-                    "title": "How was it produced?",
-                    "type": "string"
-                },
-                "sourceSystem": {
-                    "title": "Source system that was used to produce this metadata.",
-                    "type": "string"
-                },
-                "likelihoodOfRelease": {
-                    "title": "How likely is it to be released as open data?",
-                    "type": "string"
-                },
-                "isOpenData": {
-                    "title": "Is it already released as open data?",
-                    "type": "boolean"
-                },
-                "affiliatedOrganisation": {
-                    "title": "Was this dataset produced collaborating with other organisations?",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "accessLevel": {
             "description": "The degree to which this dataset could be made publicly-available, regardless of whether it has been made available. Choices: public (Data asset is or could be made publicly available to all without restrictions), restricted public (Data asset is available under certain use restrictions), or non-public (Data asset is not available to members of the public)",
             "title": "Public Access Level",

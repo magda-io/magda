@@ -125,7 +125,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </h4>
                 <div>
                     <YesNoEditReveal
-                        value={dataset.creation_affiliatedOrganisation}
+                        value={dataset.collaborationOrganization}
                         defaultValue={[]}
                         nullValue={null}
                         onChange={editDataset(
@@ -133,7 +133,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                         )}
                     >
                         <AlwaysEditor
-                            value={dataset.creation_affiliatedOrganisation}
+                            value={dataset.collaborationOrganization}
                             onChange={editDataset(
                                 "creation_affiliatedOrganisation"
                             )}
@@ -143,10 +143,26 @@ export default function DatasetAddPeoplePage(props: Props) {
                         />
                     </YesNoEditReveal>
                 </div>
-                <h4>How was the dataset produced?</h4>
+                <h4>How was this dataset produced?</h4>
                 <div>
                     <AlwaysEditor
-                        value={dataset.creation_mechanism}
+                        value={dataset.creationSystem}
+                        onChange={editDataset("creation_mechanism")}
+                        editor={multilineTextEditor}
+                    />
+                </div>
+                <h4>What system was used to create this dataset?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={dataset.creationSystem}
+                        onChange={editDataset("creation_mechanism")}
+                        editor={multilineTextEditor}
+                    />
+                </div>
+                <h4>What was the source of this data?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={dataset.creationSystem}
                         onChange={editDataset("creation_mechanism")}
                         editor={multilineTextEditor}
                     />

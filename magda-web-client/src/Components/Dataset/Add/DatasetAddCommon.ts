@@ -75,9 +75,9 @@ export type Dataset = {
     importance?: string;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
-    creation_affiliatedOrganisation?: string[];
-    creation_sourceSystem?: string;
-    creation_mechanism?: string;
+    collaborationOrganization?: string[];
+    productionDetails?: string;
+    creationSystem?: string;
     creation_isOpenData?: boolean;
     accessLevel?: string;
     accessNotesTemp?: string;

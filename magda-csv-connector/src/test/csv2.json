@@ -115,12 +115,6 @@
                 "themes": ["Resource"],
                 "keywords": ["KE1", "K W 2", "KW3", "Item", "Resource"],
                 "contactPoint": "Fred Nerk\n\nActive",
-                "creation": {
-                    "isInternallyProduced": false,
-                    "mechanism": "Sourced from a chicken farm",
-                    "sourceSystem": "Sourced from a chicken farm",
-                    "isOpenData": false
-                },
                 "accessLevel": "Not Classified",
                 "status": "Active",
                 "informationSecurity": {
@@ -144,6 +138,12 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-a94089507837f9062056995b14324baa"
+            },
+            "provenance": {
+                "isInternallyProduced": false,
+                "mechanism": "Sourced from a chicken farm",
+                "sourceSystem": "Sourced from a chicken farm",
+                "isOpenData": false
             }
         },
         "sourceTag": "stag"
@@ -220,12 +220,6 @@
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
                 "contactPoint": "Joe Bloggs",
-                "creation": {
-                    "isInternallyProduced": true,
-                    "mechanism": "Internally produced by Agency",
-                    "sourceSystem": "Internally produced by Agency",
-                    "isOpenData": true
-                },
                 "accessLevel": "Not Classified",
                 "status": "Active",
                 "informationSecurity": {
@@ -246,6 +240,12 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-634437f607a8f344c444482c3c831cc5"
+            },
+            "provenance": {
+                "isInternallyProduced": true,
+                "mechanism": "Internally produced by Agency",
+                "sourceSystem": "Internally produced by Agency",
+                "isOpenData": true
             }
         },
         "sourceTag": "stag"
@@ -322,12 +322,6 @@
                 "themes": ["Resource"],
                 "keywords": ["Item", "Resource"],
                 "contactPoint": "Active",
-                "creation": {
-                    "isInternallyProduced": true,
-                    "mechanism": "Produced with magic",
-                    "sourceSystem": "Produced with magic",
-                    "isOpenData": true
-                },
                 "accessLevel": "Not Classified",
                 "status": "Active",
                 "informationSecurity": {
@@ -349,6 +343,12 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-e44009afeecf1fe914c6c84488c4280a"
+            },
+            "provenance": {
+                "isInternallyProduced": true,
+                "mechanism": "Produced with magic",
+                "sourceSystem": "Produced with magic",
+                "isOpenData": true
             }
         },
         "sourceTag": "stag"

@@ -25,6 +25,17 @@ export default [
     },
     {
         aspectDefinition: {
+            id: "provenance",
+            name: "Provenance of the datasets",
+            jsonSchema: require("@magda/registry-aspects/provenance.schema.json")
+        },
+        builderFunctionString: fs.readFileSync(
+            "aspect-templates/provenance.js",
+            "utf8"
+        )
+    },
+    {
+        aspectDefinition: {
             id: "source",
             name: "Source",
             jsonSchema: require("@magda/registry-aspects/source.schema.json")
