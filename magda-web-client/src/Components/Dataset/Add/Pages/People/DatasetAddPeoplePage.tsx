@@ -118,6 +118,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                         value={props.publishing.contactPointDisplay}
                         onChange={editPublishing("contactPointDisplay")}
                         editor={codelistRadioEditor(
+                            "dataset-contact-point-display",
                             codelists.contactPointDisplay
                         )}
                     />

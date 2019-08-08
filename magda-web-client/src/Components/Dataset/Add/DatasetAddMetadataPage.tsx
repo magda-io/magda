@@ -449,6 +449,7 @@ class NewDataset extends React.Component<Props, State> {
                             value={datasetPublishing.level}
                             onChange={editDatasetPublishing("level")}
                             editor={codelistRadioEditor(
+                                "dataset-publishing-level",
                                 codelists.publishingLevel
                             )}
                         />
