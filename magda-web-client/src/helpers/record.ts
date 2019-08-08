@@ -389,7 +389,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
 
     const publishing = aspects["publishing"] || {};
 
-    const creation = datasetInfo["creation"] || {};
+    const creation = aspects["provenance"] || {};
 
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
@@ -484,14 +484,14 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        creation: datasetInfo["creation"] || {},
+        creation,
         importance: datasetInfo["importance"],
         publishingState: publishing["state"],
-        creationAffiliatedOrganisation: creation["affiliatedOrganisation"],
+        creationAffiliatedOrganisation: creation.affiliatedOrganisation,
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
-        informationSecurity: datasetInfo["informationSecurity"] || {},
+        informationSecurity: aspects["information-security"] || {},
         accessControl,
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:

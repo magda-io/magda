@@ -52,12 +52,6 @@
                 "accessLevel": "Non-Public",
                 "importance": "Essential",
                 "status": "Current",
-                "informationSecurity": {
-                    "disseminationLimits": [
-                        "Sensitive: Personal",
-                        "Sensitive: Commercial"
-                    ]
-                },
                 "metadata": {
                     "format": "META FMT"
                 }
@@ -79,6 +73,12 @@
                 "sourceSystem": "CRM",
                 "likelihoodOfRelease": "Low",
                 "affiliatedOrganisation": ["AI"]
+            },
+            "information-security": {
+                "disseminationLimits": [
+                    "Sensitive: Personal",
+                    "Sensitive: Commercial"
+                ]
             }
         },
         "sourceTag": "stag"
@@ -135,10 +135,7 @@
                 ],
                 "contactPoint": "Engineering",
                 "accessLevel": "Restricted Public",
-                "importance": "Useful",
-                "informationSecurity": {
-                    "disseminationLimits": ["For Official Use Only"]
-                }
+                "importance": "Useful"
             },
             "source": {
                 "type": "csv-dataset",
@@ -155,6 +152,9 @@
             "provenance": {
                 "mechanism": "Data generated and provided to us by Data61",
                 "likelihoodOfRelease": "Restricted"
+            },
+            "information-security": {
+                "disseminationLimits": ["For Official Use Only"]
             }
         },
         "sourceTag": "stag"
@@ -210,9 +210,6 @@
                 "contactPoint": "META STD\n\nGaming",
                 "accessLevel": "T3",
                 "status": "Retired",
-                "informationSecurity": {
-                    "disseminationLimits": ["For Official Use Only"]
-                },
                 "metadata": {
                     "standard": "META STD"
                 }
@@ -234,6 +231,9 @@
                 "sourceSystem": "Recycle bin",
                 "likelihoodOfRelease": "Low",
                 "affiliatedOrganisation": ["Machine Learning"]
+            },
+            "information-security": {
+                "disseminationLimits": ["For Official Use Only"]
             }
         },
         "sourceTag": "stag"

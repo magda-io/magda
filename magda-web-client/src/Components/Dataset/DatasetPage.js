@@ -191,6 +191,16 @@ class RecordHandler extends React.Component {
             "temporal-coverage"
         );
 
+        const provenanceChange = this.change(
+            this.props.dataset.identifier,
+            "provenance"
+        );
+
+        const informationSecurityChange = this.change(
+            this.props.dataset.identifier,
+            "information-security"
+        );
+
         const { dataset, hasEditPermissions } = this.props;
 
         if (this.props.match.params.distributionId) {
@@ -728,10 +738,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creationAffiliatedOrganisation
+                                                        dataset.provenance
+                                                            .affiliatedOrganisation
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/affiliatedOrganisation"
+                                                    onChange={provenanceChange(
+                                                        "affiliatedOrganisation"
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
@@ -743,11 +754,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creation
+                                                        dataset.provenance
                                                             .mechanism
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/mechanism"
+                                                    onChange={provenanceChange(
+                                                        "mechanism"
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
@@ -757,11 +768,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creation
+                                                        dataset.provenance
                                                             .sourceSystem
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/sourceSystem"
+                                                    onChange={provenanceChange(
+                                                        "sourceSystem"
                                                     )}
                                                     editor={textEditor}
                                                 />
@@ -783,8 +794,8 @@ class RecordHandler extends React.Component {
                                                             .informationSecurity
                                                             .disseminationLimits
                                                     }
-                                                    onChange={datasetChange(
-                                                        "informationSecurity/disseminationLimits"
+                                                    onChange={informationSecurityChange(
+                                                        "disseminationLimits"
                                                     )}
                                                     editor={multiCodelistEditor(
                                                         codelists.disseminationLimits
@@ -804,8 +815,8 @@ class RecordHandler extends React.Component {
                                                             .informationSecurity
                                                             .classification
                                                     }
-                                                    onChange={datasetChange(
-                                                        "informationSecurity/classification"
+                                                    onChange={informationSecurityChange(
+                                                        "classification"
                                                     )}
                                                     editor={codelistEditor(
                                                         codelists.classification

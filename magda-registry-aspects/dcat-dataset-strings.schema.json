@@ -103,38 +103,6 @@
             "title": "Current status. E.g. active, retired",
             "type": "string"
         },
-        "informationSecurity": {
-            "title": "Metadata about information security",
-            "type": "object",
-            "properties": {
-                "disseminationLimits": {
-                    "title": "Any sensitivity DLMs. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "For Official Use Only",
-                            "Sensitive",
-                            "Sensitive: Personal",
-                            "Sensitive: Legal",
-                            "Sensitive: Cabinet",
-                            "Sensitive: Commercial"
-                        ]
-                    }
-                },
-                "classification": {
-                    "title": "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
-                    "type": "string",
-                    "enum": [
-                        "UNCLASSIFIED",
-                        "PROTECTED",
-                        "CONFIDENTIAL",
-                        "SECRET",
-                        "TOP SECRET"
-                    ]
-                }
-            }
-        },
         "metadata": {
             "title": "Metadata about metadata of the dataset.",
             "type": "object",

@@ -52,7 +52,7 @@ package misc {
 
   case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]] = None)
 
-  case class DcatCreation(
+  case class Provenance(
      isInternallyProduced: Option[Boolean] = None,
      mechanism: Option[String] = None,
      sourceSystem: Option[String] = None,
@@ -88,7 +88,7 @@ package misc {
       quality: Double,
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
-      creation: Option[DcatCreation] = None,
+      creation: Option[Provenance] = None,
       score: Option[Float],
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None,
@@ -346,7 +346,7 @@ package misc {
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(DataSouce.apply)
-    implicit val dcatCreationFormat: RootJsonFormat[DcatCreation] = jsonFormat6(DcatCreation.apply)
+    implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat6(Provenance.apply)
 
     implicit val licenseFormat: RootJsonFormat[License] = jsonFormat2(License.apply)
 
@@ -575,7 +575,7 @@ package misc {
           quality = Protocols.convertField[Double]("quality", json),
           hasQuality = Protocols.convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
-          creation = convertOptionField[DcatCreation]("creation", json),
+          creation = convertOptionField[Provenance]("creation", json),
           score = convertOptionField[Float]("score", json),
           publishingState = convertOptionField[String]("publishingState", json),
           accessControl = convertOptionField[AccessControl]("accessControl", json),

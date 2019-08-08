@@ -64,7 +64,7 @@ class DatasetPageDetails extends Component {
                                 >
                                     {dataset.landingPage}
                                 </a>
-                                {defined(dataset.creation) &&
+                                {defined(dataset.provenance) &&
                                 defined(dataset.creation.isOpenData) ? (
                                     <h3 className="section-heading">
                                         Type:{" "}

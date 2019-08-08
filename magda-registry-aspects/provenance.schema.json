@@ -1,34 +1,53 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Provenance for datasets or distributions",
+    "title": "Provenance",
+    "description": "Describes how this data was collected or generated.",
     "type": "object",
     "properties": {
-        "isInternallyProduced": {
-            "title": "Was it internally produced by the metadata?",
-            "type": "boolean"
-        },
         "mechanism": {
-            "title": "How was it produced?",
+            "description": "How was it produced?",
             "type": "string"
         },
         "sourceSystem": {
-            "title": "Source system that was used to produce this metadata.",
+            "description": "What system, if any, was used to produce the data?",
             "type": "string"
         },
-        "likelihoodOfRelease": {
-            "title": "How likely is it to be released as open data?",
-            "type": "string"
+        "derivedFrom": {
+            "description": "What other record(s), if any, was this data derived from?",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "The id(s) of the record(s)",
+                    "type": "array",
+                    "items": {
+                        "description": "The id of the record",
+                        "type": "string",
+                        "links": [
+                            {
+                                "href": "/api/v0/registry/records/{$}",
+                                "rel": "item"
+                            }
+                        ]
+                    }
+                }
+            }
         },
-        "isOpenData": {
-            "title": "Is it already released as open data?",
-            "type": "boolean"
-        },
-        "affiliatedOrganisation": {
-            "title": "Was this dataset produced collaborating with other organisations?",
+        "affiliatedOrganisationIds": {
+            "description": "Which other organisation(s), if any, was this produced in collaboration with?",
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/registry/records/{$}",
+                        "rel": "item"
+                    }
+                ]
             }
+        },
+        "isOpenData": {
+            "description": "Is it already released as open data?",
+            "type": "boolean"
         }
     }
 }
