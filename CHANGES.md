@@ -68,7 +68,10 @@ UI:
 -   Added words count to Textarea
 -   Adjusted tooltip style & layout
 -   Overall page layout adjustment for `Details and Content` page
--   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Stopped keywords & themes extraction producing duplicate keywords for different files
+-   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
+-   Made all keywords extracted lower case
+-   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
 
 Gateway:
 
