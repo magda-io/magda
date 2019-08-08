@@ -74,6 +74,7 @@
     "@types/react": "^16.8.17",
     "@types/react-autosuggest": "^9.3.9",
     "@types/react-dates": "^17.1.5",
+    "@types/react-router": "^5.0.3",
     "@types/react-select": "^3.0.0",
     "@types/rrule": "^2.2.9",
     "babel-core": "^6.26.0",

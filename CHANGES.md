@@ -62,6 +62,7 @@ UI:
 -   New Design Spatial area input on `Dataset details and contents` page
 -   New Design for text input & text area input on add dataset pages
 -   Next & save button style adjustment on add dataset pages
+-   Update pagination to meet WCAG and use correct semantic HTML tags.
 -   New Design for files review box on `Details and Content` page
 -   Moved dataset description to Details and Contents page & added `additional notes` text box to submit page
 -   Added words count to Textarea
@@ -69,6 +70,10 @@ UI:
 -   Overall page layout adjustment for `Details and Content` page
 -   fixed: keywords & themes extraction might produce duplicate keywords for different files
 -   Added ability to set the owning org unit in Add Dataset flow.
+-   Stopped keywords & themes extraction producing duplicate keywords for different files
+-   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
+-   Made all keywords extracted lower case
+-   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
 
 Gateway:
 

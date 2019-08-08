@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router";
+import { withRouter, RouterProps } from "react-router";
 import FileDrop from "react-file-drop";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -16,7 +16,7 @@ import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
 
 class DatasetAddFilesPage extends React.Component<
-    { dataset: string; initialState: State },
+    { dataset: string; initialState: State } & RouterProps,
     State
 > {
     state = this.props.initialState;
@@ -263,12 +263,12 @@ class DatasetAddFilesPage extends React.Component<
 
     saveAndExit() {
         saveState(this.state, this.props.dataset);
-        window.location.href = `/dataset/list`;
+        this.props.history.push(`/dataset/list`);
     }
 
     reviewMetadata() {
         const id = saveState(this.state, this.props.dataset);
-        window.location.href = `/dataset/add/metadata/${id}/0`;
+        this.props.history.push(`/dataset/add/metadata/${id}/0`);
     }
 }
 
