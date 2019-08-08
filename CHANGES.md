@@ -72,6 +72,7 @@ UI:
 -   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
 -   Made all keywords extracted lower case
 -   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
+-   Style adjustment for question Who can see the dataset once it is published on Access and Use page
 
 Gateway:
 
