@@ -46,7 +46,7 @@ export default function OrgUnitDropdown({
         return (
             <select
                 className="au-select"
-                defaultValue={orgUnitId}
+                defaultValue={orgUnitId || ""}
                 onChange={onChange}
             >
                 <option value="" disabled>
