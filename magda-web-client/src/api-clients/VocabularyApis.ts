@@ -61,6 +61,7 @@ async function queryEndpoint(
             keywords.push(label._value);
         });
     });
+
     return keywords;
 }
 
@@ -71,9 +72,17 @@ export async function query(str: string): Promise<string[]> {
         );
     }
     const result = await Promise.all(
-        apiEndpoints.map(api => queryEndpoint(api, str))
+        apiEndpoints.map(api =>
+            queryEndpoint(api, str).catch(e => {
+                // In the event that a query fails it's not fatal... just count it as empty and move to the next one.
+                console.error(e);
+                return [];
+            })
+        )
     );
-    const keywords = uniq(flatMap(result));
+    const keywords = uniq(
+        flatMap(result).map(keyword => keyword.toLowerCase())
+    );
     return keywords;
 }
 
