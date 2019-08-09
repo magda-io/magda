@@ -115,6 +115,54 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
   }
 
+  override def autoCompleteQuery(
+    field: String,
+    jwtToken: Option[String],
+    inputString: Option[String],
+    size: Option[Int],
+    tenantId: BigInt) = {
+
+    // --- by default, autoComplete using all dataset user has access to
+    // --- modify the filter (currently, empty Set()) to restrict to only draft (or published) datasets only
+    val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(Set(), jwtToken)
+
+    val sizeLimit:Int = if(size.isEmpty) 10
+    else if(size.get <1) 1
+    else if(size.get > 100) 100
+    else size.get
+
+    clientFuture.flatMap { implicit client =>
+      publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
+        val query = ElasticDsl
+          .search(indices.getIndex(config, Indices.DataSetsIndex))
+          .sourceInclude(field)
+          .query(must(Seq(
+            termQuery("tenantId", tenantId),
+            publishingStatusQuery,
+            matchQuery(field, inputString.get)
+          ))).aggregations(termsAggregation("suggestions").field(field).size(sizeLimit))
+
+        client.execute(query).flatMap {
+          case results: RequestSuccess[SearchResponse] => Future.successful(results.result)
+          case IllegalArgumentException(e) => throw e
+          case ESGenericException(e) => throw e
+        }.map{ result =>
+          result
+        }
+      }
+    } recover {
+      case RootCause(illegalArgument: IllegalArgumentException) =>
+        logger.error(illegalArgument, "Exception when searching")
+        failureSearchResult(
+          inputQuery,
+          "Bad argument: " + illegalArgument.getMessage)
+      case e: Throwable =>
+        logger.error(e, "Exception when searching")
+        failureSearchResult(inputQuery, "Unknown error")
+    }
+
+  }
+
   def augmentWithBoostRegions(query: Query)(implicit client: ElasticClient): Future[Query] = {
     val regionsFuture = query.freeText.filter(_.length > 0).map(freeText => client.execute(
       ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
