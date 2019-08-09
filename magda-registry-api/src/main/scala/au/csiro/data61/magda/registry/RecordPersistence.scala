@@ -1315,18 +1315,21 @@ object DefaultRecordPersistence
   ): List[SQLSyntax] = {
     opaQueries.map {
       case OpaQueryMatchValue(
-          OpaRefObjectKey("object") :: OpaRefObjectKey("aspects") :: OpaRefObjectKey(
-            aspectName
-          ) :: aspectPath,
+          OpaRefObjectKey("object")
+            :: OpaRefObjectKey("registry")
+            :: OpaRefObjectKey("records")
+            :: OpaRefObjectKey("dataset-access-control")
+            :: otherPath,
           operation,
           value
           ) =>
         val query = AspectQuery(
-          aspectId = aspectName,
-          path = aspectPath.map {
+          aspectId = "dataset-access-control",
+          path = otherPath.map {
             case OpaRefObjectKey(key) => key
             case _                    => "[_]"
           },
+
           value = value match {
             case OpaValueString(string)   => string
             case OpaValueBoolean(boolean) => boolean.toString()

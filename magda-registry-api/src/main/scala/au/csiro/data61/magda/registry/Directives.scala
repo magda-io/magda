@@ -3,7 +3,6 @@ package au.csiro.data61.magda.registry
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -25,6 +24,7 @@ import akka.event.Logging
 import au.csiro.data61.magda.opa.OpaQueryer
 import au.csiro.data61.magda.directives.AuthDirectives
 import au.csiro.data61.magda.opa.OpaTypes._
+import cats.instances.future
 
 object Directives {
 
@@ -41,7 +41,7 @@ object Directives {
       new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
 
     AuthDirectives.getJwt().flatMap { jwt =>
-      val future = queryer.queryForAspects(jwt, aspectIds, operationType)
+      val future: Future[Seq[OpaQueryPair]] = queryer.queryForAspects(jwt, aspectIds, operationType)
 
       onSuccess(future).flatMap { queryResults =>
         provide(queryResults)
@@ -58,26 +58,20 @@ object Directives {
       system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
-  ): Directive1[Option[Seq[OpaQueryPair]]] = {
+  ): Directive1[OpaQueryPair] = {
     val queryer =
       new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
 
     AuthDirectives.getJwt().flatMap { jwt =>
-      val recordFuture = queryer.queryForRecord(jwt, operationType)
-      val aspectFuture = queryer.queryForAspects(jwt, aspectIds, operationType)
+      val recordFuture: Future[List[OpaQuery]] = queryer.queryForRecord(jwt, operationType)
 
-      val combined = for {
+      val combined: Future[List[OpaQuery]] = for {
         recordPermission <- recordFuture
-        aspectPermissions <- aspectFuture
-      } yield (recordPermission, aspectPermissions)
+      } yield recordPermission
 
-      onSuccess(combined).tflatMap(_ match {
-        case (
-            recordPermission,
-            aspectOpaQueries
-            ) =>
-          provide(if (recordPermission) Some(aspectOpaQueries) else None)
-      })
+      onSuccess(combined).flatMap { queryResults =>
+        provide(OpaQueryPair("object.registry.record.owner_orgunit." + operationType.id, queryResults))
+      }
     }
   }
 }

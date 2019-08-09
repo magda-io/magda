@@ -110,7 +110,7 @@ class RecordsService(
               AuthOperations.delete
             )(config, system, materializer, ec) { opaQueriesOpt =>
               opaQueriesOpt match {
-                case Some(opaQueries) =>
+                case opaQueries =>
                   val result = DB localTx { session =>
                     recordPersistence.deleteRecord(session, recordId) match {
                       case Success(result) => complete(DeleteResult(result))
@@ -123,7 +123,7 @@ class RecordsService(
                   }
                   webHookActor ! WebHookActor.Process()
                   result
-                case None =>
+                case _ =>
                   complete(
                     StatusCodes.NotFound
                   )

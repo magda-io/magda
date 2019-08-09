@@ -298,6 +298,13 @@ class OpaQueryer()(
       )
   }
 
+  def queryRecord(
+    jwtToken: Option[String],
+    policyId: String
+  ): Future[List[OpaQuery]] = {
+    queryPolicy(jwtToken, policyId)
+  }
+
   def queryAsDefaultUser(
       policyId: String
   ): Future[List[OpaQuery]] = {

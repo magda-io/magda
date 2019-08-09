@@ -15,7 +15,3 @@ CREATE INDEX recordaspects_authpolicydelete_idx
 
 UPDATE aspects SET aspectid='access-control' WHERE aspectid='dataset-access-control';
 UPDATE recordaspects SET aspectid='access-control' WHERE aspectid='dataset-access-control';
-
-ALTER TABLE recordaspects ALTER COLUMN authPolicyRead DROP DEFAULT;
-ALTER TABLE recordaspects ALTER COLUMN authPolicyUpdate DROP DEFAULT;
-ALTER TABLE recordaspects ALTER COLUMN authPolicyDelete DROP DEFAULT;

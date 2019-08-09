@@ -77,5 +77,6 @@ object RegistryApp extends App {
   val interface = Option(System.getenv("npm_package_config_interface")).orElse(Option(config.getString("http.interface"))).getOrElse("127.0.0.1")
   val port = Option(System.getenv("npm_package_config_port")).map(_.toInt).orElse(Option(config.getInt("http.port"))).getOrElse(6101)
 
+  println("Listening on port: " + port)
   Http().bindAndHandle(api.routes, interface, port)
 }
