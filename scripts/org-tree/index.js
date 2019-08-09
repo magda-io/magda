@@ -41,4 +41,8 @@ program
             "\tBoth `userNameOrId` & `nodeNameOrId` can be either entity name or Id.\n" +
             "\tIf more than one entities are located by entity name, the first one will be used."
     )
+    .command(
+        "unassign <userNameOrId>",
+        "\n\tAssign the specified user from any node"
+    )
     .parse(process.argv);

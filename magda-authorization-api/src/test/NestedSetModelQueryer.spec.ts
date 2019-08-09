@@ -20,7 +20,7 @@ async function checkNodeLeftRight(
     expectedRight: number
 ) {
     queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
-    const testNode = (await queryer.getNodesByName(nodeName))[0];
+    const testNode = (await queryer.getNodes({ name: nodeName }))[0];
     expect(testNode.left).to.equal(expectedLeft);
     expect(testNode.right).to.equal(expectedRight);
 }
@@ -115,7 +115,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
     async function getNodeIdFromName(tableName: string, name: string) {
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        const nodes = await queryer.getNodesByName(name);
+        const nodes = await queryer.getNodes({ name });
         if (!nodes) throw new Error(`Can't find node by name: ${name}`);
         return nodes[0]["id"];
     }
@@ -123,7 +123,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
     it("`getNodesByName` should return the node with specified name", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        const nodes = await queryer.getNodesByName("Chuck");
+        const nodes = await queryer.getNodes({ name: "Chuck" });
         expect(nodes.length).to.equal(1);
         expect(nodes[0]["name"]).to.equal("Chuck");
     });
@@ -131,7 +131,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
     it("`getNodeById` should return the node with the specified id", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        const nodes = await queryer.getNodesByName("Chuck");
+        const nodes = await queryer.getNodes({ name: "Chuck" });
         expect(nodes.length).to.equal(1);
         expect(nodes[0]["name"]).to.equal("Chuck");
         const testNode = await queryer.getNodeById(nodes[0]["id"]);
@@ -155,16 +155,40 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(Object.keys(node)).to.have.members(["id", "left"]);
     });
 
-    it("`getLeafNodes` should return all leaf nodes", async () => {
+    it("`getNodes with no parameters should return all nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        const nodes = await queryer.getLeafNodes();
+        const nodes = await queryer.getNodes();
+        expect(nodes.map(n => n.name)).to.have.members([
+            "Albert",
+            "Bert",
+            "Chuck",
+            "Donna",
+            "Eddie",
+            "Fred"
+        ]);
+    });
+
+    it("`getNodes({ leafNodesOnly: true })` should return all leaf nodes", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        const nodes = await queryer.getNodes({ leafNodesOnly: true });
         expect(nodes.map(n => n.name)).to.have.members([
             "Bert",
             "Donna",
             "Eddie",
             "Fred"
         ]);
+    });
+
+    it("`getNodes with both name and leafNodesOnly should return all leaf nodes with that name", async () => {
+        const tableName = await createTestTableWithTestData();
+        const queryer = new NestedSetModelQueryer(pool, tableName);
+        const nodes = await queryer.getNodes({
+            leafNodesOnly: true,
+            name: "Bert"
+        });
+        expect(nodes.map(n => n.name)).to.have.members(["Bert"]);
     });
 
     it("`getAllChildren` should return all children correctly", async () => {
@@ -568,27 +592,27 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await queryer.insertNode(lv3ParentNodeId, { name: "Eddie" });
         await queryer.insertNode(lv3ParentNodeId, { name: "Fred" });
 
-        let testNode = (await queryer.getNodesByName("Albert"))[0];
+        let testNode = (await queryer.getNodes({ name: "Albert" }))[0];
         expect(testNode.left).to.equal(1);
         expect(testNode.right).to.equal(12);
 
-        testNode = (await queryer.getNodesByName("Bert"))[0];
+        testNode = (await queryer.getNodes({ name: "Bert" }))[0];
         expect(testNode.left).to.equal(2);
         expect(testNode.right).to.equal(3);
 
-        testNode = (await queryer.getNodesByName("Chuck"))[0];
+        testNode = (await queryer.getNodes({ name: "Chuck" }))[0];
         expect(testNode.left).to.equal(4);
         expect(testNode.right).to.equal(11);
 
-        testNode = (await queryer.getNodesByName("Donna"))[0];
+        testNode = (await queryer.getNodes({ name: "Donna" }))[0];
         expect(testNode.left).to.equal(5);
         expect(testNode.right).to.equal(6);
 
-        testNode = (await queryer.getNodesByName("Eddie"))[0];
+        testNode = (await queryer.getNodes({ name: "Eddie" }))[0];
         expect(testNode.left).to.equal(7);
         expect(testNode.right).to.equal(8);
 
-        testNode = (await queryer.getNodesByName("Fred"))[0];
+        testNode = (await queryer.getNodes({ name: "Fred" }))[0];
         expect(testNode.left).to.equal(9);
         expect(testNode.right).to.equal(10);
     });
@@ -599,7 +623,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
-        const bertId = (await queryer.getNodesByName("Bert"))[0]["id"];
+        const bertId = (await queryer.getNodes({ name: "Bert" }))[0]["id"];
         const bert1nodeId = await queryer.insertNodeToRightOfSibling(bertId, {
             name: "Bert1"
         });
@@ -613,7 +637,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         const bert = lv2Nodes.find(n => n.id === bertId);
         expect(_.isUndefined(bert)).to.equal(false);
 
-        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        const chuckId = (await queryer.getNodes({ name: "Chuck" }))[0]["id"];
         const chuck = lv2Nodes.find(n => n.id === chuckId);
         expect(_.isUndefined(chuck)).to.equal(false);
 
@@ -644,8 +668,8 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
-        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
-        const bertId = (await queryer.getNodesByName("Bert"))[0]["id"];
+        const chuckId = (await queryer.getNodes({ name: "Chuck" }))[0]["id"];
+        const bertId = (await queryer.getNodes({ name: "Bert" }))[0]["id"];
 
         // --- move Chuck under Bert
         await queryer.moveSubTreeTo(chuckId, bertId);
@@ -672,8 +696,8 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- continue to move `Donna` to `Bert`
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Donna"))[0]["id"],
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Donna" }))[0]["id"],
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking three structure after the chanhes
@@ -694,7 +718,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- we shouldn't allow to move Bert's sub stree to Eddie
         // --- as Eddie is one of Bert's subordinate
-        let eddieId = (await queryer.getNodesByName("Eddie"))[0]["id"];
+        let eddieId = (await queryer.getNodes({ name: "Eddie" }))[0]["id"];
 
         expect(queryer.moveSubTreeTo(bertId, eddieId)).be.rejectedWith(
             `Cannot move a higher level node (id: ${bertId})to its subordinate (id: ${eddieId})`
@@ -709,14 +733,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         expect(
             (await queryer.getImmediateParent(
-                (await queryer.getNodesByName("Donna"))[0]["id"]
+                (await queryer.getNodes({ name: "Donna" }))[0]["id"]
             )).valueOrThrow().name
         ).to.equal("Chuck");
 
         // --- move `Donna` to `Bert`: there is no path from Donna to Bert
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Donna"))[0]["id"],
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Donna" }))[0]["id"],
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking three structure after the changes
@@ -734,7 +758,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         ]);
         expect(
             (await queryer.getImmediateParent(
-                (await queryer.getNodesByName("Donna"))[0]["id"]
+                (await queryer.getNodes({ name: "Donna" }))[0]["id"]
             )).valueOrThrow().name
         ).to.equal("Bert");
     });
@@ -745,7 +769,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
-        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        const chuckId = (await queryer.getNodes({ name: "Chuck" }))[0]["id"];
         await queryer.deleteSubTree(chuckId);
 
         // --- checking left nodes data
@@ -763,7 +787,9 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
         // --- try delete root stree
-        const rootNodeId = (await queryer.getNodesByName("Albert"))[0]["id"];
+        const rootNodeId = (await queryer.getNodes({ name: "Albert" }))[0][
+            "id"
+        ];
         await queryer.deleteSubTree(rootNodeId, true);
 
         const results = await pool.query(`SELECT * FROM "${tableName}"`);
@@ -777,7 +803,9 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
         // --- try delete root stree
-        const rootNodeId = (await queryer.getNodesByName("Albert"))[0]["id"];
+        const rootNodeId = (await queryer.getNodes({ name: "Albert" }))[0][
+            "id"
+        ];
 
         expect(queryer.deleteSubTree(rootNodeId)).be.rejectedWith(
             "Root node id is not allowed!"
@@ -792,8 +820,8 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- move Bert under Eddie
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Donna"))[0]["id"],
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Donna" }))[0]["id"],
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -806,7 +834,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- delete Eddie
         await queryer.deleteSubTree(
-            (await queryer.getNodesByName("Eddie"))[0]["id"]
+            (await queryer.getNodes({ name: "Eddie" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -823,7 +851,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
-        const chuckId = (await queryer.getNodesByName("Chuck"))[0]["id"];
+        const chuckId = (await queryer.getNodes({ name: "Chuck" }))[0]["id"];
 
         // --- delete chuck
         await queryer.deleteNode(chuckId);
@@ -844,14 +872,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- move Bert under Eddie
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Bert"))[0]["id"],
-            (await queryer.getNodesByName("Eddie"))[0]["id"]
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"],
+            (await queryer.getNodes({ name: "Eddie" }))[0]["id"]
         );
 
         // --- move Donna under Bert
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Donna"))[0]["id"],
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Donna" }))[0]["id"],
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -864,7 +892,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- delete Eddie
         await queryer.deleteNode(
-            (await queryer.getNodesByName("Eddie"))[0]["id"]
+            (await queryer.getNodes({ name: "Eddie" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -883,14 +911,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- move Bert under Eddie
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Bert"))[0]["id"],
-            (await queryer.getNodesByName("Eddie"))[0]["id"]
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"],
+            (await queryer.getNodes({ name: "Eddie" }))[0]["id"]
         );
 
         // --- move Donna under Bert
         await queryer.moveSubTreeTo(
-            (await queryer.getNodesByName("Donna"))[0]["id"],
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Donna" }))[0]["id"],
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -903,7 +931,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         // --- delete Bert
         await queryer.deleteNode(
-            (await queryer.getNodesByName("Bert"))[0]["id"]
+            (await queryer.getNodes({ name: "Bert" }))[0]["id"]
         );
 
         // --- checking left nodes data
@@ -923,7 +951,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         // --- delete Albert (root Node)
         expect(
             queryer.deleteNode(
-                (await queryer.getNodesByName("Albert"))[0]["id"]
+                (await queryer.getNodes({ name: "Albert" }))[0]["id"]
             )
         ).be.rejectedWith("Delete a root node is not allowed!");
     });
@@ -939,7 +967,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             "left",
             "right"
         ];
-        const albertId = (await queryer.getNodesByName("Albert"))[0]["id"];
+        const albertId = (await queryer.getNodes({ name: "Albert" }))[0]["id"];
         await queryer.updateNode(albertId, {
             id: "testId", // --- should be ignored
             left: 14, // --- should be ignored

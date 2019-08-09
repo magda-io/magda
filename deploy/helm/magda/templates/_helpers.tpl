@@ -190,6 +190,8 @@ spec:
           command:
             - "node"
             - "/usr/src/app/component/dist/index.js"
+            - "--tenantId"
+            - {{ .jobConfig.tenantId | default .root.Values.defaultTenantId | quote }}
             - "--config"
             - "/etc/config/connector.json"
             - "--registryUrl"
