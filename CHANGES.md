@@ -105,6 +105,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Removed Travis CI (Gitlab CI still remains)
 
 ## 0.0.55
 
@@ -168,7 +169,6 @@ Others:
 -   Elasticsearch related test cases run on Docker container than than local node
 -   Fixed: datasets with null description could lead to blank search result page
 -   Stopped gateway from passing auth and single-hop headers through to other services
--   Removed Travis CI (Gitlab CI still remains)
 
 ## 0.0.53
 
