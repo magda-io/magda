@@ -70,10 +70,12 @@ UI:
 -   Overall page layout adjustment for `Details and Content` page
 -   fixed: keywords & themes extraction might produce duplicate keywords for different files
 -   Restricted dataset contact point display options to team members, team or org and made it save in the registry.
+-   Added ability to set the owning org unit in Add Dataset flow.
 -   Stopped keywords & themes extraction producing duplicate keywords for different files
 -   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
 -   Made all keywords extracted lower case
 -   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
+-   Style adjustment for question Who can see the dataset once it is published on Access and Use page
 
 Gateway:
 
