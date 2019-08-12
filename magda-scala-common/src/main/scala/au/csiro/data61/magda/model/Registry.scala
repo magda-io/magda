@@ -305,10 +305,10 @@ trait RegistryConverters extends RegistryProtocols {
     val accessNotes = Try {
       hit.aspects.get("access") match {
         case Some(JsObject(access)) =>
-          DataSetAccessNotes(url= access.get("url") match {
+          DataSetAccessNotes(notes = access.get("notes") match {
             case Some(JsString(notes)) => Some(notes)
             case _ => None
-          }, notes = access.get("notes") match {
+          }, url= access.get("url") match {
             case Some(JsString(notes)) => Some(notes)
             case _ => None
           }, downloadURL = access.get("downloadURL") match {

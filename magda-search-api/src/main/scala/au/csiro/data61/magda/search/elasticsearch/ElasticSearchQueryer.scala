@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{AutoCompleteQueryResult, OrganisationsSearchResult, RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
@@ -116,51 +116,59 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   override def autoCompleteQuery(
-    field: String,
     jwtToken: Option[String],
-    inputString: Option[String],
+    field: String,
+    input: Option[String],
     size: Option[Int],
-    tenantId: BigInt) = {
+    tenantId: BigInt): Future[AutoCompleteQueryResult] = {
 
-    // --- by default, autoComplete using all dataset user has access to
-    // --- modify the filter (currently, empty Set()) to restrict to only draft (or published) datasets only
-    val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(Set(), jwtToken)
+    val inputString: String = input.getOrElse("").trim
 
-    val sizeLimit:Int = if(size.isEmpty) 10
-    else if(size.get <1) 1
-    else if(size.get > 100) 100
-    else size.get
+    if(inputString == "") Future.successful(AutoCompleteQueryResult(inputString, List()))
+    else {
 
-    clientFuture.flatMap { implicit client =>
-      publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
-        val query = ElasticDsl
-          .search(indices.getIndex(config, Indices.DataSetsIndex))
-          .sourceInclude(field)
-          .query(must(Seq(
-            termQuery("tenantId", tenantId),
-            publishingStatusQuery,
-            matchQuery(field, inputString.get)
-          ))).aggregations(termsAggregation("suggestions").field(field).size(sizeLimit))
+      // --- by default, autoComplete using all dataset user has access to
+      // --- modify the filter (currently, empty Set()) to restrict to only draft (or published) datasets only
+      val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(Set(), jwtToken)
 
-        client.execute(query).flatMap {
-          case results: RequestSuccess[SearchResponse] => Future.successful(results.result)
-          case IllegalArgumentException(e) => throw e
-          case ESGenericException(e) => throw e
-        }.map{ result =>
-          result
+      val sizeLimit:Int = if(size.isEmpty) 10
+      else if(size.get <1) 1
+      else if(size.get > 100) 100
+      else size.get
+
+      clientFuture.flatMap { implicit client =>
+        publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
+          val query = ElasticDsl
+            .search(indices.getIndex(config, Indices.DataSetsIndex))
+            .sourceInclude(field)
+            .query(must(Seq(
+              termQuery("tenantId", tenantId),
+              publishingStatusQuery,
+              matchQuery(field, inputString)
+            ))).aggregations(termsAggregation("suggestions").field(field).size(sizeLimit))
+
+          client.execute(query).flatMap {
+            case results: RequestSuccess[SearchResponse] => Future.successful(results.result)
+            case IllegalArgumentException(e) => throw e
+            case ESGenericException(e) => throw e
+          }.map{ result =>
+            result
+            AutoCompleteQueryResult(inputString, List())
+          }
         }
+      } recover {
+        case RootCause(illegalArgument: IllegalArgumentException) =>
+          logger.error(illegalArgument, "Exception when searching")
+          AutoCompleteQueryResult(
+            inputString,
+            List(),
+            Some("Bad argument: " + illegalArgument.getMessage))
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          AutoCompleteQueryResult(inputString, List(), Some("Unknown error"))
       }
-    } recover {
-      case RootCause(illegalArgument: IllegalArgumentException) =>
-        logger.error(illegalArgument, "Exception when searching")
-        failureSearchResult(
-          inputQuery,
-          "Bad argument: " + illegalArgument.getMessage)
-      case e: Throwable =>
-        logger.error(e, "Exception when searching")
-        failureSearchResult(inputQuery, "Unknown error")
-    }
 
+    }
   }
 
   def augmentWithBoostRegions(query: Query)(implicit client: ElasticClient): Future[Query] = {

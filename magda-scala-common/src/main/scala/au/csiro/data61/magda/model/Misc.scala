@@ -66,8 +66,8 @@ package misc {
      preAuthorisedPermissionIds: Option[Seq[String]] = None)
 
   case class DataSetAccessNotes(
-      url: Option[String] = None,
       notes: Option[String] = None,
+      url: Option[String] = None,
       downloadURL: Option[String] = None)
 
   case class DataSet(
