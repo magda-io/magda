@@ -3,7 +3,7 @@ async function getNodeIdByNameOrId(nameOrId, queryer) {
     if (isUuid(nameOrId)) {
         return nameOrId;
     } else {
-        const nodes = await queryer.getNodesByName(nameOrId, ["id"]);
+        const nodes = await queryer.getNodes({ name: nameOrId }, ["id"]);
         if (!nodes || !nodes.length) {
             throw new Error(`Cannot locate node record with name: ${nameOrId}`);
         }

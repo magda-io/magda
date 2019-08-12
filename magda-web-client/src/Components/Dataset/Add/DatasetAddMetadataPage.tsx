@@ -48,6 +48,7 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
 import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetAccessControl from "@magda/registry-aspects/dataset-access-control.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -74,7 +75,8 @@ const aspects = {
     "dcat-distribution-strings": dcatDistributionStringsAspect,
     access: accessAspect,
     provenance: provenanceAspect,
-    "information-security": informationSecurityAspect
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControl
 };
 
 type Props = {
@@ -108,6 +110,8 @@ class NewDataset extends React.Component<Props, State> {
             <DatasetAddPeoplePage
                 edit={this.edit}
                 dataset={this.state.dataset}
+                publishing={this.state.datasetPublishing}
+                provenance={this.state.provenance}
             />
         ),
         this.renderRestriction.bind(this),
@@ -440,23 +444,33 @@ class NewDataset extends React.Component<Props, State> {
         return (
             <div className="row dataset-access-and-use-page">
                 <div className="col-sm-12">
-                    <h2>Dataset access and use</h2>
-                    <hr />
-                    <h3>User access</h3>
-                    <h4>Who can see the dataset once it is published?</h4>
-                    <ToolTip>
-                        We recommend you publish your data to everyone in your
-                        organisation to help prevent data silos.
-                    </ToolTip>
-                    <p>
-                        <AlwaysEditor
-                            value={datasetPublishing.level}
-                            onChange={editDatasetPublishing("level")}
-                            editor={codelistRadioEditor(
-                                codelists.publishingLevel
-                            )}
-                        />
-                    </p>
+                    <h2>Access and Use</h2>
+                    <h3 className="with-underline">User access</h3>
+                    <div className="question-who-can-see-dataset">
+                        <h4 className="with-icon">
+                            <span>
+                                Who can see the dataset once it is published?
+                            </span>
+                            <span className="help-icon-container">
+                                <img src={helpIcon} />
+                            </span>
+                        </h4>
+                        <ToolTip>
+                            We recommend you publish your data to everyone in
+                            your organisation to help prevent data silos.
+                        </ToolTip>
+                        <div>
+                            <AlwaysEditor
+                                value={datasetPublishing.level}
+                                onChange={editDatasetPublishing("level")}
+                                editor={codelistRadioEditor(
+                                    "dataset-publishing-level",
+                                    codelists.publishingLevel
+                                )}
+                            />
+                        </div>
+                    </div>
+
                     <h4>How can other users access this dataset?</h4>
                     <ToolTip>
                         Include locations on share drives, URLs of databases,
@@ -760,7 +774,10 @@ class NewDataset extends React.Component<Props, State> {
                 "dataset-publisher": {
                     publisher: publisherId
                 },
-                "information-security": informationSecurity
+                "information-security": informationSecurity,
+                "dataset-access-control": {
+                    orgUnitOwnerId: dataset.owningOrgUnitId
+                }
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);

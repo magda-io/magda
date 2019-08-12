@@ -550,16 +550,19 @@ export const classification = {
     "TOP SECRET": "TOP SECRET"
 };
 
-export const contactPointDisplay = {
-    role: "Display contact point(s) role (recommended)",
-    name: "Display contact point(s) name",
-    organisation: "Display responsible organisation"
+export type ContactPointDisplayOption = "members" | "team" | "organization";
+
+export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
+    members: "Display members of the maintaining team",
+    team: "Display maintaining team",
+    organization: "Display organisation"
 };
 
 export const publishingLevel = {
-    agency: "Everyone in my organisation",
+    agency: "Everyone in my organisation (recommended)",
+    branch: "My branch only",
+    section: "My section only",
     team: "My team only"
-    // public: "Everyone (Open Data)"
 };
 
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here

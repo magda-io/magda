@@ -8,3 +8,4 @@ resources:
 config: []
 includeInitialJobs: true
 includeCronJobs: true
+defaultTenantId: 0
