@@ -62,6 +62,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
       |authorization.skip = true
       |akka.loglevel = debug
       |authApi.baseUrl = "http://localhost:6104"
+      |auth.skipOpaQuery = true
       |authorization.skip=false
       |webhooks.actorTickRate=0
       |webhooks.eventPageSize=10
