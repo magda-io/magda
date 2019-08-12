@@ -7,7 +7,7 @@ test_allow_owner {
         },
         "object": {
             "registry": {
-                "records": {
+                "record": {
                     "dataset-access-control": {
                         "ownerId": "personA"
                     }
@@ -23,7 +23,7 @@ test_deny_non_owner {
             "id": "personA"
         },
         "object": {
-            "records": {
+            "record": {
                 "dataset-access-control": {
                     "ownerId": "personB"
                 }
@@ -38,7 +38,7 @@ test_deny_no_access_control_info {
             "id": "personA"
         },
         "object": {
-            "records": {
+            "record": {
                 "dataset-access-control": {
                     "someOtherKey": "personB"
                 }
