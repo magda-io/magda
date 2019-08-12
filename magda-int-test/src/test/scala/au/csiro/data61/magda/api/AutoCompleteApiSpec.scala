@@ -1,30 +1,21 @@
 package au.csiro.data61.magda.api
 
 import au.csiro.data61.magda.test.util.Generators
-import org.scalatest.{BeforeAndAfterAll, FunSpecLike}
-import akka.http.scaladsl.server.Route
+import org.scalatest.{BeforeAndAfterAll}
 
-import scala.concurrent.duration._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.OK
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER}
+import akka.http.scaladsl.model.StatusCodes.{OK,InternalServerError}
 import au.csiro.data61.magda.model.RegistryConverters
-import au.csiro.data61.magda.model.misc.{DataSet, DataSetAccessNotes}
+import au.csiro.data61.magda.model.misc.{DataSetAccessNotes}
 import au.csiro.data61.magda.api.model.AutoCompleteQueryResult
 import org.scalacheck.Gen
 
 import scala.collection.mutable
 
-class AutoCompleteApiSpecApiSpec
-  extends FunSpecLike
-    with BaseSearchApiSpec
-    with RegistryConverters
-    with BeforeAndAfterAll {
+class AutoCompleteApiSpec extends BaseSearchApiSpec
+  with RegistryConverters
+  with BeforeAndAfterAll {
 
   override def afterAll {
     super.afterAll
@@ -53,14 +44,73 @@ class AutoCompleteApiSpecApiSpec
     "Access database name `ABC` and table `bde`"
   )
 
-  it("sdsdsdds") {
-    val routes = createDatasetWithItems(notes)
-    Get(s"/v0/autoComplete?type=accessNotes.notes") ~> addSingleTenantIdHeader ~> routes ~> check {
+  val routes = createDatasetWithItems(notes)
+
+  it("Should response empty list without error if input is not supplied") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
-      //val response = responseAs[AutoCompleteQueryResult]
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(0)
+      response.errorMessage shouldBe None
     }
   }
 
+  it("Should response first 3 items with input /shareDrive") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDrive") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(3)
+      response.suggestions.contains(notes(0)) shouldBe true
+      response.suggestions.contains(notes(1)) shouldBe true
+      response.suggestions.contains(notes(2)) shouldBe true
+    }
+  }
+
+  it("Should response Item 2 & 3 with input /shareDriveB") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(2)
+      response.suggestions.contains(notes(1)) shouldBe true
+      response.suggestions.contains(notes(2)) shouldBe true
+    }
+  }
+
+  it("Should response Item 2 & 3 with input /shareDriveb (Lowercase b)") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(2)
+      response.suggestions.contains(notes(1)) shouldBe true
+      response.suggestions.contains(notes(2)) shouldBe true
+    }
+  }
+
+  it("Should response Item 4 & 5 with input `contact test`") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes&input=contact%20test") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(2)
+      response.suggestions.contains(notes(3)) shouldBe true
+      response.suggestions.contains(notes(4)) shouldBe true
+    }
+  }
+
+  it("Should response Error with invalid field name: xxxx") {
+
+    Get(s"/v0/autoComplete?field=xxxx&input=xxxx") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe InternalServerError
+    }
+  }
 
 }

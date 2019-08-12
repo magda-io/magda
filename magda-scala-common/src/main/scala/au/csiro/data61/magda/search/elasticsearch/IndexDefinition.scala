@@ -57,8 +57,15 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val MagdaEdgeNgramFilter = EdgeNGramTokenFilter("magda_edge_ngram_filter", Some(1), Some(20))
 
-  def magdaAutocompleteField(name: String) = {
-    textField(name).analyzer("magda_edge_ngram").searchAnalyzer("standard")
+  def magdaAutocompleteField(name: String, extraFields: FieldDefinition*) = {
+
+    val fields = extraFields ++ Seq(
+      keywordField("keyword"),
+      textField("quote").analyzer("quote"),
+      textField("autoComplete").analyzer("magda_edge_ngram").searchAnalyzer("standard")
+    )
+
+    textField(name).analyzer("english").fields(fields)
   }
 
   val MagdaSynonymTokenFilter = SynonymTokenFilter(
@@ -171,7 +178,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             keywordField("publishingState"),
             objectField("accessNotes").fields(
               keywordField("url"),
-              magdaTextField("notes").fields(magdaAutocompleteField("autocomplete")),
+              magdaAutocompleteField("notes"),
               keywordField("downloadUrl")
             )
           )
@@ -243,7 +250,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           // do not use as search analyzer
           CustomAnalyzerDefinition(
             "magda_edge_ngram",
-            KeywordTokenizer,
+            StandardTokenizer,
             List(
               LowercaseTokenFilter,
               MagdaEdgeNgramFilter

@@ -20,9 +20,9 @@ import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.search.SearchResponse
+import com.sksamuel.elastic4s.http.search.{Aggregations, SearchResponse}
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
+import com.sksamuel.elastic4s.searches.aggs.{FilterAggregation, Aggregation => AggregationDefinition}
 import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
 import com.sksamuel.elastic4s.searches.queries.term.TermQuery
@@ -67,6 +67,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "accrualPeriodicity",
     "contactPoint.identifier",
     "publisher.acronym")
+
+  val ALLOWED_AUTO_COMPLETE_FIELDS = Seq(
+    "accessNotes.notes"
+  )
 
   override def search(
     jwtToken: Option[String],
@@ -125,6 +129,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val inputString: String = input.getOrElse("").trim
 
     if(inputString == "") Future.successful(AutoCompleteQueryResult(inputString, List()))
+    else if(!ALLOWED_AUTO_COMPLETE_FIELDS.contains(field)) Future.successful(
+      AutoCompleteQueryResult(
+        inputString,
+        List(),
+        Some("Unrecognised auto-complete field")
+      )
+    )
     else {
 
       // --- by default, autoComplete using all dataset user has access to
@@ -138,22 +149,40 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
       clientFuture.flatMap { implicit client =>
         publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
+
+          val filterQuery = boolQuery().must(Seq(
+            termQuery("tenantId", tenantId),
+            publishingStatusQuery,
+            matchQuery(s"${field}.autoComplete", inputString)
+          ))
+
+          val aggs = termsAggregation("suggestions")
+            .field(s"${field}.keyword")
+            .size(sizeLimit)
+
           val query = ElasticDsl
             .search(indices.getIndex(config, Indices.DataSetsIndex))
-            .sourceInclude(field)
-            .query(must(Seq(
-              termQuery("tenantId", tenantId),
-              publishingStatusQuery,
-              matchQuery(field, inputString)
-            ))).aggregations(termsAggregation("suggestions").field(field).size(sizeLimit))
+            .size(0) // --- disable hits data from response as we only need aggregation
+            .query(filterQuery)
+            .aggregations(aggs)
 
           client.execute(query).flatMap {
             case results: RequestSuccess[SearchResponse] => Future.successful(results.result)
             case IllegalArgumentException(e) => throw e
             case ESGenericException(e) => throw e
           }.map{ result =>
-            result
-            AutoCompleteQueryResult(inputString, List())
+            val aggs = result.aggregations
+            val items = aggs.dataAsMap
+              .get("suggestions")
+              .flatMap(AggUtils.toAgg(_))
+              .toSeq
+              .flatMap(_.dataAsMap.get("buckets").toSeq)
+              .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+                val agg = Aggregations(m)
+                agg.data("key").toString
+              })
+
+            AutoCompleteQueryResult(inputString, items)
           }
         }
       } recover {

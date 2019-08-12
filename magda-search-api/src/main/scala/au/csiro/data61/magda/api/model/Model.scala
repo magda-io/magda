@@ -28,7 +28,7 @@ case class RegionSearchResult(
 
 case class AutoCompleteQueryResult(
   inputString: String,
-  suggestions: List[String],
+  suggestions: Seq[String],
   errorMessage: Option[String] = None)
 
 case class OrganisationsSearchResult(
