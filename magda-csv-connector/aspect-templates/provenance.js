@@ -14,25 +14,19 @@ let sourceSystem = fuzzy.findClosestFieldThreshold(
     "primary source"
 );
 
-let likelihoodOfRelease = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "likelihood of release"
-);
-
 let isOpenData = fuzzy.findClosestFieldThreshold(dataset, 0.5, "open data");
 if (isOpenData) {
     isOpenData = fuzzy.similarity(isOpenData, "yes") > 0.5;
 }
 
-let affiliatedOrganisation = fuzzy.findClosestFieldThreshold(
+let affiliatedOrganisations = fuzzy.findClosestFieldThreshold(
     dataset,
     0.5,
     "affiliated organisation"
 );
 
-if (affiliatedOrganisation) {
-    affiliatedOrganisation = [affiliatedOrganisation];
+if (affiliatedOrganisations) {
+    affiliatedOrganisations = [affiliatedOrganisations];
 }
 
 let provenance = undefined;
@@ -42,14 +36,13 @@ if (
     sourceSystem !== undefined ||
     likelihoodOfRelease !== undefined ||
     isOpenData !== undefined ||
-    affiliatedOrganisation
+    affiliatedOrganisations
 ) {
     provenance = {
         mechanism,
         sourceSystem,
-        likelihoodOfRelease,
         isOpenData,
-        affiliatedOrganisationId: affiliatedOrganisation
+        affiliatedOrganisationIds: affiliatedOrganisations
     };
 }
 

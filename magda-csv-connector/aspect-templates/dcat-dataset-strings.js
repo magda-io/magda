@@ -75,21 +75,6 @@ let contactPoint = [
     .filter(i => i)
     .join("\n\n");
 
-let conformsTo = fuzzy.findClosestFieldThreshold(dataset, 0.5, "data standard");
-
-let accessLevel = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "dataset value",
-    "access"
-);
-
-let importance = fuzzy.findClosestFieldThreshold(dataset, 0.5, "importance");
-
-let status = fuzzy.findClosestFieldThreshold(dataset, 0.5, "status");
-
-let metadata = extractMetadata();
-
 return {
     title,
     description,
@@ -99,11 +84,7 @@ return {
     accrualPeriodicity,
     themes,
     keywords,
-    contactPoint,
-    accessLevel,
-    importance,
-    status,
-    metadata
+    contactPoint
 };
 
 function extractKeywordList(items) {
@@ -114,35 +95,6 @@ function extractKeywordList(items) {
         }
     }
     return undefined;
-}
-
-function extractMetadata() {
-    // lets use a higher threshold as this could easily be confused with "data format" etc
-    let format = fuzzy.findClosestFieldThreshold(
-        dataset,
-        0.9,
-        "metadata format"
-    );
-
-    let standard = fuzzy.findClosestFieldThreshold(
-        dataset,
-        0.9,
-        "metadata standard"
-    );
-
-    let location = fuzzy.findClosestFieldThreshold(
-        dataset,
-        0.9,
-        "metadata location"
-    );
-
-    if (format || standard || location) {
-        return {
-            format,
-            standard,
-            location
-        };
-    }
 }
 
 function extractTemporal() {

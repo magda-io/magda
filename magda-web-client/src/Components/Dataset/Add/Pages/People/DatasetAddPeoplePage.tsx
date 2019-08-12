@@ -8,7 +8,7 @@ import {
 import { multiContactEditor } from "Components/Editing/Editors/contactEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
-import { Dataset } from "Components/Dataset/Add/DatasetAddCommon";
+import { Dataset, Provenance } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 
 function YesNoEditReveal(props) {
@@ -73,12 +73,16 @@ function YesNoEditReveal(props) {
 type Props = {
     edit: (aspectField: string) => (field: string) => (newValue: any) => void;
     dataset: Dataset;
+    provenance: Provenance;
 };
 
-export default function DatasetAddPeoplePage(props: Props) {
-    const { dataset } = props;
-
-    const editDataset = props.edit("dataset");
+export default function DatasetAddPeoplePage({
+    dataset,
+    provenance,
+    edit
+}: Props) {
+    const editDataset = edit("dataset");
+    const editProvenance = edit("provenance");
 
     return (
         <div className="row people-and-production-page">
@@ -125,17 +129,15 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </h4>
                 <div>
                     <YesNoEditReveal
-                        value={dataset.collaborationOrganization}
+                        value={provenance.affiliatedOrganisationIds}
                         defaultValue={[]}
                         nullValue={null}
-                        onChange={editDataset(
-                            "creation_affiliatedOrganisation"
-                        )}
+                        onChange={editProvenance("affiliatedOrganisationIds")}
                     >
                         <AlwaysEditor
-                            value={dataset.collaborationOrganization}
-                            onChange={editDataset(
-                                "creation_affiliatedOrganisation"
+                            value={provenance.affiliatedOrganisationIds}
+                            onChange={editProvenance(
+                                "affiliatedOrganisationIds"
                             )}
                             editor={multiTextEditorEx({
                                 placeholder: "Add an organisation"
@@ -146,25 +148,27 @@ export default function DatasetAddPeoplePage(props: Props) {
                 <h4>How was this dataset produced?</h4>
                 <div>
                     <AlwaysEditor
-                        value={dataset.creationSystem}
-                        onChange={editDataset("creation_mechanism")}
+                        value={provenance.mechanism}
+                        onChange={editProvenance("mechanism")}
                         editor={multilineTextEditor}
                     />
                 </div>
                 <h4>What system was used to create this dataset?</h4>
                 <div>
                     <AlwaysEditor
-                        value={dataset.creationSystem}
-                        onChange={editDataset("creation_mechanism")}
+                        value={provenance.sourceSystem}
+                        onChange={editProvenance("sourceSystem")}
                         editor={multilineTextEditor}
                     />
                 </div>
                 <h4>What was the source of this data?</h4>
                 <div>
                     <AlwaysEditor
-                        value={dataset.creationSystem}
-                        onChange={editDataset("creation_mechanism")}
-                        editor={multilineTextEditor}
+                        value={provenance.derivedFrom}
+                        onChange={editProvenance("derivedFrom")}
+                        editor={multiTextEditorEx({
+                            placeholder: "Enter a dataset id"
+                        })}
                     />
                 </div>
             </div>

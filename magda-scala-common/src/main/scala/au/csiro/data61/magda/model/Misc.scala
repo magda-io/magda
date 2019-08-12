@@ -53,12 +53,11 @@ package misc {
   case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]] = None)
 
   case class Provenance(
-     isInternallyProduced: Option[Boolean] = None,
-     mechanism: Option[String] = None,
-     sourceSystem: Option[String] = None,
-     likelihoodOfRelease: Option[String] = None,
-     isOpenData: Option[Boolean] = None,
-     affiliatedOrganisation: Option[Seq[String]] = None)
+    mechanism: Option[String],
+    sourceSystem: Option[String],
+    derivedFrom: Option[Seq[String]],
+    affiliatedOrganisationIds: Option[Seq[String]],
+    isOpenData: Option[Boolean])
 
   case class AccessControl(
      ownerId: Option[String] = None,
@@ -346,7 +345,7 @@ package misc {
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(DataSouce.apply)
-    implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat6(Provenance.apply)
+    implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat5(Provenance.apply)
 
     implicit val licenseFormat: RootJsonFormat[License] = jsonFormat2(License.apply)
 

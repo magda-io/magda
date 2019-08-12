@@ -84,42 +84,6 @@
             "title": "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
             "type": "string",
             "format": "uri"
-        },
-        "conformsTo": {
-            "title": "Data Standard",
-            "description": "URI or description to identify a standardized specification the dataset conforms to",
-            "type": "string"
-        },
-        "accessLevel": {
-            "description": "The degree to which this dataset could be made publicly-available, regardless of whether it has been made available. Choices: public (Data asset is or could be made publicly available to all without restrictions), restricted public (Data asset is available under certain use restrictions), or non-public (Data asset is not available to members of the public)",
-            "title": "Public Access Level",
-            "type": "string"
-        },
-        "importance": {
-            "title": "How important is this dataset?",
-            "type": "string"
-        },
-        "status": {
-            "title": "Current status. E.g. active, retired",
-            "type": "string"
-        },
-        "metadata": {
-            "title": "Metadata about metadata of the dataset.",
-            "type": "object",
-            "properties": {
-                "format": {
-                    "title": "Format metadata exists in. E.g. word document, xml etc.",
-                    "type": "string"
-                },
-                "standard": {
-                    "title": "Standard metadata conforms to. E.g. ISO 19114, RDF etc.",
-                    "type": "string"
-                },
-                "location": {
-                    "title": "Location where it is kept at.",
-                    "type": "string"
-                }
-            }
         }
     },
     "additionalProperties": false
