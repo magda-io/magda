@@ -437,23 +437,32 @@ class NewDataset extends React.Component<Props, State> {
         return (
             <div className="row dataset-access-and-use-page">
                 <div className="col-sm-12">
-                    <h2>Dataset access and use</h2>
-                    <hr />
-                    <h3>User access</h3>
-                    <h4>Who can see the dataset once it is published?</h4>
-                    <ToolTip>
-                        We recommend you publish your data to everyone in your
-                        organisation to help prevent data silos.
-                    </ToolTip>
-                    <p>
-                        <AlwaysEditor
-                            value={datasetPublishing.level}
-                            onChange={editDatasetPublishing("level")}
-                            editor={codelistRadioEditor(
-                                codelists.publishingLevel
-                            )}
-                        />
-                    </p>
+                    <h2>Access and Use</h2>
+                    <h3 className="with-underline">User access</h3>
+                    <div className="question-who-can-see-dataset">
+                        <h4 className="with-icon">
+                            <span>
+                                Who can see the dataset once it is published?
+                            </span>
+                            <span className="help-icon-container">
+                                <img src={helpIcon} />
+                            </span>
+                        </h4>
+                        <ToolTip>
+                            We recommend you publish your data to everyone in
+                            your organisation to help prevent data silos.
+                        </ToolTip>
+                        <div>
+                            <AlwaysEditor
+                                value={datasetPublishing.level}
+                                onChange={editDatasetPublishing("level")}
+                                editor={codelistRadioEditor(
+                                    codelists.publishingLevel
+                                )}
+                            />
+                        </div>
+                    </div>
+
                     <h4>How can other users access this dataset?</h4>
                     <ToolTip>
                         Include locations on share drives, URLs of databases,

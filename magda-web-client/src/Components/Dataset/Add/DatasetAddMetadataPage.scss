@@ -1,6 +1,22 @@
 @import "variables";
 
 .dataset-add-meta-data-pages {
+    h4.with-icon {
+        position: relative;
+    }
+
+    h4 .help-icon-container {
+        position: absolute;
+        top: -2px;
+        padding-left: 10px;
+    }
+
+    h3.with-underline {
+        border-bottom: solid 1px #cccaca;
+        margin-bottom: 50px;
+        padding-bottom: 15px;
+    }
+
     .file-icon-item {
         padding-left: 10px;
         margin-bottom: 20px;
@@ -75,11 +91,6 @@
             padding-bottom: 15px;
         }
 
-        h3.with-underline {
-            border-bottom: solid 1px #cccaca;
-            margin-bottom: 50px;
-        }
-
         h4 {
             font-size: 16px;
             font-weight: normal;
@@ -123,12 +134,6 @@
                 color: #484848;
                 position: relative;
             }
-
-            .help-icon-container {
-                position: absolute;
-                top: -2px;
-                padding-left: 10px;
-            }
         }
 
         .question-recent-modify-date {
@@ -153,6 +158,34 @@
 
         .question-time-period {
             margin-bottom: 50px;
+        }
+    }
+
+    .dataset-access-and-use-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #30384d;
+            margin-bottom: 80px;
+        }
+
+        h3 {
+            font-size: 29px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.03;
+            letter-spacing: normal;
+            color: #484848;
+            margin-bottom: 76px;
+        }
+
+        .question-who-can-see-dataset {
+            margin-bottom: 54px;
         }
     }
 
