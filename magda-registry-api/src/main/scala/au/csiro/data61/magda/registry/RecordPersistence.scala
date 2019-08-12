@@ -230,7 +230,7 @@ object DefaultRecordPersistence
         None,
         None,
         dereference,
-        List(Some(sqls"recordId=${id}"))
+        List(Some(sqls"recordId=$id"))
       )
       .records
       .headOption
@@ -245,7 +245,7 @@ object DefaultRecordPersistence
       dereference: Option[Boolean] = None
   ): RecordsPage[Record] = {
     if (ids.isEmpty)
-      RecordsPage(false, Some("0"), List())
+      RecordsPage(hasMore = false, Some("0"), List())
     else
       this.getRecords(
         session,
@@ -256,7 +256,7 @@ object DefaultRecordPersistence
         None,
         None,
         dereference,
-        List(Some(sqls"recordId in (${ids})"))
+        List(Some(sqls"recordId in ($ids)"))
       )
   }
 
@@ -273,7 +273,7 @@ object DefaultRecordPersistence
       buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
     if (linkAspects.isEmpty) {
       // There are no linking aspects, so there cannot be any records linking to these IDs.
-      RecordsPage(false, None, List())
+      RecordsPage(hasMore = false, None, List())
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
@@ -286,7 +286,7 @@ object DefaultRecordPersistence
 
       val excludeSelector =
         if (idsToExclude.isEmpty) None
-        else Some(sqls"recordId not in (${idsToExclude})")
+        else Some(sqls"recordId not in ($idsToExclude)")
 
       val selectors = Seq(
         Some(SQLSyntax.join(dereferenceSelectors.toSeq, SQLSyntax.or)),
@@ -317,16 +317,16 @@ object DefaultRecordPersistence
       aspectIds.map(aspectId => sqls"""aspectId = $aspectId""")
 
     val recordIdClause = recordId match {
-      case Some(recordId) => sqls"""recordid = ${recordId}"""
+      case Some(aRecordId) => sqls"""recordid = $aRecordId"""
       case None           => SQLSyntax.empty
     }
 
     val column = getColumnNameForOperation(operation)
 
-    sql"""SELECT DISTINCT ${column}
+    sql"""SELECT DISTINCT $column
       FROM recordaspects 
       WHERE ${SQLSyntax.joinWithAnd(
-      sqls"${column} IS NOT NULL",
+      sqls"$column IS NOT NULL",
       SQLSyntax
         .joinWithOr(aspectIdStatements: _*),
       recordIdClause
@@ -344,8 +344,6 @@ object DefaultRecordPersistence
       opaQueries: List[OpaQuery] = List()
   ): Option[JsObject] = {
     val opaWhereClauseParts = opaQueriesToWhereClauseParts(opaQueries)
-
-    ///} => sqls"recordId=${id}"))
 
     sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data
           from RecordAspects
@@ -422,7 +420,7 @@ object DefaultRecordPersistence
             case Some(record) =>
               Failure(
                 new RuntimeException(
-                  "You don't have permission to create this record."
+                  s"You don't have permission to create this record $record."
                 )
               )
             case None =>
@@ -443,7 +441,7 @@ object DefaultRecordPersistence
         val oldRecordJson = oldRecordWithoutAspects.toJson
         val newRecordJson = newRecordWithoutAspects.toJson
 
-        JsonDiff.diff(oldRecordJson, newRecordJson, false)
+        JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
       }
       result <- patchRecordById(session, id, recordPatch, opaQueryUpdate)
       patchedAspects <- Try {
@@ -498,7 +496,7 @@ object DefaultRecordPersistence
             .apply()
         }
       }
-      eventId <- Try {
+      _ <- Try {
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
           val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
@@ -522,18 +520,18 @@ object DefaultRecordPersistence
                 case _                      => None
               }
           )
-          .filterKeys(!_.isEmpty)
+          .filterKeys(_.isDefined)
           .map({
             // Create or patch each aspect.
             // We create if there's exactly one ADD operation and it's adding an entire aspect.
             case (
                 Some(aspectId),
-                List(Add("aspects" / (name / rest), value))
-                ) => {
+                List(Add("aspects" / (_ / rest), aValue))
+                ) =>
               if (rest == Pointer.Empty)
                 (
                   aspectId,
-                  putRecordAspectById(session, id, aspectId, value.asJsObject)
+                  putRecordAspectById(session, id, aspectId, aValue.asJsObject)
                 )
               else
                 (
@@ -542,15 +540,14 @@ object DefaultRecordPersistence
                     session,
                     id,
                     aspectId,
-                    JsonPatch(Add(rest, value))
+                    JsonPatch(Add(rest, aValue))
                   )
                 )
-            }
             // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
             case (
                 Some(aspectId),
-                List(Remove("aspects" / (name / rest), old))
-                ) => {
+                List(Remove("aspects" / (_ / rest), old))
+                ) =>
               if (rest == Pointer.Empty) {
                 deleteRecordAspect(session, id, aspectId)
                 (aspectId, Success(JsNull))
@@ -565,7 +562,6 @@ object DefaultRecordPersistence
                   )
                 )
               }
-            }
             // We patch in all other scenarios.
             case (Some(aspectId), operations) =>
               (
@@ -576,16 +572,16 @@ object DefaultRecordPersistence
                   aspectId,
                   JsonPatch(operations.map({
                     // Make paths in operations relative to the aspect instead of the record
-                    case Add("aspects" / (name / rest), value) =>
-                      Add(rest, value)
-                    case Remove("aspects" / (name / rest), old) =>
+                    case Add("aspects" / (_ / rest), aValue) =>
+                      Add(rest, aValue)
+                    case Remove("aspects" / (_ / rest), old) =>
                       Remove(rest, old)
-                    case Replace("aspects" / (name / rest), value, old) =>
-                      Replace(rest, value, old)
+                    case Replace("aspects" / (_ / rest), aValue, old) =>
+                      Replace(rest, aValue, old)
                     case Move(
                         "aspects" / (sourceName / sourceRest),
                         "aspects" / (destName / destRest)
-                        ) => {
+                        ) =>
                       if (sourceName != destName)
                         // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
                         // Move into a Remove on one and an Add on the other.  But it's probably not worth
@@ -595,20 +591,18 @@ object DefaultRecordPersistence
                         )
                       else
                         Move(sourceRest, destRest)
-                    }
                     case Copy(
                         "aspects" / (sourceName / sourceRest),
                         "aspects" / (destName / destRest)
-                        ) => {
+                        ) =>
                       if (sourceName != destName)
                         throw new RuntimeException(
                           "A patch may not copy values between two different aspects."
                         )
                       else
                         Copy(sourceRest, destRest)
-                    }
-                    case Test("aspects" / (name / rest), value) =>
-                      Test(rest, value)
+                    case Test("aspects" / (_ / rest), aValue) =>
+                      Test(rest, aValue)
                     case _ =>
                       throw new RuntimeException(
                         "The patch contains an unsupported operation for aspect " + aspectId
@@ -660,11 +654,11 @@ object DefaultRecordPersistence
         val oldAspectJson = aspect.toJson
         val newAspectJson = patchedAspect.toJson
 
-        JsonDiff.diff(oldAspectJson, newAspectJson, false)
+        JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
       }
 
       eventId <- Try {
-        if (testRecordAspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.nonEmpty) {
           val event =
             PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
           sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)"
@@ -676,9 +670,9 @@ object DefaultRecordPersistence
       }
 
       _ <- Try {
-        if (testRecordAspectPatch.ops.length > 0) {
+        if (testRecordAspectPatch.ops.nonEmpty) {
           val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values (${recordId}, ${aspectId}, $eventId, $jsonString::json)
+          sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, $aspectId, $eventId, $jsonString::json)
                on conflict (recordId, aspectId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
@@ -719,7 +713,7 @@ object DefaultRecordPersistence
         val oldAspectJson = oldAspect.toJson
         val newAspectJson = newAspect.toJson
 
-        JsonDiff.diff(oldAspectJson, newAspectJson, false)
+        JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
       }
       result <- patchRecordAspectById(
         session,
@@ -738,12 +732,12 @@ object DefaultRecordPersistence
         sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
-      insertResult <- Try {
+      _ <- Try {
         sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag})""".update
           .apply()
       } match {
         case Failure(e: SQLException)
-            if e.getSQLState().substring(0, 2) == "23" =>
+            if e.getSQLState.substring(0, 2) == "23" =>
           Failure(
             new RuntimeException(
               s"Cannot create record '${record.id}' because a record with that ID already exists."
@@ -822,12 +816,12 @@ object DefaultRecordPersistence
 
     result match {
       case Success(count: Long) =>
-        if (!logger.isEmpty) {
-          logger.get.info(s"Trimmed ${count} records.")
+        if (logger.isDefined) {
+          logger.get.info(s"Trimmed $count records.")
         }
         Success(count)
       case Failure(err) =>
-        if (!logger.isEmpty) {
+        if (logger.isDefined) {
           logger.get.error(err, "Error happened when trimming records.")
         }
         Failure(err)
@@ -850,15 +844,15 @@ object DefaultRecordPersistence
       }
       insertResult <- Try {
         val jsonData = aspect.compactPrint
-        sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, ${aspectId}, $eventId, $jsonData::json)""".update
+        sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, $aspectId, $eventId, $jsonData::json)""".update
           .apply()
         aspect
       } match {
         case Failure(e: SQLException)
-            if e.getSQLState().substring(0, 2) == "23" =>
+            if e.getSQLState.substring(0, 2) == "23" =>
           Failure(
             new RuntimeException(
-              s"Cannot create aspect '${aspectId}' for record '${recordId}' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."
+              s"Cannot create aspect '$aspectId' for record '$recordId' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."
             )
           )
         case anythingElse => anythingElse
@@ -905,7 +899,7 @@ object DefaultRecordPersistence
             case EventType.PatchRecord =>
               event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
             case EventType.DeleteRecord => JsNull
-            case EventType.CreateRecordAspect => {
+            case EventType.CreateRecordAspect =>
               val createAspectEvent =
                 event.data.convertTo[CreateRecordAspectEvent]
               val record = recordValue.asJsObject
@@ -916,8 +910,7 @@ object DefaultRecordPersistence
                 newAspects
               ))
               JsObject(newFields)
-            }
-            case EventType.PatchRecordAspect => {
+            case EventType.PatchRecordAspect =>
               val patchRecordAspectEvent =
                 event.data.convertTo[PatchRecordAspectEvent]
               val record = recordValue.asJsObject
@@ -931,8 +924,7 @@ object DefaultRecordPersistence
                 newAspects
               ))
               JsObject(newFields)
-            }
-            case EventType.DeleteRecordAspect => {
+            case EventType.DeleteRecordAspect =>
               val deleteRecordAspectEvent =
                 event.data.convertTo[DeleteRecordAspectEvent]
               val record = recordValue.asJsObject
@@ -943,7 +935,6 @@ object DefaultRecordPersistence
                 newAspects
               ))
               JsObject(newFields)
-            }
             case _ => recordValue
           }
       )
@@ -960,7 +951,7 @@ object DefaultRecordPersistence
       rawLimit: Option[Int],
       recordId: Option[String] = None
   ): RecordsPage[RecordSummary] = {
-    val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=${id}"))
+    val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=$id"))
     val whereClauseParts = countWhereClauseParts :+ pageToken.map(
       token => sqls"Records.sequence > ${token.toLong}"
     )
@@ -1015,11 +1006,19 @@ object DefaultRecordPersistence
       Map[String, PropertyWithLink]()
     }
 
-    val whereClauseParts = (aspectIdsToWhereClause(aspectIds) ++ recordSelector) :+ pageToken
-      .map(token => sqls"Records.sequence > ${token.toLong}")
+    val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
+      aspectIdsAndOpaQueriesToWhereParts(
+        aspectIds,
+        opaQuery,
+        AuthOperations.read
+      ).toSeq.map(item => Option(item))
+
+    val whereClauseParts: Seq[Option[SQLSyntax]] =
+      (recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors) :+ pageToken
+      .map(token => sqls"Records.sequence > $token")
+
     val aspectSelectors = aspectIdsToSelectClauses(
       List.concat(aspectIds, optionalAspectIds),
-      opaQuery,
       AuthOperations.read,
       dereferenceDetails
     )
@@ -1028,27 +1027,26 @@ object DefaultRecordPersistence
       .map(l => Math.min(l, maxResultCount))
       .getOrElse(defaultResultCount)
 
-    val result =
+    val rawResult1: SQL[Nothing, NoExtractor] =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName
-                   ${if (aspectSelectors.nonEmpty) sqls", ${aspectSelectors}"
-      else SQLSyntax.empty},
+                   ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors" else SQLSyntax.empty},
                    Records.sourcetag as sourceTag
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by Records.sequence
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
-        .map(rs => {
-          (
-            rs.long("sequence"),
-            rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
-          )
-        })
-        .list
-        .apply()
 
+    val rawResult: List[(Long, Record)] = rawResult1.map(rs => {
+      (
+        rs.long("sequence"),
+        rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
+      )
+    }).list.apply()
+
+    val result = rawResult
     val hasMore = result.length > limit
     val trimmed = result.take(limit)
     val lastSequence = if (hasMore) Some(trimmed.last._1) else None
@@ -1067,12 +1065,12 @@ object DefaultRecordPersistence
       // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
       // is equivalent to counting the records with that type
       val aspectIdsWhereClause = aspectIds
-        .map(aspectId => sqls"RecordAspects.aspectId=${aspectId}")
+        .map(aspectId => sqls"RecordAspects.aspectId=$aspectId")
         .toSeq
       val recordSelectorWhereClause = recordSelector.flatten
         .map(
           recordSelectorInner =>
-            sqls"EXISTS(SELECT 1 FROM Records WHERE RecordAspects.recordId=Records.recordId AND ${recordSelectorInner})"
+            sqls"EXISTS(SELECT 1 FROM Records WHERE RecordAspects.recordId=Records.recordId AND $recordSelectorInner)"
         )
         .toSeq
       val clauses =
@@ -1087,10 +1085,18 @@ object DefaultRecordPersistence
   }
 
   private def makeWhereClause(andParts: Seq[Option[SQLSyntax]]) = {
-    andParts.filter(!_.isEmpty) match {
+    andParts.filter(_.isDefined) match {
       case Seq() => SQLSyntax.empty
       case nonEmpty =>
         SQLSyntax.where(SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*))
+    }
+  }
+
+  private def makeWhereParts(andParts: Seq[Option[SQLSyntax]]) = {
+    andParts.filter(_.isDefined) match {
+      case Seq() => SQLSyntax.empty
+      case nonEmpty =>
+        SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*)
     }
   }
 
@@ -1105,18 +1111,18 @@ object DefaultRecordPersistence
   }
 
   private def rowToRecord(
-      aspectIds: Iterable[String]
+    aspectIds: Iterable[String]
   )(rs: WrappedResultSet): Record = {
     Record(
       rs.string("recordId"),
       rs.string("recordName"),
       aspectIds.zipWithIndex
         .filter {
-          case (_, index) => rs.stringOpt(s"aspect${index}").isDefined
+          case (_, index) => rs.stringOpt(s"aspect$index").isDefined
         }
         .map {
           case (aspectId, index) =>
-            (aspectId, JsonParser(rs.string(s"aspect${index}")).asJsObject)
+            (aspectId, JsonParser(rs.string(s"aspect$index")).asJsObject)
         }
         .toMap,
       rs.stringOpt("sourceTag")
@@ -1128,8 +1134,8 @@ object DefaultRecordPersistence
   }
 
   def buildDereferenceMap(
-      implicit session: DBSession,
-      aspectIds: Iterable[String]
+    implicit session: DBSession,
+    aspectIds: Iterable[String]
   ): Map[String, PropertyWithLink] = {
     if (aspectIds.isEmpty) {
       Map()
@@ -1137,7 +1143,7 @@ object DefaultRecordPersistence
       val aspects =
         sql"""select aspectId, jsonSchema
             from Aspects
-            where aspectId in (${aspectIds})"""
+            where aspectId in ($aspectIds)"""
           .map(
             rs =>
               (
@@ -1161,7 +1167,7 @@ object DefaultRecordPersistence
               val properties = jsonSchema.fields
                 .get("properties")
                 .flatMap {
-                  case JsObject(properties) => Some(properties)
+                  case JsObject(theProperties) => Some(theProperties)
                   case _                    => None
                 }
                 .getOrElse(Map())
@@ -1186,15 +1192,15 @@ object DefaultRecordPersistence
                       }
                     )
 
-                    if (!linksInProperties.isEmpty) {
-                      Some(PropertyWithLink(propertyName, false))
-                    } else if (!linksInItems.isEmpty) {
-                      Some(PropertyWithLink(propertyName, true))
+                    if (linksInProperties.nonEmpty) {
+                      Some(PropertyWithLink(propertyName, isArray = false))
+                    } else if (linksInItems.nonEmpty) {
+                      Some(PropertyWithLink(propertyName, isArray = true))
                     } else {
                       None
                     }
                 }
-                .filter(!_.isEmpty)
+                .filter(_.isDefined)
                 .map(_.get)
 
               propertyWithLinks.map(property => (aspectId, property)).headOption
@@ -1202,74 +1208,90 @@ object DefaultRecordPersistence
               None
             }
         }
-        .filter(!_.isEmpty)
+        .filter(_.isDefined)
         .map(_.get)
         .toMap
     }
   }
 
-  private def aspectIdsToSelectClauses(
-      aspectIds: Iterable[String],
-      opaQueries: Seq[OpaQueryPair],
-      operationType: AuthOperations.OperationType,
-      dereferenceDetails: Map[String, PropertyWithLink] = Map()
-  ) = {
-    val opaSql = sqls"""(${SQLSyntax.joinWithOr(opaQueries.map {
-      case OpaQueryPair(policyId, queries) =>
+  private def aspectIdsAndOpaQueriesToWhereParts(
+    aspectIds: Iterable[String],
+    opaQueries: Seq[OpaQueryPair],
+    operationType: AuthOperations.OperationType
+  ): Iterable[SQLSyntax] = {
+    val theOpaQueries =
+      if (opaQueries.nonEmpty) {
+        opaQueries
+      }
+      else {
+        Seq(OpaQueryPair(s"object.registry.record.owner_orgunit.${operationType.id}", List(OpaQuerySkipAccessControl)))
+      }
+
+    val opaSql: SQLSyntax =
+      sqls"""(${SQLSyntax.joinWithOr(theOpaQueries.map {
+      case OpaQueryPair(_, queries) =>
         sqls"(${SQLSyntax.joinWithAnd(
-          sqls"RecordAspects.${getColumnNameForOperation(operationType)} = ${policyId}",
           SQLSyntax
             .joinWithOr(opaQueriesToWhereClauseParts(queries): _*)
         )})"
     }: _*)})"""
 
-    aspectIds.zipWithIndex.map {
+    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(aspectIds)
+    val aspectWhereParts: SQLSyntax = makeWhereParts(aspectWhereClauses)
+    val result = List(aspectWhereParts, opaSql)
+    result
+  }
+
+  private def aspectIdsToSelectClauses(
+    aspectIds: Iterable[String],
+    operationType: AuthOperations.OperationType,
+    dereferenceDetails: Map[String, PropertyWithLink] = Map()
+  ): Iterable[scalikejdbc.SQLSyntax] = {
+    val result: Iterable[SQLSyntax] = aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
         // Use a simple numbered column name rather than trying to make the aspect name safe.
-        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect${index}")
+        val aspectColumnName = SQLSyntax.createUnsafely(s"aspect$index")
         val selection = dereferenceDetails
           .get(aspectId)
           .map {
-            case PropertyWithLink(propertyName, true) => {
+            case PropertyWithLink(propertyName, true) =>
               sqls"""(
-            |                CASE WHEN
-            |                        EXISTS (
-            |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->${propertyName})
-            |                        )
-            |                    THEN(
-            |                        select jsonb_set(
-            |                                    RecordAspects.data,
-            |                                    ${"{\"" + propertyName + "\"}"}::text[],
-            |                                    jsonb_agg(
-            |                                        jsonb_build_object(
-            |                                            'id',
-            |                                            Records.recordId,
-            |                                            'name',
-            |                                            Records.name,
-            |                                            'aspects',
-            |                                            (
-            |                                                select jsonb_object_agg(aspectId, data)
-            |                                                from RecordAspects
-            |                                                where recordId=Records.recordId
-            |                                                and ${opaSql}
-            |                                            )
-            |                                        )
-            |                                    )
-            |                                )
-            |                        from Records
-            |                        inner join jsonb_array_elements_text(RecordAspects.data->${propertyName}) as aggregatedId on aggregatedId=Records.recordId
-            |                    )
-            |                    ELSE(
-            |                        select data
-            |                        from RecordAspects
-            |                        where aspectId=${aspectId} and recordId=Records.recordId and ${opaSql}
-            |                    )
-            |                END
+                    |                CASE WHEN
+                    |                        EXISTS (
+                    |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)
+                    |                        )
+                    |                    THEN(
+                    |                        select jsonb_set(
+                    |                                    RecordAspects.data,
+                    |                                    ${"{\"" + propertyName + "\"}"}::text[],
+                    |                                    jsonb_agg(
+                    |                                        jsonb_build_object(
+                    |                                            'id',
+                    |                                            Records.recordId,
+                    |                                            'name',
+                    |                                            Records.name,
+                    |                                            'aspects',
+                    |                                            (
+                    |                                                select jsonb_object_agg(aspectId, data)
+                    |                                                from RecordAspects
+                    |                                                where recordId=Records.recordId
+                    |                                            )
+                    |                                        )
+                    |                                    )
+                    |                                )
+                    |                        from Records
+                    |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId
+                    |                    )
+                    |                    ELSE(
+                    |                        select data
+                    |                        from RecordAspects
+                    |                        where aspectId=$aspectId and recordId=Records.recordId
+                    |                    )
+                    |                END
             )""".stripMargin
-            }
-            case PropertyWithLink(propertyName, false) => {
+            case PropertyWithLink(propertyName, false) =>
               sqls"""
-                (select 
+                (select
                   jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[],
                   jsonb_build_object(
                     'id',
@@ -1277,22 +1299,21 @@ object DefaultRecordPersistence
                     'name',
                     Records.name,
                     'aspects',
-                    (select jsonb_object_agg(aspectId, data) 
+                    (select jsonb_object_agg(aspectId, data)
                       from RecordAspects
                       where recordId=Records.recordId
-                      and ${opaSql}
                     )
                   )
                 )
                 from Records
-                where Records.recordId=RecordAspects.data->>${propertyName})"""
-            }
+                where Records.recordId=RecordAspects.data->>$propertyName)"""
           }
           .getOrElse(sqls"data")
-        sqls"""(select ${selection} from RecordAspects where aspectId=${aspectId} and recordId=Records.recordId and ${opaSql}) as ${aspectColumnName}"""
+        sqls"""(select $selection from RecordAspects where aspectId=$aspectId and recordId=Records.recordId) as $aspectColumnName"""
     }
-  }
 
+    result
+  }
   private def aspectIdsToWhereClause(
       aspectIds: Iterable[String]
   ): Seq[Option[SQLSyntax]] = {
@@ -1301,7 +1322,7 @@ object DefaultRecordPersistence
 
   private def aspectIdToWhereClause(aspectId: String) = {
     Some(
-      sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=${aspectId})"
+      sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)"
     )
   }
 
@@ -1313,31 +1334,42 @@ object DefaultRecordPersistence
   private def opaQueriesToWhereClauseParts(
       opaQueries: List[OpaQuery]
   ): List[SQLSyntax] = {
-    opaQueries.map {
+    // Assume that most records have no access control, making first SQL query
+    // for OpaQueryMatchNoAccessControl may speed up the process.
+    val theOpaQueries =
+    if (opaQueries.nonEmpty)
+      List(OpaQueryMatchNoAccessControl) ++ opaQueries
+    else
+      List(OpaQuerySkipAccessControl)
+
+    val accessControlAspectId = "dataset-access-control"
+    theOpaQueries.map {
       case OpaQueryMatchValue(
           OpaRefObjectKey("object")
             :: OpaRefObjectKey("registry")
-            :: OpaRefObjectKey("records")
-            :: OpaRefObjectKey("dataset-access-control")
-            :: otherPath,
-          operation,
-          value
+            :: OpaRefObjectKey("record")
+            :: OpaRefObjectKey(`accessControlAspectId`)
+            :: finalKey,
+          _,  // operation is not used at the moment. It is assumed to be eq.
+          aValue
           ) =>
         val query = AspectQuery(
-          aspectId = "dataset-access-control",
-          path = otherPath.map {
+          aspectId = accessControlAspectId,
+          path = finalKey.map {
             case OpaRefObjectKey(key) => key
             case _                    => "[_]"
           },
 
-          value = value match {
+          value = aValue match {
             case OpaValueString(string)   => string
-            case OpaValueBoolean(boolean) => boolean.toString()
+            case OpaValueBoolean(boolean) => boolean.toString
             case OpaValueNumber(bigDec)   => bigDec.toString()
           }
         )
 
         aspectQueryToWhereClause(query)
+      case OpaQueryMatchNoAccessControl => sqls"""NOT EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = $accessControlAspectId)"""
+      case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone => sqls"false"
       case unmatched =>
         throw new Exception(

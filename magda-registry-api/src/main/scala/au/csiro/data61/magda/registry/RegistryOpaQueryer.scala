@@ -60,8 +60,8 @@ class RegistryOpaQueryer()(
   }
 
   def queryForRecord(
-      jwt: Option[String],
-      operationType: AuthOperations.OperationType
+    jwt: Option[String],
+    operationType: AuthOperations.OperationType
   ): Future[List[OpaQuery]] = {
     super.queryRecord(jwt, "object.registry.record.owner_orgunit." + operationType.id)
   }

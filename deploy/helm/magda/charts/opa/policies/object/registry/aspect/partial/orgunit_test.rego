@@ -18,24 +18,6 @@ test_orgunit_happy {
     }
 }
 
-test_orgunit_adhoc {
-    orgunit with input as {
-        "user": {
-            "managingOrgUnitIds": ["1", "2", "3", "4"],
-            "permissions": [
-                {"uri": "object/aspect/view"}
-            ]
-        },
-        "object": {
-            "aspects": {
-                "access-control": {
-                    "adhocViewerOrgUnitIds": ["3"]
-                }
-            }
-        }
-    }
-}
-
 test_orgunit_wrong_org_unit {
     not orgunit with input as {
         "user": {

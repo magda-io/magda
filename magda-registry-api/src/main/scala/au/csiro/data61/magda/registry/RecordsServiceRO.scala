@@ -1,39 +1,19 @@
 package au.csiro.data61.magda.registry
 
-import java.util.concurrent.TimeoutException
-
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.util.Failure
-import scala.util.Success
-
-import com.typesafe.config.Config
-
-import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.event.Logging
-import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import java.util.concurrent.TimeoutException
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.model.Registry._
-import gnieh.diffson.sprayJson._
+import au.csiro.data61.magda.registry.Directives.{withAspectOpaQuery, withRecordOpaQuery}
+import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
-import au.csiro.data61.magda.opa.OpaQueryer
-import au.csiro.data61.magda.directives.AuthDirectives.getJwt
-import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
-import au.csiro.data61.magda.registry.Directives.withAspectOpaQuery
+
+import scala.concurrent.ExecutionContext
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -162,24 +142,28 @@ class RecordsServiceRO(
             dereference,
             aspectQueries
         ) =>
-          withAspectOpaQuery(aspects.toSeq ++ optionalAspects.toSeq, AuthOperations.read)(
+          withRecordOpaQuery(AuthOperations.read)(
             config,
             system,
             materializer,
             ec
           ) { opaQueries =>
             complete {
+
               DB readOnly { session =>
-                recordPersistence.getAllWithAspects(
+                val records: RecordsPage[Record] = recordPersistence.getAllWithAspects(
                   session,
                   aspects,
                   optionalAspects,
-                  opaQueries,
+                  Seq(opaQueries),
                   pageToken,
                   start,
                   limit,
-                  dereference
+                  dereference,
+                  aspectQueries.map(AspectQuery.parse)
                 )
+
+                records
               }
             }
           }
@@ -466,8 +450,7 @@ class RecordsServiceRO(
     path(Segment) { id =>
       parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
         (aspects, optionalAspects, dereference) =>
-          val aspectIds: List[String] = aspects.foldLeft(List[String]())((acc, aspectId) => acc :+ aspectId)
-          withRecordOpaQuery(id, aspectIds, AuthOperations.read)(
+          withRecordOpaQuery(AuthOperations.read)(
             config,
             system,
             materializer,

@@ -5,16 +5,14 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.Materializer
-import com.typesafe.config.Config
 import akka.util.ByteString
-import scala.concurrent.duration._
-import spray.json._
 import au.csiro.data61.magda.Authentication
-import akka.http.scaladsl.model.headers.RawHeader
 import com.auth0.jwt.JWT
+import com.typesafe.config.Config
+import spray.json._
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import com.google.common.collect.Lists
 
 object OpaTypes {
   case class OpaQueryPair(policyId: String, queries: List[OpaQuery])
@@ -28,7 +26,7 @@ object OpaTypes {
   case object Gte extends OpaOp
 
   object OpaOp {
-    def apply(op: String) = op match {
+    def apply(op: String): OpaOp = op match {
       case "equal" => Eq
       case "eq"    => Eq
       case "neq"   => Neq
@@ -61,13 +59,15 @@ object OpaTypes {
   ) extends OpaQuery
   case object OpaQueryMatchAll extends OpaQuery
   case object OpaQueryMatchNone extends OpaQuery
+  case object OpaQueryMatchNoAccessControl extends OpaQuery
+  case object OpaQuerySkipAccessControl extends OpaQuery
 
   case class OpaPartialResponse(
       queries: List[OpaQuery]
   )
 }
 
-import OpaTypes._
+import au.csiro.data61.magda.opa.OpaTypes._
 
 /**
   * Part of a RegoRef - i.e. one element in the array of the AST like so:
@@ -220,9 +220,6 @@ object RegoTerm {
 
 sealed trait RegoRefPart
 case class RegoRefPartString(value: String) extends RegoRefPart
-// case class RegoRefPartBoolean(value: Boolean) extends RegoRefPart
-// case class RegoRefPartInteger(value: Int) extends RegoRefPart
-// case class RegoRefPartFloat(value: Double) extends RegoRefPart
 case class RegoRefPartVar(value: String) extends RegoRefPart
 
 object RegoRefPart {
@@ -239,14 +236,6 @@ object RegoRefPart {
   }
 }
 
-/**
-  *
-  * @param unknownDataRefs: the dataset refs that set to `unknown` for OPA's partial evaluation
-  * @param config
-  * @param system
-  * @param ec
-  * @param materializer
-  */
 class OpaQueryer()(
     implicit val config: Config,
     implicit val system: ActorSystem,
@@ -256,21 +245,6 @@ class OpaQueryer()(
 
   private val opaUrl: String = config.getConfig("opa").getString("baseUrl")
   private val logger = system.log
-
-  var hasErrors = false
-  var errors: List[String] = List()
-
-  private def reportErrorWithMatchNoneQuery(message: String): List[OpaQuery] = {
-    hasErrors = true
-    errors = message :: errors
-    logger.warning(message)
-    List(OpaQueryMatchNone)
-  }
-
-  private def resetErrors() = {
-    errors = List()
-    hasErrors = false
-  }
 
   def queryBoolean(
       jwtToken: Option[String],
@@ -282,7 +256,7 @@ class OpaQueryer()(
     }
 
     val httpRequest = HttpRequest(
-      uri = s"${opaUrl}/${policyId.replace(".", "/")}",
+      uri = s"$opaUrl/${policyId.replace(".", "/")}",
       method = HttpMethods.GET,
       headers = headers
     )
@@ -304,7 +278,7 @@ class OpaQueryer()(
   ): Future[List[OpaQuery]] = {
     queryPolicy(jwtToken, policyId)
   }
-
+  
   def queryAsDefaultUser(
       policyId: String
   ): Future[List[OpaQuery]] = {
@@ -321,39 +295,24 @@ class OpaQueryer()(
       policyId: String
   ): Future[List[OpaQuery]] = {
     val requestData: String = s"""{
-      |  "query": "data.${policyId}",
+      |  "query": "data.$policyId",
       |  "unknowns": ["input.object"]
       |}""".stripMargin
 
     // println(requestData)
 
-    var headers = jwtToken match {
+    val headers = jwtToken match {
       case Some(jwt) => List(RawHeader("X-Magda-Session", jwt))
       case None      => List()
     }
-    // if (!testSessionId.isEmpty) {
-    //   // --- only used for testing so that MockServer can server different tests in parallel
-    //   headers = RawHeader("x-test-session-id", testSessionId.get) :: headers
-    // }
 
     val httpRequest = HttpRequest(
-      uri = s"${opaUrl}/compile",
+      uri = s"$opaUrl/compile",
       method = HttpMethods.POST,
       entity = HttpEntity(ContentTypes.`application/json`, requestData),
       headers = headers
     )
 
-    // val httpRequest = HttpRequest(
-    //   uri = "http://localhost:30104/v0/public/users/whoami",
-    //   method = HttpMethods.GET,
-    //   // entity = HttpEntity(ContentTypes.`application/json`, requestData),
-    //   headers = headers
-    // )
-    // var unknownDataRefs: List[String] = List("input.object.dataset")
-    // unknownDataRefs = unknownDataRefs
-    //   .map(_.trim)
-    //   .filter(_.length > 0)
-    //   .sortWith(_.length > _.length)
     Http()
       .singleRequest(httpRequest)
       .flatMap(recieveOpaResponse[List[OpaQuery]](_) { json =>
@@ -382,15 +341,11 @@ class OpaQueryer()(
   def parseOpaResponse(json: JsValue): List[OpaQuery] = {
     val result = json.asJsObject.fields
       .get("result") match {
-      case Some(result) => result
+      case Some(aResult) => aResult
       case None         => throw new Exception("Got no result for opa query")
     }
 
-    println(
-      result
-    )
-
-    result.asJsObject.fields
+    val rulesOpt = result.asJsObject.fields
       .get("queries") match {
       case None                    => List(OpaQueryMatchNone)
       case Some(JsArray(Vector())) => List(OpaQueryMatchAll)
@@ -409,9 +364,7 @@ class OpaQueryer()(
           .flatMap(_.elements.toList)
           .flatMap { element =>
             val fields = element.asJsObject.fields
-            val isDefault = fields
-              .get("default")
-              .getOrElse(JsFalse)
+            val isDefault = fields.getOrElse("default", JsFalse)
               .asInstanceOf[JsBoolean]
               .value
             val headValue =
@@ -426,7 +379,8 @@ class OpaQueryer()(
                 element.asJsObject.fields
                   .get("body")
                   .map(_.asInstanceOf[JsArray])
-              case JsBoolean(false) if (isDefault) =>
+              case JsBoolean(false) if isDefault =>
+                //noinspection ScalaDeprecation
                 Seq(JsArray(List(JsObject("terms" -> headValue))))
               case _ =>
                 throw new Exception(
@@ -438,7 +392,7 @@ class OpaQueryer()(
           .flatMap(_.elements.toList)
 
         (rulesFromRules ++ rulesFromSupports).toList
-          .map(parseRule(_))
+          .map(parseRule)
           .flatMap {
             case List(
                 operation: RegoTermRef,
@@ -455,9 +409,9 @@ class OpaQueryer()(
                       OpaOp(opString)
                   },
                   value = value match {
-                    case RegoTermBoolean(value) => OpaValueBoolean(value)
-                    case RegoTermString(value)  => OpaValueString(value)
-                    case RegoTermNumber(value)  => OpaValueNumber(value)
+                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+                    case RegoTermString(aValue)  => OpaValueString(aValue)
+                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
                   }
                 )
               )
@@ -468,11 +422,12 @@ class OpaQueryer()(
           }
 
     }
-    // println(rulesOpt)
 
+    println(rulesOpt)
+    rulesOpt
   }
 
-  val allInArrayPattern = "\\$.*".r
+  private val allInArrayPattern = "\\$.*".r
   private def regoRefPathToOpaRefPath(path: List[RegoRefPart]): List[OpaRef] = {
     path.flatMap {
       case RegoRefPartVar(allInArrayPattern()) => Some(OpaRefAllInArray)
@@ -484,12 +439,12 @@ class OpaQueryer()(
 
   private def parseRule(ruleJson: JsValue): List[RegoTerm] = {
     ruleJson match {
-      case (ruleJsonObject: JsObject) =>
+      case ruleJsonObject: JsObject =>
         val terms = ruleJsonObject
           .fields("terms")
 
         terms match {
-          case (termsObj: JsObject) => {
+          case termsObj: JsObject =>
             (termsObj.fields("type"), termsObj.fields("value")) match {
               case (JsString("ref"), array: JsArray) =>
                 array.elements.toList
@@ -503,11 +458,9 @@ class OpaQueryer()(
                 List(RegoTermString(value.value))
               case _ => throw new Exception("Could not parse rule " + ruleJson)
             }
-          }
-          case (termsArr: JsArray) => {
+          case termsArr: JsArray =>
             termsArr.elements.toList
               .map(parseTerm)
-          }
           case _ => throw new Exception("Could not parse rule " + ruleJson)
         }
       case _ => throw new Exception("Could not parse rule " + ruleJson)
@@ -515,224 +468,5 @@ class OpaQueryer()(
   }
 
   private def parseTerm(termJson: JsValue): RegoTerm = RegoTerm(termJson)
-
-  // private def parseRule(ruleJson: JsValue): OpaQuery = {
-  //   ruleJson match {
-  //     case JsObject(rule) =>
-  //       val isDefault: Boolean = rule
-  //         .get("default")
-  //         .flatMap {
-  //           case JsBoolean(v) => Some(v)
-  //           case _            => None
-  //         }
-  //         .getOrElse(false)
-
-  //       val defaultValue: Option[JsValue] = rule.get("head").flatMap {
-  //         case JsObject(head) =>
-  //           head.get("value").flatMap(_.asJsObject.fields.get("value"))
-  //         case _ => None
-  //       }
-
-  //       if (isDefault) {
-  //         //--- it's a default rule; rule body can be ignored
-  //         defaultValue match {
-  //           case Some(JsTrue) => List(OpaQueryMatchAll)
-  //           case _            => List(OpaQueryMatchNone)
-  //         }
-  //       } else {
-  //         val ruleExps = rule
-  //           .get("body")
-  //           .toList
-  //           .flatMap(_.asInstanceOf[JsArray].elements.map(_.asJsObject))
-  //         val ruleExpQueries = ruleExps.flatMap(ruleExpressionToQueryDef(_))
-  //         if (ruleExpQueries.isEmpty) {
-  //           List(OpaQueryMatchNone)
-  //         } else {
-  //           if (ruleExpQueries.size == 0) List(OpaQueryMatchNone)
-  //           else (ruleExpQueries)
-  //         }
-  //       }
-  //     case _ =>
-  //       reportErrorWithMatchNoneQuery(s"Rule should be JsObject: ${ruleJson}")
-  //   }
-  // }
-
-  // private def translateDataRefString(refString: String): String = {
-  //   unknownDataRefs.find { prefix =>
-  //     s"^${prefix}".r.findFirstIn(refString) match {
-  //       case None => false
-  //       case _    => true
-  //     }
-  //   } match {
-  //     case Some(prefix: String) => refString.replaceFirst(s"^${prefix}\\.", "")
-  //     case _                    => refString
-  //   }
-  // }
-
-  // def parseTerm(term: RegoRef) {}
-
-  // private def ruleExpressionToQueryDef(expJson: JsValue): List[OpaQuery] = {
-
-  //   expJson match {
-  //     case JsObject(exp) =>
-  //       val terms = exp
-  //         .get("terms")
-  //         .toArray
-  //         .flatMap(_.asInstanceOf[JsArray].elements.map(_.asJsObject))
-  //       val parsedTerms = terms
-
-  //       if (terms.size == 1) {
-  //         // --- expression like data.abc with no operator
-  //         // --- should use exist Query for this
-  //         terms.head match {
-  //           case RegoRef(r) =>
-  //             if (!r.isOperator && !r.hasCollectionLookup) {
-  //               List(OpaQueryExists(r.opaRef))
-  //             } else {
-  //               reportErrorWithMatchNoneQuery(
-  //                 s"Invalid single Opa term, ref: ${r.toString}"
-  //               )
-  //             }
-  //           case _ => {
-  //             reportErrorWithMatchNoneQuery(
-  //               s"Invalid single Opa term: ${terms.head}"
-  //             )
-  //           }
-  //         }
-  //       } else if (terms.size == 3) {
-  //         var operator: Option[OpaOp] = None
-  //         var datasetRef: Option[RegoRef] = None
-  //         var value: Option[RegoValue] = None
-
-  //         val parsed = terms
-  //           .foldRight[(Option[List[OpaRef]], Option[OpaOp], Option[OpaRef])](
-  //             (None, None, None)
-  //           )(
-  //             (term, soFar) =>
-  //               term match {
-  //                 case RegoRef(ref) =>
-  //                   if (ref.isOperator) (soFar._1, Some(ref.opaRef), soFar._3)
-  //                   else (Some(ref.opaRef), soFar._2, soFar._3)
-  //                 case RegoValue(v) => (soFar._1, soFar._2, Some(v))
-  //                 case _            => throw new Exception(s"Invalid opa term: ${term}")
-  //               }
-  //           )
-
-  //         terms.foreach { term =>
-  //           term match {
-  //             case RegoRef(ref) =>
-  //               if (ref.isOperator) operator = ref.asInstanceOf[OpaOp]
-  //               else datasetRef = Some(ref)
-  //             case RegoValue(v) => value = Some(v)
-  //             case _ =>
-  //               reportErrorWithMatchNoneQuery(s"Invalid opa term: ${term}")
-  //           }
-  //         }
-  //         if (datasetRef.isEmpty || operator.isEmpty || value.isEmpty) {
-  //           reportErrorWithMatchNoneQuery(
-  //             s"Invalid opa expression (can't locate datasetRef, operator or value): ${expJson}"
-  //           )
-  //         } else {
-  //           createQueryForThreeTermsExpression(
-  //             datasetRef.get,
-  //             operator.get,
-  //             value.get
-  //           )
-  //         }
-  //       } else {
-  //         // --- we only support 1 or 3 terms expression
-  //         // --- 2 terms expression are very rare (or unlikely) to produce in rego
-  //         reportErrorWithMatchNoneQuery(
-  //           s"Invalid ${terms.size} Opa terms expression: ${expJson}"
-  //         )
-  //       }
-  //     case _ =>
-  //       reportErrorWithMatchNoneQuery(
-  //         s"Rule expression should be JsObject: ${expJson}"
-  //       )
-  //   }
-  // }
-
-  // private def mergeNonMatchQueries(
-  //     queries: List[QueryDefinition]
-  // ): List[QueryDefinition] = {
-  //   val reducedQueries = if (queries.size > 1 && queries.exists {
-  //                              case MatchNoneQuery(x) => true
-  //                              case _                 => false
-  //                            }) {
-
-  //     /**
-  //       * If contains more than one query & at least one is MatchNoneQuery
-  //       * Will filter out MatchNoneQuery as it does nothing
-  //       */
-  //     queries.filter {
-  //       case MatchNoneQuery(x) => false
-  //       case _                 => true
-  //     }
-  //   } else {
-  //     queries
-  //   }
-
-  //   if (reducedQueries.size == 0) List(OpaQueryMatchNone)
-  //   else reducedQueries
-  // }
-
-  // private def unknownDataRefsJson =
-  //   JsArray(unknownDataRefs.map(JsString(_)).toVector)
-
-  // def publishingStateQuery(
-  //     publishingStateValue: Set[FilterValue[String]],
-  //     jwtToken: Option[String]
-  // ): Future[QueryDefinition] = {
-
-  //   resetErrors()
-
-  //   var filteredValue = publishingStateValue
-  //     .map(value => {
-  //       value match {
-  //         case Specified(inner) => inner
-  //         case Unspecified()    => ""
-  //       }
-  //     })
-  //     .filter(_ != "")
-  //     .toList
-
-  //   // --- if "*" means all possible publishingState, should ignore all other options
-  //   if (filteredValue.exists(_ == "*")) filteredValue = List("*")
-
-  //   filteredValue = if (!filteredValue.isEmpty) filteredValue else List("*")
-
-  //   val opaRequestFutures = filteredValue.map { datasetType =>
-  //     val requestData: String = s"""{
-  //                                |  "query": "data.object.dataset.allow",
-  //                                |  "input": {
-  //                                |    "operationUri": "object/dataset/${datasetType}/read"
-  //                                |  },
-  //                                |  "unknowns": ${unknownDataRefsJson
-  //                                    .toString()}
-  //                                |}""".stripMargin
-
-  //     var headers = List(RawHeader("X-Magda-Session", jwtToken.getOrElse("")))
-  //     if (!testSessionId.isEmpty) {
-  //       // --- only used for testing so that MockServer can server different tests in parallel
-  //       headers = RawHeader("x-test-session-id", testSessionId.get) :: headers
-  //     }
-
-  //     val httpRequest = HttpRequest(
-  //       uri = s"${opaUrl}compile",
-  //       method = HttpMethods.POST,
-  //       entity = HttpEntity(ContentTypes.`application/json`, requestData),
-  //       headers = headers
-  //     )
-
-  //     Http().singleRequest(httpRequest).flatMap(parseOpaResponse(_))
-  //   }
-
-  //   Future.Listuence(opaRequestFutures).map { queries =>
-  //     val combinedQuery = mergeNonMatchQueries(queries.flatten)
-
-  //     boolQuery().should(combinedQuery).minimumShouldMatch(1)
-  //   }
-  // }
 
 }
