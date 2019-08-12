@@ -107,6 +107,7 @@ class NewDataset extends React.Component<Props, State> {
             <DatasetAddPeoplePage
                 edit={this.edit}
                 dataset={this.state.dataset}
+                publishing={this.state.datasetPublishing}
             />
         ),
         this.renderRestriction.bind(this),
@@ -457,6 +458,7 @@ class NewDataset extends React.Component<Props, State> {
                                 value={datasetPublishing.level}
                                 onChange={editDatasetPublishing("level")}
                                 editor={codelistRadioEditor(
+                                    "dataset-publishing-level",
                                     codelists.publishingLevel
                                 )}
                             />
