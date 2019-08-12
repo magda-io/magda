@@ -5,7 +5,7 @@ import org.scalatest.{BeforeAndAfterAll}
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.{OK,InternalServerError}
+import akka.http.scaladsl.model.StatusCodes.{OK, InternalServerError}
 import au.csiro.data61.magda.model.RegistryConverters
 import au.csiro.data61.magda.model.misc.{DataSetAccessNotes}
 import au.csiro.data61.magda.api.model.AutoCompleteQueryResult
@@ -13,9 +13,10 @@ import org.scalacheck.Gen
 
 import scala.collection.mutable
 
-class AutoCompleteApiSpec extends BaseSearchApiSpec
-  with RegistryConverters
-  with BeforeAndAfterAll {
+class AutoCompleteApiSpec
+    extends BaseSearchApiSpec
+    with RegistryConverters
+    with BeforeAndAfterAll {
 
   override def afterAll {
     super.afterAll
@@ -24,12 +25,18 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
 
   def createDatasetWithItems(items: Seq[String]) = {
     val inputCache: mutable.Map[String, List[_]] = mutable.HashMap.empty
-    val dataSets = Gen.listOfN(items.size, Generators.dataSetGen(inputCache)).retryUntil(_ => true).sample.get.zip(items).map{
-      case (dataset, notes) =>
-        dataset.copy(
-          accessNotes = Some(DataSetAccessNotes(Some(notes)))
-        )
-    }
+    val dataSets = Gen
+      .listOfN(items.size, Generators.dataSetGen(inputCache))
+      .retryUntil(_ => true)
+      .sample
+      .get
+      .zip(items)
+      .map {
+        case (dataset, notes) =>
+          dataset.copy(
+            accessNotes = Some(DataSetAccessNotes(Some(notes)))
+          )
+      }
     putDataSetsInIndex(dataSets) match {
       case (_, _, routes) => routes
     }
@@ -52,7 +59,7 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(0)
+      response.suggestions.size shouldEqual (0)
       response.errorMessage shouldBe None
     }
   }
@@ -63,7 +70,7 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(3)
+      response.suggestions.size shouldEqual (3)
       response.suggestions.contains(notes(0)) shouldBe true
       response.suggestions.contains(notes(1)) shouldBe true
       response.suggestions.contains(notes(2)) shouldBe true
@@ -76,7 +83,7 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(2)
+      response.suggestions.size shouldEqual (2)
       response.suggestions.contains(notes(1)) shouldBe true
       response.suggestions.contains(notes(2)) shouldBe true
     }
@@ -88,7 +95,7 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(2)
+      response.suggestions.size shouldEqual (2)
       response.suggestions.contains(notes(1)) shouldBe true
       response.suggestions.contains(notes(2)) shouldBe true
     }
@@ -100,7 +107,7 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(2)
+      response.suggestions.size shouldEqual (2)
       response.suggestions.contains(notes(3)) shouldBe true
       response.suggestions.contains(notes(4)) shouldBe true
     }
