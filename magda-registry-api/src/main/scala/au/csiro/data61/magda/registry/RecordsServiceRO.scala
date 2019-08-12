@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.{withAspectOpaQuery, withRecordOpaQuery}
+import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
@@ -354,7 +354,7 @@ class RecordsServiceRO(
     path("pagetokens") {
       pathEnd {
         parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-          withAspectOpaQuery(aspect.toSeq, AuthOperations.read)(
+          withRecordOpaQuery(AuthOperations.read)(
             config,
             system,
             materializer,
@@ -362,7 +362,7 @@ class RecordsServiceRO(
           ) { opaQueries =>
             complete {
               DB readOnly { session =>
-                "0" :: recordPersistence.getPageTokens(session, aspect, opaQueries, limit)
+                "0" :: recordPersistence.getPageTokens(session, aspect, List(opaQueries), limit)
               }
             }
           }

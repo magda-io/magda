@@ -366,9 +366,17 @@ object DefaultRecordPersistence
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String] = {
-    val whereClauseParts = aspectIdsToWhereClause(aspectIds) ++ recordSelector
 
-    //    val whereClause = aspectIds.map(aspectId => s"recordaspects.aspectid = '$aspectId'").mkString(" AND ")
+    val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
+      aspectIdsAndOpaQueriesToWhereParts(
+        aspectIds,
+        opaQuery,
+        AuthOperations.read
+      ).toSeq.map(item => Option(item))
+
+    val whereClauseParts: Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors
+
+//    val whereClauseParts: Seq[Option[scalikejdbc.SQLSyntax]] = aspectIdsToWhereClause(aspectIds) ++ recordSelector
 
     sql"""SELECT sequence
         FROM
@@ -1380,10 +1388,12 @@ object DefaultRecordPersistence
 
   private def getColumnNameForOperation(operation: AuthOperations.OperationType) = {
     operation match {
-      case AuthOperations.read => sqls"authpolicyread"
+      case AuthOperations.read =>
+        sqls"authpolicyread"
       case AuthOperations.update => sqls"authpolicyupdate"
       case AuthOperations.delete => sqls"authpolicydelete"
-      case _ => throw new Exception("Could not find a column for auth operation " + operation)
+      case _ =>
+        throw new Exception("Could not find a column for auth operation " + operation)
     }
   }
 }

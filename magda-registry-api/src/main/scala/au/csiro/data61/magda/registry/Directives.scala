@@ -12,27 +12,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object Directives {
 
-  def withAspectOpaQuery(
-      aspectIds: Seq[String],
-      operationType: AuthOperations.OperationType
-  )(
-      implicit config: Config,
-      system: ActorSystem,
-      materializer: Materializer,
-      ec: ExecutionContext
-  ): Directive1[Seq[OpaQueryPair]] = {
-    val queryer =
-      new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
-
-    AuthDirectives.getJwt().flatMap { jwt =>
-      val future: Future[Seq[OpaQueryPair]] = queryer.queryForAspects(jwt, aspectIds, operationType)
-
-      onSuccess(future).flatMap { queryResults =>
-        provide(queryResults)
-      }
-    }
-  }
-
   def withRecordOpaQuery(
       operationType: AuthOperations.OperationType
   )(
