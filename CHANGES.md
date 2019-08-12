@@ -168,6 +168,7 @@ Others:
 -   Elasticsearch related test cases run on Docker container than than local node
 -   Fixed: datasets with null description could lead to blank search result page
 -   Stopped gateway from passing auth and single-hop headers through to other services
+-   Removed Travis CI (Gitlab CI still remains)
 
 ## 0.0.53
 
