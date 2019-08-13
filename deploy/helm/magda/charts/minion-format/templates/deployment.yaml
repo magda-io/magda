@@ -32,6 +32,8 @@ spec:
           value: "80"
         - name: REGISTRY_URL
           value: "http://registry-api/v0"
+        - name: TENANT_URL
+          value: "http://tenant-api/v0"
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
         - name: INTERNAL_URL

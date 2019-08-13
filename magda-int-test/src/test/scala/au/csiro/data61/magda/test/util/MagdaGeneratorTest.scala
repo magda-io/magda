@@ -1,6 +1,5 @@
 package au.csiro.data61.magda.test.util
 
-import org.scalatest.prop.Configuration.PropertyCheckConfiguration
 import org.scalactic.anyvals.PosInt
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 

@@ -1,36 +1,25 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router";
+import { withRouter, RouterProps } from "react-router";
 import FileDrop from "react-file-drop";
-import { Link } from "react-router-dom";
 
-import Breadcrumbs from "Components/Common/Breadcrumbs";
-import { Medium } from "Components/Common/Responsive";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
-import DeterminateProgressBar from "Components/Common/DeterminateProgressBar";
 
 import { getFiles } from "helpers/readFile";
 
+import { State, File, FileState, saveState } from "./DatasetAddCommon";
+import withAddDatasetState from "./withAddDatasetState";
+import uniq from "lodash/uniq";
+
 import "./DatasetAddFilesPage.scss";
+import "./DatasetAddCommon.scss";
 
-import {
-    State,
-    File,
-    FileState,
-    createBlankState,
-    loadState,
-    saveState
-} from "./DatasetAddCommon";
-
-class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
-    state = createBlankState();
-
-    componentDidMount() {
-        this.setState(state =>
-            Object.assign({}, state, loadState(this.props.dataset))
-        );
-    }
+class DatasetAddFilesPage extends React.Component<
+    { dataset: string; initialState: State } & RouterProps,
+    State
+> {
+    state = this.props.initialState;
 
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
@@ -115,19 +104,9 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                                 case "themes":
                                     const value1: string[] = dataset[key] || [];
                                     const value2: string[] = file[key] || [];
-                                    dataset[key] = value1.concat(value2);
+                                    dataset[key] = uniq(value1.concat(value2));
                                     file[key] = undefined;
                                     break;
-
-                                case "author":
-                                    dataset.contactPointFull =
-                                        dataset.contactPointFull || [];
-                                    dataset.contactPointFull.push({
-                                        name: file.author
-                                    });
-                                    file[key] = undefined;
-                                    break;
-
                                 case "spatialCoverage":
                                     Object.assign(spatialCoverage, file[key]);
                                     file[key] = undefined;
@@ -168,26 +147,28 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
         this.updateLastModifyDate();
     };
 
+    deleteFile = (index: number) => () => {
+        this.setState(state => {
+            const newFiles = state.files.filter((item, idx) => {
+                if (idx === index) return false;
+                return true;
+            });
+            return {
+                files: newFiles
+            };
+        });
+    };
+
     render() {
         return (
-            <div className="container-fluid">
-                <Medium>
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            <li key="datasets">
-                                <span>Add data</span>
-                            </li>
-                        ]}
-                    />
-                </Medium>
-
-                <div className="row">
-                    <div className="col-xs-12">
-                        <h1>Upload files to pre-populate metadata</h1>
+            <div className="container-fluid dataset-add-file-page">
+                <div className="row top-area-row">
+                    <div className="col-xs-12 top-text-area">
+                        <h1>Add files to pre-populate metadata</h1>
                         <p>
                             Upload all the files in your dataset so our
                             Publishing Tool can review the file contents and
-                            pre-populate metadata at any time.
+                            pre-populate metadata.
                         </p>
                         <p>
                             All our processing happens in your internet browser,
@@ -195,43 +176,41 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             edit or delete the metadata at any time.
                         </p>
                     </div>
-                </div>
 
-                <div className="row">
-                    <div className="col-xs-12">
-                        {this.state.files.length > 0 && (
+                    {this.state.files.length > 0 && (
+                        <div className="col-xs-12 tip-area">
                             <ToolTip>
                                 We recommend ensuring dataset file names are
                                 descriptive so users can easily understand the
-                                contents
+                                contents.
                             </ToolTip>
-                        )}
-                        <ul>
+                        </div>
+                    )}
+                </div>
+
+                <div className="row files-area">
+                    <div className="col-xs-12">
+                        <div className="row">
                             {this.state.files.map((file: File, i) => {
                                 return (
-                                    <li
+                                    <div
                                         key={i}
-                                        className="dataset-add-files-fileListItem"
+                                        className="col-xs-6 dataset-add-files-fileListItem"
                                     >
-                                        {file._state === FileState.Ready ? (
-                                            <DatasetFile
-                                                file={file}
-                                                onChange={this.editFile(i)}
-                                            />
-                                        ) : (
-                                            <div>
-                                                <DeterminateProgressBar
-                                                    progress={file._progress}
-                                                    text={
-                                                        FileState[file._state]
-                                                    }
-                                                />
-                                            </div>
-                                        )}
-                                    </li>
+                                        <DatasetFile
+                                            file={file}
+                                            onChange={this.editFile(i)}
+                                            onDelete={this.deleteFile(i)}
+                                        />
+                                    </div>
                                 );
                             })}
-                        </ul>
+                        </div>
+                        {this.state.files.length > 0 && (
+                            <div className="more-files-to-add-text">
+                                More files to add?
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -245,38 +224,37 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
                             className="dataset-add-files-dropZone"
                             targetClassName="dataset-add-files-dropTarget"
                         >
-                            <span>Drag your files or click here</span>
+                            <button
+                                className="au-btn filedrop-zone-button"
+                                aria-label="Press enter key to upload files"
+                            />
                         </FileDrop>
                     </div>
                 </div>
 
-                <div className="row" style={{ marginTop: "3em" }}>
+                <div
+                    className="row next-save-button-row"
+                    style={{ marginTop: "6em" }}
+                >
                     <div className="col-xs-12">
                         {this.state.files.filter(
                             (file: File) => file._state === FileState.Ready
                         ).length === this.state.files.length && (
                             <React.Fragment>
                                 <button
-                                    className="au-btn au-btn--secondary"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and Exit
-                                </button>
-                                <button
-                                    className="au-btn"
-                                    style={{ float: "right" }}
+                                    className="au-btn next-button"
                                     onClick={this.reviewMetadata.bind(this)}
                                 >
                                     Next: Review Metadata
                                 </button>
+                                <button
+                                    className="au-btn au-btn--secondary save-button"
+                                    onClick={this.saveAndExit.bind(this)}
+                                >
+                                    Save and Exit
+                                </button>
                             </React.Fragment>
                         )}
-                        <br />
-                        <Link to="/dataset/add">
-                            <a className="au-btn au-btn--tertiary">
-                                Escape Hatch
-                            </a>
-                        </Link>
                     </div>
                 </div>
             </div>
@@ -285,12 +263,12 @@ class DatasetAddFilesPage extends React.Component<{ dataset: string }, State> {
 
     saveAndExit() {
         saveState(this.state, this.props.dataset);
-        window.location.href = `/dataset/list`;
+        this.props.history.push(`/dataset/list`);
     }
 
     reviewMetadata() {
         const id = saveState(this.state, this.props.dataset);
-        window.location.href = `/dataset/add/metadata/${id}/0`;
+        this.props.history.push(`/dataset/add/metadata/${id}/0`);
     }
 }
 
@@ -363,4 +341,6 @@ function fileFormat(file): string {
     }
 }
 
-export default withRouter(connect(mapStateToProps)(DatasetAddFilesPage));
+export default withAddDatasetState(
+    withRouter(connect(mapStateToProps)(DatasetAddFilesPage))
+);

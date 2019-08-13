@@ -1,39 +1,28 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import scala.concurrent.Future
-import scala.math.BigDecimal.double2bigDecimal
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext
-import com.monsanto.labs.mwundo.GeoJson
-import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.mappings.{Analysis, Nulls}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
-import com.sksamuel.elastic4s.IndexAndTypes.apply
-import com.sksamuel.elastic4s.indexes.{CreateIndexRequest, IndexContentBuilder}
-import com.sksamuel.elastic4s.mappings.FieldType._
-import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, KeywordTokenizer, LowercaseTokenFilter, NamedStopTokenFilter, StandardTokenizer, StemmerTokenFilter, StopTokenFilter, TokenFilterDefinition, Tokenizer, UppercaseTokenFilter, WhitespaceTokenizer}
-import com.typesafe.config.Config
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.LinearRing
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.model.misc.BoundingBox
-import au.csiro.data61.magda.model.misc.Format
-import au.csiro.data61.magda.model.misc.Publisher
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.spatial.RegionLoader
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.RegionSources
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources, RegionSource}
 import au.csiro.data61.magda.util.MwundoJTSConversions._
-import spray.json._
+import com.monsanto.labs.mwundo.GeoJson
+import com.sksamuel.elastic4s.analyzers._
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.http.bulk.BulkResponse
+import com.sksamuel.elastic4s.http.{ElasticClient, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.mappings.FieldDefinition
+import com.typesafe.config.Config
+import org.locationtech.jts.geom._
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext
+import spray.json._
 
-import scala.collection.JavaConverters._
+import scala.concurrent.Future
+import scala.math.BigDecimal.double2bigDecimal
 
 case class IndexDefinition(
   name: String,
@@ -76,7 +65,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 42,
+    version = 43,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
     val baseDefinition =
@@ -88,6 +77,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             objectField("accrualPeriodicity").fields(
               magdaTextField("text")
             ),
+            keywordField("accrualPeriodicityRecurrenceRule"),
             objectField("temporal").fields(
               objectField("start").fields(
                 dateField("date"),
@@ -169,6 +159,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
                * */
             keywordField("identifier"),
+            keywordField("tenantId"),
             objectField("contactPoint").fields(keywordField("identifier")),
             dateField("indexed"),
             keywordField("publishingState")
@@ -261,26 +252,30 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 23,
+      version = 24,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) =>
-      createIndex(indices.getIndex(config, Indices.RegionsIndex))
-        .shards(config.getInt("elasticSearch.shardCount"))
-        .replicas(config.getInt("elasticSearch.replicaCount"))
-        .mappings(
-          mapping(indices.getType(Indices.RegionsIndexType)).fields(
-            keywordField("regionType"),
-            keywordField("regionId"),
-            magdaTextField("regionName"),
-            magdaTextField("regionShortName"),
-            textField("regionSearchId")
-              .analyzer("regionSearchIdIndex")
-              .searchAnalyzer("regionSearchIdInput"),
-            geoshapeField("boundingBox"),
-            geoshapeField("geometry"),
-            intField("order")
-          )
-        )
+        createIndex(indices.getIndex(config, Indices.RegionsIndex))
+          .shards(config.getInt("elasticSearch.shardCount"))
+          .replicas(config.getInt("elasticSearch.replicaCount"))
+          .mappings(
+            mapping(indices.getType(Indices.RegionsIndexType)).fields(
+              keywordField("regionType"),
+              keywordField("regionId"),
+              magdaTextField("regionName"),
+              magdaTextField("regionShortName"),
+              keywordField("lv1Id"),
+              keywordField("lv2Id"),
+              keywordField("lv3Id"),
+              keywordField("lv4Id"),
+              keywordField("lv5Id"),
+              textField("regionSearchId")
+                .analyzer("regionSearchIdIndex")
+                .searchAnalyzer("regionSearchIdInput"),
+              geoshapeField("boundingBox"),
+              geoshapeField("geometry"),
+              intField("order")
+            ))
         .analysis(
           CustomAnalyzerDefinition(
             "quote",
@@ -394,11 +389,37 @@ object IndexDefinition extends DefaultJsonProtocol {
   implicit val geometryFactory =
     JtsSpatialContext.GEO.getShapeFactory.getGeometryFactory
 
-  def setupRegions(client: ElasticClient, loader: RegionLoader, indices: Indices)(
-    implicit
-    config: Config,
-    materializer: Materializer,
-    system: ActorSystem
+  def getRegionSourceConfigValue(regionSource: RegionSource, fieldName: String): Option[String] = {
+    val field = regionSource.getClass.getDeclaredField(fieldName)
+    field.setAccessible(true)
+    field.get(regionSource).asInstanceOf[Option[String]]
+  }
+
+  def getOptionalIdFieldValue(idLevel: Int,
+                              jsonRegion: JsObject,
+                              regionSource: RegionSource): JsValue = {
+    getRegionSourceConfigValue(regionSource, s"""lv${idLevel}Id""") match {
+      case Some(idValue: String) => JsString(idValue)
+      case None =>
+        getRegionSourceConfigValue(regionSource, s"""lv${idLevel}IdField""") match {
+          case None => JsNull
+          case Some(idFieldConfig: String) =>
+            val properties = jsonRegion.fields("properties").asJsObject
+            properties.getFields(idFieldConfig).headOption match {
+              case Some(id: JsString) => id
+              case _                  => JsNull
+            }
+        }
+    }
+  }
+
+  def setupRegions(client: ElasticClient,
+                   loader: RegionLoader,
+                   indices: Indices)(
+      implicit
+      config: Config,
+      materializer: Materializer,
+      system: ActorSystem
   ): Future[Any] = {
     implicit val ec = system.dispatcher
     val logger = system.log
@@ -496,7 +517,12 @@ object IndexDefinition extends DefaultJsonProtocol {
                     EsBoundingBoxFormat
                   ),
                   "geometry" -> geometry.toJson,
-                  "order" -> JsNumber(regionSource.order)
+                  "order" -> JsNumber(regionSource.order),
+                  "lv1Id" -> getOptionalIdFieldValue(1, jsonRegion, regionSource),
+                  "lv2Id" -> getOptionalIdFieldValue(2, jsonRegion, regionSource),
+                  "lv3Id" -> getOptionalIdFieldValue(3, jsonRegion, regionSource),
+                  "lv4Id" -> getOptionalIdFieldValue(4, jsonRegion, regionSource),
+                  "lv5Id" -> getOptionalIdFieldValue(5, jsonRegion, regionSource)
                 ).toJson)
           )
 
@@ -550,9 +576,9 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     BoundingBox(
       indexedEnvelope.getMaxY,
-      indexedEnvelope.getMinX,
+      indexedEnvelope.getMaxX,
       indexedEnvelope.getMinY,
-      indexedEnvelope.getMaxX
+      indexedEnvelope.getMinX
     )
   }
 }

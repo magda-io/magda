@@ -7,11 +7,16 @@ type ChoiceProps = {
     href: string;
     icon: string;
     secondary?: boolean;
+    className?: string;
 };
 
 export default function Choice(props: ChoiceProps) {
     return (
-        <div className={`col-sm-12 col-md-6 choice-Col`}>
+        <div
+            className={`col-sm-12 col-md-6 choice-Col ${
+                props.className ? props.className : ""
+            }`}
+        >
             <a
                 href={props.href}
                 className={`au-btn ${
@@ -21,7 +26,7 @@ export default function Choice(props: ChoiceProps) {
                 <h2 className="choice-buttonHeading">{props.heading}</h2>{" "}
                 <div className="choice-IconRow">
                     <img className="choice-Icon" src={props.icon} />
-                    {props.blurb}
+                    <div className="text-content">{props.blurb}</div>
                 </div>
             </a>
         </div>

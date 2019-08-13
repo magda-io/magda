@@ -42,7 +42,6 @@ function MagdaSingleDatePicker({
                 onFocusChange={state => setFocused(!!state.focused)}
                 isOutsideRange={() => false}
                 displayFormat={FORMAT}
-                showClearDate
                 noBorder
                 small
                 showDefaultInputIcon

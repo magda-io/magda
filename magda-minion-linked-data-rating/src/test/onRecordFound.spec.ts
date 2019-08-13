@@ -26,7 +26,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
     const registry = new AuthorizedRegistryClient({
         baseUrl: registryUrl,
         jwtSecret: "secret",
-        userId: "1"
+        userId: "1",
+        tenantId: 1
     });
     let registryScope: nock.Scope;
 
@@ -410,7 +411,7 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
     type StarCountArgs = {
         record: Record;
         starCount?: number;
-        starCountFn?: ((num: number) => boolean);
+        starCountFn?: (num: number) => boolean;
     };
 
     function expectStarCount({
@@ -459,7 +460,8 @@ describe("ld rating onRecordFound", function(this: Mocha.ISuiteCallbackContext) 
                           ]
                 }
             },
-            sourceTag: undefined
+            sourceTag: undefined,
+            tenantId: 0
         };
     }
 });

@@ -352,3 +352,9 @@ h4 {
         display: block;
     }
 }
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}

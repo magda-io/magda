@@ -492,6 +492,11 @@ export const languages = {
     zza: "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"
 };
 
+export const languageOptions = Object.keys(languages).map(key => ({
+    label: languages[key],
+    value: key
+}));
+
 export const importance = {
     critical: "Critical",
     high: "High",
@@ -506,18 +511,15 @@ export const status = {
 };
 
 export const accrualPeriodicity = {
-    continual: "Continual",
+    continual: "In Real Time",
     hourly: "Every Hour",
     daily: "Every Day",
     weekly: "Every Week",
     fortnightly: "Every Fortnight",
     monthly: "Every Month",
     yearly: "Every Year",
-    quinquennialy: "Every 5 years",
-    decennially: "Every 10 years",
-    centennially: "Every 100 years",
     asNeeded: "As Needed",
-    notUpdated: "Not Updated"
+    custom: "Custom..."
 };
 
 export const accessLevel = {
@@ -548,16 +550,19 @@ export const classification = {
     "TOP SECRET": "TOP SECRET"
 };
 
-export const contactPointDisplay = {
-    role: "Display contact point(s) role (recommended)",
-    name: "Display contact point(s) name",
-    organisation: "Display responsible organisation"
+export type ContactPointDisplayOption = "members" | "team" | "organization";
+
+export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
+    members: "Display members of the maintaining team",
+    team: "Display maintaining team",
+    organization: "Display organisation"
 };
 
 export const publishingLevel = {
-    agency: "Everyone in my organisation",
+    agency: "Everyone in my organisation (recommended)",
+    branch: "My branch only",
+    section: "My section only",
     team: "My team only"
-    // public: "Everyone (Open Data)"
 };
 
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here

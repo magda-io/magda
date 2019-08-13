@@ -5,7 +5,6 @@ import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import NestedSetModelQueryer from "./NestedSetModelQueryer";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -32,9 +31,19 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:8181/"
         })
+        .option("registryApiUrl", {
+            describe: "The access endpoint URL of the Registry API",
+            type: "string",
+            default: "http://localhost:6101/v0"
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        })
+        .option("tenantId", {
+            describe: "The tenant id for intra-network communication",
+            type: "number",
+            default: 0
         }).argv
 );
 
@@ -47,23 +56,14 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
-const orgQueryer = new NestedSetModelQueryer(database.getPool(), "org_units");
-orgQueryer.defaultSelectFieldList = [
-    "id",
-    "name",
-    "description",
-    "create_by",
-    "create_time",
-    "edit_by",
-    "edit_time"
-];
-
 app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
+        registryApiUrl: argv.registryApiUrl,
+        opaUrl: argv.opaUrl,
         database,
-        orgQueryer
+        tenantId: argv.tenantId
     })
 );
 

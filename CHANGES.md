@@ -1,24 +1,31 @@
 ## 0.0.56
 
+General:
+
+-   Add multi-tenant support. Deployed as single tenant by default.
+
+Registry:
+
+-   Changed database schema.
+-   Provide services based on Tenant IDs.
+-   Fixed PATCH request to registry won't trigger notification to webhook
+
+Gateway:
+
+-   Add tenant ID header to client requests.
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
+
 Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
+-   Add tenant specific search.
 
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
-
-Registry:
-
--   PATCH request to registry won't trigger notification to webhook
-
-Others:
-
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
+-   Index datasets with tenant ID.
+-   Fixed indexer throws an error when affiliatedOrganisation field is created
 
 Cataloging:
 
@@ -46,10 +53,35 @@ UI:
 -   Show Database ownership information on dataset page (Admin Only)
 -   Added vocabulary suggestion for keywords & themes input on new dataset page
 -   Extracted keyword will be filtered by vocabulary APIs
+-   New add dataset page design
+-   Added new progress meter
+-   New design for file upload area
+-   New dropdown box design on `Dataset details and contents` page
+-   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
+-   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
+-   New Design Spatial area input on `Dataset details and contents` page
+-   New Design for text input & text area input on add dataset pages
+-   Next & save button style adjustment on add dataset pages
+-   Update pagination to meet WCAG and use correct semantic HTML tags.
+-   New Design for files review box on `Details and Content` page
+-   Moved dataset description to Details and Contents page & added `additional notes` text box to submit page
+-   Added words count to Textarea
+-   Adjusted tooltip style & layout
+-   Overall page layout adjustment for `Details and Content` page
+-   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Restricted dataset contact point display options to team members, team or org and made it save in the registry.
+-   Added ability to set the owning org unit in Add Dataset flow.
+-   Stopped keywords & themes extraction producing duplicate keywords for different files
+-   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
+-   Made all keywords extracted lower case
+-   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
+-   Style adjustment for question Who can see the dataset once it is published on Access and Use page
 
 Gateway:
 
--   Add ArcGIS/ESRI Authentication provider
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
+-   Made organisation field an autocomplete in add dataset page.
 
 Access Control:
 
@@ -60,6 +92,7 @@ Access Control:
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
 -   Filter datasets based on user's current organization unit
+-   Added API to see what users will approve a potential dataset
 
 Others:
 
@@ -68,6 +101,12 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Made registry-api DB pool settings configurable via Helm
+-   Make broken link sleuther recrawl period configurable via Helm
+-   Format minion will trust dcat format if other measures indicate a ZIP format
+-   Format minion will trust dcat format if other measures indicate a ESRI REST format
+-   Added ASC to 4 stars rating list
+-   Removed Travis CI (Gitlab CI still remains)
 
 ## 0.0.55
 

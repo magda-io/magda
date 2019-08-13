@@ -159,8 +159,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Shape File",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -182,8 +181,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Other",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
             },
             "source": {
                 "type": "csv-distribution",
@@ -217,8 +215,7 @@
             "csv-dataset": {},
             "dcat-dataset-strings": {
                 "title": "DATASET TITLE 2",
-                "description":
-                    "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
+                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
@@ -255,12 +252,10 @@
     },
     "dist-connector-4-0-csv": {
         "id": "dist-connector-4-0-csv",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "dcat-distribution-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "license": "No Licence",
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
@@ -279,12 +274,10 @@
     },
     "dist-connector-4-1-other": {
         "id": "dist-connector-4-1-other",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "dcat-distribution-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "license": "No Licence",
                 "accessURL": "LOCATION 1",
                 "accessNotes": "PATH/3",
@@ -319,13 +312,11 @@
     },
     "ds-connector-4": {
         "id": "ds-connector-4",
-        "name":
-            "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+        "name": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
         "aspects": {
             "csv-dataset": {},
             "dcat-dataset-strings": {
-                "title":
-                    "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
+                "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
                 "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],

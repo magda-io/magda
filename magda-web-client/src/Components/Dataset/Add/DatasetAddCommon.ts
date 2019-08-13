@@ -1,7 +1,12 @@
 import uuidv4 from "uuid/v4";
 
-import { Contact } from "Components/Editing/Editors/contactEditor";
-import { licenseLevel } from "constants/DatasetConstants";
+import {
+    licenseLevel,
+    ContactPointDisplayOption
+} from "constants/DatasetConstants";
+import { fetchOrganization } from "api-clients/RegistryApis";
+import { config } from "config";
+import { User } from "reducers/userManagementReducer";
 
 export type File = {
     title: string;
@@ -38,7 +43,27 @@ export enum FileState {
     Ready
 }
 
-type Dataset = {
+export function fileStateToText(state: FileState) {
+    switch (state) {
+        case FileState.Added:
+            return "Added";
+        case FileState.Reading:
+            return "Reading";
+        case FileState.Processing:
+            return "Processing";
+        case FileState.Ready:
+            return "Ready";
+        default:
+            return "Unknown";
+    }
+}
+
+export type OrganisationAutocompleteChoice = {
+    existingId?: string;
+    name: string;
+};
+
+export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
@@ -46,12 +71,13 @@ type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPointFull?: Contact[];
+    owningOrgUnitId?: string;
     contactPointDisplay?: string;
-    publisher?: string;
+    publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     creation_affiliatedOrganisation?: string[];
     creation_sourceSystem?: string;
     creation_mechanism?: string;
@@ -60,13 +86,20 @@ type Dataset = {
     accessNotesTemp?: string;
 };
 
-type DatasetPublishing = {
+export type DatasetPublishing = {
     state: string;
     level: string;
+    notesToApprover?: string;
+    contactPointDisplay?: ContactPointDisplayOption;
 };
 
 type SpatialCoverage = {
     bbox?: [number, number, number, number];
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
 };
 
 export type State = {
@@ -106,18 +139,19 @@ type Access = {
     downloadURL?: string;
 };
 
-export function createBlankState(): State {
+function createBlankState(user: User): State {
     return {
         files: [],
         processing: false,
         dataset: {
             title: "Untitled",
             languages: ["eng"],
-            contactPointDisplay: "role"
+            owningOrgUnitId: user.orgUnitId
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency"
+            level: "agency",
+            contactPointDisplay: "members"
         },
         spatialCoverage: {},
         temporalCoverage: {
@@ -136,13 +170,27 @@ export function createBlankState(): State {
 
 // saving data in the local storage for now
 // TODO: consider whether it makes sense to store this in registery as a custom state or something
-export function loadState(id) {
-    let dataset = localStorage[id];
-    if (dataset) {
-        dataset = JSON.parse(dataset);
-        return dataset;
+export async function loadState(id: string, user: User): Promise<State> {
+    const stateString = localStorage[id];
+    let state: State;
+    if (stateString) {
+        state = JSON.parse(stateString);
+    } else {
+        state = createBlankState(user);
     }
-    return {};
+
+    if (
+        !state.dataset.publisher &&
+        typeof config.defaultOrganizationId !== "undefined"
+    ) {
+        const org = await fetchOrganization(config.defaultOrganizationId);
+        state.dataset.publisher = {
+            name: org.name,
+            existingId: org.id
+        };
+    }
+
+    return state;
 }
 
 export function saveState(state: State, id = "") {

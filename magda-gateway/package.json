@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-0",
+    "@magda/tenant-api": "^0.0.56-0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -43,6 +44,7 @@
     "passport-facebook": "^2.0.0",
     "passport-google-oauth20": "^1.0.0",
     "passport-local": "^1.0.0",
+    "passport-wsfed-saml2": "https://github.com/magda-io/passport-wsfed-saml2",
     "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",

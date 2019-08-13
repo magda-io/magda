@@ -1,8 +1,20 @@
 .choice-buttonHeading {
-    font-size: 0.9em;
-    margin: 0 0 1em 0;
+    margin: 0px 0px 28px 0px;
     text-align: left;
-    font-style: italic;
+    font-size: 18px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.11;
+    letter-spacing: normal;
+    color: #ffffff;
+}
+
+.au-btn--secondary.choice-Button {
+    color: #484848 !important;
+    .choice-buttonHeading {
+        color: #484848 !important;
+    }
 }
 
 .choice-IconRow {
@@ -14,14 +26,27 @@
 
 .choice-Icon {
     width: 5em;
-    padding-right: 2em;
     height: 5em;
 }
 
 .choice-Button {
-    width: 90%;
+    width: 520px;
+    height: 220px;
+    display: block !important;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 0 40px 40px 40px !important;
+    padding-left: 45px !important;
+    padding-top: 55px !important;
+    padding-right: 45px !important;
+    border: none !important;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+    .text-content {
+        padding-left: 25px;
+    }
 }
 
-.choice-Col {
-    margin-top: 1em;
+.au-btn--secondary.choice-Button {
+    border: none !important;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
 }

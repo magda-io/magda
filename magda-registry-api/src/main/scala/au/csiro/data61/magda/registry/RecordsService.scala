@@ -2,35 +2,25 @@ package au.csiro.data61.magda.registry
 
 import java.util.concurrent.TimeoutException
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.util.Failure
-import scala.util.Success
-import com.typesafe.config.Config
-import akka.actor.ActorRef
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
-
-import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import java.util.concurrent.TimeoutException
-
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
+import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
+
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -57,22 +47,23 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @Path("/{recordId}")
   @ApiOperation(value = "Delete a record", nickname = "deleteById", httpMethod = "DELETE", response = classOf[DeleteResult])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "The record could not be deleted, possibly because it is used by another record.", response = classOf[BadRequest])))
-  def deleteById = delete {
-    path(Segment) { (recordId: String) =>
+  def deleteById: Route = delete {
+    path(Segment) { recordId: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        {
-          val result = DB localTx { session =>
-            recordPersistence.deleteRecord(session, recordId) match {
-              case Success(result)    => complete(DeleteResult(result))
+        requiresTenantId { tenantId =>
+          val theResult = DB localTx { session =>
+            recordPersistence.deleteRecord(session, tenantId, recordId) match {
+              case Success(result) => complete(DeleteResult(result))
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
           }
           webHookActor ! WebHookActor.Process()
-          result
+          theResult
         }
       }
     }
@@ -101,42 +92,43 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Trim by source tag", notes = "Trims records with the provided source that DON'T have the supplied source tag",
     nickname = "trimBySourceTag", httpMethod = "DELETE", response = classOf[MultipleDeleteResult])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "sourceTagToPreserve", required = true, dataType = "string", paramType = "query", value = "Source tag of the records to PRESERVE."),
     new ApiImplicitParam(name = "sourceId", required = true, dataType = "string", paramType = "query", value = "Source id of the records to delete."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 202, message = "Deletion is taking a long time (normal for sources with many records) but it has worked"),
     new ApiResponse(code = 400, message = "The records could not be deleted, possibly because they are used by other records.", response = classOf[BadRequest])))
-  def trimBySourceTag = delete {
+  def trimBySourceTag: Route = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
-
-          val deleteFuture = Future {
-            // --- DB session needs to be created within the `Future`
-            // --- as the `Future` will keep running after timeout and require active DB session
-            DB localTx { implicit session =>
-              recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, Some(logger))
+        requiresTenantId { tenantId =>
+          parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
+            val deleteFuture = Future {
+              // --- DB session needs to be created within the `Future`
+              // --- as the `Future` will keep running after timeout and require active DB session
+              DB localTx { implicit session =>
+                recordPersistence.trimRecordsBySource(tenantId, sourceTagToPreserve, sourceId, Some(logger))
+              }
+            } map { result =>
+              webHookActor ! WebHookActor.Process()
+              result
             }
-          } map { result =>
-            webHookActor ! WebHookActor.Process()
-            result
-          }
 
-          val deleteResult = try {
-            Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
-          } catch {
-            case e: Throwable => Failure(e)
-          }
+            val deleteResult = try {
+              Await.result(deleteFuture, config.getLong("trimBySourceTagTimeoutThreshold") milliseconds)
+            } catch {
+              case e: Throwable => Failure(e)
+            }
 
-          deleteResult match {
-            case Success(result)                             => complete(MultipleDeleteResult(result))
-            case Failure(timeoutException: TimeoutException) => complete(StatusCodes.Accepted)
-            case Failure(exception) =>
-              logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
-              complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
+            deleteResult match {
+              case Success(result) => complete(MultipleDeleteResult(result))
+              case Failure(_: TimeoutException) => complete(StatusCodes.Accepted)
+              case Failure(exception) =>
+                logger.error(exception, "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2", sourceTagToPreserve, sourceId)
+                complete(StatusCodes.BadRequest, BadRequest("An error occurred while processing your request."))
+            }
           }
-
         }
       }
     }
@@ -171,25 +163,25 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Modify a record by ID", nickname = "putById", httpMethod = "PUT", response = classOf[Record],
     notes = "Modifies a record.  Aspects included in the request are created or updated, but missing aspects are not removed.")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the record to be fetched."),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The record to save."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def putById = put {
-    path(Segment) { (id: String) =>
-      requireIsAdmin(authClient)(system, config) { _ =>
-        {
-          entity(as[Record]) { record =>
-            val result = DB localTx { session =>
-              recordPersistence.putRecordById(session, id, record, Nil) match {
-                case Success(_) =>
-                  // TODO: Check if this is really what we want!
-                  // A scala test expects this though.
-                  complete(record)
-                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+  def putById: Route = put {
+    path(Segment) { id: String =>
+      requireIsAdmin(authClient)(system, config) { _ => {
+        requiresTenantId { tenantId =>
+            entity(as[Record]) { recordIn =>
+              val result = DB localTx { session =>
+                recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil) match {
+                  case Success(recordOut) =>
+                    complete(recordOut)
+                  case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+                }
               }
+              webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(recordIn.aspects.keys.toList))
+              result
             }
-            webHookActor ! WebHookActor.Process(false, Some(record.aspects.map(_._1).toList))
-            result
           }
         }
       }
@@ -223,16 +215,17 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   @ApiOperation(value = "Modify a record by applying a JSON Patch", nickname = "patchById", httpMethod = "PATCH", response = classOf[AspectDefinition],
     notes = "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).")
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "id", required = true, dataType = "string", paramType = "path", value = "ID of the aspect to be saved."),
     new ApiImplicitParam(name = "recordPatch", required = true, dataType = "gnieh.diffson.JsonPatchSupport$JsonPatch", paramType = "body", value = "The RFC 6902 patch to apply to the aspect."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
-  def patchById = patch {
-    path(Segment) { (id: String) =>
+  def patchById: Route = patch {
+    path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        {
+        requiresTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
-            val result = DB localTx { session =>
-              recordPersistence.patchRecordById(session, id, recordPatch, Nil) match {
+            val theResult = DB localTx { session =>
+              recordPersistence.patchRecordById(session, tenantId, id, recordPatch, Nil) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
@@ -240,8 +233,8 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
                   complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }
             }
-            webHookActor ! WebHookActor.Process(false, Some(List(id)))
-            result
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(List(id)))
+            theResult
           }
         }
       }
@@ -276,28 +269,31 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
    */
   @ApiOperation(value = "Create a new record", nickname = "create", httpMethod = "POST", response = classOf[Record])
   @ApiImplicitParams(Array(
+    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
     new ApiImplicitParam(name = "record", required = true, dataType = "au.csiro.data61.magda.model.Registry$Record", paramType = "body", value = "The definition of the new record."),
     new ApiImplicitParam(name = "X-Magda-Session", required = true, dataType = "String", paramType = "header", value = "Magda internal session id")))
   @ApiResponses(Array(
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
-      pathEnd {
-        entity(as[Record]) { record =>
-          val result = DB localTx { session =>
-            recordPersistence.createRecord(session, record) match {
-              case Success(theResult)    => complete(theResult)
-              case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+      requiresTenantId { tenantId =>
+        pathEnd {
+          entity(as[Record]) { record =>
+            val result = DB localTx { session =>
+              recordPersistence.createRecord(session, tenantId, record) match {
+                case Success(theResult) => complete(theResult)
+                case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              }
             }
+            webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
+            result
           }
-          webHookActor ! WebHookActor.Process(ignoreWaitingForResponse = false, Some(record.aspects.keys.toList))
-          result
         }
       }
     }
   }
 
-  override def route =
+  override def route: Route =
     super.route ~
       putById ~
       patchById ~

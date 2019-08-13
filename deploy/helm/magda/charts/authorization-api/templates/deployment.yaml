@@ -25,7 +25,9 @@ spec:
             "--listenPort", "80",
             "--dbHost", "authorization-db",
             "--dbPort", "5432",
-            "--opaUrl", "http://opa/"
+            "--opaUrl", "http://opa/",
+            "--registryApiUrl", "http://registry-api/v0",
+            "--tenantId", "0"
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

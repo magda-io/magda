@@ -11,7 +11,7 @@ class RecordsServiceWithOpaQuerySpec extends ApiSpec {
 
   it("should get records that have no access control aspect by any user") { param =>
     val aspectDefinition = AspectDefinition("test", "test", None)
-    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> param.api(Full).routes ~> check {
+    param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
@@ -50,30 +50,30 @@ class RecordsServiceWithOpaQuerySpec extends ApiSpec {
 
     val accessControlAspect = AspectDefinition("dataset-access-control", "access control", Some(JsonParser(jsonSchema).asJsObject))
 
-    param.asAdmin(Post("/v0/aspects", accessControlAspect)) ~> param.api(Full).routes ~> check {
+    param.asAdmin(Post("/v0/aspects", accessControlAspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
     val recordWithAspect = Record("with", "with", Map(
       "test" -> JsObject("foo" -> JsString("bar"))
     ))
-    param.asAdmin(Post("/v0/records", recordWithAspect)) ~> param.api(Full).routes ~> check {
+    param.asAdmin(Post("/v0/records", recordWithAspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
     val recordWithoutAspect = Record("without", "without", Map())
-    param.asAdmin(Post("/v0/records", recordWithoutAspect)) ~> param.api(Full).routes ~> check {
+    param.asAdmin(Post("/v0/records", recordWithoutAspect)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
     }
 
-    Get("/v0/records?aspect=test") ~> param.api(Full).routes ~> check {
+    Get("/v0/records?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
       val page = responseAs[RecordsPage[Record]]
       page.records.length shouldBe 1
-      page.records(0) shouldBe recordWithAspect
+      page.records(0) shouldBe recordWithAspect.copy(tenantId = Some(TENANT_1))
     }
 
-    Get("/v0/records/count?aspect=test") ~> param.api(Full).routes ~> check {
+    Get("/v0/records/count?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
       val countResponse = responseAs[CountResponse]
       countResponse.count shouldBe 1

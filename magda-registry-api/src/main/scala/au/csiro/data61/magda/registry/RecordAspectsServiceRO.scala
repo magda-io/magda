@@ -1,26 +1,16 @@
 package au.csiro.data61.magda.registry
 
-import javax.ws.rs.Path
-
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.stream.Materializer
 import akka.http.scaladsl.server.Directives._
-import scalikejdbc.DB
-import akka.http.scaladsl.model.StatusCodes
-import io.swagger.annotations._
-import gnieh.diffson.sprayJson._
-import spray.json.JsObject
+import akka.stream.Materializer
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-
-import scala.util.Failure
-import scala.util.Success
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
 import com.typesafe.config.Config
-import au.csiro.data61.magda.opa.OpaQueryer
-import scala.concurrent.{ExecutionContext, Future}
-import au.csiro.data61.magda.directives.AuthDirectives.getJwt
+import io.swagger.annotations._
+import javax.ws.rs.Path
+import scalikejdbc.DB
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -28,18 +18,17 @@ import au.csiro.data61.magda.directives.AuthDirectives.getJwt
   produces = "application/json"
 )
 class RecordAspectsServiceRO(
-    implicit val system: ActorSystem,
-    implicit val materializer: Materializer,
-    implicit val config: Config
+    system: ActorSystem,
+    materializer: Materializer,
+    config: Config
 ) extends Protocols
     with SprayJsonSupport {
   private val recordPersistence = DefaultRecordPersistence
-  implicit val ec: ExecutionContext = system.dispatcher
+
 
   /**
     * @apiGroup Registry Record Aspects
     * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
-    *
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
     * @apiParam (path) {string} aspectId ID of the aspect to fetch
@@ -66,6 +55,13 @@ class RecordAspectsServiceRO(
   @ApiImplicitParams(
     Array(
       new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
         name = "recordId",
         required = true,
         dataType = "string",
@@ -91,42 +87,32 @@ class RecordAspectsServiceRO(
     )
   )
   def getById = get {
-    getJwt() { jwt =>
       path(Segment / "aspects" / Segment) {
         (recordId: String, aspectId: String) =>
-          {
-            val queryer = new RegistryOpaQueryer()
+          requiresTenantId { tenantId => {
+            withRecordOpaQuery(AuthOperations.read)(
+              config,
+              system,
+              materializer,
+              system.dispatcher
+            ) { opaQueries =>
 
-            val policyIds = DB readOnly { session =>
-              recordPersistence.getPolicyIds(session, Seq(aspectId), AuthOperations.read, Some(recordId))
-            }
-
-            if (policyIds.size > 1) {
-              throw new Exception(
-                s"Multiple policy ids ($policyIds) found for a single aspect $aspectId on record $recordId"
-              )
-            }
-
-            val policyId = policyIds.head
-            val policyFuture = queryer.queryPolicy(jwt, policyId)
-
-            onSuccess(policyFuture) { opaResult =>
-              DB readOnly { session =>
-                recordPersistence
-                  .getRecordAspectById(session, recordId, aspectId, opaResult) match {
-                  case Some(recordAspect) =>
-                    complete(recordAspect)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      BadRequest("No record aspect exists with that ID.")
+              complete {
+                DB readOnly { session =>
+                  recordPersistence
+                    .getRecordAspectById(
+                      session,
+                      tenantId,
+                      recordId,
+                      aspectId,
+                      opaQueries.queries
                     )
                 }
               }
             }
           }
+          }
       }
-    }
   }
 
   def route =

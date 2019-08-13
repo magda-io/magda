@@ -52,7 +52,11 @@ export default class Database {
         this.orgQueryer = new NestedSetModelQueryer(this.pool, "org_units", [
             "id",
             "name",
-            "description"
+            "description",
+            "create_by",
+            "create_time",
+            "edit_by",
+            "edit_time"
         ]);
     }
 

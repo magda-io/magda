@@ -2,7 +2,7 @@ import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
 import JsonTransformer, {
     JsonTransformerOptions
 } from "@magda/typescript-common/dist/JsonTransformer";
-import { Record } from "@magda/typescript-common/src/generated/registry/api";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 
 export default class CkanTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {

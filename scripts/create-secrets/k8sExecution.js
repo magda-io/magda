@@ -20,7 +20,9 @@ const dbPasswordNames = [
     "registry-db",
     "registry-db-client",
     "session-db",
-    "session-db-client"
+    "session-db-client",
+    "tenant-db",
+    "tenant-db-client"
 ];
 
 function k8sExecution(config, shouldNotAsk = false) {

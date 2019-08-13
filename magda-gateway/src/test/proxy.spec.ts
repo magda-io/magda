@@ -40,7 +40,8 @@ describe("proxying", () => {
             jwtSecret: "othersecret",
             userId: "123",
             web: "https://127.0.0.1",
-            previewMap: "http://preview-map"
+            previewMap: "http://preview-map",
+            tenantUrl: "http://tenant"
         });
     });
 

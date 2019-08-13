@@ -1,51 +1,18 @@
 package au.csiro.data61.magda.api
 
-import java.io.File
-import java.time.{ Instant, OffsetDateTime }
-import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
+import java.time.OffsetDateTime
 
-import akka.actor.{ ActorSystem, Scheduler }
-import akka.event.{ Logging, LoggingAdapter }
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.{ InternalServerError, OK }
+import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{ RouteTestTimeout, ScalatestRouteTest }
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.api.model.{ Protocols, SearchResult }
-import au.csiro.data61.magda.model.misc.{ DataSet, _ }
-import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
-import au.csiro.data61.magda.search.elasticsearch._
-import au.csiro.data61.magda.test.util.ApiGenerators._
-import com.typesafe.config.{ Config, ConfigFactory }
-import org.elasticsearch.common.settings.Settings
-import org.scalacheck.Shrink
-import org.scalacheck._
-import org.scalactic.anyvals.PosInt
-import org.scalatest.{ BeforeAndAfter, Matchers, _ }
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import spray.json._
-
-import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration.DurationInt
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
-import au.csiro.data61.magda.util.SetExtractor
-import org.scalacheck.Arbitrary._
-import au.csiro.data61.magda.model.Temporal.PeriodOfTime
-import au.csiro.data61.magda.search.SearchStrategy.{ MatchAll, MatchPart }
-import java.util.HashMap
-import com.sksamuel.elastic4s.http.HttpClient
-import org.elasticsearch.cluster.health.ClusterHealthStatus
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.api.model.Protocols
-import au.csiro.data61.magda.util.SetExtractor
-import au.csiro.data61.magda.test.util.Generators
-import scala.reflect.internal.util.Statistics.View
+import au.csiro.data61.magda.model.misc.{DataSet, _}
 import au.csiro.data61.magda.search.SearchStrategy
+import au.csiro.data61.magda.search.SearchStrategy.MatchAll
+import au.csiro.data61.magda.search.elasticsearch._
+import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
+import au.csiro.data61.magda.test.util.Generators
+import org.scalacheck.{Shrink, _}
 
 class FacetSpec extends BaseSearchApiSpec {
 
@@ -59,7 +26,7 @@ class FacetSpec extends BaseSearchApiSpec {
           val facetSize = Math.max(rawFacetSize, 1)
 
           whenever(start >= 0 && limit >= 0) {
-            Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> routes ~> check {
+            Get(s"/v0/datasets?query=*&start=$start&limit=$limit&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               inner(dataSets, facetSize)
             }
@@ -84,7 +51,7 @@ class FacetSpec extends BaseSearchApiSpec {
           val (textQuery, objQuery) = query
           val facetSize = Math.max(rawFacetSize, 1)
 
-          Get(s"/v0/datasets?${textQuery}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> routes ~> check {
+          Get(s"/v0/datasets?${textQuery}&start=0&limit=${dataSets.size}&facetSize=$facetSize") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
             inner(responseAs[SearchResult].dataSets, facetSize, objQuery, dataSets, routes)
           }
@@ -113,7 +80,7 @@ class FacetSpec extends BaseSearchApiSpec {
       whenever(!queryWithoutFilter.equals(Query())) {
         val textQueryWithoutFacet = queryToText(queryWithoutFilter)
 
-        Get(s"/v0/datasets?${textQueryWithoutFacet}&start=0&limit=${allDataSets.size}&facetSize=1") ~> routes ~> check {
+        Get(s"/v0/datasets?${textQueryWithoutFacet}&start=0&limit=${allDataSets.size}&facetSize=1") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val innerResult = responseAs[SearchResult]
           val innerDataSets = innerResult.dataSets
@@ -382,7 +349,7 @@ class FacetSpec extends BaseSearchApiSpec {
                 val publisherLookup = publishers
                   .groupBy(_.name.get.toLowerCase)
 
-                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> routes ~> check {
+                Get(s"/v0/datasets?${textQuery._1}&start=0&limit=0&facetSize=${Math.max(facetSize, 1)}") ~> addSingleTenantIdHeader ~> routes ~> check {
                   status shouldBe OK
 
                   val result = responseAs[SearchResult]

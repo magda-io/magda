@@ -18,6 +18,18 @@
       "include": "Dockerfile elasticsearch.yml setup.sh wn_s.pl regionSynonyms.txt"
     },
     "regionSources": {
+      "COUNTRY": {
+        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/country.geojson",
+        "idField": "id",
+        "nameField": "name",
+        "order": 9
+      },
+      "OFFSHORE_TERRITORIES": {
+        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/off-shore-territories.geojson",
+        "idField": "id",
+        "nameField": "name",
+        "order": 11
+      },
       "SA4": {
         "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/SA4.geojson",
         "idField": "SA4_CODE11",

@@ -1,24 +1,29 @@
 package au.csiro.data61.magda.registry
 
-import scalikejdbc._
-import spray.json._
-import spray.json.lenses.JsonLenses._
-
-import scala.util.Try
-import scala.util.{Failure, Success}
 import java.sql.SQLException
 
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
-import au.csiro.data61.magda.model.Registry._
+import scalikejdbc._
+import spray.json._
+import spray.json.lenses.JsonLenses._
+
+import scala.util.{Failure, Success, Try}
+
 import au.csiro.data61.magda.opa.OpaTypes._
 
+// TODO: Not to filter results by tenant ID for magda internal use only functions.
+// For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
+// In this case, those records should not be filtered by tenant ID.
 trait RecordPersistence {
+
   def getAll(
       implicit session: DBSession,
+      tenantId: BigInt,
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
@@ -26,6 +31,7 @@ trait RecordPersistence {
 
   def getAllWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
@@ -38,14 +44,20 @@ trait RecordPersistence {
 
   def getCount(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
   ): Long
 
-  def getById(implicit session: DBSession, id: String): Option[RecordSummary]
+  def getById(
+      implicit session: DBSession,
+      tenantId: BigInt,
+      id: String
+  ): Option[RecordSummary]
 
   def getByIdWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       opaQuery: Seq[OpaQueryPair],
       aspectIds: Iterable[String] = Seq(),
@@ -55,6 +67,7 @@ trait RecordPersistence {
 
   def getByIdsWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       ids: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       aspectIds: Iterable[String] = Seq(),
@@ -64,6 +77,7 @@ trait RecordPersistence {
 
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
+      tenantId: BigInt,
       ids: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       idsToExclude: Iterable[String] = Seq(),
@@ -74,6 +88,7 @@ trait RecordPersistence {
 
   def getRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       opaQueries: List[OpaQuery]
@@ -81,6 +96,7 @@ trait RecordPersistence {
 
   def getPageTokens(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       limit: Option[Int] = None,
@@ -89,6 +105,7 @@ trait RecordPersistence {
 
   def putRecordById(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[OpaQueryPair]
@@ -96,6 +113,7 @@ trait RecordPersistence {
 
   def patchRecordById(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[OpaQueryPair]
@@ -103,6 +121,7 @@ trait RecordPersistence {
 
   def patchRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       aspectPatch: JsonPatch
@@ -110,16 +129,26 @@ trait RecordPersistence {
 
   def putRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       newAspect: JsObject
   ): Try[JsObject]
 
-  def createRecord(implicit session: DBSession, record: Record): Try[Record]
+  def createRecord(
+      implicit session: DBSession,
+      tenantId: BigInt,
+      record: Record
+  ): Try[Record]
 
-  def deleteRecord(implicit session: DBSession, recordId: String): Try[Boolean]
+  def deleteRecord(
+      implicit session: DBSession,
+      tenantId: BigInt,
+      recordId: String
+  ): Try[Boolean]
 
   def trimRecordsBySource(
+      tenantId: BigInt,
       sourceTagToPreserve: String,
       sourceId: String,
       logger: Option[LoggingAdapter] = None
@@ -127,6 +156,7 @@ trait RecordPersistence {
 
   def createRecordAspect(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       aspect: JsObject
@@ -134,6 +164,7 @@ trait RecordPersistence {
 
   def deleteRecordAspect(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String
   ): Try[Boolean]
@@ -162,15 +193,17 @@ object DefaultRecordPersistence
 
   def getAll(
       implicit session: DBSession,
+      tenantId: BigInt,
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
   ): RecordsPage[RecordSummary] = {
-    this.getSummaries(session, pageToken, start, limit)
+    this.getSummaries(session, tenantId, pageToken, start, limit)
   }
 
   def getAllWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
@@ -180,10 +213,13 @@ object DefaultRecordPersistence
       dereference: Option[Boolean] = None,
       aspectQueries: Iterable[AspectQuery] = Nil
   ): RecordsPage[Record] = {
-    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
+    val selectors = aspectQueries
+      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(Some.apply)
 
     this.getRecords(
       session,
+      tenantId,
       aspectIds,
       optionalAspectIds,
       opaQuery,
@@ -195,25 +231,36 @@ object DefaultRecordPersistence
     )
   }
 
+  // If a system tenant makes the request with aspectIds, it will always return 0.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
   ): Long = {
-    val selectors = aspectQueries.map(aspectQueryToWhereClause).map(Some.apply)
+    val selectors: Iterable[Some[SQLSyntax]] = aspectQueries
+      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(Some.apply)
 
-    this.getCountInner(session, aspectIds, selectors)
+    this.getCountInner(session, tenantId, aspectIds, selectors)
   }
 
   def getById(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String
   ): Option[RecordSummary] = {
-    this.getSummaries(session, None, None, None, Some(id)).records.headOption
+    this
+      .getSummaries(session, tenantId, None, None, None, Some(id))
+      .records
+      .headOption
   }
 
   def getByIdWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       opaQuery: Seq[OpaQueryPair],
       aspectIds: Iterable[String] = Seq(),
@@ -223,6 +270,7 @@ object DefaultRecordPersistence
     this
       .getRecords(
         session,
+        tenantId,
         aspectIds,
         optionalAspectIds,
         opaQuery,
@@ -238,6 +286,7 @@ object DefaultRecordPersistence
 
   def getByIdsWithAspects(
       implicit session: DBSession,
+      tenantId: BigInt,
       ids: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       aspectIds: Iterable[String] = Seq(),
@@ -249,6 +298,7 @@ object DefaultRecordPersistence
     else
       this.getRecords(
         session,
+        tenantId,
         aspectIds,
         optionalAspectIds,
         opaQuery,
@@ -262,6 +312,7 @@ object DefaultRecordPersistence
 
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
+      tenantId: BigInt,
       ids: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       idsToExclude: Iterable[String] = Seq(),
@@ -281,6 +332,7 @@ object DefaultRecordPersistence
                          from RecordAspects
                          where RecordAspects.recordId=Records.recordId
                          and aspectId=$aspectId
+                         and tenantId=$tenantId
                          and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
       }
 
@@ -295,6 +347,7 @@ object DefaultRecordPersistence
 
       this.getRecords(
         session,
+        tenantId,
         aspectIds,
         optionalAspectIds,
         opaQuery,
@@ -318,7 +371,7 @@ object DefaultRecordPersistence
 
     val recordIdClause = recordId match {
       case Some(aRecordId) => sqls"""recordid = $aRecordId"""
-      case None           => SQLSyntax.empty
+      case None            => SQLSyntax.empty
     }
 
     val column = getColumnNameForOperation(operation)
@@ -339,20 +392,20 @@ object DefaultRecordPersistence
 
   def getRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       opaQueries: List[OpaQuery] = List()
   ): Option[JsObject] = {
-    val opaWhereClauseParts = opaQueriesToWhereClauseParts(opaQueries)
+    val opaWhereClauseParts = opaQueriesToWhereClauseParts(tenantId, opaQueries)
 
-    sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data
+    sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data, RecordAspects.tenantId
           from RecordAspects
-            inner join Aspects using (aspectId)
-            inner join Records using (recordId)
-          where RecordAspects.recordId=$recordId
-          and RecordAspects.aspectId=$aspectId
-          ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
-    else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
+          inner join Aspects using (aspectId, tenantId)
+          inner join Records using (recordId, tenantId)
+          where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, $tenantId)
+	        ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
+            else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
       """
       .map(rowToAspect)
       .single
@@ -361,20 +414,26 @@ object DefaultRecordPersistence
 
   def getPageTokens(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String] = {
+    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
 
     val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
       aspectIdsAndOpaQueriesToWhereParts(
+        tenantId,
         aspectIds,
         opaQuery,
         AuthOperations.read
       ).toSeq.map(item => Option(item))
 
-    val whereClauseParts: Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors
+    val whereClauseParts
+        : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
+      recordsFilteredByTenantClause
+    )
 
 //    val whereClauseParts: Seq[Option[scalikejdbc.SQLSyntax]] = aspectIdsToWhereClause(aspectIds) ++ recordSelector
 
@@ -398,6 +457,7 @@ object DefaultRecordPersistence
 
   def putRecordById(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[OpaQueryPair]
@@ -414,6 +474,7 @@ object DefaultRecordPersistence
         )
       oldRecordWithoutAspects <- this.getByIdWithAspects(
         session,
+        tenantId,
         id,
         opaQueryUpdate
       ) match {
@@ -424,7 +485,7 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           // Check if record exists without any auth
-          this.getById(session, id) match {
+          this.getById(session, tenantId, id) match {
             case Some(record) =>
               Failure(
                 new RuntimeException(
@@ -433,11 +494,13 @@ object DefaultRecordPersistence
               )
             case None =>
               DB.localTx { nested =>
-                createRecord(nested, newRecord).map(_.copy(aspects = Map()))
+                createRecord(nested, tenantId, newRecord).map(
+                  _.copy(aspects = Map())
+                )
               } match {
                 case Success(record) => Success(record)
                 case Failure(e) =>
-                  this.getByIdWithAspects(session, id, opaQueryUpdate) match {
+                  this.getByIdWithAspects(session, tenantId, id, opaQueryUpdate) match {
                     case Some(record) => Success(record)
                     case None         => Failure(e)
                   }
@@ -451,11 +514,20 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
       }
-      result <- patchRecordById(session, id, recordPatch, opaQueryUpdate)
+      result <- patchRecordById(
+        session,
+        tenantId,
+        id,
+        recordPatch,
+        opaQueryUpdate
+      )
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
-            (aspectId, this.putRecordAspectById(session, id, aspectId, data))
+            (
+              aspectId,
+              this.putRecordAspectById(session, tenantId, id, aspectId, data)
+            )
         }
       }
       // Report the first failed aspect, if any
@@ -465,17 +537,19 @@ object DefaultRecordPersistence
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
       resultAspects <- Try { patchedAspects.mapValues(_.get) }
-    } yield result.copy(aspects = resultAspects)
+    } yield
+      result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
   }
 
   def patchRecordById(
       implicit session: DBSession,
+      tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[OpaQueryPair]
   ): Try[Record] = {
     for {
-      record <- this.getByIdWithAspects(session, id, opaQuery) match {
+      record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
         case Some(record) => Success(record)
         case None =>
           Failure(new RuntimeException("No record exists with that ID."))
@@ -500,19 +574,20 @@ object DefaultRecordPersistence
       _ <- Try {
         // Sourcetag should not generate an event so updating it is done separately
         if (record.sourceTag != patchedRecord.sourceTag) {
-          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where recordId = $id""".update
+          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, $tenantId)""".update
             .apply()
         }
       }
       _ <- Try {
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
-          val event = PatchRecordEvent(id, recordOnlyPatch).toJson.compactPrint
+          val event =
+            PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId =
-            sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordEvent.Id}, 0, $event::json)"
+            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, $tenantId, $event::json)"
               .updateAndReturnGeneratedKey()
               .apply()
-          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where recordId = $id""".update
+          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, $tenantId)""".update
             .apply()
           eventId
         } else {
@@ -539,13 +614,20 @@ object DefaultRecordPersistence
               if (rest == Pointer.Empty)
                 (
                   aspectId,
-                  putRecordAspectById(session, id, aspectId, aValue.asJsObject)
+                  putRecordAspectById(
+                    session,
+                    tenantId,
+                    id,
+                    aspectId,
+                    aValue.asJsObject
+                  )
                 )
               else
                 (
                   aspectId,
                   patchRecordAspectById(
                     session,
+                    tenantId,
                     id,
                     aspectId,
                     JsonPatch(Add(rest, aValue))
@@ -557,13 +639,14 @@ object DefaultRecordPersistence
                 List(Remove("aspects" / (_ / rest), old))
                 ) =>
               if (rest == Pointer.Empty) {
-                deleteRecordAspect(session, id, aspectId)
+                deleteRecordAspect(session, tenantId, id, aspectId)
                 (aspectId, Success(JsNull))
               } else {
                 (
                   aspectId,
                   patchRecordAspectById(
                     session,
+                    tenantId,
                     id,
                     aspectId,
                     JsonPatch(Remove(rest, old))
@@ -576,6 +659,7 @@ object DefaultRecordPersistence
                 aspectId,
                 patchRecordAspectById(
                   session,
+                  tenantId,
                   id,
                   aspectId,
                   JsonPatch(operations.map({
@@ -638,19 +722,27 @@ object DefaultRecordPersistence
           })
           .map(aspect => (aspect._1, aspect._2.get.asJsObject))
       )
-    } yield Record(patchedRecord.id, patchedRecord.name, aspects)
+    } yield
+      Record(
+        patchedRecord.id,
+        patchedRecord.name,
+        aspects,
+        tenantId = Some(tenantId)
+      )
   }
 
   def patchRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       aspectPatch: JsonPatch
   ): Try[JsObject] = {
     for {
-      aspect <- this.getRecordAspectById(session, recordId, aspectId) match {
+      aspect <- this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
         case Some(aspect) => Success(aspect)
-        case None         => createRecordAspect(session, recordId, aspectId, JsObject())
+        case None =>
+          createRecordAspect(session, tenantId, recordId, aspectId, JsObject())
       }
 
       patchedAspect <- Try {
@@ -667,9 +759,13 @@ object DefaultRecordPersistence
 
       eventId <- Try {
         if (testRecordAspectPatch.ops.nonEmpty) {
-          val event =
-            PatchRecordAspectEvent(recordId, aspectId, aspectPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${PatchRecordAspectEvent.Id}, 0, $event::json)"
+          val event = PatchRecordAspectEvent(
+            recordId,
+            tenantId,
+            aspectId,
+            aspectPatch
+          ).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, 0, $tenantId, $event::json)"
             .updateAndReturnGeneratedKey()
             .apply()
         } else {
@@ -680,8 +776,8 @@ object DefaultRecordPersistence
       _ <- Try {
         if (testRecordAspectPatch.ops.nonEmpty) {
           val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, $aspectId, $eventId, $jsonString::json)
-               on conflict (recordId, aspectId) do update
+          sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonString::json)
+               on conflict (aspectId, recordId, tenantId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
         } else {
@@ -693,12 +789,18 @@ object DefaultRecordPersistence
 
   def putRecordAspectById(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       newAspect: JsObject
   ): Try[JsObject] = {
     for {
-      oldAspect <- this.getRecordAspectById(session, recordId, aspectId) match {
+      oldAspect <- this.getRecordAspectById(
+        session,
+        tenantId,
+        recordId,
+        aspectId
+      ) match {
         case Some(aspect) => Success(aspect)
         // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
@@ -706,11 +808,11 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           DB.localTx { nested =>
-            createRecordAspect(nested, recordId, aspectId, newAspect)
+            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect)
           } match {
             case Success(aspect) => Success(aspect)
             case Failure(e) =>
-              this.getRecordAspectById(session, recordId, aspectId) match {
+              this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
                 case Some(aspect) => Success(aspect)
                 case None         => Failure(e)
               }
@@ -725,6 +827,7 @@ object DefaultRecordPersistence
       }
       result <- patchRecordAspectById(
         session,
+        tenantId,
         recordId,
         aspectId,
         recordAspectPatch
@@ -732,16 +835,20 @@ object DefaultRecordPersistence
     } yield result
   }
 
-  def createRecord(implicit session: DBSession, record: Record): Try[Record] = {
+  def createRecord(
+      implicit session: DBSession,
+      tenantId: BigInt,
+      record: Record
+  ): Try[Record] = {
     for {
       eventId <- Try {
         val eventJson =
-          CreateRecordEvent(record.id, record.name).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey
+          CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       _ <- Try {
-        sql"""insert into Records (recordId, name, lastUpdate, sourcetag) values (${record.id}, ${record.name}, $eventId, ${record.sourceTag})""".update
+        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, $tenantId, ${record.name}, $eventId, ${record.sourceTag})""".update
           .apply()
       } match {
         case Failure(e: SQLException)
@@ -756,50 +863,63 @@ object DefaultRecordPersistence
 
       hasAspectFailure <- record.aspects
         .map(
-          aspect => createRecordAspect(session, record.id, aspect._1, aspect._2)
+          aspect =>
+            createRecordAspect(
+              session,
+              tenantId,
+              record.id,
+              aspect._1,
+              aspect._2
+            )
         )
         .find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record)
+        case _                => Success(record.copy(tenantId = Some(tenantId)))
       }
     } yield hasAspectFailure
   }
 
   def deleteRecord(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String
   ): Try[Boolean] = {
     for {
       aspects <- Try {
-        sql"select aspectId from RecordAspects where recordId=$recordId"
+        sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, $tenantId)"
           .map(rs => rs.string("aspectId"))
           .list
           .apply()
       }
       _ <- aspects
-        .map(aspectId => deleteRecordAspect(session, recordId, aspectId))
+        .map(
+          aspectId => deleteRecordAspect(session, tenantId, recordId, aspectId)
+        )
         .find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
         case _                => Success(aspects)
       }
       _ <- Try {
-        val eventJson = DeleteRecordEvent(recordId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey
+        val eventJson =
+          DeleteRecordEvent(recordId, tenantId).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from Records where recordId=$recordId""".update.apply()
+        sql"""delete from Records where (recordId, tenantId)=($recordId, $tenantId)""".update
+          .apply()
       }
     } yield rowsDeleted > 0
   }
 
   def trimRecordsBySource(
+      tenantId: BigInt,
       sourceTagToPreserve: String,
       sourceId: String,
       logger: Option[LoggingAdapter] = None
   )(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON records.recordid = recordaspects.recordid where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = $tenantId"
         .map(rs => rs.string("recordId"))
         .list
         .apply()
@@ -809,7 +929,7 @@ object DefaultRecordPersistence
       case Success(Nil) => Success(0L)
       case Success(ids) =>
         ids
-          .map(recordId => deleteRecord(session, recordId))
+          .map(recordId => deleteRecord(session, tenantId, recordId))
           .foldLeft[Try[Long]](Success(0L))(
             (trySoFar: Try[Long], thisTry: Try[Boolean]) =>
               (trySoFar, thisTry) match {
@@ -839,20 +959,25 @@ object DefaultRecordPersistence
 
   def createRecordAspect(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String,
       aspect: JsObject
   ): Try[JsObject] = {
     for {
       eventId <- Try {
-        val eventJson =
-          CreateRecordAspectEvent(recordId, aspectId, aspect).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${CreateRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey
+        val eventJson = CreateRecordAspectEvent(
+          recordId,
+          tenantId,
+          aspectId,
+          aspect
+        ).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       insertResult <- Try {
         val jsonData = aspect.compactPrint
-        sql"""insert into RecordAspects (recordId, aspectId, lastUpdate, data) values ($recordId, $aspectId, $eventId, $jsonData::json)""".update
+        sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonData::json)""".update
           .apply()
         aspect
       } match {
@@ -870,18 +995,19 @@ object DefaultRecordPersistence
 
   def deleteRecordAspect(
       implicit session: DBSession,
+      tenantId: BigInt,
       recordId: String,
       aspectId: String
   ): Try[Boolean] = {
     for {
       _ <- Try {
         val eventJson =
-          DeleteRecordAspectEvent(recordId, aspectId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, data) values (${DeleteRecordAspectEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey
+          DeleteRecordAspectEvent(recordId, tenantId, aspectId).toJson.compactPrint
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from RecordAspects where recordId=$recordId and aspectId=$aspectId""".update
+        sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, $tenantId)""".update
           .apply()
       }
     } yield rowsDeleted > 0
@@ -952,16 +1078,27 @@ object DefaultRecordPersistence
       }
   }
 
+  // The current implementation assumes this API is not used by the system tenant.
+  // Is this what we want?
+  // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(
       implicit session: DBSession,
+      tenantId: BigInt,
       pageToken: Option[String],
       start: Option[Int],
       rawLimit: Option[Int],
       recordId: Option[String] = None
   ): RecordsPage[RecordSummary] = {
-    val countWhereClauseParts = Seq(recordId.map(id => sqls"recordId=$id"))
+    val countWhereClauseParts =
+      if (recordId.nonEmpty)
+        Seq(
+          recordId.map(id => sqls"recordId=$id and Records.tenantId=$tenantId")
+        )
+      else Seq(Some(sqls"Records.tenantId=$tenantId"))
+
     val whereClauseParts = countWhereClauseParts :+ pageToken.map(
-      token => sqls"Records.sequence > ${token.toLong}"
+      token =>
+        sqls"Records.sequence > ${token.toLong} and Records.tenantId=$tenantId"
     )
     val limit = rawLimit.getOrElse(defaultResultCount)
 
@@ -969,7 +1106,8 @@ object DefaultRecordPersistence
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where recordId=Records.recordId) as aspects
+                   (select array_agg(aspectId) from RecordAspects where (recordId, tenantId)=(Records.recordId, $tenantId)) as aspects,
+                   Records.tenantId as tenantId
             from Records
             ${makeWhereClause(whereClauseParts)}
             order by sequence
@@ -995,6 +1133,7 @@ object DefaultRecordPersistence
 
   private def getRecords(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQueryPair],
@@ -1014,18 +1153,28 @@ object DefaultRecordPersistence
       Map[String, PropertyWithLink]()
     }
 
+    val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
+      tenantId
+    )
+
+    val theRecordSelector = recordSelector ++ Iterable(
+      Some(recordsFilteredByTenantClause)
+    )
+
     val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
       aspectIdsAndOpaQueriesToWhereParts(
+        tenantId,
         aspectIds,
         opaQuery,
         AuthOperations.read
       ).toSeq.map(item => Option(item))
 
     val whereClauseParts: Seq[Option[SQLSyntax]] =
-      (recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors) :+ pageToken
-      .map(token => sqls"Records.sequence > $token")
+      (theRecordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors) :+ pageToken
+        .map(token => sqls"Records.sequence > $token")
 
     val aspectSelectors = aspectIdsToSelectClauses(
+      tenantId,
       List.concat(aspectIds, optionalAspectIds),
       AuthOperations.read,
       dereferenceDetails
@@ -1038,8 +1187,10 @@ object DefaultRecordPersistence
     val rawResult1: SQL[Nothing, NoExtractor] =
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
-                   Records.name as recordName
-                   ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors" else SQLSyntax.empty},
+                   Records.name as recordName,
+                   Records.tenantId as tenantId
+                   ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors"
+      else SQLSyntax.empty},
                    Records.sourcetag as sourceTag
             from Records
             ${makeWhereClause(whereClauseParts)}
@@ -1047,12 +1198,15 @@ object DefaultRecordPersistence
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
 
-    val rawResult: List[(Long, Record)] = rawResult1.map(rs => {
-      (
-        rs.long("sequence"),
-        rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
-      )
-    }).list.apply()
+    val rawResult: List[(Long, Record)] = rawResult1
+      .map(rs => {
+        (
+          rs.long("sequence"),
+          rowToRecord(List.concat(aspectIds, optionalAspectIds))(rs)
+        )
+      })
+      .list
+      .apply()
 
     val result = rawResult
     val hasMore = result.length > limit
@@ -1065,20 +1219,26 @@ object DefaultRecordPersistence
 
   private def getCountInner(
       implicit session: DBSession,
+      tenantId: BigInt,
       aspectIds: Iterable[String],
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): Long = {
+    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
+    val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector
     val statement = if (aspectIds.size == 1) {
       // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
       // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
       // is equivalent to counting the records with that type
       val aspectIdsWhereClause = aspectIds
-        .map(aspectId => sqls"RecordAspects.aspectId=$aspectId")
+        .map(
+          aspectId =>
+            sqls"RecordAspects.tenantId=$tenantId and RecordAspects.aspectId=$aspectId"
+        )
         .toSeq
-      val recordSelectorWhereClause = recordSelector.flatten
+      val recordSelectorWhereClause = theRecordSelector.flatten
         .map(
           recordSelectorInner =>
-            sqls"EXISTS(SELECT 1 FROM Records WHERE RecordAspects.recordId=Records.recordId AND $recordSelectorInner)"
+            sqls"EXISTS(SELECT 1 FROM Records WHERE Records.tenantId=$tenantId AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)"
         )
         .toSeq
       val clauses =
@@ -1086,7 +1246,7 @@ object DefaultRecordPersistence
       sql"select count(*) from RecordAspects ${makeWhereClause(clauses)}"
     } else {
       // If there's zero or > 1 aspect ids involved then there's no advantage to querying record aspects instead.
-      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(aspectIds) ++ recordSelector)}"
+      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector)}"
     }
 
     statement.map(_.long(1)).single.apply().getOrElse(0L)
@@ -1114,12 +1274,13 @@ object DefaultRecordPersistence
       rs.string("recordName"),
       rs.arrayOpt("aspects")
         .map(_.getArray().asInstanceOf[Array[String]].toList)
-        .getOrElse(List())
+        .getOrElse(List()),
+      Some(rs.bigInt("tenantId"))
     )
   }
 
   private def rowToRecord(
-    aspectIds: Iterable[String]
+      aspectIds: Iterable[String]
   )(rs: WrappedResultSet): Record = {
     Record(
       rs.string("recordId"),
@@ -1133,7 +1294,8 @@ object DefaultRecordPersistence
             (aspectId, JsonParser(rs.string(s"aspect$index")).asJsObject)
         }
         .toMap,
-      rs.stringOpt("sourceTag")
+      rs.stringOpt("sourceTag"),
+      Option(rs.bigInt("tenantId"))
     )
   }
 
@@ -1142,8 +1304,8 @@ object DefaultRecordPersistence
   }
 
   def buildDereferenceMap(
-    implicit session: DBSession,
-    aspectIds: Iterable[String]
+      implicit session: DBSession,
+      aspectIds: Iterable[String]
   ): Map[String, PropertyWithLink] = {
     if (aspectIds.isEmpty) {
       Map()
@@ -1176,7 +1338,7 @@ object DefaultRecordPersistence
                 .get("properties")
                 .flatMap {
                   case JsObject(theProperties) => Some(theProperties)
-                  case _                    => None
+                  case _                       => None
                 }
                 .getOrElse(Map())
 
@@ -1223,37 +1385,46 @@ object DefaultRecordPersistence
   }
 
   private def aspectIdsAndOpaQueriesToWhereParts(
-    aspectIds: Iterable[String],
-    opaQueries: Seq[OpaQueryPair],
-    operationType: AuthOperations.OperationType
+      tenantId: BigInt,
+      aspectIds: Iterable[String],
+      opaQueries: Seq[OpaQueryPair],
+      operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
     val theOpaQueries =
       if (opaQueries.nonEmpty) {
         opaQueries
-      }
-      else {
-        Seq(OpaQueryPair(s"object.registry.record.owner_orgunit.${operationType.id}", List(OpaQuerySkipAccessControl)))
+      } else {
+        Seq(
+          OpaQueryPair(
+            s"object.registry.record.owner_orgunit.${operationType.id}",
+            List(OpaQuerySkipAccessControl)
+          )
+        )
       }
 
     val opaSql: SQLSyntax =
       sqls"""(${SQLSyntax.joinWithOr(theOpaQueries.map {
-      case OpaQueryPair(_, queries) =>
-        sqls"(${SQLSyntax.joinWithAnd(
-          SQLSyntax
-            .joinWithOr(opaQueriesToWhereClauseParts(queries): _*)
-        )})"
-    }: _*)})"""
+        case OpaQueryPair(_, queries) =>
+          sqls"(${SQLSyntax.joinWithAnd(
+            SQLSyntax
+              .joinWithOr(opaQueriesToWhereClauseParts(tenantId, queries): _*)
+          )})"
+      }: _*)})"""
 
-    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(aspectIds)
+    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
+      tenantId,
+      aspectIds
+    )
     val aspectWhereParts: SQLSyntax = makeWhereParts(aspectWhereClauses)
     val result = List(aspectWhereParts, opaSql)
     result
   }
 
   private def aspectIdsToSelectClauses(
-    aspectIds: Iterable[String],
-    operationType: AuthOperations.OperationType,
-    dereferenceDetails: Map[String, PropertyWithLink] = Map()
+      tenantId: BigInt,
+      aspectIds: Iterable[String],
+      operationType: AuthOperations.OperationType,
+      dereferenceDetails: Map[String, PropertyWithLink] = Map()
   ): Iterable[scalikejdbc.SQLSyntax] = {
     val result: Iterable[SQLSyntax] = aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
@@ -1282,73 +1453,66 @@ object DefaultRecordPersistence
                     |                                            (
                     |                                                select jsonb_object_agg(aspectId, data)
                     |                                                from RecordAspects
-                    |                                                where recordId=Records.recordId
+                    |                                                where tenantId=Records.tenantId and recordId=Records.recordId
                     |                                            )
                     |                                        )
                     |                                    )
                     |                                )
                     |                        from Records
-                    |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId
+                    |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
                     |                    )
                     |                    ELSE(
                     |                        select data
                     |                        from RecordAspects
-                    |                        where aspectId=$aspectId and recordId=Records.recordId
+                    |                        where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
                     |                    )
                     |                END
             )""".stripMargin
             case PropertyWithLink(propertyName, false) =>
-              sqls"""
-                (select
-                  jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[],
-                  jsonb_build_object(
-                    'id',
-                    Records.recordId,
-                    'name',
-                    Records.name,
-                    'aspects',
-                    (select jsonb_object_agg(aspectId, data)
-                      from RecordAspects
-                      where recordId=Records.recordId
-                    )
-                  )
-                )
-                from Records
-                where Records.recordId=RecordAspects.data->>$propertyName)"""
+              sqls"""(select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], jsonb_build_object('id', Records.recordId, 'name', Records.name, 'aspects',
+                  (select jsonb_object_agg(aspectId, data) from RecordAspects where tenantId=Records.tenantId and recordId=Records.recordId)))
+                   from Records where Records.tenantId=RecordAspects.tenantId and Records.recordId=RecordAspects.data->>$propertyName)"""
           }
           .getOrElse(sqls"data")
-        sqls"""(select $selection from RecordAspects where aspectId=$aspectId and recordId=Records.recordId) as $aspectColumnName"""
+        sqls"""(select $selection from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId)) as $aspectColumnName"""
     }
 
     result
   }
+
+  private def filterRecordsByTenantClause(tenantId: BigInt) = {
+    if (tenantId == MAGDA_SYSTEM_ID) sqls"true"
+    else sqls"Records.tenantId=$tenantId"
+  }
   private def aspectIdsToWhereClause(
+      tenantId: BigInt,
       aspectIds: Iterable[String]
   ): Seq[Option[SQLSyntax]] = {
-    aspectIds.map(aspectId => aspectIdToWhereClause(aspectId)).toSeq
+    aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq
   }
 
-  private def aspectIdToWhereClause(aspectId: String) = {
+  private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
     Some(
-      sqls"exists (select 1 from RecordAspects where RecordAspects.recordId=Records.recordId and RecordAspects.aspectId=$aspectId)"
+      sqls"exists (select 1 from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))"
     )
   }
 
-  private def aspectQueryToWhereClause(query: AspectQuery) = {
-    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = ${query.aspectId} AND data #>> string_to_array(${query.path
+  private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+    sqls"EXISTS (SELECT 1 FROM recordaspects WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND data #>> string_to_array(${query.path
       .mkString(",")}, ',') = ${query.value})"
   }
 
   private def opaQueriesToWhereClauseParts(
+      tenantId: BigInt,
       opaQueries: List[OpaQuery]
   ): List[SQLSyntax] = {
     // Assume that most records have no access control, making first SQL query
     // for OpaQueryMatchNoAccessControl may speed up the process.
     val theOpaQueries =
-    if (opaQueries.nonEmpty)
-      List(OpaQueryMatchNoAccessControl) ++ opaQueries
-    else
-      List(OpaQuerySkipAccessControl)
+      if (opaQueries.nonEmpty)
+        List(OpaQueryMatchNoAccessControl) ++ opaQueries
+      else
+        List(OpaQuerySkipAccessControl)
 
     val accessControlAspectId = "dataset-access-control"
     theOpaQueries.map {
@@ -1358,7 +1522,7 @@ object DefaultRecordPersistence
             :: OpaRefObjectKey("record")
             :: OpaRefObjectKey(`accessControlAspectId`)
             :: finalKey,
-          _,  // operation is not used at the moment. It is assumed to be eq.
+          _, // operation is not used at the moment. It is assumed to be eq.
           aValue
           ) =>
         val query = AspectQuery(
@@ -1367,7 +1531,6 @@ object DefaultRecordPersistence
             case OpaRefObjectKey(key) => key
             case _                    => "[_]"
           },
-
           value = aValue match {
             case OpaValueString(string)   => string
             case OpaValueBoolean(boolean) => boolean.toString
@@ -1375,10 +1538,11 @@ object DefaultRecordPersistence
           }
         )
 
-        aspectQueryToWhereClause(query)
-      case OpaQueryMatchNoAccessControl => sqls"""NOT EXISTS (SELECT 1 FROM recordaspects WHERE recordaspects.recordid=records.recordid AND aspectId = $accessControlAspectId)"""
+        aspectQueryToWhereClause(tenantId, query)
+      case OpaQueryMatchNoAccessControl =>
+        sqls"""NOT EXISTS (SELECT 1 FROM recordaspects WHERE (recordaspects.recordid, recordaspects.tenantid)=(records.recordid, $tenantId) AND aspectId = $accessControlAspectId)"""
       case OpaQuerySkipAccessControl => sqls"true"
-      case OpaQueryMatchNone => sqls"false"
+      case OpaQueryMatchNone         => sqls"false"
       case unmatched =>
         throw new Exception(
           "Could not convert query " + unmatched + " to where clause"
@@ -1386,14 +1550,18 @@ object DefaultRecordPersistence
     }
   }
 
-  private def getColumnNameForOperation(operation: AuthOperations.OperationType) = {
+  private def getColumnNameForOperation(
+      operation: AuthOperations.OperationType
+  ) = {
     operation match {
       case AuthOperations.read =>
         sqls"authpolicyread"
       case AuthOperations.update => sqls"authpolicyupdate"
       case AuthOperations.delete => sqls"authpolicydelete"
       case _ =>
-        throw new Exception("Could not find a column for auth operation " + operation)
+        throw new Exception(
+          "Could not find a column for auth operation " + operation
+        )
     }
   }
 }

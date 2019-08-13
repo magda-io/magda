@@ -137,6 +137,8 @@ export type ParsedDistribution = {
 export type ParsedDataset = {
     identifier?: string;
     title: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -166,7 +168,7 @@ export type ParsedDataset = {
     };
 };
 
-export const defaultPublisher: Publisher = {
+export const emptyPublisher: Publisher = {
     id: "",
     name: "",
     aspects: {
@@ -196,7 +198,7 @@ const defaultDatasetAspects = {
         distributions: []
     },
     "temporal-coverage": null,
-    "dataset-publisher": { publisher: defaultPublisher },
+    "dataset-publisher": { publisher: emptyPublisher },
     source: {
         url: "",
         name: "",
@@ -391,7 +393,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
 
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
-        : defaultPublisher;
+        : emptyPublisher;
     const contactPoint: string = datasetInfo.contactPoint;
     const source: string | undefined = aspects["source"]
         ? aspects["source"]["type"] !== "csv-dataset"
@@ -490,6 +492,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
         informationSecurity: datasetInfo["informationSecurity"] || {},
-        accessControl
+        accessControl,
+        accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
+        accrualPeriodicityRecurrenceRule:
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
     };
 }

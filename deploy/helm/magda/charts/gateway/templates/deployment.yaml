@@ -45,6 +45,15 @@ spec:
 {{- if .Values.auth.aafClientUri}}
             "--aafClientUri", {{ .Values.auth.aafClientUri| quote }},
 {{- end }}
+{{- if .Values.auth.googleClientId }}
+            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
+{{- end }}
+{{- if .Values.auth.vanguardWsFedIdpUrl }}
+            "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
+{{- end }}
+{{- if .Values.auth.vanguardWsFedRealm }}
+            "--vanguardWsFedRealm", {{ .Values.auth.vanguardWsFedRealm | quote }},
+{{- end }}
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
@@ -64,9 +73,18 @@ spec:
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
-            "--web", "http://web",
+            "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
+            "--tenantUrl", "http://tenant-api/v0",
             "--previewMap", "http://preview-map:6110",
+{{- if .Values.enableMultiTenants }}
+            "--enableMultiTenants", {{ .Values.enableMultiTenants | quote }},
+{{- end }}
+{{- if .Values.global.magdaAdminPortalName }}
+            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote}}
+{{- else if .Values.magdaAdminPortalName }}
+            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
+{{- end }}
         ]
         volumeMounts:
           - name: config
@@ -122,6 +140,14 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: facebook-client-secret
+              optional: true
+{{- end }}
+{{- if .Values.auth.vanguardWsFedRealm }}
+        - name: VANGUARD_CERTIFICATE
+          valueFrom:
+            secretKeyRef:
+              name: oauth-secrets
+              key: vanguard-certificate
               optional: true
 {{- end }}
 {{- if .Values.auth.arcgisClientId }}

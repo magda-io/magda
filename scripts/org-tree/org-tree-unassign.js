@@ -2,15 +2,14 @@
 const pkg = require("../package.json");
 const program = require("commander");
 const chalk = require("chalk");
+const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
+    .default;
 const getDBPool = require("./getDBPool");
+const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
 const getUserIdFromNameOrId = require("./getUserIdFromNameOrId");
 
 program
-    .description(
-        "Unassign the specified user from any node" +
-            "\n`userNameOrId` can be either entity name or Id. \n" +
-            "\tIf more than one entities are located by entity name, the first one will be used."
-    )
+    .description("Remove the specified user to from any org unit.")
     .option("<userNameOrId>", "user name or id")
     .version(pkg.version)
     .action(async userNameOrId => {

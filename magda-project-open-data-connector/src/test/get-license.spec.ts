@@ -11,6 +11,7 @@ import organizationAspectBuilders from "../organizationAspectBuilders";
 import datasetAspectBuilders from "../datasetAspectBuilders";
 import distributionAspectBuilders from "../distributionAspectBuilders";
 import ProjectOpenDataTransformer from "../ProjectOpenDataTransformer";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/src/registry/TenantConsts";
 
 describe("when distributions have a license as a custom URL", function(this: Mocha.ISuiteCallbackContext) {
     let registry: Registry;
@@ -117,7 +118,8 @@ describe("when distributions have a license as a custom URL", function(this: Moc
         registry = new Registry({
             jwtSecret: "secret",
             userId: "",
-            baseUrl: "http://registry.example.com"
+            baseUrl: "http://registry.example.com",
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         });
 
         source = new ProjectOpenData({
@@ -132,7 +134,8 @@ describe("when distributions have a license as a custom URL", function(this: Moc
             sourceUrl: "http://source.example.com",
             datasetAspectBuilders,
             distributionAspectBuilders,
-            organizationAspectBuilders
+            organizationAspectBuilders,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         });
 
         connector = new JsonConnector({

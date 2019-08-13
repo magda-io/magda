@@ -16,6 +16,7 @@ import JsonConnector, {
 import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
 import ConnectorRecordId from "src/ConnectorRecordId";
 import { Record } from "src/generated/registry/api";
+
 // ConnectorSource,
 
 describe("JsonConnector", () => {
@@ -30,6 +31,8 @@ describe("JsonConnector", () => {
     afterEach(() => {
         nock.cleanAll();
     });
+
+    const tenant_id_1 = 1;
 
     describe("crawlTag", () => {
         it("auto-generates a tag that is distinct between instances by default", () => {
@@ -200,11 +203,13 @@ describe("JsonConnector", () => {
             properties: {
                 "test-aspect-data1": {
                     title: "test-aspect-data1",
-                    type: "string"
+                    type: "string",
+                    tenantId: tenant_id_1
                 },
                 "test-aspect-data2": {
                     title: "test-aspect-data2",
-                    type: "string"
+                    type: "string",
+                    tenantId: tenant_id_1
                 }
             }
         };
@@ -228,6 +233,7 @@ describe("JsonConnector", () => {
                 {
                     // --- transformer options:
                     sourceId: "connector-id",
+                    tenantId: tenant_id_1,
                     datasetAspectBuilders: [
                         {
                             aspectDefinition: {
@@ -315,7 +321,8 @@ describe("JsonConnector", () => {
                 baseUrl: "http://example.com",
                 jwtSecret: "squirrel",
                 userId: "1",
-                maxRetries: 0
+                maxRetries: 0,
+                tenantId: tenant_id_1
             });
 
             const source = new FakeConnectorSource(config);

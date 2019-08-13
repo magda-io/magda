@@ -6,6 +6,7 @@ import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import * as fs from "fs";
 import * as yargs from "yargs";
+
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel"
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel" --registryUrl="http://192.168.137.107:30860/v0"
 const argv = addJwtSecretFromEnvVar(
@@ -81,6 +82,12 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe:
+                "The magda tenant id to use when making requests to the registry",
+            type: "number",
+            demand: true
         }).argv
 );
 
@@ -219,7 +226,8 @@ const dap = new Dap({
 const registry = new Registry({
     baseUrl: argv.registryUrl,
     jwtSecret: argv.jwtSecret,
-    userId: argv.userId
+    userId: argv.userId,
+    tenantId: argv.tenantId
 });
 
 const transformerOptions = {
@@ -231,7 +239,8 @@ const transformerOptions = {
     registryUrl: argv.registryUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    tenantId: argv.tenantId
 };
 
 const transformer = createTransformer(transformerOptions);
