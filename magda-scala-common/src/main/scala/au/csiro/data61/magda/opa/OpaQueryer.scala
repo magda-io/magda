@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.Materializer
 import akka.util.ByteString
 import au.csiro.data61.magda.Authentication
+import au.csiro.data61.magda.opa.OpaTypes._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import spray.json._
@@ -39,7 +40,6 @@ object OpaTypes {
   }
 
   sealed trait OpaRef
-// case class OpaRefVar(value: String) extends OpaRef
   case object OpaRefAllInArray extends OpaRef
   case class OpaRefObjectKey(key: String) extends OpaRef
 
@@ -66,133 +66,6 @@ object OpaTypes {
       queries: List[OpaQuery]
   )
 }
-
-import au.csiro.data61.magda.opa.OpaTypes._
-
-/**
-  * Part of a RegoRef - i.e. one element in the array of the AST like so:
-  *
-  * {
-        "type": "var",
-        "value": "input"
-    }
-  */
-// case class RegoRefPart(refType: String, refString: String) {
-//   def isVar: Boolean = refType == "var"
-// }
-
-// object RegoRefPart {
-//   def unapply(json: JsValue): Option[RegoRefPart] = json match {
-//     case JsObject(data) =>
-//       (data.get("type"), data.get("value")) match {
-//         case (Some(refType), Some(refValue)) =>
-//           Some(RegoRefPart(refType.toString, refValue.toString))
-//         case _ => None
-//       }
-//     case _ => None
-//   }
-// }
-
-// case class RegoRef(refParts: List[RegoRefPart]) {
-//   def opaRef: List[OpaRef] = {
-//     refParts.map {
-//       case RegoRefPart("var", "equal")     => Eq
-//       case RegoRefPart("var", "neq")       => Neq
-//       case RegoRefPart("var", "lt")        => Lt
-//       case RegoRefPart("var", "gt")        => Gt
-//       case RegoRefPart("var", "lte")       => Lte
-//       case RegoRefPart("var", "gte")       => Gte
-//       case RegoRefPart("var", "[_]")       => OpaRefAllInArray
-//       case RegoRefPart("var", refValue)    => OpaRefVar(refValue)
-//       case RegoRefPart("string", refValue) => OpaRefObjectKey(refValue)
-//     }
-//   }
-
-//   def isOperator: Boolean = {
-//     this.opaRef.contains(
-//       (x: OpaRef) =>
-//         x match {
-//           case (x: OpaOp) => true
-//           case _          => false
-//         }
-//     )
-//   }
-
-//   // --- the first var type won't count as collection lookup
-//   def hasCollectionLookup: Boolean = {
-//     if (refParts.size <= 1) false
-//     else refParts.indexWhere(_.isVar, 1) != -1
-//   }
-
-//   // -- simple collection only contains 1 level lookup
-//   // -- we don't need Nested Query to handle it
-//   def isSimpleCollectionLookup: Boolean = {
-//     if (refParts.size <= 1) false
-//     else refParts.indexWhere(_.isVar, 1) == refParts.size - 1
-//   }
-// }
-
-// object RegoRef {
-//   def unapply(refJson: JsValue): Option[RegoRef] = refJson match {
-//     case JsObject(ref) =>
-//       ref.get("type") match {
-//         case Some(JsString("ref")) =>
-//           ref.get("value") match {
-//             case Some(JsArray(values)) =>
-//               val RegoRefArray = values.flatMap {
-//                 case RegoRefPart(part) => Some(part)
-//                 case _                 => None
-//               }.toArray
-//               Some(RegoRef(RegoRefArray))
-//             case _ => None
-//           }
-//         case _ => None
-//       }
-//     case _ => None
-//   }
-
-// }
-
-// case class RegoValue(valueType: String, value: JsValue) extends RegoValue
-// {}
-
-// def asNumber: Option[Number] = value match {
-//   case JsNumber(v) => Some(v)
-//   case _           => None
-// }
-
-// def asString: Option[String] = value match {
-//   case JsNumber(v) => Some(v.toString())
-//   case JsString(v) => Some(v)
-//   case JsTrue      => Some("true")
-//   case JsFalse     => Some("false")
-//   case _           => None
-// }
-
-// def asBoolean: Option[Boolean] = value match {
-//   case JsBoolean(v) => Some(v)
-//   case _            => None
-// }
-// }
-
-// object RegoValue {
-
-//   def unapply(refJson: JsValue): Option[RegoValue] = refJson match {
-//     case JsObject(ref) =>
-//       ref.get("type") match {
-//         case Some(JsString(typeString)) if typeString != "ref" =>
-//           ref.get("value") match {
-//             case Some(v: JsNumber)  => Some(RegoValue(typeString, v))
-//             case Some(v: JsString)  => Some(RegoValue(typeString, v))
-//             case Some(v: JsBoolean) => Some(RegoValue(typeString, v))
-//             case _                  => None
-//           }
-//         case _ => None
-//       }
-//     case _ => None
-//   }
-
-// }
 
 sealed trait RegoTerm
 case class RegoTermRef(value: List[RegoRefPart]) extends RegoTerm
@@ -265,7 +138,7 @@ class OpaQueryer()(
       .singleRequest(httpRequest)
       .flatMap(
         res =>
-          recieveOpaResponse(res)(_.asJsObject.fields.get("result") match {
+          receiveOpaResponse(res)(_.asJsObject.fields.get("result") match {
             case Some(JsBoolean(true)) => true
             case _                     => false
           })
@@ -278,7 +151,7 @@ class OpaQueryer()(
   ): Future[List[OpaQuery]] = {
     queryPolicy(jwtToken, policyId)
   }
-  
+
   def queryAsDefaultUser(
       policyId: String
   ): Future[List[OpaQuery]] = {
@@ -315,12 +188,12 @@ class OpaQueryer()(
 
     Http()
       .singleRequest(httpRequest)
-      .flatMap(recieveOpaResponse[List[OpaQuery]](_) { json =>
+      .flatMap(receiveOpaResponse[List[OpaQuery]](_) { json =>
         parseOpaResponse(json)
       })
   }
 
-  def recieveOpaResponse[T](res: HttpResponse)(fn: JsValue => T): Future[T] = {
+  def receiveOpaResponse[T](res: HttpResponse)(fn: JsValue => T): Future[T] = {
     if (res.status.intValue() != 200) {
       res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
         logger

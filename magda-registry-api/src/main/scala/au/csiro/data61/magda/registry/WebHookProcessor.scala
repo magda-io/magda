@@ -9,14 +9,13 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.opa.OpaTypes.{OpaQueryPair, OpaQuerySkipAccessControl}
+import au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
 import scalikejdbc._
 import spray.json.JsString
 
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 /**
@@ -32,7 +31,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
   val recordPersistence: DefaultRecordPersistence.type = DefaultRecordPersistence
   // No access control will apply to webhooks.
   // In the current system, all web hooks are treated as system level users.
-  val opaQueryPair = OpaQueryPair(s"object.registry.record.owner_orgunit.${AuthOperations.read.id}", List(OpaQuerySkipAccessControl))
+  val opaQuerySkipAccessControl = List(OpaQuerySkipAccessControl)
 
   private def getTenantRecordIdsMap(events: List[RegistryEvent]): mutable.HashMap[BigInt, Set[String]] = {
     val tenantRecordIdsMap = new mutable.HashMap[BigInt, Set[String]]
@@ -80,7 +79,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
-              Seq(this.opaQueryPair),
+              this.opaQuerySkipAccessControl,
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),
               webHook.config.dereference)
@@ -101,7 +100,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
-              Seq(this.opaQueryPair),
+              this.opaQuerySkipAccessControl,
               recordIdsExcluded,
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),

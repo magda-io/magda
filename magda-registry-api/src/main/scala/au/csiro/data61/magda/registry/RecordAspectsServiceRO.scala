@@ -105,7 +105,7 @@ class RecordAspectsServiceRO(
                       tenantId,
                       recordId,
                       aspectId,
-                      opaQueries.queries
+                      opaQueries
                     )
                 }
               }

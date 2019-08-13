@@ -19,7 +19,7 @@ object Directives {
       system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
-  ): Directive1[OpaQueryPair] = {
+  ): Directive1[List[OpaQuery]] = {
     val queryer = new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
 
     AuthDirectives.getJwt().flatMap { jwt =>
@@ -30,7 +30,7 @@ object Directives {
       } yield recordPermission
 
       onSuccess(recordPermissionsF).flatMap { queryResults =>
-        provide(OpaQueryPair(s"object.registry.record.owner_orgunit.${operationType.id}", queryResults))
+        provide(queryResults)
       }
     }
   }

@@ -109,7 +109,10 @@ export default class Database {
     async getUserPermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
             `SELECT DISTINCT ON (p.id, op.id)
-                p.id, p.name,
+                p.id, p.name, p.resource_id, res.uri AS resource_uri,
+                p.user_ownership_constraint,
+                p.org_unit_ownership_constraint,
+                p.pre_authorised_constraint,
                 op.id AS operation_id,
                 op.uri AS operation_uri,
                 op.name AS operation_name
@@ -159,7 +162,10 @@ export default class Database {
     async getRolePermissions(id: string): Promise<Permission[]> {
         const result = await this.pool.query(
             `SELECT  DISTINCT ON (p.id, op.id)
-            p.id, p.name,
+            p.id, p.name, p.resource_id, res.uri AS resource_uri,
+            p.user_ownership_constraint,
+            p.org_unit_ownership_constraint,
+            p.pre_authorised_constraint,
             op.id AS operation_id,
             op.uri AS operation_uri,
             op.name AS operation_name

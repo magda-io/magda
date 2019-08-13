@@ -34,7 +34,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -59,7 +59,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -69,7 +69,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -79,7 +79,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -98,7 +98,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String]
@@ -108,7 +108,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[OpaQueryPair]
+      opaQueryUpdate: Seq[OpaQuery]
   ): Try[Record]
 
   def patchRecordById(
@@ -116,7 +116,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[OpaQueryPair]
+      opaQuery: Seq[OpaQuery]
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -206,7 +206,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -262,7 +262,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -288,7 +288,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -314,7 +314,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -416,7 +416,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String] = {
@@ -460,7 +460,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[OpaQueryPair]
+      opaQueryUpdate: Seq[OpaQuery]
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -546,7 +546,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[OpaQueryPair]
+      opaQuery: Seq[OpaQuery]
   ): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
@@ -1136,7 +1136,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQueryPair],
+      opaQuery: Seq[OpaQuery],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
@@ -1387,29 +1387,17 @@ object DefaultRecordPersistence
   private def aspectIdsAndOpaQueriesToWhereParts(
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQueries: Seq[OpaQueryPair],
+      opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
-    val theOpaQueries =
-      if (opaQueries.nonEmpty) {
-        opaQueries
-      } else {
-        Seq(
-          OpaQueryPair(
-            s"object.registry.record.owner_orgunit.${operationType.id}",
-            List(OpaQuerySkipAccessControl)
-          )
-        )
-      }
-
+    val theOpaQueries: List[OpaQuery] = if (opaQueries.nonEmpty) opaQueries.toList else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
-      sqls"""(${SQLSyntax.joinWithOr(theOpaQueries.map {
-        case OpaQueryPair(_, queries) =>
-          sqls"(${SQLSyntax.joinWithAnd(
+        sqls"(${
+          SQLSyntax.joinWithAnd(
             SQLSyntax
-              .joinWithOr(opaQueriesToWhereClauseParts(tenantId, queries): _*)
-          )})"
-      }: _*)})"""
+              .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
+          )
+        })"
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,

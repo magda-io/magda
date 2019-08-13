@@ -167,7 +167,7 @@ class RecordsServiceRO(
                     tenantId,
                     aspects,
                     optionalAspects,
-                    Seq(opaQueries),
+                    opaQueries,
                     pageToken,
                     start,
                     limit,
@@ -401,7 +401,7 @@ class RecordsServiceRO(
                       session,
                       tenantId,
                       aspect,
-                      List(opaQueries),
+                      opaQueries,
                       limit
                     )
                 }
@@ -509,7 +509,7 @@ class RecordsServiceRO(
                   session,
                   tenantId,
                   id,
-                  List(opaQueries),
+                  opaQueries,
                   aspects,
                   optionalAspects,
                   dereference
