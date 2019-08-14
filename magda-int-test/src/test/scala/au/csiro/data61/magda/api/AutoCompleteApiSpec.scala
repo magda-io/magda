@@ -48,7 +48,10 @@ class AutoCompleteApiSpec
     "/shareDriveB/c/a/h",
     "Contact test@email.com for access",
     "Contact test2@email.com for access",
-    "Access database name `ABC` and table `bde`"
+    "Access database name `ABC` and table `bde`",
+    "/shareDriveC/d/e/f",
+    "/shareDriveC/d/e/f",
+    "/shareDriveC/e/f/d"
   )
 
   val routes = createDatasetWithItems(notes)
@@ -64,16 +67,18 @@ class AutoCompleteApiSpec
     }
   }
 
-  it("Should response first 3 items with input /shareDrive") {
+  it("Should response first 3 items + last 2 item with input /shareDrive") {
 
     Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDrive") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual (3)
+      response.suggestions.size shouldEqual (5) // --- no duplication will be included
       response.suggestions.contains(notes(0)) shouldBe true
       response.suggestions.contains(notes(1)) shouldBe true
       response.suggestions.contains(notes(2)) shouldBe true
+      response.suggestions.contains(notes(7)) shouldBe true
+      response.suggestions.contains(notes(8)) shouldBe true
     }
   }
 
@@ -117,6 +122,18 @@ class AutoCompleteApiSpec
 
     Get(s"/v0/autoComplete?field=xxxx&input=xxxx") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe InternalServerError
+    }
+  }
+
+  it("Should response `/shareDriveC/d/e/f` (without duplication) & `/shareDriveC/e/f/d` with input /shareDriveC") {
+
+    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveC") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[AutoCompleteQueryResult]
+      response.suggestions.size shouldEqual(2) // --- should be no duplication. Thus, 2 rather than 3
+      response.suggestions.contains(notes(6)) shouldBe true
+      response.suggestions.contains(notes(8)) shouldBe true
     }
   }
 
