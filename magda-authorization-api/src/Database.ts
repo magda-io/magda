@@ -121,6 +121,7 @@ export default class Database {
                 LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
+                LEFT JOIN resources res ON res.id = p.resource_id
                 WHERE ur.user_id = $1`,
             [id]
         );
@@ -173,6 +174,7 @@ export default class Database {
             LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
             LEFT JOIN operations op ON op.id = po.operation_id
             LEFT JOIN permissions p ON p.id = rp.permission_id
+            LEFT JOIN resources res ON res.id = p.resource_id
             WHERE rp.role_id = $1`,
             [id]
         );

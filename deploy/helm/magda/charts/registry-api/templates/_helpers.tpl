@@ -58,6 +58,7 @@ spec:
             "-DauthApi.baseUrl=http://authorization-api",
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
+            "-Dopa.baseUrl=http://authorization-api/v0/opa",
             "-Drole={{ .role }}"
         ]
 {{- if .root.Values.global.enableLivenessProbes }}
