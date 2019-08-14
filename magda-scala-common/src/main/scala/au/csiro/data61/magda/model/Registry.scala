@@ -308,11 +308,8 @@ trait RegistryConverters extends RegistryProtocols {
           Some(DataSetAccessNotes(notes = access.get("notes") match {
             case Some(JsString(notes)) => Some(notes)
             case _ => None
-          }, url= access.get("url") match {
-            case Some(JsString(notes)) => Some(notes)
-            case _ => None
-          }, downloadURL = access.get("downloadURL") match {
-            case Some(JsString(notes)) => Some(notes)
+          }, location= access.get("location") match {
+            case Some(JsString(location)) => Some(location)
             case _ => None
           }))
         case _ => None

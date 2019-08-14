@@ -58,7 +58,7 @@ class AutoCompleteApiSpec
 
   it("Should response empty list without error if input is not supplied") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
@@ -69,7 +69,7 @@ class AutoCompleteApiSpec
 
   it("Should response first 3 items + last 2 item with input /shareDrive") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDrive") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDrive") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
@@ -84,7 +84,7 @@ class AutoCompleteApiSpec
 
   it("Should response Item 2 & 3 with input /shareDriveB") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
@@ -96,7 +96,7 @@ class AutoCompleteApiSpec
 
   it("Should response Item 2 & 3 with input /shareDriveb (Lowercase b)") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
@@ -108,7 +108,7 @@ class AutoCompleteApiSpec
 
   it("Should response Item 4 & 5 with input `contact test`") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes&input=contact%20test") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location&input=contact%20test") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
@@ -127,7 +127,7 @@ class AutoCompleteApiSpec
 
   it("Should response `/shareDriveC/d/e/f` (without duplication) & `/shareDriveC/e/f/d` with input /shareDriveC") {
 
-    Get(s"/v0/autoComplete?field=accessNotes.notes&input=/shareDriveC") ~> addSingleTenantIdHeader ~> routes ~> check {
+    Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDriveC") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]

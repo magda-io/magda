@@ -69,7 +69,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "publisher.acronym")
 
   val ALLOWED_AUTO_COMPLETE_FIELDS = Seq(
-    "accessNotes.notes"
+    "accessNotes.location"
   )
 
   override def search(

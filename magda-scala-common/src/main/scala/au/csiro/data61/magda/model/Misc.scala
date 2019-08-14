@@ -67,8 +67,7 @@ package misc {
 
   case class DataSetAccessNotes(
       notes: Option[String] = None,
-      url: Option[String] = None,
-      downloadURL: Option[String] = None)
+      location: Option[String] = None)
 
   case class DataSet(
       identifier: String,
@@ -505,7 +504,7 @@ package misc {
 
     implicit val accessControlFormat: RootJsonFormat[AccessControl] = jsonFormat3(AccessControl.apply)
 
-    implicit val datasetAccessNotesFormat: RootJsonFormat[DataSetAccessNotes] = jsonFormat3(DataSetAccessNotes.apply)
+    implicit val datasetAccessNotesFormat: RootJsonFormat[DataSetAccessNotes] = jsonFormat2(DataSetAccessNotes.apply)
 
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters

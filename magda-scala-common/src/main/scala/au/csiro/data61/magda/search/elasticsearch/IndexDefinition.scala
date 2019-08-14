@@ -177,9 +177,8 @@ object IndexDefinition extends DefaultJsonProtocol {
             dateField("indexed"),
             keywordField("publishingState"),
             objectField("accessNotes").fields(
-              keywordField("url"),
-              magdaAutocompleteField("notes"),
-              keywordField("downloadUrl")
+              magdaTextField("notes"),
+              magdaAutocompleteField("location")
             )
           )
         )
