@@ -68,6 +68,9 @@ UI:
 -   Added words count to Textarea
 -   Adjusted tooltip style & layout
 -   Overall page layout adjustment for `Details and Content` page
+-   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Restricted dataset contact point display options to team members, team or org and made it save in the registry.
+-   Added ability to set the owning org unit in Add Dataset flow.
 -   Stopped keywords & themes extraction producing duplicate keywords for different files
 -   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
 -   Made all keywords extracted lower case
@@ -103,6 +106,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Removed Travis CI (Gitlab CI still remains)
 
 ## 0.0.55
 

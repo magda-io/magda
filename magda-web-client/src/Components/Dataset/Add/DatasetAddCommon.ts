@@ -1,9 +1,12 @@
 import uuidv4 from "uuid/v4";
 
-import { Contact } from "Components/Editing/Editors/contactEditor";
-import { licenseLevel } from "constants/DatasetConstants";
+import {
+    licenseLevel,
+    ContactPointDisplayOption
+} from "constants/DatasetConstants";
 import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
+import { User } from "reducers/userManagementReducer";
 
 export type File = {
     title: string;
@@ -68,7 +71,7 @@ export type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPointFull?: Contact[];
+    owningOrgUnitId?: string;
     contactPointDisplay?: string;
     publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
@@ -83,10 +86,11 @@ export type Dataset = {
     accessNotesTemp?: string;
 };
 
-type DatasetPublishing = {
+export type DatasetPublishing = {
     state: string;
     level: string;
     notesToApprover?: string;
+    contactPointDisplay?: ContactPointDisplayOption;
 };
 
 type SpatialCoverage = {
@@ -135,18 +139,19 @@ type Access = {
     downloadURL?: string;
 };
 
-function createBlankState(): State {
+function createBlankState(user: User): State {
     return {
         files: [],
         processing: false,
         dataset: {
             title: "Untitled",
             languages: ["eng"],
-            contactPointDisplay: "role"
+            owningOrgUnitId: user.orgUnitId
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency"
+            level: "agency",
+            contactPointDisplay: "members"
         },
         spatialCoverage: {},
         temporalCoverage: {
@@ -165,13 +170,13 @@ function createBlankState(): State {
 
 // saving data in the local storage for now
 // TODO: consider whether it makes sense to store this in registery as a custom state or something
-export async function loadState(id: string): Promise<State> {
+export async function loadState(id: string, user: User): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
     if (stateString) {
         state = JSON.parse(stateString);
     } else {
-        state = createBlankState();
+        state = createBlankState(user);
     }
 
     if (
