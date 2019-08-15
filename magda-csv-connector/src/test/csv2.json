@@ -114,9 +114,7 @@
                 "accrualPeriodicity": "Quarterly",
                 "themes": ["Resource"],
                 "keywords": ["KE1", "K W 2", "KW3", "Item", "Resource"],
-                "contactPoint": "Fred Nerk\n\nActive",
-                "accessLevel": "Not Classified",
-                "status": "Active"
+                "contactPoint": "Fred Nerk\n\nActive"
             },
             "source": {
                 "type": "csv-dataset",
@@ -218,9 +216,7 @@
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
-                "contactPoint": "Joe Bloggs",
-                "accessLevel": "Not Classified",
-                "status": "Active"
+                "contactPoint": "Joe Bloggs"
             },
             "source": {
                 "type": "csv-dataset",
@@ -319,9 +315,7 @@
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],
                 "keywords": ["Item", "Resource"],
-                "contactPoint": "Active",
-                "accessLevel": "Not Classified",
-                "status": "Active"
+                "contactPoint": "Active"
             },
             "source": {
                 "type": "csv-dataset",

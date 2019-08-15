@@ -83,7 +83,7 @@ export type Provenance = {
     mechanism?: string;
     sourceSystem?: string;
     derivedFrom?: string[];
-    affiliatedOrganisationIds?: string[];
+    affiliatedOrganizationIds?: string[];
     isOpenData?: boolean;
 };
 

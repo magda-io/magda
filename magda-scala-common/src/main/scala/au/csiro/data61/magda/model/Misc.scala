@@ -56,7 +56,7 @@ package misc {
     mechanism: Option[String],
     sourceSystem: Option[String],
     derivedFrom: Option[Seq[String]],
-    affiliatedOrganisationIds: Option[Seq[String]],
+    affiliatedOrganizationIds: Option[Seq[String]],
     isOpenData: Option[Boolean])
 
   case class AccessControl(

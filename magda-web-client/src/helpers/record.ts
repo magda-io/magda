@@ -156,7 +156,7 @@ export type ParsedDataset = {
     creation?: any;
     publishingState?: string;
     importance?: string;
-    creationAffiliatedOrganisation?: string;
+    creationAffiliatedOrganisation?: string[];
     spatialCoverageBbox?: any;
     temporalExtent?: any;
     accessLevel?: string;
@@ -487,7 +487,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         creation,
         importance: datasetInfo["importance"],
         publishingState: publishing["state"],
-        creationAffiliatedOrganisation: creation.affiliatedOrganisation,
+        creationAffiliatedOrganisation: creation.affiliatedOrganisationIds,
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],

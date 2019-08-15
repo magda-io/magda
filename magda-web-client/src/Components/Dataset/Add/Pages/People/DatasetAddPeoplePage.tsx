@@ -136,15 +136,15 @@ export default function DatasetAddPeoplePage({
                 </h4>
                 <div>
                     <YesNoEditReveal
-                        value={provenance.affiliatedOrganisationIds}
+                        value={provenance.affiliatedOrganizationIds}
                         defaultValue={[]}
                         nullValue={null}
-                        onChange={editProvenance("affiliatedOrganisationIds")}
+                        onChange={editProvenance("affiliatedOrganizationIds")}
                     >
                         <AlwaysEditor
-                            value={provenance.affiliatedOrganisationIds}
+                            value={provenance.affiliatedOrganizationIds}
                             onChange={editProvenance(
-                                "affiliatedOrganisationIds"
+                                "affiliatedOrganizationIds"
                             )}
                             editor={multiTextEditorEx({
                                 placeholder: "Add an organisation"

@@ -44,5 +44,16 @@ export default [
             "aspect-templates/dataset-source.js",
             "utf8"
         )
+    },
+    {
+        aspectDefinition: {
+            id: "information-security",
+            name: "Information Security",
+            jsonSchema: require("@magda/registry-aspects/information-security.schema.json")
+        },
+        builderFunctionString: fs.readFileSync(
+            "aspect-templates/information-security.js",
+            "utf8"
+        )
     }
 ];

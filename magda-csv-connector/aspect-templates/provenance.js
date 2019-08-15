@@ -34,7 +34,6 @@ let provenance = undefined;
 if (
     mechanism !== undefined ||
     sourceSystem !== undefined ||
-    likelihoodOfRelease !== undefined ||
     isOpenData !== undefined ||
     affiliatedOrganisations
 ) {
@@ -42,7 +41,7 @@ if (
         mechanism,
         sourceSystem,
         isOpenData,
-        affiliatedOrganisationIds: affiliatedOrganisations
+        affiliatedOrganizationIds: affiliatedOrganisations // TODO: Look this up instead of just putting the id in
     };
 }
 

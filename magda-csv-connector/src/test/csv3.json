@@ -48,13 +48,7 @@
                 "modified": "2014-01-01",
                 "themes": ["666", "#GAMERS", "DATA"],
                 "keywords": ["Operations", "Item", "Yes"],
-                "contactPoint": "Fred Nerk\n\nNuclear Plant",
-                "accessLevel": "Non-Public",
-                "importance": "Essential",
-                "status": "Current",
-                "metadata": {
-                    "format": "META FMT"
-                }
+                "contactPoint": "Fred Nerk\n\nNuclear Plant"
             },
             "source": {
                 "type": "csv-dataset",
@@ -71,8 +65,7 @@
             "provenance": {
                 "mechanism": "Yes",
                 "sourceSystem": "CRM",
-                "likelihoodOfRelease": "Low",
-                "affiliatedOrganisation": ["AI"]
+                "affiliatedOrganizationIds": ["AI"]
             },
             "information-security": {
                 "disseminationLimits": [
@@ -133,9 +126,7 @@
                     "Item",
                     "Data generated and provided to us by Data61"
                 ],
-                "contactPoint": "Engineering",
-                "accessLevel": "Restricted Public",
-                "importance": "Useful"
+                "contactPoint": "Engineering"
             },
             "source": {
                 "type": "csv-dataset",
@@ -150,8 +141,7 @@
                 "publisher": "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca"
             },
             "provenance": {
-                "mechanism": "Data generated and provided to us by Data61",
-                "likelihoodOfRelease": "Restricted"
+                "mechanism": "Data generated and provided to us by Data61"
             },
             "information-security": {
                 "disseminationLimits": ["For Official Use Only"]
@@ -207,12 +197,7 @@
                 "accrualPeriodicity": "Ad-Hoc",
                 "themes": ["For Official Use Only"],
                 "keywords": ["Compliance", "Item", "For Official Use Only"],
-                "contactPoint": "META STD\n\nGaming",
-                "accessLevel": "T3",
-                "status": "Retired",
-                "metadata": {
-                    "standard": "META STD"
-                }
+                "contactPoint": "META STD\n\nGaming"
             },
             "source": {
                 "type": "csv-dataset",
@@ -229,8 +214,7 @@
             "provenance": {
                 "mechanism": "No",
                 "sourceSystem": "Recycle bin",
-                "likelihoodOfRelease": "Low",
-                "affiliatedOrganisation": ["Machine Learning"]
+                "affiliatedOrganizationIds": ["Machine Learning"]
             },
             "information-security": {
                 "disseminationLimits": ["For Official Use Only"]
