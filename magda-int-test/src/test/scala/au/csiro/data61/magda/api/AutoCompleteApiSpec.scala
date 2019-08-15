@@ -32,9 +32,11 @@ class AutoCompleteApiSpec
       .get
       .zip(items)
       .map {
-        case (dataset, notes) =>
+        case (dataset, location) =>
           dataset.copy(
-            accessNotes = Some(DataSetAccessNotes(Some(notes)))
+            accessNotes = Some(DataSetAccessNotes(
+              location = Some(location)
+            ))
           )
       }
     putDataSetsInIndex(dataSets) match {
