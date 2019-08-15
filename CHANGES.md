@@ -76,6 +76,7 @@ UI:
 -   Made all keywords extracted lower case
 -   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
 -   Style adjustment for question Who can see the dataset once it is published on Access and Use page
+-   Fixed a JS error which causes blank screen on Organisations Page
 
 Gateway:
 
