@@ -134,9 +134,8 @@ type Usage = {
 };
 
 type Access = {
-    url?: string;
+    location?: string;
     notes?: string;
-    downloadURL?: string;
 };
 
 function createBlankState(user: User): State {
