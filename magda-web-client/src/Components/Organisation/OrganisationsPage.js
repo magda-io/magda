@@ -273,7 +273,7 @@ class OrganisationsPage extends Component {
                                             this.props.hitCount /
                                                 searchResultsPerPage
                                         )}
-                                        onPageChange={this.onPageChange}
+                                        location={this.props.location}
                                         totalItems={this.props.hitCount}
                                     />
                                 )}
