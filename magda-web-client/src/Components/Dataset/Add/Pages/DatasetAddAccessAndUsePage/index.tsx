@@ -27,7 +27,7 @@ type Props = {
     stateData: State;
 };
 
-export default function DatasetAddPeoplePage(props: Props) {
+export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
         files,
         datasetAccess,
