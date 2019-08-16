@@ -37,6 +37,7 @@ abstract class ApiWithOpaSpec extends FunSpec with ScalatestRouteTest with Match
   val userId1 = "t1001"
   val userId2 = "t1002"
   val userId3 = "t1003"
+  val anonymous = "blah"
 
   def addJwtToken(userId: String): RawHeader = {
     val jwtToken =
@@ -49,32 +50,12 @@ abstract class ApiWithOpaSpec extends FunSpec with ScalatestRouteTest with Match
     else if (userId.equals(userId3 ))
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMy0wMDAwMDAwMDAwMDAiLCJpYXQiOjE1NjU4NDEwNDV9.Qy1TM5BIyjWarXJtSRpxvTzP0CWSxfWvnnxAxbDMQ-s"
     else
-      throw new Exception(s"Unknown user id $userId")
+      ""
 
     RawHeader("X-Magda-Session", jwtToken)
   }
 
-
-
-  // Any positive numbers
   val TENANT_0: BigInt = 0
-
-
-//  override def testConfigSource =
-//    s"""
-//      |db.default.url = "jdbc:postgresql://localhost/postgres"
-//      |authorization.skip = false
-//      |akka.loglevel = debug
-//      |authApi.baseUrl = "http://localhost:6104"
-//      |auth.userId= "00000000-0000-4000-8000-000000000000"
-//      |auth.skipOpaQuery = false
-//      |opa.baseUrl = "http://localhost:6104/v0/opa"
-//      |authorization.skip=false
-//      |webhooks.actorTickRate=0
-//      |webhooks.eventPageSize=10
-//      |akka.test.timefactor=2000.0
-//      |trimBySourceTagTimeoutThreshold=500
-//    """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
 
